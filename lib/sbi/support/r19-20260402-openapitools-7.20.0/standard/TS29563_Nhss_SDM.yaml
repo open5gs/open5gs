@@ -1,0 +1,361 @@
+openapi: 3.0.0
+
+info:
+  version: '1.3.0'
+  title: 'Nhss_SDM'
+  description: |
+    HSS Subscriber Data Management.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.563 HSS Services for Interworking With UDM, version 19.3.0
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.563/'
+
+servers:
+  - url: '{apiRoot}/nhss-sdm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - oAuth2ClientCredentials:
+    - nhss-sdm
+  - {}
+
+paths:
+  /{ueId}/ue-context-in-pgw-data:
+    get:
+      summary: Retrieve the UE Context In PGW
+      operationId: GetUeCtxInPgwData
+      tags:
+        - UE Context In PGW Data Retrieval
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            type: string
+            pattern: '^(imsi-[0-9]{5,15})$'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeContextInPgwData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+  /{ueId}/subscriptions:
+    post:
+      summary: subscribe to notifications
+      operationId: Subscribe
+      tags:
+        - Subscription Creation
+      parameters:
+        - name: ueId
+          in: path
+          description: IMSI of the user
+          required: true
+          schema:
+            type: string
+            pattern: '^(imsi-[0-9]{5,15})$'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionData'
+        required: true
+      responses:
+        '201':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/nhss-sdm/<apiVersion>/{ueId}/subscriptions/{subscriptionId}
+              required: true
+              schema:
+                type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+      callbacks:
+        datachangeNotification:
+          '{$request.body#/callbackReference}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ModificationNotification'
+              responses:
+                '204':
+                  description: Successful Notification response
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  description: Unexpected error
+
+  /{ueId}/subscriptions/{subscriptionId}:
+    delete:
+      summary: unsubscribe from notifications
+      operationId: Unsubscribe
+      tags:
+        - Subscription Deletion
+      parameters:
+        - name: ueId
+          in: path
+          description: IMSI of the user
+          required: true
+          schema:
+            type: string
+            pattern: '^(imsi-[0-9]{5,15})$'
+        - name: subscriptionId
+          in: path
+          description: Id of the Subscription
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successful response
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    patch:
+      summary: modify the subscription
+      operationId: Modify
+      tags:
+        - Subscription Modification
+      parameters:
+        - name: ueId
+          in: path
+          description: IMSI of the user
+          required: true
+          schema:
+            type: string
+            pattern: '^(imsi-[0-9]{5,15})$'
+        - name: subscriptionId
+          in: path
+          description: Id of the Subscription
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '204':
+          description: Successful modification
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nhss-sdm: Access to the nhss-sdm API
+
+
+  schemas:
+
+# STRUCTURED TYPES:
+
+    UeContextInPgwData:
+      description: >
+        Contains data about APNs and PGW-C+SMF FQDNs used in interworking with UDM, and the
+        PGW-C+SMF FQDN to be used for emergency session
+      type: object
+      properties:
+        pgwInfo:
+          type: array
+          items:
+            $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/PgwInfo'
+          minItems: 1
+        emergencyFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        emergencyPlmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        emergencyIpAddr:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/IpAddress'
+        emergencyRegistrationTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+
+    SubscriptionData:
+      description: >
+        Contains data about a subscription request, to be created by a consumer to an URI of the
+        HSS_SDM API to be monitored; it also represents the response containing data about the
+        created subscription
+      type: object
+      required:
+        - nfInstanceId
+        - callbackReference
+        - monitoredResourceUris
+      properties:
+        nfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        callbackReference:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        monitoredResourceUris:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+        expires:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        immediateReport:
+          type: boolean
+          default: false
+        report:
+          $ref: '#/components/schemas/SubscriptionDataSets'
+
+    SubscriptionDataSets:
+      description: >
+        Contains data to be reported as an immediate report in the response to a subscription
+        creation request
+      type: object
+      properties:
+        ueContextInPgwData:
+          $ref: '#/components/schemas/UeContextInPgwData'
+
+# SIMPLE TYPES:
+
+
+# ENUMS:

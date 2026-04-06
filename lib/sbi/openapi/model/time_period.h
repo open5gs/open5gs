@@ -12,21 +12,21 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_time_period_s OpenAPI_time_period_t;
 #include "periodicity.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_time_period_s OpenAPI_time_period_t;
-typedef struct OpenAPI_time_period_s {
-    struct OpenAPI_periodicity_s *period;
+struct OpenAPI_time_period_s {
+    OpenAPI_periodicity_e period;
     bool is_max_num_period;
     int max_num_period;
-} OpenAPI_time_period_t;
+};
 
 OpenAPI_time_period_t *OpenAPI_time_period_create(
-    OpenAPI_periodicity_t *period,
+    OpenAPI_periodicity_e period,
     bool is_max_num_period,
     int max_num_period
 );

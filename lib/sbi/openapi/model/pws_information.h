@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pws_information_s OpenAPI_pws_information_t;
 #include "global_ran_node_id.h"
 #include "n2_info_content.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pws_information_s OpenAPI_pws_information_t;
-typedef struct OpenAPI_pws_information_s {
+struct OpenAPI_pws_information_s {
     int message_identifier;
     int serial_number;
     struct OpenAPI_n2_info_content_s *pws_container;
@@ -29,7 +29,7 @@ typedef struct OpenAPI_pws_information_s {
     int send_ran_response;
     char *omc_id;
     char *nf_id;
-} OpenAPI_pws_information_t;
+};
 
 OpenAPI_pws_information_t *OpenAPI_pws_information_create(
     int message_identifier,

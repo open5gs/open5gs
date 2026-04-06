@@ -16,7 +16,9 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_create(
     char *supported_features,
     OpenAPI_access_token_err_t *access_token_error,
     OpenAPI_access_token_req_t *access_token_request,
-    char *nrf_id
+    char *nrf_id,
+    OpenAPI_list_t *supported_api_versions,
+    OpenAPI_no_profile_match_info_t *no_profile_match_info
 )
 {
     OpenAPI_problem_details_t *problem_details_local_var = ogs_malloc(sizeof(OpenAPI_problem_details_t));
@@ -34,6 +36,8 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_create(
     problem_details_local_var->access_token_error = access_token_error;
     problem_details_local_var->access_token_request = access_token_request;
     problem_details_local_var->nrf_id = nrf_id;
+    problem_details_local_var->supported_api_versions = supported_api_versions;
+    problem_details_local_var->no_profile_match_info = no_profile_match_info;
 
     return problem_details_local_var;
 }
@@ -87,6 +91,17 @@ void OpenAPI_problem_details_free(OpenAPI_problem_details_t *problem_details)
     if (problem_details->nrf_id) {
         ogs_free(problem_details->nrf_id);
         problem_details->nrf_id = NULL;
+    }
+    if (problem_details->supported_api_versions) {
+        OpenAPI_list_for_each(problem_details->supported_api_versions, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(problem_details->supported_api_versions);
+        problem_details->supported_api_versions = NULL;
+    }
+    if (problem_details->no_profile_match_info) {
+        OpenAPI_no_profile_match_info_free(problem_details->no_profile_match_info);
+        problem_details->no_profile_match_info = NULL;
     }
     ogs_free(problem_details);
 }
@@ -200,6 +215,33 @@ cJSON *OpenAPI_problem_details_convertToJSON(OpenAPI_problem_details_t *problem_
     }
     }
 
+    if (problem_details->supported_api_versions) {
+    cJSON *supported_api_versionsList = cJSON_AddArrayToObject(item, "supportedApiVersions");
+    if (supported_api_versionsList == NULL) {
+        ogs_error("OpenAPI_problem_details_convertToJSON() failed [supported_api_versions]");
+        goto end;
+    }
+    OpenAPI_list_for_each(problem_details->supported_api_versions, node) {
+        if (cJSON_AddStringToObject(supported_api_versionsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_problem_details_convertToJSON() failed [supported_api_versions]");
+            goto end;
+        }
+    }
+    }
+
+    if (problem_details->no_profile_match_info) {
+    cJSON *no_profile_match_info_local_JSON = OpenAPI_no_profile_match_info_convertToJSON(problem_details->no_profile_match_info);
+    if (no_profile_match_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_problem_details_convertToJSON() failed [no_profile_match_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "noProfileMatchInfo", no_profile_match_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_problem_details_convertToJSON() failed [no_profile_match_info]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -222,6 +264,10 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_parseFromJSON(cJSON *problem_
     cJSON *access_token_request = NULL;
     OpenAPI_access_token_req_t *access_token_request_local_nonprim = NULL;
     cJSON *nrf_id = NULL;
+    cJSON *supported_api_versions = NULL;
+    OpenAPI_list_t *supported_api_versionsList = NULL;
+    cJSON *no_profile_match_info = NULL;
+    OpenAPI_no_profile_match_info_t *no_profile_match_info_local_nonprim = NULL;
     type = cJSON_GetObjectItemCaseSensitive(problem_detailsJSON, "type");
     if (type) {
     if (!cJSON_IsString(type) && !cJSON_IsNull(type)) {
@@ -328,6 +374,36 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_parseFromJSON(cJSON *problem_
     }
     }
 
+    supported_api_versions = cJSON_GetObjectItemCaseSensitive(problem_detailsJSON, "supportedApiVersions");
+    if (supported_api_versions) {
+        cJSON *supported_api_versions_local = NULL;
+        if (!cJSON_IsArray(supported_api_versions)) {
+            ogs_error("OpenAPI_problem_details_parseFromJSON() failed [supported_api_versions]");
+            goto end;
+        }
+
+        supported_api_versionsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(supported_api_versions_local, supported_api_versions) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(supported_api_versions_local)) {
+                ogs_error("OpenAPI_problem_details_parseFromJSON() failed [supported_api_versions]");
+                goto end;
+            }
+            OpenAPI_list_add(supported_api_versionsList, ogs_strdup(supported_api_versions_local->valuestring));
+        }
+    }
+
+    no_profile_match_info = cJSON_GetObjectItemCaseSensitive(problem_detailsJSON, "noProfileMatchInfo");
+    if (no_profile_match_info) {
+    no_profile_match_info_local_nonprim = OpenAPI_no_profile_match_info_parseFromJSON(no_profile_match_info);
+    if (!no_profile_match_info_local_nonprim) {
+        ogs_error("OpenAPI_no_profile_match_info_parseFromJSON failed [no_profile_match_info]");
+        goto end;
+    }
+    }
+
     problem_details_local_var = OpenAPI_problem_details_create (
         type && !cJSON_IsNull(type) ? ogs_strdup(type->valuestring) : NULL,
         title && !cJSON_IsNull(title) ? ogs_strdup(title->valuestring) : NULL,
@@ -340,7 +416,9 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_parseFromJSON(cJSON *problem_
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         access_token_error ? access_token_error_local_nonprim : NULL,
         access_token_request ? access_token_request_local_nonprim : NULL,
-        nrf_id && !cJSON_IsNull(nrf_id) ? ogs_strdup(nrf_id->valuestring) : NULL
+        nrf_id && !cJSON_IsNull(nrf_id) ? ogs_strdup(nrf_id->valuestring) : NULL,
+        supported_api_versions ? supported_api_versionsList : NULL,
+        no_profile_match_info ? no_profile_match_info_local_nonprim : NULL
     );
 
     return problem_details_local_var;
@@ -359,6 +437,17 @@ end:
     if (access_token_request_local_nonprim) {
         OpenAPI_access_token_req_free(access_token_request_local_nonprim);
         access_token_request_local_nonprim = NULL;
+    }
+    if (supported_api_versionsList) {
+        OpenAPI_list_for_each(supported_api_versionsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(supported_api_versionsList);
+        supported_api_versionsList = NULL;
+    }
+    if (no_profile_match_info_local_nonprim) {
+        OpenAPI_no_profile_match_info_free(no_profile_match_info_local_nonprim);
+        no_profile_match_info_local_nonprim = NULL;
     }
     return NULL;
 }

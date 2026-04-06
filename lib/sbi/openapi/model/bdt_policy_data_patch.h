@@ -12,15 +12,15 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_bdt_policy_data_patch_s OpenAPI_bdt_policy_data_patch_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_bdt_policy_data_patch_s OpenAPI_bdt_policy_data_patch_t;
-typedef struct OpenAPI_bdt_policy_data_patch_s {
+struct OpenAPI_bdt_policy_data_patch_s {
     char *bdt_ref_id;
-} OpenAPI_bdt_policy_data_patch_t;
+};
 
 OpenAPI_bdt_policy_data_patch_t *OpenAPI_bdt_policy_data_patch_create(
     char *bdt_ref_id

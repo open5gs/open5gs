@@ -12,7 +12,9 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_subscription_data_s OpenAPI_subscription_data_t;
 #include "ext_snssai.h"
+#include "locality_description.h"
 #include "nf_type.h"
 #include "notif_condition.h"
 #include "notification_event_type.h"
@@ -25,10 +27,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_subscription_data_s OpenAPI_subscription_data_t;
-typedef struct OpenAPI_subscription_data_s {
+struct OpenAPI_subscription_data_s {
     char *nf_status_notification_uri;
     char *req_nf_instance_id;
+    OpenAPI_list_t *shared_data_ids;
     struct OpenAPI_subscr_cond_s *subscr_cond;
     char *subscription_id;
     char *validity_time;
@@ -50,11 +52,15 @@ typedef struct OpenAPI_subscription_data_s {
     int onboarding_capability;
     char *target_hni;
     char *preferred_locality;
-} OpenAPI_subscription_data_t;
+    OpenAPI_list_t* ext_preferred_locality;
+    bool is_complete_profile_subscription;
+    int complete_profile_subscription;
+};
 
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     char *nf_status_notification_uri,
     char *req_nf_instance_id,
+    OpenAPI_list_t *shared_data_ids,
     OpenAPI_subscr_cond_t *subscr_cond,
     char *subscription_id,
     char *validity_time,
@@ -75,7 +81,10 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     bool is_onboarding_capability,
     int onboarding_capability,
     char *target_hni,
-    char *preferred_locality
+    char *preferred_locality,
+    OpenAPI_list_t* ext_preferred_locality,
+    bool is_complete_profile_subscription,
+    int complete_profile_subscription
 );
 void OpenAPI_subscription_data_free(OpenAPI_subscription_data_t *subscription_data);
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subscription_dataJSON);

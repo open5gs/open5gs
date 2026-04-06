@@ -1,7 +1,7 @@
 /*
  * am_influ_event.h
  *
- * Represents the service area coverage outcome event.
+ * 
  */
 
 #ifndef _OpenAPI_am_influ_event_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "am_influ_event_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_am_influ_event_s OpenAPI_am_influ_event_t;
-typedef struct OpenAPI_am_influ_event_s {
-} OpenAPI_am_influ_event_t;
+typedef enum { OpenAPI_am_influ_event_NULL = 0, OpenAPI_am_influ_event_SERVICE_AREA_COVRG_OUTCOME, OpenAPI_am_influ_event_SLICE_REPLACE_OUTCOME } OpenAPI_am_influ_event_e;
 
-OpenAPI_am_influ_event_t *OpenAPI_am_influ_event_create(
-);
-void OpenAPI_am_influ_event_free(OpenAPI_am_influ_event_t *am_influ_event);
-OpenAPI_am_influ_event_t *OpenAPI_am_influ_event_parseFromJSON(cJSON *am_influ_eventJSON);
-cJSON *OpenAPI_am_influ_event_convertToJSON(OpenAPI_am_influ_event_t *am_influ_event);
-OpenAPI_am_influ_event_t *OpenAPI_am_influ_event_copy(OpenAPI_am_influ_event_t *dst, OpenAPI_am_influ_event_t *src);
+char* OpenAPI_am_influ_event_ToString(OpenAPI_am_influ_event_e am_influ_event);
+
+OpenAPI_am_influ_event_e OpenAPI_am_influ_event_FromString(char* am_influ_event);
 
 #ifdef __cplusplus
 }

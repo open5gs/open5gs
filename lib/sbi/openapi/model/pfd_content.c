@@ -9,7 +9,8 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_create(
     OpenAPI_list_t *flow_descriptions,
     OpenAPI_list_t *urls,
     OpenAPI_list_t *domain_names,
-    OpenAPI_domain_name_protocol_t *dn_protocol
+    OpenAPI_domain_name_protocol_e dn_protocol,
+    OpenAPI_nf_type_e source_nf_type
 )
 {
     OpenAPI_pfd_content_t *pfd_content_local_var = ogs_malloc(sizeof(OpenAPI_pfd_content_t));
@@ -20,6 +21,7 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_create(
     pfd_content_local_var->urls = urls;
     pfd_content_local_var->domain_names = domain_names;
     pfd_content_local_var->dn_protocol = dn_protocol;
+    pfd_content_local_var->source_nf_type = source_nf_type;
 
     return pfd_content_local_var;
 }
@@ -55,10 +57,6 @@ void OpenAPI_pfd_content_free(OpenAPI_pfd_content_t *pfd_content)
         }
         OpenAPI_list_free(pfd_content->domain_names);
         pfd_content->domain_names = NULL;
-    }
-    if (pfd_content->dn_protocol) {
-        OpenAPI_domain_name_protocol_free(pfd_content->dn_protocol);
-        pfd_content->dn_protocol = NULL;
     }
     ogs_free(pfd_content);
 }
@@ -123,15 +121,16 @@ cJSON *OpenAPI_pfd_content_convertToJSON(OpenAPI_pfd_content_t *pfd_content)
     }
     }
 
-    if (pfd_content->dn_protocol) {
-    cJSON *dn_protocol_local_JSON = OpenAPI_domain_name_protocol_convertToJSON(pfd_content->dn_protocol);
-    if (dn_protocol_local_JSON == NULL) {
+    if (pfd_content->dn_protocol != OpenAPI_domain_name_protocol_NULL) {
+    if (cJSON_AddStringToObject(item, "dnProtocol", OpenAPI_domain_name_protocol_ToString(pfd_content->dn_protocol)) == NULL) {
         ogs_error("OpenAPI_pfd_content_convertToJSON() failed [dn_protocol]");
         goto end;
     }
-    cJSON_AddItemToObject(item, "dnProtocol", dn_protocol_local_JSON);
-    if (item->child == NULL) {
-        ogs_error("OpenAPI_pfd_content_convertToJSON() failed [dn_protocol]");
+    }
+
+    if (pfd_content->source_nf_type != OpenAPI_nf_type_NULL) {
+    if (cJSON_AddStringToObject(item, "sourceNfType", OpenAPI_nf_type_ToString(pfd_content->source_nf_type)) == NULL) {
+        ogs_error("OpenAPI_pfd_content_convertToJSON() failed [source_nf_type]");
         goto end;
     }
     }
@@ -152,7 +151,9 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON)
     cJSON *domain_names = NULL;
     OpenAPI_list_t *domain_namesList = NULL;
     cJSON *dn_protocol = NULL;
-    OpenAPI_domain_name_protocol_t *dn_protocol_local_nonprim = NULL;
+    OpenAPI_domain_name_protocol_e dn_protocolVariable = 0;
+    cJSON *source_nf_type = NULL;
+    OpenAPI_nf_type_e source_nf_typeVariable = 0;
     pfd_id = cJSON_GetObjectItemCaseSensitive(pfd_contentJSON, "pfdId");
     if (pfd_id) {
     if (!cJSON_IsString(pfd_id) && !cJSON_IsNull(pfd_id)) {
@@ -226,11 +227,20 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON)
 
     dn_protocol = cJSON_GetObjectItemCaseSensitive(pfd_contentJSON, "dnProtocol");
     if (dn_protocol) {
-    dn_protocol_local_nonprim = OpenAPI_domain_name_protocol_parseFromJSON(dn_protocol);
-    if (!dn_protocol_local_nonprim) {
-        ogs_error("OpenAPI_domain_name_protocol_parseFromJSON failed [dn_protocol]");
+    if (!cJSON_IsString(dn_protocol)) {
+        ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [dn_protocol]");
         goto end;
     }
+    dn_protocolVariable = OpenAPI_domain_name_protocol_FromString(dn_protocol->valuestring);
+    }
+
+    source_nf_type = cJSON_GetObjectItemCaseSensitive(pfd_contentJSON, "sourceNfType");
+    if (source_nf_type) {
+    if (!cJSON_IsString(source_nf_type)) {
+        ogs_error("OpenAPI_pfd_content_parseFromJSON() failed [source_nf_type]");
+        goto end;
+    }
+    source_nf_typeVariable = OpenAPI_nf_type_FromString(source_nf_type->valuestring);
     }
 
     pfd_content_local_var = OpenAPI_pfd_content_create (
@@ -238,7 +248,8 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON)
         flow_descriptions ? flow_descriptionsList : NULL,
         urls ? urlsList : NULL,
         domain_names ? domain_namesList : NULL,
-        dn_protocol ? dn_protocol_local_nonprim : NULL
+        dn_protocol ? dn_protocolVariable : 0,
+        source_nf_type ? source_nf_typeVariable : 0
     );
 
     return pfd_content_local_var;
@@ -263,10 +274,6 @@ end:
         }
         OpenAPI_list_free(domain_namesList);
         domain_namesList = NULL;
-    }
-    if (dn_protocol_local_nonprim) {
-        OpenAPI_domain_name_protocol_free(dn_protocol_local_nonprim);
-        dn_protocol_local_nonprim = NULL;
     }
     return NULL;
 }

@@ -12,14 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_create_ue_context_request_s OpenAPI_create_ue_context_request_t;
 #include "ue_context_create_data.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_create_ue_context_request_s OpenAPI_create_ue_context_request_t;
-typedef struct OpenAPI_create_ue_context_request_s {
+struct OpenAPI_create_ue_context_request_s {
     struct OpenAPI_ue_context_create_data_s *json_data;
     OpenAPI_binary_t* binary_data_n2_information;
     OpenAPI_binary_t* binary_data_n2_information_ext1;
@@ -39,7 +39,7 @@ typedef struct OpenAPI_create_ue_context_request_s {
     OpenAPI_binary_t* binary_data_n2_information_ext15;
     OpenAPI_binary_t* binary_data_n2_information_ext16;
     OpenAPI_binary_t* binary_data_n2_information_ext17;
-} OpenAPI_create_ue_context_request_t;
+};
 
 OpenAPI_create_ue_context_request_t *OpenAPI_create_ue_context_request_create(
     OpenAPI_ue_context_create_data_t *json_data,

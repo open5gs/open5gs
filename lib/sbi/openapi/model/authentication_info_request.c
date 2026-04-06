@@ -15,7 +15,9 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_creat
     bool is_nswo_ind,
     int nswo_ind,
     bool is_disaster_roaming_ind,
-    int disaster_roaming_ind
+    int disaster_roaming_ind,
+    bool is_aun3_ind,
+    int aun3_ind
 )
 {
     OpenAPI_authentication_info_request_t *authentication_info_request_local_var = ogs_malloc(sizeof(OpenAPI_authentication_info_request_t));
@@ -32,6 +34,8 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_creat
     authentication_info_request_local_var->nswo_ind = nswo_ind;
     authentication_info_request_local_var->is_disaster_roaming_ind = is_disaster_roaming_ind;
     authentication_info_request_local_var->disaster_roaming_ind = disaster_roaming_ind;
+    authentication_info_request_local_var->is_aun3_ind = is_aun3_ind;
+    authentication_info_request_local_var->aun3_ind = aun3_ind;
 
     return authentication_info_request_local_var;
 }
@@ -153,6 +157,13 @@ cJSON *OpenAPI_authentication_info_request_convertToJSON(OpenAPI_authentication_
     }
     }
 
+    if (authentication_info_request->is_aun3_ind) {
+    if (cJSON_AddBoolToObject(item, "aun3Ind", authentication_info_request->aun3_ind) == NULL) {
+        ogs_error("OpenAPI_authentication_info_request_convertToJSON() failed [aun3_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -171,6 +182,7 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
     cJSON *n5gc_ind = NULL;
     cJSON *nswo_ind = NULL;
     cJSON *disaster_roaming_ind = NULL;
+    cJSON *aun3_ind = NULL;
     supported_features = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "supportedFeatures");
     if (supported_features) {
     if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
@@ -253,6 +265,14 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
     }
     }
 
+    aun3_ind = cJSON_GetObjectItemCaseSensitive(authentication_info_requestJSON, "aun3Ind");
+    if (aun3_ind) {
+    if (!cJSON_IsBool(aun3_ind)) {
+        ogs_error("OpenAPI_authentication_info_request_parseFromJSON() failed [aun3_ind]");
+        goto end;
+    }
+    }
+
     authentication_info_request_local_var = OpenAPI_authentication_info_request_create (
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         ogs_strdup(serving_network_name->valuestring),
@@ -264,7 +284,9 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parse
         nswo_ind ? true : false,
         nswo_ind ? nswo_ind->valueint : 0,
         disaster_roaming_ind ? true : false,
-        disaster_roaming_ind ? disaster_roaming_ind->valueint : 0
+        disaster_roaming_ind ? disaster_roaming_ind->valueint : 0,
+        aun3_ind ? true : false,
+        aun3_ind ? aun3_ind->valueint : 0
     );
 
     return authentication_info_request_local_var;

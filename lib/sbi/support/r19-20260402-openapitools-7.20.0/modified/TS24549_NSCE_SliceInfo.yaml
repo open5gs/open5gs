@@ -1,0 +1,234 @@
+openapi: 3.0.0
+
+info:
+  title: NSCE_SliceInfo
+  version: 1.1.0
+  description: |
+    API for notification of slice information.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.549 V19.1.0 Network slice capability enablement- Service Enabler;
+    Architecture Layer for Verticals (SEAL); Protocol specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/24_series/24.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/nsce_sliceinfo/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+paths:
+  /edn-slice-subscriptions:
+    post:
+    # This is a pseudo operation, NF service consumers shall NOT invoke this method!
+      requestBody:
+        required: true
+        content:
+          application/json:
+            # Unspecified schema for the JSON body, since this is neither used by consumer nor by the producer.
+            schema: {}
+      responses:
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        SliceNotification:
+          '{callbackUri}':
+          # The URI in {callbackUri} is not provided by SNSCE-C via NSCE_SliceInfo API in this Release.
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: 'TS29435_NSCE_ServiceContinuity.yaml#/components/schemas/EdgeSCRequirementNotif'
+              responses:
+                '204':
+                  description: No Content, notification was succesfull.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /plmn-slice-subscriptions:
+    post:
+    # This is a pseudo operation, NF service consumers shall NOT invoke this method!
+      requestBody:
+        required: true
+        content:
+          application/json:
+            # Unspecified schema for the JSON body, since this is neither used by consumer nor by the producer.
+            schema: {}
+      responses:
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        InterPlmnSliceNotification:
+          '{callbackUri}':
+          # The URI in {callbackUri} is not provided by SNSCE-C via NSCE_SliceInfo API in this Release.
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: 'TS29435_NSCE_InterPLMNContinuity.yaml#/components/schemas/InterPlmnServContNotif'
+              responses:
+                '204':
+                  description: No Content, notification was succesfull.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /ns-info-subscriptions:
+    post:
+    # This is a pseudo operation, NF service consumers shall NOT invoke this method!
+      requestBody:
+        required: true
+        content:
+          application/json:
+            # Unspecified schema for the JSON body, since this is neither used by consumer nor by the producer.
+            schema: {}
+      responses:
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        NSInfoDelivery:
+          '{callbackUri}':
+          # The URI in {callbackUri} is not provided by SNSCE-C via NSCE_SliceInfo API in this Release.
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NSInfoDel'
+              responses:
+                '204':
+                  description: No Content, notification was succesfull.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    NSInfoDel:
+      description: Represents the network slice information delivery.
+      type: object
+      properties:
+        valServId:
+          type: string
+        tgtNsceServId:
+          type: string
+        tgtNsceAddr:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint' 
+        valUeIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Represents the list of VAL UEs ID.
+        nSInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/NSInfo'
+          minItems: 1
+      required:
+        - valServId
+        - tgtNsceServId
+        - tgtNsceAddr
+        - nSInfos
+
+    NSInfo:
+      description: Represents the network slice information.
+      type: object
+      properties:
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+      required:
+        - netSliceId

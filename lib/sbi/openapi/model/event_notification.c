@@ -5,16 +5,17 @@
 #include "event_notification.h"
 
 OpenAPI_event_notification_t *OpenAPI_event_notification_create(
-    OpenAPI_nwdaf_event_t *event,
+    OpenAPI_nwdaf_event_e event,
     char *start,
     char *expiry,
     char *time_stamp_gen,
-    OpenAPI_nwdaf_failure_code_t *fail_notify_code,
+    OpenAPI_nwdaf_failure_code_e fail_notify_code,
     bool is_rv_wait_time,
     int rv_wait_time,
     OpenAPI_analytics_metadata_info_t *ana_meta_info,
     OpenAPI_list_t *nf_load_level_infos,
     OpenAPI_list_t *nsi_load_level_infos,
+    OpenAPI_list_t *pfd_determ_infos,
     OpenAPI_slice_load_level_information_t *slice_load_level_info,
     OpenAPI_list_t *svc_exps,
     OpenAPI_list_t *qos_sustain_infos,
@@ -27,7 +28,21 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_create(
     OpenAPI_list_t *disper_infos,
     OpenAPI_list_t *red_trans_infos,
     OpenAPI_list_t *wlan_infos,
-    OpenAPI_list_t *smcc_exps
+    OpenAPI_list_t *smcc_exps,
+    OpenAPI_list_t *pdu_ses_traf_infos,
+    OpenAPI_list_t *data_vl_trns_tm_infos,
+    OpenAPI_accuracy_info_t *accu_info,
+    bool is_cancel_accu_ind,
+    int cancel_accu_ind,
+    bool is_pause_ind,
+    int pause_ind,
+    bool is_resume_ind,
+    int resume_ind,
+    OpenAPI_list_t *mov_behav_infos,
+    OpenAPI_list_t *loc_acc_infos,
+    OpenAPI_list_t *rel_prox_infos,
+    OpenAPI_list_t *signal_storm_infos,
+    OpenAPI_list_t *qos_pol_assist_infos
 )
 {
     OpenAPI_event_notification_t *event_notification_local_var = ogs_malloc(sizeof(OpenAPI_event_notification_t));
@@ -43,6 +58,7 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_create(
     event_notification_local_var->ana_meta_info = ana_meta_info;
     event_notification_local_var->nf_load_level_infos = nf_load_level_infos;
     event_notification_local_var->nsi_load_level_infos = nsi_load_level_infos;
+    event_notification_local_var->pfd_determ_infos = pfd_determ_infos;
     event_notification_local_var->slice_load_level_info = slice_load_level_info;
     event_notification_local_var->svc_exps = svc_exps;
     event_notification_local_var->qos_sustain_infos = qos_sustain_infos;
@@ -56,6 +72,20 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_create(
     event_notification_local_var->red_trans_infos = red_trans_infos;
     event_notification_local_var->wlan_infos = wlan_infos;
     event_notification_local_var->smcc_exps = smcc_exps;
+    event_notification_local_var->pdu_ses_traf_infos = pdu_ses_traf_infos;
+    event_notification_local_var->data_vl_trns_tm_infos = data_vl_trns_tm_infos;
+    event_notification_local_var->accu_info = accu_info;
+    event_notification_local_var->is_cancel_accu_ind = is_cancel_accu_ind;
+    event_notification_local_var->cancel_accu_ind = cancel_accu_ind;
+    event_notification_local_var->is_pause_ind = is_pause_ind;
+    event_notification_local_var->pause_ind = pause_ind;
+    event_notification_local_var->is_resume_ind = is_resume_ind;
+    event_notification_local_var->resume_ind = resume_ind;
+    event_notification_local_var->mov_behav_infos = mov_behav_infos;
+    event_notification_local_var->loc_acc_infos = loc_acc_infos;
+    event_notification_local_var->rel_prox_infos = rel_prox_infos;
+    event_notification_local_var->signal_storm_infos = signal_storm_infos;
+    event_notification_local_var->qos_pol_assist_infos = qos_pol_assist_infos;
 
     return event_notification_local_var;
 }
@@ -66,10 +96,6 @@ void OpenAPI_event_notification_free(OpenAPI_event_notification_t *event_notific
 
     if (NULL == event_notification) {
         return;
-    }
-    if (event_notification->event) {
-        OpenAPI_nwdaf_event_free(event_notification->event);
-        event_notification->event = NULL;
     }
     if (event_notification->start) {
         ogs_free(event_notification->start);
@@ -82,10 +108,6 @@ void OpenAPI_event_notification_free(OpenAPI_event_notification_t *event_notific
     if (event_notification->time_stamp_gen) {
         ogs_free(event_notification->time_stamp_gen);
         event_notification->time_stamp_gen = NULL;
-    }
-    if (event_notification->fail_notify_code) {
-        OpenAPI_nwdaf_failure_code_free(event_notification->fail_notify_code);
-        event_notification->fail_notify_code = NULL;
     }
     if (event_notification->ana_meta_info) {
         OpenAPI_analytics_metadata_info_free(event_notification->ana_meta_info);
@@ -104,6 +126,13 @@ void OpenAPI_event_notification_free(OpenAPI_event_notification_t *event_notific
         }
         OpenAPI_list_free(event_notification->nsi_load_level_infos);
         event_notification->nsi_load_level_infos = NULL;
+    }
+    if (event_notification->pfd_determ_infos) {
+        OpenAPI_list_for_each(event_notification->pfd_determ_infos, node) {
+            OpenAPI_pfd_determination_info_free(node->data);
+        }
+        OpenAPI_list_free(event_notification->pfd_determ_infos);
+        event_notification->pfd_determ_infos = NULL;
     }
     if (event_notification->slice_load_level_info) {
         OpenAPI_slice_load_level_information_free(event_notification->slice_load_level_info);
@@ -193,6 +222,59 @@ void OpenAPI_event_notification_free(OpenAPI_event_notification_t *event_notific
         OpenAPI_list_free(event_notification->smcc_exps);
         event_notification->smcc_exps = NULL;
     }
+    if (event_notification->pdu_ses_traf_infos) {
+        OpenAPI_list_for_each(event_notification->pdu_ses_traf_infos, node) {
+            OpenAPI_pdu_ses_traffic_info_free(node->data);
+        }
+        OpenAPI_list_free(event_notification->pdu_ses_traf_infos);
+        event_notification->pdu_ses_traf_infos = NULL;
+    }
+    if (event_notification->data_vl_trns_tm_infos) {
+        OpenAPI_list_for_each(event_notification->data_vl_trns_tm_infos, node) {
+            OpenAPI_e2e_data_vol_trans_time_info_free(node->data);
+        }
+        OpenAPI_list_free(event_notification->data_vl_trns_tm_infos);
+        event_notification->data_vl_trns_tm_infos = NULL;
+    }
+    if (event_notification->accu_info) {
+        OpenAPI_accuracy_info_free(event_notification->accu_info);
+        event_notification->accu_info = NULL;
+    }
+    if (event_notification->mov_behav_infos) {
+        OpenAPI_list_for_each(event_notification->mov_behav_infos, node) {
+            OpenAPI_mov_behav_info_free(node->data);
+        }
+        OpenAPI_list_free(event_notification->mov_behav_infos);
+        event_notification->mov_behav_infos = NULL;
+    }
+    if (event_notification->loc_acc_infos) {
+        OpenAPI_list_for_each(event_notification->loc_acc_infos, node) {
+            OpenAPI_loc_accuracy_info_free(node->data);
+        }
+        OpenAPI_list_free(event_notification->loc_acc_infos);
+        event_notification->loc_acc_infos = NULL;
+    }
+    if (event_notification->rel_prox_infos) {
+        OpenAPI_list_for_each(event_notification->rel_prox_infos, node) {
+            OpenAPI_rel_prox_info_free(node->data);
+        }
+        OpenAPI_list_free(event_notification->rel_prox_infos);
+        event_notification->rel_prox_infos = NULL;
+    }
+    if (event_notification->signal_storm_infos) {
+        OpenAPI_list_for_each(event_notification->signal_storm_infos, node) {
+            OpenAPI_signal_storm_info_free(node->data);
+        }
+        OpenAPI_list_free(event_notification->signal_storm_infos);
+        event_notification->signal_storm_infos = NULL;
+    }
+    if (event_notification->qos_pol_assist_infos) {
+        OpenAPI_list_for_each(event_notification->qos_pol_assist_infos, node) {
+            OpenAPI_qos_policy_assist_info_free(node->data);
+        }
+        OpenAPI_list_free(event_notification->qos_pol_assist_infos);
+        event_notification->qos_pol_assist_infos = NULL;
+    }
     ogs_free(event_notification);
 }
 
@@ -207,17 +289,11 @@ cJSON *OpenAPI_event_notification_convertToJSON(OpenAPI_event_notification_t *ev
     }
 
     item = cJSON_CreateObject();
-    if (!event_notification->event) {
+    if (event_notification->event == OpenAPI_nwdaf_event_NULL) {
         ogs_error("OpenAPI_event_notification_convertToJSON() failed [event]");
         return NULL;
     }
-    cJSON *event_local_JSON = OpenAPI_nwdaf_event_convertToJSON(event_notification->event);
-    if (event_local_JSON == NULL) {
-        ogs_error("OpenAPI_event_notification_convertToJSON() failed [event]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "event", event_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "event", OpenAPI_nwdaf_event_ToString(event_notification->event)) == NULL) {
         ogs_error("OpenAPI_event_notification_convertToJSON() failed [event]");
         goto end;
     }
@@ -243,14 +319,8 @@ cJSON *OpenAPI_event_notification_convertToJSON(OpenAPI_event_notification_t *ev
     }
     }
 
-    if (event_notification->fail_notify_code) {
-    cJSON *fail_notify_code_local_JSON = OpenAPI_nwdaf_failure_code_convertToJSON(event_notification->fail_notify_code);
-    if (fail_notify_code_local_JSON == NULL) {
-        ogs_error("OpenAPI_event_notification_convertToJSON() failed [fail_notify_code]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "failNotifyCode", fail_notify_code_local_JSON);
-    if (item->child == NULL) {
+    if (event_notification->fail_notify_code != OpenAPI_nwdaf_failure_code_NULL) {
+    if (cJSON_AddStringToObject(item, "failNotifyCode", OpenAPI_nwdaf_failure_code_ToString(event_notification->fail_notify_code)) == NULL) {
         ogs_error("OpenAPI_event_notification_convertToJSON() failed [fail_notify_code]");
         goto end;
     }
@@ -305,6 +375,22 @@ cJSON *OpenAPI_event_notification_convertToJSON(OpenAPI_event_notification_t *ev
             goto end;
         }
         cJSON_AddItemToArray(nsi_load_level_infosList, itemLocal);
+    }
+    }
+
+    if (event_notification->pfd_determ_infos) {
+    cJSON *pfd_determ_infosList = cJSON_AddArrayToObject(item, "pfdDetermInfos");
+    if (pfd_determ_infosList == NULL) {
+        ogs_error("OpenAPI_event_notification_convertToJSON() failed [pfd_determ_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_notification->pfd_determ_infos, node) {
+        cJSON *itemLocal = OpenAPI_pfd_determination_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_notification_convertToJSON() failed [pfd_determ_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(pfd_determ_infosList, itemLocal);
     }
     }
 
@@ -513,6 +599,152 @@ cJSON *OpenAPI_event_notification_convertToJSON(OpenAPI_event_notification_t *ev
     }
     }
 
+    if (event_notification->pdu_ses_traf_infos) {
+    cJSON *pdu_ses_traf_infosList = cJSON_AddArrayToObject(item, "pduSesTrafInfos");
+    if (pdu_ses_traf_infosList == NULL) {
+        ogs_error("OpenAPI_event_notification_convertToJSON() failed [pdu_ses_traf_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_notification->pdu_ses_traf_infos, node) {
+        cJSON *itemLocal = OpenAPI_pdu_ses_traffic_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_notification_convertToJSON() failed [pdu_ses_traf_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(pdu_ses_traf_infosList, itemLocal);
+    }
+    }
+
+    if (event_notification->data_vl_trns_tm_infos) {
+    cJSON *data_vl_trns_tm_infosList = cJSON_AddArrayToObject(item, "dataVlTrnsTmInfos");
+    if (data_vl_trns_tm_infosList == NULL) {
+        ogs_error("OpenAPI_event_notification_convertToJSON() failed [data_vl_trns_tm_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_notification->data_vl_trns_tm_infos, node) {
+        cJSON *itemLocal = OpenAPI_e2e_data_vol_trans_time_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_notification_convertToJSON() failed [data_vl_trns_tm_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(data_vl_trns_tm_infosList, itemLocal);
+    }
+    }
+
+    if (event_notification->accu_info) {
+    cJSON *accu_info_local_JSON = OpenAPI_accuracy_info_convertToJSON(event_notification->accu_info);
+    if (accu_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_event_notification_convertToJSON() failed [accu_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "accuInfo", accu_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_event_notification_convertToJSON() failed [accu_info]");
+        goto end;
+    }
+    }
+
+    if (event_notification->is_cancel_accu_ind) {
+    if (cJSON_AddBoolToObject(item, "cancelAccuInd", event_notification->cancel_accu_ind) == NULL) {
+        ogs_error("OpenAPI_event_notification_convertToJSON() failed [cancel_accu_ind]");
+        goto end;
+    }
+    }
+
+    if (event_notification->is_pause_ind) {
+    if (cJSON_AddBoolToObject(item, "pauseInd", event_notification->pause_ind) == NULL) {
+        ogs_error("OpenAPI_event_notification_convertToJSON() failed [pause_ind]");
+        goto end;
+    }
+    }
+
+    if (event_notification->is_resume_ind) {
+    if (cJSON_AddBoolToObject(item, "resumeInd", event_notification->resume_ind) == NULL) {
+        ogs_error("OpenAPI_event_notification_convertToJSON() failed [resume_ind]");
+        goto end;
+    }
+    }
+
+    if (event_notification->mov_behav_infos) {
+    cJSON *mov_behav_infosList = cJSON_AddArrayToObject(item, "movBehavInfos");
+    if (mov_behav_infosList == NULL) {
+        ogs_error("OpenAPI_event_notification_convertToJSON() failed [mov_behav_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_notification->mov_behav_infos, node) {
+        cJSON *itemLocal = OpenAPI_mov_behav_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_notification_convertToJSON() failed [mov_behav_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(mov_behav_infosList, itemLocal);
+    }
+    }
+
+    if (event_notification->loc_acc_infos) {
+    cJSON *loc_acc_infosList = cJSON_AddArrayToObject(item, "locAccInfos");
+    if (loc_acc_infosList == NULL) {
+        ogs_error("OpenAPI_event_notification_convertToJSON() failed [loc_acc_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_notification->loc_acc_infos, node) {
+        cJSON *itemLocal = OpenAPI_loc_accuracy_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_notification_convertToJSON() failed [loc_acc_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(loc_acc_infosList, itemLocal);
+    }
+    }
+
+    if (event_notification->rel_prox_infos) {
+    cJSON *rel_prox_infosList = cJSON_AddArrayToObject(item, "relProxInfos");
+    if (rel_prox_infosList == NULL) {
+        ogs_error("OpenAPI_event_notification_convertToJSON() failed [rel_prox_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_notification->rel_prox_infos, node) {
+        cJSON *itemLocal = OpenAPI_rel_prox_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_notification_convertToJSON() failed [rel_prox_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(rel_prox_infosList, itemLocal);
+    }
+    }
+
+    if (event_notification->signal_storm_infos) {
+    cJSON *signal_storm_infosList = cJSON_AddArrayToObject(item, "signalStormInfos");
+    if (signal_storm_infosList == NULL) {
+        ogs_error("OpenAPI_event_notification_convertToJSON() failed [signal_storm_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_notification->signal_storm_infos, node) {
+        cJSON *itemLocal = OpenAPI_signal_storm_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_notification_convertToJSON() failed [signal_storm_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(signal_storm_infosList, itemLocal);
+    }
+    }
+
+    if (event_notification->qos_pol_assist_infos) {
+    cJSON *qos_pol_assist_infosList = cJSON_AddArrayToObject(item, "qosPolAssistInfos");
+    if (qos_pol_assist_infosList == NULL) {
+        ogs_error("OpenAPI_event_notification_convertToJSON() failed [qos_pol_assist_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_notification->qos_pol_assist_infos, node) {
+        cJSON *itemLocal = OpenAPI_qos_policy_assist_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_notification_convertToJSON() failed [qos_pol_assist_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(qos_pol_assist_infosList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -522,12 +754,12 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
     OpenAPI_event_notification_t *event_notification_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *event = NULL;
-    OpenAPI_nwdaf_event_t *event_local_nonprim = NULL;
+    OpenAPI_nwdaf_event_e eventVariable = 0;
     cJSON *start = NULL;
     cJSON *expiry = NULL;
     cJSON *time_stamp_gen = NULL;
     cJSON *fail_notify_code = NULL;
-    OpenAPI_nwdaf_failure_code_t *fail_notify_code_local_nonprim = NULL;
+    OpenAPI_nwdaf_failure_code_e fail_notify_codeVariable = 0;
     cJSON *rv_wait_time = NULL;
     cJSON *ana_meta_info = NULL;
     OpenAPI_analytics_metadata_info_t *ana_meta_info_local_nonprim = NULL;
@@ -535,6 +767,8 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
     OpenAPI_list_t *nf_load_level_infosList = NULL;
     cJSON *nsi_load_level_infos = NULL;
     OpenAPI_list_t *nsi_load_level_infosList = NULL;
+    cJSON *pfd_determ_infos = NULL;
+    OpenAPI_list_t *pfd_determ_infosList = NULL;
     cJSON *slice_load_level_info = NULL;
     OpenAPI_slice_load_level_information_t *slice_load_level_info_local_nonprim = NULL;
     cJSON *svc_exps = NULL;
@@ -561,16 +795,35 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
     OpenAPI_list_t *wlan_infosList = NULL;
     cJSON *smcc_exps = NULL;
     OpenAPI_list_t *smcc_expsList = NULL;
+    cJSON *pdu_ses_traf_infos = NULL;
+    OpenAPI_list_t *pdu_ses_traf_infosList = NULL;
+    cJSON *data_vl_trns_tm_infos = NULL;
+    OpenAPI_list_t *data_vl_trns_tm_infosList = NULL;
+    cJSON *accu_info = NULL;
+    OpenAPI_accuracy_info_t *accu_info_local_nonprim = NULL;
+    cJSON *cancel_accu_ind = NULL;
+    cJSON *pause_ind = NULL;
+    cJSON *resume_ind = NULL;
+    cJSON *mov_behav_infos = NULL;
+    OpenAPI_list_t *mov_behav_infosList = NULL;
+    cJSON *loc_acc_infos = NULL;
+    OpenAPI_list_t *loc_acc_infosList = NULL;
+    cJSON *rel_prox_infos = NULL;
+    OpenAPI_list_t *rel_prox_infosList = NULL;
+    cJSON *signal_storm_infos = NULL;
+    OpenAPI_list_t *signal_storm_infosList = NULL;
+    cJSON *qos_pol_assist_infos = NULL;
+    OpenAPI_list_t *qos_pol_assist_infosList = NULL;
     event = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "event");
     if (!event) {
         ogs_error("OpenAPI_event_notification_parseFromJSON() failed [event]");
         goto end;
     }
-    event_local_nonprim = OpenAPI_nwdaf_event_parseFromJSON(event);
-    if (!event_local_nonprim) {
-        ogs_error("OpenAPI_nwdaf_event_parseFromJSON failed [event]");
+    if (!cJSON_IsString(event)) {
+        ogs_error("OpenAPI_event_notification_parseFromJSON() failed [event]");
         goto end;
     }
+    eventVariable = OpenAPI_nwdaf_event_FromString(event->valuestring);
 
     start = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "start");
     if (start) {
@@ -598,11 +851,11 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
 
     fail_notify_code = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "failNotifyCode");
     if (fail_notify_code) {
-    fail_notify_code_local_nonprim = OpenAPI_nwdaf_failure_code_parseFromJSON(fail_notify_code);
-    if (!fail_notify_code_local_nonprim) {
-        ogs_error("OpenAPI_nwdaf_failure_code_parseFromJSON failed [fail_notify_code]");
+    if (!cJSON_IsString(fail_notify_code)) {
+        ogs_error("OpenAPI_event_notification_parseFromJSON() failed [fail_notify_code]");
         goto end;
     }
+    fail_notify_codeVariable = OpenAPI_nwdaf_failure_code_FromString(fail_notify_code->valuestring);
     }
 
     rv_wait_time = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "rvWaitTime");
@@ -667,6 +920,30 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
                 goto end;
             }
             OpenAPI_list_add(nsi_load_level_infosList, nsi_load_level_infosItem);
+        }
+    }
+
+    pfd_determ_infos = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "pfdDetermInfos");
+    if (pfd_determ_infos) {
+        cJSON *pfd_determ_infos_local = NULL;
+        if (!cJSON_IsArray(pfd_determ_infos)) {
+            ogs_error("OpenAPI_event_notification_parseFromJSON() failed [pfd_determ_infos]");
+            goto end;
+        }
+
+        pfd_determ_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(pfd_determ_infos_local, pfd_determ_infos) {
+            if (!cJSON_IsObject(pfd_determ_infos_local)) {
+                ogs_error("OpenAPI_event_notification_parseFromJSON() failed [pfd_determ_infos]");
+                goto end;
+            }
+            OpenAPI_pfd_determination_info_t *pfd_determ_infosItem = OpenAPI_pfd_determination_info_parseFromJSON(pfd_determ_infos_local);
+            if (!pfd_determ_infosItem) {
+                ogs_error("No pfd_determ_infosItem");
+                goto end;
+            }
+            OpenAPI_list_add(pfd_determ_infosList, pfd_determ_infosItem);
         }
     }
 
@@ -967,17 +1244,219 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
         }
     }
 
+    pdu_ses_traf_infos = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "pduSesTrafInfos");
+    if (pdu_ses_traf_infos) {
+        cJSON *pdu_ses_traf_infos_local = NULL;
+        if (!cJSON_IsArray(pdu_ses_traf_infos)) {
+            ogs_error("OpenAPI_event_notification_parseFromJSON() failed [pdu_ses_traf_infos]");
+            goto end;
+        }
+
+        pdu_ses_traf_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(pdu_ses_traf_infos_local, pdu_ses_traf_infos) {
+            if (!cJSON_IsObject(pdu_ses_traf_infos_local)) {
+                ogs_error("OpenAPI_event_notification_parseFromJSON() failed [pdu_ses_traf_infos]");
+                goto end;
+            }
+            OpenAPI_pdu_ses_traffic_info_t *pdu_ses_traf_infosItem = OpenAPI_pdu_ses_traffic_info_parseFromJSON(pdu_ses_traf_infos_local);
+            if (!pdu_ses_traf_infosItem) {
+                ogs_error("No pdu_ses_traf_infosItem");
+                goto end;
+            }
+            OpenAPI_list_add(pdu_ses_traf_infosList, pdu_ses_traf_infosItem);
+        }
+    }
+
+    data_vl_trns_tm_infos = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "dataVlTrnsTmInfos");
+    if (data_vl_trns_tm_infos) {
+        cJSON *data_vl_trns_tm_infos_local = NULL;
+        if (!cJSON_IsArray(data_vl_trns_tm_infos)) {
+            ogs_error("OpenAPI_event_notification_parseFromJSON() failed [data_vl_trns_tm_infos]");
+            goto end;
+        }
+
+        data_vl_trns_tm_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(data_vl_trns_tm_infos_local, data_vl_trns_tm_infos) {
+            if (!cJSON_IsObject(data_vl_trns_tm_infos_local)) {
+                ogs_error("OpenAPI_event_notification_parseFromJSON() failed [data_vl_trns_tm_infos]");
+                goto end;
+            }
+            OpenAPI_e2e_data_vol_trans_time_info_t *data_vl_trns_tm_infosItem = OpenAPI_e2e_data_vol_trans_time_info_parseFromJSON(data_vl_trns_tm_infos_local);
+            if (!data_vl_trns_tm_infosItem) {
+                ogs_error("No data_vl_trns_tm_infosItem");
+                goto end;
+            }
+            OpenAPI_list_add(data_vl_trns_tm_infosList, data_vl_trns_tm_infosItem);
+        }
+    }
+
+    accu_info = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "accuInfo");
+    if (accu_info) {
+    accu_info_local_nonprim = OpenAPI_accuracy_info_parseFromJSON(accu_info);
+    if (!accu_info_local_nonprim) {
+        ogs_error("OpenAPI_accuracy_info_parseFromJSON failed [accu_info]");
+        goto end;
+    }
+    }
+
+    cancel_accu_ind = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "cancelAccuInd");
+    if (cancel_accu_ind) {
+    if (!cJSON_IsBool(cancel_accu_ind)) {
+        ogs_error("OpenAPI_event_notification_parseFromJSON() failed [cancel_accu_ind]");
+        goto end;
+    }
+    }
+
+    pause_ind = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "pauseInd");
+    if (pause_ind) {
+    if (!cJSON_IsBool(pause_ind)) {
+        ogs_error("OpenAPI_event_notification_parseFromJSON() failed [pause_ind]");
+        goto end;
+    }
+    }
+
+    resume_ind = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "resumeInd");
+    if (resume_ind) {
+    if (!cJSON_IsBool(resume_ind)) {
+        ogs_error("OpenAPI_event_notification_parseFromJSON() failed [resume_ind]");
+        goto end;
+    }
+    }
+
+    mov_behav_infos = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "movBehavInfos");
+    if (mov_behav_infos) {
+        cJSON *mov_behav_infos_local = NULL;
+        if (!cJSON_IsArray(mov_behav_infos)) {
+            ogs_error("OpenAPI_event_notification_parseFromJSON() failed [mov_behav_infos]");
+            goto end;
+        }
+
+        mov_behav_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(mov_behav_infos_local, mov_behav_infos) {
+            if (!cJSON_IsObject(mov_behav_infos_local)) {
+                ogs_error("OpenAPI_event_notification_parseFromJSON() failed [mov_behav_infos]");
+                goto end;
+            }
+            OpenAPI_mov_behav_info_t *mov_behav_infosItem = OpenAPI_mov_behav_info_parseFromJSON(mov_behav_infos_local);
+            if (!mov_behav_infosItem) {
+                ogs_error("No mov_behav_infosItem");
+                goto end;
+            }
+            OpenAPI_list_add(mov_behav_infosList, mov_behav_infosItem);
+        }
+    }
+
+    loc_acc_infos = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "locAccInfos");
+    if (loc_acc_infos) {
+        cJSON *loc_acc_infos_local = NULL;
+        if (!cJSON_IsArray(loc_acc_infos)) {
+            ogs_error("OpenAPI_event_notification_parseFromJSON() failed [loc_acc_infos]");
+            goto end;
+        }
+
+        loc_acc_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(loc_acc_infos_local, loc_acc_infos) {
+            if (!cJSON_IsObject(loc_acc_infos_local)) {
+                ogs_error("OpenAPI_event_notification_parseFromJSON() failed [loc_acc_infos]");
+                goto end;
+            }
+            OpenAPI_loc_accuracy_info_t *loc_acc_infosItem = OpenAPI_loc_accuracy_info_parseFromJSON(loc_acc_infos_local);
+            if (!loc_acc_infosItem) {
+                ogs_error("No loc_acc_infosItem");
+                goto end;
+            }
+            OpenAPI_list_add(loc_acc_infosList, loc_acc_infosItem);
+        }
+    }
+
+    rel_prox_infos = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "relProxInfos");
+    if (rel_prox_infos) {
+        cJSON *rel_prox_infos_local = NULL;
+        if (!cJSON_IsArray(rel_prox_infos)) {
+            ogs_error("OpenAPI_event_notification_parseFromJSON() failed [rel_prox_infos]");
+            goto end;
+        }
+
+        rel_prox_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(rel_prox_infos_local, rel_prox_infos) {
+            if (!cJSON_IsObject(rel_prox_infos_local)) {
+                ogs_error("OpenAPI_event_notification_parseFromJSON() failed [rel_prox_infos]");
+                goto end;
+            }
+            OpenAPI_rel_prox_info_t *rel_prox_infosItem = OpenAPI_rel_prox_info_parseFromJSON(rel_prox_infos_local);
+            if (!rel_prox_infosItem) {
+                ogs_error("No rel_prox_infosItem");
+                goto end;
+            }
+            OpenAPI_list_add(rel_prox_infosList, rel_prox_infosItem);
+        }
+    }
+
+    signal_storm_infos = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "signalStormInfos");
+    if (signal_storm_infos) {
+        cJSON *signal_storm_infos_local = NULL;
+        if (!cJSON_IsArray(signal_storm_infos)) {
+            ogs_error("OpenAPI_event_notification_parseFromJSON() failed [signal_storm_infos]");
+            goto end;
+        }
+
+        signal_storm_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(signal_storm_infos_local, signal_storm_infos) {
+            if (!cJSON_IsObject(signal_storm_infos_local)) {
+                ogs_error("OpenAPI_event_notification_parseFromJSON() failed [signal_storm_infos]");
+                goto end;
+            }
+            OpenAPI_signal_storm_info_t *signal_storm_infosItem = OpenAPI_signal_storm_info_parseFromJSON(signal_storm_infos_local);
+            if (!signal_storm_infosItem) {
+                ogs_error("No signal_storm_infosItem");
+                goto end;
+            }
+            OpenAPI_list_add(signal_storm_infosList, signal_storm_infosItem);
+        }
+    }
+
+    qos_pol_assist_infos = cJSON_GetObjectItemCaseSensitive(event_notificationJSON, "qosPolAssistInfos");
+    if (qos_pol_assist_infos) {
+        cJSON *qos_pol_assist_infos_local = NULL;
+        if (!cJSON_IsArray(qos_pol_assist_infos)) {
+            ogs_error("OpenAPI_event_notification_parseFromJSON() failed [qos_pol_assist_infos]");
+            goto end;
+        }
+
+        qos_pol_assist_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(qos_pol_assist_infos_local, qos_pol_assist_infos) {
+            if (!cJSON_IsObject(qos_pol_assist_infos_local)) {
+                ogs_error("OpenAPI_event_notification_parseFromJSON() failed [qos_pol_assist_infos]");
+                goto end;
+            }
+            OpenAPI_qos_policy_assist_info_t *qos_pol_assist_infosItem = OpenAPI_qos_policy_assist_info_parseFromJSON(qos_pol_assist_infos_local);
+            if (!qos_pol_assist_infosItem) {
+                ogs_error("No qos_pol_assist_infosItem");
+                goto end;
+            }
+            OpenAPI_list_add(qos_pol_assist_infosList, qos_pol_assist_infosItem);
+        }
+    }
+
     event_notification_local_var = OpenAPI_event_notification_create (
-        event_local_nonprim,
+        eventVariable,
         start && !cJSON_IsNull(start) ? ogs_strdup(start->valuestring) : NULL,
         expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
         time_stamp_gen && !cJSON_IsNull(time_stamp_gen) ? ogs_strdup(time_stamp_gen->valuestring) : NULL,
-        fail_notify_code ? fail_notify_code_local_nonprim : NULL,
+        fail_notify_code ? fail_notify_codeVariable : 0,
         rv_wait_time ? true : false,
         rv_wait_time ? rv_wait_time->valuedouble : 0,
         ana_meta_info ? ana_meta_info_local_nonprim : NULL,
         nf_load_level_infos ? nf_load_level_infosList : NULL,
         nsi_load_level_infos ? nsi_load_level_infosList : NULL,
+        pfd_determ_infos ? pfd_determ_infosList : NULL,
         slice_load_level_info ? slice_load_level_info_local_nonprim : NULL,
         svc_exps ? svc_expsList : NULL,
         qos_sustain_infos ? qos_sustain_infosList : NULL,
@@ -990,19 +1469,25 @@ OpenAPI_event_notification_t *OpenAPI_event_notification_parseFromJSON(cJSON *ev
         disper_infos ? disper_infosList : NULL,
         red_trans_infos ? red_trans_infosList : NULL,
         wlan_infos ? wlan_infosList : NULL,
-        smcc_exps ? smcc_expsList : NULL
+        smcc_exps ? smcc_expsList : NULL,
+        pdu_ses_traf_infos ? pdu_ses_traf_infosList : NULL,
+        data_vl_trns_tm_infos ? data_vl_trns_tm_infosList : NULL,
+        accu_info ? accu_info_local_nonprim : NULL,
+        cancel_accu_ind ? true : false,
+        cancel_accu_ind ? cancel_accu_ind->valueint : 0,
+        pause_ind ? true : false,
+        pause_ind ? pause_ind->valueint : 0,
+        resume_ind ? true : false,
+        resume_ind ? resume_ind->valueint : 0,
+        mov_behav_infos ? mov_behav_infosList : NULL,
+        loc_acc_infos ? loc_acc_infosList : NULL,
+        rel_prox_infos ? rel_prox_infosList : NULL,
+        signal_storm_infos ? signal_storm_infosList : NULL,
+        qos_pol_assist_infos ? qos_pol_assist_infosList : NULL
     );
 
     return event_notification_local_var;
 end:
-    if (event_local_nonprim) {
-        OpenAPI_nwdaf_event_free(event_local_nonprim);
-        event_local_nonprim = NULL;
-    }
-    if (fail_notify_code_local_nonprim) {
-        OpenAPI_nwdaf_failure_code_free(fail_notify_code_local_nonprim);
-        fail_notify_code_local_nonprim = NULL;
-    }
     if (ana_meta_info_local_nonprim) {
         OpenAPI_analytics_metadata_info_free(ana_meta_info_local_nonprim);
         ana_meta_info_local_nonprim = NULL;
@@ -1020,6 +1505,13 @@ end:
         }
         OpenAPI_list_free(nsi_load_level_infosList);
         nsi_load_level_infosList = NULL;
+    }
+    if (pfd_determ_infosList) {
+        OpenAPI_list_for_each(pfd_determ_infosList, node) {
+            OpenAPI_pfd_determination_info_free(node->data);
+        }
+        OpenAPI_list_free(pfd_determ_infosList);
+        pfd_determ_infosList = NULL;
     }
     if (slice_load_level_info_local_nonprim) {
         OpenAPI_slice_load_level_information_free(slice_load_level_info_local_nonprim);
@@ -1108,6 +1600,59 @@ end:
         }
         OpenAPI_list_free(smcc_expsList);
         smcc_expsList = NULL;
+    }
+    if (pdu_ses_traf_infosList) {
+        OpenAPI_list_for_each(pdu_ses_traf_infosList, node) {
+            OpenAPI_pdu_ses_traffic_info_free(node->data);
+        }
+        OpenAPI_list_free(pdu_ses_traf_infosList);
+        pdu_ses_traf_infosList = NULL;
+    }
+    if (data_vl_trns_tm_infosList) {
+        OpenAPI_list_for_each(data_vl_trns_tm_infosList, node) {
+            OpenAPI_e2e_data_vol_trans_time_info_free(node->data);
+        }
+        OpenAPI_list_free(data_vl_trns_tm_infosList);
+        data_vl_trns_tm_infosList = NULL;
+    }
+    if (accu_info_local_nonprim) {
+        OpenAPI_accuracy_info_free(accu_info_local_nonprim);
+        accu_info_local_nonprim = NULL;
+    }
+    if (mov_behav_infosList) {
+        OpenAPI_list_for_each(mov_behav_infosList, node) {
+            OpenAPI_mov_behav_info_free(node->data);
+        }
+        OpenAPI_list_free(mov_behav_infosList);
+        mov_behav_infosList = NULL;
+    }
+    if (loc_acc_infosList) {
+        OpenAPI_list_for_each(loc_acc_infosList, node) {
+            OpenAPI_loc_accuracy_info_free(node->data);
+        }
+        OpenAPI_list_free(loc_acc_infosList);
+        loc_acc_infosList = NULL;
+    }
+    if (rel_prox_infosList) {
+        OpenAPI_list_for_each(rel_prox_infosList, node) {
+            OpenAPI_rel_prox_info_free(node->data);
+        }
+        OpenAPI_list_free(rel_prox_infosList);
+        rel_prox_infosList = NULL;
+    }
+    if (signal_storm_infosList) {
+        OpenAPI_list_for_each(signal_storm_infosList, node) {
+            OpenAPI_signal_storm_info_free(node->data);
+        }
+        OpenAPI_list_free(signal_storm_infosList);
+        signal_storm_infosList = NULL;
+    }
+    if (qos_pol_assist_infosList) {
+        OpenAPI_list_for_each(qos_pol_assist_infosList, node) {
+            OpenAPI_qos_policy_assist_info_free(node->data);
+        }
+        OpenAPI_list_free(qos_pol_assist_infosList);
+        qos_pol_assist_infosList = NULL;
     }
     return NULL;
 }

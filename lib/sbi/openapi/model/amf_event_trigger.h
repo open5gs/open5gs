@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "amf_event_trigger_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_amf_event_trigger_s OpenAPI_amf_event_trigger_t;
-typedef struct OpenAPI_amf_event_trigger_s {
-} OpenAPI_amf_event_trigger_t;
+typedef enum { OpenAPI_amf_event_trigger_NULL = 0, OpenAPI_amf_event_trigger_ONE_TIME, OpenAPI_amf_event_trigger_CONTINUOUS, OpenAPI_amf_event_trigger_PERIODIC } OpenAPI_amf_event_trigger_e;
 
-OpenAPI_amf_event_trigger_t *OpenAPI_amf_event_trigger_create(
-);
-void OpenAPI_amf_event_trigger_free(OpenAPI_amf_event_trigger_t *amf_event_trigger);
-OpenAPI_amf_event_trigger_t *OpenAPI_amf_event_trigger_parseFromJSON(cJSON *amf_event_triggerJSON);
-cJSON *OpenAPI_amf_event_trigger_convertToJSON(OpenAPI_amf_event_trigger_t *amf_event_trigger);
-OpenAPI_amf_event_trigger_t *OpenAPI_amf_event_trigger_copy(OpenAPI_amf_event_trigger_t *dst, OpenAPI_amf_event_trigger_t *src);
+char* OpenAPI_amf_event_trigger_ToString(OpenAPI_amf_event_trigger_e amf_event_trigger);
+
+OpenAPI_amf_event_trigger_e OpenAPI_amf_event_trigger_FromString(char* amf_event_trigger);
 
 #ifdef __cplusplus
 }

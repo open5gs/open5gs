@@ -1,7 +1,7 @@
 /*
  * sor_update_indicator.h
  *
- * 
+ * Indicates serving node PLMN identity.
  */
 
 #ifndef _OpenAPI_sor_update_indicator_H_

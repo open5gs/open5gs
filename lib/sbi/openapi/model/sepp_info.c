@@ -8,7 +8,8 @@ OpenAPI_sepp_info_t *OpenAPI_sepp_info_create(
     char *sepp_prefix,
     OpenAPI_list_t* sepp_ports,
     OpenAPI_list_t *remote_plmn_list,
-    OpenAPI_list_t *remote_snpn_list
+    OpenAPI_list_t *remote_snpn_list,
+    OpenAPI_list_t *n32_purposes
 )
 {
     OpenAPI_sepp_info_t *sepp_info_local_var = ogs_malloc(sizeof(OpenAPI_sepp_info_t));
@@ -18,6 +19,7 @@ OpenAPI_sepp_info_t *OpenAPI_sepp_info_create(
     sepp_info_local_var->sepp_ports = sepp_ports;
     sepp_info_local_var->remote_plmn_list = remote_plmn_list;
     sepp_info_local_var->remote_snpn_list = remote_snpn_list;
+    sepp_info_local_var->n32_purposes = n32_purposes;
 
     return sepp_info_local_var;
 }
@@ -56,6 +58,10 @@ void OpenAPI_sepp_info_free(OpenAPI_sepp_info_t *sepp_info)
         }
         OpenAPI_list_free(sepp_info->remote_snpn_list);
         sepp_info->remote_snpn_list = NULL;
+    }
+    if (sepp_info->n32_purposes) {
+        OpenAPI_list_free(sepp_info->n32_purposes);
+        sepp_info->n32_purposes = NULL;
     }
     ogs_free(sepp_info);
 }
@@ -140,6 +146,20 @@ cJSON *OpenAPI_sepp_info_convertToJSON(OpenAPI_sepp_info_t *sepp_info)
     }
     }
 
+    if (sepp_info->n32_purposes != OpenAPI_n32_purpose_NULL) {
+    cJSON *n32_purposesList = cJSON_AddArrayToObject(item, "n32Purposes");
+    if (n32_purposesList == NULL) {
+        ogs_error("OpenAPI_sepp_info_convertToJSON() failed [n32_purposes]");
+        goto end;
+    }
+    OpenAPI_list_for_each(sepp_info->n32_purposes, node) {
+        if (cJSON_AddStringToObject(n32_purposesList, "", OpenAPI_n32_purpose_ToString((intptr_t)node->data)) == NULL) {
+            ogs_error("OpenAPI_sepp_info_convertToJSON() failed [n32_purposes]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -155,6 +175,8 @@ OpenAPI_sepp_info_t *OpenAPI_sepp_info_parseFromJSON(cJSON *sepp_infoJSON)
     OpenAPI_list_t *remote_plmn_listList = NULL;
     cJSON *remote_snpn_list = NULL;
     OpenAPI_list_t *remote_snpn_listList = NULL;
+    cJSON *n32_purposes = NULL;
+    OpenAPI_list_t *n32_purposesList = NULL;
     sepp_prefix = cJSON_GetObjectItemCaseSensitive(sepp_infoJSON, "seppPrefix");
     if (sepp_prefix) {
     if (!cJSON_IsString(sepp_prefix) && !cJSON_IsNull(sepp_prefix)) {
@@ -241,18 +263,49 @@ OpenAPI_sepp_info_t *OpenAPI_sepp_info_parseFromJSON(cJSON *sepp_infoJSON)
         }
     }
 
+    n32_purposes = cJSON_GetObjectItemCaseSensitive(sepp_infoJSON, "n32Purposes");
+    if (n32_purposes) {
+        cJSON *n32_purposes_local = NULL;
+        if (!cJSON_IsArray(n32_purposes)) {
+            ogs_error("OpenAPI_sepp_info_parseFromJSON() failed [n32_purposes]");
+            goto end;
+        }
+
+        n32_purposesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(n32_purposes_local, n32_purposes) {
+            OpenAPI_n32_purpose_e localEnum = OpenAPI_n32_purpose_NULL;
+            if (!cJSON_IsString(n32_purposes_local)) {
+                ogs_error("OpenAPI_sepp_info_parseFromJSON() failed [n32_purposes]");
+                goto end;
+            }
+            localEnum = OpenAPI_n32_purpose_FromString(n32_purposes_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"n32_purposes\" is not supported. Ignoring it ...",
+                         n32_purposes_local->valuestring);
+            } else {
+                OpenAPI_list_add(n32_purposesList, (void *)localEnum);
+            }
+        }
+        if (n32_purposesList->count == 0) {
+            ogs_error("OpenAPI_sepp_info_parseFromJSON() failed: Expected n32_purposesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+    }
+
     sepp_info_local_var = OpenAPI_sepp_info_create (
         sepp_prefix && !cJSON_IsNull(sepp_prefix) ? ogs_strdup(sepp_prefix->valuestring) : NULL,
         sepp_ports ? sepp_portsList : NULL,
         remote_plmn_list ? remote_plmn_listList : NULL,
-        remote_snpn_list ? remote_snpn_listList : NULL
+        remote_snpn_list ? remote_snpn_listList : NULL,
+        n32_purposes ? n32_purposesList : NULL
     );
 
     return sepp_info_local_var;
 end:
     if (sepp_portsList) {
         OpenAPI_list_for_each(sepp_portsList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             ogs_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
@@ -273,6 +326,10 @@ end:
         }
         OpenAPI_list_free(remote_snpn_listList);
         remote_snpn_listList = NULL;
+    }
+    if (n32_purposesList) {
+        OpenAPI_list_free(n32_purposesList);
+        n32_purposesList = NULL;
     }
     return NULL;
 }

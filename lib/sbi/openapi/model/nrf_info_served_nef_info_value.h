@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nrf_info_served_nef_info_value_s OpenAPI_nrf_info_served_nef_info_value_t;
 #include "af_event_exposure_data.h"
 #include "identity_range.h"
 #include "nef_info.h"
@@ -24,8 +25,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nrf_info_served_nef_info_value_s OpenAPI_nrf_info_served_nef_info_value_t;
-typedef struct OpenAPI_nrf_info_served_nef_info_value_s {
+struct OpenAPI_nrf_info_served_nef_info_value_s {
     char *nef_id;
     struct OpenAPI_pfd_data_s *pfd_data;
     struct OpenAPI_af_event_exposure_data_s *af_ee_data;
@@ -38,7 +38,11 @@ typedef struct OpenAPI_nrf_info_served_nef_info_value_s {
     OpenAPI_list_t *un_trust_af_info_list;
     bool is_uas_nf_functionality_ind;
     int uas_nf_functionality_ind;
-} OpenAPI_nrf_info_served_nef_info_value_t;
+    bool is_multi_mem_af_sess_qos_ind;
+    int multi_mem_af_sess_qos_ind;
+    bool is_member_ue_sel_assist_ind;
+    int member_ue_sel_assist_ind;
+};
 
 OpenAPI_nrf_info_served_nef_info_value_t *OpenAPI_nrf_info_served_nef_info_value_create(
     char *nef_id,
@@ -52,7 +56,11 @@ OpenAPI_nrf_info_served_nef_info_value_t *OpenAPI_nrf_info_served_nef_info_value
     OpenAPI_list_t *dnai_list,
     OpenAPI_list_t *un_trust_af_info_list,
     bool is_uas_nf_functionality_ind,
-    int uas_nf_functionality_ind
+    int uas_nf_functionality_ind,
+    bool is_multi_mem_af_sess_qos_ind,
+    int multi_mem_af_sess_qos_ind,
+    bool is_member_ue_sel_assist_ind,
+    int member_ue_sel_assist_ind
 );
 void OpenAPI_nrf_info_served_nef_info_value_free(OpenAPI_nrf_info_served_nef_info_value_t *nrf_info_served_nef_info_value);
 OpenAPI_nrf_info_served_nef_info_value_t *OpenAPI_nrf_info_served_nef_info_value_parseFromJSON(cJSON *nrf_info_served_nef_info_valueJSON);

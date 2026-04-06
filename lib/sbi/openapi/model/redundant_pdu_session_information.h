@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_redundant_pdu_session_information_s OpenAPI_redundant_pdu_session_information_t;
 #include "rsn.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_redundant_pdu_session_information_s OpenAPI_redundant_pdu_session_information_t;
-typedef struct OpenAPI_redundant_pdu_session_information_s {
+struct OpenAPI_redundant_pdu_session_information_s {
     OpenAPI_rsn_e rsn;
     bool is_pdu_session_pair_id;
     int pdu_session_pair_id;
-} OpenAPI_redundant_pdu_session_information_t;
+};
 
 OpenAPI_redundant_pdu_session_information_t *OpenAPI_redundant_pdu_session_information_create(
     OpenAPI_rsn_e rsn,

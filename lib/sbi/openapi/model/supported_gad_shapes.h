@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "supported_gad_shapes_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_supported_gad_shapes_s OpenAPI_supported_gad_shapes_t;
-typedef struct OpenAPI_supported_gad_shapes_s {
-} OpenAPI_supported_gad_shapes_t;
+typedef enum { OpenAPI_supported_gad_shapes_NULL = 0, OpenAPI_supported_gad_shapes_POINT, OpenAPI_supported_gad_shapes_POINT_UNCERTAINTY_CIRCLE, OpenAPI_supported_gad_shapes_POINT_UNCERTAINTY_ELLIPSE, OpenAPI_supported_gad_shapes_POLYGON, OpenAPI_supported_gad_shapes_POINT_ALTITUDE, OpenAPI_supported_gad_shapes_POINT_ALTITUDE_UNCERTAINTY, OpenAPI_supported_gad_shapes_ELLIPSOID_ARC, OpenAPI_supported_gad_shapes_LOCAL_2D_POINT_UNCERTAINTY_ELLIPSE, OpenAPI_supported_gad_shapes_LOCAL_3D_POINT_UNCERTAINTY_ELLIPSOID, OpenAPI_supported_gad_shapes_DISTANCE_DIRECTION, OpenAPI_supported_gad_shapes_RELATIVE_2D_LOCATION_UNCERTAINTY_ELLIPSE, OpenAPI_supported_gad_shapes_RELATIVE_3D_LOCATION_UNCERTAINTY_ELLIPSOID } OpenAPI_supported_gad_shapes_e;
 
-OpenAPI_supported_gad_shapes_t *OpenAPI_supported_gad_shapes_create(
-);
-void OpenAPI_supported_gad_shapes_free(OpenAPI_supported_gad_shapes_t *supported_gad_shapes);
-OpenAPI_supported_gad_shapes_t *OpenAPI_supported_gad_shapes_parseFromJSON(cJSON *supported_gad_shapesJSON);
-cJSON *OpenAPI_supported_gad_shapes_convertToJSON(OpenAPI_supported_gad_shapes_t *supported_gad_shapes);
-OpenAPI_supported_gad_shapes_t *OpenAPI_supported_gad_shapes_copy(OpenAPI_supported_gad_shapes_t *dst, OpenAPI_supported_gad_shapes_t *src);
+char* OpenAPI_supported_gad_shapes_ToString(OpenAPI_supported_gad_shapes_e supported_gad_shapes);
+
+OpenAPI_supported_gad_shapes_e OpenAPI_supported_gad_shapes_FromString(char* supported_gad_shapes);
 
 #ifdef __cplusplus
 }

@@ -9,7 +9,8 @@ OpenAPI_policy_data_for_individual_ue_t *OpenAPI_policy_data_for_individual_ue_c
     OpenAPI_sm_policy_data_t *sm_policy_data_set,
     OpenAPI_am_policy_data_t *am_policy_data_set,
     OpenAPI_list_t* um_data,
-    OpenAPI_list_t* operator_specific_data_set
+    OpenAPI_list_t* operator_specific_data_set,
+    char *supp_feat
 )
 {
     OpenAPI_policy_data_for_individual_ue_t *policy_data_for_individual_ue_local_var = ogs_malloc(sizeof(OpenAPI_policy_data_for_individual_ue_t));
@@ -20,6 +21,7 @@ OpenAPI_policy_data_for_individual_ue_t *OpenAPI_policy_data_for_individual_ue_c
     policy_data_for_individual_ue_local_var->am_policy_data_set = am_policy_data_set;
     policy_data_for_individual_ue_local_var->um_data = um_data;
     policy_data_for_individual_ue_local_var->operator_specific_data_set = operator_specific_data_set;
+    policy_data_for_individual_ue_local_var->supp_feat = supp_feat;
 
     return policy_data_for_individual_ue_local_var;
 }
@@ -62,6 +64,10 @@ void OpenAPI_policy_data_for_individual_ue_free(OpenAPI_policy_data_for_individu
         }
         OpenAPI_list_free(policy_data_for_individual_ue->operator_specific_data_set);
         policy_data_for_individual_ue->operator_specific_data_set = NULL;
+    }
+    if (policy_data_for_individual_ue->supp_feat) {
+        ogs_free(policy_data_for_individual_ue->supp_feat);
+        policy_data_for_individual_ue->supp_feat = NULL;
     }
     ogs_free(policy_data_for_individual_ue);
 }
@@ -176,6 +182,13 @@ cJSON *OpenAPI_policy_data_for_individual_ue_convertToJSON(OpenAPI_policy_data_f
     }
     }
 
+    if (policy_data_for_individual_ue->supp_feat) {
+    if (cJSON_AddStringToObject(item, "suppFeat", policy_data_for_individual_ue->supp_feat) == NULL) {
+        ogs_error("OpenAPI_policy_data_for_individual_ue_convertToJSON() failed [supp_feat]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -194,6 +207,7 @@ OpenAPI_policy_data_for_individual_ue_t *OpenAPI_policy_data_for_individual_ue_p
     OpenAPI_list_t *um_dataList = NULL;
     cJSON *operator_specific_data_set = NULL;
     OpenAPI_list_t *operator_specific_data_setList = NULL;
+    cJSON *supp_feat = NULL;
     ue_policy_data_set = cJSON_GetObjectItemCaseSensitive(policy_data_for_individual_ueJSON, "uePolicyDataSet");
     if (ue_policy_data_set) {
     ue_policy_data_set_local_nonprim = OpenAPI_ue_policy_set_parseFromJSON(ue_policy_data_set);
@@ -273,12 +287,21 @@ OpenAPI_policy_data_for_individual_ue_t *OpenAPI_policy_data_for_individual_ue_p
         }
     }
 
+    supp_feat = cJSON_GetObjectItemCaseSensitive(policy_data_for_individual_ueJSON, "suppFeat");
+    if (supp_feat) {
+    if (!cJSON_IsString(supp_feat) && !cJSON_IsNull(supp_feat)) {
+        ogs_error("OpenAPI_policy_data_for_individual_ue_parseFromJSON() failed [supp_feat]");
+        goto end;
+    }
+    }
+
     policy_data_for_individual_ue_local_var = OpenAPI_policy_data_for_individual_ue_create (
         ue_policy_data_set ? ue_policy_data_set_local_nonprim : NULL,
         sm_policy_data_set ? sm_policy_data_set_local_nonprim : NULL,
         am_policy_data_set ? am_policy_data_set_local_nonprim : NULL,
         um_data ? um_dataList : NULL,
-        operator_specific_data_set ? operator_specific_data_setList : NULL
+        operator_specific_data_set ? operator_specific_data_setList : NULL,
+        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL
     );
 
     return policy_data_for_individual_ue_local_var;
@@ -297,7 +320,7 @@ end:
     }
     if (um_dataList) {
         OpenAPI_list_for_each(um_dataList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_usage_mon_data_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
@@ -307,7 +330,7 @@ end:
     }
     if (operator_specific_data_setList) {
         OpenAPI_list_for_each(operator_specific_data_setList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_operator_specific_data_container_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

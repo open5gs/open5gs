@@ -1,7 +1,7 @@
 /*
  * npcf_multicast_access_control.h
  *
- * 
+ * Indicates whether the service data flow, corresponding to the service data flow template, is allowed or not allowed. 
  */
 
 #ifndef _OpenAPI_npcf_multicast_access_control_H_

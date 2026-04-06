@@ -1,0 +1,314 @@
+openapi: 3.0.0
+info:
+  title: Mbar_Management_AvatarRepresentations
+  version: 1.0.0
+  description: |
+    Base Avatar Repository Management API - Avatar Representations
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: AvatarRepresentations
+    description: 'Avatar Representation Management'
+
+externalDocs:
+  description: 'TS 26.264 V19.1.0; IMS-based AR Real-Time Communication'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.264/'
+
+servers:
+  - url: '{apiRoot}/3gpp-mbar-management/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in 3GPP TS 29.501
+
+security:
+  - {}
+  - OAuth2: []
+
+paths:
+  /avatars/{avatarId}/representations:
+    parameters:
+      - name: avatarId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The unique identifier of the Avatar resource'
+    post:
+      tags:
+        - AvatarRepresentations
+      operationId: createAvatarRepresentation
+      summary: 'Create an Avatar Representation resource in the BAR'
+      security:
+        - OAuth2:
+          - avatar_representation_create
+      requestBody:
+        description: 'A JSON representation of an Avatar Representation'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvatarRepresentation'
+      responses:
+        '201':
+          description: 'Avatar Representation Created'
+          headers:
+            Location:
+              description: 'URL of the newly created Avatar Representation resource'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/Url'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvatarRepresentation'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /avatars/{avatarId}/representations/{avatarRepresentationId}:
+    parameters:
+      - name: avatarId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The unique identifier of the parent Avatar resource'
+      - name: avatarRepresentationId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The unique identifier of the Avatar Representation resource'
+    get:
+      tags:
+        - AvatarRepresentations
+      operationId: getAvatarRepresentation
+      summary: 'Retrieve a previously created Avatar Representation resource'
+      security:
+        - OAuth2:
+          - avatar_representation_retrieve
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvatarRepresentation'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      tags:
+        - AvatarRepresentations
+      operationId: updateAvatarRepresentation
+      summary: 'Update Avatar Representation resource'
+      security:
+        - OAuth2:
+          - avatar_representation_update
+      requestBody:
+        description: 'A JSON representation of an Avatar Representation'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvatarRepresentation'
+      responses:
+        '200':
+          description: 'Avatar Representation Updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvatarRepresentation'
+        '204':
+          description: 'Avatar Representation Unchanged'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      tags:
+        - AvatarRepresentations
+      operationId: patchAvatarRepresentation
+      summary: 'Patch Avatar Representation resource'
+      security:
+        - OAuth2:
+          - avatar_representation_update
+      requestBody:
+        description: 'A JSON representation of an Avatar Representation'
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/AvatarRepresentation'
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/AvatarRepresentation'
+      responses:
+        '200':
+          description: 'Patched Avatar Representation'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvatarRepresentation'
+        '204':
+          description: 'Avatar Representation Unchanged'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      tags:
+        - AvatarRepresentations
+      operationId: deleteAvatarRepresentation
+      summary: 'Remove and delete an Avatar Representation'
+      security:
+        - OAuth2:
+          - avatar_representation_delete
+      responses:
+        '204':
+          description: 'Avatar Representation Deleted'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            avatar_representation_create: Create Avatar Representation resource
+            avatar_representation_retrieve: Retrieve Avatar Representation resource
+            avatar_representation_update: Update Avatar Representation resource
+            avatar_representation_delete: Delete Avatar Representation resource
+
+  schemas:
+    AvatarRepresentation:
+      type: object
+      description: 'A representation of an Avatar Representation resource'
+      required:
+        - ownerId
+        - assetIds
+        - assetLoDs
+      properties:
+        avatarRepresentationId:
+          allOf:
+            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+            - readOnly: true
+              description: 'A unique identifier assigned to an Avatar Representation by the BAR on creation'
+        ownerId:
+          type: string
+          description: 'A unique identifier identifying the subscriber (owner) associated with the base avatar'
+        assetIds:
+          type: array
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          description: 'Identifies the assets to be shared'
+        assetLoDs:
+          type: array
+          items:
+            type: object
+            properties:
+              assetId:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+              allowedLoDs:
+                type: array
+                items:
+                  type: string
+          description: 'Identifies the allowed LoDs for each asset selected'
+        publishTime:
+          type: number
+          format: int64
+          readOnly: true
+          description: 'Describes the issue time or latest update time (in wall clock time) of the Avatar Representation'

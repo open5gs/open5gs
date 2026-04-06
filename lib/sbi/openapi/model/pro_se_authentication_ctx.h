@@ -1,7 +1,7 @@
 /*
  * pro_se_authentication_ctx.h
  *
- * Contains the information related to the resource generated to handle the ProSe authentication.
+ * Contains the information related to the resource generated to handle the ProSe authentication. 
  */
 
 #ifndef _OpenAPI_pro_se_authentication_ctx_H_
@@ -12,26 +12,25 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pro_se_authentication_ctx_s OpenAPI_pro_se_authentication_ctx_t;
 #include "auth_type.h"
 #include "links_value_schema.h"
-#include "pro_se_auth_data.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pro_se_authentication_ctx_s OpenAPI_pro_se_authentication_ctx_t;
-typedef struct OpenAPI_pro_se_authentication_ctx_s {
+struct OpenAPI_pro_se_authentication_ctx_s {
     OpenAPI_auth_type_e auth_type;
     OpenAPI_list_t* _links;
-    struct OpenAPI_pro_se_auth_data_s *pro_se_auth_data;
+    char *pro_se_auth_data;
     char *supported_features;
-} OpenAPI_pro_se_authentication_ctx_t;
+};
 
 OpenAPI_pro_se_authentication_ctx_t *OpenAPI_pro_se_authentication_ctx_create(
     OpenAPI_auth_type_e auth_type,
     OpenAPI_list_t* _links,
-    OpenAPI_pro_se_auth_data_t *pro_se_auth_data,
+    char *pro_se_auth_data,
     char *supported_features
 );
 void OpenAPI_pro_se_authentication_ctx_free(OpenAPI_pro_se_authentication_ctx_t *pro_se_authentication_ctx);

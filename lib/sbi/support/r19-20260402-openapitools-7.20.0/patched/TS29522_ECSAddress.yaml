@@ -1,0 +1,450 @@
+openapi: 3.0.0
+
+info:
+  title: 3gpp-ecs-address
+  version: 1.1.0
+  description: |
+    API for AF provisioned ECS Address Configuration Information.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.522 V19.5.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/3gpp-ecs-address/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+paths:
+  /{afId}/configurations:
+    parameters:
+      - name: afId
+        in: path
+        description: Represents the identifier of the AF.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve all the active ECS Address Configuration Information Set(s).
+      operationId: ReadEACIs
+      tags:
+        - ECS Address Configuration Information Sets (Collection)
+      responses:
+        '200':
+          description: >
+            OK. All the Individual ECS Address Configuration Information Set resource(s) managed by
+            the NEF are returned.
+            If there are no active Individual ECS Address Configuration Information Set resources at
+            the NEF, an empty array is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EcsAddrInfo'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Create a new ECS Address Configuration Information Set.
+      operationId: CreateEACI
+      tags:
+        - ECS Address Configuration Information Sets (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EcsAddrInfo'
+      responses:
+        '201':
+          description: >
+            Created. A representation of the created Individual ECS Address Configuration 
+            Information Set resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcsAddrInfo'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{afId}/configurations/{configId}:
+    parameters:
+      - name: afId
+        in: path
+        description: Represents the identifier of the AF.
+        required: true
+        schema:
+          type: string
+      - name: configId
+        in: path
+        description: >
+          Represents the identifier of the Individual ECS Address Configuration Information Set
+          resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual ECS Address Configuration Information Set resource.
+      operationId: ReadEACI
+      tags:
+        - Individual ECS Address Configuration Information Set (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual ECS Address Configuration Information Set resource is 
+            successfully returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcsAddrInfo'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update an existing Individual ECS Address Configuration Information Set resource.
+      operationId: UpdateEACI
+      tags:
+        - Individual ECS Address Configuration Information Set (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EcsAddrInfo'
+      responses:
+        '200':
+          description: >
+            OK. The Individual ECS Address Configuration Information Set resource is successfully
+            updated and a representation of the updated resource is returned in the response
+            body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcsAddrInfo'
+        '204':
+          description: >
+            No Content. The Individual ECS Address Configuration Information Set resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual ECS Address Configuration Information Set resource.
+      operationId: ModifyEACI
+      tags:
+        - Individual Individual ECS Address Configuration Set (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/EcsAddrInfoPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual ECS Address Configuration Information Set resource is successfully
+            modified and a representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcsAddrInfo'
+        '204':
+          description: >
+            No Content. The Individual ECS Address Configuration Information Set resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an existing Individual ECS Address Configuration Information Set resource
+      operationId: DeleteEACI
+      tags:
+        - Individual ECS Address Configuration Information Set (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual ECS Address Configuration Information Set resource is
+            successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /remove-ecsaddr:
+    post:
+      summary: Remove ECS Address Configuration information based on given criteria.
+      operationId: DeleteEACIs
+      tags:
+        - ECS Address Configuration Information Deletion Request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EcsAddrDeleteCriteria'
+        required: true
+      responses:
+        '204':
+          description: >
+            No Content. The request to remove ECS Address Configuration Information based on given
+            criteria is successfully received and processed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    EcsAddrInfo:
+      description: Represents an ECS Address Configuration Information Set.
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        ecsServerAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/EcsServerAddr'
+        spatialValidityCond:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SpatialValidityCond'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        ecsAuthMethods:
+          type: array
+          items:
+            $ref: 'TS29503_Nudm_PP.yaml#/components/schemas/EcsAuthMethod'
+          minItems: 1
+        supportedPlmns:
+          type: array
+          items:
+            $ref: 'TS29503_Nudm_PP.yaml#/components/schemas/SupportedPlmn'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ecsServerAddr
+
+    EcsAddrDeleteCriteria:
+      description: >
+        Contains criteria to be used for deleting ECS Address Configuration information.
+      type: object
+      properties:
+        afIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: AF identifiers to be used as deletion criterion.
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        ecsAddrInfo:
+          $ref: '#/components/schemas/EcsAddrInfo'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      anyOf:
+        - required: [afIds]
+        - required: [dnn]
+        - required: [snssai]
+        - required: [ecsAddrInfo]
+
+    EcsAddrInfoPatch:
+      description: >
+        Represents the requested modifications to an ECS Address Configuration Information Set.
+      type: object
+      properties:
+        ecsServerAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/EcsServerAddr'
+        ecsAuthMethods:
+          type: array
+          items:
+            $ref: 'TS29503_Nudm_PP.yaml#/components/schemas/EcsAuthMethod'
+          minItems: 1
+        supportedPlmns:
+          type: array
+          items:
+            $ref: 'TS29503_Nudm_PP.yaml#/components/schemas/SupportedPlmn'
+          minItems: 1
+        spatialValidityCond:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SpatialValidityCond'
+
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#

@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "reachability_filter_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_reachability_filter_s OpenAPI_reachability_filter_t;
-typedef struct OpenAPI_reachability_filter_s {
-} OpenAPI_reachability_filter_t;
+typedef enum { OpenAPI_reachability_filter_NULL = 0, OpenAPI_reachability_filter_UE_REACHABILITY_STATUS_CHANGE, OpenAPI_reachability_filter_UE_REACHABLE_DL_TRAFFIC } OpenAPI_reachability_filter_e;
 
-OpenAPI_reachability_filter_t *OpenAPI_reachability_filter_create(
-);
-void OpenAPI_reachability_filter_free(OpenAPI_reachability_filter_t *reachability_filter);
-OpenAPI_reachability_filter_t *OpenAPI_reachability_filter_parseFromJSON(cJSON *reachability_filterJSON);
-cJSON *OpenAPI_reachability_filter_convertToJSON(OpenAPI_reachability_filter_t *reachability_filter);
-OpenAPI_reachability_filter_t *OpenAPI_reachability_filter_copy(OpenAPI_reachability_filter_t *dst, OpenAPI_reachability_filter_t *src);
+char* OpenAPI_reachability_filter_ToString(OpenAPI_reachability_filter_e reachability_filter);
+
+OpenAPI_reachability_filter_e OpenAPI_reachability_filter_FromString(char* reachability_filter);
 
 #ifdef __cplusplus
 }

@@ -35,7 +35,8 @@ ogs_sbi_request_t *amf_nnssf_nsselection_build_get(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nnssf_nsselection);
     message.h.api.version = (char *)OGS_SBI_API_V2;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_NETWORK_SLICE_INFORMATION;

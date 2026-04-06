@@ -1,0 +1,235 @@
+openapi: 3.0.1
+info:
+  title: NDT NRM
+  version: 19.2.0
+  description: >-
+    OAS 3.0.1 definition of the NDT NRM
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.561; Management aspects of Network Digital Twins
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.561/
+paths: {}
+components:
+  schemas:
+
+  #-------- Definition of types for name-containments ------
+    SubNetwork-ncO-NDTNrm:
+      type: object
+      properties:
+        NDTFunction:
+          $ref: '#/components/schemas/NDTFunction-Multiple'
+
+   #-------Definition of generic IOCs ----------#  
+    NDTFunction-Single:
+      description: >-
+        This IOC represents the properties of an NDT Function
+      allOf:
+      - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+      - type: object
+        properties:
+          supportedNDTCapabilities:
+            type: array
+            uniqueItems: true
+            minItems: 1
+            items:
+              $ref: '#/components/schemas/NDTCapability'
+            description: >-
+              It indicates the different types of NDT application use cases which the NDT is capable of undertaking..
+              New values can be added to this list in future releases to support new use cases.
+          nDTFunctionScope:
+            $ref: '#/components/schemas/NDTFunctionScope'
+          nDTFunctionRefList:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+
+    NDTJob-Single:
+      description: >-
+        This IOC represents the properties of an NDT job demand created by an MnS consumer. An NDT job represents the requirements for a network simulation/emulation task  
+      allOf:
+      - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'    
+      - type: object
+        properties:
+          nDTCapability:
+            $ref: '#/components/schemas/NDTCapability'
+            description: >-
+              It indicates the type of application use cases that is desired to be executed.
+              New values can be added to this list in future releases to support new use cases.
+          nDTJobSynchScope:
+            $ref: '#/components/schemas/ScopeDefinition'
+          nDTJobScenario:
+            $ref: '#/components/schemas/NDTInputDescription'
+          nDTJobExecutionRequirements:
+            $ref: '#/components/schemas/NdtJobExecutionReqts'
+          collaboratingNDT:
+            description: >-
+              It indicates the related NDT Job contributing as a collaborator to the executed NDT Job. It describes the DN of the collaborated NDT Job
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'
+          nDTReportRefList:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'
+          nDTJobRefList:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'
+    NDTReport-Single:
+      description: >-
+        This IOC represents the properties of an NDT report corresponding to an NDT job
+      allOf:
+      - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+      - type: object
+        properties:
+          nDTJobOutputData:
+            type: array
+            uniqueItems: true
+            minItems: 1
+            items:
+              $ref: '#/components/schemas/NDTOutputDataPoint'
+            description: It indicates the list of NDTOutput(s) that are provided by the NDT function as the output for any task executed in an instantiated NDT job.
+          nDTJobRef:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+
+
+   #-------Definition of the dataType ----------#
+    NDTCapability:
+      type: string
+      enum:
+        - RISKY_ACTIONS_PREDICTION
+        - EVENTS_IMPACTS_VERIFICATION
+        - NETWORK_ISSUE_INDUCEMENT
+        - NETWORK_EVENTS_VERIFICATION
+        - NETWORK_CONFIGURATIONS_VERIFICATION
+        - AUTOMATION_CONFIGURATION_VERIFICATION
+        - ML_TRAINING_DATA_GENERATION
+        - USER_EXPERIENCE_DATA_GENERATION        
+    NDTFunctionScope:  
+      type: object
+      properties:
+        nDTRANScope:
+          $ref: '#/components/schemas/ScopeDefinition'
+        nDTCNScope:
+          $ref: '#/components/schemas/ScopeDefinition'
+    NDTInputDescription:  
+      type: object
+      properties:
+        nDTInputDescriptionId:
+          type: string
+        simulationDataDescriptor:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/SimulationDataDescriptor'
+        networkEventInfo:
+          type: string
+    NDTOutputDescription:  
+      type: object
+      properties:
+        nDTOutputDescriptionId:
+          type: string
+        objectInstance:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+        objectAttributeList:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+    ScopeDefinition:
+      type: object
+#      oneOf:
+#        - required: [ managedEntitiesScope ]
+#        - required: [ areaScope ]
+      properties:
+        managedEntitiesScope:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+        areaScope:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+    NdtJobExecutionReqts:  
+      type: object
+      properties:
+        maxRuntime:
+          type: integer
+    NDTOutputDataPoint:  
+      type: object
+      properties:
+        networkState:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/NDTOutputDescription'
+        networkConfiguration:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/NDTOutputDescription'
+        observations:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/NDTOutputDescription'
+    SimulationDataDescriptor:  
+      type: object
+      properties:
+        simulationData:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/SimulationData'
+        condition:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+    SimulationData:  
+      type: object
+      properties:
+        performanceData:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/PerformanceData'
+        mDTData:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+        configurationData:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+    PerformanceData:  
+      type: object
+      properties:
+        performanceDataName:
+          type: string
+          maxItems: 1
+        performanceDataValue:
+          type: integer
+          maxItems: 1
+        performanceDataScalingFactor:
+          type: integer
+          maxItems: 1
+
+  #------Definition of JSON arrays for name-contained IOCs ---------------#
+
+    NDTJob-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/NDTJob-Single'
+
+    NDTReport-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/NDTReport-Single'
+   
+    NDTFunction-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/NDTFunction-Single'
+   #------Definition of JSON arrays for name-contained IOCs ---------------#
+   
+   #----- Definitions in TS 28.561 for TS 28.532 --------------------------#
+    resources-ndtNrm:
+      oneOf:
+       - $ref: '#/components/schemas/NDTFunction-Single'
+       - $ref: '#/components/schemas/NDTJob-Single'
+       - $ref: '#/components/schemas/NDTReport-Single'

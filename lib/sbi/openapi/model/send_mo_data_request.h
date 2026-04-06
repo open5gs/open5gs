@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_send_mo_data_request_s OpenAPI_send_mo_data_request_t;
 #include "send_mo_data_req_data.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_send_mo_data_request_s OpenAPI_send_mo_data_request_t;
-typedef struct OpenAPI_send_mo_data_request_s {
+struct OpenAPI_send_mo_data_request_s {
     struct OpenAPI_send_mo_data_req_data_s *json_data;
     OpenAPI_binary_t* binary_mo_data;
-} OpenAPI_send_mo_data_request_t;
+};
 
 OpenAPI_send_mo_data_request_t *OpenAPI_send_mo_data_request_create(
     OpenAPI_send_mo_data_req_data_t *json_data,

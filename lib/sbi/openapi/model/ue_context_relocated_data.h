@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_context_relocated_data_s OpenAPI_ue_context_relocated_data_t;
 #include "ue_context.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_context_relocated_data_s OpenAPI_ue_context_relocated_data_t;
-typedef struct OpenAPI_ue_context_relocated_data_s {
+struct OpenAPI_ue_context_relocated_data_s {
     struct OpenAPI_ue_context_s *ue_context;
-} OpenAPI_ue_context_relocated_data_t;
+};
 
 OpenAPI_ue_context_relocated_data_t *OpenAPI_ue_context_relocated_data_create(
     OpenAPI_ue_context_t *ue_context

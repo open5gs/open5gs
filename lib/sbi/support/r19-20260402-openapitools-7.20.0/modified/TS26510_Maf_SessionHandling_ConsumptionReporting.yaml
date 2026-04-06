@@ -1,0 +1,142 @@
+openapi: 3.0.0
+info:
+  title: Maf_SessionHandling_ConsumptionReporting
+  version: 1.0.1
+  description: |
+    Media Delivery: Consumption Reporting API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Maf_SessionHandling_ConsumptionReporting
+    description: 'Media Delivery: Consumption Reporting API'
+
+externalDocs:
+  description: 'TS 26.510 V18.4.0; Media Delivery; Interactions and APIs for media session handling'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.510/'
+
+servers:
+  - url: '{apiRoot}/3gpp-maf-session-handling/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 26.510 clause 7.1.3.
+
+security:
+  - {}
+  - OAuth2: []
+
+paths:
+  /provisioning-sessions/{provisioningSessionId}/consumption-reporting:
+    parameters:
+      - name: provisioningSessionId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'See 3GPP TS 26.512 clause 11.3.2.'
+    post:
+      operationId: submitConsumptionReport
+      summary: 'Submit a Consumption Report'
+      security:
+        - OAuth2:
+          - consumption-report_submit
+      requestBody:
+        description: 'A Consumption Report'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsumptionReport'
+      responses:
+        '202': # Accepted: The request is well-formed but the message body has not yet been fully processed
+          description: 'Metrics Report Accepted'
+        '204': # No Content: The request is well-formed and the message body has been processed successfully
+          description: 'Metrics Report Successful'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden: Consumption reporting is not provisioned
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            consumption-report_submit: Submit a consumption report
+        authorizationCode:
+          authorizationUrl: '{authorizationUrl}'
+          tokenUrl: '{tokenUrl}'
+          scopes: 
+            consumption-report_submit: Submit a consumption report
+
+  schemas:
+    ConsumptionReport:
+      description: "A representation of a Consumption Report."
+      type: object
+      required:
+        - reportingClientId
+        - sessionId
+        - mediaPlayerEntry
+        - consumptionReportingUnits
+      properties:
+        reportingClientId:
+          type: string
+        sessionId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/MediaDeliverySessionId'
+        mediaPlayerEntry:
+          type: string
+        consumptionReportingUnits:
+          type: array
+          items: 
+            $ref: '#/components/schemas/ConsumptionReportingUnit'
+    ConsumptionReportingUnit:
+      description: "A Consumption Reporting Unit."
+      type: object
+      required:
+        - mediaConsumed
+        - startTime
+        - duration
+      properties:
+        mediaConsumed:
+          type: string
+        clientEndpointAddress:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/EndpointAddress'
+        serverEndpointAddress:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/EndpointAddress'
+        startTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        duration:
+          minimum: 0
+          exclusiveMinimum: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        sliceInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dataNetworkName:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        locations:
+          type: array
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/TypedLocation'
+          minItems: 1

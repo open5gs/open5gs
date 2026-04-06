@@ -13,7 +13,13 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_create(
     bool is_auth_removal_ind,
     int auth_removal_ind,
     char *nf_set_id,
-    OpenAPI_list_t *reset_ids
+    OpenAPI_list_t *reset_ids,
+    char *data_restoration_callback_uri,
+    bool is_udr_restart_ind,
+    int udr_restart_ind,
+    char *last_synchronization_time,
+    bool is_nswo_ind,
+    int nswo_ind
 )
 {
     OpenAPI_auth_event_t *auth_event_local_var = ogs_malloc(sizeof(OpenAPI_auth_event_t));
@@ -28,6 +34,12 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_create(
     auth_event_local_var->auth_removal_ind = auth_removal_ind;
     auth_event_local_var->nf_set_id = nf_set_id;
     auth_event_local_var->reset_ids = reset_ids;
+    auth_event_local_var->data_restoration_callback_uri = data_restoration_callback_uri;
+    auth_event_local_var->is_udr_restart_ind = is_udr_restart_ind;
+    auth_event_local_var->udr_restart_ind = udr_restart_ind;
+    auth_event_local_var->last_synchronization_time = last_synchronization_time;
+    auth_event_local_var->is_nswo_ind = is_nswo_ind;
+    auth_event_local_var->nswo_ind = nswo_ind;
 
     return auth_event_local_var;
 }
@@ -61,6 +73,14 @@ void OpenAPI_auth_event_free(OpenAPI_auth_event_t *auth_event)
         }
         OpenAPI_list_free(auth_event->reset_ids);
         auth_event->reset_ids = NULL;
+    }
+    if (auth_event->data_restoration_callback_uri) {
+        ogs_free(auth_event->data_restoration_callback_uri);
+        auth_event->data_restoration_callback_uri = NULL;
+    }
+    if (auth_event->last_synchronization_time) {
+        ogs_free(auth_event->last_synchronization_time);
+        auth_event->last_synchronization_time = NULL;
     }
     ogs_free(auth_event);
 }
@@ -145,6 +165,34 @@ cJSON *OpenAPI_auth_event_convertToJSON(OpenAPI_auth_event_t *auth_event)
     }
     }
 
+    if (auth_event->data_restoration_callback_uri) {
+    if (cJSON_AddStringToObject(item, "dataRestorationCallbackUri", auth_event->data_restoration_callback_uri) == NULL) {
+        ogs_error("OpenAPI_auth_event_convertToJSON() failed [data_restoration_callback_uri]");
+        goto end;
+    }
+    }
+
+    if (auth_event->is_udr_restart_ind) {
+    if (cJSON_AddBoolToObject(item, "udrRestartInd", auth_event->udr_restart_ind) == NULL) {
+        ogs_error("OpenAPI_auth_event_convertToJSON() failed [udr_restart_ind]");
+        goto end;
+    }
+    }
+
+    if (auth_event->last_synchronization_time) {
+    if (cJSON_AddStringToObject(item, "lastSynchronizationTime", auth_event->last_synchronization_time) == NULL) {
+        ogs_error("OpenAPI_auth_event_convertToJSON() failed [last_synchronization_time]");
+        goto end;
+    }
+    }
+
+    if (auth_event->is_nswo_ind) {
+    if (cJSON_AddBoolToObject(item, "nswoInd", auth_event->nswo_ind) == NULL) {
+        ogs_error("OpenAPI_auth_event_convertToJSON() failed [nswo_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -163,6 +211,10 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_parseFromJSON(cJSON *auth_eventJSON)
     cJSON *nf_set_id = NULL;
     cJSON *reset_ids = NULL;
     OpenAPI_list_t *reset_idsList = NULL;
+    cJSON *data_restoration_callback_uri = NULL;
+    cJSON *udr_restart_ind = NULL;
+    cJSON *last_synchronization_time = NULL;
+    cJSON *nswo_ind = NULL;
     nf_instance_id = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "nfInstanceId");
     if (!nf_instance_id) {
         ogs_error("OpenAPI_auth_event_parseFromJSON() failed [nf_instance_id]");
@@ -251,6 +303,38 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_parseFromJSON(cJSON *auth_eventJSON)
         }
     }
 
+    data_restoration_callback_uri = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "dataRestorationCallbackUri");
+    if (data_restoration_callback_uri) {
+    if (!cJSON_IsString(data_restoration_callback_uri) && !cJSON_IsNull(data_restoration_callback_uri)) {
+        ogs_error("OpenAPI_auth_event_parseFromJSON() failed [data_restoration_callback_uri]");
+        goto end;
+    }
+    }
+
+    udr_restart_ind = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "udrRestartInd");
+    if (udr_restart_ind) {
+    if (!cJSON_IsBool(udr_restart_ind)) {
+        ogs_error("OpenAPI_auth_event_parseFromJSON() failed [udr_restart_ind]");
+        goto end;
+    }
+    }
+
+    last_synchronization_time = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "lastSynchronizationTime");
+    if (last_synchronization_time) {
+    if (!cJSON_IsString(last_synchronization_time) && !cJSON_IsNull(last_synchronization_time)) {
+        ogs_error("OpenAPI_auth_event_parseFromJSON() failed [last_synchronization_time]");
+        goto end;
+    }
+    }
+
+    nswo_ind = cJSON_GetObjectItemCaseSensitive(auth_eventJSON, "nswoInd");
+    if (nswo_ind) {
+    if (!cJSON_IsBool(nswo_ind)) {
+        ogs_error("OpenAPI_auth_event_parseFromJSON() failed [nswo_ind]");
+        goto end;
+    }
+    }
+
     auth_event_local_var = OpenAPI_auth_event_create (
         ogs_strdup(nf_instance_id->valuestring),
         
@@ -261,7 +345,13 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_parseFromJSON(cJSON *auth_eventJSON)
         auth_removal_ind ? true : false,
         auth_removal_ind ? auth_removal_ind->valueint : 0,
         nf_set_id && !cJSON_IsNull(nf_set_id) ? ogs_strdup(nf_set_id->valuestring) : NULL,
-        reset_ids ? reset_idsList : NULL
+        reset_ids ? reset_idsList : NULL,
+        data_restoration_callback_uri && !cJSON_IsNull(data_restoration_callback_uri) ? ogs_strdup(data_restoration_callback_uri->valuestring) : NULL,
+        udr_restart_ind ? true : false,
+        udr_restart_ind ? udr_restart_ind->valueint : 0,
+        last_synchronization_time && !cJSON_IsNull(last_synchronization_time) ? ogs_strdup(last_synchronization_time->valuestring) : NULL,
+        nswo_ind ? true : false,
+        nswo_ind ? nswo_ind->valueint : 0
     );
 
     return auth_event_local_var;

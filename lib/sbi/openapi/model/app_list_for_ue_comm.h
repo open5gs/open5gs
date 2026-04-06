@@ -12,14 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_app_list_for_ue_comm_s OpenAPI_app_list_for_ue_comm_t;
 #include "network_area_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_app_list_for_ue_comm_s OpenAPI_app_list_for_ue_comm_t;
-typedef struct OpenAPI_app_list_for_ue_comm_s {
+struct OpenAPI_app_list_for_ue_comm_s {
     char *app_id;
     char *start_time;
     bool is_app_dur;
@@ -27,7 +27,7 @@ typedef struct OpenAPI_app_list_for_ue_comm_s {
     bool is_occur_ratio;
     int occur_ratio;
     struct OpenAPI_network_area_info_s *spatial_validity;
-} OpenAPI_app_list_for_ue_comm_t;
+};
 
 OpenAPI_app_list_for_ue_comm_t *OpenAPI_app_list_for_ue_comm_create(
     char *app_id,

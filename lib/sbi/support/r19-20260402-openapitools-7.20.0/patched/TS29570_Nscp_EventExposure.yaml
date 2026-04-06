@@ -1,0 +1,475 @@
+openapi: 3.0.0
+info:
+  title: Nscp_EventExposure
+  version: 1.0.1
+  description: |
+    SCP Event Exposure Service.
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.570 V19.2.0; Service Communication Proxy Services.
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.570/
+servers:
+  - url: '{apiRoot}/nscp-ee/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nscp-ee
+paths:
+  /subscriptions:
+    post:
+      summary: Nscp_EventExposure Subscribe service Operation
+      tags:
+        - Subscriptions(Collection)
+      operationId: CreateSubscription
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScpEventExposureSubscription'
+        required: true
+      responses:
+        '201':
+          description: Subscription Created
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nscp-ee/<apiVersion>/subscriptions/{subscriptionId}
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScpEventExposureSubsResp'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        onScpEventExposureNotification:
+          '{$request.body#/subscription/notificationUri}':
+            post:
+              summary: SCP Event Exposure Notification
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ScpEventExposureNotification'
+                required: true
+              responses:
+                '204':
+                  description: Successful acknowledgement
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    patch:
+      summary: Nscp_EventExposure Subscribe Modify service Operation
+      tags:
+        - Individual subscription (Document)
+      operationId: ModifySubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Unique ID of the subscription to be modified
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '200':
+          description: Subscription modified successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScpEventExposureSubsResp'
+        '204':
+          description: Expected response to a successful subscription modification
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+    delete:
+      summary: Nscp_EventExposure Unsubscribe service Operation
+      tags:
+        - Individual subscription (Document)
+      operationId: DeleteSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Deletion of Subscription
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Subscription deleted successfully
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nscp-ee: Access to the Nscp_EventExposure API
+
+  schemas:
+#
+# STRUCTURED TYPES
+#
+
+
+    ScpEventExposureSubscription:
+      description: Describes an event to be subscribed
+      type: object
+      properties:
+        eventList:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScpEventFilter'
+          minItems: 1
+        eventNotifyUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifyCorrelationId:
+          type: string
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - eventList
+        - eventNotifyUri
+        - notifyCorrelationId
+
+
+    ScpEventFilter:
+      description: Describes an SCP event
+      type: object
+      properties:
+        eventType:
+          $ref: '#/components/schemas/ScpEventType'
+        timeWindow:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/RecurTime'
+        filterConfigs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScpEventFilterConfig'
+          minItems: 1
+      required:
+        - eventType
+
+
+    ScpEventFilterConfig:
+      description: Describes an SCP event filters
+      type: object
+      properties:
+        nfType:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NFType'
+        targetNfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        targetNfIdList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+          minItems: 1
+        serviceNameList:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/ServiceName'
+          minItems: 1
+        serviceInstanceIdList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        reportingThreshold:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        devFromAveTh:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        failureTh:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+
+
+
+    ScpEventExposureNotification:
+      description: Represents an event notification
+      type: object
+      properties:
+        notifyCorrelationId:
+          type: string
+        reportList:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScpEventReport'
+          minItems: 1
+
+
+    ScpEventExposureSubsResp:
+      description: Represents SCP Event Exposure Subscription Response
+      type: object
+      properties:
+        expiryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+
+
+
+    ScpEventReport:
+      description: Describes an SCP report triggered due to a subscription to an SCP event
+      type: object
+      properties:
+        eventType:
+          $ref: '#/components/schemas/ScpEventType'
+        timeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        scpSignallingInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScpSignallingInfo'
+          minItems: 1
+      required:
+        - eventType
+        - timeStamp
+
+
+    FailureCauseOccurrence:
+      description: The number of times that a failure happened due to a particular cause 
+      type: object
+      properties:
+        cause:
+          $ref: '#/components/schemas/FailureCause'
+        count:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - cause
+        - count
+
+
+    ScpSignallingInfo:
+      description: 
+        Per service instance statistics including SCP and NF statistics behavior and overload.
+      type: object
+      properties:
+        serviceInstanceId:
+          type: string
+        nfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        serviceName:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/ServiceName'
+        nfType:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NFType'
+        nfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        rcvRequestCount:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        sentRequestCount:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        successfulResponseCount:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        failureResponseCount:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        failureCauseStats:
+          type: array
+          items:
+            $ref: '#/components/schemas/FailureCauseOccurrence'
+          minItems: 1
+        scpFailureCount:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        scpFailureCauseStats:
+          type: array
+          items:
+            $ref: '#/components/schemas/FailureCauseOccurrence'
+          minItems: 1
+        reselectionCount:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        reselectionStatList:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReselectionStat'
+          minItems: 1
+        connectionStatus:
+          $ref: '#/components/schemas/ConnectionStatus'
+        avgResponseTimeToNF:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        overloadControlInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/OverloadControlInfo'
+
+
+    ReselectionStat:
+      description: The number of times that a reselection happened due to a particular reason 
+      type: object
+      properties:
+        reselectionReason:
+          $ref: '#/components/schemas/ReselectionReason'
+        count:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - reselectionReason
+        - count
+
+
+#
+# ENUMERATIONS
+#
+
+
+    FailureCause:
+      description: Describes the reasons for failed responses related to SCP egress interface
+      anyOf:
+      - type: string
+        enum:
+          - TIME_OUT
+          - SERVER_ERROR
+          - CLIENT_ERROR
+          - OTHER_FAILURE_REASONS
+      - type: string
+
+
+    ScpEventType:
+      description: Describes the supported event types of Nscp_EventExposure Service
+      anyOf:
+      - type: string
+        enum:
+          - SERVICE_SIGNALLING_CHARACTERISTICS
+      - type: string
+
+
+    ReselectionReason:
+      description: Describes the reasons for SCP reselection
+      anyOf:
+      - type: string
+        enum:
+          - TARGET_NF_UNREACHABLE
+          - LOAD_BASED_RESELECTION
+          - SERVICE_INSTANCE_FAILURE
+          - UNSPECIFIED
+      - type: string
+
+    ConnectionStatus:
+      description: Describes the connection status
+      anyOf:
+      - type: string
+        enum:
+          - ACTIVE
+          - INACTIVE
+      - type: string

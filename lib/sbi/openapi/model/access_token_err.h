@@ -12,22 +12,22 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_access_token_err_s OpenAPI_access_token_err_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_access_token_err_s OpenAPI_access_token_err_t;
 typedef enum { OpenAPI_access_token_err_ERROR_NULL = 0, OpenAPI_access_token_err_ERROR_invalid_request, OpenAPI_access_token_err_ERROR_invalid_client, OpenAPI_access_token_err_ERROR_invalid_grant, OpenAPI_access_token_err_ERROR_unauthorized_client, OpenAPI_access_token_err_ERROR_unsupported_grant_type, OpenAPI_access_token_err_ERROR_invalid_scope } OpenAPI_access_token_err_error_e;
 
 char* OpenAPI_access_token_err_error_ToString(OpenAPI_access_token_err_error_e error);
 
 OpenAPI_access_token_err_error_e OpenAPI_access_token_err_error_FromString(char* error);
-typedef struct OpenAPI_access_token_err_s {
+struct OpenAPI_access_token_err_s {
     OpenAPI_access_token_err_error_e error;
     char *error_description;
     char *error_uri;
-} OpenAPI_access_token_err_t;
+};
 
 OpenAPI_access_token_err_t *OpenAPI_access_token_err_create(
     OpenAPI_access_token_err_error_e error,

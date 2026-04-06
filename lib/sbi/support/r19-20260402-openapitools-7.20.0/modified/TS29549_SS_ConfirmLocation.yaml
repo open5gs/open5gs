@@ -1,0 +1,405 @@
+openapi: 3.0.0
+
+info:
+  title: LM Server Location Confirmation Service Management Service
+  version: 1.0.0
+  description: |
+    LM Server Location Confirmation Service Management Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+servers:
+  - url: '{apiRoot}/ss-cl/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Request the creation of a Location Confirmation Service Subscription.
+      operationId: CreateLocConfirmSubsc
+      tags:
+        - Location Confirmation Service Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocConfirmSubsc'
+      responses:
+        '201':
+          description: >
+            Created. The Location Confirmation Service Subscription is successfully created and a
+            representation of the created Individual Location Confirmation Service Subscription
+            resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocConfirmSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Location Confirmation Service
+                Subscription resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        LocConfirmUsageNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/LocConfirmUsageNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Location Confirmation Service Usage Notification is successfully
+                    received and acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /subscription/{subscId}:
+    parameters:
+      - name: subscId
+        in: path
+        description: >
+          Represents the identifier of the Individual Location Confirmation Service Subscription
+          resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Location Confirmation Service Subscription resource.
+      operationId: GetIndLocConfirmSubsc
+      tags:
+        - Individual Location Confirmation Service Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Location Confirmation Service Subscription resource shall
+            be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocConfirmSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Location Confirmation Service Subscription resource.
+      operationId: UpdateIndLocConfirmSubsc
+      tags:
+        - Individual Location Confirmation Service Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocConfirmSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Location Confirmation Service Subscription resource is successfully
+            updated and a representation of the updated resource shall be returned in the response
+            body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocConfirmSubsc'
+        '204':
+          description: >
+            No Content. The Individual Location Confirmation Service Subscription resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Location Confirmation Service Subscription resource.
+      operationId: ModifyIndLocConfirmSubsc
+      tags:
+        - Individual Location Confirmation Service Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/LocConfirmSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Location Confirmation Service Subscription resource is successfully
+            modified and a representation of the updated resource shall be returned in the response
+            body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocConfirmSubsc'
+        '204':
+          description: >
+            No Content. The Individual Location Confirmation Service Subscription resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Location Confirmation Service Subscription resource.
+      operationId: DeleteIndLocConfirmSubsc
+      tags:
+        - Individual Location Confirmation Service Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Location Confirmation Service Subscription resource is
+            successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    LocConfirmSubsc:
+      description: >
+        Represents a Location Confirmation Service Subscription.
+      type: object
+      properties:
+        appIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        valServiceIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+#      oneOf:
+#        - required: [appIds]
+#        - required: [valServiceIds]
+#
+    LocConfirmSubscPatch:
+      description: >
+        Represents the parameters to request the modification of a Location Confirmation Service
+        Subscription.
+      type: object
+      properties:
+        appIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        valServiceIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+
+    LocConfirmUsageNotif:
+      description: >
+        Represents a Location Confirmation Service Usage Notification.
+      type: object
+      properties:
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocConfirmUsageReport'
+          minItems: 0
+        timestamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - reports
+
+    LocConfirmUsageReport:
+      description: >
+        Represents a Location Confirmation Service Usage Notification.
+      type: object
+      properties:
+        appId:
+          type: string
+        valServiceId:
+          type: string
+        valUeId:
+          type: string
+        timestamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - valUeId
+#      oneOf:
+#        - required: [appId]
+#        - required: [valServiceId]
+#
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+
+# Data types describing alternative data types or combinations of data types
+#

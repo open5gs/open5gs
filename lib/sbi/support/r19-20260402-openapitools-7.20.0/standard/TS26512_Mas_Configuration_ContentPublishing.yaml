@@ -1,0 +1,365 @@
+openapi: 3.0.0
+info:
+  title: Mas_Configuration_ContentPublishing
+  version: 1.1.0
+  description: |
+    5GMS AS Configuration API: Content Publishing
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Mas_Configuration_ContentPublishing
+    description: '5G Media Streaming: Application Server Configuration (M3) APIs: Content Publishing'
+
+externalDocs:
+  description: 'TS 26.512 V19.0.0; 5G Media Streaming (5GMS); Protocols'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.512/'
+
+servers:
+  - url: '{apiRoot}/3gpp-mas-configuration/v3'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 29.512 clause 6.1.2.
+
+security:
+  - {}
+  - OAuth2: [] 
+
+paths:
+  /content-publishing-configurations:
+    summary: "Content Publishing Configuration collection"
+    get:
+      operationId: enumerateContentPublishingConfigurations
+      summary: "Retrieve a list of Content Publishing Configuration resource identifiers currently registered with the 5GMS AS"
+      security:
+        - OAuth2:
+          - content-publishing-configuration_enumerate
+      responses:
+        '200': # OK
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /content-publishing-configurations/{afResourceId}:
+    summary: "Operations to manipulate a single Content Publishing Configuration resource"
+    description: "Individual resources in the collection are addressed using an afResourceId nominated by the 5GMS AF which is unique in this collection at a given 5GMS AS instance."
+    parameters:
+      - name: afResourceId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The resource identifier of an existing Provisioning Session.'
+    post:
+      operationId: createContentPublishingConfiguration
+      summary: 'Create and upload the Content Publishing Configuration for the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - content-publishing-configuration_create
+      requestBody:
+        description: 'A JSON representation of a Content Publishing Configuration'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationServerContentPublishingConfiguration'
+      responses:
+        '201': # Created
+          description: 'Content Publishing Configuration Created'
+          headers:
+            Location:
+              description: 'URL of the newly created Content Publishing Configuration (which may be redirected from the request URL).'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '409': # Conflict: Resource already exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/409'
+        '410': # Gone: This resource has previously been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'    
+    # get (Retrieval of individual Content Publishing Configuration resources is not permitted at reference point M3.)
+    put:
+      operationId: replaceContentPublishingConfiguration
+      summary: 'Replace an existing Content Publishing Configuration for the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - content-publishing-configuration_replace
+      requestBody:
+        description: 'A JSON representation of a Content Publishing Configuration'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationServerContentPublishingConfiguration'
+      responses:
+        '200': # OK
+          description: 'Content Publishing Configuration Replaced'
+        '204': # No Content
+          description: 'Content Publishing Configuration Unchanged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: This resource has previously been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    delete:
+      operationId: destroyContentPublishingConfiguration
+      summary: 'Destroy the specified Content Publishing Configuration'
+      security:
+        - OAuth2:
+          - content-publishing-configuration_destroy
+      responses:
+        '204': # No Content
+          description: 'Content Publishing Configuration Destroyed'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: This resource has previously been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /content-publishing-configurations/{afResourceId}/active:
+    parameters:
+        - name: afResourceId
+          in: path
+          required: true
+          schema:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          description: 'Individual resources in the collection are addressed using an afResourceId nominated by the 5GMS AF which is unique in this collection at a given 5GMS AS instance.'
+    post:
+      operationId: modifyContentPublishingConfigurationState
+      summary: 'Activate or deactivate the specified Content Publishing Configuration'
+      security:
+        - OAuth2:
+          - content-publishing-configuration_modify-state
+      requestBody:
+        description: 'The desired state of the target Content Publishing Configuration'
+        required: true
+        content:
+          application/json:
+            schema:
+              description: 'The desired state of the target Content Publishing Configuration: true for active; false for inactive.'
+              type: boolean
+      responses:
+        '204': # No Content
+          description: 'No Content'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: This resource has previously been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload too large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    get:
+      operationId: interrogateContentPublishingConfigurationState
+      summary: 'Interrogate the current state of the specified Content Publishing Configuration'
+      security:
+        - OAuth2:
+          - content-publishing-configuration_interrogate-state
+      responses:
+        '200': # OK
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                description: 'The current state of the target Content Publishing Configuration: true for active; false for inactive.'
+                type: boolean     
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: This resource has previously been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /content-publishing-configurations/{afResourceId}/purge:
+    parameters:
+        - name: afResourceId
+          in: path
+          required: true
+          schema:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          description: 'Individual resources in the collection are addressed using an afResourceId nominated by the 5GMS AF which is unique in this collection at a given 5GMS AS instance.'
+    post:
+      operationId: purgeContentPublishingCache
+      summary: 'Purge the content of the cache for the specified Content Publishing Configuration'
+      security:
+        - OAuth2:
+          - content-publishing-configuration_purge-cache
+      requestBody:
+        description: 'The regular expression pattern for resources to purge from the cache'
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              properties:
+                pattern: 
+                  description: 'Keyword'
+                  type: string
+                value:
+                  description: 'The regular expression'
+                  type: string
+      responses:
+        '204': # No Content
+          description: 'Content Purged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: This resource has previously been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload too large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            content-publishing-configuration_enumerate: Enumerate the current set of Content Publishing Configuration resources
+            content-publishing-configuration_create: Create a Content Publishing Configuration resource
+            content-publishing-configuration_replace: Replace a Content Publishing Configuration resource
+            content-publishing-configuration_destroy: Destroy a Content Publishing Configuration resource
+            content-publishing-configuration_modify-state: Modify the state of a Content Publishing Configuration resource
+            content-publishing-configuration_interrogate-state: Interrogate the state of a Content Publishing Configuration resource
+            content-publishing-configuration_purge-cache: Purge the cache associated with a Content Publishing Configuration resource
+ 
+  schemas:
+    ApplicationServerContributionConfiguration:
+      description: 'A content contribution configuration used to configure a Media AS.'
+      allOf:
+        - $ref: 'TS26510_Maf_Provisioning_ContentPublishing.yaml#/components/schemas/BaseContributionConfiguration'
+        - type: object
+          properties:
+            canonicalDomainName:
+              type: string
+              description: 'Default Fully-Qualified Domain Name assigned by the Media AF for use at reference point M4 and M10.'
+
+
+    # Schema for the resource itself
+    ApplicationServerContentPublishingConfiguration:
+      type: object
+      description: "A representation of a Content Publishing Configuration resource used to configure a Media AS."
+      required:
+        - name
+        - externalServiceId
+        - contributionConfigurations
+        - egestConfiguration
+      properties:
+        name:
+          type: string
+        externalServiceId:
+          type: string
+          description: 'External service identifier of the parent Provisioning Session for use in retrieving Service Access Information at reference point M3.'
+        contributionConfigurations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationServerContributionConfiguration'
+          minItems: 1
+        egestConfiguration:
+          $ref: 'TS26510_Maf_Provisioning_ContentPublishing.yaml#/components/schemas/EgestConfiguration'

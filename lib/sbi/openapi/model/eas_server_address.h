@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_eas_server_address_s OpenAPI_eas_server_address_t;
 #include "ip_addr.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_eas_server_address_s OpenAPI_eas_server_address_t;
-typedef struct OpenAPI_eas_server_address_s {
+struct OpenAPI_eas_server_address_s {
     struct OpenAPI_ip_addr_s *ip;
     int port;
-} OpenAPI_eas_server_address_t;
+};
 
 OpenAPI_eas_server_address_t *OpenAPI_eas_server_address_create(
     OpenAPI_ip_addr_t *ip,

@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_spatial_validity_cond_s OpenAPI_spatial_validity_cond_t;
 #include "geo_service_area.h"
 #include "tai.h"
 
@@ -19,12 +20,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_spatial_validity_cond_s OpenAPI_spatial_validity_cond_t;
-typedef struct OpenAPI_spatial_validity_cond_s {
+struct OpenAPI_spatial_validity_cond_s {
     OpenAPI_list_t *tracking_area_list;
     OpenAPI_list_t *countries;
     struct OpenAPI_geo_service_area_s *geographical_service_area;
-} OpenAPI_spatial_validity_cond_t;
+};
 
 OpenAPI_spatial_validity_cond_t *OpenAPI_spatial_validity_cond_create(
     OpenAPI_list_t *tracking_area_list,

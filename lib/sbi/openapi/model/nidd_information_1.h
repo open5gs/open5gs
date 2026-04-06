@@ -1,7 +1,7 @@
 /*
  * nidd_information_1.h
  *
- * 
+ * Contains NIDD Information
  */
 
 #ifndef _OpenAPI_nidd_information_1_H_
@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nidd_information_1_s OpenAPI_nidd_information_1_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nidd_information_1_s OpenAPI_nidd_information_1_t;
-typedef struct OpenAPI_nidd_information_1_s {
+struct OpenAPI_nidd_information_1_s {
     char *af_id;
     char *gpsi;
     char *ext_group_id;
-} OpenAPI_nidd_information_1_t;
+};
 
 OpenAPI_nidd_information_1_t *OpenAPI_nidd_information_1_create(
     char *af_id,

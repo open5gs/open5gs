@@ -1,0 +1,148 @@
+openapi: 3.0.0
+
+info:
+  title: Npkmf_PKMFKeyRequest
+  version: 1.2.0
+  description: |
+    PKMF KeyRequest Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.559 V19.4.0; 5G System; 5G ProSe Key Management Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.559/
+
+servers:
+  - url: '{apiRoot}/npkmf-keyrequest/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - npkmf-keyrequest
+
+paths:
+  /prose-keys/request:
+    post:
+      summary: Request Keying Materials for 5G ProSe
+      operationId: ProseKey
+      tags:
+        - ProSe Keys Collection (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProseKeyReqData'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProseKeyRspData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npkmf-keyrequest: Access to the Npkmf_PKMFKeyRequest API
+
+  schemas:
+#
+#  Structured Data Types
+#
+    ProseKeyReqData:
+      description: Representation of the input to request the keying material.
+      type: object
+      properties:
+        relayServCode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RelayServiceCode'
+        knrpFreshness1:
+          $ref: '#/components/schemas/KnrpFreshnessParameter1'
+        resyncInfo:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/ResynchronizationInfo'
+        prukId:
+          $ref: '#/components/schemas/PrukId'
+        suci:
+          $ref: 'TS29509_Nausf_UEAuthentication.yaml#/components/schemas/Suci'
+      required:
+        - relayServCode
+        - knrpFreshness1
+
+    ProseKeyRspData:
+      description: Representation of the successfully requested keying material.
+      type: object
+      properties:
+        knrp:
+          $ref: '#/components/schemas/Knrp'
+        knrpFreshness2:
+          $ref: '#/components/schemas/KnrpFreshnessParameter2'
+        gpi:
+          $ref: '#/components/schemas/Gpi'
+      required:
+        - knrp
+        - knrpFreshness2
+
+#
+#  Simple Data Types
+#
+    PrukId:
+      description: User Plane Prose Remote User Key ID
+      type: string
+
+    Knrp:
+      description: Key for NR PC5
+      type: string
+
+    KnrpFreshnessParameter1:
+      description: KNRP Freshness Parameter 1
+      type: string
+
+    KnrpFreshnessParameter2:
+      description: KNRP Freshness Parameter 2
+      type: string
+
+    Gpi:
+      description: GBA Pushing Information
+      type: string
+
+
+#
+#  Enumeration Data Types
+#

@@ -1,0 +1,312 @@
+openapi: 3.0.0
+
+info:
+  version: '1.2.1'
+  title: 'JOSE Protected Message Forwarding API'
+  description: |
+    N32-f Message Forwarding Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+servers:
+  - url: '{apiRoot}/n32f-forward/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description:  apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+externalDocs:
+  description: 3GPP TS 29.573 V17.6.0; 5G System; Public Land Mobile Network (PLMN) Interconnection; Stage 3
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.573/
+
+paths:
+  /n32f-process:
+    post:
+      summary:  N32-f Message Forwarding
+      tags:
+        - N32-f Forward
+      operationId: PostN32fProcess
+      parameters:
+        - name: Content-Encoding
+          in: header
+          description: Content-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
+        - name: Accept-Encoding
+          in: header
+          description: Accept-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
+        - name: 3gpp-Sbi-Message-Priority
+          in: header
+          description: 3gpp-Sbi-Message-Priority, defined in 3GPP TS 29.500
+          schema:
+            type: string
+      requestBody:
+        description: Custom operation N32-f Message Forwarding
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/N32fReformattedReqMsg'
+      responses:
+        '200':
+          description: OK (Successful forwarding of reformatted message over N32-f)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/N32fReformattedRspMsg'
+          headers:
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+            Content-Encoding:
+              description: Content-Encoding, described in IETF RFC 7231
+              schema:
+                type: string
+            3gpp-Sbi-Message-Priority:
+              description: 3gpp-Sbi-Message-Priority, defined in 3GPP TS 29.500
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+    options:
+      summary: Discover communication options supported by next hop (IPX or SEPP)
+      operationId: N32fProcessOptions
+      tags:
+        - N32-f Forward
+      responses:
+        '204':
+          description: No Content
+          headers:
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '405':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/405'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  schemas:
+    FlatJweJson:
+      description: Contains the integrity protected reformatted block
+      type: object
+      required:
+        - ciphertext
+      properties:
+        protected:
+          type: string
+        unprotected:
+          type: object
+        header:
+          type: object
+        encrypted_key:
+          type: string
+# The attribute name does not follow the naming conventions specified in 3GPP TS 29.501. The attribute name is kept though as defined in the current specification for backward compatibility reason.
+        aad:
+          type: string
+        iv:
+          type: string
+        ciphertext:
+          type: string
+        tag:
+          type: string
+
+    FlatJwsJson:
+      description: Contains the modification from IPXes on path
+      type: object
+      required:
+        - payload
+        - signature
+      properties:
+        payload:
+          type: string
+        protected:
+          type: string
+        header:
+          type: object
+        signature:
+          type: string
+
+    N32fReformattedReqMsg:
+      description: Contains the reformatted HTTP/2 request message
+      type: object
+      required:
+        - reformattedData
+      properties:
+        reformattedData:
+          $ref: '#/components/schemas/FlatJweJson'
+        modificationsBlock:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlatJwsJson'
+          minItems: 1
+
+    N32fReformattedRspMsg:
+      description: Contains the reformatted HTTP/2 response message
+      type: object
+      required:
+        - reformattedData
+      properties:
+        reformattedData:
+          $ref: '#/components/schemas/FlatJweJson'
+        modificationsBlock:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlatJwsJson'
+          minItems: 1
+
+    DataToIntegrityProtectAndCipherBlock:
+      description: HTTP header to be encrypted or the value of a JSON attribute to be encrypted
+      type: object
+      required:
+        - dataToEncrypt
+      properties:
+        dataToEncrypt:
+          type: array
+          items: {}
+          minItems: 1
+    DataToIntegrityProtectBlock:
+      description: Data to be integrity protected
+      type: object
+      properties:
+        metaData:
+          $ref: '#/components/schemas/MetaData'
+        requestLine:
+          $ref: '#/components/schemas/RequestLine'
+        statusLine:
+          type: string
+        headers:
+          type: array
+          items:
+            $ref: '#/components/schemas/HttpHeader'
+          minItems: 1
+        payload:
+          type: array
+          items:
+            $ref: '#/components/schemas/HttpPayload'
+          minItems: 1
+    RequestLine:
+      description: Contains the request line of the HTTP API request being reformatted and forwarded over N32-f
+      type: object
+      required:
+        - method
+        - scheme
+        - authority
+        - path
+        - protocolVersion
+      properties:
+        method:
+          $ref: 'TS29573_N32_Handshake.yaml#/components/schemas/HttpMethod'
+        scheme:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UriScheme'
+        authority:
+          type: string
+        path:
+          type: string
+        protocolVersion:
+          type: string
+        queryFragment:
+          type: string
+    HttpHeader:
+      description: Contains the encoding of HTTP headers in the API request / response
+      type: object
+      required:
+        - header
+        - value
+      properties:
+        header:
+          type: string
+        value:
+          $ref: '#/components/schemas/EncodedHttpHeaderValue'
+    HttpPayload:
+      description: Contains the encoding of JSON payload in the API request / response
+      type: object
+      required:
+        - iePath
+        - ieValueLocation
+        - value
+      properties:
+        iePath:
+          type: string
+        ieValueLocation:
+          $ref: 'TS29573_N32_Handshake.yaml#/components/schemas/IeLocation'
+        value:
+          type: object
+    MetaData:
+      description: Contains the meta data information needed for replay protection
+      type: object
+      required:
+        - n32fContextId
+        - messageId
+        - authorizedIpxId
+      properties:
+        n32fContextId:
+          type: string
+          pattern: '^[A-Fa-f0-9]{16}$'
+        messageId:
+          type: string
+        authorizedIpxId:
+          type: string
+    Modifications:
+      description: Information on inserting of the modifications entry
+      type: object
+      required:
+        - identity
+      properties:
+        identity:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        operations:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+          minItems: 1
+        tag:
+          type: string
+    IndexToEncryptedValue:
+      description: Index to the encrypted value
+      type: object
+      required:
+        - encBlockIndex
+      properties:
+        encBlockIndex:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+    EncodedHttpHeaderValue:
+      description: HTTP header value or index to the HTTP header value
+      oneOf:
+        - type: string
+        - $ref: '#/components/schemas/IndexToEncryptedValue'

@@ -5,7 +5,6 @@
 #include "pro_se_eap_session.h"
 
 OpenAPI_pro_se_eap_session_t *OpenAPI_pro_se_eap_session_create(
-    bool is_eap_payload_null,
     char *eap_payload,
     char *knr_pro_se,
     OpenAPI_list_t* _links,
@@ -19,7 +18,6 @@ OpenAPI_pro_se_eap_session_t *OpenAPI_pro_se_eap_session_create(
     OpenAPI_pro_se_eap_session_t *pro_se_eap_session_local_var = ogs_malloc(sizeof(OpenAPI_pro_se_eap_session_t));
     ogs_assert(pro_se_eap_session_local_var);
 
-    pro_se_eap_session_local_var->is_eap_payload_null = is_eap_payload_null;
     pro_se_eap_session_local_var->eap_payload = eap_payload;
     pro_se_eap_session_local_var->knr_pro_se = knr_pro_se;
     pro_se_eap_session_local_var->_links = _links;
@@ -259,7 +257,6 @@ OpenAPI_pro_se_eap_session_t *OpenAPI_pro_se_eap_session_parseFromJSON(cJSON *pr
     }
 
     pro_se_eap_session_local_var = OpenAPI_pro_se_eap_session_create (
-        eap_payload && cJSON_IsNull(eap_payload) ? true : false,
         ogs_strdup(eap_payload->valuestring),
         knr_pro_se && !cJSON_IsNull(knr_pro_se) ? ogs_strdup(knr_pro_se->valuestring) : NULL,
         _links ? _linksList : NULL,
@@ -274,7 +271,7 @@ OpenAPI_pro_se_eap_session_t *OpenAPI_pro_se_eap_session_parseFromJSON(cJSON *pr
 end:
     if (_linksList) {
         OpenAPI_list_for_each(_linksList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_links_value_schema_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

@@ -212,7 +212,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
 end:
     if (last_indexesList) {
         OpenAPI_list_for_each(last_indexesList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             ogs_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

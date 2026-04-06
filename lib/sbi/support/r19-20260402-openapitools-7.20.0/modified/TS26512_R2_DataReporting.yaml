@@ -1,0 +1,29 @@
+openapi: 3.0.0
+
+info:
+  title: 5GMS Data Reporting data types
+  version: 1.0.2
+  description: |
+    5GMS Data Reporting data types
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: 5GMS Data Reporting data types
+    description: '5G Media Streaming: Data Reporting data types'
+
+externalDocs:
+  description: 'TS 26.512 V18.6.0; 5G Media Streaming (5GMS); Protocols'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.512/'
+
+paths: {}
+
+components:
+  schemas:
+    ANBRNetworkAssistanceInvocationRecord:
+      description: "An R2 data reporting record describing a single ANBR-based Network Assistance invocation by the Media Stream Handler."
+      allOf:
+        - $ref: 'TS26532_Ndcaf_DataReporting.yaml#/components/schemas/BaseRecord'
+        - $ref: 'TS26512_CommonData.yaml#/components/schemas/MediaStreamingBaseReportingRecord'
+        - $ref: 'TS26512_CommonData.yaml#/components/schemas/MediaStreamingSessionIdentification'
+        - $ref: 'TS26512_CommonData.yaml#/components/schemas/NetworkAssistanceInvocation'

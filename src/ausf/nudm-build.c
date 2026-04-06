@@ -31,7 +31,8 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_get(ausf_ue_t *ausf_ue, void *data)
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UEAU;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudm_ueau);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = ausf_ue->suci;
     message.h.resource.component[1] =
@@ -78,7 +79,8 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_result_confirmation_inform(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UEAU;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudm_ueau);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = ausf_ue->supi;
     message.h.resource.component[1] = (char *)OGS_SBI_RESOURCE_NAME_AUTH_EVENTS;
@@ -132,7 +134,8 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_auth_removal_ind(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UEAU;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudm_ueau);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = ausf_ue->supi;
     message.h.resource.component[1] = (char *)OGS_SBI_RESOURCE_NAME_AUTH_EVENTS;

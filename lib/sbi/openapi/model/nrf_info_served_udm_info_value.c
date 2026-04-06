@@ -11,7 +11,9 @@ OpenAPI_nrf_info_served_udm_info_value_t *OpenAPI_nrf_info_served_udm_info_value
     OpenAPI_list_t *external_group_identifiers_ranges,
     OpenAPI_list_t *routing_indicators,
     OpenAPI_list_t *internal_group_identifiers_ranges,
-    OpenAPI_list_t *suci_infos
+    OpenAPI_list_t *suci_infos,
+    bool is_any_ue_udm_single_instance,
+    int any_ue_udm_single_instance
 )
 {
     OpenAPI_nrf_info_served_udm_info_value_t *nrf_info_served_udm_info_value_local_var = ogs_malloc(sizeof(OpenAPI_nrf_info_served_udm_info_value_t));
@@ -24,6 +26,8 @@ OpenAPI_nrf_info_served_udm_info_value_t *OpenAPI_nrf_info_served_udm_info_value
     nrf_info_served_udm_info_value_local_var->routing_indicators = routing_indicators;
     nrf_info_served_udm_info_value_local_var->internal_group_identifiers_ranges = internal_group_identifiers_ranges;
     nrf_info_served_udm_info_value_local_var->suci_infos = suci_infos;
+    nrf_info_served_udm_info_value_local_var->is_any_ue_udm_single_instance = is_any_ue_udm_single_instance;
+    nrf_info_served_udm_info_value_local_var->any_ue_udm_single_instance = any_ue_udm_single_instance;
 
     return nrf_info_served_udm_info_value_local_var;
 }
@@ -196,6 +200,13 @@ cJSON *OpenAPI_nrf_info_served_udm_info_value_convertToJSON(OpenAPI_nrf_info_ser
     }
     }
 
+    if (nrf_info_served_udm_info_value->is_any_ue_udm_single_instance) {
+    if (cJSON_AddBoolToObject(item, "anyUeUdmSingleInstance", nrf_info_served_udm_info_value->any_ue_udm_single_instance) == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_udm_info_value_convertToJSON() failed [any_ue_udm_single_instance]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -217,6 +228,7 @@ OpenAPI_nrf_info_served_udm_info_value_t *OpenAPI_nrf_info_served_udm_info_value
     OpenAPI_list_t *internal_group_identifiers_rangesList = NULL;
     cJSON *suci_infos = NULL;
     OpenAPI_list_t *suci_infosList = NULL;
+    cJSON *any_ue_udm_single_instance = NULL;
     group_id = cJSON_GetObjectItemCaseSensitive(nrf_info_served_udm_info_valueJSON, "groupId");
     if (group_id) {
     if (!cJSON_IsString(group_id) && !cJSON_IsNull(group_id)) {
@@ -366,6 +378,14 @@ OpenAPI_nrf_info_served_udm_info_value_t *OpenAPI_nrf_info_served_udm_info_value
         }
     }
 
+    any_ue_udm_single_instance = cJSON_GetObjectItemCaseSensitive(nrf_info_served_udm_info_valueJSON, "anyUeUdmSingleInstance");
+    if (any_ue_udm_single_instance) {
+    if (!cJSON_IsBool(any_ue_udm_single_instance)) {
+        ogs_error("OpenAPI_nrf_info_served_udm_info_value_parseFromJSON() failed [any_ue_udm_single_instance]");
+        goto end;
+    }
+    }
+
     nrf_info_served_udm_info_value_local_var = OpenAPI_nrf_info_served_udm_info_value_create (
         group_id && !cJSON_IsNull(group_id) ? ogs_strdup(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
@@ -373,7 +393,9 @@ OpenAPI_nrf_info_served_udm_info_value_t *OpenAPI_nrf_info_served_udm_info_value
         external_group_identifiers_ranges ? external_group_identifiers_rangesList : NULL,
         routing_indicators ? routing_indicatorsList : NULL,
         internal_group_identifiers_ranges ? internal_group_identifiers_rangesList : NULL,
-        suci_infos ? suci_infosList : NULL
+        suci_infos ? suci_infosList : NULL,
+        any_ue_udm_single_instance ? true : false,
+        any_ue_udm_single_instance ? any_ue_udm_single_instance->valueint : 0
     );
 
     return nrf_info_served_udm_info_value_local_var;

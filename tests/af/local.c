@@ -32,7 +32,7 @@ const char *af_local_get_name(af_local_e id)
 }
 
 void af_local_discover_and_send(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         af_sess_t *sess, void *data,
         ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data))
 {
@@ -45,7 +45,7 @@ void af_local_discover_and_send(
     e->local_id = AF_LOCAL_DISCOVER_AND_SEND;
     e->sess = sess;
 
-    e->local.service_type = service_type;
+    e->local.service_name = service_name;
     e->local.data = data;
     e->local.build = build;
 

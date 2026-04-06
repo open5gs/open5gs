@@ -12,20 +12,20 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_svc_experience_s OpenAPI_svc_experience_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_svc_experience_s OpenAPI_svc_experience_t;
-typedef struct OpenAPI_svc_experience_s {
+struct OpenAPI_svc_experience_s {
     bool is_mos;
     float mos;
     bool is_upper_range;
     float upper_range;
     bool is_lower_range;
     float lower_range;
-} OpenAPI_svc_experience_t;
+};
 
 OpenAPI_svc_experience_t *OpenAPI_svc_experience_create(
     bool is_mos,

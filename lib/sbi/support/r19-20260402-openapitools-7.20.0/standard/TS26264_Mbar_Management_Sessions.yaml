@@ -1,0 +1,399 @@
+openapi: 3.0.0
+info:
+  title: Mbar_Management_Sessions
+  version: 1.0.0
+  description: |
+    Base Avatar Repository Management API - Sessions
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Sessions
+    description: 'Session Management for Avatar Usage'
+
+externalDocs:
+  description: 'TS 26.264 v19.0.0; IMS-based AR Real-Time Communication'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.264/'
+
+servers:
+  - url: '{apiRoot}/3gpp-mbar-management/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in 3GPP TS 29.501
+
+security:
+  - {}
+  - OAuth2: []
+
+paths:
+  /sessions:
+    post:
+      tags:
+        - Sessions
+      operationId: createSession
+      summary: 'Create a Session resource in the BAR'
+      security:
+        - OAuth2:
+          - session_create
+      requestBody:
+        description: 'A JSON representation of a Session'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Session'
+      responses:
+        '201':
+          description: 'Session Created'
+          headers:
+            Location:
+              description: 'URL of the newly created Session resource'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/Url'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /sessions/{sessionId}:
+    parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The unique identifier of the Session resource'
+    get:
+      tags:
+        - Sessions
+      operationId: getSession
+      summary: 'Retrieve a previously created Session resource'
+      security:
+        - OAuth2:
+          - session_retrieve
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      tags:
+        - Sessions
+      operationId: updateSession
+      summary: 'Update Session resource'
+      security:
+        - OAuth2:
+          - session_update
+      requestBody:
+        description: 'A JSON representation of a Session'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Session'
+      responses:
+        '200':
+          description: 'Session Updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '204':
+          description: 'Session Unchanged'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      tags:
+        - Sessions
+      operationId: deleteSession
+      summary: 'Remove and delete the Session and revoke its associated access token'
+      security:
+        - OAuth2:
+          - session_delete
+      responses:
+        '204':
+          description: 'Session Deleted'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /sessions/{sessionId}/token:
+    parameters:
+      - name: sessionId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The unique identifier of the Session resource'
+    get:
+      tags:
+        - Sessions
+      operationId: getSessionToken
+      summary: 'Return current token metadata for the Session'
+      security:
+        - OAuth2:
+          - session_token_retrieve
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionAccess'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    post:
+      tags:
+        - Sessions
+      operationId: rotateSessionToken
+      summary: 'Issue a new short lived access token for the Session and invalidate the previous token'
+      security:
+        - OAuth2:
+          - session_token_rotate
+      responses:
+        '200':
+          description: 'New token issued'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionAccess'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      tags:
+        - Sessions
+      operationId: revokeSessionToken
+      summary: 'Revoke the current Session token without deleting the Session'
+      security:
+        - OAuth2:
+          - session_token_revoke
+      responses:
+        '204':
+          description: 'Token Revoked'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            session_create: Create Session resource
+            session_retrieve: Retrieve Session resource
+            session_update: Update Session resource
+            session_delete: Delete Session resource
+            session_token_retrieve: Retrieve Session Token metadata
+            session_token_rotate: Rotate Session Token
+            session_token_revoke: Revoke Session Token
+
+  schemas:
+    Session:
+      type: object
+      description: 'A representation of a Session resource'
+      required:
+        - avatarId
+        - avatarRepresentationId
+        - ownerId
+        - creatorId
+        - callStartTime
+        - callEndTime
+      properties:
+        sessionId:
+          allOf:
+            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+            - readOnly: true
+              description: 'Unique identifier assigned by the BAR upon session creation'
+        avatarId:
+          allOf:
+            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+            - readOnly: true
+              description: 'A unique identifier assigned to a base avatar by the BAR'
+        avatarRepresentationId:
+          allOf:
+            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+            - readOnly: true
+              description: 'A unique identifier assigned to an Avatar Representation by the BAR'
+        ownerId:
+          type: string
+          description: 'A unique identifier identifying the subscriber (owner) associated with the base avatar'
+        creatorId:
+          type: string
+          description: 'A unique identifier identifying the creator of the session resource'
+        callStartTime:
+          type: number
+          description: 'The wall clock time at the start time of an avatar call period'
+        callEndTime:
+          type: number
+          description: 'Specifies the end time (in wall clock time) of an avatar call period'
+        publishTime:
+          type: number
+          readOnly: true
+          description: 'Describes the issue time or latest update time (in wall clock time) of the session resource'
+        accessToken:
+          allOf:
+            - $ref: '#/components/schemas/SessionAccess'
+            - readOnly: true
+              description: 'Access token and validity for dereferencing BAR resources within the scope of this session'
+
+    SessionAccess:
+      type: object
+      description: 'Session access token information'
+      required:
+        - token
+        - issuedAt
+        - expiresAt
+      properties:
+        token:
+          $ref: '#/components/schemas/SessionToken'
+        issuedAt:
+          type: number
+          description: 'Token issuance time (ms since epoch)'
+        expiresAt:
+          type: number
+          description: 'Absolute expiry (ms since epoch). Tokens are short lived and shall not exceed operator policy TTL'
+
+    SessionToken:
+      type: object
+      description: 'Session token'
+      required:
+        - scheme
+        - value
+      properties:
+        scheme:
+          type: string
+          description: 'Token scheme; "bearer" shall be supported'
+          enum:
+            - bearer
+        value:
+          type: string
+          description: 'Opaque token value. Its internal structure is operator specific'

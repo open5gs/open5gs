@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "bdt_policy_status_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_bdt_policy_status_s OpenAPI_bdt_policy_status_t;
-typedef struct OpenAPI_bdt_policy_status_s {
-} OpenAPI_bdt_policy_status_t;
+typedef enum { OpenAPI_bdt_policy_status_NULL = 0, OpenAPI_bdt_policy_status_INVALID, OpenAPI_bdt_policy_status_VALID } OpenAPI_bdt_policy_status_e;
 
-OpenAPI_bdt_policy_status_t *OpenAPI_bdt_policy_status_create(
-);
-void OpenAPI_bdt_policy_status_free(OpenAPI_bdt_policy_status_t *bdt_policy_status);
-OpenAPI_bdt_policy_status_t *OpenAPI_bdt_policy_status_parseFromJSON(cJSON *bdt_policy_statusJSON);
-cJSON *OpenAPI_bdt_policy_status_convertToJSON(OpenAPI_bdt_policy_status_t *bdt_policy_status);
-OpenAPI_bdt_policy_status_t *OpenAPI_bdt_policy_status_copy(OpenAPI_bdt_policy_status_t *dst, OpenAPI_bdt_policy_status_t *src);
+char* OpenAPI_bdt_policy_status_ToString(OpenAPI_bdt_policy_status_e bdt_policy_status);
+
+OpenAPI_bdt_policy_status_e OpenAPI_bdt_policy_status_FromString(char* bdt_policy_status);
 
 #ifdef __cplusplus
 }

@@ -6,7 +6,10 @@
 
 OpenAPI_local_origin_t *OpenAPI_local_origin_create(
     char *coordinate_id,
-    OpenAPI_geographical_coordinates_t *point
+    OpenAPI_geographical_coordinates_t *point,
+    OpenAPI_geographic_area_t *area,
+    bool is_horiz_axes_orientation,
+    int horiz_axes_orientation
 )
 {
     OpenAPI_local_origin_t *local_origin_local_var = ogs_malloc(sizeof(OpenAPI_local_origin_t));
@@ -14,6 +17,9 @@ OpenAPI_local_origin_t *OpenAPI_local_origin_create(
 
     local_origin_local_var->coordinate_id = coordinate_id;
     local_origin_local_var->point = point;
+    local_origin_local_var->area = area;
+    local_origin_local_var->is_horiz_axes_orientation = is_horiz_axes_orientation;
+    local_origin_local_var->horiz_axes_orientation = horiz_axes_orientation;
 
     return local_origin_local_var;
 }
@@ -33,6 +39,10 @@ void OpenAPI_local_origin_free(OpenAPI_local_origin_t *local_origin)
         OpenAPI_geographical_coordinates_free(local_origin->point);
         local_origin->point = NULL;
     }
+    if (local_origin->area) {
+        OpenAPI_geographic_area_free(local_origin->area);
+        local_origin->area = NULL;
+    }
     ogs_free(local_origin);
 }
 
@@ -47,11 +57,13 @@ cJSON *OpenAPI_local_origin_convertToJSON(OpenAPI_local_origin_t *local_origin)
     }
 
     item = cJSON_CreateObject();
-    if (local_origin->coordinate_id) {
+    if (!local_origin->coordinate_id) {
+        ogs_error("OpenAPI_local_origin_convertToJSON() failed [coordinate_id]");
+        return NULL;
+    }
     if (cJSON_AddStringToObject(item, "coordinateId", local_origin->coordinate_id) == NULL) {
         ogs_error("OpenAPI_local_origin_convertToJSON() failed [coordinate_id]");
         goto end;
-    }
     }
 
     if (local_origin->point) {
@@ -67,6 +79,26 @@ cJSON *OpenAPI_local_origin_convertToJSON(OpenAPI_local_origin_t *local_origin)
     }
     }
 
+    if (local_origin->area) {
+    cJSON *area_local_JSON = OpenAPI_geographic_area_convertToJSON(local_origin->area);
+    if (area_local_JSON == NULL) {
+        ogs_error("OpenAPI_local_origin_convertToJSON() failed [area]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "area", area_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_local_origin_convertToJSON() failed [area]");
+        goto end;
+    }
+    }
+
+    if (local_origin->is_horiz_axes_orientation) {
+    if (cJSON_AddNumberToObject(item, "horizAxesOrientation", local_origin->horiz_axes_orientation) == NULL) {
+        ogs_error("OpenAPI_local_origin_convertToJSON() failed [horiz_axes_orientation]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -78,12 +110,17 @@ OpenAPI_local_origin_t *OpenAPI_local_origin_parseFromJSON(cJSON *local_originJS
     cJSON *coordinate_id = NULL;
     cJSON *point = NULL;
     OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
+    cJSON *area = NULL;
+    OpenAPI_geographic_area_t *area_local_nonprim = NULL;
+    cJSON *horiz_axes_orientation = NULL;
     coordinate_id = cJSON_GetObjectItemCaseSensitive(local_originJSON, "coordinateId");
-    if (coordinate_id) {
-    if (!cJSON_IsString(coordinate_id) && !cJSON_IsNull(coordinate_id)) {
+    if (!coordinate_id) {
         ogs_error("OpenAPI_local_origin_parseFromJSON() failed [coordinate_id]");
         goto end;
     }
+    if (!cJSON_IsString(coordinate_id)) {
+        ogs_error("OpenAPI_local_origin_parseFromJSON() failed [coordinate_id]");
+        goto end;
     }
 
     point = cJSON_GetObjectItemCaseSensitive(local_originJSON, "point");
@@ -95,9 +132,29 @@ OpenAPI_local_origin_t *OpenAPI_local_origin_parseFromJSON(cJSON *local_originJS
     }
     }
 
+    area = cJSON_GetObjectItemCaseSensitive(local_originJSON, "area");
+    if (area) {
+    area_local_nonprim = OpenAPI_geographic_area_parseFromJSON(area);
+    if (!area_local_nonprim) {
+        ogs_error("OpenAPI_geographic_area_parseFromJSON failed [area]");
+        goto end;
+    }
+    }
+
+    horiz_axes_orientation = cJSON_GetObjectItemCaseSensitive(local_originJSON, "horizAxesOrientation");
+    if (horiz_axes_orientation) {
+    if (!cJSON_IsNumber(horiz_axes_orientation)) {
+        ogs_error("OpenAPI_local_origin_parseFromJSON() failed [horiz_axes_orientation]");
+        goto end;
+    }
+    }
+
     local_origin_local_var = OpenAPI_local_origin_create (
-        coordinate_id && !cJSON_IsNull(coordinate_id) ? ogs_strdup(coordinate_id->valuestring) : NULL,
-        point ? point_local_nonprim : NULL
+        ogs_strdup(coordinate_id->valuestring),
+        point ? point_local_nonprim : NULL,
+        area ? area_local_nonprim : NULL,
+        horiz_axes_orientation ? true : false,
+        horiz_axes_orientation ? horiz_axes_orientation->valuedouble : 0
     );
 
     return local_origin_local_var;
@@ -105,6 +162,10 @@ end:
     if (point_local_nonprim) {
         OpenAPI_geographical_coordinates_free(point_local_nonprim);
         point_local_nonprim = NULL;
+    }
+    if (area_local_nonprim) {
+        OpenAPI_geographic_area_free(area_local_nonprim);
+        area_local_nonprim = NULL;
     }
     return NULL;
 }

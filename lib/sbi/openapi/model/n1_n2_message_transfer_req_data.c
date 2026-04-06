@@ -15,6 +15,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     bool is_pdu_session_id,
     int pdu_session_id,
     char *lcs_correlation_id,
+    char *serving_lmf_identification,
     bool is_ppi,
     int ppi,
     OpenAPI_arp_t *arp,
@@ -31,7 +32,11 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     bool is_ext_buf_support,
     int ext_buf_support,
     OpenAPI_access_type_e target_access,
-    char *nf_id
+    char *nf_id,
+    bool is_pru_ind,
+    int pru_ind,
+    bool is_pdu_session_prio,
+    int pdu_session_prio
 )
 {
     OpenAPI_n1_n2_message_transfer_req_data_t *n1_n2_message_transfer_req_data_local_var = ogs_malloc(sizeof(OpenAPI_n1_n2_message_transfer_req_data_t));
@@ -47,6 +52,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     n1_n2_message_transfer_req_data_local_var->is_pdu_session_id = is_pdu_session_id;
     n1_n2_message_transfer_req_data_local_var->pdu_session_id = pdu_session_id;
     n1_n2_message_transfer_req_data_local_var->lcs_correlation_id = lcs_correlation_id;
+    n1_n2_message_transfer_req_data_local_var->serving_lmf_identification = serving_lmf_identification;
     n1_n2_message_transfer_req_data_local_var->is_ppi = is_ppi;
     n1_n2_message_transfer_req_data_local_var->ppi = ppi;
     n1_n2_message_transfer_req_data_local_var->arp = arp;
@@ -64,6 +70,10 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     n1_n2_message_transfer_req_data_local_var->ext_buf_support = ext_buf_support;
     n1_n2_message_transfer_req_data_local_var->target_access = target_access;
     n1_n2_message_transfer_req_data_local_var->nf_id = nf_id;
+    n1_n2_message_transfer_req_data_local_var->is_pru_ind = is_pru_ind;
+    n1_n2_message_transfer_req_data_local_var->pru_ind = pru_ind;
+    n1_n2_message_transfer_req_data_local_var->is_pdu_session_prio = is_pdu_session_prio;
+    n1_n2_message_transfer_req_data_local_var->pdu_session_prio = pdu_session_prio;
 
     return n1_n2_message_transfer_req_data_local_var;
 }
@@ -90,6 +100,10 @@ void OpenAPI_n1_n2_message_transfer_req_data_free(OpenAPI_n1_n2_message_transfer
     if (n1_n2_message_transfer_req_data->lcs_correlation_id) {
         ogs_free(n1_n2_message_transfer_req_data->lcs_correlation_id);
         n1_n2_message_transfer_req_data->lcs_correlation_id = NULL;
+    }
+    if (n1_n2_message_transfer_req_data->serving_lmf_identification) {
+        ogs_free(n1_n2_message_transfer_req_data->serving_lmf_identification);
+        n1_n2_message_transfer_req_data->serving_lmf_identification = NULL;
     }
     if (n1_n2_message_transfer_req_data->arp) {
         OpenAPI_arp_free(n1_n2_message_transfer_req_data->arp);
@@ -196,6 +210,13 @@ cJSON *OpenAPI_n1_n2_message_transfer_req_data_convertToJSON(OpenAPI_n1_n2_messa
     }
     }
 
+    if (n1_n2_message_transfer_req_data->serving_lmf_identification) {
+    if (cJSON_AddStringToObject(item, "servingLMFIdentification", n1_n2_message_transfer_req_data->serving_lmf_identification) == NULL) {
+        ogs_error("OpenAPI_n1_n2_message_transfer_req_data_convertToJSON() failed [serving_lmf_identification]");
+        goto end;
+    }
+    }
+
     if (n1_n2_message_transfer_req_data->is_ppi) {
     if (cJSON_AddNumberToObject(item, "ppi", n1_n2_message_transfer_req_data->ppi) == NULL) {
         ogs_error("OpenAPI_n1_n2_message_transfer_req_data_convertToJSON() failed [ppi]");
@@ -298,6 +319,20 @@ cJSON *OpenAPI_n1_n2_message_transfer_req_data_convertToJSON(OpenAPI_n1_n2_messa
     }
     }
 
+    if (n1_n2_message_transfer_req_data->is_pru_ind) {
+    if (cJSON_AddBoolToObject(item, "pruInd", n1_n2_message_transfer_req_data->pru_ind) == NULL) {
+        ogs_error("OpenAPI_n1_n2_message_transfer_req_data_convertToJSON() failed [pru_ind]");
+        goto end;
+    }
+    }
+
+    if (n1_n2_message_transfer_req_data->is_pdu_session_prio) {
+    if (cJSON_AddNumberToObject(item, "pduSessionPrio", n1_n2_message_transfer_req_data->pdu_session_prio) == NULL) {
+        ogs_error("OpenAPI_n1_n2_message_transfer_req_data_convertToJSON() failed [pdu_session_prio]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -316,6 +351,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     cJSON *last_msg_indication = NULL;
     cJSON *pdu_session_id = NULL;
     cJSON *lcs_correlation_id = NULL;
+    cJSON *serving_lmf_identification = NULL;
     cJSON *ppi = NULL;
     cJSON *arp = NULL;
     OpenAPI_arp_t *arp_local_nonprim = NULL;
@@ -332,6 +368,8 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     cJSON *target_access = NULL;
     OpenAPI_access_type_e target_accessVariable = 0;
     cJSON *nf_id = NULL;
+    cJSON *pru_ind = NULL;
+    cJSON *pdu_session_prio = NULL;
     n1_message_container = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "n1MessageContainer");
     if (n1_message_container) {
     n1_message_container_local_nonprim = OpenAPI_n1_message_container_parseFromJSON(n1_message_container);
@@ -387,6 +425,14 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     if (lcs_correlation_id) {
     if (!cJSON_IsString(lcs_correlation_id) && !cJSON_IsNull(lcs_correlation_id)) {
         ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [lcs_correlation_id]");
+        goto end;
+    }
+    }
+
+    serving_lmf_identification = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "servingLMFIdentification");
+    if (serving_lmf_identification) {
+    if (!cJSON_IsString(serving_lmf_identification) && !cJSON_IsNull(serving_lmf_identification)) {
+        ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [serving_lmf_identification]");
         goto end;
     }
     }
@@ -491,6 +537,22 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
     }
     }
 
+    pru_ind = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "pruInd");
+    if (pru_ind) {
+    if (!cJSON_IsBool(pru_ind)) {
+        ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [pru_ind]");
+        goto end;
+    }
+    }
+
+    pdu_session_prio = cJSON_GetObjectItemCaseSensitive(n1_n2_message_transfer_req_dataJSON, "pduSessionPrio");
+    if (pdu_session_prio) {
+    if (!cJSON_IsNumber(pdu_session_prio)) {
+        ogs_error("OpenAPI_n1_n2_message_transfer_req_data_parseFromJSON() failed [pdu_session_prio]");
+        goto end;
+    }
+    }
+
     n1_n2_message_transfer_req_data_local_var = OpenAPI_n1_n2_message_transfer_req_data_create (
         n1_message_container ? n1_message_container_local_nonprim : NULL,
         n2_info_container ? n2_info_container_local_nonprim : NULL,
@@ -502,6 +564,7 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         pdu_session_id ? true : false,
         pdu_session_id ? pdu_session_id->valuedouble : 0,
         lcs_correlation_id && !cJSON_IsNull(lcs_correlation_id) ? ogs_strdup(lcs_correlation_id->valuestring) : NULL,
+        serving_lmf_identification && !cJSON_IsNull(serving_lmf_identification) ? ogs_strdup(serving_lmf_identification->valuestring) : NULL,
         ppi ? true : false,
         ppi ? ppi->valuedouble : 0,
         arp ? arp_local_nonprim : NULL,
@@ -518,7 +581,11 @@ OpenAPI_n1_n2_message_transfer_req_data_t *OpenAPI_n1_n2_message_transfer_req_da
         ext_buf_support ? true : false,
         ext_buf_support ? ext_buf_support->valueint : 0,
         target_access ? target_accessVariable : 0,
-        nf_id && !cJSON_IsNull(nf_id) ? ogs_strdup(nf_id->valuestring) : NULL
+        nf_id && !cJSON_IsNull(nf_id) ? ogs_strdup(nf_id->valuestring) : NULL,
+        pru_ind ? true : false,
+        pru_ind ? pru_ind->valueint : 0,
+        pdu_session_prio ? true : false,
+        pdu_session_prio ? pdu_session_prio->valuedouble : 0
     );
 
     return n1_n2_message_transfer_req_data_local_var;

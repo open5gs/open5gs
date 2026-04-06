@@ -1,7 +1,7 @@
 /*
  * trace_data_response.h
  *
- * 
+ * Contains Trace Data Response
  */
 
 #ifndef _OpenAPI_trace_data_response_H_
@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_trace_data_response_s OpenAPI_trace_data_response_t;
 #include "trace_data.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_trace_data_response_s OpenAPI_trace_data_response_t;
-typedef struct OpenAPI_trace_data_response_s {
+struct OpenAPI_trace_data_response_s {
     bool is_trace_data_null;
     struct OpenAPI_trace_data_s *trace_data;
     char *shared_trace_data_id;
-} OpenAPI_trace_data_response_t;
+};
 
 OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_create(
     bool is_trace_data_null,

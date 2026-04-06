@@ -1,0 +1,218 @@
+openapi: 3.0.0
+
+info:
+  title: EES ACR Status Update Service
+  version: 1.2.0
+  description: |
+    EES ACR Status Update Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.558 V19.5.0; Enabling Edge Applications;
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.558/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/eees-acrstatus-update/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+paths:
+  /request-acrupdate:
+    post:
+      summary: Request to update the information related to ACR (e.g. indicate the status of ACT, update the notification target address).
+      operationId: RequestACRUpdate
+      tags:
+        - Request ACR Update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ACRUpdateData'
+      responses:
+        '200':
+          description: >
+            The communicated ACR update information was successfully received.
+            The response body contains the feedback of the EES.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ACRDataStatus'
+        '204':
+          description: >
+            No Content. The communicated ACR update information was successfully
+            received.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    ACRUpdateData:
+      description: >
+        Represents the parameters to update the information related to ACR (e.g. indicate
+        the status of ACT, update the notification target address).
+      type: object
+      properties:
+        easId:
+          type: string
+        acId:
+          type: string
+        actResultInfo:
+          $ref: '#/components/schemas/ACTResultInfo'
+        e3SubscIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        e3NotificationUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+      required:
+        - easId
+      anyOf:
+        - required: [actResultInfo]
+        - required: [e3SubscIds]
+        - required: [e3NotificationUri]
+
+    ACRDataStatus:
+      description: Represents the ACR status information.
+      type: object
+      properties:
+        e3SubscsStatus:
+          $ref: '#/components/schemas/E3SubscsStatus'
+        e3SubscIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - e3SubscsStatus
+
+    ACTResultInfo:
+      description: Represents the result of ACT and the related information.
+      type: object
+      properties:
+        actResult:
+          $ref: '#/components/schemas/ACTResult'
+        actFailureCause:
+          $ref: '#/components/schemas/ACTFailureCause'
+        appGrpInfo:
+          $ref: '#/components/schemas/AppGroupInfo'
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        easEndPoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+      required:
+        - actResult
+        - ueId
+        - easEndPoint
+
+    AppGroupInfo:
+      description: >
+        Represents the Application Group information.
+      type: object
+      properties:
+        appGroupId:
+          type: string
+        ueIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+      required:
+        - appGroupId
+        - ueIds
+
+# ENUMS:
+
+    ACTResult:
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - SUCCESSFUL
+      - FAILED
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the result of ACT.  
+#        Possible values are:
+#        - SUCCESSFUL: Indicates that the ACT was successful.
+#        - FAILED: Indicates that the ACT failed.
+#
+    E3SubscsStatus:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+      - SUCCESSFUL
+      - FAILED
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the status of the initialization of EDGE-3 subscriptions.  
+#        Possible values are:
+#        - SUCCESSFUL: Indicates that the initialization of EDGE-3 subscriptions was successful.
+#        - FAILED: Indicates that the initialization of EDGE-3 subscriptions failed.
+#
+    ACTFailureCause:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+      - ACR_CANCELLATION
+      - OTHER
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the cause of ACT failure.  
+#        Possible values are:
+#        - ACR_CANCELLATION: Indicates that the ACT failed due to the cancellation of the ACR.
+#        - OTHER: Indicates that the ACT failed for other reasons.

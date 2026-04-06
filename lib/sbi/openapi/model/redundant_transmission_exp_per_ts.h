@@ -12,14 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_redundant_transmission_exp_per_ts_s OpenAPI_redundant_transmission_exp_per_ts_t;
 #include "observed_redundant_trans_exp.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_redundant_transmission_exp_per_ts_s OpenAPI_redundant_transmission_exp_per_ts_t;
-typedef struct OpenAPI_redundant_transmission_exp_per_ts_s {
+struct OpenAPI_redundant_transmission_exp_per_ts_s {
     char *ts_start;
     int ts_duration;
     struct OpenAPI_observed_redundant_trans_exp_s *obsv_red_trans_exp;
@@ -29,7 +29,7 @@ typedef struct OpenAPI_redundant_transmission_exp_per_ts_s {
     int ue_ratio;
     bool is_confidence;
     int confidence;
-} OpenAPI_redundant_transmission_exp_per_ts_t;
+};
 
 OpenAPI_redundant_transmission_exp_per_ts_t *OpenAPI_redundant_transmission_exp_per_ts_create(
     char *ts_start,

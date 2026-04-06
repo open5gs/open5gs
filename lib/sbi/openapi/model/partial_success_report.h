@@ -1,7 +1,7 @@
 /*
  * partial_success_report.h
  *
- * Includes the information reported by the SMF when some of the PCC rules and/or session rules are not successfully installed/activated.
+ * Includes the information reported by the SMF when some of the PCC rules and/or session rules  and/or policy decision and/or condition data are not successfully installed/activated or stored. 
  */
 
 #ifndef _OpenAPI_partial_success_report_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_partial_success_report_s OpenAPI_partial_success_report_t;
 #include "failure_cause.h"
 #include "invalid_param.h"
 #include "policy_decision_failure_code.h"
@@ -23,15 +24,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_partial_success_report_s OpenAPI_partial_success_report_t;
-typedef struct OpenAPI_partial_success_report_s {
+struct OpenAPI_partial_success_report_s {
     OpenAPI_failure_cause_e failure_cause;
     OpenAPI_list_t *rule_reports;
     OpenAPI_list_t *sess_rule_reports;
     struct OpenAPI_ue_camping_rep_s *ue_camping_rep;
     OpenAPI_list_t *policy_dec_failure_reports;
     OpenAPI_list_t *invalid_policy_decs;
-} OpenAPI_partial_success_report_t;
+};
 
 OpenAPI_partial_success_report_t *OpenAPI_partial_success_report_create(
     OpenAPI_failure_cause_e failure_cause,

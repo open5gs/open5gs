@@ -1,7 +1,7 @@
 /*
  * pdu_session_status.h
  *
- * 
+ * Indicates whether the PDU session is established or terminated.
  */
 
 #ifndef _OpenAPI_pdu_session_status_H_
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_pdu_session_status_NULL = 0, OpenAPI_pdu_session_status_ACTIVE, OpenAPI_pdu_session_status_RELEASED } OpenAPI_pdu_session_status_e;
+typedef enum { OpenAPI_pdu_session_status_NULL = 0, OpenAPI_pdu_session_status_ESTABLISHED, OpenAPI_pdu_session_status_TERMINATED } OpenAPI_pdu_session_status_e;
 
 char* OpenAPI_pdu_session_status_ToString(OpenAPI_pdu_session_status_e pdu_session_status);
 

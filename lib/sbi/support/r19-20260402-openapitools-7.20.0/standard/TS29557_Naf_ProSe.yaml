@@ -1,0 +1,433 @@
+openapi: 3.0.0
+
+info:
+  title: Naf_ProSe API
+  version: 1.2.1
+  description: |
+    Naf_ProSe Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.557 V19.4.0; 5G System; Application Function ProSe Service; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.557/
+
+servers:
+  - url: '{apiRoot}/naf-prose/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - naf-prose
+
+paths:
+  /authorize-discovery:
+    post:
+      summary: Obtain the authorization of Discovery Request from 5G DDNMF for a UE.
+      operationId: AuthorizeDiscovery
+      tags:
+        - Obtain the authorization of Discovery Request for a UE
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthDisReqData'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthDisResData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+      callbacks:
+        DiscoveryAuthorizationUpdateNotify:
+          '{$request.body#/authUpdateCallbackUri}':
+            post:
+              requestBody:
+                description: >
+                  Update of authorization information to revoke discovery permissions 
+                  relating to some other users in the NF consumer for Restricted ProSe Direct
+                  Discovery.
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AuthUpdateData'
+              responses:
+                '204':
+                  description: Expected response to a valid notification
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                '504':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /authorization-update-result:
+    post:
+      summary: >
+        Report the result of update of authorization information to revoke discovery 
+        permissions relating to some other users in the NF consumer for Restricted ProSe Direct
+        Discovery.
+      operationId: AuthorizationUpdateResult
+      tags:
+        - Authorization Information Update Result 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthUpdateData'
+        required: true
+      responses:
+        '204':
+          description: >
+             No Content. This case represents successful report of discovery authorization update result.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            naf-prose: Access to the Naf_ProSe API
+
+  schemas:
+
+# COMPLEX TYPES:
+
+    AuthDisReqData:
+      type: object
+      description: >
+        Represents Data used to request the authorization for a UE of a 5G ProSe Direct 
+        Discovery request.
+      required:
+        - authRequestType
+      properties:
+        authRequestType:
+          $ref: '#/components/schemas/AuthRequestType'
+        proseAppId:
+          type: array
+          items:
+            $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/ProseApplicationId'
+        allowedSuffixNum:
+          $ref: '#/components/schemas/AllowedSuffixNum'
+        appLevelContainer:
+          $ref: '#/components/schemas/AppLevelContainer'
+        rpauid:
+          $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/Rpauid'
+        targetRpauid:
+          $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/Rpauid'
+        authUpdateCallbackUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+
+    AuthDisResData:
+      type: object
+      description: >
+        Represents the obtained authorization Data for a UE of a 5G ProSe Direct Discovery 
+        request.
+      required:
+        - authResponseType
+      properties:
+        authResponseType:
+          $ref: '#/components/schemas/AuthResponseType'
+        proseAppCodeSuffixPool:
+          $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/ProseApplicationCodeSuffixPool'
+        pduids:
+          type: array
+          items:
+            $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/Pduid'
+        restrictedCodeSuffixPool:
+          type: array
+          items:
+            $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/RestrictedCodeSuffixPool'
+        proseAppMasks:
+          type: array
+          items:
+            $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/ProseApplicationMask'
+        proSeRestrictedMasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProSeRestrictedMask'
+        resAppLevelContainer:
+          $ref: '#/components/schemas/AppLevelContainer'
+        targetDataSet:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetData'
+        targetPduid:
+          $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/Pduid'
+        metaData:
+          $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/MetaData'
+
+
+    TargetData:
+      type: object
+      description: Represents a set of Target PDUID - Target RPAUID - Metadata Indicator.
+      required:
+        - targetRpauid
+        - pduid
+      properties:
+        targetRpauid:
+          $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/Rpauid'
+        pduid:
+          $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/Pduid'
+        metadataIndic:
+          $ref: '#/components/schemas/MetadataIndic'
+    AuthUpdateData:
+      type: object
+      description: >
+        Represents the update data and resulting update data of authorization information 
+        for Restricted ProSe Direct Discovery.
+      required:
+        - targetRpauid
+        - bannedAuthData
+      properties:
+        targetRpauid:
+          $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/Rpauid'
+        bannedAuthData:
+          type: array
+          items:
+            $ref: '#/components/schemas/BannedAuthData'
+          minItems: 1
+
+    BannedAuthData:
+      type: object
+      description: Represents a set of Banned PDUID - Banned RPAUID.
+      required:
+        - bannedRpauid
+        - bannedPduid
+      properties:
+        bannedRpauid:
+          $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/Rpauid'
+        bannedPduid:
+          $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/Pduid'
+        revocationResult:
+          $ref: '#/components/schemas/RevocationResult'
+
+# SIMPLE TYPES:
+
+    AllowedSuffixNum:
+      description: contains the allowed number of suffixes.
+      type: integer
+
+    AppLevelContainer:
+      description: Contains the Application Level Container.
+      type: string
+
+    ProSeRestrictedMask:
+      description: Contains a ProSe Restricted Mask.
+      type: string
+
+# ENUMS:
+
+    AuthRequestType:
+      anyOf:
+      - type: string
+        enum:
+          - OPEN_DISCOVERY_EXTENSION_ANNOUNCE
+          - RESTRICTED_DISCOVERY_ANNOUNCE
+          - RESTRICTED_DISCOVERY_EXTENSION_ANNOUNCE
+          - OPEN_DISCOVERY_EXTENSION_MONITOR
+          - RESTRICTED_DISCOVERY_MONITOR
+          - RESTRICTED_DISCOVERY_EXTENSION_MONITOR
+          - RESTRICTED_DISCOVERY_PERMISSION
+          - RESTRICTED_DISCOVERY_RESPONSE
+          - RESTRICTED_DISCOVERY_QUERY
+          - RESTRICTED_DISCOVERY_MATCH
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the authorization request type.  
+        Possible values are:
+        - OPEN_DISCOVERY_EXTENSION_ANNOUNCE: Indicates that the Authorization Request Type is
+        open discovery with application-controlled extension/announce.
+        - RESTRICTED_DISCOVERY_ANNOUNCE: Indicates that the Authorization Request Type is restricted
+        discovery/announce.
+        - RESTRICTED_DISCOVERY_EXTENSION_ANNOUNCE: Indicates that the Authorization Request Type is
+        restricted discovery with application-controlled extension/announce.
+        - OPEN_DISCOVERY_EXTENSION_MONITOR: Indicates that the Authorization Request Type is open
+        discovery with application-controlled extension/monitor.
+        - RESTRICTED_DISCOVERY_MONITOR: Indicates that the Authorization Request Type is restricted
+        discovery/monitor.
+        - RESTRICTED_DISCOVERY_EXTENSION_MONITOR: Indicates that the Authorization Request Type is
+        restricted discovery with application-controlled extension/monitor.
+        - RESTRICTED_DISCOVERY_PERMISSION: Indicates that the Authorization Request Type is
+        restricted discovery/permission.
+        - RESTRICTED_DISCOVERY_RESPONSE: Indicates that the Authorization Request Type is restricted
+        discovery/response.
+        - RESTRICTED_DISCOVERY_QUERY: Indicates that the Authorization Request Type is restricted
+        discovery/query.
+        - RESTRICTED_DISCOVERY_MATCH: Indicates that the Authorization Request Type is restricted
+        discovery/match.
+
+    AuthResponseType:
+      anyOf:
+      - type: string
+        enum:
+          - OPEN_DISCOVERY_EXTENSION_ANNOUNCE_ACK
+          - RESTRICTED_DISCOVERY_ANNOUNCE_ACK
+          - RESTRICTED_DISCOVERY_EXTENSION_ANNOUNCE_ACK
+          - OPEN_DISCOVERY_EXTENSION_MONITOR_ACK
+          - RESTRICTED_DISCOVERY_MONITOR_ACK
+          - RESTRICTED_DISCOVERY_EXTENSION_MONITOR_ACK
+          - RESTRICTED_DISCOVERY_PERMISSION_ACK
+          - RESTRICTED_DISCOVERY_RESPONSE_ACK
+          - RESTRICTED_DISCOVERY_QUERY_ACK
+          - RESTRICTED_DISCOVERY_MATCH_ACK
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the authorization response type.  
+        Possible values are:
+        - OPEN_DISCOVERY_EXTENSION_ANNOUNCE_ACK: Indicates that the Authorization Response Type is
+        open discovery with application-controlled extension/announce ack.
+        - RESTRICTED_DISCOVERY_ANNOUNCE_ACK: Indicates that the Authorization Response Type is
+        restricted discovery/announce ack.
+        - RESTRICTED_DISCOVERY_EXTENSION_ANNOUNCE_ACK: Indicates that the Authorization Response
+        Type is restricted discovery with application-controlled extension/announce ack.
+        - OPEN_DISCOVERY_EXTENSION_MONITOR_ACK: Indicates that the Authorization Response Type is
+        open discovery with application-controlled extension/monitor ack.
+        - RESTRICTED_DISCOVERY_MONITOR_ACK: Indicates that the Authorization Response Type is
+        restricted discovery/monitor ack.
+        - RESTRICTED_DISCOVERY_EXTENSION_MONITOR_ACK: Indicates that the Authorization Response Type
+        is restricted discovery with application-controlled extension/monitor ack.
+        - RESTRICTED_DISCOVERY_PERMISSION_ACK: Indicates that the Authorization Response Type is
+        restricted discovery/permission ack.
+        - RESTRICTED_DISCOVERY_RESPONSE_ACK: Indicates that the Authorization Response Type is
+        restricted discovery/response ack.
+        - RESTRICTED_DISCOVERY_QUERY_ACK: Indicates that the Authorization Response Type is
+        restricted discovery/query ack.
+        - RESTRICTED_DISCOVERY_MATCH_ACK: Indicates that the Authorization Response Type is
+        restricted discovery/match ack.
+
+    MetadataIndic:
+      anyOf:
+      - type: string
+        enum:
+          - NO_METADATA
+          - METADATA_UPDATE_DISALLOWED
+          - METADATA_UPDATE_ALLOWED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the Metadata Indicator.  
+        Possible values are:
+        - NO_METADATA: This value may be used to indicate that there is no metadata associated with
+        the target RPAUID. This is the default value applicable if this IE is not supplied.
+        - METADATA_UPDATE_DISALLOWED: This value shall be used to indicate that there exists
+        metadata associated with the target RPAUID, but the metadata is not allowed to be updated.
+        - METADATA_UPDATE_ALLOWED: This value shall be used to indicate that there exists metadata
+        associated with the target RPAUID, and the metadata is allowed to be updated.
+
+    RevocationResult:
+      anyOf:
+      - type: string
+        enum:
+          - REVOCATION_SUCCESSFUL
+          - REVOCATION_NOT_SUCCESSFUL
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the revocation result of a set of Banned RPAUID - Banned PDUID for Restricted
+        ProSe Direct Discovery.  
+        Possible values are:
+        - REVOCATION_SUCCESSFUL: Indicates the successful revocation for a set of Banned RPAUID -
+        Banned PDUID for Restricted ProSe Direct Discovery.
+        - REVOCATION_NOT_SUCCESSFUL: Indicates that unsuccessful revocation for a set of Banned
+        RPAUID - Banned PDUID for Restricted ProSe Direct Discovery.

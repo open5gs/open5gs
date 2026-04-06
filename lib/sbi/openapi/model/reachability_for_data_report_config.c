@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "reachability_for_data_report_config.h"
 
-OpenAPI_reachability_for_data_report_config_t *OpenAPI_reachability_for_data_report_config_create(
-)
+char* OpenAPI_reachability_for_data_report_config_ToString(OpenAPI_reachability_for_data_report_config_e reachability_for_data_report_config)
 {
-    OpenAPI_reachability_for_data_report_config_t *reachability_for_data_report_config_local_var = ogs_malloc(sizeof(OpenAPI_reachability_for_data_report_config_t));
-    ogs_assert(reachability_for_data_report_config_local_var);
-
-
-    return reachability_for_data_report_config_local_var;
+    const char *reachability_for_data_report_configArray[] =  { "NULL", "DIRECT_REPORT", "INDIRECT_REPORT" };
+    size_t sizeofArray = sizeof(reachability_for_data_report_configArray) / sizeof(reachability_for_data_report_configArray[0]);
+    if (reachability_for_data_report_config < sizeofArray)
+        return (char *)reachability_for_data_report_configArray[reachability_for_data_report_config];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_reachability_for_data_report_config_free(OpenAPI_reachability_for_data_report_config_t *reachability_for_data_report_config)
+OpenAPI_reachability_for_data_report_config_e OpenAPI_reachability_for_data_report_config_FromString(char* reachability_for_data_report_config)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == reachability_for_data_report_config) {
-        return;
+    int stringToReturn = 0;
+    const char *reachability_for_data_report_configArray[] =  { "NULL", "DIRECT_REPORT", "INDIRECT_REPORT" };
+    size_t sizeofArray = sizeof(reachability_for_data_report_configArray) / sizeof(reachability_for_data_report_configArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(reachability_for_data_report_config, reachability_for_data_report_configArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(reachability_for_data_report_config);
-}
-
-cJSON *OpenAPI_reachability_for_data_report_config_convertToJSON(OpenAPI_reachability_for_data_report_config_t *reachability_for_data_report_config)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (reachability_for_data_report_config == NULL) {
-        ogs_error("OpenAPI_reachability_for_data_report_config_convertToJSON() failed [ReachabilityForDataReportConfig]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_reachability_for_data_report_config_t *OpenAPI_reachability_for_data_report_config_parseFromJSON(cJSON *reachability_for_data_report_configJSON)
-{
-    OpenAPI_reachability_for_data_report_config_t *reachability_for_data_report_config_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    reachability_for_data_report_config_local_var = OpenAPI_reachability_for_data_report_config_create (
-    );
-
-    return reachability_for_data_report_config_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_reachability_for_data_report_config_t *OpenAPI_reachability_for_data_report_config_copy(OpenAPI_reachability_for_data_report_config_t *dst, OpenAPI_reachability_for_data_report_config_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_reachability_for_data_report_config_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_reachability_for_data_report_config_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_reachability_for_data_report_config_free(dst);
-    dst = OpenAPI_reachability_for_data_report_config_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

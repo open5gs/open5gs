@@ -5,13 +5,15 @@
 #include "sponsor_connectivity_data.h"
 
 OpenAPI_sponsor_connectivity_data_t *OpenAPI_sponsor_connectivity_data_create(
-    OpenAPI_list_t *asp_ids
+    OpenAPI_list_t *asp_ids,
+    char *supp_feat
 )
 {
     OpenAPI_sponsor_connectivity_data_t *sponsor_connectivity_data_local_var = ogs_malloc(sizeof(OpenAPI_sponsor_connectivity_data_t));
     ogs_assert(sponsor_connectivity_data_local_var);
 
     sponsor_connectivity_data_local_var->asp_ids = asp_ids;
+    sponsor_connectivity_data_local_var->supp_feat = supp_feat;
 
     return sponsor_connectivity_data_local_var;
 }
@@ -29,6 +31,10 @@ void OpenAPI_sponsor_connectivity_data_free(OpenAPI_sponsor_connectivity_data_t 
         }
         OpenAPI_list_free(sponsor_connectivity_data->asp_ids);
         sponsor_connectivity_data->asp_ids = NULL;
+    }
+    if (sponsor_connectivity_data->supp_feat) {
+        ogs_free(sponsor_connectivity_data->supp_feat);
+        sponsor_connectivity_data->supp_feat = NULL;
     }
     ogs_free(sponsor_connectivity_data);
 }
@@ -60,6 +66,13 @@ cJSON *OpenAPI_sponsor_connectivity_data_convertToJSON(OpenAPI_sponsor_connectiv
         }
     }
 
+    if (sponsor_connectivity_data->supp_feat) {
+    if (cJSON_AddStringToObject(item, "suppFeat", sponsor_connectivity_data->supp_feat) == NULL) {
+        ogs_error("OpenAPI_sponsor_connectivity_data_convertToJSON() failed [supp_feat]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -70,6 +83,7 @@ OpenAPI_sponsor_connectivity_data_t *OpenAPI_sponsor_connectivity_data_parseFrom
     OpenAPI_lnode_t *node = NULL;
     cJSON *asp_ids = NULL;
     OpenAPI_list_t *asp_idsList = NULL;
+    cJSON *supp_feat = NULL;
     asp_ids = cJSON_GetObjectItemCaseSensitive(sponsor_connectivity_dataJSON, "aspIds");
     if (!asp_ids) {
         ogs_error("OpenAPI_sponsor_connectivity_data_parseFromJSON() failed [asp_ids]");
@@ -93,8 +107,17 @@ OpenAPI_sponsor_connectivity_data_t *OpenAPI_sponsor_connectivity_data_parseFrom
             OpenAPI_list_add(asp_idsList, ogs_strdup(asp_ids_local->valuestring));
         }
 
+    supp_feat = cJSON_GetObjectItemCaseSensitive(sponsor_connectivity_dataJSON, "suppFeat");
+    if (supp_feat) {
+    if (!cJSON_IsString(supp_feat) && !cJSON_IsNull(supp_feat)) {
+        ogs_error("OpenAPI_sponsor_connectivity_data_parseFromJSON() failed [supp_feat]");
+        goto end;
+    }
+    }
+
     sponsor_connectivity_data_local_var = OpenAPI_sponsor_connectivity_data_create (
-        asp_idsList
+        asp_idsList,
+        supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL
     );
 
     return sponsor_connectivity_data_local_var;

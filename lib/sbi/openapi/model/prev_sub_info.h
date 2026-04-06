@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_prev_sub_info_s OpenAPI_prev_sub_info_t;
 #include "nwdaf_event.h"
 #include "ue_analytics_context_descriptor.h"
 
@@ -19,14 +20,13 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_prev_sub_info_s OpenAPI_prev_sub_info_t;
-typedef struct OpenAPI_prev_sub_info_s {
+struct OpenAPI_prev_sub_info_s {
     char *producer_id;
     char *producer_set_id;
     char *subscription_id;
     OpenAPI_list_t *nf_ana_events;
     OpenAPI_list_t *ue_ana_events;
-} OpenAPI_prev_sub_info_t;
+};
 
 OpenAPI_prev_sub_info_t *OpenAPI_prev_sub_info_create(
     char *producer_id,

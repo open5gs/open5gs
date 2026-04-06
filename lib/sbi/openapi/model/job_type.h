@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_job_type_NULL = 0, OpenAPI_job_type_IMMEDIATE_MDT_ONLY, OpenAPI_job_type_LOGGED_MDT_ONLY, OpenAPI_job_type_TRACE_ONLY, OpenAPI_job_type_IMMEDIATE_MDT_AND_TRACE, OpenAPI_job_type_RLF_REPORTS_ONLY, OpenAPI_job_type_RCEF_REPORTS_ONLY, OpenAPI_job_type_LOGGED_MBSFN_MDT } OpenAPI_job_type_e;
+typedef enum { OpenAPI_job_type_NULL = 0, OpenAPI_job_type_IMMEDIATE_MDT_ONLY, OpenAPI_job_type_LOGGED_MDT_ONLY, OpenAPI_job_type_TRACE_ONLY, OpenAPI_job_type_IMMEDIATE_MDT_AND_TRACE, OpenAPI_job_type_LOGGED_MBSFN_MDT, OpenAPI_job_type__5GC_UE_LEVEL_MEASUREMENTS_ONLY, OpenAPI_job_type_TRACE_AND_5GC_UE_LEVEL_MEASUREMENTS_ONLY, OpenAPI_job_type_IMMEDIATE_MDT_AND_5GC_UE_LEVEL_MEASUREMENTS, OpenAPI_job_type_TRACE_IMMEDIATE_MDT_AND_5GC_UE_LEVEL_MEASUREMENTS } OpenAPI_job_type_e;
 
 char* OpenAPI_job_type_ToString(OpenAPI_job_type_e job_type);
 

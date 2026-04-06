@@ -1,0 +1,130 @@
+openapi: 3.0.0
+
+info:
+  version: 1.0.1
+  title: Nmfaf_ContextManagement
+  description: |
+    MFAF Context Management Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.576 V19.6.0; 5G System; Messaging Framework Adaptor Services; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.576/'
+
+servers:
+  - url: '{apiRoot}/nmfaf-contextmanagement/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - oAuth2ClientCredentials:
+    - nmfaf-contextmanagement
+  - {}
+
+paths:
+
+  /transfer:
+    post:
+      summary: Performs the transfer of MFAF configuration(s).
+      operationId: MFAFTransfer
+      tags:
+        - MFAF Transfer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContextTransferReq'
+        required: true
+      responses:
+        '200':
+          description: >
+            Successful MFAF configuration(s) transfer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContextTransferResp'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nmfaf-contextmanagement: Access to the nmfaf-contextmanagement API
+
+  schemas:
+
+    ContextTransferReq:
+      description: The contents of an MFAF configuration transfer request.
+      type: object
+      properties:
+        refIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+          description: The resource URIs of the MFAF configurations to be transfered.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - refIds
+
+    ContextTransferResp:
+      description: The contents of an MFAF configuration transfer response.
+      type: object
+      properties:
+        configs:
+          type: object
+          additionalProperties:
+            $ref: 'TS29576_Nmfaf_3daDataManagement.yaml#/components/schemas/MfafConfiguration'
+          minProperties: 1
+          description: >
+            A map of the configurations that are transferred.
+            The key used in this map for each entry is one of the values of the "refIds" attribute
+            provided in the request and the value is the respective configuration.
+        bufferedNotifs:
+          type: object
+          additionalProperties:
+            $ref: 'TS29576_Nmfaf_3caDataManagement.yaml#/components/schemas/NmfafDataAnaNotification'
+          minProperties: 1
+          description: >
+            A map of the buffered notifications that had not yet been delivered.
+            The key used in this map for each entry is one of the values of the "refIds" attribute
+            provided in the request and the value is the respective buffered notifications.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - configs

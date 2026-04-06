@@ -9,7 +9,9 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
     OpenAPI_list_t *ssc_modes,
     OpenAPI_list_t *pdu_sess_types,
     bool is_atsss_info,
-    int atsss_info
+    int atsss_info,
+    bool is_lbo_roam_allowed,
+    int lbo_roam_allowed
 )
 {
     OpenAPI_dnn_route_selection_descriptor_t *dnn_route_selection_descriptor_local_var = ogs_malloc(sizeof(OpenAPI_dnn_route_selection_descriptor_t));
@@ -20,6 +22,8 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
     dnn_route_selection_descriptor_local_var->pdu_sess_types = pdu_sess_types;
     dnn_route_selection_descriptor_local_var->is_atsss_info = is_atsss_info;
     dnn_route_selection_descriptor_local_var->atsss_info = atsss_info;
+    dnn_route_selection_descriptor_local_var->is_lbo_roam_allowed = is_lbo_roam_allowed;
+    dnn_route_selection_descriptor_local_var->lbo_roam_allowed = lbo_roam_allowed;
 
     return dnn_route_selection_descriptor_local_var;
 }
@@ -101,6 +105,13 @@ cJSON *OpenAPI_dnn_route_selection_descriptor_convertToJSON(OpenAPI_dnn_route_se
     }
     }
 
+    if (dnn_route_selection_descriptor->is_lbo_roam_allowed) {
+    if (cJSON_AddBoolToObject(item, "lboRoamAllowed", dnn_route_selection_descriptor->lbo_roam_allowed) == NULL) {
+        ogs_error("OpenAPI_dnn_route_selection_descriptor_convertToJSON() failed [lbo_roam_allowed]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -115,6 +126,7 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
     cJSON *pdu_sess_types = NULL;
     OpenAPI_list_t *pdu_sess_typesList = NULL;
     cJSON *atsss_info = NULL;
+    cJSON *lbo_roam_allowed = NULL;
     dnn = cJSON_GetObjectItemCaseSensitive(dnn_route_selection_descriptorJSON, "dnn");
     if (!dnn) {
         ogs_error("OpenAPI_dnn_route_selection_descriptor_parseFromJSON() failed [dnn]");
@@ -193,12 +205,22 @@ OpenAPI_dnn_route_selection_descriptor_t *OpenAPI_dnn_route_selection_descriptor
     }
     }
 
+    lbo_roam_allowed = cJSON_GetObjectItemCaseSensitive(dnn_route_selection_descriptorJSON, "lboRoamAllowed");
+    if (lbo_roam_allowed) {
+    if (!cJSON_IsBool(lbo_roam_allowed)) {
+        ogs_error("OpenAPI_dnn_route_selection_descriptor_parseFromJSON() failed [lbo_roam_allowed]");
+        goto end;
+    }
+    }
+
     dnn_route_selection_descriptor_local_var = OpenAPI_dnn_route_selection_descriptor_create (
         ogs_strdup(dnn->valuestring),
         ssc_modes ? ssc_modesList : NULL,
         pdu_sess_types ? pdu_sess_typesList : NULL,
         atsss_info ? true : false,
-        atsss_info ? atsss_info->valueint : 0
+        atsss_info ? atsss_info->valueint : 0,
+        lbo_roam_allowed ? true : false,
+        lbo_roam_allowed ? lbo_roam_allowed->valueint : 0
     );
 
     return dnn_route_selection_descriptor_local_var;

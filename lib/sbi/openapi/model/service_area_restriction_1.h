@@ -1,7 +1,7 @@
 /*
  * service_area_restriction_1.h
  *
- * Provides information about allowed or not allowed areas.
+ * 
  */
 
 #ifndef _OpenAPI_service_area_restriction_1_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_service_area_restriction_1_s OpenAPI_service_area_restriction_1_t;
 #include "area_1.h"
 #include "restriction_type.h"
 
@@ -19,15 +20,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_service_area_restriction_1_s OpenAPI_service_area_restriction_1_t;
-typedef struct OpenAPI_service_area_restriction_1_s {
+struct OpenAPI_service_area_restriction_1_s {
     OpenAPI_restriction_type_e restriction_type;
     OpenAPI_list_t *areas;
     bool is_max_num_of_tas;
     int max_num_of_tas;
     bool is_max_num_of_tas_for_not_allowed_areas;
     int max_num_of_tas_for_not_allowed_areas;
-} OpenAPI_service_area_restriction_1_t;
+};
 
 OpenAPI_service_area_restriction_1_t *OpenAPI_service_area_restriction_1_create(
     OpenAPI_restriction_type_e restriction_type,

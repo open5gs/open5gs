@@ -7,13 +7,19 @@
 OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_create(
     char *sender,
     OpenAPI_security_capability_e selected_sec_capability,
+    char *n32_handshake_id,
     bool is__3_gpp_sbi_target_api_root_supported,
     int _3_gpp_sbi_target_api_root_supported,
     OpenAPI_list_t *plmn_id_list,
     OpenAPI_list_t *snpn_id_list,
     OpenAPI_list_t *allowed_usage_purpose,
     OpenAPI_list_t *rejected_usage_purpose,
-    char *supported_features
+    char *supported_features,
+    char *sender_n32f_fqdn,
+    bool is_sender_n32f_port,
+    int sender_n32f_port,
+    bool is_n32_keepalive_timer,
+    int n32_keepalive_timer
 )
 {
     OpenAPI_sec_negotiate_rsp_data_t *sec_negotiate_rsp_data_local_var = ogs_malloc(sizeof(OpenAPI_sec_negotiate_rsp_data_t));
@@ -21,6 +27,7 @@ OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_create(
 
     sec_negotiate_rsp_data_local_var->sender = sender;
     sec_negotiate_rsp_data_local_var->selected_sec_capability = selected_sec_capability;
+    sec_negotiate_rsp_data_local_var->n32_handshake_id = n32_handshake_id;
     sec_negotiate_rsp_data_local_var->is__3_gpp_sbi_target_api_root_supported = is__3_gpp_sbi_target_api_root_supported;
     sec_negotiate_rsp_data_local_var->_3_gpp_sbi_target_api_root_supported = _3_gpp_sbi_target_api_root_supported;
     sec_negotiate_rsp_data_local_var->plmn_id_list = plmn_id_list;
@@ -28,6 +35,11 @@ OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_create(
     sec_negotiate_rsp_data_local_var->allowed_usage_purpose = allowed_usage_purpose;
     sec_negotiate_rsp_data_local_var->rejected_usage_purpose = rejected_usage_purpose;
     sec_negotiate_rsp_data_local_var->supported_features = supported_features;
+    sec_negotiate_rsp_data_local_var->sender_n32f_fqdn = sender_n32f_fqdn;
+    sec_negotiate_rsp_data_local_var->is_sender_n32f_port = is_sender_n32f_port;
+    sec_negotiate_rsp_data_local_var->sender_n32f_port = sender_n32f_port;
+    sec_negotiate_rsp_data_local_var->is_n32_keepalive_timer = is_n32_keepalive_timer;
+    sec_negotiate_rsp_data_local_var->n32_keepalive_timer = n32_keepalive_timer;
 
     return sec_negotiate_rsp_data_local_var;
 }
@@ -42,6 +54,10 @@ void OpenAPI_sec_negotiate_rsp_data_free(OpenAPI_sec_negotiate_rsp_data_t *sec_n
     if (sec_negotiate_rsp_data->sender) {
         ogs_free(sec_negotiate_rsp_data->sender);
         sec_negotiate_rsp_data->sender = NULL;
+    }
+    if (sec_negotiate_rsp_data->n32_handshake_id) {
+        ogs_free(sec_negotiate_rsp_data->n32_handshake_id);
+        sec_negotiate_rsp_data->n32_handshake_id = NULL;
     }
     if (sec_negotiate_rsp_data->plmn_id_list) {
         OpenAPI_list_for_each(sec_negotiate_rsp_data->plmn_id_list, node) {
@@ -75,6 +91,10 @@ void OpenAPI_sec_negotiate_rsp_data_free(OpenAPI_sec_negotiate_rsp_data_t *sec_n
         ogs_free(sec_negotiate_rsp_data->supported_features);
         sec_negotiate_rsp_data->supported_features = NULL;
     }
+    if (sec_negotiate_rsp_data->sender_n32f_fqdn) {
+        ogs_free(sec_negotiate_rsp_data->sender_n32f_fqdn);
+        sec_negotiate_rsp_data->sender_n32f_fqdn = NULL;
+    }
     ogs_free(sec_negotiate_rsp_data);
 }
 
@@ -105,6 +125,13 @@ cJSON *OpenAPI_sec_negotiate_rsp_data_convertToJSON(OpenAPI_sec_negotiate_rsp_da
     if (cJSON_AddStringToObject(item, "selectedSecCapability", OpenAPI_security_capability_ToString(sec_negotiate_rsp_data->selected_sec_capability)) == NULL) {
         ogs_error("OpenAPI_sec_negotiate_rsp_data_convertToJSON() failed [selected_sec_capability]");
         goto end;
+    }
+
+    if (sec_negotiate_rsp_data->n32_handshake_id) {
+    if (cJSON_AddStringToObject(item, "n32HandshakeId", sec_negotiate_rsp_data->n32_handshake_id) == NULL) {
+        ogs_error("OpenAPI_sec_negotiate_rsp_data_convertToJSON() failed [n32_handshake_id]");
+        goto end;
+    }
     }
 
     if (sec_negotiate_rsp_data->is__3_gpp_sbi_target_api_root_supported) {
@@ -185,6 +212,27 @@ cJSON *OpenAPI_sec_negotiate_rsp_data_convertToJSON(OpenAPI_sec_negotiate_rsp_da
     }
     }
 
+    if (sec_negotiate_rsp_data->sender_n32f_fqdn) {
+    if (cJSON_AddStringToObject(item, "senderN32fFqdn", sec_negotiate_rsp_data->sender_n32f_fqdn) == NULL) {
+        ogs_error("OpenAPI_sec_negotiate_rsp_data_convertToJSON() failed [sender_n32f_fqdn]");
+        goto end;
+    }
+    }
+
+    if (sec_negotiate_rsp_data->is_sender_n32f_port) {
+    if (cJSON_AddNumberToObject(item, "senderN32fPort", sec_negotiate_rsp_data->sender_n32f_port) == NULL) {
+        ogs_error("OpenAPI_sec_negotiate_rsp_data_convertToJSON() failed [sender_n32f_port]");
+        goto end;
+    }
+    }
+
+    if (sec_negotiate_rsp_data->is_n32_keepalive_timer) {
+    if (cJSON_AddNumberToObject(item, "n32KeepaliveTimer", sec_negotiate_rsp_data->n32_keepalive_timer) == NULL) {
+        ogs_error("OpenAPI_sec_negotiate_rsp_data_convertToJSON() failed [n32_keepalive_timer]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -196,6 +244,7 @@ OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_parseFromJSON(c
     cJSON *sender = NULL;
     cJSON *selected_sec_capability = NULL;
     OpenAPI_security_capability_e selected_sec_capabilityVariable = 0;
+    cJSON *n32_handshake_id = NULL;
     cJSON *_3_gpp_sbi_target_api_root_supported = NULL;
     cJSON *plmn_id_list = NULL;
     OpenAPI_list_t *plmn_id_listList = NULL;
@@ -206,6 +255,9 @@ OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_parseFromJSON(c
     cJSON *rejected_usage_purpose = NULL;
     OpenAPI_list_t *rejected_usage_purposeList = NULL;
     cJSON *supported_features = NULL;
+    cJSON *sender_n32f_fqdn = NULL;
+    cJSON *sender_n32f_port = NULL;
+    cJSON *n32_keepalive_timer = NULL;
     sender = cJSON_GetObjectItemCaseSensitive(sec_negotiate_rsp_dataJSON, "sender");
     if (!sender) {
         ogs_error("OpenAPI_sec_negotiate_rsp_data_parseFromJSON() failed [sender]");
@@ -226,6 +278,14 @@ OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_parseFromJSON(c
         goto end;
     }
     selected_sec_capabilityVariable = OpenAPI_security_capability_FromString(selected_sec_capability->valuestring);
+
+    n32_handshake_id = cJSON_GetObjectItemCaseSensitive(sec_negotiate_rsp_dataJSON, "n32HandshakeId");
+    if (n32_handshake_id) {
+    if (!cJSON_IsString(n32_handshake_id) && !cJSON_IsNull(n32_handshake_id)) {
+        ogs_error("OpenAPI_sec_negotiate_rsp_data_parseFromJSON() failed [n32_handshake_id]");
+        goto end;
+    }
+    }
 
     _3_gpp_sbi_target_api_root_supported = cJSON_GetObjectItemCaseSensitive(sec_negotiate_rsp_dataJSON, "3GppSbiTargetApiRootSupported");
     if (_3_gpp_sbi_target_api_root_supported) {
@@ -339,16 +399,46 @@ OpenAPI_sec_negotiate_rsp_data_t *OpenAPI_sec_negotiate_rsp_data_parseFromJSON(c
     }
     }
 
+    sender_n32f_fqdn = cJSON_GetObjectItemCaseSensitive(sec_negotiate_rsp_dataJSON, "senderN32fFqdn");
+    if (sender_n32f_fqdn) {
+    if (!cJSON_IsString(sender_n32f_fqdn) && !cJSON_IsNull(sender_n32f_fqdn)) {
+        ogs_error("OpenAPI_sec_negotiate_rsp_data_parseFromJSON() failed [sender_n32f_fqdn]");
+        goto end;
+    }
+    }
+
+    sender_n32f_port = cJSON_GetObjectItemCaseSensitive(sec_negotiate_rsp_dataJSON, "senderN32fPort");
+    if (sender_n32f_port) {
+    if (!cJSON_IsNumber(sender_n32f_port)) {
+        ogs_error("OpenAPI_sec_negotiate_rsp_data_parseFromJSON() failed [sender_n32f_port]");
+        goto end;
+    }
+    }
+
+    n32_keepalive_timer = cJSON_GetObjectItemCaseSensitive(sec_negotiate_rsp_dataJSON, "n32KeepaliveTimer");
+    if (n32_keepalive_timer) {
+    if (!cJSON_IsNumber(n32_keepalive_timer)) {
+        ogs_error("OpenAPI_sec_negotiate_rsp_data_parseFromJSON() failed [n32_keepalive_timer]");
+        goto end;
+    }
+    }
+
     sec_negotiate_rsp_data_local_var = OpenAPI_sec_negotiate_rsp_data_create (
         ogs_strdup(sender->valuestring),
         selected_sec_capabilityVariable,
+        n32_handshake_id && !cJSON_IsNull(n32_handshake_id) ? ogs_strdup(n32_handshake_id->valuestring) : NULL,
         _3_gpp_sbi_target_api_root_supported ? true : false,
         _3_gpp_sbi_target_api_root_supported ? _3_gpp_sbi_target_api_root_supported->valueint : 0,
         plmn_id_list ? plmn_id_listList : NULL,
         snpn_id_list ? snpn_id_listList : NULL,
         allowed_usage_purpose ? allowed_usage_purposeList : NULL,
         rejected_usage_purpose ? rejected_usage_purposeList : NULL,
-        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        sender_n32f_fqdn && !cJSON_IsNull(sender_n32f_fqdn) ? ogs_strdup(sender_n32f_fqdn->valuestring) : NULL,
+        sender_n32f_port ? true : false,
+        sender_n32f_port ? sender_n32f_port->valuedouble : 0,
+        n32_keepalive_timer ? true : false,
+        n32_keepalive_timer ? n32_keepalive_timer->valuedouble : 0
     );
 
     return sec_negotiate_rsp_data_local_var;

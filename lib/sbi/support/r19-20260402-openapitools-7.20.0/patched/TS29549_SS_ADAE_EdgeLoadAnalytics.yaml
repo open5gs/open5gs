@@ -1,0 +1,362 @@
+openapi: 3.0.0
+
+info:
+  title: SS_ADAE_EdgeLoadAnalytics
+  description: |
+    API for ADAE Edge Load Analytics.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.1.0"
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-adae-el/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /edge-load:
+    post:
+      description: Creates a new individual Edge Load Event Subscription.
+      operationId: EdgeSub
+      tags:
+        - Edge Load Events Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EdgeSub'
+      callbacks:
+        notifUri:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EdgeNotif'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: Edge Load Events subscription resource created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EdgeSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /edge-load/{edgeLdId}:
+    get:
+      description: Retrieves an individual Edge Load Event Subscription.
+      operationId: RetrieveIndEdgeLdEventSubsc
+      tags:
+        - Individual Edge Load Events Subscription (Document)
+      parameters:
+        - name: edgeLdId
+          in: path
+          description: Identifier of an individual Events Subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The individual edge load subscription.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EdgeSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      description: Deletes an individual Edge Load Event Subscription.
+      operationId: DeleteIndEdgeLdEventSubsc
+      tags:
+        - Individual Edge Load Events Subscription (Document)
+      parameters:
+        - name: edgeLdId
+          in: path
+          description: Identifier of an individual Events Subscription
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            The individual Edge Load Events Subscription matching the edgeLdId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    EdgeSub:
+      description: Represents an individual Edge Load Subscription resource.
+      type: object
+      properties:
+        analyticsId:
+          $ref: '#/components/schemas/AnalyticsIdEl'
+        analyticsType:
+          $ref: 'TS29549_SS_ADAE_VALPerformanceAnalytics.yaml#/components/schemas/AnalyticsType'
+        destinationEasInfo:
+          type: string
+          description: String representing the information for the destination EAS.
+        destinationEesId:
+          type: string
+          description: String identifying the the destination EES.
+        dnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        dataProdProfile:
+          $ref: 'TS29549_SS_ADAE_VALPerformanceAnalytics.yaml#/components/schemas/ProdProfileInfo'
+        confLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        area:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        report:
+          $ref: '#/components/schemas/EdgeNotif'
+        reportReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        timeInterval:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - analyticsType
+        - notifUri
+      anyOf:
+        - required: [destinationEasInfo]
+        - required: [destinationEesId]
+        - oneOf:
+           - required: [dnai]
+           - required: [dnn]
+
+    EdgeNotif:
+      description: Represents notification information of an Edge Load Event.
+      type: object
+      properties:
+        output:
+          $ref: '#/components/schemas/AnalyticsOutputEl'
+        analyticsOutput:
+          type: string
+          description: String representing the edge load analytics.
+        confLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      oneOf:
+        - required: [output]
+        - required: [analyticsOutput]
+
+    AnalyticsOutputEl:
+      description: Represents the edge load analytics output.
+      type: object
+      properties:
+        analyticsId:
+          $ref: '#/components/schemas/AnalyticsIdEl'
+        platAnalytics:
+          $ref: '#/components/schemas/EdgePlatformAnalytics'
+        eesAnalytics:
+          $ref: '#/components/schemas/EesAnalytics'
+        easAnalytics:
+          $ref: '#/components/schemas/EasAnalytics'
+      required:
+        - analyticsId
+
+    EdgePlatformAnalytics:
+      description: Represents the edge platform analytics data.
+      type: object
+      properties:
+        easConn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        eesConn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        confLevel:
+          type: integer
+          minimum: 0
+          maximum: 100
+        timeWnd:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+      anyOf:
+        - required: [easConn]
+        - required: [eesConn]
+
+    EesAnalytics:
+      description: Represents the EES analytics data.
+      type: object
+      properties:
+        eesUnavail:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ScheduledCommunicationTime'
+          minItems: 1
+        eesUnavailPer:
+          type: integer
+          minimum: 0
+          maximum: 100
+        confLevel:
+          type: integer
+          minimum: 0
+          maximum: 100
+        timeWnd:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+      anyOf:
+        - required: [eesUnavail]
+        - required: [eesUnavailPer]
+
+    EasAnalytics:
+      description: Represents the EAS analytics data.
+      type: object
+      properties:
+        easUnavail:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ScheduledCommunicationTime'
+          minItems: 1
+        easUnavailPer:
+          type: integer
+          minimum: 0
+          maximum: 100
+        confLevel:
+          type: integer
+          minimum: 0
+          maximum: 100
+        timeWnd:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+      anyOf:
+        - required: [easUnavail]
+        - required: [easUnavailPer]
+
+# Simple data types and Enumerations
+
+    AnalyticsIdEl:
+      anyOf:
+      - type: string
+        enum:
+          - EDGE_PLATFORM
+          - EES
+          - EAS
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents the analytics identifier for the edge load analytics.  
+        Possible values are:
+        - EDGE_PLATFORM: Indicates that the analytics identifier is edge platform analytics.
+        - EES: Indicates that the analytics identifier is EES analytics.
+        - EAS: Indicates that the analytics identifier is EAS analytics.

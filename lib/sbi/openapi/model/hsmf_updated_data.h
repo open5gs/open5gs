@@ -12,22 +12,25 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_hsmf_updated_data_s OpenAPI_hsmf_updated_data_t;
 #include "ambr.h"
 #include "eps_bearer_info.h"
 #include "eps_pdn_cnx_info.h"
+#include "hrsbo_info_from_hplmn.h"
+#include "local_offloading_mgt_info_to_ismf.h"
 #include "max_integrity_protected_data_rate.h"
 #include "n4_information.h"
 #include "qos_flow_setup_item.h"
 #include "ref_to_binary_data.h"
 #include "roaming_charging_profile.h"
+#include "uli_change_granularity.h"
 #include "up_security.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_hsmf_updated_data_s OpenAPI_hsmf_updated_data_t;
-typedef struct OpenAPI_hsmf_updated_data_s {
+struct OpenAPI_hsmf_updated_data_s {
     struct OpenAPI_ref_to_binary_data_s *n1_sm_info_to_ue;
     struct OpenAPI_n4_information_s *n4_info;
     struct OpenAPI_n4_information_s *n4_info_ext1;
@@ -36,6 +39,7 @@ typedef struct OpenAPI_hsmf_updated_data_s {
     char *supported_features;
     struct OpenAPI_roaming_charging_profile_s *roaming_charging_profile;
     char *home_provided_charging_id;
+    char *home_provided_smf_charging_id;
     struct OpenAPI_up_security_s *up_security;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl;
@@ -49,7 +53,10 @@ typedef struct OpenAPI_hsmf_updated_data_s {
     int pti;
     char *inter_plmn_api_root;
     char *intra_plmn_api_root;
-} OpenAPI_hsmf_updated_data_t;
+    struct OpenAPI_hrsbo_info_from_hplmn_s *hrsbo_info;
+    struct OpenAPI_local_offloading_mgt_info_to_ismf_s *local_offload_mgt_info;
+    OpenAPI_uli_change_granularity_e uli_change_granularity;
+};
 
 OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     OpenAPI_ref_to_binary_data_t *n1_sm_info_to_ue,
@@ -60,6 +67,7 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     char *supported_features,
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile,
     char *home_provided_charging_id,
+    char *home_provided_smf_charging_id,
     OpenAPI_up_security_t *up_security,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
@@ -72,7 +80,10 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     bool is_pti,
     int pti,
     char *inter_plmn_api_root,
-    char *intra_plmn_api_root
+    char *intra_plmn_api_root,
+    OpenAPI_hrsbo_info_from_hplmn_t *hrsbo_info,
+    OpenAPI_local_offloading_mgt_info_to_ismf_t *local_offload_mgt_info,
+    OpenAPI_uli_change_granularity_e uli_change_granularity
 );
 void OpenAPI_hsmf_updated_data_free(OpenAPI_hsmf_updated_data_t *hsmf_updated_data);
 OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf_updated_dataJSON);

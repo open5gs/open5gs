@@ -45,7 +45,8 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nsmf_pdusession);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SM_CONTEXTS;
@@ -207,7 +208,8 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
 
             SmContextCreateData.h_smf_uri =
                 ogs_msprintf("%s/%s/%s/%s", apiroot,
-                        (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION,
+                        OpenAPI_service_name_ToString(
+                            OpenAPI_service_name_nsmf_pdusession),
                         (char *)OGS_SBI_API_V1,
                         (char *)OGS_SBI_RESOURCE_NAME_PDU_SESSIONS);
             ogs_assert(SmContextCreateData.h_smf_uri);
@@ -229,8 +231,8 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
      * the PCF when a situation arises where we really need the PCF-ID.
      */
     pcf_nf_instance = OGS_SBI_GET_NF_INSTANCE(
-            amf_ue->sbi.service_type_array[
-            OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL]);
+            amf_ue->sbi.service_name_array[
+            OpenAPI_service_name_npcf_am_policy_control]);
     if (pcf_nf_instance)
         SmContextCreateData.pcf_id = pcf_nf_instance->id;
     else
@@ -253,7 +255,9 @@ ogs_sbi_request_t *amf_nsmf_pdusession_build_create_sm_context(
     if (param && param->nrf_uri) {
         message.http.custom.nrf_uri =
             ogs_msprintf("%s: \"%s\"",
-                    OGS_SBI_SERVICE_NAME_NNRF_DISC, param->nrf_uri);
+                    OpenAPI_service_name_ToString(
+                        OpenAPI_service_name_nnrf_disc),
+                    param->nrf_uri);
     }
 
     request = ogs_sbi_build_request(&message);

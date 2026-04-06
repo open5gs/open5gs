@@ -12,14 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_qos_requirement_s OpenAPI_qos_requirement_t;
+#include "device_type.h"
 #include "qos_resource_type.h"
+#include "velocity_estimate.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_qos_requirement_s OpenAPI_qos_requirement_t;
-typedef struct OpenAPI_qos_requirement_s {
+struct OpenAPI_qos_requirement_s {
     bool is__5qi;
     int _5qi;
     char *gfbr_ul;
@@ -28,7 +30,9 @@ typedef struct OpenAPI_qos_requirement_s {
     bool is_pdb;
     int pdb;
     char *per;
-} OpenAPI_qos_requirement_t;
+    struct OpenAPI_velocity_estimate_s *device_speed;
+    OpenAPI_device_type_e device_type;
+};
 
 OpenAPI_qos_requirement_t *OpenAPI_qos_requirement_create(
     bool is__5qi,
@@ -38,7 +42,9 @@ OpenAPI_qos_requirement_t *OpenAPI_qos_requirement_create(
     OpenAPI_qos_resource_type_e res_type,
     bool is_pdb,
     int pdb,
-    char *per
+    char *per,
+    OpenAPI_velocity_estimate_t *device_speed,
+    OpenAPI_device_type_e device_type
 );
 void OpenAPI_qos_requirement_free(OpenAPI_qos_requirement_t *qos_requirement);
 OpenAPI_qos_requirement_t *OpenAPI_qos_requirement_parseFromJSON(cJSON *qos_requirementJSON);

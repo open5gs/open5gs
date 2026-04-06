@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_analytics_metadata_indication_s OpenAPI_analytics_metadata_indication_t;
 #include "dataset_statistical_property.h"
 #include "output_strategy.h"
 #include "time_window.h"
@@ -20,18 +21,17 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_analytics_metadata_indication_s OpenAPI_analytics_metadata_indication_t;
-typedef struct OpenAPI_analytics_metadata_indication_s {
+struct OpenAPI_analytics_metadata_indication_s {
     struct OpenAPI_time_window_s *data_window;
     OpenAPI_list_t *data_stat_props;
-    struct OpenAPI_output_strategy_s *strategy;
+    OpenAPI_output_strategy_e strategy;
     OpenAPI_list_t *aggr_nwdaf_ids;
-} OpenAPI_analytics_metadata_indication_t;
+};
 
 OpenAPI_analytics_metadata_indication_t *OpenAPI_analytics_metadata_indication_create(
     OpenAPI_time_window_t *data_window,
     OpenAPI_list_t *data_stat_props,
-    OpenAPI_output_strategy_t *strategy,
+    OpenAPI_output_strategy_e strategy,
     OpenAPI_list_t *aggr_nwdaf_ids
 );
 void OpenAPI_analytics_metadata_indication_free(OpenAPI_analytics_metadata_indication_t *analytics_metadata_indication);

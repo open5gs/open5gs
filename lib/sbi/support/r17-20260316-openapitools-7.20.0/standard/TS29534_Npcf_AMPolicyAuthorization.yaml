@@ -1,0 +1,719 @@
+openapi: 3.0.0
+info:
+  title: Npcf_AMPolicyAuthorization Service API
+  version: 1.0.2
+  description: |
+    PCF Access and Mobility Policy Authorization Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.534 V17.3.0;
+    5G System; Access and Mobility Policy Authorization Service; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.534/'
+#
+servers:
+  - url: '{apiRoot}/npcf-am-policyauthorization/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+#
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - npcf-am-policyauthorization
+paths:
+  /app-am-contexts:
+    post:
+      summary: Creates a new Individual Application AM Context resource
+      operationId: PostAppAmContexts
+      tags:
+        - Application AM contexts (Collection)
+      requestBody:
+        description: Contains the information for the creation the resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppAmContextData'
+      responses:
+        '201':
+          description: Successful creation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppAmContextRespData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created individual application AM context resource,
+                according to the structure
+                {apiRoot}/npcf-am-policyauthorization/<apiVersion>/app-am-contexts/{appAmContextId}
+                or the URI of the created AM Policy events subscription subresource,
+                according to the structure
+                {apiRoot}/npcf-am-policyauthorization/<apiVersion>/app-am-contexts/{appAmContextId}/events-subscription}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        terminationRequest:
+          '{$request.body#/termNotifUri}':
+            post:
+              requestBody:
+                description: Request of the termination of the Individual Application AM Context.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AmTerminationInfo'
+              responses:
+                '204':
+                  description: The receipt of the notification is acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+        amEventNotification:
+          '{$request.body#/evSubsc/eventNotifUri}':
+            post:
+              requestBody:
+                description: Notification of an event occurrence in the PCF.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AmEventsNotification'
+              responses:
+                '204':
+                  description: The receipt of the notification is acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+#
+  /app-am-contexts/{appAmContextId}:
+    get:
+      summary: "Reads an existing Individual Application AM Context"
+      operationId: GetAppAmContext
+      tags:
+        - Individual Application AM Context (Document)
+      parameters:
+        - name: appAmContextId
+          description: String identifying the resource.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A representation of the resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppAmContextData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+#
+    patch:
+      summary: "Modifies an existing Individual Application AM Context"
+      operationId: ModAppAmContext
+      tags:
+        - Individual Application AM Context (Document)
+      parameters:
+        - name: appAmContextId
+          description: String identifying the resource.
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Modification of the resource.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/AppAmContextUpdateData'
+      responses:
+        '200':
+          description: >
+            Successful modification of the resource and a representation of that resource is
+            returned. If a subscribed event is matched, the event notification is also included
+            in the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppAmContextRespData'
+        '204':
+          description: The successful modification.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        amEventNotification:
+          '{$request.body#/evSubsc/eventNotifUri}':
+            post:
+              requestBody:
+                description: Notification of an event occurrence in the PCF.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AmEventsNotification'
+              responses:
+                '204':
+                  description: The receipt of the notification is acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+#
+    delete:
+      summary: Deletes an existing Individual Application AM Context
+      operationId: DeleteAppAmContext
+      tags:
+        - Individual Application AM Context (Document)
+      parameters:
+        - name: appAmContextId
+          description: String identifying the Individual Application AM Context resource.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The deletion is confirmed without returning additional data.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+#
+  /app-am-contexts/{appAmContextId}/events-subscription:
+    put:
+      summary: creates or modifies an AM Policy Events Subscription subresource.
+      operationId: updateAmEventsSubsc
+      tags:
+        - AM Policy Events Subscription (Document)
+      parameters:
+        - name: appAmContextId
+          description: String identifying the AM Policy Events Subscription subresource.
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Creation or modification of an AM Policy Events Subscription subresource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AmEventsSubscData'
+      responses:
+        '201':
+          description: >
+            The creation of the AM Policy Events Subscription subresource is confirmed and its
+            representation is returned. If an AM Event is matched, the response also includes the
+            notification.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmEventsSubscRespData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created AM Policy Events Subscription subresource,
+                according to the structure
+                {apiRoot}/npcf-am-policyauthorization/<apiVersion>/app-am-contexts/{appAmContextId}/events-subscription}
+              required: true
+              schema:
+                type: string
+        '200':
+          description: The modification of the AM Policy Events Subscription subresource is confirmed and its representation is returned. If an AM Event is matched, the response also includes the notification.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmEventsSubscRespData'
+        '204':
+          description: The modification of the AM Policy Events Subscription subresource is confirmed without returning additional data.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        amEventNotification:
+          '{$request.body#/evSubsc/eventNotifUri}':
+            post:
+              requestBody:
+                description: Contains the information for the notification of an event occurrence in the PCF.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AmEventsNotification'
+              responses:
+                '204':
+                  description: The receipt of the notification is acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: deletes the AM Policy Events Subscription subresource
+      operationId: DeleteAmEventsSubsc
+      tags:
+        - AM Policy Events Subscription (Document)
+      parameters:
+        - name: appAmContextId
+          description: String identifying the Individual Application AM Context resource.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The deletion of the of the AM Policy Events Subscription subresource is confirmed without returning additional data.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+#
+#
+components:
+#
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npcf-am-policyauthorization: Access to the Npcf_AMPolicyAuthorization API
+#
+  schemas:
+#
+    AppAmContextData:
+      description: Represents an Individual Application AM Context resource.
+      type: object
+      required:
+        - supi
+        - termNotifUri
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        termNotifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        evSubsc:
+          $ref: '#/components/schemas/AmEventsSubscData'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        highThruInd:
+          type: boolean
+          description: Indicates whether high throughput is desired for the indicated UE traffic.
+        covReq:
+          type: array
+          description: Identifies a list of Tracking Areas per serving network where service is allowed.
+          items:
+            $ref: '#/components/schemas/ServiceAreaCoverageInfo'
+          minItems: 1
+        asTimeDisParam:
+          $ref: 'TS29507_Npcf_AMPolicyControl.yaml#/components/schemas/AsTimeDistributionParam'
+      anyOf:
+       - anyOf:
+          - required: [highThruInd]
+          - required: [covReq]
+       - required: [asTimeDisParam]
+       - required: [evSubsc]
+#
+#
+    AppAmContextUpdateData:
+      description: Describes the modifications to an Individual Application AM resource.
+      type: object
+      properties:
+        termNotifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        evSubsc:
+          $ref: '#/components/schemas/AmEventsSubscDataRm'
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        highThruInd:
+          description: Indicates whether high throughput is desired for the indicated UE traffic.
+          type: boolean
+          nullable: true
+        covReq:
+          type: array
+          description: Identifies a list of Tracking Areas per serving network where service is allowed.
+          items:
+            $ref: '#/components/schemas/ServiceAreaCoverageInfo'
+          minItems: 1
+          nullable: true
+        asTimeDisParam:
+          $ref: 'TS29507_Npcf_AMPolicyControl.yaml#/components/schemas/AsTimeDistributionParam'
+#
+    AmEventsSubscData:
+      description: It represents the AM Policy Events Subscription subresource and identifies the events the application subscribes to.
+      type: object
+      required:
+        - eventNotifUri
+      properties:
+        eventNotifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmEventData'
+          minItems: 1
+#
+    AmEventsNotification:
+      description: Describes the notification about the events occurred within an Individual Application AM Context resource.
+      type: object
+      required:
+        - repEvents
+      properties:
+        appAmContextId:
+          type: string
+          description: Contains the AM Policy Events Subscription resource identifier related to the event notification.
+        repEvents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmEventNotification'
+          minItems: 1
+#
+    AmTerminationInfo:
+      description: Includes information related to the termination of the Individual Application AM Context resource.
+      type: object
+      required:
+        - appAmContextId
+        - termCause
+      properties:
+        appAmContextId:
+          type: string
+          description: Contains the Individual application AM context resource identifier related to the termination notification.
+        termCause:
+          $ref: '#/components/schemas/AmTerminationCause'
+#
+    AmEventsSubscDataRm:
+      description: This data type is defined in the same way as the AmEventsSubscData but with the OpenAPI nullable property set to true.
+      type: object
+      properties:
+        eventNotifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmEventData'
+          minItems: 1
+      nullable: true
+#
+    AmEventData:
+      description: This data type contains the event identifier and the related event reporting information.
+      type: object
+      required:
+        - event
+      properties:
+        event:
+          $ref: '#/components/schemas/AmEvent'
+        immRep:
+          type: boolean
+        notifMethod:
+          $ref: 'TS29508_Nsmf_EventExposure.yaml#/components/schemas/NotificationMethod'
+        maxReportNbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        monDur:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        repPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+#
+    AmEventNotification:
+      description: Describes the notification of a subscription.
+      type: object
+      required:
+        - event
+      properties:
+        event:
+          $ref: '#/components/schemas/AmEvent'
+        appliedCov:
+          $ref: '#/components/schemas/ServiceAreaCoverageInfo'
+        pduidInfo:
+          $ref: '#/components/schemas/PduidInformation'
+#
+    PduidInformation:
+      description: Contains the ProSe Discovery UE ID and its validity timer.
+      type: object
+      required:
+        - expiry
+        - pduid
+      properties:
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        pduid:
+          $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/Pduid'
+#
+    ServiceAreaCoverageInfo:
+      description: It represents a list of Tracking Areas within a serving network.
+      type: object
+      required:
+        - tacList
+      properties:
+        tacList:
+          type: array
+          description: Indicates a list of Tracking Areas where the service is allowed.
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tac'
+        servingNetwork:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+#
+# ENUMERATIONS DATA TYPES
+#
+    AmTerminationCause:
+      description: It represents the cause values that the PCF should report when requesting to an NF service consumer the deletion of an "AF application AM context" resource.
+      anyOf:
+        - type: string
+          enum:
+            - UE_DEREGISTERED
+            - UNSPECIFIED
+            - INSUFFICIENT_RESOURCES
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration but
+            is not used to encode content defined in the present version of this API.
+#
+    AmEvent:
+      anyOf:
+      - type: string
+        enum:
+          - SAC_CH
+          - PDUID_CH
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration but
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Possible values are:
+        - SAC_CH: Service Area Coverage Change
+        - PDUID_CH: The PDUID assigned to a UE for the UE ProSe Policies changed
+#
+#
+    AppAmContextRespData:
+      description: It represents a response to a modification or creation request of an Individual Application AM resource. It may contain the notification of the already met events.
+      anyOf:
+        - $ref: '#/components/schemas/AppAmContextData'
+        - $ref: '#/components/schemas/AmEventsNotification'
+#
+    AmEventsSubscRespData:
+      description: Identifies the events the application subscribes to within an AM Policy Events Subscription subresource data. It may contain the notification of the already met events.
+      anyOf:
+        - $ref: '#/components/schemas/AmEventsSubscData'
+        - $ref: '#/components/schemas/AmEventsNotification'
+#

@@ -9,8 +9,14 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_create(
     int atsss_ll,
     bool is_mptcp,
     int mptcp,
+    bool is_mpquic,
+    int mpquic,
     bool is_rtt_without_pmf,
-    int rtt_without_pmf
+    int rtt_without_pmf,
+    bool is_mpquic_ip,
+    int mpquic_ip,
+    bool is_mpquic_e,
+    int mpquic_e
 )
 {
     OpenAPI_atsss_capability_t *atsss_capability_local_var = ogs_malloc(sizeof(OpenAPI_atsss_capability_t));
@@ -20,8 +26,14 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_create(
     atsss_capability_local_var->atsss_ll = atsss_ll;
     atsss_capability_local_var->is_mptcp = is_mptcp;
     atsss_capability_local_var->mptcp = mptcp;
+    atsss_capability_local_var->is_mpquic = is_mpquic;
+    atsss_capability_local_var->mpquic = mpquic;
     atsss_capability_local_var->is_rtt_without_pmf = is_rtt_without_pmf;
     atsss_capability_local_var->rtt_without_pmf = rtt_without_pmf;
+    atsss_capability_local_var->is_mpquic_ip = is_mpquic_ip;
+    atsss_capability_local_var->mpquic_ip = mpquic_ip;
+    atsss_capability_local_var->is_mpquic_e = is_mpquic_e;
+    atsss_capability_local_var->mpquic_e = mpquic_e;
 
     return atsss_capability_local_var;
 }
@@ -61,9 +73,30 @@ cJSON *OpenAPI_atsss_capability_convertToJSON(OpenAPI_atsss_capability_t *atsss_
     }
     }
 
+    if (atsss_capability->is_mpquic) {
+    if (cJSON_AddBoolToObject(item, "mpquic", atsss_capability->mpquic) == NULL) {
+        ogs_error("OpenAPI_atsss_capability_convertToJSON() failed [mpquic]");
+        goto end;
+    }
+    }
+
     if (atsss_capability->is_rtt_without_pmf) {
     if (cJSON_AddBoolToObject(item, "rttWithoutPmf", atsss_capability->rtt_without_pmf) == NULL) {
         ogs_error("OpenAPI_atsss_capability_convertToJSON() failed [rtt_without_pmf]");
+        goto end;
+    }
+    }
+
+    if (atsss_capability->is_mpquic_ip) {
+    if (cJSON_AddBoolToObject(item, "mpquicIp", atsss_capability->mpquic_ip) == NULL) {
+        ogs_error("OpenAPI_atsss_capability_convertToJSON() failed [mpquic_ip]");
+        goto end;
+    }
+    }
+
+    if (atsss_capability->is_mpquic_e) {
+    if (cJSON_AddBoolToObject(item, "mpquicE", atsss_capability->mpquic_e) == NULL) {
+        ogs_error("OpenAPI_atsss_capability_convertToJSON() failed [mpquic_e]");
         goto end;
     }
     }
@@ -78,7 +111,10 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_
     OpenAPI_lnode_t *node = NULL;
     cJSON *atsss_ll = NULL;
     cJSON *mptcp = NULL;
+    cJSON *mpquic = NULL;
     cJSON *rtt_without_pmf = NULL;
+    cJSON *mpquic_ip = NULL;
+    cJSON *mpquic_e = NULL;
     atsss_ll = cJSON_GetObjectItemCaseSensitive(atsss_capabilityJSON, "atsssLL");
     if (atsss_ll) {
     if (!cJSON_IsBool(atsss_ll)) {
@@ -95,10 +131,34 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_
     }
     }
 
+    mpquic = cJSON_GetObjectItemCaseSensitive(atsss_capabilityJSON, "mpquic");
+    if (mpquic) {
+    if (!cJSON_IsBool(mpquic)) {
+        ogs_error("OpenAPI_atsss_capability_parseFromJSON() failed [mpquic]");
+        goto end;
+    }
+    }
+
     rtt_without_pmf = cJSON_GetObjectItemCaseSensitive(atsss_capabilityJSON, "rttWithoutPmf");
     if (rtt_without_pmf) {
     if (!cJSON_IsBool(rtt_without_pmf)) {
         ogs_error("OpenAPI_atsss_capability_parseFromJSON() failed [rtt_without_pmf]");
+        goto end;
+    }
+    }
+
+    mpquic_ip = cJSON_GetObjectItemCaseSensitive(atsss_capabilityJSON, "mpquicIp");
+    if (mpquic_ip) {
+    if (!cJSON_IsBool(mpquic_ip)) {
+        ogs_error("OpenAPI_atsss_capability_parseFromJSON() failed [mpquic_ip]");
+        goto end;
+    }
+    }
+
+    mpquic_e = cJSON_GetObjectItemCaseSensitive(atsss_capabilityJSON, "mpquicE");
+    if (mpquic_e) {
+    if (!cJSON_IsBool(mpquic_e)) {
+        ogs_error("OpenAPI_atsss_capability_parseFromJSON() failed [mpquic_e]");
         goto end;
     }
     }
@@ -108,8 +168,14 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_
         atsss_ll ? atsss_ll->valueint : 0,
         mptcp ? true : false,
         mptcp ? mptcp->valueint : 0,
+        mpquic ? true : false,
+        mpquic ? mpquic->valueint : 0,
         rtt_without_pmf ? true : false,
-        rtt_without_pmf ? rtt_without_pmf->valueint : 0
+        rtt_without_pmf ? rtt_without_pmf->valueint : 0,
+        mpquic_ip ? true : false,
+        mpquic_ip ? mpquic_ip->valueint : 0,
+        mpquic_e ? true : false,
+        mpquic_e ? mpquic_e->valueint : 0
     );
 
     return atsss_capability_local_var;

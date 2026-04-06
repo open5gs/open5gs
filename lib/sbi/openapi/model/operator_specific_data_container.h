@@ -12,30 +12,30 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "operator_specific_data_container_value.h"
+typedef struct OpenAPI_operator_specific_data_container_s OpenAPI_operator_specific_data_container_t;
+#include "any_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_operator_specific_data_container_s OpenAPI_operator_specific_data_container_t;
 typedef enum { OpenAPI_operator_specific_data_container_DATATYPE_NULL = 0, OpenAPI_operator_specific_data_container_DATATYPE_string, OpenAPI_operator_specific_data_container_DATATYPE_integer, OpenAPI_operator_specific_data_container_DATATYPE_number, OpenAPI_operator_specific_data_container_DATATYPE_boolean, OpenAPI_operator_specific_data_container_DATATYPE_object, OpenAPI_operator_specific_data_container_DATATYPE_array } OpenAPI_operator_specific_data_container_data_type_e;
 
 char* OpenAPI_operator_specific_data_container_data_type_ToString(OpenAPI_operator_specific_data_container_data_type_e data_type);
 
 OpenAPI_operator_specific_data_container_data_type_e OpenAPI_operator_specific_data_container_data_type_FromString(char* data_type);
-typedef struct OpenAPI_operator_specific_data_container_s {
+struct OpenAPI_operator_specific_data_container_s {
     OpenAPI_operator_specific_data_container_data_type_e data_type;
     char *data_type_definition;
-    struct OpenAPI_operator_specific_data_container_value_s *value;
+    OpenAPI_any_type_t *value;
     char *supported_features;
     OpenAPI_list_t *reset_ids;
-} OpenAPI_operator_specific_data_container_t;
+};
 
 OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_container_create(
     OpenAPI_operator_specific_data_container_data_type_e data_type,
     char *data_type_definition,
-    OpenAPI_operator_specific_data_container_value_t *value,
+    OpenAPI_any_type_t *value,
     char *supported_features,
     OpenAPI_list_t *reset_ids
 );

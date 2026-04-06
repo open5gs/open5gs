@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_small_data_rate_status_info_s OpenAPI_small_data_rate_status_info_t;
 #include "small_data_rate_status.h"
 #include "snssai.h"
 
@@ -19,12 +20,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_small_data_rate_status_info_s OpenAPI_small_data_rate_status_info_t;
-typedef struct OpenAPI_small_data_rate_status_info_s {
+struct OpenAPI_small_data_rate_status_info_s {
     struct OpenAPI_snssai_s *snssai;
     char *dnn;
     struct OpenAPI_small_data_rate_status_s *small_data_rate_status;
-} OpenAPI_small_data_rate_status_info_t;
+};
 
 OpenAPI_small_data_rate_status_info_t *OpenAPI_small_data_rate_status_info_create(
     OpenAPI_snssai_t *snssai,

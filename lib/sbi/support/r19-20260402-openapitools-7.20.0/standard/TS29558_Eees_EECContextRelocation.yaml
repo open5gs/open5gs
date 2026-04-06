@@ -1,0 +1,285 @@
+openapi: 3.0.0
+
+info:
+  title: EES EEC Context Relocation API
+  version: 1.2.0
+  description: |
+    API for EEC Context Relocation.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.558 V19.5.0 Enabling Edge Applications;
+    Application Programming Interface (API) specification; Stage 3
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.558/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/eees-eeccontextreloc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.558.
+
+paths:
+  /eec-contexts:
+    post:
+      summary: Push EEC Context information.
+      operationId: PushEecContexts
+      tags:
+        - EEC contexts (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EECContextPush'
+      responses:
+        '200':
+          description: >
+            OK. The EEC context has been successfully pushed to the EES and related
+            information is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EECContextPushRes'
+        '204':
+          description: No Content. The EEC context has been successfully pushed to the EES.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    get:
+      summary: Pull EEC Context information.
+      operationId: PullEecContexts
+      tags:
+        - EEC contexts (Collection)
+      parameters:
+        - name: ees-id
+          in: query
+          description: Unique identifier of the requesting entity.
+          required: true
+          schema:
+            type: string
+        - name: eec-cntx-id
+          in: query
+          description: Unique identifier of the EEC context.
+          required: true
+          schema:
+            type: string
+        - name: sess-cntxs
+          in: query
+          description: List of service session context information being requested.
+          required: false
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionContexts'
+      responses:
+        '200':
+          description: >
+            OK. The EEC context information matching the query parameters in the request
+            shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EECContext'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    SessionContexts:
+      type: object
+      description: Represents the list of service session contexts information.
+      properties:
+        sessCntxs:
+          type: array
+          items:
+            $ref: '#/components/schemas/IndividualSessionContext'
+          minItems: 1
+          description: List of service session contexts information.
+      required:
+        - sessCntxs
+
+    IndividualSessionContext:
+      type: object
+      description: Represents a single service session context information.
+      properties:
+        easId:
+          type: string
+          description: Identifier of the Application Server providing the application services.
+        endPt:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        acId:
+          type: string
+          description: Identifier of the AC for which the service session information is provided.
+        acrList:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          minItems: 1
+          description: The list of selected ACR scenarios.
+        eecId:
+          type: string
+        appGrpId:
+          type: string
+      required:
+        - easId
+        - endPt
+
+    EECContextPush:
+      type: object
+      description: Represents the EEC context push request data.
+      properties:
+        eesId:
+          type: string
+          description: Identifier of the entity that is pushing the EEC context information.
+        eecCntx:
+          $ref: '#/components/schemas/EECContext'
+        tgtEas:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        acrScenariosSelReq:
+          type: boolean
+          description: >
+            Set to true if the EEC indicates to select the ACR scenarisos.
+            Set to false if it is not required to select the ACR scenarios.
+            The default value when omitted is false.
+        eecCntxs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EECContext'
+          minItems: 1
+      required:
+        - eesId
+        - eecCntx
+
+    EECContextPushRes:
+      type: object
+      description: Represents the EEC context push response data.
+      properties:
+        implReg:
+          $ref: '#/components/schemas/ImplicitRegDetails'
+        selAcrScenariosList:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          minItems: 1
+
+    ImplicitRegDetails:
+      type: object
+      description: Represents the EEC implicit registration details.
+      properties:
+        regId:
+          type: string
+          description: Identifier of the EEC registration.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - regId
+
+    EECContext:
+      type: object
+      description: Represents the EEC context information.
+      properties:
+        eecId:
+          type: string
+          description: Unique idenitfier of the EEC.
+        cntxId:
+          type: string
+          description: Unique idenitfier assigned to the EEC context.
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        e1Subs:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: List of subscription IDs for the capability expsoure for the EEC ID.
+        ueLoc:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        acProfs:
+          type: array
+          items:
+            $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACProfile'
+          minItems: 1
+          description: List AC profiles.
+        sessCntxs:
+            $ref: '#/components/schemas/SessionContexts'
+        eecSrvContSupp:
+            $ref: '#/components/schemas/EECSrvContinuitySupport'
+        ueMobSuppInd:
+          type: boolean
+          description: >
+            Set to true to indicate that UE Mobility support is required.
+            Set to false to indicate that UE mobility support is not required.
+            The default value when omitted is false.
+      required:
+        - eecId
+        - cntxId
+
+    EECSrvContinuitySupport:
+      type: object
+      description: Represents the EEC service continuity support details.
+      properties:
+        srvContSupp:
+          type: boolean
+          description: >
+            Set to true if EEC supports service continuity.
+            Set to false if EEC does not supports service continuity.
+        acrScenarios:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          minItems: 1
+          description: The list of ACR scenarios supported by EEC.
+      required:
+        - srvContSupp

@@ -1,7 +1,7 @@
 /*
  * steering_container.h
  *
- * 
+ * Contains Steering Info or a secured packet
  */
 
 #ifndef _OpenAPI_steering_container_H_
@@ -12,17 +12,21 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_steering_container_s OpenAPI_steering_container_t;
 #include "steering_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_steering_container_s OpenAPI_steering_container_t;
-typedef struct OpenAPI_steering_container_s {
-} OpenAPI_steering_container_t;
+struct OpenAPI_steering_container_s {
+    OpenAPI_list_t *steering_info_list;
+    char *secured_packet;
+};
 
 OpenAPI_steering_container_t *OpenAPI_steering_container_create(
+    OpenAPI_list_t *steering_info_list,
+    char *secured_packet
 );
 void OpenAPI_steering_container_free(OpenAPI_steering_container_t *steering_container);
 OpenAPI_steering_container_t *OpenAPI_steering_container_parseFromJSON(cJSON *steering_containerJSON);

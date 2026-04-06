@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_allowed_snssai_s OpenAPI_allowed_snssai_t;
 #include "nsi_information.h"
 #include "snssai.h"
 
@@ -19,12 +20,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_allowed_snssai_s OpenAPI_allowed_snssai_t;
-typedef struct OpenAPI_allowed_snssai_s {
+struct OpenAPI_allowed_snssai_s {
     struct OpenAPI_snssai_s *allowed_snssai;
     OpenAPI_list_t *nsi_information_list;
     struct OpenAPI_snssai_s *mapped_home_snssai;
-} OpenAPI_allowed_snssai_t;
+};
 
 OpenAPI_allowed_snssai_t *OpenAPI_allowed_snssai_create(
     OpenAPI_snssai_t *allowed_snssai,

@@ -1,0 +1,347 @@
+openapi: 3.0.0
+
+info:
+  title: NSCE Server Edge Service Continuity Service
+  version: 1.1.0
+  description: |
+    NSCE Server Edge Service Continuity Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.435 V19.3.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Network Slice Capability Enablement (NSCE) Server Service(s); Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.435/
+
+servers:
+  - url: '{apiRoot}/nsce-esc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /request:
+    post:
+      summary: Enables to request Edge service continuity requirement.
+      operationId: EdgeSCRequirementReq
+      tags:
+        - Edge Service Continuity Requirement Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EdgeSCRequirementReq'
+      responses:
+        '204':
+          description: >
+            No Content. The Edge service continuity requirement request is successfully
+            received and processed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        EdgeSCRequirementNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EdgeSCRequirementNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Edge Service Continuity requirement Notification
+                    is successfully received and processed.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /negotiate:
+    post:
+      summary: Enables to request Edge service continuity negotiation.
+      operationId: EdgeSCNegotiationReq
+      tags:
+        - Edge Service Continuity Negotiation Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EdgeSCNegotiationReq'
+      responses:
+        '204':
+          description: >
+            No Content. The Edge service continuity Negotiation request is successfully
+            received and processed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        EdgeSCNegotiationNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EdgeSCNegotiationNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Edge Service Continuity Negotiation Notification is
+                    successfully received and processed.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    EdgeSCRequirementReq:
+      description: >
+        Represents the parameters to request Edge Service Continuity Requirement.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        valServId:
+          type: string
+          description: >
+            The identifier of the VAL service for which the requirement request applies.
+        valUeIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: >
+            The list of VAL UE IDs for which the requirement request applies.
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        servContReq:
+          $ref: 'TS29435_NSCE_InterPLMNContinuity.yaml#/components/schemas/ServContReq'
+        targetServArea:
+          $ref: 'TS29435_NSCE_NSInfoDelivery.yaml#/components/schemas/ServArea'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - valServId
+        - servContReq
+        - notifUri
+
+    EdgeSCRequirementNotif:
+      description: >
+        Represents an Edge Service Continuity Requirement Notification.
+      type: object
+      properties:
+        valServId:
+          type: string
+          description: >
+            The identifier of the VAL service for which the requirement request applies.
+        valUeIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: >
+            The list of VAL UE IDs for which the requirement request applies.
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        tgtNsceServId:
+          type: string
+          description: >
+            Contains the identifier of the target NSCE Server.
+        tgtNsceAddr:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        targetServArea:
+          $ref: 'TS29435_NSCE_NSInfoDelivery.yaml#/components/schemas/ServArea'
+      required:
+        - valServId
+        - netSliceId
+        - tgtNsceServId
+        - tgtNsceAddr
+        - targetServArea
+
+    EdgeSCNegotiationReq:
+      description: >
+        Represents the parameters to request Edge Service Continuity Negotiation.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        valServId:
+          type: string
+          description: >
+            The identifier of the VAL service for which the negotiation request applies.
+        valUeIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: >
+            The list of VAL UE IDs for which the Negotiation request applies.
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        servContReq:
+          $ref: 'TS29435_NSCE_InterPLMNContinuity.yaml#/components/schemas/ServContReq'
+        appQoSReqs:
+          $ref: 'TS29435_NSCE_InterPLMNContinuity.yaml#/components/schemas/AppReqs'
+        triggerAction:
+          $ref: '#/components/schemas/TriggerAction'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - valServId
+        - servContReq
+        - netSliceId
+        - notifUri
+
+    EdgeSCNegotiationNotif:
+      description: >
+        Represents an Edge Service Continuity Negotiation Notification.
+      type: object
+      properties:
+        valServId:
+          type: string
+          description: >
+            The identifier of the VAL service for which the negotiation request applies.
+        triggerAction:
+          $ref: '#/components/schemas/TriggerAction'
+      required:
+        - valServId
+        - triggerAction
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    TriggerAction:
+      anyOf:
+      - type: string
+        enum:
+           - SLICE_LIFECYCLE_CHG
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the trigger action.  
+        Possible values are:
+        - SLICE_LIFECYCLE_CHG: Indicates that the trigger action is slice lifecycle change.

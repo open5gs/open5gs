@@ -12,16 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "av5_ghe_aka.h"
-#include "av_eap_aka_prime.h"
+typedef struct OpenAPI_authentication_vector_s OpenAPI_authentication_vector_t;
 #include "av_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_authentication_vector_s OpenAPI_authentication_vector_t;
-typedef struct OpenAPI_authentication_vector_s {
+struct OpenAPI_authentication_vector_s {
     OpenAPI_av_type_e av_type;
     char *rand;
     char *xres;
@@ -30,7 +28,7 @@ typedef struct OpenAPI_authentication_vector_s {
     char *ik_prime;
     char *xres_star;
     char *kausf;
-} OpenAPI_authentication_vector_t;
+};
 
 OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_create(
     OpenAPI_av_type_e av_type,

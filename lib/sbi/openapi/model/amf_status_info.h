@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_amf_status_info_s OpenAPI_amf_status_info_t;
 #include "guami.h"
 #include "status_change.h"
 
@@ -19,13 +20,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_amf_status_info_s OpenAPI_amf_status_info_t;
-typedef struct OpenAPI_amf_status_info_s {
+struct OpenAPI_amf_status_info_s {
     OpenAPI_list_t *guami_list;
     OpenAPI_status_change_e status_change;
     char *target_amf_removal;
     char *target_amf_failure;
-} OpenAPI_amf_status_info_t;
+};
 
 OpenAPI_amf_status_info_t *OpenAPI_amf_status_info_create(
     OpenAPI_list_t *guami_list,

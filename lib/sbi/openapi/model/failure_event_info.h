@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_failure_event_info_s OpenAPI_failure_event_info_t;
 #include "nwdaf_event.h"
 #include "nwdaf_failure_code.h"
 
@@ -19,15 +20,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_failure_event_info_s OpenAPI_failure_event_info_t;
-typedef struct OpenAPI_failure_event_info_s {
-    struct OpenAPI_nwdaf_event_s *event;
-    struct OpenAPI_nwdaf_failure_code_s *failure_code;
-} OpenAPI_failure_event_info_t;
+struct OpenAPI_failure_event_info_s {
+    OpenAPI_nwdaf_event_e event;
+    OpenAPI_nwdaf_failure_code_e failure_code;
+};
 
 OpenAPI_failure_event_info_t *OpenAPI_failure_event_info_create(
-    OpenAPI_nwdaf_event_t *event,
-    OpenAPI_nwdaf_failure_code_t *failure_code
+    OpenAPI_nwdaf_event_e event,
+    OpenAPI_nwdaf_failure_code_e failure_code
 );
 void OpenAPI_failure_event_info_free(OpenAPI_failure_event_info_t *failure_event_info);
 OpenAPI_failure_event_info_t *OpenAPI_failure_event_info_parseFromJSON(cJSON *failure_event_infoJSON);

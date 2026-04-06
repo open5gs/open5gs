@@ -30,7 +30,7 @@ OpenAPI_operator_specific_data_container_data_type_e OpenAPI_data_typeoperator_s
 OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_container_create(
     OpenAPI_operator_specific_data_container_data_type_e data_type,
     char *data_type_definition,
-    OpenAPI_operator_specific_data_container_value_t *value,
+    OpenAPI_any_type_t *value,
     char *supported_features,
     OpenAPI_list_t *reset_ids
 )
@@ -59,7 +59,7 @@ void OpenAPI_operator_specific_data_container_free(OpenAPI_operator_specific_dat
         operator_specific_data_container->data_type_definition = NULL;
     }
     if (operator_specific_data_container->value) {
-        OpenAPI_operator_specific_data_container_value_free(operator_specific_data_container->value);
+        OpenAPI_any_type_free(operator_specific_data_container->value);
         operator_specific_data_container->value = NULL;
     }
     if (operator_specific_data_container->supported_features) {
@@ -107,12 +107,12 @@ cJSON *OpenAPI_operator_specific_data_container_convertToJSON(OpenAPI_operator_s
         ogs_error("OpenAPI_operator_specific_data_container_convertToJSON() failed [value]");
         return NULL;
     }
-    cJSON *value_local_JSON = OpenAPI_operator_specific_data_container_value_convertToJSON(operator_specific_data_container->value);
-    if (value_local_JSON == NULL) {
+    cJSON *value_object = OpenAPI_any_type_convertToJSON(operator_specific_data_container->value);
+    if (value_object == NULL) {
         ogs_error("OpenAPI_operator_specific_data_container_convertToJSON() failed [value]");
         goto end;
     }
-    cJSON_AddItemToObject(item, "value", value_local_JSON);
+    cJSON_AddItemToObject(item, "value", value_object);
     if (item->child == NULL) {
         ogs_error("OpenAPI_operator_specific_data_container_convertToJSON() failed [value]");
         goto end;
@@ -151,7 +151,7 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
     OpenAPI_operator_specific_data_container_data_type_e data_typeVariable = 0;
     cJSON *data_type_definition = NULL;
     cJSON *value = NULL;
-    OpenAPI_operator_specific_data_container_value_t *value_local_nonprim = NULL;
+    OpenAPI_any_type_t *value_local_object = NULL;
     cJSON *supported_features = NULL;
     cJSON *reset_ids = NULL;
     OpenAPI_list_t *reset_idsList = NULL;
@@ -179,11 +179,7 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
         ogs_error("OpenAPI_operator_specific_data_container_parseFromJSON() failed [value]");
         goto end;
     }
-    value_local_nonprim = OpenAPI_operator_specific_data_container_value_parseFromJSON(value);
-    if (!value_local_nonprim) {
-        ogs_error("OpenAPI_operator_specific_data_container_value_parseFromJSON failed [value]");
-        goto end;
-    }
+    value_local_object = OpenAPI_any_type_parseFromJSON(value);
 
     supported_features = cJSON_GetObjectItemCaseSensitive(operator_specific_data_containerJSON, "supportedFeatures");
     if (supported_features) {
@@ -217,16 +213,16 @@ OpenAPI_operator_specific_data_container_t *OpenAPI_operator_specific_data_conta
     operator_specific_data_container_local_var = OpenAPI_operator_specific_data_container_create (
         data_typeVariable,
         data_type_definition && !cJSON_IsNull(data_type_definition) ? ogs_strdup(data_type_definition->valuestring) : NULL,
-        value_local_nonprim,
+        value_local_object,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         reset_ids ? reset_idsList : NULL
     );
 
     return operator_specific_data_container_local_var;
 end:
-    if (value_local_nonprim) {
-        OpenAPI_operator_specific_data_container_value_free(value_local_nonprim);
-        value_local_nonprim = NULL;
+    if (value_local_object) {
+        OpenAPI_any_type_free(value_local_object);
+        value_local_object = NULL;
     }
     if (reset_idsList) {
         OpenAPI_list_for_each(reset_idsList, node) {

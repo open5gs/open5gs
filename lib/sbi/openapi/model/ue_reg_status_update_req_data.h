@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_reg_status_update_req_data_s OpenAPI_ue_reg_status_update_req_data_t;
 #include "release_session_info.h"
 #include "smf_change_info.h"
 #include "ue_context_transfer_status.h"
@@ -20,8 +21,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_reg_status_update_req_data_s OpenAPI_ue_reg_status_update_req_data_t;
-typedef struct OpenAPI_ue_reg_status_update_req_data_s {
+struct OpenAPI_ue_reg_status_update_req_data_s {
     OpenAPI_ue_context_transfer_status_e transfer_status;
     OpenAPI_list_t *to_release_session_list;
     bool is_pcf_reselected_ind;
@@ -29,7 +29,7 @@ typedef struct OpenAPI_ue_reg_status_update_req_data_s {
     OpenAPI_list_t *smf_change_info_list;
     OpenAPI_list_t *analytics_not_used_list;
     OpenAPI_list_t *to_release_session_info;
-} OpenAPI_ue_reg_status_update_req_data_t;
+};
 
 OpenAPI_ue_reg_status_update_req_data_t *OpenAPI_ue_reg_status_update_req_data_create(
     OpenAPI_ue_context_transfer_status_e transfer_status,

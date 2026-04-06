@@ -1,0 +1,57 @@
+/*
+ * presence_info_1.h
+ *
+ * If the additionalPraId IE is present, this IE shall state the presence information of the UE for the individual PRA identified by the additionalPraId IE;  If the additionalPraId IE is not present, this IE shall state the presence information of the UE for the PRA identified by the praId IE. 
+ */
+
+#ifndef _OpenAPI_presence_info_1_H_
+#define _OpenAPI_presence_info_1_H_
+
+#include <string.h>
+#include "../external/cJSON.h"
+#include "../include/list.h"
+#include "../include/keyValuePair.h"
+#include "../include/binary.h"
+typedef struct OpenAPI_presence_info_1_s OpenAPI_presence_info_1_t;
+#include "ecgi.h"
+#include "global_ran_node_id.h"
+#include "ncgi.h"
+#include "presence_state.h"
+#include "tai.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct OpenAPI_presence_info_1_s {
+    char *pra_id;
+    char *additional_pra_id;
+    OpenAPI_presence_state_e presence_state;
+    OpenAPI_list_t *tracking_area_list;
+    OpenAPI_list_t *ecgi_list;
+    OpenAPI_list_t *ncgi_list;
+    OpenAPI_list_t *global_ran_node_id_list;
+    OpenAPI_list_t *globale_nb_id_list;
+};
+
+OpenAPI_presence_info_1_t *OpenAPI_presence_info_1_create(
+    char *pra_id,
+    char *additional_pra_id,
+    OpenAPI_presence_state_e presence_state,
+    OpenAPI_list_t *tracking_area_list,
+    OpenAPI_list_t *ecgi_list,
+    OpenAPI_list_t *ncgi_list,
+    OpenAPI_list_t *global_ran_node_id_list,
+    OpenAPI_list_t *globale_nb_id_list
+);
+void OpenAPI_presence_info_1_free(OpenAPI_presence_info_1_t *presence_info_1);
+OpenAPI_presence_info_1_t *OpenAPI_presence_info_1_parseFromJSON(cJSON *presence_info_1JSON);
+cJSON *OpenAPI_presence_info_1_convertToJSON(OpenAPI_presence_info_1_t *presence_info_1);
+OpenAPI_presence_info_1_t *OpenAPI_presence_info_1_copy(OpenAPI_presence_info_1_t *dst, OpenAPI_presence_info_1_t *src);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _OpenAPI_presence_info_1_H_ */
+

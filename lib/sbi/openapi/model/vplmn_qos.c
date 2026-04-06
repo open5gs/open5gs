@@ -7,12 +7,15 @@
 OpenAPI_vplmn_qos_t *OpenAPI_vplmn_qos_create(
     bool is__5qi,
     int _5qi,
+    OpenAPI_list_t *add5_qi_list,
     OpenAPI_arp_t *arp,
     OpenAPI_ambr_t *session_ambr,
     char *max_fbr_dl,
     char *max_fbr_ul,
     char *gua_fbr_dl,
-    char *gua_fbr_ul
+    char *gua_fbr_ul,
+    bool is__5qi_pl,
+    int _5qi_pl
 )
 {
     OpenAPI_vplmn_qos_t *vplmn_qos_local_var = ogs_malloc(sizeof(OpenAPI_vplmn_qos_t));
@@ -20,12 +23,15 @@ OpenAPI_vplmn_qos_t *OpenAPI_vplmn_qos_create(
 
     vplmn_qos_local_var->is__5qi = is__5qi;
     vplmn_qos_local_var->_5qi = _5qi;
+    vplmn_qos_local_var->add5_qi_list = add5_qi_list;
     vplmn_qos_local_var->arp = arp;
     vplmn_qos_local_var->session_ambr = session_ambr;
     vplmn_qos_local_var->max_fbr_dl = max_fbr_dl;
     vplmn_qos_local_var->max_fbr_ul = max_fbr_ul;
     vplmn_qos_local_var->gua_fbr_dl = gua_fbr_dl;
     vplmn_qos_local_var->gua_fbr_ul = gua_fbr_ul;
+    vplmn_qos_local_var->is__5qi_pl = is__5qi_pl;
+    vplmn_qos_local_var->_5qi_pl = _5qi_pl;
 
     return vplmn_qos_local_var;
 }
@@ -36,6 +42,13 @@ void OpenAPI_vplmn_qos_free(OpenAPI_vplmn_qos_t *vplmn_qos)
 
     if (NULL == vplmn_qos) {
         return;
+    }
+    if (vplmn_qos->add5_qi_list) {
+        OpenAPI_list_for_each(vplmn_qos->add5_qi_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(vplmn_qos->add5_qi_list);
+        vplmn_qos->add5_qi_list = NULL;
     }
     if (vplmn_qos->arp) {
         OpenAPI_arp_free(vplmn_qos->arp);
@@ -79,6 +92,24 @@ cJSON *OpenAPI_vplmn_qos_convertToJSON(OpenAPI_vplmn_qos_t *vplmn_qos)
     if (cJSON_AddNumberToObject(item, "5qi", vplmn_qos->_5qi) == NULL) {
         ogs_error("OpenAPI_vplmn_qos_convertToJSON() failed [_5qi]");
         goto end;
+    }
+    }
+
+    if (vplmn_qos->add5_qi_list) {
+    cJSON *add5_qi_listList = cJSON_AddArrayToObject(item, "add5QiList");
+    if (add5_qi_listList == NULL) {
+        ogs_error("OpenAPI_vplmn_qos_convertToJSON() failed [add5_qi_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(vplmn_qos->add5_qi_list, node) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_vplmn_qos_convertToJSON() failed [add5_qi_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(add5_qi_listList, "", *(double *)node->data) == NULL) {
+            ogs_error("OpenAPI_vplmn_qos_convertToJSON() failed [add5_qi_list]");
+            goto end;
+        }
     }
     }
 
@@ -136,6 +167,13 @@ cJSON *OpenAPI_vplmn_qos_convertToJSON(OpenAPI_vplmn_qos_t *vplmn_qos)
     }
     }
 
+    if (vplmn_qos->is__5qi_pl) {
+    if (cJSON_AddNumberToObject(item, "5qiPL", vplmn_qos->_5qi_pl) == NULL) {
+        ogs_error("OpenAPI_vplmn_qos_convertToJSON() failed [_5qi_pl]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -145,6 +183,8 @@ OpenAPI_vplmn_qos_t *OpenAPI_vplmn_qos_parseFromJSON(cJSON *vplmn_qosJSON)
     OpenAPI_vplmn_qos_t *vplmn_qos_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *_5qi = NULL;
+    cJSON *add5_qi_list = NULL;
+    OpenAPI_list_t *add5_qi_listList = NULL;
     cJSON *arp = NULL;
     OpenAPI_arp_t *arp_local_nonprim = NULL;
     cJSON *session_ambr = NULL;
@@ -153,12 +193,40 @@ OpenAPI_vplmn_qos_t *OpenAPI_vplmn_qos_parseFromJSON(cJSON *vplmn_qosJSON)
     cJSON *max_fbr_ul = NULL;
     cJSON *gua_fbr_dl = NULL;
     cJSON *gua_fbr_ul = NULL;
+    cJSON *_5qi_pl = NULL;
     _5qi = cJSON_GetObjectItemCaseSensitive(vplmn_qosJSON, "5qi");
     if (_5qi) {
     if (!cJSON_IsNumber(_5qi)) {
         ogs_error("OpenAPI_vplmn_qos_parseFromJSON() failed [_5qi]");
         goto end;
     }
+    }
+
+    add5_qi_list = cJSON_GetObjectItemCaseSensitive(vplmn_qosJSON, "add5QiList");
+    if (add5_qi_list) {
+        cJSON *add5_qi_list_local = NULL;
+        if (!cJSON_IsArray(add5_qi_list)) {
+            ogs_error("OpenAPI_vplmn_qos_parseFromJSON() failed [add5_qi_list]");
+            goto end;
+        }
+
+        add5_qi_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(add5_qi_list_local, add5_qi_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsNumber(add5_qi_list_local)) {
+                ogs_error("OpenAPI_vplmn_qos_parseFromJSON() failed [add5_qi_list]");
+                goto end;
+            }
+            localDouble = (double *)ogs_calloc(1, sizeof(double));
+            if (!localDouble) {
+                ogs_error("OpenAPI_vplmn_qos_parseFromJSON() failed [add5_qi_list]");
+                goto end;
+            }
+            *localDouble = add5_qi_list_local->valuedouble;
+            OpenAPI_list_add(add5_qi_listList, localDouble);
+        }
     }
 
     arp = cJSON_GetObjectItemCaseSensitive(vplmn_qosJSON, "arp");
@@ -211,19 +279,37 @@ OpenAPI_vplmn_qos_t *OpenAPI_vplmn_qos_parseFromJSON(cJSON *vplmn_qosJSON)
     }
     }
 
+    _5qi_pl = cJSON_GetObjectItemCaseSensitive(vplmn_qosJSON, "5qiPL");
+    if (_5qi_pl) {
+    if (!cJSON_IsNumber(_5qi_pl)) {
+        ogs_error("OpenAPI_vplmn_qos_parseFromJSON() failed [_5qi_pl]");
+        goto end;
+    }
+    }
+
     vplmn_qos_local_var = OpenAPI_vplmn_qos_create (
         _5qi ? true : false,
         _5qi ? _5qi->valuedouble : 0,
+        add5_qi_list ? add5_qi_listList : NULL,
         arp ? arp_local_nonprim : NULL,
         session_ambr ? session_ambr_local_nonprim : NULL,
         max_fbr_dl && !cJSON_IsNull(max_fbr_dl) ? ogs_strdup(max_fbr_dl->valuestring) : NULL,
         max_fbr_ul && !cJSON_IsNull(max_fbr_ul) ? ogs_strdup(max_fbr_ul->valuestring) : NULL,
         gua_fbr_dl && !cJSON_IsNull(gua_fbr_dl) ? ogs_strdup(gua_fbr_dl->valuestring) : NULL,
-        gua_fbr_ul && !cJSON_IsNull(gua_fbr_ul) ? ogs_strdup(gua_fbr_ul->valuestring) : NULL
+        gua_fbr_ul && !cJSON_IsNull(gua_fbr_ul) ? ogs_strdup(gua_fbr_ul->valuestring) : NULL,
+        _5qi_pl ? true : false,
+        _5qi_pl ? _5qi_pl->valuedouble : 0
     );
 
     return vplmn_qos_local_var;
 end:
+    if (add5_qi_listList) {
+        OpenAPI_list_for_each(add5_qi_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(add5_qi_listList);
+        add5_qi_listList = NULL;
+    }
     if (arp_local_nonprim) {
         OpenAPI_arp_free(arp_local_nonprim);
         arp_local_nonprim = NULL;

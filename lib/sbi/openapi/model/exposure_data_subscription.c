@@ -6,20 +6,28 @@
 
 OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_create(
     char *notification_uri,
+    char *notif_id,
     OpenAPI_list_t *monitored_resource_uris,
     char *expiry,
     char *supported_features,
-    OpenAPI_list_t *reset_ids
+    OpenAPI_list_t *reset_ids,
+    bool is_imm_rep,
+    int imm_rep,
+    OpenAPI_list_t *imm_reports
 )
 {
     OpenAPI_exposure_data_subscription_t *exposure_data_subscription_local_var = ogs_malloc(sizeof(OpenAPI_exposure_data_subscription_t));
     ogs_assert(exposure_data_subscription_local_var);
 
     exposure_data_subscription_local_var->notification_uri = notification_uri;
+    exposure_data_subscription_local_var->notif_id = notif_id;
     exposure_data_subscription_local_var->monitored_resource_uris = monitored_resource_uris;
     exposure_data_subscription_local_var->expiry = expiry;
     exposure_data_subscription_local_var->supported_features = supported_features;
     exposure_data_subscription_local_var->reset_ids = reset_ids;
+    exposure_data_subscription_local_var->is_imm_rep = is_imm_rep;
+    exposure_data_subscription_local_var->imm_rep = imm_rep;
+    exposure_data_subscription_local_var->imm_reports = imm_reports;
 
     return exposure_data_subscription_local_var;
 }
@@ -34,6 +42,10 @@ void OpenAPI_exposure_data_subscription_free(OpenAPI_exposure_data_subscription_
     if (exposure_data_subscription->notification_uri) {
         ogs_free(exposure_data_subscription->notification_uri);
         exposure_data_subscription->notification_uri = NULL;
+    }
+    if (exposure_data_subscription->notif_id) {
+        ogs_free(exposure_data_subscription->notif_id);
+        exposure_data_subscription->notif_id = NULL;
     }
     if (exposure_data_subscription->monitored_resource_uris) {
         OpenAPI_list_for_each(exposure_data_subscription->monitored_resource_uris, node) {
@@ -57,6 +69,13 @@ void OpenAPI_exposure_data_subscription_free(OpenAPI_exposure_data_subscription_
         OpenAPI_list_free(exposure_data_subscription->reset_ids);
         exposure_data_subscription->reset_ids = NULL;
     }
+    if (exposure_data_subscription->imm_reports) {
+        OpenAPI_list_for_each(exposure_data_subscription->imm_reports, node) {
+            OpenAPI_exposure_data_change_notification_free(node->data);
+        }
+        OpenAPI_list_free(exposure_data_subscription->imm_reports);
+        exposure_data_subscription->imm_reports = NULL;
+    }
     ogs_free(exposure_data_subscription);
 }
 
@@ -78,6 +97,13 @@ cJSON *OpenAPI_exposure_data_subscription_convertToJSON(OpenAPI_exposure_data_su
     if (cJSON_AddStringToObject(item, "notificationUri", exposure_data_subscription->notification_uri) == NULL) {
         ogs_error("OpenAPI_exposure_data_subscription_convertToJSON() failed [notification_uri]");
         goto end;
+    }
+
+    if (exposure_data_subscription->notif_id) {
+    if (cJSON_AddStringToObject(item, "notifId", exposure_data_subscription->notif_id) == NULL) {
+        ogs_error("OpenAPI_exposure_data_subscription_convertToJSON() failed [notif_id]");
+        goto end;
+    }
     }
 
     if (!exposure_data_subscription->monitored_resource_uris) {
@@ -124,6 +150,29 @@ cJSON *OpenAPI_exposure_data_subscription_convertToJSON(OpenAPI_exposure_data_su
     }
     }
 
+    if (exposure_data_subscription->is_imm_rep) {
+    if (cJSON_AddBoolToObject(item, "immRep", exposure_data_subscription->imm_rep) == NULL) {
+        ogs_error("OpenAPI_exposure_data_subscription_convertToJSON() failed [imm_rep]");
+        goto end;
+    }
+    }
+
+    if (exposure_data_subscription->imm_reports) {
+    cJSON *imm_reportsList = cJSON_AddArrayToObject(item, "immReports");
+    if (imm_reportsList == NULL) {
+        ogs_error("OpenAPI_exposure_data_subscription_convertToJSON() failed [imm_reports]");
+        goto end;
+    }
+    OpenAPI_list_for_each(exposure_data_subscription->imm_reports, node) {
+        cJSON *itemLocal = OpenAPI_exposure_data_change_notification_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_exposure_data_subscription_convertToJSON() failed [imm_reports]");
+            goto end;
+        }
+        cJSON_AddItemToArray(imm_reportsList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -133,12 +182,16 @@ OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_parseFr
     OpenAPI_exposure_data_subscription_t *exposure_data_subscription_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *notification_uri = NULL;
+    cJSON *notif_id = NULL;
     cJSON *monitored_resource_uris = NULL;
     OpenAPI_list_t *monitored_resource_urisList = NULL;
     cJSON *expiry = NULL;
     cJSON *supported_features = NULL;
     cJSON *reset_ids = NULL;
     OpenAPI_list_t *reset_idsList = NULL;
+    cJSON *imm_rep = NULL;
+    cJSON *imm_reports = NULL;
+    OpenAPI_list_t *imm_reportsList = NULL;
     notification_uri = cJSON_GetObjectItemCaseSensitive(exposure_data_subscriptionJSON, "notificationUri");
     if (!notification_uri) {
         ogs_error("OpenAPI_exposure_data_subscription_parseFromJSON() failed [notification_uri]");
@@ -147,6 +200,14 @@ OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_parseFr
     if (!cJSON_IsString(notification_uri)) {
         ogs_error("OpenAPI_exposure_data_subscription_parseFromJSON() failed [notification_uri]");
         goto end;
+    }
+
+    notif_id = cJSON_GetObjectItemCaseSensitive(exposure_data_subscriptionJSON, "notifId");
+    if (notif_id) {
+    if (!cJSON_IsString(notif_id) && !cJSON_IsNull(notif_id)) {
+        ogs_error("OpenAPI_exposure_data_subscription_parseFromJSON() failed [notif_id]");
+        goto end;
+    }
     }
 
     monitored_resource_uris = cJSON_GetObjectItemCaseSensitive(exposure_data_subscriptionJSON, "monitoredResourceUris");
@@ -209,12 +270,48 @@ OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_parseFr
         }
     }
 
+    imm_rep = cJSON_GetObjectItemCaseSensitive(exposure_data_subscriptionJSON, "immRep");
+    if (imm_rep) {
+    if (!cJSON_IsBool(imm_rep)) {
+        ogs_error("OpenAPI_exposure_data_subscription_parseFromJSON() failed [imm_rep]");
+        goto end;
+    }
+    }
+
+    imm_reports = cJSON_GetObjectItemCaseSensitive(exposure_data_subscriptionJSON, "immReports");
+    if (imm_reports) {
+        cJSON *imm_reports_local = NULL;
+        if (!cJSON_IsArray(imm_reports)) {
+            ogs_error("OpenAPI_exposure_data_subscription_parseFromJSON() failed [imm_reports]");
+            goto end;
+        }
+
+        imm_reportsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(imm_reports_local, imm_reports) {
+            if (!cJSON_IsObject(imm_reports_local)) {
+                ogs_error("OpenAPI_exposure_data_subscription_parseFromJSON() failed [imm_reports]");
+                goto end;
+            }
+            OpenAPI_exposure_data_change_notification_t *imm_reportsItem = OpenAPI_exposure_data_change_notification_parseFromJSON(imm_reports_local);
+            if (!imm_reportsItem) {
+                ogs_error("No imm_reportsItem");
+                goto end;
+            }
+            OpenAPI_list_add(imm_reportsList, imm_reportsItem);
+        }
+    }
+
     exposure_data_subscription_local_var = OpenAPI_exposure_data_subscription_create (
         ogs_strdup(notification_uri->valuestring),
+        notif_id && !cJSON_IsNull(notif_id) ? ogs_strdup(notif_id->valuestring) : NULL,
         monitored_resource_urisList,
         expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
-        reset_ids ? reset_idsList : NULL
+        reset_ids ? reset_idsList : NULL,
+        imm_rep ? true : false,
+        imm_rep ? imm_rep->valueint : 0,
+        imm_reports ? imm_reportsList : NULL
     );
 
     return exposure_data_subscription_local_var;
@@ -232,6 +329,13 @@ end:
         }
         OpenAPI_list_free(reset_idsList);
         reset_idsList = NULL;
+    }
+    if (imm_reportsList) {
+        OpenAPI_list_for_each(imm_reportsList, node) {
+            OpenAPI_exposure_data_change_notification_free(node->data);
+        }
+        OpenAPI_list_free(imm_reportsList);
+        imm_reportsList = NULL;
     }
     return NULL;
 }

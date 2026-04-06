@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_n3ga_location_s OpenAPI_n3ga_location_t;
 #include "hfc_node_id.h"
 #include "line_type.h"
 #include "tai.h"
@@ -23,8 +24,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n3ga_location_s OpenAPI_n3ga_location_t;
-typedef struct OpenAPI_n3ga_location_s {
+struct OpenAPI_n3ga_location_s {
     struct OpenAPI_tai_s *n3gpp_tai;
     char *n3_iwf_id;
     char *ue_ipv4_addr;
@@ -38,7 +38,7 @@ typedef struct OpenAPI_n3ga_location_s {
     char *gli;
     OpenAPI_line_type_e w5gban_line_type;
     char *gci;
-} OpenAPI_n3ga_location_t;
+};
 
 OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_create(
     OpenAPI_tai_t *n3gpp_tai,

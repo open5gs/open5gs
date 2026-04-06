@@ -42,7 +42,8 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.service.name =
-        (char *)OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL;
+        OpenAPI_service_name_ToString(
+                OpenAPI_service_name_npcf_am_policy_control);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_POLICIES;
 
@@ -156,7 +157,8 @@ ogs_sbi_request_t *amf_npcf_am_policy_control_build_create(
     }
 
     PolicyAssociationRequest.service_name =
-        (char *)OGS_SBI_SERVICE_NAME_NAMF_CALLBACK;
+        OpenAPI_service_name_FromString(
+                (char *)OGS_SBI_SERVICE_NAME_NAMF_CALLBACK);
 
     PolicyAssociationRequest.supp_feat =
         ogs_uint64_to_string(amf_ue->am_policy_control_features);

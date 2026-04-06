@@ -12,15 +12,21 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_context_s OpenAPI_ue_context_t;
+#include "a2x_context.h"
+#include "am_policy_info_container.h"
 #include "ambr.h"
 #include "analytics_subscription.h"
 #include "area.h"
+#include "as_time_distribution_param.h"
 #include "cag_data.h"
 #include "core_network_type.h"
 #include "ec_restriction_data_wb.h"
 #include "eps_interworking_info.h"
 #include "ext_amf_event_subscription.h"
 #include "immediate_mdt_conf.h"
+#include "lcs_up_context.h"
+#include "mbsr_operation_allowed.h"
 #include "mm_context.h"
 #include "mo_exp_data_counter.h"
 #include "pcf_ue_callback_info.h"
@@ -31,6 +37,7 @@
 #include "presence_info.h"
 #include "prose_context.h"
 #include "rat_type.h"
+#include "satellite_backhaul_category.h"
 #include "sbi_binding_level.h"
 #include "seaf_data.h"
 #include "service_area_restriction.h"
@@ -40,13 +47,13 @@
 #include "trace_data.h"
 #include "updp_subscription_data.h"
 #include "v2x_context.h"
+#include "wireline_service_area_restriction.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_context_s OpenAPI_ue_context_t;
-typedef struct OpenAPI_ue_context_s {
+struct OpenAPI_ue_context_s {
     char *supi;
     bool is_supi_unauth_ind;
     int supi_unauth_ind;
@@ -62,9 +69,13 @@ typedef struct OpenAPI_ue_context_s {
     char *drx_parameter;
     bool is_sub_rfsp;
     int sub_rfsp;
+    bool is_pcf_rfsp;
+    int pcf_rfsp;
+    char *chf_group_id;
     bool is_used_rfsp;
     int used_rfsp;
     struct OpenAPI_ambr_s *sub_ue_ambr;
+    struct OpenAPI_ambr_s *pcf_ue_ambr;
     OpenAPI_list_t* sub_ue_slice_mbr_list;
     char *smsf_id;
     struct OpenAPI_seaf_data_s *seaf_data;
@@ -103,10 +114,13 @@ typedef struct OpenAPI_ue_context_s {
     int lte_cat_m_ind;
     bool is_red_cap_ind;
     int red_cap_ind;
+    bool is_e_red_cap_ind;
+    int e_red_cap_ind;
     struct OpenAPI_mo_exp_data_counter_s *mo_exp_data_counter;
     struct OpenAPI_cag_data_s *cag_data;
     bool is_management_mdt_ind;
     int management_mdt_ind;
+    OpenAPI_list_t* adjacen_plmn_mngt_mdt_inds;
     struct OpenAPI_immediate_mdt_conf_s *immediate_mdt_conf;
     struct OpenAPI_ec_restriction_data_wb_s *ec_restriction_data_wb;
     bool is_ec_restriction_data_nb;
@@ -140,7 +154,25 @@ typedef struct OpenAPI_ue_context_s {
     bool is_disaster_roaming_ind;
     int disaster_roaming_ind;
     struct OpenAPI_plmn_id_s *disaster_plmn;
-} OpenAPI_ue_context_t;
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat;
+    struct OpenAPI_wireline_service_area_restriction_s *wl_serv_area_res;
+    bool is_as_time_dis_param_null;
+    struct OpenAPI_as_time_distribution_param_s *as_time_dis_param;
+    struct OpenAPI_am_policy_info_container_s *am_policy_info_container;
+    struct OpenAPI_a2x_context_s *a2x_context;
+    struct OpenAPI_mbsr_operation_allowed_s *mbsr_operation_allowed;
+    struct OpenAPI_lcs_up_context_s *lcs_up_context;
+    OpenAPI_list_t *lcs_up_context_list;
+    bool is_reconnect_ind;
+    int reconnect_ind;
+    char *ue_policy_container;
+    bool is_am_policy_ind;
+    int am_policy_ind;
+    bool is_ue_policy_ind;
+    int ue_policy_ind;
+    bool is_energy_saving_ind;
+    int energy_saving_ind;
+};
 
 OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     char *supi,
@@ -158,9 +190,13 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     char *drx_parameter,
     bool is_sub_rfsp,
     int sub_rfsp,
+    bool is_pcf_rfsp,
+    int pcf_rfsp,
+    char *chf_group_id,
     bool is_used_rfsp,
     int used_rfsp,
     OpenAPI_ambr_t *sub_ue_ambr,
+    OpenAPI_ambr_t *pcf_ue_ambr,
     OpenAPI_list_t* sub_ue_slice_mbr_list,
     char *smsf_id,
     OpenAPI_seaf_data_t *seaf_data,
@@ -199,10 +235,13 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     int lte_cat_m_ind,
     bool is_red_cap_ind,
     int red_cap_ind,
+    bool is_e_red_cap_ind,
+    int e_red_cap_ind,
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
     OpenAPI_cag_data_t *cag_data,
     bool is_management_mdt_ind,
     int management_mdt_ind,
+    OpenAPI_list_t* adjacen_plmn_mngt_mdt_inds,
     OpenAPI_immediate_mdt_conf_t *immediate_mdt_conf,
     OpenAPI_ec_restriction_data_wb_t *ec_restriction_data_wb,
     bool is_ec_restriction_data_nb,
@@ -235,7 +274,25 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_create(
     char *smsf_binding_info,
     bool is_disaster_roaming_ind,
     int disaster_roaming_ind,
-    OpenAPI_plmn_id_t *disaster_plmn
+    OpenAPI_plmn_id_t *disaster_plmn,
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat,
+    OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res,
+    bool is_as_time_dis_param_null,
+    OpenAPI_as_time_distribution_param_t *as_time_dis_param,
+    OpenAPI_am_policy_info_container_t *am_policy_info_container,
+    OpenAPI_a2x_context_t *a2x_context,
+    OpenAPI_mbsr_operation_allowed_t *mbsr_operation_allowed,
+    OpenAPI_lcs_up_context_t *lcs_up_context,
+    OpenAPI_list_t *lcs_up_context_list,
+    bool is_reconnect_ind,
+    int reconnect_ind,
+    char *ue_policy_container,
+    bool is_am_policy_ind,
+    int am_policy_ind,
+    bool is_ue_policy_ind,
+    int ue_policy_ind,
+    bool is_energy_saving_ind,
+    int energy_saving_ind
 );
 void OpenAPI_ue_context_free(OpenAPI_ue_context_t *ue_context);
 OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON);

@@ -1,7 +1,7 @@
 /*
  * auth_type.h
  *
- * 
+ * Indicates the authentication method used.
  */
 
 #ifndef _OpenAPI_auth_type_H_

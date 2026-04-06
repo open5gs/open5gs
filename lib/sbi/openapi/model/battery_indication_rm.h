@@ -1,7 +1,7 @@
 /*
  * battery_indication_rm.h
  *
- * This data type is defined in the same way as the &#39;BatteryIndication&#39; data type, but with the OpenAPI &#39;nullable: true&#39; property. 
+ * 
  */
 
 #ifndef _OpenAPI_battery_indication_rm_H_
@@ -12,22 +12,20 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "battery_indication.h"
-#include "null_value.h"
+typedef struct OpenAPI_battery_indication_rm_s OpenAPI_battery_indication_rm_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_battery_indication_rm_s OpenAPI_battery_indication_rm_t;
-typedef struct OpenAPI_battery_indication_rm_s {
+struct OpenAPI_battery_indication_rm_s {
     bool is_battery_ind;
     int battery_ind;
     bool is_replaceable_ind;
     int replaceable_ind;
     bool is_rechargeable_ind;
     int rechargeable_ind;
-} OpenAPI_battery_indication_rm_t;
+};
 
 OpenAPI_battery_indication_rm_t *OpenAPI_battery_indication_rm_create(
     bool is_battery_ind,

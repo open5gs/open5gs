@@ -1,0 +1,539 @@
+openapi: 3.0.0
+
+info:
+  title: MMTel DC Application Management Service
+  version: 1.0.1
+  description: |
+    MMTel DC Application Management Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.392 V19.1.0; 
+    Application layer support for MMTel;
+    MMTel Enabler Server Services;Stage 3.
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.392/
+
+servers:
+  - url: '{apiRoot}/mmtel-dcappmgmt/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /dcapps/configure:
+    post:
+      summary: Request the creation of a new DC application management configuration.
+      operationId: CreateDCAppMgmt
+      tags:
+        - DC Application Management Configurations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DcAppConfigReq'
+      responses:
+        '200':
+          description: >
+            OK. The DC application and DC application profile configuration is successfully
+            processed and DC application and profile Configuration shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DcAppConfigResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /dcapps/update:
+    post:
+      summary: Request the updae of a DC application management configuration.
+      operationId: UpdateDCAppMgmt
+      tags:
+        - DC Application Management Configurations Update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DcAppUpdateReq'
+      responses:
+        '200':
+          description: >
+            Updated. The DC application and DC application profile configuration is successfully
+            updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DcAppStatResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /dcapps/delete:
+    post:
+      summary: Request the delete of a DC application management configuration.
+      operationId: DeleteDCAppMgmt
+      tags:
+        - DC Application Management Configurations Delete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DcAppIdReq'
+      responses:
+        '200':
+          description: >
+            Deleted. The DC application and DC application profile configuration is successfully
+            deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DcAppIdResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /dcapps/retrieval:
+    post:
+      summary: Request the retrieval of a DC application management configuration.
+      operationId: RetrievalDCAppMgmt
+      tags:
+        - DC Application Management Configurations Retrieval
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DcAppIdReq'
+      responses:
+        '200':
+          description: >
+            The requested DC application profile related information is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DcAppIdResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    DcAppConfigReq:
+      description: >
+        Represents the DC application and profile configuration request.
+      type: object
+      properties:
+        reqId:
+          type: string
+        secCred:
+          type: string
+        dcAppNum:
+          type: integer
+        dcAppConfigParamList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DcAppConfigParameters'
+          minItems: 1
+      required:
+        - reqId
+        - dcAppNum
+        - dcAppConfigParamList
+
+    DcAppConfigParameters:
+      description: >
+        Represents the parameters of single-DC applicaion in the configuration request.
+      type: object
+      properties:
+        appIndex:
+          type: string
+        appName:
+          type: string
+        svcType:
+          type: string
+        appIconUrl:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        appVer:
+          type: string
+        appVal:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        appLoadPh:
+          $ref: '#/components/schemas/AppLoadPhase'
+        autoload:
+          type: boolean
+        autolaunch:
+          type: boolean
+        peerDcReq:
+          type: boolean
+        suppScnr:
+          $ref: '#/components/schemas/SupportScenario'
+        cond:
+          $ref: '#/components/schemas/Condition'
+        qosReq:
+          type: string
+        persDataColl:
+          type: boolean
+        persDataCollInfoUrl:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        appPkg:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Binary'
+      required:
+        - appIndex
+
+    DcAppConfigResp:
+      description: >
+        Represents the DC application and profile configuration response.
+      type: object
+      properties:
+        dcAppConfigRespList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DcAppConfigResponseParameters'
+          minItems: 1
+      required:
+        - dcAppConfigRespList
+
+    DcAppConfigResponseParameters:
+      description: >
+        Represents the parameters of single-DC applicaion in the configuration response.
+      type: object
+      properties:
+        appIndex:
+          type: string
+        status:
+          $ref: '#/components/schemas/Status'
+        appId:
+          type: string
+        failureCause:
+          type: string
+      required:
+        - appIndex
+        - status
+
+    DcAppUpdateReq:
+      description: >
+        Represents the DC application and profile update request.
+      type: object
+      properties:
+        reqId:
+          type: string
+        secCred:
+          type: string
+        dcAppNum:
+          type: integer
+        dcAppUpdateParamList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DcAppUpdateParameters'
+          minItems: 1
+      required:
+        - reqId
+        - dcAppNum
+        - dcAppUpdateParamList
+
+    DcAppUpdateParameters:
+      description: >
+        Represents the parameters of single-DC applicaion in the update response.
+        appId:
+          type: string
+        appName:
+          type: string
+        svcType:
+          type: string
+        appIconUrl:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        appVer:
+          type: string
+        appVal:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        appLoadPh:
+          $ref: '#/components/schemas/AppLoadPhase'
+        autoload:
+          type: boolean
+        autolaunch:
+          type: boolean
+        peerDcReq:
+          type: boolean
+        suppScnr:
+          $ref: '#/components/schemas/SupportScenario'
+        cond:
+          $ref: '#/components/schemas/Condition'
+        qosReq:
+          type: string
+        persDataColl:
+          type: boolean
+        persDataCollInfoUrl:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        appPkg:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Binary'
+      required:
+        - appId
+
+    DcAppStatResp:
+      description: >
+        Represents the DC application and profile update response or DC application delete response.
+      type: object
+      properties:
+        dcAppStatRespList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DcAppResponseParameters'
+          minItems: 1
+      required:
+        - dcAppStatRespList
+
+    DcAppResponseParameters:
+      description: >
+        Represents the parameters of single-DC applicaion in the DC application and
+        profile update response and DC application delete response.
+      type: object
+      properties:
+        appId:
+          type: string
+        status:
+          $ref: '#/components/schemas/Status'
+        failureCause:
+          type: string
+      required:
+        - appId
+        - status
+
+    DcAppIdReq:
+      description: >
+        Represents the DC application delete request and DC application information
+        retrieval request.
+      type: object
+      properties:
+        reqId:
+          type: string
+        dcAppNum:
+          type: integer
+        appIdList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - reqId
+        - dcAppNum
+        - appIdList
+
+    DcAppIdResp:
+      description: >
+        Represents the DC application profile information retrieval response.
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        dcAppInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DcAppUpdateParameters'
+          minItems: 1
+        failureCause:
+          type: string
+      required:
+        - status
+
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    AppLoadPhase:
+      anyOf:
+      - type: string
+        enum:
+           - PRECALL_ONLY
+           - INCALL
+           - PRECALL_AND_INCALL
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration but
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the load phase of the DC application.
+        It complies with the provisions defined in Table 6.1.6.3.3-1 of 3GPP TS 29.392.  
+        Possible values are:
+        - PRECALL_ONLY: Indicates the Data Channel Application is allowed to be used before
+          the MMTel call session is established.
+        - INCALL: Indicates that the Data Channel Application is allowed to be used after
+          the MMTel call session is established.
+        - PRECALL_AND_INCALL: Indicateds that the Data Channel Application is allowed to be
+          used during the entire Precall and incall.
+
+    SupportScenario:
+      anyOf:
+      - type: string
+        enum:
+           - VOICE_CALL_ONLY
+           - VIDEO_CALL_ONLY
+           - VOICE_AND_VIDEO_CALL
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration but
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the support scenario of the DC application.
+        It complies with the provisions defined in Table 6.1.6.3.4-1 of 3GPP TS 29.392.  
+        Possible values are:
+        - VOICE_CALL_ONLY: Indicates the Data Channel Application can be used if and only
+          if the corresponding call is a voice call.
+        - VIDEO_CALL_ONLY: Indicates that the Data Channel Application can be used if
+          and only if the corresponding call is a video call.
+        - VOICE_AND_VIDEO_CALL: Indicateds that the Data Channel Application can be used
+          in both voice call and video call.
+
+    Status:
+      anyOf:
+      - type: string
+        enum:
+           - SUCCESS
+           - FAILED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration but
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the request return status.
+        It complies with the provisions defined in Table 6.1.6.3.5-1 of 3GPP TS 29.392.  
+        Possible values are:
+        - SUCCESS: Indicates that the request is processed successfully.
+        - FAILED: Indicates that the request fails to be processed.
+
+    Condition:
+      anyOf:
+      - type: string
+        enum:
+           - CONDTY
+           - CONDVA
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration but
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the conditions used by the DC application.
+        It complies with the provisions defined in Table 6.1.6.3.6-1 of 3GPP TS 29.392.  
+        Possible values are:
+        - CONDTY: Indicates the Data Channel Application is allowed to be used in this
+          condition, e.g. Service area.
+        - CONDVA: Indicates the value of the CONFTY.

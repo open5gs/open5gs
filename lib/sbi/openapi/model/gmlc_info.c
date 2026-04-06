@@ -26,9 +26,6 @@ void OpenAPI_gmlc_info_free(OpenAPI_gmlc_info_t *gmlc_info)
         return;
     }
     if (gmlc_info->serving_client_types) {
-        OpenAPI_list_for_each(gmlc_info->serving_client_types, node) {
-            OpenAPI_external_client_type_free(node->data);
-        }
         OpenAPI_list_free(gmlc_info->serving_client_types);
         gmlc_info->serving_client_types = NULL;
     }
@@ -53,19 +50,17 @@ cJSON *OpenAPI_gmlc_info_convertToJSON(OpenAPI_gmlc_info_t *gmlc_info)
     }
 
     item = cJSON_CreateObject();
-    if (gmlc_info->serving_client_types) {
+    if (gmlc_info->serving_client_types != OpenAPI_external_client_type_NULL) {
     cJSON *serving_client_typesList = cJSON_AddArrayToObject(item, "servingClientTypes");
     if (serving_client_typesList == NULL) {
         ogs_error("OpenAPI_gmlc_info_convertToJSON() failed [serving_client_types]");
         goto end;
     }
     OpenAPI_list_for_each(gmlc_info->serving_client_types, node) {
-        cJSON *itemLocal = OpenAPI_external_client_type_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        if (cJSON_AddStringToObject(serving_client_typesList, "", OpenAPI_external_client_type_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_gmlc_info_convertToJSON() failed [serving_client_types]");
             goto end;
         }
-        cJSON_AddItemToArray(serving_client_typesList, itemLocal);
     }
     }
 
@@ -106,16 +101,22 @@ OpenAPI_gmlc_info_t *OpenAPI_gmlc_info_parseFromJSON(cJSON *gmlc_infoJSON)
         serving_client_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(serving_client_types_local, serving_client_types) {
-            if (!cJSON_IsObject(serving_client_types_local)) {
+            OpenAPI_external_client_type_e localEnum = OpenAPI_external_client_type_NULL;
+            if (!cJSON_IsString(serving_client_types_local)) {
                 ogs_error("OpenAPI_gmlc_info_parseFromJSON() failed [serving_client_types]");
                 goto end;
             }
-            OpenAPI_external_client_type_t *serving_client_typesItem = OpenAPI_external_client_type_parseFromJSON(serving_client_types_local);
-            if (!serving_client_typesItem) {
-                ogs_error("No serving_client_typesItem");
-                goto end;
+            localEnum = OpenAPI_external_client_type_FromString(serving_client_types_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"serving_client_types\" is not supported. Ignoring it ...",
+                         serving_client_types_local->valuestring);
+            } else {
+                OpenAPI_list_add(serving_client_typesList, (void *)localEnum);
             }
-            OpenAPI_list_add(serving_client_typesList, serving_client_typesItem);
+        }
+        if (serving_client_typesList->count == 0) {
+            ogs_error("OpenAPI_gmlc_info_parseFromJSON() failed: Expected serving_client_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -148,9 +149,6 @@ OpenAPI_gmlc_info_t *OpenAPI_gmlc_info_parseFromJSON(cJSON *gmlc_infoJSON)
     return gmlc_info_local_var;
 end:
     if (serving_client_typesList) {
-        OpenAPI_list_for_each(serving_client_typesList, node) {
-            OpenAPI_external_client_type_free(node->data);
-        }
         OpenAPI_list_free(serving_client_typesList);
         serving_client_typesList = NULL;
     }

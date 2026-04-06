@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_patch_result_s OpenAPI_patch_result_t;
 #include "report_item.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_patch_result_s OpenAPI_patch_result_t;
-typedef struct OpenAPI_patch_result_s {
+struct OpenAPI_patch_result_s {
     OpenAPI_list_t *report;
-} OpenAPI_patch_result_t;
+};
 
 OpenAPI_patch_result_t *OpenAPI_patch_result_create(
     OpenAPI_list_t *report

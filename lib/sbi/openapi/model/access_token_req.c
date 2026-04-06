@@ -46,7 +46,12 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_create(
     char *target_nf_set_id,
     char *target_nf_service_set_id,
     char *hnrf_access_token_uri,
-    char *source_nf_instance_id
+    char *source_nf_instance_id,
+    char *vendor_id,
+    OpenAPI_list_t *analytics_ids,
+    OpenAPI_list_t *requester_inter_ind_list,
+    char *source_vendor_id,
+    char *af_id
 )
 {
     OpenAPI_access_token_req_t *access_token_req_local_var = ogs_malloc(sizeof(OpenAPI_access_token_req_t));
@@ -71,6 +76,11 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_create(
     access_token_req_local_var->target_nf_service_set_id = target_nf_service_set_id;
     access_token_req_local_var->hnrf_access_token_uri = hnrf_access_token_uri;
     access_token_req_local_var->source_nf_instance_id = source_nf_instance_id;
+    access_token_req_local_var->vendor_id = vendor_id;
+    access_token_req_local_var->analytics_ids = analytics_ids;
+    access_token_req_local_var->requester_inter_ind_list = requester_inter_ind_list;
+    access_token_req_local_var->source_vendor_id = source_vendor_id;
+    access_token_req_local_var->af_id = af_id;
 
     return access_token_req_local_var;
 }
@@ -160,6 +170,29 @@ void OpenAPI_access_token_req_free(OpenAPI_access_token_req_t *access_token_req)
     if (access_token_req->source_nf_instance_id) {
         ogs_free(access_token_req->source_nf_instance_id);
         access_token_req->source_nf_instance_id = NULL;
+    }
+    if (access_token_req->vendor_id) {
+        ogs_free(access_token_req->vendor_id);
+        access_token_req->vendor_id = NULL;
+    }
+    if (access_token_req->analytics_ids) {
+        OpenAPI_list_free(access_token_req->analytics_ids);
+        access_token_req->analytics_ids = NULL;
+    }
+    if (access_token_req->requester_inter_ind_list) {
+        OpenAPI_list_for_each(access_token_req->requester_inter_ind_list, node) {
+            OpenAPI_ml_model_inter_ind_free(node->data);
+        }
+        OpenAPI_list_free(access_token_req->requester_inter_ind_list);
+        access_token_req->requester_inter_ind_list = NULL;
+    }
+    if (access_token_req->source_vendor_id) {
+        ogs_free(access_token_req->source_vendor_id);
+        access_token_req->source_vendor_id = NULL;
+    }
+    if (access_token_req->af_id) {
+        ogs_free(access_token_req->af_id);
+        access_token_req->af_id = NULL;
     }
     ogs_free(access_token_req);
 }
@@ -375,6 +408,57 @@ cJSON *OpenAPI_access_token_req_convertToJSON(OpenAPI_access_token_req_t *access
     }
     }
 
+    if (access_token_req->vendor_id) {
+    if (cJSON_AddStringToObject(item, "vendorId", access_token_req->vendor_id) == NULL) {
+        ogs_error("OpenAPI_access_token_req_convertToJSON() failed [vendor_id]");
+        goto end;
+    }
+    }
+
+    if (access_token_req->analytics_ids != OpenAPI_nwdaf_event_NULL) {
+    cJSON *analytics_idsList = cJSON_AddArrayToObject(item, "analyticsIds");
+    if (analytics_idsList == NULL) {
+        ogs_error("OpenAPI_access_token_req_convertToJSON() failed [analytics_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(access_token_req->analytics_ids, node) {
+        if (cJSON_AddStringToObject(analytics_idsList, "", OpenAPI_nwdaf_event_ToString((intptr_t)node->data)) == NULL) {
+            ogs_error("OpenAPI_access_token_req_convertToJSON() failed [analytics_ids]");
+            goto end;
+        }
+    }
+    }
+
+    if (access_token_req->requester_inter_ind_list) {
+    cJSON *requester_inter_ind_listList = cJSON_AddArrayToObject(item, "requesterInterIndList");
+    if (requester_inter_ind_listList == NULL) {
+        ogs_error("OpenAPI_access_token_req_convertToJSON() failed [requester_inter_ind_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(access_token_req->requester_inter_ind_list, node) {
+        cJSON *itemLocal = OpenAPI_ml_model_inter_ind_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_access_token_req_convertToJSON() failed [requester_inter_ind_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(requester_inter_ind_listList, itemLocal);
+    }
+    }
+
+    if (access_token_req->source_vendor_id) {
+    if (cJSON_AddStringToObject(item, "sourceVendorId", access_token_req->source_vendor_id) == NULL) {
+        ogs_error("OpenAPI_access_token_req_convertToJSON() failed [source_vendor_id]");
+        goto end;
+    }
+    }
+
+    if (access_token_req->af_id) {
+    if (cJSON_AddStringToObject(item, "afId", access_token_req->af_id) == NULL) {
+        ogs_error("OpenAPI_access_token_req_convertToJSON() failed [af_id]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -413,6 +497,13 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
     cJSON *target_nf_service_set_id = NULL;
     cJSON *hnrf_access_token_uri = NULL;
     cJSON *source_nf_instance_id = NULL;
+    cJSON *vendor_id = NULL;
+    cJSON *analytics_ids = NULL;
+    OpenAPI_list_t *analytics_idsList = NULL;
+    cJSON *requester_inter_ind_list = NULL;
+    OpenAPI_list_t *requester_inter_ind_listList = NULL;
+    cJSON *source_vendor_id = NULL;
+    cJSON *af_id = NULL;
     grant_type = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "grant_type");
     if (!grant_type) {
         ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [grant_type]");
@@ -654,6 +745,84 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
     }
     }
 
+    vendor_id = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "vendorId");
+    if (vendor_id) {
+    if (!cJSON_IsString(vendor_id) && !cJSON_IsNull(vendor_id)) {
+        ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [vendor_id]");
+        goto end;
+    }
+    }
+
+    analytics_ids = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "analyticsIds");
+    if (analytics_ids) {
+        cJSON *analytics_ids_local = NULL;
+        if (!cJSON_IsArray(analytics_ids)) {
+            ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [analytics_ids]");
+            goto end;
+        }
+
+        analytics_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(analytics_ids_local, analytics_ids) {
+            OpenAPI_nwdaf_event_e localEnum = OpenAPI_nwdaf_event_NULL;
+            if (!cJSON_IsString(analytics_ids_local)) {
+                ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [analytics_ids]");
+                goto end;
+            }
+            localEnum = OpenAPI_nwdaf_event_FromString(analytics_ids_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"analytics_ids\" is not supported. Ignoring it ...",
+                         analytics_ids_local->valuestring);
+            } else {
+                OpenAPI_list_add(analytics_idsList, (void *)localEnum);
+            }
+        }
+        if (analytics_idsList->count == 0) {
+            ogs_error("OpenAPI_access_token_req_parseFromJSON() failed: Expected analytics_idsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+    }
+
+    requester_inter_ind_list = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "requesterInterIndList");
+    if (requester_inter_ind_list) {
+        cJSON *requester_inter_ind_list_local = NULL;
+        if (!cJSON_IsArray(requester_inter_ind_list)) {
+            ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [requester_inter_ind_list]");
+            goto end;
+        }
+
+        requester_inter_ind_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(requester_inter_ind_list_local, requester_inter_ind_list) {
+            if (!cJSON_IsObject(requester_inter_ind_list_local)) {
+                ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [requester_inter_ind_list]");
+                goto end;
+            }
+            OpenAPI_ml_model_inter_ind_t *requester_inter_ind_listItem = OpenAPI_ml_model_inter_ind_parseFromJSON(requester_inter_ind_list_local);
+            if (!requester_inter_ind_listItem) {
+                ogs_error("No requester_inter_ind_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(requester_inter_ind_listList, requester_inter_ind_listItem);
+        }
+    }
+
+    source_vendor_id = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "sourceVendorId");
+    if (source_vendor_id) {
+    if (!cJSON_IsString(source_vendor_id) && !cJSON_IsNull(source_vendor_id)) {
+        ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [source_vendor_id]");
+        goto end;
+    }
+    }
+
+    af_id = cJSON_GetObjectItemCaseSensitive(access_token_reqJSON, "afId");
+    if (af_id) {
+    if (!cJSON_IsString(af_id) && !cJSON_IsNull(af_id)) {
+        ogs_error("OpenAPI_access_token_req_parseFromJSON() failed [af_id]");
+        goto end;
+    }
+    }
+
     access_token_req_local_var = OpenAPI_access_token_req_create (
         grant_typeVariable,
         ogs_strdup(nf_instance_id->valuestring),
@@ -673,7 +842,12 @@ OpenAPI_access_token_req_t *OpenAPI_access_token_req_parseFromJSON(cJSON *access
         target_nf_set_id && !cJSON_IsNull(target_nf_set_id) ? ogs_strdup(target_nf_set_id->valuestring) : NULL,
         target_nf_service_set_id && !cJSON_IsNull(target_nf_service_set_id) ? ogs_strdup(target_nf_service_set_id->valuestring) : NULL,
         hnrf_access_token_uri && !cJSON_IsNull(hnrf_access_token_uri) ? ogs_strdup(hnrf_access_token_uri->valuestring) : NULL,
-        source_nf_instance_id && !cJSON_IsNull(source_nf_instance_id) ? ogs_strdup(source_nf_instance_id->valuestring) : NULL
+        source_nf_instance_id && !cJSON_IsNull(source_nf_instance_id) ? ogs_strdup(source_nf_instance_id->valuestring) : NULL,
+        vendor_id && !cJSON_IsNull(vendor_id) ? ogs_strdup(vendor_id->valuestring) : NULL,
+        analytics_ids ? analytics_idsList : NULL,
+        requester_inter_ind_list ? requester_inter_ind_listList : NULL,
+        source_vendor_id && !cJSON_IsNull(source_vendor_id) ? ogs_strdup(source_vendor_id->valuestring) : NULL,
+        af_id && !cJSON_IsNull(af_id) ? ogs_strdup(af_id->valuestring) : NULL
     );
 
     return access_token_req_local_var;
@@ -724,6 +898,17 @@ end:
         }
         OpenAPI_list_free(target_nsi_listList);
         target_nsi_listList = NULL;
+    }
+    if (analytics_idsList) {
+        OpenAPI_list_free(analytics_idsList);
+        analytics_idsList = NULL;
+    }
+    if (requester_inter_ind_listList) {
+        OpenAPI_list_for_each(requester_inter_ind_listList, node) {
+            OpenAPI_ml_model_inter_ind_free(node->data);
+        }
+        OpenAPI_list_free(requester_inter_ind_listList);
+        requester_inter_ind_listList = NULL;
     }
     return NULL;
 }

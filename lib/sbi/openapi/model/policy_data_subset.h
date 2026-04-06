@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "policy_data_subset_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_policy_data_subset_s OpenAPI_policy_data_subset_t;
-typedef struct OpenAPI_policy_data_subset_s {
-} OpenAPI_policy_data_subset_t;
+typedef enum { OpenAPI_policy_data_subset_NULL = 0, OpenAPI_policy_data_subset_AM_POLICY_DATA, OpenAPI_policy_data_subset_SM_POLICY_DATA, OpenAPI_policy_data_subset_UE_POLICY_DATA, OpenAPI_policy_data_subset_UM_DATA, OpenAPI_policy_data_subset_OPERATOR_SPECIFIC_DATA } OpenAPI_policy_data_subset_e;
 
-OpenAPI_policy_data_subset_t *OpenAPI_policy_data_subset_create(
-);
-void OpenAPI_policy_data_subset_free(OpenAPI_policy_data_subset_t *policy_data_subset);
-OpenAPI_policy_data_subset_t *OpenAPI_policy_data_subset_parseFromJSON(cJSON *policy_data_subsetJSON);
-cJSON *OpenAPI_policy_data_subset_convertToJSON(OpenAPI_policy_data_subset_t *policy_data_subset);
-OpenAPI_policy_data_subset_t *OpenAPI_policy_data_subset_copy(OpenAPI_policy_data_subset_t *dst, OpenAPI_policy_data_subset_t *src);
+char* OpenAPI_policy_data_subset_ToString(OpenAPI_policy_data_subset_e policy_data_subset);
+
+OpenAPI_policy_data_subset_e OpenAPI_policy_data_subset_FromString(char* policy_data_subset);
 
 #ifdef __cplusplus
 }

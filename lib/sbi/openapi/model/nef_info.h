@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nef_info_s OpenAPI_nef_info_t;
 #include "af_event_exposure_data.h"
 #include "identity_range.h"
 #include "pfd_data.h"
@@ -23,8 +24,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nef_info_s OpenAPI_nef_info_t;
-typedef struct OpenAPI_nef_info_s {
+struct OpenAPI_nef_info_s {
     char *nef_id;
     struct OpenAPI_pfd_data_s *pfd_data;
     struct OpenAPI_af_event_exposure_data_s *af_ee_data;
@@ -37,7 +37,11 @@ typedef struct OpenAPI_nef_info_s {
     OpenAPI_list_t *un_trust_af_info_list;
     bool is_uas_nf_functionality_ind;
     int uas_nf_functionality_ind;
-} OpenAPI_nef_info_t;
+    bool is_multi_mem_af_sess_qos_ind;
+    int multi_mem_af_sess_qos_ind;
+    bool is_member_ue_sel_assist_ind;
+    int member_ue_sel_assist_ind;
+};
 
 OpenAPI_nef_info_t *OpenAPI_nef_info_create(
     char *nef_id,
@@ -51,7 +55,11 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_create(
     OpenAPI_list_t *dnai_list,
     OpenAPI_list_t *un_trust_af_info_list,
     bool is_uas_nf_functionality_ind,
-    int uas_nf_functionality_ind
+    int uas_nf_functionality_ind,
+    bool is_multi_mem_af_sess_qos_ind,
+    int multi_mem_af_sess_qos_ind,
+    bool is_member_ue_sel_assist_ind,
+    int member_ue_sel_assist_ind
 );
 void OpenAPI_nef_info_free(OpenAPI_nef_info_t *nef_info);
 OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON);

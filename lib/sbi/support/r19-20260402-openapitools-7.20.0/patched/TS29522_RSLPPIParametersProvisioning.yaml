@@ -1,0 +1,364 @@
+openapi: 3.0.0
+
+info:
+  title: 3gpp-rslppi-pp
+  version: 1.0.0
+  description: |
+    API for RSLPPI Parameters Provisioning.  
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.522 V18.6.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+
+servers:
+  - url: '{apiRoot}/3gpp-rslppi-pp/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /pp:
+    get:
+      summary: Request to retrieve all the active RSLPPI Parameters Provisioning resources at the NEF.
+      operationId: GetRslppiParamsProvisionings
+      tags:
+        - RSLPPI Parameters Provisionings (Collection)
+      responses:
+        '200':
+          description: >
+            OK. All the Individual RSLPPI Parameters Provisioning resources managed by the NEF are
+            returned.
+            If there are no existing Individual RSLPPI Parameters Provisioning resources managed at
+            the NEF, an empty array is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RslppiPpData'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request the creation of a new RSLPPI Parameters Provisioning.
+      tags:
+        - RSLPPI Parameters Provisioning (Collection)
+      operationId: CreateRslppiParamsProvisioning
+      requestBody:
+        description: >
+          Representation of the new RSLPPI Parameters Provisioning to be created at the NEF.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RslppiPpData'
+      responses:
+        '201':
+          description: >
+            Created. A representation of the created Individual RSLPPI Parameters Provisioning
+            resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RslppiPpData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /pp/{ppId}:
+    parameters:
+      - name: ppId
+        in: path
+        description: >
+          Represents the identifier of the Individual RSLPPI Parameters Provisioning resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Request to retrieve an existing Individual RSLPPI Parameters Provisioning resource.
+      operationId: GetIndRslppiParamsProvisioning
+      tags:
+        - Individual RSLPPI Parameters Provisioning (Document)
+      responses:
+        '200':
+          description: >
+            OK. Successful retrieval of the requested Individual RSLPPI Parameters Provisioning.
+            resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RslppiPpData'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual RSLPPI Parameters Provisioning resource.
+      tags:
+        - Individual RSLPPI Parameters Provisioning (Document)
+      operationId: UpdateIndRslppiParamsProvisioning
+      requestBody:
+        description: >
+          Represents the updated Individual RSLPPI Parameters Provisioning resource representation.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RslppiPpData'
+      responses:
+        '200':
+          description: >
+            OK. The Individual RSLPPI Parameters Provisioning resource is successfully updated and a
+            representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RslppiPpData'
+        '204':
+          description: >
+            No Content. The Individual RSLPPI Parameters Provisioning resource is successfully
+            updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual RSLPPI Parameters Provisioning resource.
+      tags:
+        - Individual RSLPPI Parameters Provisioning (Document)
+      operationId: ModifyIndRslppiParamsProvisioning
+      requestBody:
+        description: >
+          Contains the parameters to request the modification of the Individual RSLPPI Parameters
+          Provisioning resource.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/RslppiPpDataPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual RSLPPI Parameters Provisioning resource is successfully modified and
+            A representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RslppiPpData'
+        '204':
+          description: >
+            No Content. The Individual RSLPPI Parameters Provisioning resource is successfully
+            modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual RSLPPI Parameters Provisioning resource.
+      tags:
+        - Individual RSLPPI Parameters Provisioning (Document)
+      operationId: DeleteIndRslppiParamsProvisioning
+      responses:
+        '204':
+          description: >
+            No Content. The Individual RSLPPI Parameters Provisioning resource is successfully
+            deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+#
+# STRUCTURED DATA TYPES
+#
+    RslppiPpData:
+      description: Represents the RSLPPI Parameters Provisioning data.
+      type: object
+      properties:
+        afId:
+          type: string
+        rslppiData:
+          $ref: '#/components/schemas/RslppiData'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - afId
+
+    RslppiPpDataPatch:
+      description: >
+        Represents the requested modifications to an existing RSLPPI Parameters Provisioning data.
+      type: object
+      properties:
+        rslppiData:
+          $ref: '#/components/schemas/RslppiData'
+
+    RslppiData:
+      description: Represents RSLPPI Parameters data.
+      type: object
+      properties:
+        extGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        rslppi:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/Rslppi'
+      required:
+        - rslppi
+      oneOf:
+        - required: [ extGroupId ]
+        - required: [ gpsi ]
+
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#

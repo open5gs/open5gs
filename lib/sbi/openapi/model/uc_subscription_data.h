@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_uc_subscription_data_s OpenAPI_uc_subscription_data_t;
 #include "user_consent.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_uc_subscription_data_s OpenAPI_uc_subscription_data_t;
-typedef struct OpenAPI_uc_subscription_data_s {
+struct OpenAPI_uc_subscription_data_s {
     OpenAPI_list_t* user_consent_per_purpose_list;
-} OpenAPI_uc_subscription_data_t;
+};
 
 OpenAPI_uc_subscription_data_t *OpenAPI_uc_subscription_data_create(
     OpenAPI_list_t* user_consent_per_purpose_list

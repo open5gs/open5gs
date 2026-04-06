@@ -1,0 +1,121 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLES_ML Model Update Request Service
+  version: 1.0.0
+  description: |
+    AIMLES ML Model Update Request Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.0.0; Artificial Intelligence Machine Learning Enablement 
+    (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/aimles-mlmupd/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /request:
+    post:
+      summary: Enables a service consumer to request ML model update to the AIMLE Server.
+      operationId: RequestMLModelUpdate
+      tags:
+        - ML Model Update Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MLMdlUpdateReq'
+      responses:
+        '200':
+          description: >
+            Successful case. The ML model update request is successfully received and processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MLMdlUpdateRsp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    MLMdlUpdateReq:
+      description: >
+        Represents the ML model update request.
+      type: object
+      properties:
+        mlModelId:
+          type: string
+        performanceDegradationInfo:
+          $ref: 'TS29482_AIMLES_MLModelPerfMonitor.yaml#/components/schemas/MlMdlDegradedParam'
+        mlModelRetrievalEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+      required:
+        - mlModelId
+
+    MLMdlUpdateRsp:
+      description: >
+        Represents the ML model update response.
+      type: object
+      properties:
+        mlModelInformation:
+          $ref: 'TS29482_MLR_MLModelManagement.yaml#/components/schemas/MLModel'
+        mlModelRetrievalEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        mlModel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+      anyOf:
+        - required: [mlModelInformation]
+        - required: [mlModelRetrievalEndpoint]
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#

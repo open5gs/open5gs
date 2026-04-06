@@ -12,7 +12,12 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_create(
     OpenAPI_user_location_t *user_location_info,
     char *ue_time_zone,
     OpenAPI_net_loc_access_support_e net_loc_acc_supp,
-    OpenAPI_satellite_backhaul_category_e sat_backhaul_category
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
+    char *ursp_enf_info,
+    OpenAPI_ssc_mode_e ssc_mode,
+    char *ue_req_dnn,
+    OpenAPI_pdu_session_type_e ue_req_pdu_session_type,
+    OpenAPI_pc_session_recovery_status_e session_recov_status
 )
 {
     OpenAPI_ue_camping_rep_t *ue_camping_rep_local_var = ogs_malloc(sizeof(OpenAPI_ue_camping_rep_t));
@@ -26,6 +31,11 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_create(
     ue_camping_rep_local_var->ue_time_zone = ue_time_zone;
     ue_camping_rep_local_var->net_loc_acc_supp = net_loc_acc_supp;
     ue_camping_rep_local_var->sat_backhaul_category = sat_backhaul_category;
+    ue_camping_rep_local_var->ursp_enf_info = ursp_enf_info;
+    ue_camping_rep_local_var->ssc_mode = ssc_mode;
+    ue_camping_rep_local_var->ue_req_dnn = ue_req_dnn;
+    ue_camping_rep_local_var->ue_req_pdu_session_type = ue_req_pdu_session_type;
+    ue_camping_rep_local_var->session_recov_status = session_recov_status;
 
     return ue_camping_rep_local_var;
 }
@@ -52,6 +62,14 @@ void OpenAPI_ue_camping_rep_free(OpenAPI_ue_camping_rep_t *ue_camping_rep)
     if (ue_camping_rep->ue_time_zone) {
         ogs_free(ue_camping_rep->ue_time_zone);
         ue_camping_rep->ue_time_zone = NULL;
+    }
+    if (ue_camping_rep->ursp_enf_info) {
+        ogs_free(ue_camping_rep->ursp_enf_info);
+        ue_camping_rep->ursp_enf_info = NULL;
+    }
+    if (ue_camping_rep->ue_req_dnn) {
+        ogs_free(ue_camping_rep->ue_req_dnn);
+        ue_camping_rep->ue_req_dnn = NULL;
     }
     ogs_free(ue_camping_rep);
 }
@@ -141,6 +159,41 @@ cJSON *OpenAPI_ue_camping_rep_convertToJSON(OpenAPI_ue_camping_rep_t *ue_camping
     }
     }
 
+    if (ue_camping_rep->ursp_enf_info) {
+    if (cJSON_AddStringToObject(item, "urspEnfInfo", ue_camping_rep->ursp_enf_info) == NULL) {
+        ogs_error("OpenAPI_ue_camping_rep_convertToJSON() failed [ursp_enf_info]");
+        goto end;
+    }
+    }
+
+    if (ue_camping_rep->ssc_mode != OpenAPI_ssc_mode_NULL) {
+    if (cJSON_AddStringToObject(item, "sscMode", OpenAPI_ssc_mode_ToString(ue_camping_rep->ssc_mode)) == NULL) {
+        ogs_error("OpenAPI_ue_camping_rep_convertToJSON() failed [ssc_mode]");
+        goto end;
+    }
+    }
+
+    if (ue_camping_rep->ue_req_dnn) {
+    if (cJSON_AddStringToObject(item, "ueReqDnn", ue_camping_rep->ue_req_dnn) == NULL) {
+        ogs_error("OpenAPI_ue_camping_rep_convertToJSON() failed [ue_req_dnn]");
+        goto end;
+    }
+    }
+
+    if (ue_camping_rep->ue_req_pdu_session_type != OpenAPI_pdu_session_type_NULL) {
+    if (cJSON_AddStringToObject(item, "ueReqPduSessionType", OpenAPI_pdu_session_type_ToString(ue_camping_rep->ue_req_pdu_session_type)) == NULL) {
+        ogs_error("OpenAPI_ue_camping_rep_convertToJSON() failed [ue_req_pdu_session_type]");
+        goto end;
+    }
+    }
+
+    if (ue_camping_rep->session_recov_status != OpenAPI_pc_session_recovery_status_NULL) {
+    if (cJSON_AddStringToObject(item, "sessionRecovStatus", OpenAPI_pc_session_recovery_status_ToString(ue_camping_rep->session_recov_status)) == NULL) {
+        ogs_error("OpenAPI_ue_camping_rep_convertToJSON() failed [session_recov_status]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -164,6 +217,14 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
     OpenAPI_net_loc_access_support_e net_loc_acc_suppVariable = 0;
     cJSON *sat_backhaul_category = NULL;
     OpenAPI_satellite_backhaul_category_e sat_backhaul_categoryVariable = 0;
+    cJSON *ursp_enf_info = NULL;
+    cJSON *ssc_mode = NULL;
+    OpenAPI_ssc_mode_e ssc_modeVariable = 0;
+    cJSON *ue_req_dnn = NULL;
+    cJSON *ue_req_pdu_session_type = NULL;
+    OpenAPI_pdu_session_type_e ue_req_pdu_session_typeVariable = 0;
+    cJSON *session_recov_status = NULL;
+    OpenAPI_pc_session_recovery_status_e session_recov_statusVariable = 0;
     access_type = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "accessType");
     if (access_type) {
     if (!cJSON_IsString(access_type)) {
@@ -235,6 +296,49 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
     sat_backhaul_categoryVariable = OpenAPI_satellite_backhaul_category_FromString(sat_backhaul_category->valuestring);
     }
 
+    ursp_enf_info = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "urspEnfInfo");
+    if (ursp_enf_info) {
+    if (!cJSON_IsString(ursp_enf_info) && !cJSON_IsNull(ursp_enf_info)) {
+        ogs_error("OpenAPI_ue_camping_rep_parseFromJSON() failed [ursp_enf_info]");
+        goto end;
+    }
+    }
+
+    ssc_mode = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "sscMode");
+    if (ssc_mode) {
+    if (!cJSON_IsString(ssc_mode)) {
+        ogs_error("OpenAPI_ue_camping_rep_parseFromJSON() failed [ssc_mode]");
+        goto end;
+    }
+    ssc_modeVariable = OpenAPI_ssc_mode_FromString(ssc_mode->valuestring);
+    }
+
+    ue_req_dnn = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "ueReqDnn");
+    if (ue_req_dnn) {
+    if (!cJSON_IsString(ue_req_dnn) && !cJSON_IsNull(ue_req_dnn)) {
+        ogs_error("OpenAPI_ue_camping_rep_parseFromJSON() failed [ue_req_dnn]");
+        goto end;
+    }
+    }
+
+    ue_req_pdu_session_type = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "ueReqPduSessionType");
+    if (ue_req_pdu_session_type) {
+    if (!cJSON_IsString(ue_req_pdu_session_type)) {
+        ogs_error("OpenAPI_ue_camping_rep_parseFromJSON() failed [ue_req_pdu_session_type]");
+        goto end;
+    }
+    ue_req_pdu_session_typeVariable = OpenAPI_pdu_session_type_FromString(ue_req_pdu_session_type->valuestring);
+    }
+
+    session_recov_status = cJSON_GetObjectItemCaseSensitive(ue_camping_repJSON, "sessionRecovStatus");
+    if (session_recov_status) {
+    if (!cJSON_IsString(session_recov_status)) {
+        ogs_error("OpenAPI_ue_camping_rep_parseFromJSON() failed [session_recov_status]");
+        goto end;
+    }
+    session_recov_statusVariable = OpenAPI_pc_session_recovery_status_FromString(session_recov_status->valuestring);
+    }
+
     ue_camping_rep_local_var = OpenAPI_ue_camping_rep_create (
         access_type ? access_typeVariable : 0,
         rat_type ? rat_typeVariable : 0,
@@ -243,7 +347,12 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping
         user_location_info ? user_location_info_local_nonprim : NULL,
         ue_time_zone && !cJSON_IsNull(ue_time_zone) ? ogs_strdup(ue_time_zone->valuestring) : NULL,
         net_loc_acc_supp ? net_loc_acc_suppVariable : 0,
-        sat_backhaul_category ? sat_backhaul_categoryVariable : 0
+        sat_backhaul_category ? sat_backhaul_categoryVariable : 0,
+        ursp_enf_info && !cJSON_IsNull(ursp_enf_info) ? ogs_strdup(ursp_enf_info->valuestring) : NULL,
+        ssc_mode ? ssc_modeVariable : 0,
+        ue_req_dnn && !cJSON_IsNull(ue_req_dnn) ? ogs_strdup(ue_req_dnn->valuestring) : NULL,
+        ue_req_pdu_session_type ? ue_req_pdu_session_typeVariable : 0,
+        session_recov_status ? session_recov_statusVariable : 0
     );
 
     return ue_camping_rep_local_var;

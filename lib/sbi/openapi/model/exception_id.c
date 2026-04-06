@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "exception_id.h"
 
-OpenAPI_exception_id_t *OpenAPI_exception_id_create(
-)
+char* OpenAPI_exception_id_ToString(OpenAPI_exception_id_e exception_id)
 {
-    OpenAPI_exception_id_t *exception_id_local_var = ogs_malloc(sizeof(OpenAPI_exception_id_t));
-    ogs_assert(exception_id_local_var);
-
-
-    return exception_id_local_var;
+    const char *exception_idArray[] =  { "NULL", "UNEXPECTED_UE_LOCATION", "UNEXPECTED_LONG_LIVE_FLOW", "UNEXPECTED_LARGE_RATE_FLOW", "UNEXPECTED_WAKEUP", "SUSPICION_OF_DDOS_ATTACK", "WRONG_DESTINATION_ADDRESS", "TOO_FREQUENT_SERVICE_ACCESS", "UNEXPECTED_RADIO_LINK_FAILURES", "PING_PONG_ACROSS_CELLS" };
+    size_t sizeofArray = sizeof(exception_idArray) / sizeof(exception_idArray[0]);
+    if (exception_id < sizeofArray)
+        return (char *)exception_idArray[exception_id];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_exception_id_free(OpenAPI_exception_id_t *exception_id)
+OpenAPI_exception_id_e OpenAPI_exception_id_FromString(char* exception_id)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == exception_id) {
-        return;
+    int stringToReturn = 0;
+    const char *exception_idArray[] =  { "NULL", "UNEXPECTED_UE_LOCATION", "UNEXPECTED_LONG_LIVE_FLOW", "UNEXPECTED_LARGE_RATE_FLOW", "UNEXPECTED_WAKEUP", "SUSPICION_OF_DDOS_ATTACK", "WRONG_DESTINATION_ADDRESS", "TOO_FREQUENT_SERVICE_ACCESS", "UNEXPECTED_RADIO_LINK_FAILURES", "PING_PONG_ACROSS_CELLS" };
+    size_t sizeofArray = sizeof(exception_idArray) / sizeof(exception_idArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(exception_id, exception_idArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(exception_id);
-}
-
-cJSON *OpenAPI_exception_id_convertToJSON(OpenAPI_exception_id_t *exception_id)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (exception_id == NULL) {
-        ogs_error("OpenAPI_exception_id_convertToJSON() failed [ExceptionId]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_exception_id_t *OpenAPI_exception_id_parseFromJSON(cJSON *exception_idJSON)
-{
-    OpenAPI_exception_id_t *exception_id_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    exception_id_local_var = OpenAPI_exception_id_create (
-    );
-
-    return exception_id_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_exception_id_t *OpenAPI_exception_id_copy(OpenAPI_exception_id_t *dst, OpenAPI_exception_id_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_exception_id_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_exception_id_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_exception_id_free(dst);
-    dst = OpenAPI_exception_id_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

@@ -1,0 +1,1207 @@
+openapi: 3.0.0
+
+info:
+  version: 1.4.1
+  title: Npcf_UEPolicyControl
+  description: |
+    UE Policy Control Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.525 V19.6.0; 5G System; UE Policy Control Service.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.525/'
+
+servers:
+  - url: '{apiRoot}/npcf-ue-policy-control/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - npcf-ue-policy-control
+
+paths:
+  /policies:
+    post:
+      operationId: CreateIndividualUEPolicyAssociation
+      summary: Create individual UE policy association.
+      tags:
+        - UE Policy Associations (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyAssociationRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyAssociation'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/npcf-ue-policy-control/v1/policies/{polAssoId}'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        policyUpdateNotification:
+          '{$request.body#/notificationUri}/update': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/PolicyUpdate'
+              responses: 
+                '200':
+                  description: >
+                    OK. The current applicable values corresponding to the policy control request
+                    trigger is reported
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/UeRequestedValueRep'
+                '204':
+                  description: No Content, Notification was successful
+                '307': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+        policyAssocitionTerminationRequestNotification:
+          '{$request.body#/notificationUri}/terminate': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/TerminationNotification'
+              responses:
+                '204':
+                  description: No Content, Notification was successful
+                '307': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policies/{polAssoId}:
+    get:
+      operationId: ReadIndividualUEPolicyAssociation
+      summary: Read individual UE policy association.
+      tags:
+        - Individual UE Policy Association (Document)
+      parameters:
+        - name: polAssoId
+          in: path
+          description: Identifier of a policy association
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyAssociation'
+        '307': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      operationId: DeleteIndividualUEPolicyAssociation
+      summary: Delete individual UE policy association.
+      tags:
+        - Individual UE Policy Association (Document)
+      parameters:
+        - name: polAssoId
+          in: path
+          description: Identifier of a policy association
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was successfully deleted
+        '307': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policies/{polAssoId}/update:
+    post:
+      operationId: ReportObservedEventTriggersForIndividualUEPolicyAssociation
+      summary: >
+        Report observed event triggers and possibly obtain updated policies for an individual UE
+        policy association.
+      tags:
+        - Individual UE Policy Association (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyAssociationUpdateRequest'
+      parameters:
+        - name: polAssoId
+          in: path
+          description: Identifier of a policy association
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Updated policies are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyUpdate'
+        '307': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npcf-ue-policy-control: Access to the Npcf_UEPolicyControl API
+
+  schemas:
+    PolicyAssociation:
+      description: >
+        Contains the description of a policy association that is returned by the PCF when a policy
+        Association is created, updated, or read.
+      type: object
+      properties:
+        request:
+          $ref: '#/components/schemas/PolicyAssociationRequest'
+        uePolicy:
+          $ref: '#/components/schemas/UePolicy'
+        n2Pc5Pol:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N2InfoContent'
+        n2Pc5PolA2x:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N2InfoContent'
+        n2Pc5ProSePol:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N2InfoContent'
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestTrigger'
+          minItems: 1
+          description: >
+            Request Triggers that the PCF subscribes.
+        pras:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 1
+          description: >
+            Contains the presence reporting area(s) for which reporting was requested.
+            The praId attribute within the PresenceInfo data type is the key of the map.
+        andspDelInd:
+          $ref: '#/components/schemas/PolicyStatus'
+        andspInd:
+          description: >
+            Indication of UE support of ANDSP. When set to true, it indicates the UE supports ANDSP,
+            when set to false it indicates the UE does not support ANDSP.
+          type: boolean
+        pduSessions:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionInfo'
+          minItems: 1
+          description: Combination of DNN and S-NSSAIs for which LBO information is requested. 
+        chfInfo:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/ChargingInformation'
+        chfGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        n2Pc5RsppPol:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N2InfoContent'
+        pcfUeInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PcfUeCallbackInfo'
+        matchPdus:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionInfo'
+          minItems: 1
+      required:
+        - suppFeat
+
+    PolicyAssociationRequest:
+      description: >
+        Represents information that the NF service consumer provides when requesting the creation of
+        a policy association.
+      type: object
+      properties:
+        notificationUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        altNotifIpv4Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+          description: Alternate or backup IPv4 Address(es) where to send Notifications.
+        altNotifIpv6Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+          description: Alternate or backup IPv6 Address(es) where to send Notifications. 
+        altNotifFqdns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+          minItems: 1
+          description: Alternate or backup FQDN(s) where to send Notifications.
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        accessTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+          description: >
+            The Access Type(s) where the served UE is camping.
+            It shall be provided, if available, for trigger "ACCESS_TYPE_CH.
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        userLoc:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        timeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        servingPlmn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        ratTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+          minItems: 1
+          description: >
+            The RAT Type(s), if available, for the reported "accessTypes" where the served UE is 
+            camping. It shall be provided, if available, for trigger "ACCESS_TYPE_CH.
+        groupIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+          minItems: 1
+        hPcfId: 
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        hPcfUri: 
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        hPcfSetId: 
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        uePolReq:
+          $ref: '#/components/schemas/UePolicyRequest'
+        guami:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+        serviceName:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/ServiceName'
+        servingNfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        pc5Capab:
+          $ref: '#/components/schemas/Pc5Capability'
+        a2xCapab:
+          type: array
+          items:
+            $ref: '#/components/schemas/A2xCapability'
+          minItems: 1
+        proSeCapab:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProSeCapability'
+          minItems: 1
+        confSnssais:
+          type: array
+          items:
+            $ref: 'TS29531_Nnssf_NSSelection.yaml#/components/schemas/ConfiguredSnssai'
+          minItems: 1
+          description: >
+            The Configured NSSAI for the serving PLMN, and the mapped S-NSSAI value of home
+            network corresponding to the configured S-NSSAI in the serving PLMN.
+        n3gNodeReSel:
+          $ref: '#/components/schemas/Non3gppAccess'
+        sliceN3gNodeSelCap:
+          $ref: '#/components/schemas/SliceSpecificN3gNodeSelectionCapability'
+        satBackhaulCategory:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SatelliteBackhaulCategory'
+        5gsToEpsMob:
+          type: boolean
+          description: >
+            It indicates the UE Policy Association is triggered by a 5GS to EPS mobility
+            scenario.
+        vpsUePolGuidance:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UePolicyParameters'
+          minProperties: 1
+          description: >
+            Contains the service parameter used to guide the VPLMN-specific URSP and may contain
+            the subscription to VPLMN-specific URSP delivery outcome.
+            The key of the map represents the AF request to guide VPLMN-specific URSP rules.
+            This attribute only applies in roaming and when the V-PCF is the NF service consumer.
+        lboRoamInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/LboRoamingInformation'
+          minItems: 1
+          description: >
+            Contains LBO roaming information for DNN and S-NSSAI combination(s).
+            This attribute only applies in roaming and when the AMF is the NF service consumer.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        rangSlCapab:
+          type: array
+          items:
+            $ref: '#/components/schemas/RangSLCapability'
+          minItems: 1
+      required:
+        - notificationUri
+        - suppFeat
+        - supi
+
+    PolicyAssociationUpdateRequest:
+      description: >
+        Represents Information that the NF service consumer provides when requesting the update of
+        a policy association.
+      type: object
+      properties:
+        notificationUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        altNotifIpv4Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+          description: Alternate or backup IPv4 Address(es) where to send Notifications.
+        altNotifIpv6Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+          description: Alternate or backup IPv6 Address(es) where to send Notifications. 
+        altNotifFqdns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+          minItems: 1
+          description: Alternate or backup FQDN(s) where to send Notifications.
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestTrigger'
+          minItems: 1
+          description: Request Triggers that the NF service consumer observes.
+        praStatuses:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          description: >
+            Contains the UE presence status for tracking area for which changes of the UE presence
+            occurred. The praId attribute within the PresenceInfo data type is the key of the map.
+          minProperties: 1
+        userLoc:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        uePolDelResult:
+          $ref: '#/components/schemas/UePolicyDeliveryResult'
+        uePolTransFailNotif:
+          $ref: '#/components/schemas/UePolicyTransferFailureNotification'
+        uePolReq:
+          $ref: '#/components/schemas/UePolicyRequest'
+        guami:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+        servingNfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        connectState:
+          $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/CmState'
+        groupIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+          minItems: 1
+        pc5Capab:
+          $ref: '#/components/schemas/Pc5Capability'
+        a2xCapab:
+          type: array
+          items:
+            $ref: '#/components/schemas/A2xCapability'
+          minItems: 1
+        proSeCapab:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProSeCapability'
+          minItems: 1
+        confSnssais:
+          type: array
+          items:
+            $ref: 'TS29531_Nnssf_NSSelection.yaml#/components/schemas/ConfiguredSnssai'
+          minItems: 1
+          description: >
+            The Configured NSSAI for the serving PLMN, and the mapped S-NSSAI value of home
+            network corresponding to the configured S-NSSAI in the serving PLMN.
+        n3gNodeReSel:
+          $ref: '#/components/schemas/Non3gppAccess'
+        sliceN3gNodeSelCap:
+          $ref: '#/components/schemas/SliceSpecificN3gNodeSelectionCapability'
+        satBackhaulCategory:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SatelliteBackhaulCategory'
+        urspEnfRep:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UrspEnforcementPduSession'
+          description: >
+            Contains information about the enforced URSP rule(s) in one or more PDU sessions.
+            The key of the map is a character string that represents an integer value.
+          minProperties: 1
+        vpsUePolGuidance:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UePolicyParameters'
+          minProperties: 1
+          description: >
+            Contains the service parameter used to guide the VPLMN-specific URSP and may contain
+            the subscription to VPLMN-specific URSP delivery outcome.
+            The key of the map represents the AF request to guide VPLMN-specific URSP rules.
+            This attribute only applies in roaming and when the V-PCF is the NF service consumer.
+          nullable: true
+        lboRoamInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/LboRoamingInformation'
+          minItems: 1
+          description: >
+            Contains LBO roaming information for DNN and S-NSSAI combination(s).
+            This attribute only applies in roaming and when the AMF is the NF service consumer.
+        accessTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+          description: >
+            The Access Type(s) where the served UE is camping.
+            It shall be provided, if available, for trigger "ACCESS_TYPE_CH.
+        ratTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+          minItems: 1
+          description: >
+            The RAT Type(s), if available, for the reported "accessTypes" where the served UE is 
+            camping. It shall be provided, if available, for trigger "ACCESS_TYPE_CH.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        rangSlCapab:
+          type: array
+          items:
+            $ref: '#/components/schemas/RangSLCapability'
+          minItems: 1
+          description: >
+            Contains the Ranging/SL related UE capabilities.
+
+    PolicyUpdate:
+      description: >
+        Represents updated policies that the PCF provides in a notification or in the reply to an
+        Update Request.
+      type: object
+      properties:
+        resourceUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        uePolicy:
+          $ref: '#/components/schemas/UePolicy'
+        n2Pc5Pol:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N2InfoContent'
+        n2Pc5PolA2x:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N2InfoContent'
+        n2Pc5ProSePol:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N2InfoContent'
+        triggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestTrigger'
+          minItems: 1
+          nullable: true
+          description: >
+            Request Triggers that the PCF subscribes.
+        pras:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfoRm'
+          description: >
+            Contains the presence reporting area(s) for which reporting was requested.
+            The praId attribute within the PresenceInfoRm data type is the key of the map.
+          minProperties: 1
+          nullable: true
+        andspDelInd:
+          $ref: '#/components/schemas/PolicyStatus'
+        delivReport:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UePolicyNotification'
+          minProperties: 1
+          description: >
+            Contains the delivery outcome of the VPLMN-specific URSP.
+            The key of the map represents the AF request of the corresponding subscription, i.e. its
+            value shall match the key that was previously provided by the V-PCF in the
+            vpsUePolGuidance attribute.
+            This attribute only applies in roaming and when the V-PCF is the NF service consumer.
+        pduSessions:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionInfo'
+          minItems: 1
+          description: >
+            Combination of DNN and S-NSSAIs for which LBO information is requested. 
+          nullable: true
+        pcfUeInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PcfUeCallbackInfo'
+        matchPdus:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionInfo'
+          minItems: 1
+          nullable: true
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        n2Pc5RsppPol:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N2InfoContent'
+      required:
+        - resourceUri
+
+    TerminationNotification:
+      description: >
+        Represents a request to terminate a policy association that the PCF provides in a
+        notification.
+      type: object
+      properties:
+        resourceUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        cause:
+          $ref: '#/components/schemas/PolicyAssociationReleaseCause'
+      required:
+        - resourceUri
+        - cause
+
+    UePolicyTransferFailureNotification:
+      description: >
+        Represents information on the failure of a UE policy transfer to the UE because the UE is
+        not reachable.
+      type: object
+      properties:
+        cause:
+          $ref: '#/components/schemas/UePolicyTransferFailureCause'
+        retryAfter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        ptis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+          minItems: 1
+          description: >
+            This contains a list of PTI assigned by the H-PCF corresponding to the UE policy(s)
+            which could not be transferred by the AMF.
+      required:
+        - cause
+        - ptis
+
+    UeRequestedValueRep:
+      description: >
+        Contains the current applicable values corresponding to the policy control request triggers.
+      type: object
+      properties:
+        userLoc:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        praStatuses:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 1
+          description: >
+            Contains the UE presence statuses for tracking areas. The praId attribute within the
+            PresenceInfo data type is the key of the map.
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        connectState:
+          $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/CmState'
+        confSnssais:
+          type: array
+          items:
+            $ref: 'TS29531_Nnssf_NSSelection.yaml#/components/schemas/ConfiguredSnssai'
+          minItems: 1
+          description: >
+            The Configured NSSAI for the serving PLMN, and the mapped S-NSSAI value of home
+            network corresponding to the configured S-NSSAI in the serving PLMN.
+        satBackhaulCategory:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SatelliteBackhaulCategory'
+        urspEnfRep:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UrspEnforcementPduSession'
+          description: >
+            Contains information about the enforced URSP rule(s) in one or more PDU sessions.
+            The key of the map is a character string that represents an integer value.
+          minProperties: 1
+        lboRoamInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/LboRoamingInformation'
+          minItems: 1
+          description: >
+            Contains LBO roaming information for DNN and S-NSSAI combination(s).
+        accessTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+          description: >
+            The Access Type(s) where the served UE is camping.
+            It shall be provided, if available, for trigger "ACCESS_TYPE_CH.
+        ratTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+          minItems: 1
+          description: >
+            The RAT Type(s), if available, for the reported "accessTypes" where the served UE is 
+            camping. It shall be provided, if available, for trigger "ACCESS_TYPE_CH.
+
+    UePolicyParameters:
+      description: >
+        Contains the service parameters used to guide the VPLMN-specific URSP rule determination.
+      type: object
+      properties:
+        urspGuidance:
+          type: array
+          items:
+            $ref: 'TS29522_ServiceParameter.yaml#/components/schemas/UrspRuleRequest'
+          minItems: 1
+          description: >
+            Contains the service parameter used to guide the VPLMN-specific URSP.
+        deliveryEvents:
+          type: array
+          items:
+            $ref: 'TS29522_ServiceParameter.yaml#/components/schemas/Event'
+          minItems: 1
+          description: >
+            AF subscribed event(s) notifications related to AF provisioned guidance
+            for VPLMN-specific URSP rules.
+          nullable: true
+      nullable: true
+
+    LboRoamingInformation:
+      description: >
+        Contains LBO roaming information for a DNN and S-NSSAI.
+      type: object
+      properties:
+        lboRoamAllowed:
+          type: boolean
+          description: >
+            Indicates whether LBO for the DNN and S-NSSAI is allowed when roaming.
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+      required:
+        - dnn
+        - snssai
+
+    UrspEnforcementPduSession:
+      description: >
+        Represents URSP rule enforcement information for a PDU session.
+      type: object
+      required:
+        - urspEnfInfo
+      properties:
+        urspEnfInfo:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/UrspEnforcementInfo'
+        sscMode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SscMode'
+        ueReqDnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        ueReqPduSessionType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+
+    UePolicyNotification:
+      description: >
+        Contains the delivery outcome of VPLMN-specific URSP rules.
+      type: object
+      required:
+        - eventNotifs
+      properties:
+        eventNotifs:
+          type: array
+          items:
+            $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/PcEventNotification'
+          minItems: 1
+          description: >
+            Represents the events to be reported according to the subscription to notifications
+            of VPLMN-specific URSP delivery outcome events.
+
+    UePolicy:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+
+    UePolicyDeliveryResult:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+
+    UePolicyRequest:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+
+    RequestTrigger:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - LOC_CH
+        - PRA_CH
+        - UE_POLICY
+        - PLMN_CH
+        - CON_STATE_CH
+        - GROUP_ID_LIST_CHG
+        - UE_CAP_CH
+        - SAT_CATEGORY_CHG
+        - NON_3GPP_NODE_RESELECTION
+        - CONF_NSSAI_CH
+        - LBO_INFO_CH
+        - FEAT_RENEG
+        - URSP_ENF_INFO
+        - ACCESS_TYPE_CH
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the possible request triggers.  
+#        Possible values are:
+#        - LOC_CH: Location change (tracking area). The tracking area of the UE has changed.
+#        - PRA_CH: Change of UE presence in PRA. The AMF reports the current presence status
+#          of the UE in a Presence Reporting Area, and notifies that the UE enters/leaves the 
+#          Presence Reporting Area.
+#        - UE_POLICY: A MANAGE UE POLICY COMPLETE message or a MANAGE UE POLICY COMMAND REJECT
+#          message, as defined in Annex D.5 of 3GPP TS 24.501 or a "UE POLICY PROVISIONING REQUEST"
+#          message, as defined in clause 7.2.1.1 of 3GPP TS 24.587, has been received by the AMF
+#          and is being forwarded.
+#        - PLMN_CH: PLMN change. the serving PLMN of UE has changed.
+#        - CON_STATE_CH: Connectivity state change: the connectivity state of UE has changed.
+#        - GROUP_ID_LIST_CHG: UE Internal Group Identifier(s) has changed. This policy 
+#          control request
+#          trigger does not require a subscription.
+#        - UE_CAP_CH: UE Capabilities change: the UE provided 5G ProSe capabilities have changed.
+#          This policy control request trigger does not require subscription.
+#        - SAT_CATEGORY_CHG: Indicates that the AMF has detected a change between different satellite
+#          category, or non-satellite backhaul.
+#        - NON_3GPP_NODE_RESELECTION: The UE has connected to a wrong non-3GPP access node that
+#          does not match its subscribed S-NSSAI(s). This policy control request trigger does not
+#          require a subscription.
+#        - CONF_NSSAI_CH: Configured NSSAI change. Indicates that the configured NSSAI has changed.
+#        - LBO_INFO_CH: LBO information change. The AMF reports LBO roaming allowed or not allowed
+#          for the requested DNN(s) and S-NSSAI(s). This policy control request trigger only applies
+#          in roaming scenarios when the NF service consumer is the AMF.
+#        - FEAT_RENEG: The NF service consumer notifies that the target AMF is requesting feature
+#          re-negotiation.
+#        - URSP_ENF_INFO: The V-PCF has received URSP rule enforcement information about the enforced
+#          URSP rule(s) in one or more PDU sessions. This trigger applies in roaming scenarios and
+#          to the V-PCF.
+#        - ACCESS_TYPE_CH: Access Type change. The registered access type and RAT type 
+#          has changed, an access type and RAT type is added or removed.
+#
+    PolicyAssociationReleaseCause:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - UNSPECIFIED
+        - UE_SUBSCRIPTION
+        - INSUFFICIENT_RES
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the cause why the PCF requests the policy association termination.  
+#        Possible values are:
+#        - UNSPECIFIED: This value is used for unspecified reasons.
+#        - UE_SUBSCRIPTION: This value is used to indicate that the policy association needs to be
+#          terminated because the subscription of UE has changed (e.g. was removed).
+#        - INSUFFICIENT_RES: This value is used to indicate that the server is overloaded and needs
+#          to abort the policy association.
+#
+    Pc5Capability:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - LTE_PC5
+        - NR_PC5
+        - LTE_NR_PC5
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the specific PC5 RAT(s) which the UE supports for V2X communications over
+#        PC5 reference point.  
+#        Possible values are:
+#        - LTE_PC5: This value is used to indicate that UE supports PC5 LTE RAT for V2X
+#          communications over the PC5 reference point
+#        - NR_PC5: This value is used to indicate that UE supports PC5 NR RAT for V2X communications
+#          over the PC5 reference point.
+#        - LTE_NR_PC5: This value is used to indicate that UE supports both PC5 LTE and NR RAT for
+#          V2X communications over the PC5 reference point.
+#
+    ProSeCapability:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - PROSE_DD
+        - PROSE_DC
+        - PROSE_L2_U2N_RELAY
+        - PROSE_L3_U2N_RELAY
+        - PROSE_L2_REMOTE_UE
+        - PROSE_L3_REMOTE_UE
+        - PROSE_L2_U2U_RELAY
+        - PROSE_L3_U2U_RELAY
+        - PROSE_L2_END_UE
+        - PROSE_L3_END_UE
+        - PROSE_MH_L2_U2N_RELAY
+        - PROSE_MH_L3_U2N_RELAY
+        - PROSE_MH_L2_REMOTE_UE
+        - PROSE_MH_L3_REMOTE_UE
+        - PROSE_MH_L2_INTERMEDIATE_UE
+        - PROSE_MH_L3_INTERMEDIATE_UE
+        - PROSE_MH_L3_U2U_RELAY
+        - PROSE_MH_L3_END_UE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          the content defined in the present version of this API.
+#      description: |
+#        Represents the 5G ProSe capabilities.  
+#        Possible values are:
+#        - PROSE_DD: This value is used to indicate that 5G ProSe Direct Discovery is supported
+#          by the UE.
+#        - PROSE_DC: This value is used to indicate that 5G ProSe Direct Communication is supported
+#          by the UE.
+#        - PROSE_L2_U2N_RELAY: This value is used to indicate that Layer-2 5G ProSe UE-to-Network
+#          Relay is supported by the UE.
+#        - PROSE_L3_U2N_RELAY: This value is used to indicate that Layer-3 5G ProSe UE-to-Network
+#          Relay is supported by the UE.
+#        - PROSE_L2_REMOTE_UE: This value is used to indicate that Layer-2 5G ProSe Remote UE is
+#          supported by the UE.
+#        - PROSE_L3_REMOTE_UE: This value is used to indicate that Layer-3 5G ProSe Remote UE is
+#          supported by the UE.
+#        - PROSE_L2_U2U_RELAY: This value is used to indicate that Layer-2 5G ProSe UE-to-UE
+#          Relay is supported by the UE.
+#        - PROSE_L3_U2U_RELAY: This value is used to indicate that Layer-3 5G ProSe UE-to-UE
+#          Relay is supported by the UE.
+#        - PROSE_L2_END_UE: This value is used to indicate that Layer-2 5G ProSe End UE is
+#          supported by the UE.
+#        - PROSE_L3_END_UE: This value is used to indicate that Layer-3 5G ProSe End UE is
+#          supported by the UE.
+#        - PROSE_MH_L2_U2N_RELAY: Indicates that the UE supports acting as a 5G ProSe Layer-2
+#          UE-to-Network Relay UE supporting 5G ProSe Layer-2 multi-hop UE-to-Network Relay.
+#        - PROSE_MH_L3_U2N_RELAY: Indicates that the UE supports acting as a 5G ProSe Layer-3
+#          UE-to-Network Relay UE supporting 5G ProSe Layer-3 multi-hop UE-to-Network Relay.
+#        - PROSE_MH_L2_REMOTE_UE: Indicates that the UE supports acting as a 5G ProSe Layer-2 Remote
+#          UE supporting 5G ProSe Layer-2 multi-hop UE-to-Network Relay.
+#        - PROSE_MH_L3_REMOTE_UE: Indicates that the UE supports acting as a 5G ProSe Layer-3 Remote
+#          UE supporting 5G ProSe Layer-3 multi-hop UE-to-Network Relay.
+#        - PROSE_MH_L2_INTERMEDIATE_UE: Indicates that the UE supports acting as a 5G ProSe Layer-2
+#          Intermediate UE-to-Network Relay supporting 5G ProSe Layer-2 multi-hop UE-to-Network
+#          Relay.
+#        - PROSE_MH_L3_INTERMEDIATE_UE: Indicates that the UE supports acting as a 5G ProSe Layer-3
+#          Intermediate UE-to-Network Relay supporting 5G ProSe Layer-3 multi-hop UE-to-Network
+#          Relay.
+#        - PROSE_MH_L3_U2U_RELAY: Indicates that the UE supports acting as a 5G ProSe Layer-3
+#          UE-to-UE Relay UE supporting 5G ProSe Layer-3 multi-hop UE-to-UE Relay.
+#        - PROSE_MH_L3_END_UE: Indicates that the UE supports acting as a 5G ProSe Layer-3 End UE
+#          supporting 5G ProSe Layer-3 multi-hop UE-to-UE Relay.
+#
+    Non3gppAccess:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - N3IWF
+        - TNGF
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents a non-3gpp access node.  
+#        Possible values are:
+#        - N3IWF: Non-3gpp Interworking Function.
+#        - TNGF: Trusted Non-3gpp Gateway Function.
+#
+    N1N2MessTransferErrorReply:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - UE_NOT_REACHABLE
+        - UNSPECIFIED
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents an N1N2 Message Transfer error.  
+#        Possible values are:
+#        - UE_NOT_REACHABLE: The UE is not reachable for paging.
+#        - UNSPECIFIED: Unspecified error.
+#
+    RangSLCapability:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - PC5_RANGING_SL
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          but is not used to encode content defined in the present version of this API.
+#      description: |
+#        Indicates the Ranging and Sidelink Capability.  
+#        Possible values are:
+#        - PC5_RANGING_SL: Indicates that the PC5 Capability for Ranging and Sidelink is supported
+#          by the UE.
+#
+    PolicyStatus:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - CONFIGURED
+        - NOT_CONFIGURED
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the configuration status of a UE Policy in the UE.  
+#        Possible values are:
+#        - CONFIGURED: The UE Policy is configured in the UE.
+#        - NOT_CONFIGURED: The UE Policy is not configured in the UE.
+#
+    A2xCapability:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - EUTRA_PC5
+        - NR_PC5
+        - UU
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the A2X capabilities the UE supports for A2X communication.  
+#        Possible values are:
+#        - EUTRA_PC5: This value is used to indicate that the UE supports PC5 EUTRA RAT for A2X
+#          communications over the PC5 reference point
+#        - NR_PC5: This value is used to indicate that the UE supports PC5 NR RAT for A2X
+#          communications over the PC5 reference point.
+#        - UU: This value is used to indicate that UE supports A2X communications over the Uu
+#          reference point.
+#
+    SliceSpecificN3gNodeSelectionCapability:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - ONLY_N3IWF_SS_SEL
+        - ONLY_TNGF_SS_SEL
+        - TNGF_N3IWF_SS_SEL
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the UE capabilities with regard to slice-specific non-3gpp node selection.  
+#        Possible values are:
+#        - ONLY_N3IWF_SS_SEL: Indicates that the UE supports N3IWF selection based on the slices
+#          the UE wishes to use over untrusted non-3GPP access.
+#        - ONLY_TNGF_SS_SEL: Indicates that the UE supports TNGF selection based on the slices
+#          the UE wishes to use over trusted non-3GPP access.
+#        - TNGF_N3IWF_SS_SEL: Indicates that the UE supports N3IWF selection based on the slices
+#          the UE wishes to use over untrusted non-3GPP access and TNGF selection based on the
+#          slices the UE wishes to use over trusted non-3GPP access.
+#
+    UePolicyTransferFailureCause:
+      description: UE Policy Transfer Failure Cause.
+      $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N1N2MessageTransferCause'
+#      anyOf:
+#        - $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N1N2MessageTransferCause'
+#        - $ref: '#/components/schemas/N1N2MessTransferErrorReply'

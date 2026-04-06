@@ -7,7 +7,10 @@
 OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_create(
     char *dnn,
     bool is_bdt_ref_ids_null,
-    OpenAPI_list_t* bdt_ref_ids
+    OpenAPI_list_t* bdt_ref_ids,
+    OpenAPI_list_t *restri_status,
+    bool is_spend_lim_info_null,
+    OpenAPI_list_t* spend_lim_info
 )
 {
     OpenAPI_sm_policy_dnn_data_patch_t *sm_policy_dnn_data_patch_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_dnn_data_patch_t));
@@ -16,6 +19,9 @@ OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_create(
     sm_policy_dnn_data_patch_local_var->dnn = dnn;
     sm_policy_dnn_data_patch_local_var->is_bdt_ref_ids_null = is_bdt_ref_ids_null;
     sm_policy_dnn_data_patch_local_var->bdt_ref_ids = bdt_ref_ids;
+    sm_policy_dnn_data_patch_local_var->restri_status = restri_status;
+    sm_policy_dnn_data_patch_local_var->is_spend_lim_info_null = is_spend_lim_info_null;
+    sm_policy_dnn_data_patch_local_var->spend_lim_info = spend_lim_info;
 
     return sm_policy_dnn_data_patch_local_var;
 }
@@ -40,6 +46,23 @@ void OpenAPI_sm_policy_dnn_data_patch_free(OpenAPI_sm_policy_dnn_data_patch_t *s
         }
         OpenAPI_list_free(sm_policy_dnn_data_patch->bdt_ref_ids);
         sm_policy_dnn_data_patch->bdt_ref_ids = NULL;
+    }
+    if (sm_policy_dnn_data_patch->restri_status) {
+        OpenAPI_list_for_each(sm_policy_dnn_data_patch->restri_status, node) {
+            OpenAPI_restricted_status_free(node->data);
+        }
+        OpenAPI_list_free(sm_policy_dnn_data_patch->restri_status);
+        sm_policy_dnn_data_patch->restri_status = NULL;
+    }
+    if (sm_policy_dnn_data_patch->spend_lim_info) {
+        OpenAPI_list_for_each(sm_policy_dnn_data_patch->spend_lim_info, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_policy_counter_info_rm_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(sm_policy_dnn_data_patch->spend_lim_info);
+        sm_policy_dnn_data_patch->spend_lim_info = NULL;
     }
     ogs_free(sm_policy_dnn_data_patch);
 }
@@ -95,6 +118,57 @@ cJSON *OpenAPI_sm_policy_dnn_data_patch_convertToJSON(OpenAPI_sm_policy_dnn_data
         }
     }
 
+    if (sm_policy_dnn_data_patch->restri_status) {
+    cJSON *restri_statusList = cJSON_AddArrayToObject(item, "restriStatus");
+    if (restri_statusList == NULL) {
+        ogs_error("OpenAPI_sm_policy_dnn_data_patch_convertToJSON() failed [restri_status]");
+        goto end;
+    }
+    OpenAPI_list_for_each(sm_policy_dnn_data_patch->restri_status, node) {
+        cJSON *itemLocal = OpenAPI_restricted_status_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_sm_policy_dnn_data_patch_convertToJSON() failed [restri_status]");
+            goto end;
+        }
+        cJSON_AddItemToArray(restri_statusList, itemLocal);
+    }
+    }
+
+    if (sm_policy_dnn_data_patch->spend_lim_info) {
+    cJSON *spend_lim_info = cJSON_AddObjectToObject(item, "spendLimInfo");
+    if (spend_lim_info == NULL) {
+        ogs_error("OpenAPI_sm_policy_dnn_data_patch_convertToJSON() failed [spend_lim_info]");
+        goto end;
+    }
+    cJSON *localMapObject = spend_lim_info;
+    if (sm_policy_dnn_data_patch->spend_lim_info) {
+        OpenAPI_list_for_each(sm_policy_dnn_data_patch->spend_lim_info, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_patch_convertToJSON() failed [spend_lim_info]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_patch_convertToJSON() failed [spend_lim_info]");
+                goto end;
+            }
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_policy_counter_info_rm_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_patch_convertToJSON() failed [inner]");
+                goto end;
+            }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        }
+    }
+    } else if (sm_policy_dnn_data_patch->is_spend_lim_info_null) {
+        if (cJSON_AddNullToObject(item, "spendLimInfo") == NULL) {
+            ogs_error("OpenAPI_sm_policy_dnn_data_patch_convertToJSON() failed [spend_lim_info]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -106,6 +180,10 @@ OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_parseFromJS
     cJSON *dnn = NULL;
     cJSON *bdt_ref_ids = NULL;
     OpenAPI_list_t *bdt_ref_idsList = NULL;
+    cJSON *restri_status = NULL;
+    OpenAPI_list_t *restri_statusList = NULL;
+    cJSON *spend_lim_info = NULL;
+    OpenAPI_list_t *spend_lim_infoList = NULL;
     dnn = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_data_patchJSON, "dnn");
     if (!dnn) {
         ogs_error("OpenAPI_sm_policy_dnn_data_patch_parseFromJSON() failed [dnn]");
@@ -142,23 +220,95 @@ OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_parseFromJS
     }
     }
 
+    restri_status = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_data_patchJSON, "restriStatus");
+    if (restri_status) {
+        cJSON *restri_status_local = NULL;
+        if (!cJSON_IsArray(restri_status)) {
+            ogs_error("OpenAPI_sm_policy_dnn_data_patch_parseFromJSON() failed [restri_status]");
+            goto end;
+        }
+
+        restri_statusList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(restri_status_local, restri_status) {
+            if (!cJSON_IsObject(restri_status_local)) {
+                ogs_error("OpenAPI_sm_policy_dnn_data_patch_parseFromJSON() failed [restri_status]");
+                goto end;
+            }
+            OpenAPI_restricted_status_t *restri_statusItem = OpenAPI_restricted_status_parseFromJSON(restri_status_local);
+            if (!restri_statusItem) {
+                ogs_error("No restri_statusItem");
+                goto end;
+            }
+            OpenAPI_list_add(restri_statusList, restri_statusItem);
+        }
+    }
+
+    spend_lim_info = cJSON_GetObjectItemCaseSensitive(sm_policy_dnn_data_patchJSON, "spendLimInfo");
+    if (spend_lim_info) {
+    if (!cJSON_IsNull(spend_lim_info)) {
+        cJSON *spend_lim_info_local_map = NULL;
+        if (!cJSON_IsObject(spend_lim_info) && !cJSON_IsNull(spend_lim_info)) {
+            ogs_error("OpenAPI_sm_policy_dnn_data_patch_parseFromJSON() failed [spend_lim_info]");
+            goto end;
+        }
+        if (cJSON_IsObject(spend_lim_info)) {
+            spend_lim_infoList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(spend_lim_info_local_map, spend_lim_info) {
+                cJSON *localMapObject = spend_lim_info_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_policy_counter_info_rm_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_sm_policy_dnn_data_patch_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(spend_lim_infoList, localMapKeyPair);
+            }
+        }
+    }
+    }
+
     sm_policy_dnn_data_patch_local_var = OpenAPI_sm_policy_dnn_data_patch_create (
         ogs_strdup(dnn->valuestring),
         bdt_ref_ids && cJSON_IsNull(bdt_ref_ids) ? true : false,
-        bdt_ref_ids ? bdt_ref_idsList : NULL
+        bdt_ref_ids ? bdt_ref_idsList : NULL,
+        restri_status ? restri_statusList : NULL,
+        spend_lim_info && cJSON_IsNull(spend_lim_info) ? true : false,
+        spend_lim_info ? spend_lim_infoList : NULL
     );
 
     return sm_policy_dnn_data_patch_local_var;
 end:
     if (bdt_ref_idsList) {
         OpenAPI_list_for_each(bdt_ref_idsList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             ogs_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(bdt_ref_idsList);
         bdt_ref_idsList = NULL;
+    }
+    if (restri_statusList) {
+        OpenAPI_list_for_each(restri_statusList, node) {
+            OpenAPI_restricted_status_free(node->data);
+        }
+        OpenAPI_list_free(restri_statusList);
+        restri_statusList = NULL;
+    }
+    if (spend_lim_infoList) {
+        OpenAPI_list_for_each(spend_lim_infoList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_policy_counter_info_rm_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(spend_lim_infoList);
+        spend_lim_infoList = NULL;
     }
     return NULL;
 }

@@ -1,7 +1,7 @@
 /*
  * communication_characteristics.h
  *
- * 
+ * Contains Communication Characteristics
  */
 
 #ifndef _OpenAPI_communication_characteristics_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_communication_characteristics_s OpenAPI_communication_characteristics_t;
 #include "pp_active_time.h"
 #include "pp_dl_packet_count_ext.h"
 #include "pp_maximum_latency.h"
@@ -22,8 +23,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_communication_characteristics_s OpenAPI_communication_characteristics_t;
-typedef struct OpenAPI_communication_characteristics_s {
+struct OpenAPI_communication_characteristics_s {
     bool is_pp_subs_reg_timer_null;
     struct OpenAPI_pp_subs_reg_timer_s *pp_subs_reg_timer;
     bool is_pp_active_time_null;
@@ -37,7 +37,9 @@ typedef struct OpenAPI_communication_characteristics_s {
     struct OpenAPI_pp_maximum_response_time_s *pp_maximum_response_time;
     bool is_pp_maximum_latency_null;
     struct OpenAPI_pp_maximum_latency_s *pp_maximum_latency;
-} OpenAPI_communication_characteristics_t;
+    bool is_pp_mps_msg_indication;
+    int pp_mps_msg_indication;
+};
 
 OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_create(
     bool is_pp_subs_reg_timer_null,
@@ -52,7 +54,9 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_c
     bool is_pp_maximum_response_time_null,
     OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time,
     bool is_pp_maximum_latency_null,
-    OpenAPI_pp_maximum_latency_t *pp_maximum_latency
+    OpenAPI_pp_maximum_latency_t *pp_maximum_latency,
+    bool is_pp_mps_msg_indication,
+    int pp_mps_msg_indication
 );
 void OpenAPI_communication_characteristics_free(OpenAPI_communication_characteristics_t *communication_characteristics);
 OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_parseFromJSON(cJSON *communication_characteristicsJSON);

@@ -7,7 +7,9 @@
 OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_create(
     OpenAPI_list_t *af_events,
     OpenAPI_list_t *af_ids,
-    OpenAPI_list_t *app_ids
+    OpenAPI_list_t *app_ids,
+    OpenAPI_list_t *tai_list,
+    OpenAPI_list_t *tai_range_list
 )
 {
     OpenAPI_af_event_exposure_data_t *af_event_exposure_data_local_var = ogs_malloc(sizeof(OpenAPI_af_event_exposure_data_t));
@@ -16,6 +18,8 @@ OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_create(
     af_event_exposure_data_local_var->af_events = af_events;
     af_event_exposure_data_local_var->af_ids = af_ids;
     af_event_exposure_data_local_var->app_ids = app_ids;
+    af_event_exposure_data_local_var->tai_list = tai_list;
+    af_event_exposure_data_local_var->tai_range_list = tai_range_list;
 
     return af_event_exposure_data_local_var;
 }
@@ -44,6 +48,20 @@ void OpenAPI_af_event_exposure_data_free(OpenAPI_af_event_exposure_data_t *af_ev
         }
         OpenAPI_list_free(af_event_exposure_data->app_ids);
         af_event_exposure_data->app_ids = NULL;
+    }
+    if (af_event_exposure_data->tai_list) {
+        OpenAPI_list_for_each(af_event_exposure_data->tai_list, node) {
+            OpenAPI_tai_free(node->data);
+        }
+        OpenAPI_list_free(af_event_exposure_data->tai_list);
+        af_event_exposure_data->tai_list = NULL;
+    }
+    if (af_event_exposure_data->tai_range_list) {
+        OpenAPI_list_for_each(af_event_exposure_data->tai_range_list, node) {
+            OpenAPI_tai_range_free(node->data);
+        }
+        OpenAPI_list_free(af_event_exposure_data->tai_range_list);
+        af_event_exposure_data->tai_range_list = NULL;
     }
     ogs_free(af_event_exposure_data);
 }
@@ -103,6 +121,38 @@ cJSON *OpenAPI_af_event_exposure_data_convertToJSON(OpenAPI_af_event_exposure_da
     }
     }
 
+    if (af_event_exposure_data->tai_list) {
+    cJSON *tai_listList = cJSON_AddArrayToObject(item, "taiList");
+    if (tai_listList == NULL) {
+        ogs_error("OpenAPI_af_event_exposure_data_convertToJSON() failed [tai_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(af_event_exposure_data->tai_list, node) {
+        cJSON *itemLocal = OpenAPI_tai_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_af_event_exposure_data_convertToJSON() failed [tai_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(tai_listList, itemLocal);
+    }
+    }
+
+    if (af_event_exposure_data->tai_range_list) {
+    cJSON *tai_range_listList = cJSON_AddArrayToObject(item, "taiRangeList");
+    if (tai_range_listList == NULL) {
+        ogs_error("OpenAPI_af_event_exposure_data_convertToJSON() failed [tai_range_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(af_event_exposure_data->tai_range_list, node) {
+        cJSON *itemLocal = OpenAPI_tai_range_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_af_event_exposure_data_convertToJSON() failed [tai_range_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(tai_range_listList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -117,6 +167,10 @@ OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_parseFromJSON(c
     OpenAPI_list_t *af_idsList = NULL;
     cJSON *app_ids = NULL;
     OpenAPI_list_t *app_idsList = NULL;
+    cJSON *tai_list = NULL;
+    OpenAPI_list_t *tai_listList = NULL;
+    cJSON *tai_range_list = NULL;
+    OpenAPI_list_t *tai_range_listList = NULL;
     af_events = cJSON_GetObjectItemCaseSensitive(af_event_exposure_dataJSON, "afEvents");
     if (!af_events) {
         ogs_error("OpenAPI_af_event_exposure_data_parseFromJSON() failed [af_events]");
@@ -191,10 +245,60 @@ OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_parseFromJSON(c
         }
     }
 
+    tai_list = cJSON_GetObjectItemCaseSensitive(af_event_exposure_dataJSON, "taiList");
+    if (tai_list) {
+        cJSON *tai_list_local = NULL;
+        if (!cJSON_IsArray(tai_list)) {
+            ogs_error("OpenAPI_af_event_exposure_data_parseFromJSON() failed [tai_list]");
+            goto end;
+        }
+
+        tai_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(tai_list_local, tai_list) {
+            if (!cJSON_IsObject(tai_list_local)) {
+                ogs_error("OpenAPI_af_event_exposure_data_parseFromJSON() failed [tai_list]");
+                goto end;
+            }
+            OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local);
+            if (!tai_listItem) {
+                ogs_error("No tai_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(tai_listList, tai_listItem);
+        }
+    }
+
+    tai_range_list = cJSON_GetObjectItemCaseSensitive(af_event_exposure_dataJSON, "taiRangeList");
+    if (tai_range_list) {
+        cJSON *tai_range_list_local = NULL;
+        if (!cJSON_IsArray(tai_range_list)) {
+            ogs_error("OpenAPI_af_event_exposure_data_parseFromJSON() failed [tai_range_list]");
+            goto end;
+        }
+
+        tai_range_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(tai_range_list_local, tai_range_list) {
+            if (!cJSON_IsObject(tai_range_list_local)) {
+                ogs_error("OpenAPI_af_event_exposure_data_parseFromJSON() failed [tai_range_list]");
+                goto end;
+            }
+            OpenAPI_tai_range_t *tai_range_listItem = OpenAPI_tai_range_parseFromJSON(tai_range_list_local);
+            if (!tai_range_listItem) {
+                ogs_error("No tai_range_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(tai_range_listList, tai_range_listItem);
+        }
+    }
+
     af_event_exposure_data_local_var = OpenAPI_af_event_exposure_data_create (
         af_eventsList,
         af_ids ? af_idsList : NULL,
-        app_ids ? app_idsList : NULL
+        app_ids ? app_idsList : NULL,
+        tai_list ? tai_listList : NULL,
+        tai_range_list ? tai_range_listList : NULL
     );
 
     return af_event_exposure_data_local_var;
@@ -216,6 +320,20 @@ end:
         }
         OpenAPI_list_free(app_idsList);
         app_idsList = NULL;
+    }
+    if (tai_listList) {
+        OpenAPI_list_for_each(tai_listList, node) {
+            OpenAPI_tai_free(node->data);
+        }
+        OpenAPI_list_free(tai_listList);
+        tai_listList = NULL;
+    }
+    if (tai_range_listList) {
+        OpenAPI_list_for_each(tai_range_listList, node) {
+            OpenAPI_tai_range_free(node->data);
+        }
+        OpenAPI_list_free(tai_range_listList);
+        tai_range_listList = NULL;
     }
     return NULL;
 }

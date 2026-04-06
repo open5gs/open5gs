@@ -1,7 +1,7 @@
 /*
  * nsi_load_level_info.h
  *
- * Represents the network slice and optionally the associated network slice instance and the  load level information. 
+ * Represents the network slice and optionally the associated network slice instance and the load level information. 
  */
 
 #ifndef _OpenAPI_nsi_load_level_info_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nsi_load_level_info_s OpenAPI_nsi_load_level_info_t;
 #include "network_area_info.h"
 #include "number_average.h"
 #include "resource_usage.h"
@@ -22,8 +23,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nsi_load_level_info_s OpenAPI_nsi_load_level_info_t;
-typedef struct OpenAPI_nsi_load_level_info_s {
+struct OpenAPI_nsi_load_level_info_s {
     int load_level_information;
     struct OpenAPI_snssai_s *snssai;
     char *nsi_id;
@@ -39,7 +39,7 @@ typedef struct OpenAPI_nsi_load_level_info_s {
     struct OpenAPI_number_average_s *num_of_pdu_sess;
     bool is_confidence;
     int confidence;
-} OpenAPI_nsi_load_level_info_t;
+};
 
 OpenAPI_nsi_load_level_info_t *OpenAPI_nsi_load_level_info_create(
     int load_level_information,

@@ -1,7 +1,7 @@
 /*
  * service_info_status.h
  *
- * 
+ * Represents the preliminary or final service information status.
  */
 
 #ifndef _OpenAPI_service_info_status_H_

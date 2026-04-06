@@ -15,7 +15,12 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
     char *subscription_id,
     bool is_unique_subscription,
     int unique_subscription,
-    char *supported_features
+    char *supported_features,
+    bool is_immediate_report,
+    int immediate_report,
+    OpenAPI_immediate_report_1_t *report,
+    OpenAPI_list_t *additional_data_refs,
+    OpenAPI_list_t *reset_ids
 )
 {
     OpenAPI_subscription_data_subscriptions_t *subscription_data_subscriptions_local_var = ogs_malloc(sizeof(OpenAPI_subscription_data_subscriptions_t));
@@ -32,6 +37,11 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
     subscription_data_subscriptions_local_var->is_unique_subscription = is_unique_subscription;
     subscription_data_subscriptions_local_var->unique_subscription = unique_subscription;
     subscription_data_subscriptions_local_var->supported_features = supported_features;
+    subscription_data_subscriptions_local_var->is_immediate_report = is_immediate_report;
+    subscription_data_subscriptions_local_var->immediate_report = immediate_report;
+    subscription_data_subscriptions_local_var->report = report;
+    subscription_data_subscriptions_local_var->additional_data_refs = additional_data_refs;
+    subscription_data_subscriptions_local_var->reset_ids = reset_ids;
 
     return subscription_data_subscriptions_local_var;
 }
@@ -81,6 +91,24 @@ void OpenAPI_subscription_data_subscriptions_free(OpenAPI_subscription_data_subs
     if (subscription_data_subscriptions->supported_features) {
         ogs_free(subscription_data_subscriptions->supported_features);
         subscription_data_subscriptions->supported_features = NULL;
+    }
+    if (subscription_data_subscriptions->report) {
+        OpenAPI_immediate_report_1_free(subscription_data_subscriptions->report);
+        subscription_data_subscriptions->report = NULL;
+    }
+    if (subscription_data_subscriptions->additional_data_refs) {
+        OpenAPI_list_for_each(subscription_data_subscriptions->additional_data_refs, node) {
+            OpenAPI_additional_data_ref_free(node->data);
+        }
+        OpenAPI_list_free(subscription_data_subscriptions->additional_data_refs);
+        subscription_data_subscriptions->additional_data_refs = NULL;
+    }
+    if (subscription_data_subscriptions->reset_ids) {
+        OpenAPI_list_for_each(subscription_data_subscriptions->reset_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(subscription_data_subscriptions->reset_ids);
+        subscription_data_subscriptions->reset_ids = NULL;
     }
     ogs_free(subscription_data_subscriptions);
 }
@@ -189,6 +217,56 @@ cJSON *OpenAPI_subscription_data_subscriptions_convertToJSON(OpenAPI_subscriptio
     }
     }
 
+    if (subscription_data_subscriptions->is_immediate_report) {
+    if (cJSON_AddBoolToObject(item, "immediateReport", subscription_data_subscriptions->immediate_report) == NULL) {
+        ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [immediate_report]");
+        goto end;
+    }
+    }
+
+    if (subscription_data_subscriptions->report) {
+    cJSON *report_local_JSON = OpenAPI_immediate_report_1_convertToJSON(subscription_data_subscriptions->report);
+    if (report_local_JSON == NULL) {
+        ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [report]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "report", report_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [report]");
+        goto end;
+    }
+    }
+
+    if (subscription_data_subscriptions->additional_data_refs) {
+    cJSON *additional_data_refsList = cJSON_AddArrayToObject(item, "additionalDataRefs");
+    if (additional_data_refsList == NULL) {
+        ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [additional_data_refs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(subscription_data_subscriptions->additional_data_refs, node) {
+        cJSON *itemLocal = OpenAPI_additional_data_ref_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [additional_data_refs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(additional_data_refsList, itemLocal);
+    }
+    }
+
+    if (subscription_data_subscriptions->reset_ids) {
+    cJSON *reset_idsList = cJSON_AddArrayToObject(item, "resetIds");
+    if (reset_idsList == NULL) {
+        ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [reset_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(subscription_data_subscriptions->reset_ids, node) {
+        if (cJSON_AddStringToObject(reset_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_subscription_data_subscriptions_convertToJSON() failed [reset_ids]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -210,6 +288,13 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
     cJSON *subscription_id = NULL;
     cJSON *unique_subscription = NULL;
     cJSON *supported_features = NULL;
+    cJSON *immediate_report = NULL;
+    cJSON *report = NULL;
+    OpenAPI_immediate_report_1_t *report_local_nonprim = NULL;
+    cJSON *additional_data_refs = NULL;
+    OpenAPI_list_t *additional_data_refsList = NULL;
+    cJSON *reset_ids = NULL;
+    OpenAPI_list_t *reset_idsList = NULL;
     ue_id = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "ueId");
     if (ue_id) {
     if (!cJSON_IsString(ue_id) && !cJSON_IsNull(ue_id)) {
@@ -309,6 +394,68 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
     }
     }
 
+    immediate_report = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "immediateReport");
+    if (immediate_report) {
+    if (!cJSON_IsBool(immediate_report)) {
+        ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [immediate_report]");
+        goto end;
+    }
+    }
+
+    report = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "report");
+    if (report) {
+    report_local_nonprim = OpenAPI_immediate_report_1_parseFromJSON(report);
+    if (!report_local_nonprim) {
+        ogs_error("OpenAPI_immediate_report_1_parseFromJSON failed [report]");
+        goto end;
+    }
+    }
+
+    additional_data_refs = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "additionalDataRefs");
+    if (additional_data_refs) {
+        cJSON *additional_data_refs_local = NULL;
+        if (!cJSON_IsArray(additional_data_refs)) {
+            ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [additional_data_refs]");
+            goto end;
+        }
+
+        additional_data_refsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(additional_data_refs_local, additional_data_refs) {
+            if (!cJSON_IsObject(additional_data_refs_local)) {
+                ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [additional_data_refs]");
+                goto end;
+            }
+            OpenAPI_additional_data_ref_t *additional_data_refsItem = OpenAPI_additional_data_ref_parseFromJSON(additional_data_refs_local);
+            if (!additional_data_refsItem) {
+                ogs_error("No additional_data_refsItem");
+                goto end;
+            }
+            OpenAPI_list_add(additional_data_refsList, additional_data_refsItem);
+        }
+    }
+
+    reset_ids = cJSON_GetObjectItemCaseSensitive(subscription_data_subscriptionsJSON, "resetIds");
+    if (reset_ids) {
+        cJSON *reset_ids_local = NULL;
+        if (!cJSON_IsArray(reset_ids)) {
+            ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [reset_ids]");
+            goto end;
+        }
+
+        reset_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(reset_ids_local, reset_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(reset_ids_local)) {
+                ogs_error("OpenAPI_subscription_data_subscriptions_parseFromJSON() failed [reset_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(reset_idsList, ogs_strdup(reset_ids_local->valuestring));
+        }
+    }
+
     subscription_data_subscriptions_local_var = OpenAPI_subscription_data_subscriptions_create (
         ue_id && !cJSON_IsNull(ue_id) ? ogs_strdup(ue_id->valuestring) : NULL,
         ogs_strdup(callback_reference->valuestring),
@@ -320,7 +467,12 @@ OpenAPI_subscription_data_subscriptions_t *OpenAPI_subscription_data_subscriptio
         subscription_id && !cJSON_IsNull(subscription_id) ? ogs_strdup(subscription_id->valuestring) : NULL,
         unique_subscription ? true : false,
         unique_subscription ? unique_subscription->valueint : 0,
-        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        immediate_report ? true : false,
+        immediate_report ? immediate_report->valueint : 0,
+        report ? report_local_nonprim : NULL,
+        additional_data_refs ? additional_data_refsList : NULL,
+        reset_ids ? reset_idsList : NULL
     );
 
     return subscription_data_subscriptions_local_var;
@@ -339,6 +491,24 @@ end:
     if (hss_subscription_info_local_nonprim) {
         OpenAPI_hss_subscription_info_free(hss_subscription_info_local_nonprim);
         hss_subscription_info_local_nonprim = NULL;
+    }
+    if (report_local_nonprim) {
+        OpenAPI_immediate_report_1_free(report_local_nonprim);
+        report_local_nonprim = NULL;
+    }
+    if (additional_data_refsList) {
+        OpenAPI_list_for_each(additional_data_refsList, node) {
+            OpenAPI_additional_data_ref_free(node->data);
+        }
+        OpenAPI_list_free(additional_data_refsList);
+        additional_data_refsList = NULL;
+    }
+    if (reset_idsList) {
+        OpenAPI_list_for_each(reset_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(reset_idsList);
+        reset_idsList = NULL;
     }
     return NULL;
 }

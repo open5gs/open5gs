@@ -1,0 +1,29 @@
+openapi: 3.0.0
+
+info:
+  title: 5GMS R4 Data Reporting data types
+  version: 2.0.2
+  description: |
+    5GMS R4 Data Reporting data types
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: 5GMS R4 Data Reporting data types
+    description: '5G Media Streaming: R4 Data Reporting data types'
+
+externalDocs:
+  description: 'TS 26.512 V18.6.0; 5G Media Streaming (5GMS); Protocols'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.512/'
+
+paths: {}
+
+components:
+  schemas:
+    MediaStreamingAccessRecord:
+      description: "An R4 data reporting record describing a single media access by the Media Stream Handler."
+      allOf:
+        - $ref: 'TS26532_Ndcaf_DataReporting.yaml#/components/schemas/BaseRecord'
+        - $ref: 'TS26512_CommonData.yaml#/components/schemas/MediaStreamingBaseReportingRecord'
+        - $ref: 'TS26512_CommonData.yaml#/components/schemas/MediaStreamingSessionIdentification'
+        - $ref: 'TS26512_CommonData.yaml#/components/schemas/MediaStreamingAccess'

@@ -187,7 +187,8 @@ bool bsf_nbsf_management_handle_pcf_binding(
 
             memset(&header, 0, sizeof(header));
             header.service.name =
-                (char *)OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT;
+                OpenAPI_service_name_ToString(
+                        OpenAPI_service_name_nbsf_management);
             header.api.version = (char *)OGS_SBI_API_V1;
             header.resource.component[0] =
                 (char *)OGS_SBI_RESOURCE_NAME_PCF_BINDINGS;

@@ -11,7 +11,8 @@ OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_create(
     int duration,
     bool is_duration_variance,
     float duration_variance,
-    OpenAPI_list_t *loc_infos
+    OpenAPI_list_t *loc_infos,
+    OpenAPI_list_t *direction_infos
 )
 {
     OpenAPI_ue_mobility_t *ue_mobility_local_var = ogs_malloc(sizeof(OpenAPI_ue_mobility_t));
@@ -24,6 +25,7 @@ OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_create(
     ue_mobility_local_var->is_duration_variance = is_duration_variance;
     ue_mobility_local_var->duration_variance = duration_variance;
     ue_mobility_local_var->loc_infos = loc_infos;
+    ue_mobility_local_var->direction_infos = direction_infos;
 
     return ue_mobility_local_var;
 }
@@ -49,6 +51,13 @@ void OpenAPI_ue_mobility_free(OpenAPI_ue_mobility_t *ue_mobility)
         }
         OpenAPI_list_free(ue_mobility->loc_infos);
         ue_mobility->loc_infos = NULL;
+    }
+    if (ue_mobility->direction_infos) {
+        OpenAPI_list_for_each(ue_mobility->direction_infos, node) {
+            OpenAPI_direction_info_free(node->data);
+        }
+        OpenAPI_list_free(ue_mobility->direction_infos);
+        ue_mobility->direction_infos = NULL;
     }
     ogs_free(ue_mobility);
 }
@@ -114,6 +123,22 @@ cJSON *OpenAPI_ue_mobility_convertToJSON(OpenAPI_ue_mobility_t *ue_mobility)
     }
     }
 
+    if (ue_mobility->direction_infos) {
+    cJSON *direction_infosList = cJSON_AddArrayToObject(item, "directionInfos");
+    if (direction_infosList == NULL) {
+        ogs_error("OpenAPI_ue_mobility_convertToJSON() failed [direction_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(ue_mobility->direction_infos, node) {
+        cJSON *itemLocal = OpenAPI_direction_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_ue_mobility_convertToJSON() failed [direction_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(direction_infosList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -129,6 +154,8 @@ OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_parseFromJSON(cJSON *ue_mobilityJSON)
     cJSON *duration_variance = NULL;
     cJSON *loc_infos = NULL;
     OpenAPI_list_t *loc_infosList = NULL;
+    cJSON *direction_infos = NULL;
+    OpenAPI_list_t *direction_infosList = NULL;
     ts = cJSON_GetObjectItemCaseSensitive(ue_mobilityJSON, "ts");
     if (ts) {
     if (!cJSON_IsString(ts) && !cJSON_IsNull(ts)) {
@@ -186,6 +213,30 @@ OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_parseFromJSON(cJSON *ue_mobilityJSON)
         }
     }
 
+    direction_infos = cJSON_GetObjectItemCaseSensitive(ue_mobilityJSON, "directionInfos");
+    if (direction_infos) {
+        cJSON *direction_infos_local = NULL;
+        if (!cJSON_IsArray(direction_infos)) {
+            ogs_error("OpenAPI_ue_mobility_parseFromJSON() failed [direction_infos]");
+            goto end;
+        }
+
+        direction_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(direction_infos_local, direction_infos) {
+            if (!cJSON_IsObject(direction_infos_local)) {
+                ogs_error("OpenAPI_ue_mobility_parseFromJSON() failed [direction_infos]");
+                goto end;
+            }
+            OpenAPI_direction_info_t *direction_infosItem = OpenAPI_direction_info_parseFromJSON(direction_infos_local);
+            if (!direction_infosItem) {
+                ogs_error("No direction_infosItem");
+                goto end;
+            }
+            OpenAPI_list_add(direction_infosList, direction_infosItem);
+        }
+    }
+
     ue_mobility_local_var = OpenAPI_ue_mobility_create (
         ts && !cJSON_IsNull(ts) ? ogs_strdup(ts->valuestring) : NULL,
         recurring_time ? recurring_time_local_nonprim : NULL,
@@ -193,7 +244,8 @@ OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_parseFromJSON(cJSON *ue_mobilityJSON)
         duration ? duration->valuedouble : 0,
         duration_variance ? true : false,
         duration_variance ? duration_variance->valuedouble : 0,
-        loc_infos ? loc_infosList : NULL
+        loc_infos ? loc_infosList : NULL,
+        direction_infos ? direction_infosList : NULL
     );
 
     return ue_mobility_local_var;
@@ -208,6 +260,13 @@ end:
         }
         OpenAPI_list_free(loc_infosList);
         loc_infosList = NULL;
+    }
+    if (direction_infosList) {
+        OpenAPI_list_for_each(direction_infosList, node) {
+            OpenAPI_direction_info_free(node->data);
+        }
+        OpenAPI_list_free(direction_infosList);
+        direction_infosList = NULL;
     }
     return NULL;
 }

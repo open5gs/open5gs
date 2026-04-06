@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pcf_addressing_info_s OpenAPI_pcf_addressing_info_t;
 #include "ip_end_point.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pcf_addressing_info_s OpenAPI_pcf_addressing_info_t;
-typedef struct OpenAPI_pcf_addressing_info_s {
+struct OpenAPI_pcf_addressing_info_s {
     char *pcf_fqdn;
     OpenAPI_list_t *pcf_ip_end_points;
     char *binding_info;
-} OpenAPI_pcf_addressing_info_t;
+};
 
 OpenAPI_pcf_addressing_info_t *OpenAPI_pcf_addressing_info_create(
     char *pcf_fqdn,

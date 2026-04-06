@@ -367,7 +367,7 @@ OpenAPI_mb_smf_info_t *OpenAPI_mb_smf_info_parseFromJSON(cJSON *mb_smf_infoJSON)
 end:
     if (s_nssai_info_listList) {
         OpenAPI_list_for_each(s_nssai_info_listList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_snssai_mb_smf_info_item_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
@@ -377,7 +377,7 @@ end:
     }
     if (tmgi_range_listList) {
         OpenAPI_list_for_each(tmgi_range_listList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_tmgi_range_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
@@ -401,7 +401,7 @@ end:
     }
     if (mbs_session_listList) {
         OpenAPI_list_for_each(mbs_session_listList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_mbs_session_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

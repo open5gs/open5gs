@@ -1,7 +1,7 @@
 /*
  * sqn_scheme.h
  *
- * 
+ * Scheme for generation of Sequence Numbers.
  */
 
 #ifndef _OpenAPI_sqn_scheme_H_

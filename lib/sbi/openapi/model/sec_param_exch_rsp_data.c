@@ -9,6 +9,7 @@ OpenAPI_sec_param_exch_rsp_data_t *OpenAPI_sec_param_exch_rsp_data_create(
     char *selected_jwe_cipher_suite,
     char *selected_jws_cipher_suite,
     OpenAPI_protection_policy_t *sel_protection_policy_info,
+    OpenAPI_list_t *sel_sec_profiles,
     OpenAPI_list_t *ipx_provider_sec_info_list,
     char *sender
 )
@@ -20,6 +21,7 @@ OpenAPI_sec_param_exch_rsp_data_t *OpenAPI_sec_param_exch_rsp_data_create(
     sec_param_exch_rsp_data_local_var->selected_jwe_cipher_suite = selected_jwe_cipher_suite;
     sec_param_exch_rsp_data_local_var->selected_jws_cipher_suite = selected_jws_cipher_suite;
     sec_param_exch_rsp_data_local_var->sel_protection_policy_info = sel_protection_policy_info;
+    sec_param_exch_rsp_data_local_var->sel_sec_profiles = sel_sec_profiles;
     sec_param_exch_rsp_data_local_var->ipx_provider_sec_info_list = ipx_provider_sec_info_list;
     sec_param_exch_rsp_data_local_var->sender = sender;
 
@@ -48,6 +50,13 @@ void OpenAPI_sec_param_exch_rsp_data_free(OpenAPI_sec_param_exch_rsp_data_t *sec
     if (sec_param_exch_rsp_data->sel_protection_policy_info) {
         OpenAPI_protection_policy_free(sec_param_exch_rsp_data->sel_protection_policy_info);
         sec_param_exch_rsp_data->sel_protection_policy_info = NULL;
+    }
+    if (sec_param_exch_rsp_data->sel_sec_profiles) {
+        OpenAPI_list_for_each(sec_param_exch_rsp_data->sel_sec_profiles, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(sec_param_exch_rsp_data->sel_sec_profiles);
+        sec_param_exch_rsp_data->sel_sec_profiles = NULL;
     }
     if (sec_param_exch_rsp_data->ipx_provider_sec_info_list) {
         OpenAPI_list_for_each(sec_param_exch_rsp_data->ipx_provider_sec_info_list, node) {
@@ -110,6 +119,20 @@ cJSON *OpenAPI_sec_param_exch_rsp_data_convertToJSON(OpenAPI_sec_param_exch_rsp_
     }
     }
 
+    if (sec_param_exch_rsp_data->sel_sec_profiles) {
+    cJSON *sel_sec_profilesList = cJSON_AddArrayToObject(item, "selSecProfiles");
+    if (sel_sec_profilesList == NULL) {
+        ogs_error("OpenAPI_sec_param_exch_rsp_data_convertToJSON() failed [sel_sec_profiles]");
+        goto end;
+    }
+    OpenAPI_list_for_each(sec_param_exch_rsp_data->sel_sec_profiles, node) {
+        if (cJSON_AddStringToObject(sel_sec_profilesList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_sec_param_exch_rsp_data_convertToJSON() failed [sel_sec_profiles]");
+            goto end;
+        }
+    }
+    }
+
     if (sec_param_exch_rsp_data->ipx_provider_sec_info_list) {
     cJSON *ipx_provider_sec_info_listList = cJSON_AddArrayToObject(item, "ipxProviderSecInfoList");
     if (ipx_provider_sec_info_listList == NULL) {
@@ -146,6 +169,8 @@ OpenAPI_sec_param_exch_rsp_data_t *OpenAPI_sec_param_exch_rsp_data_parseFromJSON
     cJSON *selected_jws_cipher_suite = NULL;
     cJSON *sel_protection_policy_info = NULL;
     OpenAPI_protection_policy_t *sel_protection_policy_info_local_nonprim = NULL;
+    cJSON *sel_sec_profiles = NULL;
+    OpenAPI_list_t *sel_sec_profilesList = NULL;
     cJSON *ipx_provider_sec_info_list = NULL;
     OpenAPI_list_t *ipx_provider_sec_info_listList = NULL;
     cJSON *sender = NULL;
@@ -182,6 +207,27 @@ OpenAPI_sec_param_exch_rsp_data_t *OpenAPI_sec_param_exch_rsp_data_parseFromJSON
         ogs_error("OpenAPI_protection_policy_parseFromJSON failed [sel_protection_policy_info]");
         goto end;
     }
+    }
+
+    sel_sec_profiles = cJSON_GetObjectItemCaseSensitive(sec_param_exch_rsp_dataJSON, "selSecProfiles");
+    if (sel_sec_profiles) {
+        cJSON *sel_sec_profiles_local = NULL;
+        if (!cJSON_IsArray(sel_sec_profiles)) {
+            ogs_error("OpenAPI_sec_param_exch_rsp_data_parseFromJSON() failed [sel_sec_profiles]");
+            goto end;
+        }
+
+        sel_sec_profilesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(sel_sec_profiles_local, sel_sec_profiles) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(sel_sec_profiles_local)) {
+                ogs_error("OpenAPI_sec_param_exch_rsp_data_parseFromJSON() failed [sel_sec_profiles]");
+                goto end;
+            }
+            OpenAPI_list_add(sel_sec_profilesList, ogs_strdup(sel_sec_profiles_local->valuestring));
+        }
     }
 
     ipx_provider_sec_info_list = cJSON_GetObjectItemCaseSensitive(sec_param_exch_rsp_dataJSON, "ipxProviderSecInfoList");
@@ -221,6 +267,7 @@ OpenAPI_sec_param_exch_rsp_data_t *OpenAPI_sec_param_exch_rsp_data_parseFromJSON
         selected_jwe_cipher_suite && !cJSON_IsNull(selected_jwe_cipher_suite) ? ogs_strdup(selected_jwe_cipher_suite->valuestring) : NULL,
         selected_jws_cipher_suite && !cJSON_IsNull(selected_jws_cipher_suite) ? ogs_strdup(selected_jws_cipher_suite->valuestring) : NULL,
         sel_protection_policy_info ? sel_protection_policy_info_local_nonprim : NULL,
+        sel_sec_profiles ? sel_sec_profilesList : NULL,
         ipx_provider_sec_info_list ? ipx_provider_sec_info_listList : NULL,
         sender && !cJSON_IsNull(sender) ? ogs_strdup(sender->valuestring) : NULL
     );
@@ -230,6 +277,13 @@ end:
     if (sel_protection_policy_info_local_nonprim) {
         OpenAPI_protection_policy_free(sel_protection_policy_info_local_nonprim);
         sel_protection_policy_info_local_nonprim = NULL;
+    }
+    if (sel_sec_profilesList) {
+        OpenAPI_list_for_each(sel_sec_profilesList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(sel_sec_profilesList);
+        sel_sec_profilesList = NULL;
     }
     if (ipx_provider_sec_info_listList) {
         OpenAPI_list_for_each(ipx_provider_sec_info_listList, node) {

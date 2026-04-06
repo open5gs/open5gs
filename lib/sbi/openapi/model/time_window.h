@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_time_window_s OpenAPI_time_window_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_time_window_s OpenAPI_time_window_t;
-typedef struct OpenAPI_time_window_s {
+struct OpenAPI_time_window_s {
     char *start_time;
     char *stop_time;
-} OpenAPI_time_window_t;
+};
 
 OpenAPI_time_window_t *OpenAPI_time_window_create(
     char *start_time,

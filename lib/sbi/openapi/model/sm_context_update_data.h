@@ -12,7 +12,9 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_context_update_data_s OpenAPI_sm_context_update_data_t;
 #include "access_type.h"
+#include "avail_bit_rate_mon_supported.h"
 #include "backup_amf_info.h"
 #include "cause.h"
 #include "ddn_failure_subs.h"
@@ -29,12 +31,16 @@
 #include "pcf_ue_callback_info.h"
 #include "plmn_id_nid.h"
 #include "presence_state.h"
+#include "qos_monitoring_congestion_supported.h"
+#include "qos_monitoring_pd_method.h"
+#include "qos_monitoring_pd_supported.h"
 #include "rat_type.h"
 #include "ref_to_binary_data.h"
 #include "satellite_backhaul_category.h"
 #include "snssai.h"
 #include "trace_data.h"
 #include "tunnel_info.h"
+#include "ue_level_measurements_configuration.h"
 #include "up_cnx_state.h"
 #include "user_location.h"
 
@@ -42,13 +48,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_context_update_data_s OpenAPI_sm_context_update_data_t;
-typedef enum { OpenAPI_sm_context_update_data_SMPOLICYNOTIFYIND_NULL = 0, OpenAPI_sm_context_update_data_SMPOLICYNOTIFYIND__true } OpenAPI_sm_context_update_data_sm_policy_notify_ind_e;
-
-char* OpenAPI_sm_context_update_data_sm_policy_notify_ind_ToString(OpenAPI_sm_context_update_data_sm_policy_notify_ind_e sm_policy_notify_ind);
-
-OpenAPI_sm_context_update_data_sm_policy_notify_ind_e OpenAPI_sm_context_update_data_sm_policy_notify_ind_FromString(char* sm_policy_notify_ind);
-typedef struct OpenAPI_sm_context_update_data_s {
+struct OpenAPI_sm_context_update_data_s {
     char *pei;
     char *serving_nf_id;
     struct OpenAPI_guami_s *guami;
@@ -58,6 +58,7 @@ typedef struct OpenAPI_sm_context_update_data_s {
     OpenAPI_access_type_e an_type;
     OpenAPI_access_type_e additional_an_type;
     OpenAPI_access_type_e an_type_to_reactivate;
+    OpenAPI_access_type_e an_type_of_n1_n2_info;
     OpenAPI_rat_type_e rat_type;
     OpenAPI_presence_state_e presence_in_ladn;
     struct OpenAPI_user_location_s *ue_location;
@@ -104,6 +105,8 @@ typedef struct OpenAPI_sm_context_update_data_s {
     int ma_nw_upgrade_ind;
     bool is_ma_request_ind;
     int ma_request_ind;
+    bool is_n3g_path_switch_execution_ind;
+    int n3g_path_switch_execution_ind;
     struct OpenAPI_exemption_ind_s *exemption_ind;
     char *supported_features;
     struct OpenAPI_mo_exp_data_counter_s *mo_exp_data_counter;
@@ -115,11 +118,32 @@ typedef struct OpenAPI_sm_context_update_data_s {
     bool is_skip_n2_pdu_session_res_rel_ind;
     int skip_n2_pdu_session_res_rel_ind;
     OpenAPI_list_t *secondary_rat_usage_data_report_container;
-    OpenAPI_sm_context_update_data_sm_policy_notify_ind_e sm_policy_notify_ind;
+    bool is_sm_policy_notify_ind;
+    int sm_policy_notify_ind;
     bool is_pcf_ue_callback_info_null;
     struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_callback_info;
     OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat;
-} OpenAPI_sm_context_update_data_t;
+    bool is_cn_based_mt;
+    int cn_based_mt;
+    char *geo_satellite_id;
+    char *serving_satellite_id;
+    struct OpenAPI_snssai_s *alt_snssai;
+    struct OpenAPI_snssai_s *alt_hplmn_snssai;
+    bool is_ns_repl_termin_ind;
+    int ns_repl_termin_ind;
+    bool is_slice_area_restrict_ind;
+    int slice_area_restrict_ind;
+    OpenAPI_qos_monitoring_pd_supported_e qos_monitoring_pd_supported;
+    OpenAPI_list_t *qos_monitoring_pd_methods;
+    OpenAPI_qos_monitoring_congestion_supported_e qos_monitoring_congestion_supported;
+    OpenAPI_avail_bit_rate_mon_supported_e avail_bit_rate_mon_supported;
+    struct OpenAPI_ue_level_measurements_configuration_s *ue_level_meas_config;
+    char *udm_group_id;
+    bool is_amf_resynched_ind;
+    int amf_resynched_ind;
+    bool is_local_offloading_mgt_allowed_ind;
+    int local_offloading_mgt_allowed_ind;
+};
 
 OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     char *pei,
@@ -131,6 +155,7 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_access_type_e an_type,
     OpenAPI_access_type_e additional_an_type,
     OpenAPI_access_type_e an_type_to_reactivate,
+    OpenAPI_access_type_e an_type_of_n1_n2_info,
     OpenAPI_rat_type_e rat_type,
     OpenAPI_presence_state_e presence_in_ladn,
     OpenAPI_user_location_t *ue_location,
@@ -177,6 +202,8 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     int ma_nw_upgrade_ind,
     bool is_ma_request_ind,
     int ma_request_ind,
+    bool is_n3g_path_switch_execution_ind,
+    int n3g_path_switch_execution_ind,
     OpenAPI_exemption_ind_t *exemption_ind,
     char *supported_features,
     OpenAPI_mo_exp_data_counter_t *mo_exp_data_counter,
@@ -188,10 +215,31 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     bool is_skip_n2_pdu_session_res_rel_ind,
     int skip_n2_pdu_session_res_rel_ind,
     OpenAPI_list_t *secondary_rat_usage_data_report_container,
-    OpenAPI_sm_context_update_data_sm_policy_notify_ind_e sm_policy_notify_ind,
+    bool is_sm_policy_notify_ind,
+    int sm_policy_notify_ind,
     bool is_pcf_ue_callback_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
-    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat
+    OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat,
+    bool is_cn_based_mt,
+    int cn_based_mt,
+    char *geo_satellite_id,
+    char *serving_satellite_id,
+    OpenAPI_snssai_t *alt_snssai,
+    OpenAPI_snssai_t *alt_hplmn_snssai,
+    bool is_ns_repl_termin_ind,
+    int ns_repl_termin_ind,
+    bool is_slice_area_restrict_ind,
+    int slice_area_restrict_ind,
+    OpenAPI_qos_monitoring_pd_supported_e qos_monitoring_pd_supported,
+    OpenAPI_list_t *qos_monitoring_pd_methods,
+    OpenAPI_qos_monitoring_congestion_supported_e qos_monitoring_congestion_supported,
+    OpenAPI_avail_bit_rate_mon_supported_e avail_bit_rate_mon_supported,
+    OpenAPI_ue_level_measurements_configuration_t *ue_level_meas_config,
+    char *udm_group_id,
+    bool is_amf_resynched_ind,
+    int amf_resynched_ind,
+    bool is_local_offloading_mgt_allowed_ind,
+    int local_offloading_mgt_allowed_ind
 );
 void OpenAPI_sm_context_update_data_free(OpenAPI_sm_context_update_data_t *sm_context_update_data);
 OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(cJSON *sm_context_update_dataJSON);

@@ -1,7 +1,7 @@
 /*
  * periodic_communication_indicator.h
  *
- * 
+ * Indicates the Periodic Communication Indicator
  */
 
 #ifndef _OpenAPI_periodic_communication_indicator_H_

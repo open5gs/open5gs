@@ -1,0 +1,476 @@
+openapi: 3.0.0
+
+info:
+  title: Naf_Training Service API
+  version: 1.0.1
+  description: |
+    AF Training Service.
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.530 V19.1.0; 5G System; Application Function Artificial Intelligence/Machine Learning
+    (AI/ML) Services.
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.530/
+
+servers:
+  - url: '{apiRoot}/naf-train/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - naf-train
+
+paths:
+  /subscriptions:
+
+    post:
+      summary: Request the creation of a Training Subscription.
+      operationId: CreateTrainSubsc
+      tags:
+        - Training Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainEventsSubsc'
+      responses:
+        '201':
+          description: >
+            Created. The Training Subscription is successfully created and a representation of
+            the created Individual Training Subscription resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainEventsSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Training Subscription resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        TrainEventsNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/TrainEventsNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Training Notification is successfully received
+                    and acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of the Individual Training Subscription
+          resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Training Subscription resource.
+      operationId: GetIndTrainSubsc
+      tags:
+        - Individual Training Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Training Subscription resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainEventsSubsc'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Training Subscription resource.
+      operationId: UpdateIndTrainSubsc
+      tags:
+        - Individual Training Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainEventsSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Training Subscription resource is successfully updated and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainEventsSubsc'
+        '204':
+          description: >
+            No Content. The Individual Training Subscription resource is successfully updated
+            and no content is returned in the response body.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Training Subscription resource.
+      operationId: ModifyIndTrainSubsc
+      tags:
+        - Individual Training Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/TrainEventsSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Training Subscription resource is successfully modified and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainEventsSubsc'
+        '204':
+          description: >
+            No Content. The Individual Training Subscription resource is successfully modified
+            and no content is returned in the response body.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Training Subscription resource.
+      operationId: DeleteIndTrainSubsc
+      tags:
+        - Individual Training Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Training Subscription resource is successfully deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            naf-train: >
+              Enables to access all the resources and custom operations of the Naf_Training API.
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    TrainEventsSubsc:
+      description: Represents a Training Subscription.
+      type: object
+      properties:
+        trainEventSubs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/EventSubsc'
+          minProperties: 1
+          description: >
+            Contains the subscribed training events. The key of the map shall be set to the
+            value of the "event" attribute in the EventSubsc data structure.
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifCorreId:
+          type: string
+        reportingReqs:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        eventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventNotif'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - trainEventSubs
+        - notifUri
+        - notifCorreId
+
+    TrainEventsSubscPatch:
+      description: Represents the requested modifications to a Training Subscription.
+      type: object
+      properties:
+        trainEventSubs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/EventSubsc'
+          minProperties: 1
+          description: >
+            Contains the updated subscribed training events. The key of the map shall be set to the
+            value of the "event" attribute in the EventSubsc data structure.
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifCorreId:
+          type: string
+        reportingReqs:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+
+    EventSubsc:
+      description: Represents events training subscription.
+      type: object
+      properties:
+        event:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NwdafEvent'
+        useCaseCxt:
+          type: string
+        trainFilter:
+          $ref: 'TS29520_Nnwdaf_AnalyticsInfo.yaml#/components/schemas/EventFilter'
+        tgtUe:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/TargetUeInformation'
+        exterGroupIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ExternalGroupId'
+          minItems: 1
+        repRatio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        targetPeriod:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        inferInputData:
+          $ref: 'TS29520_Nnwdaf_MLModelProvision.yaml#/components/schemas/InputDataInfo'
+        timeModelNeeded:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        modelMonInfo:
+          $ref: '#/components/schemas/MlModelMonitorInfo'
+        accuLevel:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/Accuracy'
+      required:
+        - event
+
+    MlModelMonitorInfo:
+      description: Represents an event training subscription.
+      type: object
+      properties:
+        modelMetric:
+          $ref: 'TS29520_Nnwdaf_MLModelProvision.yaml#/components/schemas/MLModelMetric'
+        accuThreshold:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        accuPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        storedData:
+          $ref: 'TS29520_Nnwdaf_MLModelProvision.yaml#/components/schemas/InferenceDataForModelTrain'
+
+    TrainEventsNotif:
+      description: Represents a events training notification.
+      type: object
+      properties:
+        notifCorreId:
+          type: string
+        eventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventNotif'
+          minItems: 1
+      required:
+        - notifCorreId
+        - eventNotifs
+
+    EventNotif:
+      description: Represents an event training report.
+      type: object
+      properties:
+        event:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NwdafEvent'
+        vflNotOnTimeInd:
+          $ref: 'TS29520_Nnwdaf_MLModelTraining.yaml#/components/schemas/DelayEventNotif'
+        trainingInd:
+          type: boolean
+          description: >
+            Set to "true" to indicate that the ML model training is ongoing. Set to "false" to
+            indicate that the ML model training is done. Default value is "false" if omitted.
+        validityPeriod:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        spatialValidity:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/NetworkAreaInfo'
+        repRatio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        accMLModel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        termCause:
+          $ref: 'TS29520_Nnwdaf_VFLInference.yaml#/components/schemas/VflTermCause'
+        vflCorrId:
+          type: string
+      required:
+        - event
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+# Data types describing alternative data types or combinations of data types:
+#

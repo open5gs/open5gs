@@ -162,7 +162,7 @@ int amf_nudm_sdm_handle_provisioned(
         }
 
         r = amf_ue_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                OpenAPI_service_name_nudm_sdm, NULL,
                 amf_nudm_sdm_build_get,
                 amf_ue, state, (char *)OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA);
         ogs_expect(r == OGS_OK);
@@ -243,7 +243,7 @@ int amf_nudm_sdm_handle_provisioned(
             }
         }
         r = amf_ue_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                OpenAPI_service_name_nudm_sdm, NULL,
                 amf_nudm_sdm_build_get,
                 amf_ue, state,
                 (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA);
@@ -256,7 +256,7 @@ int amf_nudm_sdm_handle_provisioned(
             /* we already have a SDM subscription to UDM; continue without
              * subscribing again */
             r = amf_ue_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
+                    OpenAPI_service_name_npcf_am_policy_control, NULL,
                     amf_npcf_am_policy_control_build_create,
                     amf_ue, state, NULL);
             ogs_expect(r == OGS_OK);
@@ -264,7 +264,7 @@ int amf_nudm_sdm_handle_provisioned(
         }
         else {
             r = amf_ue_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                    OpenAPI_service_name_nudm_sdm, NULL,
                     amf_nudm_sdm_build_subscription,
                     amf_ue, state, (char *)OGS_SBI_RESOURCE_NAME_AM_DATA);
             ogs_expect(r == OGS_OK);
@@ -369,7 +369,7 @@ int amf_nudm_sdm_handle_provisioned(
         ogs_sbi_header_free(&header);
 
         r = amf_ue_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
+                OpenAPI_service_name_npcf_am_policy_control, NULL,
                 amf_npcf_am_policy_control_build_create, amf_ue, state, NULL);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);

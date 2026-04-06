@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_downlink_data_notification_control_s OpenAPI_downlink_data_notification_control_t;
 #include "dl_data_delivery_status.h"
 #include "notification_control_indication.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_downlink_data_notification_control_s OpenAPI_downlink_data_notification_control_t;
-typedef struct OpenAPI_downlink_data_notification_control_s {
+struct OpenAPI_downlink_data_notification_control_s {
     OpenAPI_list_t *notif_ctrl_inds;
     OpenAPI_list_t *types_of_notif;
-} OpenAPI_downlink_data_notification_control_t;
+};
 
 OpenAPI_downlink_data_notification_control_t *OpenAPI_downlink_data_notification_control_create(
     OpenAPI_list_t *notif_ctrl_inds,

@@ -1,7 +1,7 @@
 /*
  * dnn_configuration_1.h
  *
- * 
+ * Contains DNN Configuration
  */
 
 #ifndef _OpenAPI_dnn_configuration_1_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_dnn_configuration_1_s OpenAPI_dnn_configuration_1_t;
 #include "acs_info_1.h"
 #include "aerial_ue_indication.h"
 #include "ambr_1.h"
@@ -25,13 +26,16 @@
 #include "ssc_modes_1.h"
 #include "subscribed_default_qos_1.h"
 #include "up_security_1.h"
+#include "upf_functionality_data_1.h"
+#include "upf_functionality_data_with_priority_1.h"
+#include "vlan_tag_handling_1.h"
+#include "vlan_tag_value.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dnn_configuration_1_s OpenAPI_dnn_configuration_1_t;
-typedef struct OpenAPI_dnn_configuration_1_s {
+struct OpenAPI_dnn_configuration_1_s {
     struct OpenAPI_pdu_session_types_1_s *pdu_session_types;
     struct OpenAPI_ssc_modes_1_s *ssc_modes;
     bool is_iwk_eps_ind;
@@ -75,7 +79,15 @@ typedef struct OpenAPI_dnn_configuration_1_s {
     OpenAPI_aerial_ue_indication_e aerial_ue_ind;
     bool is_subscribed_max_ipv6_prefix_size;
     int subscribed_max_ipv6_prefix_size;
-} OpenAPI_dnn_configuration_1_t;
+    bool is_hr_sbo_authorized;
+    int hr_sbo_authorized;
+    OpenAPI_list_t *required_upf_function_list;
+    OpenAPI_list_t *pref_upf_function_list;
+    OpenAPI_list_t *vlan_tag_allowed;
+    OpenAPI_list_t *vlan_tag_handling_info;
+    bool is_local_offloading_mngt_ind;
+    int local_offloading_mngt_ind;
+};
 
 OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_create(
     OpenAPI_pdu_session_types_1_t *pdu_session_types,
@@ -120,7 +132,15 @@ OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_create(
     int onboarding_ind,
     OpenAPI_aerial_ue_indication_e aerial_ue_ind,
     bool is_subscribed_max_ipv6_prefix_size,
-    int subscribed_max_ipv6_prefix_size
+    int subscribed_max_ipv6_prefix_size,
+    bool is_hr_sbo_authorized,
+    int hr_sbo_authorized,
+    OpenAPI_list_t *required_upf_function_list,
+    OpenAPI_list_t *pref_upf_function_list,
+    OpenAPI_list_t *vlan_tag_allowed,
+    OpenAPI_list_t *vlan_tag_handling_info,
+    bool is_local_offloading_mngt_ind,
+    int local_offloading_mngt_ind
 );
 void OpenAPI_dnn_configuration_1_free(OpenAPI_dnn_configuration_1_t *dnn_configuration_1);
 OpenAPI_dnn_configuration_1_t *OpenAPI_dnn_configuration_1_parseFromJSON(cJSON *dnn_configuration_1JSON);

@@ -1,0 +1,840 @@
+openapi: 3.0.0
+
+info:
+  title: 3gpp-musa
+  version: 1.1.0
+  description: |
+    API for Member UE Selection Assistance.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.522 V19.5.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+
+servers:
+  - url: '{apiRoot}/3gpp-musa/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /{afId}/subscriptions:
+    parameters:
+      - name: afId
+        in: path
+        description: Represents the identifier of the AF
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve all the active Member UE Selection Assistance Subscriptions  managed by the NEF.
+      operationId: GetMemberUESelectAssistSubsc
+      tags:
+        - Member UE Selection Assistance Subscriptions (Collection)
+      responses:
+        '200':
+          description: >
+            OK. All the Individual Member UE Selection Assistance Subscription resource(s) managed
+            by the NEF are returned.
+            If there are no active Individual Member UE Selection Assistance Subscription resources
+            at the NEF, an empty array is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MemUeSelectAssistSubsc'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Create a new Member UE Selection Assistance Subscription.
+      operationId: CreateMemberUESelectAssist
+      tags:
+        - Member UE Selection Assistance Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemUeSelectAssistSubsc'
+      responses:
+        '201':
+          description: >
+            Created. A representation of the created Individual Member UE Selection Assistance
+            Subscription resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemUeSelectAssistSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        MemberUESelectAssistNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/MemUeSeletAssistNotif'
+                      minItems: 1
+              responses:
+                '204':
+                  description: >
+                    No Content. The notification is successfully received and acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /{afId}/subscriptions/{subscriptionId}:
+    parameters:
+      - name: afId
+        in: path
+        description: Represents the identifier of the AF.
+        required: true
+        schema:
+          type: string
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of the Individual Member UE Selection Assistance Subscription
+          resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Member UE Selection Assistance Subscription resource.
+      operationId: GetIndMemberUESelectAssistSubsc
+      tags:
+        - Individual Member UE Selection Assistance Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Member UE Selection Assistance Subscription resource is
+            successfully returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemUeSelectAssistSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Member UE Selection Assistance Subscription resource.
+      operationId: UpdateIndMemberUESelectAssistSubsc
+      tags:
+        - Individual Member UE Selection Assistance Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemUeSelectAssistSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Member UE Selection Assistance Subscription resource is successfully
+            updated and a representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemUeSelectAssistSubsc'
+        '204':
+          description: >
+            No Content. The Individual Member UE Selection Assistance Subscription resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the Modification of an existing Individual Member UE Selection Assistance Subscription resource.
+      operationId: ModifyIndMemberUESelectAssistSubsc
+      tags:
+        - Individual Member UE Selection Assistance Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/MemUeSelectAssistSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Member UE Selection Assistance Subscription resource is successfully
+            modified and a representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemUeSelectAssistSubsc'
+        '204':
+          description: >
+            No Content. The Individual Member UE Selection Assistance Subscription resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Member UE Selection Assistance Subscription resource.
+      operationId: DeleteIndMemberUESelectAssistSubsc
+      tags:
+        - Individual Member UE Selection Assistance Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Member UE Selection Assistance Subscription resource is
+            successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    MemUeSelectAssistSubsc:
+      description: Represents a Member UE Selection Assistance Subscription.
+      type: object
+      properties:
+        afId:
+          type: string
+          description: Represents the identifier of the AF.
+        tgtUeIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+          description: >
+            Contains the list of identifier(s) of the UEs for which Member UE Selection Assistance
+            Reporting is requested.
+        tgtUeIps:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+          minItems: 1
+          description: >
+            Contains the IP addresses of a list of UEs for Member UE Selection Assistance
+            Reporting.
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        notifId:
+          type: string
+          description: Contains the Notification Correlation ID assigned by the AF.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        qosFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/QoSFilterCriteria'
+          minItems: 1
+          description: Contains the QoS filtering criteria for Member UE selection.
+        accRatTypeFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessRatTypeFilterCriteria'
+          minItems: 1
+          description: >
+            Contains the Access types and Rat types filtering criteria for Member UE selection.
+        e2eTransTimeFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/E2ETransTimeFilterCriteria'
+          minItems: 1
+          description: >
+            Contains the End-to-end data volume transfer time filtering criteria for Member UE
+            selection.
+        ueLocFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeLocFilterCriteria'
+          minItems: 1
+          description: Contains the UE location filtering criteria for Member UE selection.
+        ueHisLocFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeHisLocFilterCriteria'
+          minItems: 1
+          description: >
+            Contains the UE historical location filtering criteria for Member UE selection.
+        ueDirFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeDirectionFilterCriteria'
+          minItems: 1
+          description: Contains the UE direction filtering criteria for Member UE selection.
+        ueDistanceFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeDistanceFilterCriteria'
+          minItems: 1
+          description: Contains the UE distance filtering criteria for Member UE selection.
+        serviceExpFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceExpFilterCriteria'
+          minItems: 1
+          description: Contains the Service Experience filtering criteria for Member UE selection.
+        dnnFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnnFilterCriteria'
+          minItems: 1
+          description: Contains the DNN filtering criteria for Member UE selection.
+        memUpdatePeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        maxUeNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        timeWin:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - notifUri
+        - notifId
+      oneOf:
+          - required: [tgtUeIds]
+          - required: [tgtUeIps]
+      anyOf:
+        - required: [qosFilters]
+        - required: [accRatTypeFilters]
+        - required: [e2eTransTimeFilters]
+        - required: [ueLocFilters]
+        - required: [ueHisLocFilters]
+        - required: [ueDirFilters]
+        - required: [ueDistanceFilters]
+        - required: [serviceExpFilters]
+        - required: [dnnFilters]
+
+    QoSFilterCriteria:
+      description: Represents the QoS filtering criteria for Member UE selection.
+      type: object
+      properties:
+        event:
+          $ref: 'TS29508_Nsmf_EventExposure.yaml#/components/schemas/SmfEvent'
+        appId:
+          type: string
+          description: Contains the identifier(s) of the application.
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        ulDelay:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        dlDelay:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        rtDelay:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+
+    AccessRatTypeFilterCriteria:
+      description: Represents the the Access types and RAT types filtering criteria for Member UE selection.
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: 'TS29508_Nsmf_EventExposure.yaml#/components/schemas/SmfEvent'
+          minItems: 1
+          description: >
+            Contains the SMF event(s) which may be used to retrieve the Access Type and/or RAT Type
+            of the selected UE.
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        accTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+          description: Contains the Access Types of the selected UE.
+        ratTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+          minItems: 1
+          description: Contains the RAT Types of the selected UE.
+
+    E2ETransTimeFilterCriteria:
+      description: >
+        Represents the End-to-end data volume transfer time filtering criteria for Member UE
+        selection.
+      type: object
+      properties:
+        event:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NwdafEvent'
+        appId:
+          type: string
+          description: Contains the identifier of the application.
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dataVolTransTime:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DataVolumeTransferTime'
+        geoDistrInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/GeoDistributionInfo'
+          minItems: 1
+          description: Indicates the geographical distribution of the UEs per location information.
+        locationArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        numDataTrans:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        timeInterval:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+
+    UeLocFilterCriteria:
+      description: >
+        Represents the UE location filtering criteria for Member UE selection.
+      type: object
+      properties:
+        event:
+          $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/AmfEventType'
+        loc:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+
+    UeHisLocFilterCriteria:
+      description: >
+        Represents the UE historical location filtering criteria for Member UE selection.
+      type: object
+      properties:
+        event:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NwdafEvent'
+        loc:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+
+    UeDirectionFilterCriteria:
+      description: >
+        Represents the UE direction filtering criteria for Member UE selection.
+      type: object
+      properties:
+        event:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NwdafEvent'
+        directions:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/Direction'
+          minItems: 1
+          description: Contains the moving directions of the UEs.
+
+    UeDistanceFilterCriteria:
+      description: >
+        Represents the UE distance filtering criteria for Member UE selection.
+      type: object
+      properties:
+        event:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NwdafEvent'
+        distance:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+
+    ServiceExpFilterCriteria:
+      description: >
+        Represents the Service Experience filtering criteria for Member UE selection.
+      type: object
+      properties:
+        event:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NwdafEvent'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        appId:
+          type: string
+          description: Contains the Identifier(s) of the application.
+        dnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        loc:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        contribWeightThr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        expTypes:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ServiceExperienceType'
+          minItems: 1
+          description: Contains the Service Experience Types.
+
+    DnnFilterCriteria:
+      description: >
+        Represents the DNN filtering criteria for Member UE selection.
+      type: object
+      properties:
+        event:
+          $ref: 'TS29508_Nsmf_EventExposure.yaml#/components/schemas/SmfEvent'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+
+    MemUeSeletAssistNotif:
+      description: Represents a Member UE Selection Assistance Notification.
+      type: object
+      properties:
+        notifId:
+          type: string
+        candiUeInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/CandiUeListInfo'
+          minItems: 1
+          description: >
+            Contains the list of candidate UEs information for Member Selection Assistance
+            Reporting.
+        memUeSelectRpts:
+          type: array
+          items:
+            $ref: '#/components/schemas/MemUeSeletReport'
+          minItems: 1
+          description: Contains the list of UEs for Member Selection Assistance Reporting.
+      required:
+        - notifId
+        - candiUeInfos
+
+    MemUeSeletReport:
+      description: Represents a the Member UE Selection report.
+      type: object
+      properties:
+        criterionType:
+          $ref: '#/components/schemas/FilterCriterionType'
+        numForCriterion:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - criterionType
+        - numForCriterion
+
+    CandiUeListInfo:
+      description: Represents the list of candidate UEs information.
+      type: object
+      properties:
+        candUeInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/CandUeInfo'
+          minItems: 1
+        remdTimeWin:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+      required:
+        - candUeInfos
+
+    CandUeInfo:
+      description: Represents the candidate UE information.
+      type: object
+      properties:
+        candUeId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        candUeIp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        qosFilter:
+          $ref: '#/components/schemas/QoSFilterCriteria'
+        accRatTypeFilter:
+          $ref: '#/components/schemas/AccessRatTypeFilterCriteria'
+        e2eTransTimeFilter:
+          $ref: '#/components/schemas/E2ETransTimeFilterCriteria'
+        ueLocFilter:
+          $ref: '#/components/schemas/UeLocFilterCriteria'
+        ueHisLocFilter:
+          $ref: '#/components/schemas/UeHisLocFilterCriteria'
+        ueDirFilter:
+          $ref: '#/components/schemas/UeDirectionFilterCriteria'
+        ueDistanceFilter:
+          $ref: '#/components/schemas/UeDistanceFilterCriteria'
+        serviceExpFilter:
+          $ref: '#/components/schemas/ServiceExpFilterCriteria'
+        dnnFilter:
+          $ref: '#/components/schemas/DnnFilterCriteria'
+      oneOf:
+          - required: [candUeId]
+          - required: [candUeIp]
+
+    MemUeSelectAssistSubscPatch:
+      description: >
+        Represents the requested modifications to aMember UE Selection Assistance Subscription.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        notifId:
+          type: string
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        qosFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/QoSFilterCriteria'
+          minItems: 1
+          description: Contains the updatedQoS filtering criteria for Member UE selection.
+        accRatTypeFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessRatTypeFilterCriteria'
+          minItems: 1
+          description: >
+            Contains the updated Access types and Rat types filtering criteria for Member UE
+            selection.
+        e2eTransTimeFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/E2ETransTimeFilterCriteria'
+          minItems: 1
+          description: >
+            Contains the updated End-to-end data volume transfer time filtering criteria for
+            Member UE selection.
+        ueLocFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeLocFilterCriteria'
+          minItems: 1
+          description: >
+            Contains the updated UE location filtering criteria for Member UE selection.
+        ueHisLocFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeHisLocFilterCriteria'
+          minItems: 1
+          description: >
+            Contains the updated UE historical location filtering criteria for Member UE
+            selection.
+        ueDirFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeDirectionFilterCriteria'
+          minItems: 1
+          description: >
+            Contains the updated UE direction filtering criteria for Member UE selection.
+        ueDistanceFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeDistanceFilterCriteria'
+          minItems: 1
+          description: >
+            Contains the updated UE distance filtering criteria for Member UE selection.
+        serviceExpFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceExpFilterCriteria'
+          minItems: 1
+          description: >
+            Contains the updated Service Experience filtering criteria for Member UE selection.
+        dnnFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnnFilterCriteria'
+          minItems: 1
+          description: >
+            Contains the updated DNN filtering criteria for Member UE selection.
+        memUpdatePeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        maxUeNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UintegerRm'
+        timeWin:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+      nullable: true
+
+    FilterCriterionType:
+      anyOf:
+      - type: string
+        enum:
+          - QOS
+          - ACCESS_RAT_TYPE
+          - E2E_DATA_VOLUME_TRANSFER_TIME
+          - UE_LOCATION
+          - UE_HISTORICAL_LOCATION
+          - UE_DIRECTION
+          - UE_DISTANCE
+          - SERVICE_EXPERIENCE
+          - DNN
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the filter criterion event.  
+        Possible values are:
+          - QOS: Indicates QoS criterion.
+          - ACCESS_RAT_TYPE: Indicates that the type of filter criterion is Access and Rat types
+            criterion.
+          - E2E_DATA_VOLUME_TRANSFER_TIME: Indicates that the type of filter criterion is End-to-end
+            data volume transfer time criterion.
+          - UE_LOCATION: Indicates that the type of filter criterion is UE location criterion.
+          - UE_HISTORICAL_LOCATION: Indicates that the type of filter criterion is UE historical
+            location criterion.
+          - UE_DIRECTION: Indicates that the type of filter criterion is UE direction criterion.
+          - UE_DISTANCE: Indicates that the type of filter criterion is UE distance criterion.
+          - SERVICE_EXPERIENCE: Indicates that the type of filter criterion is Service Experience
+            criterion.
+          - DNN: Indicates that the type of filter criterion is DNN criterion.

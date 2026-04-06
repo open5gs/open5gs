@@ -1,0 +1,738 @@
+openapi: 3.0.0
+
+info:
+  version: '1.2.0'
+  title: 'Neasdf_DNSContext'
+  description: |
+    EASDF DNS Context Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.556 V19.4.0; 5G System; Edge Application Server Discovery Services; Stage3
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.556/
+
+servers:
+  - url: '{apiRoot}/neasdf-dnscontext/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description:  apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - neasdf-dnscontext
+
+paths:
+
+  /dns-contexts:
+    post:
+      summary:  Create
+      tags:
+        - DNS contexts collection
+      operationId: CreateDnsContext
+      requestBody:
+        description: representation of the DNS context to be created in the EASDF
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DnsContextCreateData'
+      callbacks:
+        dnsContextNotification:
+          '{$request.body#/notifyUri}':
+            post:
+              requestBody:  # contents of the DNS context Notify request
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/DnsContextNotification'
+              responses:
+                '204':
+                  description: successful notification
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+      responses:
+        '201':
+          description: successful creation of a DNS context
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DnsContextCreatedData'
+          headers:
+            Location:
+              description: >
+                'Contains the URI of the newly created resource, according to the structure: 
+                {apiRoot}/neasdf-dnscontext/<apiVersion>/dns-contexts/{dnsContextId}'
+              required: true
+              schema:
+                type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /dns-contexts/{dnsContextId}:
+    delete:
+      summary:  Delete the DNS Context
+      tags:
+        - Individual DNS context
+      operationId: DeleteDnsContext
+      parameters:
+        - name: dnsContextId
+          in: path
+          description:  DNS context Identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: successful deletion of an SM context
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Updates the DNS context
+      operationId: UpdateDnsContext
+      tags:
+        - Individual DNS context
+      parameters:
+        - name: dnsContextId
+          in: path
+          description:  DNS context Identifier
+          required: true
+          schema:
+            type: string
+        - name: Content-Encoding
+          in: header
+          description: Content-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+        required: true
+      responses:
+        '200':
+          description: Partial update of the DNS context
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '204':
+          description: Successful update of the DNS context
+          headers:
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Updates the DNS context (complete replacement)
+      operationId: ReplaceDnsContext
+      tags:
+        - Individual DNS context
+      parameters:
+        - name: dnsContextId
+          in: path
+          description:  DNS context Identifier
+          required: true
+          schema:
+            type: string
+        - name: Content-Encoding
+          in: header
+          description: Content-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DnsContextCreateData'
+      responses:
+        '204':
+          description: Successful update of the DNS context
+          headers:
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            neasdf-dnscontext: Access to the neasdf-dnscontext API
+
+
+  schemas:
+#
+# STRUCTURED DATA TYPES
+#
+    DnsContextCreateData:
+      description: Data within Create request
+      type: object
+      properties:
+        ueIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ueIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        hplmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        n6RoutingInfo:
+          $ref: '#/components/schemas/N6RoutingInfo'
+        dnsRules:
+          description: map of DNS message handling rules where a valid JSON string serves as key
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DnsRule'
+          minProperties: 1
+        notifyUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - dnn
+        - sNssai
+        - dnsRules
+      anyOf:
+        - required: [ ueIpv4Addr ]
+        - required: [ ueIpv6Prefix ]
+
+    DnsContextCreatedData:
+      description: Data within Create response
+      type: object
+      properties:
+        easdfIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        easdfIpv6Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        dnsSecurityInfo:
+          type: array
+          items:
+            $ref: 'TS29502_Nsmf_PDUSession.yaml#/components/schemas/DnsServerSecurityInformation'
+          minItems: 1
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      anyOf:
+        - required: [ easdfIpv4Addr ]
+        - required: [ easdfIpv6Addr ]
+
+    DnsRule:
+      description: DNS message handling rule
+      type: object
+      properties:
+        dnsRuleId:
+          type: string
+        label:
+          type: string
+        precedence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        dnsQueryMdtList:
+          description: >
+            map of DNS query message detection templates where a valid JSON string serves as key
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DnsQueryMdt'
+          minProperties: 1
+        baseDnsQueryMdtList:
+          type: array
+          items:
+            $ref: '#/components/schemas/BaselineDnsQueryMdtInfo'
+          minItems: 1
+        dnsRspMdtList:
+          description: >
+            map of DNS response message detection templates where a valid JSON string serves as key
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DnsRspMdt'
+          minProperties: 1
+        baseDnsRspMdtList:
+          type: array
+          items:
+            $ref: '#/components/schemas/BaselineDnsRspMdtInfo'
+          minItems: 1
+        dnsMsgId:
+          type: string
+        actionList:
+          description: map of actions where a valid JSON string serves as key
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Action'
+          minProperties: 1
+      required:
+        - actionList
+      allOf:
+        - not:
+            required: [ dnsQueryMdtList, dnsRspMdtList ]
+        - not:
+            required: [ dnsQueryMdtList, baseDnsRspMdtList ]
+        - not:
+            required: [ baseDnsQueryMdtList, dnsRspMdtList ]
+        - not:
+            required: [ baseDnsQueryMdtList, baseDnsRspMdtList ]
+
+    DnsQueryMdt:
+      description: DNS Query message detection template
+      type: object
+      properties:
+        mdtId:
+          type: string
+        label:
+          type: string
+        sourceIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        sourceIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        fqdnPatternList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/FqdnPatternMatchingRule'
+          minItems: 1
+      required:
+        - mdtId
+
+    DnsRspMdt:
+      description: DNS Response message detection template
+      type: object
+      properties:
+        mdtId:
+          type: string
+        label:
+          type: string
+        fqdnPatternList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/FqdnPatternMatchingRule'
+          minItems: 1
+        easIpv4AddrRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ipv4AddressRange'
+          minItems: 1
+        easIpv6PrefixRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ipv6PrefixRange'
+          minItems: 1
+        dnsServerSrcAddrList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+          minItems: 1
+      required:
+        - mdtId
+
+    Ipv4AddressRange:
+      description: Range of IPv4 addresses
+      type: object
+      properties:
+        start:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        end:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+      required:
+        - start
+        - end
+
+    Ipv6PrefixRange:
+      description: Range of IPv6 prefixes
+      type: object
+      properties:
+        start:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        end:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+      required:
+        - start
+        - end
+
+    Action:
+      description: Action to apply to DNS messages matching a message detection template
+      type: object
+      properties:
+        applyAction:
+          $ref: '#/components/schemas/ApplyAction'
+        fwdParas:
+          $ref: '#/components/schemas/ForwardingParameters'
+        reportingOnceInd:
+          type: boolean
+          default: false
+        resetReportingOnceInd:
+          type: boolean
+          default: false
+        respParas:
+          $ref: '#/components/schemas/RespondParameters'
+      required:
+        - applyAction
+
+    DnsContextNotification:
+      description: Data within DNS Context Notify
+      type: object
+      properties:
+        eventreportList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnsContextEventReport'
+          minItems: 1
+
+    ForwardingParameters:
+      description: Forwarding instructions
+      type: object
+      properties:
+        ecsOptionInfo:
+          $ref: '#/components/schemas/EcsOptionInfo'
+        dnsServerAddressInfo:
+          $ref: '#/components/schemas/DnsServerAddressInfo'
+
+    EcsOptionInfo:
+      description: ECS Option Information
+      type: object
+      properties:
+        ecsOption:
+          $ref: '#/components/schemas/EcsOption'
+        baseDnsAitId:
+          $ref: '#/components/schemas/BaselineDnsAitId'
+      oneOf:
+        - required: [ ecsOption ]
+        - required: [ baseDnsAitId ]
+
+    DnsServerAddressInfo:
+      description: DNS Server Address Information
+      type: object
+      properties:
+        dnsServerAddressList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+          minItems: 1
+        baseDnsAitId:
+          $ref: '#/components/schemas/BaselineDnsAitId'
+      oneOf:
+        - required: [ dnsServerAddressList ]
+        - required: [ baseDnsAitId ]
+
+    BaselineDnsMdtId:
+      description: Baseline DNS Message Detection Template Identifier
+      type: object
+      properties:
+        baseDnsPatternUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        mdtId:
+          type: string
+      required:
+        - baseDnsPatternUri
+        - mdtId
+
+    BaselineDnsAitId:
+      description: Baseline DNS Action Information Template Identifier
+      type: object
+      properties:
+        baseDnsPatternUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        aitId:
+          type: string
+      required:
+        - baseDnsPatternUri
+        - aitId
+
+    EcsOption:
+      description: ECS Option Information
+      type: object
+      properties:
+        sourcePrefixLength:
+          type: integer
+          minimum: 0
+          maximum: 128
+        scopePrefixLength:
+          type: integer
+          minimum: 0
+          maximum: 128
+        ipAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+      required:
+        - sourcePrefixLength
+        - ipAddr
+
+    DnsContextEventReport:
+      description: DNS context event report
+      type: object
+      properties:
+        timestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        dnsRuleId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        dnsQueryReport:
+          $ref: '#/components/schemas/DnsQueryReport'
+        dnsRspReport:
+          $ref: '#/components/schemas/DnsRspReport'
+        dnsMsgId:
+          type: string
+      required:
+        - timestamp
+
+
+    DnsQueryReport:
+      description: DNS Query Event Report
+      type: object
+      properties:
+        fqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+
+    DnsRspReport:
+      description: DNS Response Event Report
+      type: object
+      properties:
+        fqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        easIpv4Addresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+        easIpv6Addresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+        ecsOption:
+          $ref: '#/components/schemas/EcsOption'
+
+    BaselineDnsQueryMdtInfo:
+      description: Baseline DNS Query MDT Information
+      type: object
+      properties:
+        sourceIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        sourceIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        baseDnsMdtList:
+          type: array
+          items:
+            $ref: '#/components/schemas/BaselineDnsMdtId'
+          minItems: 1
+      required:
+        - baseDnsMdtList
+
+    BaselineDnsRspMdtInfo:
+      description: Baseline DNS Response MDT Information
+      type: object
+      properties:
+        baseDnsMdtList:
+          type: array
+          items:
+            $ref: '#/components/schemas/BaselineDnsMdtId'
+          minItems: 1
+      required:
+        - baseDnsMdtList
+
+    RespondParameters:
+      description: Respond instructions
+      type: object
+      properties:
+        easIpv4Addresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+        easIpv6Addresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+
+    N6RoutingInfo:
+      description: N6 traffic routing information
+      type: object
+      properties:
+        upfIpv4Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        upfIpv6Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        upfPortNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        easdfIpv4Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        easdfIpv6Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        easdfPortNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+
+#
+# SIMPLE DATA TYPES
+#
+
+
+
+#
+# ENUMERATIONS
+#
+
+    ApplyAction:
+      anyOf:
+      - type: string
+        enum:
+          - BUFFER
+          - REPORT
+          - FORWARD
+          - DISCARD
+          - RESPOND
+          - SEND_ANOTHER_DNS_QUERY
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Action to apply to the DNS packet

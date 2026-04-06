@@ -1,0 +1,528 @@
+openapi: 3.0.0
+
+info:
+  title: EIF Event Exposure Service
+  version: 1.0.0
+  description: |
+    API for the Neif_EventExposure Service.
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.566 V19.0.0; 5G System; Energy Information Function Services; Stage 3.
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.566/
+
+servers:
+  - url: '{apiRoot}/neif-ee/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - neif-ee
+
+paths:
+  /subscriptions:
+    get:
+      summary: Retrieve all the active Energy Event Exposure Subscription(s) managed by the EIF.
+      operationId: GetEnergyEESubscs
+      tags:
+        - Energy Event Exposure Subscriptions (Collection)
+      responses:
+        '200':
+          description: >
+            OK. All the active Individual Energy Event Exposure Subscription resource(s) managed by
+            the EIF are returned.
+            If there are no active Individual Energy Event Exposure Subscription resource(s) at the
+            EIF, an empty array is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnergyEeSubsc'
+                minItems: 0
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request the creation of an Energy Event Exposure Subscription.
+      operationId: CreateEnergyEESubsc
+      tags:
+        - Energy Event Exposure Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnergyEeSubsc'
+      responses:
+        '201':
+          description: >
+            Created. The Energy Event Exposure Subscription is successfully created and a
+            representation of the created Individual Energy Event Exposure Subscription resource
+            shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyEeSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Energy Event Exposure Subscription
+                resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        EnergyEENotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EnergyEeNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Energy Event Exposure Notification is successfully
+                    received and acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subId}:
+    parameters:
+      - name: subId
+        in: path
+        description: >
+          Represents the identifier of the Individual Energy Event Exposure Subscription
+          resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Energy Event Exposure Subscription resource.
+      operationId: GetIndEnergyEESubsc
+      tags:
+        - Individual Energy Event Exposure Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Energy Event Exposure Subscription resource
+            shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyEeSubsc'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Energy Event Exposure Subscription resource.
+      operationId: UpdateIndEnergyEESubsc
+      tags:
+        - Individual Energy Event Exposure Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnergyEeSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Energy Event Exposure Subscription resource is successfully updated
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyEeSubsc'
+        '204':
+          description: >
+            No Content. The Individual Energy Event Exposure Subscription resource is successfully
+            updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Energy Event Exposure Subscription resource.
+      operationId: ModifyIndEnergyEESubsc
+      tags:
+        - Individual Energy Event Exposure Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/EnergyEeSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Energy Event Exposure Subscription resource is successfully modified
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyEeSubsc'
+        '204':
+          description: >
+            No Content. The Individual Energy Event Exposure Subscription resource is successfully
+            modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Energy Event Exposure Subscription resource.
+      operationId: DeleteIndEnergyEESubsc
+      tags:
+        - Individual Energy Event Exposure Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Energy Event Exposure Subscription resource is
+            successfully deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            neif-ee: >
+              Enables to access all the resources and custom operations of the Neif_EventExposure
+              API.
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    EnergyEeSubsc:
+      description: >
+        Represents the Energy Event Exposure Subscription.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        eventsSubscSets:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/EnergyEeSubscSet'
+          minProperties: 1
+          description: >
+            Contains the set(s) of Energy Event Exposure subscription related details.
+            The key of the map shall be set to the value of the "subscSetId" attribute of the
+            corresponding map value encoded using the EnergyEeSubscSet data structure.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - notifUri
+        - eventsSubscSets
+
+    EnergyEeSubscPatch:
+      description: >
+        Represents the requested modifications to an Energy Event Exposure Subscription.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        eventsSubscSets:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/EnergyEeSubscSet'
+          minProperties: 1
+          description: >
+            Contains the set(s) of Energy Event Exposure subscription related details.
+            The key of the map shall be set to the value of the "subscSetId" attribute of the
+            corresponding map value encoded using the EnergyEeSubscSet data structure.
+
+    EnergyEeNotif:
+      description: >
+        Represents the Energy Event Exposure Notification.
+      type: object
+      properties:
+        subId:
+          type: string
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnergyEeReport'
+          minItems: 1
+      required:
+        - subId
+        - reports
+
+    EnergyEeSubscSet:
+      description: >
+        Represents the Energy Event Exposure Subscription set.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/EnergyEeEvent'
+        subscSetId:
+          type: string
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        appId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        flowDescs:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/FlowDescription'
+          minItems: 1
+        repPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        repTimeWin:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        enrgRepThres:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/EnergyInfo'
+        repPeriodThres:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        maxReportNbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - event
+        - subscSetId
+      oneOf:
+        - required: [supi]
+        - required: [gpsi]
+      not:
+        required: [appId, flowDescs]
+
+    EnergyEeReport:
+      description: >
+        Represents the Energy Event Exposure report.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/EnergyEeEvent'
+        subscSetId:
+          type: string
+        timeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        energyInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/EnergyInfo'
+      required:
+        - event
+        - subscSetId
+        - timeStamp
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    EnergyEeEvent:
+      anyOf:
+        - type: string
+          enum:
+          - UE_ENERGY
+          - PDU_SESSION_ENERGY
+          - SERVICE_FLOW_ENERGY
+          - UE_SNSSAI_ENERGY
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the Energy Exposure event.  
+        Possible values are:
+        - UE_ENERGY: Indicates that the Energy Exposure event is the energy consumed by a UE.
+        - PDU_SESSION_ENERGY: Indicates that the Energy Exposure event is the energy consumed
+          by a PDU session of a UE.
+        - SERVICE_FLOW_ENERGY: Indicates that the Energy Exposure event is the energy consumed
+          by an application or service data flow of an application traffic of a UE.
+        - UE_SNSSAI_ENERGY: Indicates that the Energy Exposure event is the energy consumed by
+          a UE in an S-NSSAI.
+
+
+# Data types describing alternative data types or combinations of data types:
+#

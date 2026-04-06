@@ -1,0 +1,445 @@
+openapi: 3.0.0
+
+info:
+  title: NSCE_Server Slice API Management Service
+  version: 1.1.0
+  description: |
+    NSCE Server Slice API Management Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.435 V19.3.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Network Slice Capability Exposure (NSCE) Server Services; Stage 3.
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.435/
+
+servers:
+  - url: '{apiRoot}/nsce-sam/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /configurations:
+    post:
+      summary: Request the creation of a new Slice API Configuration.
+      operationId: CreateSliceAPIConfig
+      tags:
+        - Slice API Configurations (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SliceAPIConfig'
+      responses:
+        '201':
+          description: >
+            Created. The slice API Configuration is successfully created and a representation of
+            the created Individual Slice API Configuration shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceAPIConfig'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Slice API Configuration resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        SliceAPIConfigNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SliceAPIConfigNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Slice API Configuration Notification is successfully received
+                    and processed.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /configurations/{configId}:
+    parameters:
+    - name: configId
+      in: path
+      description: >
+        Represents the identifier of the Individual Slice API Configuration.
+      required: true
+      schema:
+        type: string
+
+    get:
+      summary: Request to retrieve an existing Individual Slice API Configuration.
+      operationId: GetIndSliceAPIConfig
+      tags:
+        - Individual Slice API Configuration (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Slice API Configuration resource shall be returned in the
+            response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceAPIConfig'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request to delete an existing Individual Slice API Configuration.
+      operationId: DeleteIndSliceAPIConfig
+      tags:
+        - Individual Slice API Configuration (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Slice API Configuration resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /configurations/{configId}/update:
+    parameters:
+    - name: configId
+      in: path
+      description: >
+        Represents the identifier of the Individual Slice API Configuration.
+      required: true
+      schema:
+        type: string
+
+    post:
+      summary: Request the update of an existing slice API configuration.
+      operationId: Update
+      tags:
+        - Slice API Configuration Update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateReq'
+      responses:
+        '200':
+          description: >
+            OK. The slice API configuration update request is successfully received and processed,
+            and slice API configuration update related information shall be returned in the response
+            body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /invoke:
+    post:
+      summary: Request slice API invocation.
+      operationId: Invoke
+      tags:
+        - Slice API Invocation Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvokeReq'
+      responses:
+        '204':
+          description: >
+            No Content. The slice API invocation request is successfully received and processed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    SliceAPIConfig:
+      description: >
+        Represents the slice API Configuration.
+      type: object
+      properties:
+        servReqs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppServReqs'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        timeValidity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - servReqs
+        - notifUri
+
+    AppServReqs:
+      description: >
+        Represents the application service requirements for a network slice.
+      type: object
+      properties:
+        valServiceId:
+          type: string
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        servKpis:
+          $ref: 'TS29435_NSCE_InterPLMNContinuity.yaml#/components/schemas/AppReqs'
+        servReqs:
+          type: array
+          items:
+            $ref: 'TS29435_NSCE_SliceCommService.yaml#/components/schemas/ServReq'
+          minItems: 1
+        areaOfInterest:
+          $ref: 'TS29435_NSCE_NSInfoDelivery.yaml#/components/schemas/ServArea'
+      required:
+        - valServiceId
+        - netSliceId
+
+    UpdateReq:
+      description: >
+        Represents the parameters to request the update of a slice API configuration.
+      type: object
+      properties:
+        triggEvent:
+          $ref: '#/components/schemas/TriggerEvent'
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - triggEvent
+
+    UpdateResp:
+      description: >
+        Represents the response to the slice API configuration update resquest.
+      type: object
+      properties:
+        sliceAPIInfo:
+          $ref: '#/components/schemas/SliceAPIInfo'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - sliceAPIInfo
+
+    SliceAPIInfo:
+      description: >
+        Represents slice API information.
+      type: object
+      properties:
+        apiInfo:
+          type: string
+      anyOf:
+        - required: [apiInfo]
+
+    InvokeReq:
+      description: >
+        Represents a slice API invocation request.
+      type: object
+      properties:
+        sliceApiIdInfo:
+          type: string
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - sliceApiIdInfo
+
+    SliceAPIConfigNotif:
+      description: >
+        Represents a Slice API Configuration Notification.
+      type: object
+      properties:
+        sliceAPIInfo:
+          $ref: '#/components/schemas/SliceAPIInfo'
+      required:
+        - sliceAPIInfo
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    TriggerEvent:
+      anyOf:
+      - type: string
+        enum:
+           - UE_MOBILITY
+           - MIGRATION
+           - SERV_API_UNAVAILABILITY
+           - APP_QOS_REQ_CHANGE
+      - type: string
+        description: >
+          This string provides the triggering event for slice API configuration update.
+      description: |
+        Represents a trigger event.  
+        Possible values are:
+        - UE_MOBILITY: Indicates that the triggering event for slice API configuration update is 
+          UE mobility to a different service area.
+        - MIGRATION: Indicates that the triggering event for slice API configuration update is 
+          application server migration to a different edge/cloud platform.
+        - SERV_API_UNAVAILABILITY: Indicateds that the triggering event for slice API configuration 
+          update is service API unavailability.
+        - APP_QOS_REQ_CHANGE: Indicates that the triggering event for slice API configuration update
+          is application QoS requirements change.

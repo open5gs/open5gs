@@ -7,7 +7,7 @@
 OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_create(
     char *limit_id,
     OpenAPI_list_t* scopes,
-    OpenAPI_usage_mon_level_t *um_level,
+    OpenAPI_usage_mon_level_e um_level,
     char *start_date,
     char *end_date,
     OpenAPI_usage_threshold_t *usage_limit,
@@ -48,10 +48,6 @@ void OpenAPI_usage_mon_data_limit_free(OpenAPI_usage_mon_data_limit_t *usage_mon
         }
         OpenAPI_list_free(usage_mon_data_limit->scopes);
         usage_mon_data_limit->scopes = NULL;
-    }
-    if (usage_mon_data_limit->um_level) {
-        OpenAPI_usage_mon_level_free(usage_mon_data_limit->um_level);
-        usage_mon_data_limit->um_level = NULL;
     }
     if (usage_mon_data_limit->start_date) {
         ogs_free(usage_mon_data_limit->start_date);
@@ -122,14 +118,8 @@ cJSON *OpenAPI_usage_mon_data_limit_convertToJSON(OpenAPI_usage_mon_data_limit_t
     }
     }
 
-    if (usage_mon_data_limit->um_level) {
-    cJSON *um_level_local_JSON = OpenAPI_usage_mon_level_convertToJSON(usage_mon_data_limit->um_level);
-    if (um_level_local_JSON == NULL) {
-        ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [um_level]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "umLevel", um_level_local_JSON);
-    if (item->child == NULL) {
+    if (usage_mon_data_limit->um_level != OpenAPI_usage_mon_level_NULL) {
+    if (cJSON_AddStringToObject(item, "umLevel", OpenAPI_usage_mon_level_ToString(usage_mon_data_limit->um_level)) == NULL) {
         ogs_error("OpenAPI_usage_mon_data_limit_convertToJSON() failed [um_level]");
         goto end;
     }
@@ -187,7 +177,7 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
     cJSON *scopes = NULL;
     OpenAPI_list_t *scopesList = NULL;
     cJSON *um_level = NULL;
-    OpenAPI_usage_mon_level_t *um_level_local_nonprim = NULL;
+    OpenAPI_usage_mon_level_e um_levelVariable = 0;
     cJSON *start_date = NULL;
     cJSON *end_date = NULL;
     cJSON *usage_limit = NULL;
@@ -232,11 +222,11 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
 
     um_level = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "umLevel");
     if (um_level) {
-    um_level_local_nonprim = OpenAPI_usage_mon_level_parseFromJSON(um_level);
-    if (!um_level_local_nonprim) {
-        ogs_error("OpenAPI_usage_mon_level_parseFromJSON failed [um_level]");
+    if (!cJSON_IsString(um_level)) {
+        ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [um_level]");
         goto end;
     }
+    um_levelVariable = OpenAPI_usage_mon_level_FromString(um_level->valuestring);
     }
 
     start_date = cJSON_GetObjectItemCaseSensitive(usage_mon_data_limitJSON, "startDate");
@@ -276,7 +266,7 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
     usage_mon_data_limit_local_var = OpenAPI_usage_mon_data_limit_create (
         ogs_strdup(limit_id->valuestring),
         scopes ? scopesList : NULL,
-        um_level ? um_level_local_nonprim : NULL,
+        um_level ? um_levelVariable : 0,
         start_date && !cJSON_IsNull(start_date) ? ogs_strdup(start_date->valuestring) : NULL,
         end_date && !cJSON_IsNull(end_date) ? ogs_strdup(end_date->valuestring) : NULL,
         usage_limit ? usage_limit_local_nonprim : NULL,
@@ -287,17 +277,13 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
 end:
     if (scopesList) {
         OpenAPI_list_for_each(scopesList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_usage_mon_data_scope_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(scopesList);
         scopesList = NULL;
-    }
-    if (um_level_local_nonprim) {
-        OpenAPI_usage_mon_level_free(um_level_local_nonprim);
-        um_level_local_nonprim = NULL;
     }
     if (usage_limit_local_nonprim) {
         OpenAPI_usage_threshold_free(usage_limit_local_nonprim);

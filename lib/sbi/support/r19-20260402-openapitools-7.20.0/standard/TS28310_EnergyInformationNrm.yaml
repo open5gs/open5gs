@@ -1,0 +1,95 @@
+openapi: 3.0.1
+info:
+  title: Energy Information NRM
+  version: 19.0.0
+  description: >-
+    OAS 3.0.1 specification of the Energy Information NRM
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.310; Energy Information NRM
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.310/
+paths: {}
+components:
+  schemas:
+  
+#-------- Definition of types-----------------------------------------------------
+    EnergySourceInfo:
+      type: object
+      properties:
+        energySourceType:
+          type: string
+        energySourceCef:
+          type: number
+          format: float
+          minimum: 0
+        renewableEnergy:
+          type: boolean
+        energyCompositionPercentage:
+          type: number
+          format: float
+          default: 100
+          minimum: 1
+          maximum: 100
+    EnergySupplyMode:
+      type: string
+      enum:
+        - GRID_ELECTRICITY
+        - BACKUP_ENERGY
+        - LOCALLY_GENERATED_ENERGY
+
+#-------- Definition of concrete IOCs --------------------------------------------
+    SubNetwork-ncO-EnergyInformationNrm:
+      type: object
+      properties:
+        EnergySupplyInfo:
+          $ref: '#/components/schemas/EnergySupplyInfo-Multiple'
+        EnergyInfoGroup:
+          $ref: '#/components/schemas/EnergyInfoGroup-Multiple'
+
+    EnergySupplyInfo-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                energySupplyMode:
+                  $ref: '#/components/schemas/EnergySupplyMode'
+                energySourceList:
+                  type: array
+                  uniqueItems: true
+                  minItems: 1
+                  items:
+                    $ref: '#/components/schemas/EnergySourceInfo'
+    EnergyInfoGroup-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                energySupplyModeRefList:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+                memberDNList:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+
+#-------- Definition of JSON arrays for name-contained IOCs ----------------------
+          
+    EnergySupplyInfo-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EnergySupplyInfo-Single'
+    EnergyInfoGroup-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EnergyInfoGroup-Single'
+        
+#--------------------------------- Definition ------------------------------------                          
+
+    resources-energyInformationNrm:
+      oneOf:
+        - $ref: '#/components/schemas/EnergySupplyInfo-Single'
+        - $ref: '#/components/schemas/EnergyInfoGroup-Single'        

@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_up_security_info_s OpenAPI_up_security_info_t;
 #include "max_integrity_protected_data_rate.h"
 #include "security_result.h"
 #include "up_security.h"
@@ -20,13 +21,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_up_security_info_s OpenAPI_up_security_info_t;
-typedef struct OpenAPI_up_security_info_s {
+struct OpenAPI_up_security_info_s {
     struct OpenAPI_up_security_s *up_security;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl;
     struct OpenAPI_security_result_s *security_result;
-} OpenAPI_up_security_info_t;
+};
 
 OpenAPI_up_security_info_t *OpenAPI_up_security_info_create(
     OpenAPI_up_security_t *up_security,

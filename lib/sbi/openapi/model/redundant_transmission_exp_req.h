@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_redundant_transmission_exp_req_s OpenAPI_redundant_transmission_exp_req_t;
 #include "matching_direction.h"
 #include "red_trans_exp_ordering_criterion.h"
 
@@ -19,15 +20,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_redundant_transmission_exp_req_s OpenAPI_redundant_transmission_exp_req_t;
-typedef struct OpenAPI_redundant_transmission_exp_req_s {
-    struct OpenAPI_red_trans_exp_ordering_criterion_s *red_t_order_criter;
-    struct OpenAPI_matching_direction_s *order;
-} OpenAPI_redundant_transmission_exp_req_t;
+struct OpenAPI_redundant_transmission_exp_req_s {
+    OpenAPI_red_trans_exp_ordering_criterion_e red_t_order_criter;
+    OpenAPI_matching_direction_e order;
+};
 
 OpenAPI_redundant_transmission_exp_req_t *OpenAPI_redundant_transmission_exp_req_create(
-    OpenAPI_red_trans_exp_ordering_criterion_t *red_t_order_criter,
-    OpenAPI_matching_direction_t *order
+    OpenAPI_red_trans_exp_ordering_criterion_e red_t_order_criter,
+    OpenAPI_matching_direction_e order
 );
 void OpenAPI_redundant_transmission_exp_req_free(OpenAPI_redundant_transmission_exp_req_t *redundant_transmission_exp_req);
 OpenAPI_redundant_transmission_exp_req_t *OpenAPI_redundant_transmission_exp_req_parseFromJSON(cJSON *redundant_transmission_exp_reqJSON);

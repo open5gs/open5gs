@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_up_security_1_s OpenAPI_up_security_1_t;
 #include "up_confidentiality.h"
 #include "up_integrity.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_up_security_1_s OpenAPI_up_security_1_t;
-typedef struct OpenAPI_up_security_1_s {
+struct OpenAPI_up_security_1_s {
     OpenAPI_up_integrity_e up_integr;
     OpenAPI_up_confidentiality_e up_confid;
-} OpenAPI_up_security_1_t;
+};
 
 OpenAPI_up_security_1_t *OpenAPI_up_security_1_create(
     OpenAPI_up_integrity_e up_integr,

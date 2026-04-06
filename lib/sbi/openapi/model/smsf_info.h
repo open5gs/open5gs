@@ -1,7 +1,7 @@
 /*
  * smsf_info.h
  *
- * 
+ * Specific Data for SMSF
  */
 
 #ifndef _OpenAPI_smsf_info_H_
@@ -12,23 +12,23 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "plmn_id.h"
+typedef struct OpenAPI_smsf_info_s OpenAPI_smsf_info_t;
+#include "plmn_range.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_smsf_info_s OpenAPI_smsf_info_t;
-typedef struct OpenAPI_smsf_info_s {
-    char *smsf_instance_id;
-    struct OpenAPI_plmn_id_s *plmn_id;
-    char *smsf_set_id;
-} OpenAPI_smsf_info_t;
+struct OpenAPI_smsf_info_s {
+    bool is_roaming_ue_ind;
+    int roaming_ue_ind;
+    OpenAPI_list_t *remote_plmn_range_list;
+};
 
 OpenAPI_smsf_info_t *OpenAPI_smsf_info_create(
-    char *smsf_instance_id,
-    OpenAPI_plmn_id_t *plmn_id,
-    char *smsf_set_id
+    bool is_roaming_ue_ind,
+    int roaming_ue_ind,
+    OpenAPI_list_t *remote_plmn_range_list
 );
 void OpenAPI_smsf_info_free(OpenAPI_smsf_info_t *smsf_info);
 OpenAPI_smsf_info_t *OpenAPI_smsf_info_parseFromJSON(cJSON *smsf_infoJSON);

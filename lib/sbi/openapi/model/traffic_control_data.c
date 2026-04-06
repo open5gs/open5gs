@@ -6,6 +6,7 @@
 
 OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     char *tc_id,
+    OpenAPI_uplink_downlink_support_e l4s_ind,
     OpenAPI_flow_status_e flow_status,
     OpenAPI_redirect_information_t *redirect_info,
     OpenAPI_list_t *add_redirect_info,
@@ -15,6 +16,8 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     char *traffic_steering_pol_id_dl,
     bool is_traffic_steering_pol_id_ul_null,
     char *traffic_steering_pol_id_ul,
+    bool is_metadata_null,
+    char *metadata,
     bool is_route_to_locs_null,
     OpenAPI_list_t *route_to_locs,
     bool is_max_allowed_up_lat_null,
@@ -24,22 +27,44 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     OpenAPI_list_t *eas_ip_replace_infos,
     bool is_traff_corre_ind,
     int traff_corre_ind,
+    bool is_tfc_corre_info_null,
+    OpenAPI_traffic_correlation_info_t *tfc_corre_info,
     bool is_sim_conn_ind,
     int sim_conn_ind,
     bool is_sim_conn_term,
     int sim_conn_term,
+    bool is_n6_delay_ind,
+    int n6_delay_ind,
     bool is_up_path_chg_event_null,
     OpenAPI_up_path_chg_event_t *up_path_chg_event,
+    bool is_outcome_event_null,
+    OpenAPI_traff_route_req_outcome_event_t *outcome_event,
+    bool is_sim_conn_fail_event_null,
+    OpenAPI_sim_conn_fail_event_t *sim_conn_fail_event,
     OpenAPI_steering_functionality_e steer_fun,
+    OpenAPI_transport_mode_e trans_mode,
     OpenAPI_steering_mode_t *steer_mode_dl,
     OpenAPI_steering_mode_t *steer_mode_ul,
-    OpenAPI_npcf_multicast_access_control_e mul_acc_ctrl
+    OpenAPI_npcf_multicast_access_control_e mul_acc_ctrl,
+    bool is_cand_dnai_ind,
+    int cand_dnai_ind,
+    bool is_dat_end_mark_ind,
+    int dat_end_mark_ind,
+    bool is_dat_burst_size_ind,
+    int dat_burst_size_ind,
+    bool is_timeto_next_burst_ind,
+    int timeto_next_burst_ind,
+    bool is_payload_hdr_req_null,
+    OpenAPI_af_header_handling_control_info_t *payload_hdr_req,
+    bool is_on_path_n6_sig_info_null,
+    OpenAPI_on_path_n6_sig_info_t *on_path_n6_sig_info
 )
 {
     OpenAPI_traffic_control_data_t *traffic_control_data_local_var = ogs_malloc(sizeof(OpenAPI_traffic_control_data_t));
     ogs_assert(traffic_control_data_local_var);
 
     traffic_control_data_local_var->tc_id = tc_id;
+    traffic_control_data_local_var->l4s_ind = l4s_ind;
     traffic_control_data_local_var->flow_status = flow_status;
     traffic_control_data_local_var->redirect_info = redirect_info;
     traffic_control_data_local_var->add_redirect_info = add_redirect_info;
@@ -49,6 +74,8 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     traffic_control_data_local_var->traffic_steering_pol_id_dl = traffic_steering_pol_id_dl;
     traffic_control_data_local_var->is_traffic_steering_pol_id_ul_null = is_traffic_steering_pol_id_ul_null;
     traffic_control_data_local_var->traffic_steering_pol_id_ul = traffic_steering_pol_id_ul;
+    traffic_control_data_local_var->is_metadata_null = is_metadata_null;
+    traffic_control_data_local_var->metadata = metadata;
     traffic_control_data_local_var->is_route_to_locs_null = is_route_to_locs_null;
     traffic_control_data_local_var->route_to_locs = route_to_locs;
     traffic_control_data_local_var->is_max_allowed_up_lat_null = is_max_allowed_up_lat_null;
@@ -58,16 +85,37 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_create(
     traffic_control_data_local_var->eas_ip_replace_infos = eas_ip_replace_infos;
     traffic_control_data_local_var->is_traff_corre_ind = is_traff_corre_ind;
     traffic_control_data_local_var->traff_corre_ind = traff_corre_ind;
+    traffic_control_data_local_var->is_tfc_corre_info_null = is_tfc_corre_info_null;
+    traffic_control_data_local_var->tfc_corre_info = tfc_corre_info;
     traffic_control_data_local_var->is_sim_conn_ind = is_sim_conn_ind;
     traffic_control_data_local_var->sim_conn_ind = sim_conn_ind;
     traffic_control_data_local_var->is_sim_conn_term = is_sim_conn_term;
     traffic_control_data_local_var->sim_conn_term = sim_conn_term;
+    traffic_control_data_local_var->is_n6_delay_ind = is_n6_delay_ind;
+    traffic_control_data_local_var->n6_delay_ind = n6_delay_ind;
     traffic_control_data_local_var->is_up_path_chg_event_null = is_up_path_chg_event_null;
     traffic_control_data_local_var->up_path_chg_event = up_path_chg_event;
+    traffic_control_data_local_var->is_outcome_event_null = is_outcome_event_null;
+    traffic_control_data_local_var->outcome_event = outcome_event;
+    traffic_control_data_local_var->is_sim_conn_fail_event_null = is_sim_conn_fail_event_null;
+    traffic_control_data_local_var->sim_conn_fail_event = sim_conn_fail_event;
     traffic_control_data_local_var->steer_fun = steer_fun;
+    traffic_control_data_local_var->trans_mode = trans_mode;
     traffic_control_data_local_var->steer_mode_dl = steer_mode_dl;
     traffic_control_data_local_var->steer_mode_ul = steer_mode_ul;
     traffic_control_data_local_var->mul_acc_ctrl = mul_acc_ctrl;
+    traffic_control_data_local_var->is_cand_dnai_ind = is_cand_dnai_ind;
+    traffic_control_data_local_var->cand_dnai_ind = cand_dnai_ind;
+    traffic_control_data_local_var->is_dat_end_mark_ind = is_dat_end_mark_ind;
+    traffic_control_data_local_var->dat_end_mark_ind = dat_end_mark_ind;
+    traffic_control_data_local_var->is_dat_burst_size_ind = is_dat_burst_size_ind;
+    traffic_control_data_local_var->dat_burst_size_ind = dat_burst_size_ind;
+    traffic_control_data_local_var->is_timeto_next_burst_ind = is_timeto_next_burst_ind;
+    traffic_control_data_local_var->timeto_next_burst_ind = timeto_next_burst_ind;
+    traffic_control_data_local_var->is_payload_hdr_req_null = is_payload_hdr_req_null;
+    traffic_control_data_local_var->payload_hdr_req = payload_hdr_req;
+    traffic_control_data_local_var->is_on_path_n6_sig_info_null = is_on_path_n6_sig_info_null;
+    traffic_control_data_local_var->on_path_n6_sig_info = on_path_n6_sig_info;
 
     return traffic_control_data_local_var;
 }
@@ -102,6 +150,10 @@ void OpenAPI_traffic_control_data_free(OpenAPI_traffic_control_data_t *traffic_c
         ogs_free(traffic_control_data->traffic_steering_pol_id_ul);
         traffic_control_data->traffic_steering_pol_id_ul = NULL;
     }
+    if (traffic_control_data->metadata) {
+        ogs_free(traffic_control_data->metadata);
+        traffic_control_data->metadata = NULL;
+    }
     if (traffic_control_data->route_to_locs) {
         OpenAPI_list_for_each(traffic_control_data->route_to_locs, node) {
             OpenAPI_route_to_location_free(node->data);
@@ -116,9 +168,21 @@ void OpenAPI_traffic_control_data_free(OpenAPI_traffic_control_data_t *traffic_c
         OpenAPI_list_free(traffic_control_data->eas_ip_replace_infos);
         traffic_control_data->eas_ip_replace_infos = NULL;
     }
+    if (traffic_control_data->tfc_corre_info) {
+        OpenAPI_traffic_correlation_info_free(traffic_control_data->tfc_corre_info);
+        traffic_control_data->tfc_corre_info = NULL;
+    }
     if (traffic_control_data->up_path_chg_event) {
         OpenAPI_up_path_chg_event_free(traffic_control_data->up_path_chg_event);
         traffic_control_data->up_path_chg_event = NULL;
+    }
+    if (traffic_control_data->outcome_event) {
+        OpenAPI_traff_route_req_outcome_event_free(traffic_control_data->outcome_event);
+        traffic_control_data->outcome_event = NULL;
+    }
+    if (traffic_control_data->sim_conn_fail_event) {
+        OpenAPI_sim_conn_fail_event_free(traffic_control_data->sim_conn_fail_event);
+        traffic_control_data->sim_conn_fail_event = NULL;
     }
     if (traffic_control_data->steer_mode_dl) {
         OpenAPI_steering_mode_free(traffic_control_data->steer_mode_dl);
@@ -127,6 +191,14 @@ void OpenAPI_traffic_control_data_free(OpenAPI_traffic_control_data_t *traffic_c
     if (traffic_control_data->steer_mode_ul) {
         OpenAPI_steering_mode_free(traffic_control_data->steer_mode_ul);
         traffic_control_data->steer_mode_ul = NULL;
+    }
+    if (traffic_control_data->payload_hdr_req) {
+        OpenAPI_af_header_handling_control_info_free(traffic_control_data->payload_hdr_req);
+        traffic_control_data->payload_hdr_req = NULL;
+    }
+    if (traffic_control_data->on_path_n6_sig_info) {
+        OpenAPI_on_path_n6_sig_info_free(traffic_control_data->on_path_n6_sig_info);
+        traffic_control_data->on_path_n6_sig_info = NULL;
     }
     ogs_free(traffic_control_data);
 }
@@ -149,6 +221,13 @@ cJSON *OpenAPI_traffic_control_data_convertToJSON(OpenAPI_traffic_control_data_t
     if (cJSON_AddStringToObject(item, "tcId", traffic_control_data->tc_id) == NULL) {
         ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [tc_id]");
         goto end;
+    }
+
+    if (traffic_control_data->l4s_ind != OpenAPI_uplink_downlink_support_NULL) {
+    if (cJSON_AddStringToObject(item, "l4sInd", OpenAPI_uplink_downlink_support_ToString(traffic_control_data->l4s_ind)) == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [l4s_ind]");
+        goto end;
+    }
     }
 
     if (traffic_control_data->flow_status != OpenAPI_flow_status_NULL) {
@@ -218,6 +297,18 @@ cJSON *OpenAPI_traffic_control_data_convertToJSON(OpenAPI_traffic_control_data_t
         }
     }
 
+    if (traffic_control_data->metadata) {
+    if (cJSON_AddStringToObject(item, "metadata", traffic_control_data->metadata) == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [metadata]");
+        goto end;
+    }
+    } else if (traffic_control_data->is_metadata_null) {
+        if (cJSON_AddNullToObject(item, "metadata") == NULL) {
+            ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [metadata]");
+            goto end;
+        }
+    }
+
     if (traffic_control_data->route_to_locs) {
     cJSON *route_to_locsList = cJSON_AddArrayToObject(item, "routeToLocs");
     if (route_to_locsList == NULL) {
@@ -279,6 +370,24 @@ cJSON *OpenAPI_traffic_control_data_convertToJSON(OpenAPI_traffic_control_data_t
     }
     }
 
+    if (traffic_control_data->tfc_corre_info) {
+    cJSON *tfc_corre_info_local_JSON = OpenAPI_traffic_correlation_info_convertToJSON(traffic_control_data->tfc_corre_info);
+    if (tfc_corre_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [tfc_corre_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "tfcCorreInfo", tfc_corre_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [tfc_corre_info]");
+        goto end;
+    }
+    } else if (traffic_control_data->is_tfc_corre_info_null) {
+        if (cJSON_AddNullToObject(item, "tfcCorreInfo") == NULL) {
+            ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [tfc_corre_info]");
+            goto end;
+        }
+    }
+
     if (traffic_control_data->is_sim_conn_ind) {
     if (cJSON_AddBoolToObject(item, "simConnInd", traffic_control_data->sim_conn_ind) == NULL) {
         ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [sim_conn_ind]");
@@ -289,6 +398,13 @@ cJSON *OpenAPI_traffic_control_data_convertToJSON(OpenAPI_traffic_control_data_t
     if (traffic_control_data->is_sim_conn_term) {
     if (cJSON_AddNumberToObject(item, "simConnTerm", traffic_control_data->sim_conn_term) == NULL) {
         ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [sim_conn_term]");
+        goto end;
+    }
+    }
+
+    if (traffic_control_data->is_n6_delay_ind) {
+    if (cJSON_AddBoolToObject(item, "n6DelayInd", traffic_control_data->n6_delay_ind) == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [n6_delay_ind]");
         goto end;
     }
     }
@@ -311,9 +427,52 @@ cJSON *OpenAPI_traffic_control_data_convertToJSON(OpenAPI_traffic_control_data_t
         }
     }
 
+    if (traffic_control_data->outcome_event) {
+    cJSON *outcome_event_local_JSON = OpenAPI_traff_route_req_outcome_event_convertToJSON(traffic_control_data->outcome_event);
+    if (outcome_event_local_JSON == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [outcome_event]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "outcomeEvent", outcome_event_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [outcome_event]");
+        goto end;
+    }
+    } else if (traffic_control_data->is_outcome_event_null) {
+        if (cJSON_AddNullToObject(item, "outcomeEvent") == NULL) {
+            ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [outcome_event]");
+            goto end;
+        }
+    }
+
+    if (traffic_control_data->sim_conn_fail_event) {
+    cJSON *sim_conn_fail_event_local_JSON = OpenAPI_sim_conn_fail_event_convertToJSON(traffic_control_data->sim_conn_fail_event);
+    if (sim_conn_fail_event_local_JSON == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [sim_conn_fail_event]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "simConnFailEvent", sim_conn_fail_event_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [sim_conn_fail_event]");
+        goto end;
+    }
+    } else if (traffic_control_data->is_sim_conn_fail_event_null) {
+        if (cJSON_AddNullToObject(item, "simConnFailEvent") == NULL) {
+            ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [sim_conn_fail_event]");
+            goto end;
+        }
+    }
+
     if (traffic_control_data->steer_fun != OpenAPI_steering_functionality_NULL) {
     if (cJSON_AddStringToObject(item, "steerFun", OpenAPI_steering_functionality_ToString(traffic_control_data->steer_fun)) == NULL) {
         ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [steer_fun]");
+        goto end;
+    }
+    }
+
+    if (traffic_control_data->trans_mode != OpenAPI_transport_mode_NULL) {
+    if (cJSON_AddStringToObject(item, "transMode", OpenAPI_transport_mode_ToString(traffic_control_data->trans_mode)) == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [trans_mode]");
         goto end;
     }
     }
@@ -351,6 +510,70 @@ cJSON *OpenAPI_traffic_control_data_convertToJSON(OpenAPI_traffic_control_data_t
     }
     }
 
+    if (traffic_control_data->is_cand_dnai_ind) {
+    if (cJSON_AddBoolToObject(item, "candDnaiInd", traffic_control_data->cand_dnai_ind) == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [cand_dnai_ind]");
+        goto end;
+    }
+    }
+
+    if (traffic_control_data->is_dat_end_mark_ind) {
+    if (cJSON_AddBoolToObject(item, "datEndMarkInd", traffic_control_data->dat_end_mark_ind) == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [dat_end_mark_ind]");
+        goto end;
+    }
+    }
+
+    if (traffic_control_data->is_dat_burst_size_ind) {
+    if (cJSON_AddBoolToObject(item, "datBurstSizeInd", traffic_control_data->dat_burst_size_ind) == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [dat_burst_size_ind]");
+        goto end;
+    }
+    }
+
+    if (traffic_control_data->is_timeto_next_burst_ind) {
+    if (cJSON_AddBoolToObject(item, "timetoNextBurstInd", traffic_control_data->timeto_next_burst_ind) == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [timeto_next_burst_ind]");
+        goto end;
+    }
+    }
+
+    if (traffic_control_data->payload_hdr_req) {
+    cJSON *payload_hdr_req_local_JSON = OpenAPI_af_header_handling_control_info_convertToJSON(traffic_control_data->payload_hdr_req);
+    if (payload_hdr_req_local_JSON == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [payload_hdr_req]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "payloadHdrReq", payload_hdr_req_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [payload_hdr_req]");
+        goto end;
+    }
+    } else if (traffic_control_data->is_payload_hdr_req_null) {
+        if (cJSON_AddNullToObject(item, "payloadHdrReq") == NULL) {
+            ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [payload_hdr_req]");
+            goto end;
+        }
+    }
+
+    if (traffic_control_data->on_path_n6_sig_info) {
+    cJSON *on_path_n6_sig_info_local_JSON = OpenAPI_on_path_n6_sig_info_convertToJSON(traffic_control_data->on_path_n6_sig_info);
+    if (on_path_n6_sig_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [on_path_n6_sig_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "onPathN6SigInfo", on_path_n6_sig_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [on_path_n6_sig_info]");
+        goto end;
+    }
+    } else if (traffic_control_data->is_on_path_n6_sig_info_null) {
+        if (cJSON_AddNullToObject(item, "onPathN6SigInfo") == NULL) {
+            ogs_error("OpenAPI_traffic_control_data_convertToJSON() failed [on_path_n6_sig_info]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -360,6 +583,8 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
     OpenAPI_traffic_control_data_t *traffic_control_data_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *tc_id = NULL;
+    cJSON *l4s_ind = NULL;
+    OpenAPI_uplink_downlink_support_e l4s_indVariable = 0;
     cJSON *flow_status = NULL;
     OpenAPI_flow_status_e flow_statusVariable = 0;
     cJSON *redirect_info = NULL;
@@ -369,24 +594,42 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
     cJSON *mute_notif = NULL;
     cJSON *traffic_steering_pol_id_dl = NULL;
     cJSON *traffic_steering_pol_id_ul = NULL;
+    cJSON *metadata = NULL;
     cJSON *route_to_locs = NULL;
     OpenAPI_list_t *route_to_locsList = NULL;
     cJSON *max_allowed_up_lat = NULL;
     cJSON *eas_ip_replace_infos = NULL;
     OpenAPI_list_t *eas_ip_replace_infosList = NULL;
     cJSON *traff_corre_ind = NULL;
+    cJSON *tfc_corre_info = NULL;
+    OpenAPI_traffic_correlation_info_t *tfc_corre_info_local_nonprim = NULL;
     cJSON *sim_conn_ind = NULL;
     cJSON *sim_conn_term = NULL;
+    cJSON *n6_delay_ind = NULL;
     cJSON *up_path_chg_event = NULL;
     OpenAPI_up_path_chg_event_t *up_path_chg_event_local_nonprim = NULL;
+    cJSON *outcome_event = NULL;
+    OpenAPI_traff_route_req_outcome_event_t *outcome_event_local_nonprim = NULL;
+    cJSON *sim_conn_fail_event = NULL;
+    OpenAPI_sim_conn_fail_event_t *sim_conn_fail_event_local_nonprim = NULL;
     cJSON *steer_fun = NULL;
     OpenAPI_steering_functionality_e steer_funVariable = 0;
+    cJSON *trans_mode = NULL;
+    OpenAPI_transport_mode_e trans_modeVariable = 0;
     cJSON *steer_mode_dl = NULL;
     OpenAPI_steering_mode_t *steer_mode_dl_local_nonprim = NULL;
     cJSON *steer_mode_ul = NULL;
     OpenAPI_steering_mode_t *steer_mode_ul_local_nonprim = NULL;
     cJSON *mul_acc_ctrl = NULL;
     OpenAPI_npcf_multicast_access_control_e mul_acc_ctrlVariable = 0;
+    cJSON *cand_dnai_ind = NULL;
+    cJSON *dat_end_mark_ind = NULL;
+    cJSON *dat_burst_size_ind = NULL;
+    cJSON *timeto_next_burst_ind = NULL;
+    cJSON *payload_hdr_req = NULL;
+    OpenAPI_af_header_handling_control_info_t *payload_hdr_req_local_nonprim = NULL;
+    cJSON *on_path_n6_sig_info = NULL;
+    OpenAPI_on_path_n6_sig_info_t *on_path_n6_sig_info_local_nonprim = NULL;
     tc_id = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "tcId");
     if (!tc_id) {
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [tc_id]");
@@ -395,6 +638,15 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
     if (!cJSON_IsString(tc_id)) {
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [tc_id]");
         goto end;
+    }
+
+    l4s_ind = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "l4sInd");
+    if (l4s_ind) {
+    if (!cJSON_IsString(l4s_ind)) {
+        ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [l4s_ind]");
+        goto end;
+    }
+    l4s_indVariable = OpenAPI_uplink_downlink_support_FromString(l4s_ind->valuestring);
     }
 
     flow_status = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "flowStatus");
@@ -462,6 +714,16 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
     if (!cJSON_IsNull(traffic_steering_pol_id_ul)) {
     if (!cJSON_IsString(traffic_steering_pol_id_ul) && !cJSON_IsNull(traffic_steering_pol_id_ul)) {
         ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [traffic_steering_pol_id_ul]");
+        goto end;
+    }
+    }
+    }
+
+    metadata = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "metadata");
+    if (metadata) {
+    if (!cJSON_IsNull(metadata)) {
+    if (!cJSON_IsString(metadata) && !cJSON_IsNull(metadata)) {
+        ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [metadata]");
         goto end;
     }
     }
@@ -537,6 +799,17 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
     }
     }
 
+    tfc_corre_info = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "tfcCorreInfo");
+    if (tfc_corre_info) {
+    if (!cJSON_IsNull(tfc_corre_info)) {
+    tfc_corre_info_local_nonprim = OpenAPI_traffic_correlation_info_parseFromJSON(tfc_corre_info);
+    if (!tfc_corre_info_local_nonprim) {
+        ogs_error("OpenAPI_traffic_correlation_info_parseFromJSON failed [tfc_corre_info]");
+        goto end;
+    }
+    }
+    }
+
     sim_conn_ind = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "simConnInd");
     if (sim_conn_ind) {
     if (!cJSON_IsBool(sim_conn_ind)) {
@@ -553,12 +826,42 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
     }
     }
 
+    n6_delay_ind = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "n6DelayInd");
+    if (n6_delay_ind) {
+    if (!cJSON_IsBool(n6_delay_ind)) {
+        ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [n6_delay_ind]");
+        goto end;
+    }
+    }
+
     up_path_chg_event = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "upPathChgEvent");
     if (up_path_chg_event) {
     if (!cJSON_IsNull(up_path_chg_event)) {
     up_path_chg_event_local_nonprim = OpenAPI_up_path_chg_event_parseFromJSON(up_path_chg_event);
     if (!up_path_chg_event_local_nonprim) {
         ogs_error("OpenAPI_up_path_chg_event_parseFromJSON failed [up_path_chg_event]");
+        goto end;
+    }
+    }
+    }
+
+    outcome_event = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "outcomeEvent");
+    if (outcome_event) {
+    if (!cJSON_IsNull(outcome_event)) {
+    outcome_event_local_nonprim = OpenAPI_traff_route_req_outcome_event_parseFromJSON(outcome_event);
+    if (!outcome_event_local_nonprim) {
+        ogs_error("OpenAPI_traff_route_req_outcome_event_parseFromJSON failed [outcome_event]");
+        goto end;
+    }
+    }
+    }
+
+    sim_conn_fail_event = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "simConnFailEvent");
+    if (sim_conn_fail_event) {
+    if (!cJSON_IsNull(sim_conn_fail_event)) {
+    sim_conn_fail_event_local_nonprim = OpenAPI_sim_conn_fail_event_parseFromJSON(sim_conn_fail_event);
+    if (!sim_conn_fail_event_local_nonprim) {
+        ogs_error("OpenAPI_sim_conn_fail_event_parseFromJSON failed [sim_conn_fail_event]");
         goto end;
     }
     }
@@ -571,6 +874,15 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
         goto end;
     }
     steer_funVariable = OpenAPI_steering_functionality_FromString(steer_fun->valuestring);
+    }
+
+    trans_mode = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "transMode");
+    if (trans_mode) {
+    if (!cJSON_IsString(trans_mode)) {
+        ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [trans_mode]");
+        goto end;
+    }
+    trans_modeVariable = OpenAPI_transport_mode_FromString(trans_mode->valuestring);
     }
 
     steer_mode_dl = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "steerModeDl");
@@ -600,8 +912,63 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
     mul_acc_ctrlVariable = OpenAPI_npcf_multicast_access_control_FromString(mul_acc_ctrl->valuestring);
     }
 
+    cand_dnai_ind = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "candDnaiInd");
+    if (cand_dnai_ind) {
+    if (!cJSON_IsBool(cand_dnai_ind)) {
+        ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [cand_dnai_ind]");
+        goto end;
+    }
+    }
+
+    dat_end_mark_ind = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "datEndMarkInd");
+    if (dat_end_mark_ind) {
+    if (!cJSON_IsBool(dat_end_mark_ind)) {
+        ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [dat_end_mark_ind]");
+        goto end;
+    }
+    }
+
+    dat_burst_size_ind = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "datBurstSizeInd");
+    if (dat_burst_size_ind) {
+    if (!cJSON_IsBool(dat_burst_size_ind)) {
+        ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [dat_burst_size_ind]");
+        goto end;
+    }
+    }
+
+    timeto_next_burst_ind = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "timetoNextBurstInd");
+    if (timeto_next_burst_ind) {
+    if (!cJSON_IsBool(timeto_next_burst_ind)) {
+        ogs_error("OpenAPI_traffic_control_data_parseFromJSON() failed [timeto_next_burst_ind]");
+        goto end;
+    }
+    }
+
+    payload_hdr_req = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "payloadHdrReq");
+    if (payload_hdr_req) {
+    if (!cJSON_IsNull(payload_hdr_req)) {
+    payload_hdr_req_local_nonprim = OpenAPI_af_header_handling_control_info_parseFromJSON(payload_hdr_req);
+    if (!payload_hdr_req_local_nonprim) {
+        ogs_error("OpenAPI_af_header_handling_control_info_parseFromJSON failed [payload_hdr_req]");
+        goto end;
+    }
+    }
+    }
+
+    on_path_n6_sig_info = cJSON_GetObjectItemCaseSensitive(traffic_control_dataJSON, "onPathN6SigInfo");
+    if (on_path_n6_sig_info) {
+    if (!cJSON_IsNull(on_path_n6_sig_info)) {
+    on_path_n6_sig_info_local_nonprim = OpenAPI_on_path_n6_sig_info_parseFromJSON(on_path_n6_sig_info);
+    if (!on_path_n6_sig_info_local_nonprim) {
+        ogs_error("OpenAPI_on_path_n6_sig_info_parseFromJSON failed [on_path_n6_sig_info]");
+        goto end;
+    }
+    }
+    }
+
     traffic_control_data_local_var = OpenAPI_traffic_control_data_create (
         ogs_strdup(tc_id->valuestring),
+        l4s_ind ? l4s_indVariable : 0,
         flow_status ? flow_statusVariable : 0,
         redirect_info ? redirect_info_local_nonprim : NULL,
         add_redirect_info ? add_redirect_infoList : NULL,
@@ -611,6 +978,8 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
         traffic_steering_pol_id_dl && !cJSON_IsNull(traffic_steering_pol_id_dl) ? ogs_strdup(traffic_steering_pol_id_dl->valuestring) : NULL,
         traffic_steering_pol_id_ul && cJSON_IsNull(traffic_steering_pol_id_ul) ? true : false,
         traffic_steering_pol_id_ul && !cJSON_IsNull(traffic_steering_pol_id_ul) ? ogs_strdup(traffic_steering_pol_id_ul->valuestring) : NULL,
+        metadata && cJSON_IsNull(metadata) ? true : false,
+        metadata && !cJSON_IsNull(metadata) ? ogs_strdup(metadata->valuestring) : NULL,
         route_to_locs && cJSON_IsNull(route_to_locs) ? true : false,
         route_to_locs ? route_to_locsList : NULL,
         max_allowed_up_lat && cJSON_IsNull(max_allowed_up_lat) ? true : false,
@@ -620,16 +989,37 @@ OpenAPI_traffic_control_data_t *OpenAPI_traffic_control_data_parseFromJSON(cJSON
         eas_ip_replace_infos ? eas_ip_replace_infosList : NULL,
         traff_corre_ind ? true : false,
         traff_corre_ind ? traff_corre_ind->valueint : 0,
+        tfc_corre_info && cJSON_IsNull(tfc_corre_info) ? true : false,
+        tfc_corre_info ? tfc_corre_info_local_nonprim : NULL,
         sim_conn_ind ? true : false,
         sim_conn_ind ? sim_conn_ind->valueint : 0,
         sim_conn_term ? true : false,
         sim_conn_term ? sim_conn_term->valuedouble : 0,
+        n6_delay_ind ? true : false,
+        n6_delay_ind ? n6_delay_ind->valueint : 0,
         up_path_chg_event && cJSON_IsNull(up_path_chg_event) ? true : false,
         up_path_chg_event ? up_path_chg_event_local_nonprim : NULL,
+        outcome_event && cJSON_IsNull(outcome_event) ? true : false,
+        outcome_event ? outcome_event_local_nonprim : NULL,
+        sim_conn_fail_event && cJSON_IsNull(sim_conn_fail_event) ? true : false,
+        sim_conn_fail_event ? sim_conn_fail_event_local_nonprim : NULL,
         steer_fun ? steer_funVariable : 0,
+        trans_mode ? trans_modeVariable : 0,
         steer_mode_dl ? steer_mode_dl_local_nonprim : NULL,
         steer_mode_ul ? steer_mode_ul_local_nonprim : NULL,
-        mul_acc_ctrl ? mul_acc_ctrlVariable : 0
+        mul_acc_ctrl ? mul_acc_ctrlVariable : 0,
+        cand_dnai_ind ? true : false,
+        cand_dnai_ind ? cand_dnai_ind->valueint : 0,
+        dat_end_mark_ind ? true : false,
+        dat_end_mark_ind ? dat_end_mark_ind->valueint : 0,
+        dat_burst_size_ind ? true : false,
+        dat_burst_size_ind ? dat_burst_size_ind->valueint : 0,
+        timeto_next_burst_ind ? true : false,
+        timeto_next_burst_ind ? timeto_next_burst_ind->valueint : 0,
+        payload_hdr_req && cJSON_IsNull(payload_hdr_req) ? true : false,
+        payload_hdr_req ? payload_hdr_req_local_nonprim : NULL,
+        on_path_n6_sig_info && cJSON_IsNull(on_path_n6_sig_info) ? true : false,
+        on_path_n6_sig_info ? on_path_n6_sig_info_local_nonprim : NULL
     );
 
     return traffic_control_data_local_var;
@@ -659,9 +1049,21 @@ end:
         OpenAPI_list_free(eas_ip_replace_infosList);
         eas_ip_replace_infosList = NULL;
     }
+    if (tfc_corre_info_local_nonprim) {
+        OpenAPI_traffic_correlation_info_free(tfc_corre_info_local_nonprim);
+        tfc_corre_info_local_nonprim = NULL;
+    }
     if (up_path_chg_event_local_nonprim) {
         OpenAPI_up_path_chg_event_free(up_path_chg_event_local_nonprim);
         up_path_chg_event_local_nonprim = NULL;
+    }
+    if (outcome_event_local_nonprim) {
+        OpenAPI_traff_route_req_outcome_event_free(outcome_event_local_nonprim);
+        outcome_event_local_nonprim = NULL;
+    }
+    if (sim_conn_fail_event_local_nonprim) {
+        OpenAPI_sim_conn_fail_event_free(sim_conn_fail_event_local_nonprim);
+        sim_conn_fail_event_local_nonprim = NULL;
     }
     if (steer_mode_dl_local_nonprim) {
         OpenAPI_steering_mode_free(steer_mode_dl_local_nonprim);
@@ -670,6 +1072,14 @@ end:
     if (steer_mode_ul_local_nonprim) {
         OpenAPI_steering_mode_free(steer_mode_ul_local_nonprim);
         steer_mode_ul_local_nonprim = NULL;
+    }
+    if (payload_hdr_req_local_nonprim) {
+        OpenAPI_af_header_handling_control_info_free(payload_hdr_req_local_nonprim);
+        payload_hdr_req_local_nonprim = NULL;
+    }
+    if (on_path_n6_sig_info_local_nonprim) {
+        OpenAPI_on_path_n6_sig_info_free(on_path_n6_sig_info_local_nonprim);
+        on_path_n6_sig_info_local_nonprim = NULL;
     }
     return NULL;
 }

@@ -22,7 +22,9 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_create(
     bool is_disaster_roaming_ind,
     int disaster_roaming_ind,
     bool is_onboarding_ind,
-    int onboarding_ind
+    int onboarding_ind,
+    bool is_aun3_ind,
+    int aun3_ind
 )
 {
     OpenAPI_authentication_info_t *authentication_info_local_var = ogs_malloc(sizeof(OpenAPI_authentication_info_t));
@@ -46,6 +48,8 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_create(
     authentication_info_local_var->disaster_roaming_ind = disaster_roaming_ind;
     authentication_info_local_var->is_onboarding_ind = is_onboarding_ind;
     authentication_info_local_var->onboarding_ind = onboarding_ind;
+    authentication_info_local_var->is_aun3_ind = is_aun3_ind;
+    authentication_info_local_var->aun3_ind = aun3_ind;
 
     return authentication_info_local_var;
 }
@@ -229,6 +233,13 @@ cJSON *OpenAPI_authentication_info_convertToJSON(OpenAPI_authentication_info_t *
     }
     }
 
+    if (authentication_info->is_aun3_ind) {
+    if (cJSON_AddBoolToObject(item, "aun3Ind", authentication_info->aun3_ind) == NULL) {
+        ogs_error("OpenAPI_authentication_info_convertToJSON() failed [aun3_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -253,6 +264,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
     cJSON *nswo_ind = NULL;
     cJSON *disaster_roaming_ind = NULL;
     cJSON *onboarding_ind = NULL;
+    cJSON *aun3_ind = NULL;
     supi_or_suci = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "supiOrSuci");
     if (!supi_or_suci) {
         ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [supi_or_suci]");
@@ -378,6 +390,14 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
     }
     }
 
+    aun3_ind = cJSON_GetObjectItemCaseSensitive(authentication_infoJSON, "aun3Ind");
+    if (aun3_ind) {
+    if (!cJSON_IsBool(aun3_ind)) {
+        ogs_error("OpenAPI_authentication_info_parseFromJSON() failed [aun3_ind]");
+        goto end;
+    }
+    }
+
     authentication_info_local_var = OpenAPI_authentication_info_create (
         ogs_strdup(supi_or_suci->valuestring),
         ogs_strdup(serving_network_name->valuestring),
@@ -396,7 +416,9 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *
         disaster_roaming_ind ? true : false,
         disaster_roaming_ind ? disaster_roaming_ind->valueint : 0,
         onboarding_ind ? true : false,
-        onboarding_ind ? onboarding_ind->valueint : 0
+        onboarding_ind ? onboarding_ind->valueint : 0,
+        aun3_ind ? true : false,
+        aun3_ind ? aun3_ind->valueint : 0
     );
 
     return authentication_info_local_var;

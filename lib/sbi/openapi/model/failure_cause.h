@@ -1,7 +1,7 @@
 /*
  * failure_cause.h
  *
- * 
+ * Indicates the cause of the failure in a Partial Success Report.
  */
 
 #ifndef _OpenAPI_failure_cause_H_

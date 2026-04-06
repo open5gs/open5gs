@@ -1,7 +1,7 @@
 /*
  * operation_mode.h
  *
- * 
+ * Indicates the Operation Mode. 
  */
 
 #ifndef _OpenAPI_operation_mode_H_
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_operation_mode_NULL = 0, OpenAPI_operation_mode_WB_S1, OpenAPI_operation_mode_NB_S1, OpenAPI_operation_mode_WB_N1, OpenAPI_operation_mode_NB_N1 } OpenAPI_operation_mode_e;
+typedef enum { OpenAPI_operation_mode_NULL = 0, OpenAPI_operation_mode_WB_S1, OpenAPI_operation_mode_NB_S1, OpenAPI_operation_mode_WB_N1, OpenAPI_operation_mode_NB_N1, OpenAPI_operation_mode_NR_N1, OpenAPI_operation_mode_NR_N1_REDCAP, OpenAPI_operation_mode_NR_N1_EREDCAP } OpenAPI_operation_mode_e;
 
 char* OpenAPI_operation_mode_ToString(OpenAPI_operation_mode_e operation_mode);
 

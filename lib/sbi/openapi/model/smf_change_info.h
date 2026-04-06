@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_smf_change_info_s OpenAPI_smf_change_info_t;
 #include "smf_change_indication.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_smf_change_info_s OpenAPI_smf_change_info_t;
-typedef struct OpenAPI_smf_change_info_s {
+struct OpenAPI_smf_change_info_s {
     OpenAPI_list_t *pdu_session_id_list;
     OpenAPI_smf_change_indication_e smf_change_ind;
-} OpenAPI_smf_change_info_t;
+};
 
 OpenAPI_smf_change_info_t *OpenAPI_smf_change_info_create(
     OpenAPI_list_t *pdu_session_id_list,

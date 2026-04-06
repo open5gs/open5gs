@@ -1,7 +1,7 @@
 /*
  * ie_location.h
  *
- * 
+ * Location of the IE in a HTTP message
  */
 
 #ifndef _OpenAPI_ie_location_H_
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_ie_location_NULL = 0, OpenAPI_ie_location_URI_PARAM, OpenAPI_ie_location_HEADER, OpenAPI_ie_location_BODY, OpenAPI_ie_location_MULTIPART_BINARY } OpenAPI_ie_location_e;
+typedef enum { OpenAPI_ie_location_NULL = 0, OpenAPI_ie_location_URI_PARAM, OpenAPI_ie_location_HEADER, OpenAPI_ie_location_BODY, OpenAPI_ie_location_MULTIPART_BINARY, OpenAPI_ie_location_URI_PATH } OpenAPI_ie_location_e;
 
 char* OpenAPI_ie_location_ToString(OpenAPI_ie_location_e ie_location);
 

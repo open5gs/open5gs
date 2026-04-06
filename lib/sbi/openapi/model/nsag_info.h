@@ -1,7 +1,7 @@
 /*
  * nsag_info.h
  *
- * Contains the association of NSAGs and S-NSSAI(s) along with the TA(s) within which the association is valid.
+ * Contains the association of NSAGs and S-NSSAI(s) along with the TA(s) within which the association is valid. 
  */
 
 #ifndef _OpenAPI_nsag_info_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nsag_info_s OpenAPI_nsag_info_t;
 #include "snssai.h"
 #include "tai.h"
 #include "tai_range.h"
@@ -20,13 +21,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nsag_info_s OpenAPI_nsag_info_t;
-typedef struct OpenAPI_nsag_info_s {
+struct OpenAPI_nsag_info_s {
     OpenAPI_list_t *nsag_ids;
     OpenAPI_list_t *snssai_list;
     OpenAPI_list_t *tai_list;
     OpenAPI_list_t *tai_range_list;
-} OpenAPI_nsag_info_t;
+};
 
 OpenAPI_nsag_info_t *OpenAPI_nsag_info_create(
     OpenAPI_list_t *nsag_ids,

@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_cnf_unit_s OpenAPI_cnf_unit_t;
 #include "atom.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_cnf_unit_s OpenAPI_cnf_unit_t;
-typedef struct OpenAPI_cnf_unit_s {
+struct OpenAPI_cnf_unit_s {
     OpenAPI_list_t *cnf_unit;
-} OpenAPI_cnf_unit_t;
+};
 
 OpenAPI_cnf_unit_t *OpenAPI_cnf_unit_create(
     OpenAPI_list_t *cnf_unit

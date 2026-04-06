@@ -1,7 +1,7 @@
 /*
  * suggested_packet_num_dl.h
  *
- * 
+ * Contains suggested number of DL packets
  */
 
 #ifndef _OpenAPI_suggested_packet_num_dl_H_
@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_suggested_packet_num_dl_s OpenAPI_suggested_packet_num_dl_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_suggested_packet_num_dl_s OpenAPI_suggested_packet_num_dl_t;
-typedef struct OpenAPI_suggested_packet_num_dl_s {
+struct OpenAPI_suggested_packet_num_dl_s {
     int suggested_packet_num_dl;
     char *validity_time;
-} OpenAPI_suggested_packet_num_dl_t;
+};
 
 OpenAPI_suggested_packet_num_dl_t *OpenAPI_suggested_packet_num_dl_create(
     int suggested_packet_num_dl,

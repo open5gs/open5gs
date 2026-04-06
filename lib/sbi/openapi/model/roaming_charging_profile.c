@@ -6,7 +6,7 @@
 
 OpenAPI_roaming_charging_profile_t *OpenAPI_roaming_charging_profile_create(
     OpenAPI_list_t *triggers,
-    OpenAPI_partial_record_method_t *partial_record_method
+    OpenAPI_partial_record_method_e partial_record_method
 )
 {
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile_local_var = ogs_malloc(sizeof(OpenAPI_roaming_charging_profile_t));
@@ -31,10 +31,6 @@ void OpenAPI_roaming_charging_profile_free(OpenAPI_roaming_charging_profile_t *r
         }
         OpenAPI_list_free(roaming_charging_profile->triggers);
         roaming_charging_profile->triggers = NULL;
-    }
-    if (roaming_charging_profile->partial_record_method) {
-        OpenAPI_partial_record_method_free(roaming_charging_profile->partial_record_method);
-        roaming_charging_profile->partial_record_method = NULL;
     }
     ogs_free(roaming_charging_profile);
 }
@@ -66,14 +62,8 @@ cJSON *OpenAPI_roaming_charging_profile_convertToJSON(OpenAPI_roaming_charging_p
     }
     }
 
-    if (roaming_charging_profile->partial_record_method) {
-    cJSON *partial_record_method_local_JSON = OpenAPI_partial_record_method_convertToJSON(roaming_charging_profile->partial_record_method);
-    if (partial_record_method_local_JSON == NULL) {
-        ogs_error("OpenAPI_roaming_charging_profile_convertToJSON() failed [partial_record_method]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "partialRecordMethod", partial_record_method_local_JSON);
-    if (item->child == NULL) {
+    if (roaming_charging_profile->partial_record_method != OpenAPI_partial_record_method_NULL) {
+    if (cJSON_AddStringToObject(item, "partialRecordMethod", OpenAPI_partial_record_method_ToString(roaming_charging_profile->partial_record_method)) == NULL) {
         ogs_error("OpenAPI_roaming_charging_profile_convertToJSON() failed [partial_record_method]");
         goto end;
     }
@@ -90,7 +80,7 @@ OpenAPI_roaming_charging_profile_t *OpenAPI_roaming_charging_profile_parseFromJS
     cJSON *triggers = NULL;
     OpenAPI_list_t *triggersList = NULL;
     cJSON *partial_record_method = NULL;
-    OpenAPI_partial_record_method_t *partial_record_method_local_nonprim = NULL;
+    OpenAPI_partial_record_method_e partial_record_methodVariable = 0;
     triggers = cJSON_GetObjectItemCaseSensitive(roaming_charging_profileJSON, "triggers");
     if (triggers) {
         cJSON *triggers_local = NULL;
@@ -117,16 +107,16 @@ OpenAPI_roaming_charging_profile_t *OpenAPI_roaming_charging_profile_parseFromJS
 
     partial_record_method = cJSON_GetObjectItemCaseSensitive(roaming_charging_profileJSON, "partialRecordMethod");
     if (partial_record_method) {
-    partial_record_method_local_nonprim = OpenAPI_partial_record_method_parseFromJSON(partial_record_method);
-    if (!partial_record_method_local_nonprim) {
-        ogs_error("OpenAPI_partial_record_method_parseFromJSON failed [partial_record_method]");
+    if (!cJSON_IsString(partial_record_method)) {
+        ogs_error("OpenAPI_roaming_charging_profile_parseFromJSON() failed [partial_record_method]");
         goto end;
     }
+    partial_record_methodVariable = OpenAPI_partial_record_method_FromString(partial_record_method->valuestring);
     }
 
     roaming_charging_profile_local_var = OpenAPI_roaming_charging_profile_create (
         triggers ? triggersList : NULL,
-        partial_record_method ? partial_record_method_local_nonprim : NULL
+        partial_record_method ? partial_record_methodVariable : 0
     );
 
     return roaming_charging_profile_local_var;
@@ -137,10 +127,6 @@ end:
         }
         OpenAPI_list_free(triggersList);
         triggersList = NULL;
-    }
-    if (partial_record_method_local_nonprim) {
-        OpenAPI_partial_record_method_free(partial_record_method_local_nonprim);
-        partial_record_method_local_nonprim = NULL;
     }
     return NULL;
 }

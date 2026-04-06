@@ -12,7 +12,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_create(
     OpenAPI_list_t *ran_nas_rel_causes,
     OpenAPI_list_t *accu_usage_reports,
     OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_cause,
-    OpenAPI_list_t *qos_mon_reports
+    char *serv_sat_id
 )
 {
     OpenAPI_sm_policy_delete_data_t *sm_policy_delete_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_policy_delete_data_t));
@@ -25,7 +25,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_create(
     sm_policy_delete_data_local_var->ran_nas_rel_causes = ran_nas_rel_causes;
     sm_policy_delete_data_local_var->accu_usage_reports = accu_usage_reports;
     sm_policy_delete_data_local_var->pdu_sess_rel_cause = pdu_sess_rel_cause;
-    sm_policy_delete_data_local_var->qos_mon_reports = qos_mon_reports;
+    sm_policy_delete_data_local_var->serv_sat_id = serv_sat_id;
 
     return sm_policy_delete_data_local_var;
 }
@@ -67,12 +67,9 @@ void OpenAPI_sm_policy_delete_data_free(OpenAPI_sm_policy_delete_data_t *sm_poli
         OpenAPI_list_free(sm_policy_delete_data->accu_usage_reports);
         sm_policy_delete_data->accu_usage_reports = NULL;
     }
-    if (sm_policy_delete_data->qos_mon_reports) {
-        OpenAPI_list_for_each(sm_policy_delete_data->qos_mon_reports, node) {
-            OpenAPI_qos_monitoring_report_free(node->data);
-        }
-        OpenAPI_list_free(sm_policy_delete_data->qos_mon_reports);
-        sm_policy_delete_data->qos_mon_reports = NULL;
+    if (sm_policy_delete_data->serv_sat_id) {
+        ogs_free(sm_policy_delete_data->serv_sat_id);
+        sm_policy_delete_data->serv_sat_id = NULL;
     }
     ogs_free(sm_policy_delete_data);
 }
@@ -167,19 +164,10 @@ cJSON *OpenAPI_sm_policy_delete_data_convertToJSON(OpenAPI_sm_policy_delete_data
     }
     }
 
-    if (sm_policy_delete_data->qos_mon_reports) {
-    cJSON *qos_mon_reportsList = cJSON_AddArrayToObject(item, "qosMonReports");
-    if (qos_mon_reportsList == NULL) {
-        ogs_error("OpenAPI_sm_policy_delete_data_convertToJSON() failed [qos_mon_reports]");
+    if (sm_policy_delete_data->serv_sat_id) {
+    if (cJSON_AddStringToObject(item, "servSatId", sm_policy_delete_data->serv_sat_id) == NULL) {
+        ogs_error("OpenAPI_sm_policy_delete_data_convertToJSON() failed [serv_sat_id]");
         goto end;
-    }
-    OpenAPI_list_for_each(sm_policy_delete_data->qos_mon_reports, node) {
-        cJSON *itemLocal = OpenAPI_qos_monitoring_report_convertToJSON(node->data);
-        if (itemLocal == NULL) {
-            ogs_error("OpenAPI_sm_policy_delete_data_convertToJSON() failed [qos_mon_reports]");
-            goto end;
-        }
-        cJSON_AddItemToArray(qos_mon_reportsList, itemLocal);
     }
     }
 
@@ -203,8 +191,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
     OpenAPI_list_t *accu_usage_reportsList = NULL;
     cJSON *pdu_sess_rel_cause = NULL;
     OpenAPI_pdu_session_rel_cause_e pdu_sess_rel_causeVariable = 0;
-    cJSON *qos_mon_reports = NULL;
-    OpenAPI_list_t *qos_mon_reportsList = NULL;
+    cJSON *serv_sat_id = NULL;
     user_location_info = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "userLocationInfo");
     if (user_location_info) {
     user_location_info_local_nonprim = OpenAPI_user_location_parseFromJSON(user_location_info);
@@ -296,28 +283,12 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
     pdu_sess_rel_causeVariable = OpenAPI_pdu_session_rel_cause_FromString(pdu_sess_rel_cause->valuestring);
     }
 
-    qos_mon_reports = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "qosMonReports");
-    if (qos_mon_reports) {
-        cJSON *qos_mon_reports_local = NULL;
-        if (!cJSON_IsArray(qos_mon_reports)) {
-            ogs_error("OpenAPI_sm_policy_delete_data_parseFromJSON() failed [qos_mon_reports]");
-            goto end;
-        }
-
-        qos_mon_reportsList = OpenAPI_list_create();
-
-        cJSON_ArrayForEach(qos_mon_reports_local, qos_mon_reports) {
-            if (!cJSON_IsObject(qos_mon_reports_local)) {
-                ogs_error("OpenAPI_sm_policy_delete_data_parseFromJSON() failed [qos_mon_reports]");
-                goto end;
-            }
-            OpenAPI_qos_monitoring_report_t *qos_mon_reportsItem = OpenAPI_qos_monitoring_report_parseFromJSON(qos_mon_reports_local);
-            if (!qos_mon_reportsItem) {
-                ogs_error("No qos_mon_reportsItem");
-                goto end;
-            }
-            OpenAPI_list_add(qos_mon_reportsList, qos_mon_reportsItem);
-        }
+    serv_sat_id = cJSON_GetObjectItemCaseSensitive(sm_policy_delete_dataJSON, "servSatId");
+    if (serv_sat_id) {
+    if (!cJSON_IsString(serv_sat_id) && !cJSON_IsNull(serv_sat_id)) {
+        ogs_error("OpenAPI_sm_policy_delete_data_parseFromJSON() failed [serv_sat_id]");
+        goto end;
+    }
     }
 
     sm_policy_delete_data_local_var = OpenAPI_sm_policy_delete_data_create (
@@ -328,7 +299,7 @@ OpenAPI_sm_policy_delete_data_t *OpenAPI_sm_policy_delete_data_parseFromJSON(cJS
         ran_nas_rel_causes ? ran_nas_rel_causesList : NULL,
         accu_usage_reports ? accu_usage_reportsList : NULL,
         pdu_sess_rel_cause ? pdu_sess_rel_causeVariable : 0,
-        qos_mon_reports ? qos_mon_reportsList : NULL
+        serv_sat_id && !cJSON_IsNull(serv_sat_id) ? ogs_strdup(serv_sat_id->valuestring) : NULL
     );
 
     return sm_policy_delete_data_local_var;
@@ -354,13 +325,6 @@ end:
         }
         OpenAPI_list_free(accu_usage_reportsList);
         accu_usage_reportsList = NULL;
-    }
-    if (qos_mon_reportsList) {
-        OpenAPI_list_for_each(qos_mon_reportsList, node) {
-            OpenAPI_qos_monitoring_report_free(node->data);
-        }
-        OpenAPI_list_free(qos_mon_reportsList);
-        qos_mon_reportsList = NULL;
     }
     return NULL;
 }

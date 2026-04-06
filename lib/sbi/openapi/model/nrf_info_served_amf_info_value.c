@@ -12,9 +12,17 @@ OpenAPI_nrf_info_served_amf_info_value_t *OpenAPI_nrf_info_served_amf_info_value
     OpenAPI_list_t *tai_range_list,
     OpenAPI_list_t *backup_info_amf_failure,
     OpenAPI_list_t *backup_info_amf_removal,
+    bool is_n2_interface_amf_info_null,
     OpenAPI_n2_interface_amf_info_t *n2_interface_amf_info,
     bool is_amf_onboarding_capability,
-    int amf_onboarding_capability
+    int amf_onboarding_capability,
+    bool is_high_latency_com,
+    int high_latency_com,
+    OpenAPI_list_t *amf_events,
+    OpenAPI_list_t *pra_id_list,
+    bool is_mobile_iab_ind_null,
+    bool is_mobile_iab_ind,
+    int mobile_iab_ind
 )
 {
     OpenAPI_nrf_info_served_amf_info_value_t *nrf_info_served_amf_info_value_local_var = ogs_malloc(sizeof(OpenAPI_nrf_info_served_amf_info_value_t));
@@ -27,9 +35,17 @@ OpenAPI_nrf_info_served_amf_info_value_t *OpenAPI_nrf_info_served_amf_info_value
     nrf_info_served_amf_info_value_local_var->tai_range_list = tai_range_list;
     nrf_info_served_amf_info_value_local_var->backup_info_amf_failure = backup_info_amf_failure;
     nrf_info_served_amf_info_value_local_var->backup_info_amf_removal = backup_info_amf_removal;
+    nrf_info_served_amf_info_value_local_var->is_n2_interface_amf_info_null = is_n2_interface_amf_info_null;
     nrf_info_served_amf_info_value_local_var->n2_interface_amf_info = n2_interface_amf_info;
     nrf_info_served_amf_info_value_local_var->is_amf_onboarding_capability = is_amf_onboarding_capability;
     nrf_info_served_amf_info_value_local_var->amf_onboarding_capability = amf_onboarding_capability;
+    nrf_info_served_amf_info_value_local_var->is_high_latency_com = is_high_latency_com;
+    nrf_info_served_amf_info_value_local_var->high_latency_com = high_latency_com;
+    nrf_info_served_amf_info_value_local_var->amf_events = amf_events;
+    nrf_info_served_amf_info_value_local_var->pra_id_list = pra_id_list;
+    nrf_info_served_amf_info_value_local_var->is_mobile_iab_ind_null = is_mobile_iab_ind_null;
+    nrf_info_served_amf_info_value_local_var->is_mobile_iab_ind = is_mobile_iab_ind;
+    nrf_info_served_amf_info_value_local_var->mobile_iab_ind = mobile_iab_ind;
 
     return nrf_info_served_amf_info_value_local_var;
 }
@@ -87,6 +103,17 @@ void OpenAPI_nrf_info_served_amf_info_value_free(OpenAPI_nrf_info_served_amf_inf
     if (nrf_info_served_amf_info_value->n2_interface_amf_info) {
         OpenAPI_n2_interface_amf_info_free(nrf_info_served_amf_info_value->n2_interface_amf_info);
         nrf_info_served_amf_info_value->n2_interface_amf_info = NULL;
+    }
+    if (nrf_info_served_amf_info_value->amf_events) {
+        OpenAPI_list_free(nrf_info_served_amf_info_value->amf_events);
+        nrf_info_served_amf_info_value->amf_events = NULL;
+    }
+    if (nrf_info_served_amf_info_value->pra_id_list) {
+        OpenAPI_list_for_each(nrf_info_served_amf_info_value->pra_id_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(nrf_info_served_amf_info_value->pra_id_list);
+        nrf_info_served_amf_info_value->pra_id_list = NULL;
     }
     ogs_free(nrf_info_served_amf_info_value);
 }
@@ -213,6 +240,11 @@ cJSON *OpenAPI_nrf_info_served_amf_info_value_convertToJSON(OpenAPI_nrf_info_ser
         ogs_error("OpenAPI_nrf_info_served_amf_info_value_convertToJSON() failed [n2_interface_amf_info]");
         goto end;
     }
+    } else if (nrf_info_served_amf_info_value->is_n2_interface_amf_info_null) {
+        if (cJSON_AddNullToObject(item, "n2InterfaceAmfInfo") == NULL) {
+            ogs_error("OpenAPI_nrf_info_served_amf_info_value_convertToJSON() failed [n2_interface_amf_info]");
+            goto end;
+        }
     }
 
     if (nrf_info_served_amf_info_value->is_amf_onboarding_capability) {
@@ -220,6 +252,53 @@ cJSON *OpenAPI_nrf_info_served_amf_info_value_convertToJSON(OpenAPI_nrf_info_ser
         ogs_error("OpenAPI_nrf_info_served_amf_info_value_convertToJSON() failed [amf_onboarding_capability]");
         goto end;
     }
+    }
+
+    if (nrf_info_served_amf_info_value->is_high_latency_com) {
+    if (cJSON_AddBoolToObject(item, "highLatencyCom", nrf_info_served_amf_info_value->high_latency_com) == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_amf_info_value_convertToJSON() failed [high_latency_com]");
+        goto end;
+    }
+    }
+
+    if (nrf_info_served_amf_info_value->amf_events != OpenAPI_amf_event_type_NULL) {
+    cJSON *amf_eventsList = cJSON_AddArrayToObject(item, "amfEvents");
+    if (amf_eventsList == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_amf_info_value_convertToJSON() failed [amf_events]");
+        goto end;
+    }
+    OpenAPI_list_for_each(nrf_info_served_amf_info_value->amf_events, node) {
+        if (cJSON_AddStringToObject(amf_eventsList, "", OpenAPI_amf_event_type_ToString((intptr_t)node->data)) == NULL) {
+            ogs_error("OpenAPI_nrf_info_served_amf_info_value_convertToJSON() failed [amf_events]");
+            goto end;
+        }
+    }
+    }
+
+    if (nrf_info_served_amf_info_value->pra_id_list) {
+    cJSON *pra_id_listList = cJSON_AddArrayToObject(item, "praIdList");
+    if (pra_id_listList == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_amf_info_value_convertToJSON() failed [pra_id_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(nrf_info_served_amf_info_value->pra_id_list, node) {
+        if (cJSON_AddStringToObject(pra_id_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_nrf_info_served_amf_info_value_convertToJSON() failed [pra_id_list]");
+            goto end;
+        }
+    }
+    }
+
+    if (nrf_info_served_amf_info_value->is_mobile_iab_ind) {
+    if (cJSON_AddBoolToObject(item, "mobileIabInd", nrf_info_served_amf_info_value->mobile_iab_ind) == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_amf_info_value_convertToJSON() failed [mobile_iab_ind]");
+        goto end;
+    }
+    } else if (nrf_info_served_amf_info_value->is_mobile_iab_ind_null) {
+        if (cJSON_AddNullToObject(item, "mobileIabInd") == NULL) {
+            ogs_error("OpenAPI_nrf_info_served_amf_info_value_convertToJSON() failed [mobile_iab_ind]");
+            goto end;
+        }
     }
 
 end:
@@ -245,6 +324,12 @@ OpenAPI_nrf_info_served_amf_info_value_t *OpenAPI_nrf_info_served_amf_info_value
     cJSON *n2_interface_amf_info = NULL;
     OpenAPI_n2_interface_amf_info_t *n2_interface_amf_info_local_nonprim = NULL;
     cJSON *amf_onboarding_capability = NULL;
+    cJSON *high_latency_com = NULL;
+    cJSON *amf_events = NULL;
+    OpenAPI_list_t *amf_eventsList = NULL;
+    cJSON *pra_id_list = NULL;
+    OpenAPI_list_t *pra_id_listList = NULL;
+    cJSON *mobile_iab_ind = NULL;
     amf_set_id = cJSON_GetObjectItemCaseSensitive(nrf_info_served_amf_info_valueJSON, "amfSetId");
     if (!amf_set_id) {
         ogs_error("OpenAPI_nrf_info_served_amf_info_value_parseFromJSON() failed [amf_set_id]");
@@ -389,10 +474,12 @@ OpenAPI_nrf_info_served_amf_info_value_t *OpenAPI_nrf_info_served_amf_info_value
 
     n2_interface_amf_info = cJSON_GetObjectItemCaseSensitive(nrf_info_served_amf_info_valueJSON, "n2InterfaceAmfInfo");
     if (n2_interface_amf_info) {
+    if (!cJSON_IsNull(n2_interface_amf_info)) {
     n2_interface_amf_info_local_nonprim = OpenAPI_n2_interface_amf_info_parseFromJSON(n2_interface_amf_info);
     if (!n2_interface_amf_info_local_nonprim) {
         ogs_error("OpenAPI_n2_interface_amf_info_parseFromJSON failed [n2_interface_amf_info]");
         goto end;
+    }
     }
     }
 
@@ -404,6 +491,75 @@ OpenAPI_nrf_info_served_amf_info_value_t *OpenAPI_nrf_info_served_amf_info_value
     }
     }
 
+    high_latency_com = cJSON_GetObjectItemCaseSensitive(nrf_info_served_amf_info_valueJSON, "highLatencyCom");
+    if (high_latency_com) {
+    if (!cJSON_IsBool(high_latency_com)) {
+        ogs_error("OpenAPI_nrf_info_served_amf_info_value_parseFromJSON() failed [high_latency_com]");
+        goto end;
+    }
+    }
+
+    amf_events = cJSON_GetObjectItemCaseSensitive(nrf_info_served_amf_info_valueJSON, "amfEvents");
+    if (amf_events) {
+        cJSON *amf_events_local = NULL;
+        if (!cJSON_IsArray(amf_events)) {
+            ogs_error("OpenAPI_nrf_info_served_amf_info_value_parseFromJSON() failed [amf_events]");
+            goto end;
+        }
+
+        amf_eventsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(amf_events_local, amf_events) {
+            OpenAPI_amf_event_type_e localEnum = OpenAPI_amf_event_type_NULL;
+            if (!cJSON_IsString(amf_events_local)) {
+                ogs_error("OpenAPI_nrf_info_served_amf_info_value_parseFromJSON() failed [amf_events]");
+                goto end;
+            }
+            localEnum = OpenAPI_amf_event_type_FromString(amf_events_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"amf_events\" is not supported. Ignoring it ...",
+                         amf_events_local->valuestring);
+            } else {
+                OpenAPI_list_add(amf_eventsList, (void *)localEnum);
+            }
+        }
+        if (amf_eventsList->count == 0) {
+            ogs_error("OpenAPI_nrf_info_served_amf_info_value_parseFromJSON() failed: Expected amf_eventsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+    }
+
+    pra_id_list = cJSON_GetObjectItemCaseSensitive(nrf_info_served_amf_info_valueJSON, "praIdList");
+    if (pra_id_list) {
+        cJSON *pra_id_list_local = NULL;
+        if (!cJSON_IsArray(pra_id_list)) {
+            ogs_error("OpenAPI_nrf_info_served_amf_info_value_parseFromJSON() failed [pra_id_list]");
+            goto end;
+        }
+
+        pra_id_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(pra_id_list_local, pra_id_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(pra_id_list_local)) {
+                ogs_error("OpenAPI_nrf_info_served_amf_info_value_parseFromJSON() failed [pra_id_list]");
+                goto end;
+            }
+            OpenAPI_list_add(pra_id_listList, ogs_strdup(pra_id_list_local->valuestring));
+        }
+    }
+
+    mobile_iab_ind = cJSON_GetObjectItemCaseSensitive(nrf_info_served_amf_info_valueJSON, "mobileIabInd");
+    if (mobile_iab_ind) {
+    if (!cJSON_IsNull(mobile_iab_ind)) {
+    if (!cJSON_IsBool(mobile_iab_ind)) {
+        ogs_error("OpenAPI_nrf_info_served_amf_info_value_parseFromJSON() failed [mobile_iab_ind]");
+        goto end;
+    }
+    }
+    }
+
     nrf_info_served_amf_info_value_local_var = OpenAPI_nrf_info_served_amf_info_value_create (
         ogs_strdup(amf_set_id->valuestring),
         ogs_strdup(amf_region_id->valuestring),
@@ -412,9 +568,17 @@ OpenAPI_nrf_info_served_amf_info_value_t *OpenAPI_nrf_info_served_amf_info_value
         tai_range_list ? tai_range_listList : NULL,
         backup_info_amf_failure ? backup_info_amf_failureList : NULL,
         backup_info_amf_removal ? backup_info_amf_removalList : NULL,
+        n2_interface_amf_info && cJSON_IsNull(n2_interface_amf_info) ? true : false,
         n2_interface_amf_info ? n2_interface_amf_info_local_nonprim : NULL,
         amf_onboarding_capability ? true : false,
-        amf_onboarding_capability ? amf_onboarding_capability->valueint : 0
+        amf_onboarding_capability ? amf_onboarding_capability->valueint : 0,
+        high_latency_com ? true : false,
+        high_latency_com ? high_latency_com->valueint : 0,
+        amf_events ? amf_eventsList : NULL,
+        pra_id_list ? pra_id_listList : NULL,
+        mobile_iab_ind && cJSON_IsNull(mobile_iab_ind) ? true : false,
+        mobile_iab_ind ? true : false,
+        mobile_iab_ind ? mobile_iab_ind->valueint : 0
     );
 
     return nrf_info_served_amf_info_value_local_var;
@@ -457,6 +621,17 @@ end:
     if (n2_interface_amf_info_local_nonprim) {
         OpenAPI_n2_interface_amf_info_free(n2_interface_amf_info_local_nonprim);
         n2_interface_amf_info_local_nonprim = NULL;
+    }
+    if (amf_eventsList) {
+        OpenAPI_list_free(amf_eventsList);
+        amf_eventsList = NULL;
+    }
+    if (pra_id_listList) {
+        OpenAPI_list_for_each(pra_id_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(pra_id_listList);
+        pra_id_listList = NULL;
     }
     return NULL;
 }

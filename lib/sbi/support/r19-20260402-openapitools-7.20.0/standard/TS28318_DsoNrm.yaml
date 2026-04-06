@@ -1,0 +1,89 @@
+openapi: 3.0.1
+info:
+  title: 3GPP NRM
+  version: 19.1.0
+  description: >-
+    OAS 3.0.1 specification of the OutageAndRecoveryInfo NRM
+    © 2025, 3GPP Organizational OutageAndRecoveryInfo Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.318; OutageAndRecoveryInfo NRM
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.318/
+paths: {}
+components:
+  schemas:
+  
+#-------- Definition of types-----------------------------------------------------
+    EnergyServiceLocation:
+      type: object
+      properties:
+        outageArea:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/AreaOfInterest'
+        energySupplyId:
+          type: string
+
+
+
+#-------- Definition of concrete IOCs --------------------------------------------
+    SubNetwork-ncO-DsoNrm:
+      type: object
+      properties:
+        OutageAndRecoveryInfo:
+          $ref: '#/components/schemas/OutageAndRecoveryInfo-Multiple'
+        DsoThresholdMonitor:
+          $ref: '#/components/schemas/DsoThresholdMonitor-Multiple'
+
+    OutageAndRecoveryInfo-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            outageStartTime:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+            expectedOutageEndTime:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+            dsoRapidInterventionTime:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+            dsoRapidInterventionDuration:
+              type: integer
+            mnoInterventionTime:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+            mnoInterventionDuration:
+              type: integer
+              readOnly: true
+            mnoMaxServiceDuration:
+              type: integer
+              readOnly: true
+            affectedArea:
+              $ref: '#/components/schemas/EnergyServiceLocation'
+            isAffectedAreaPriority:
+              type: boolean
+            actualOutageEndTime:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+    DsoThresholdMonitor-Single:
+      allOf:
+        - $ref: 'TS28623_ThresholdMonitorNrm.yaml#/components/schemas/ThresholdMonitor-Single'
+        - type: object
+          properties:
+            targetThresholdLocation:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AreaOfInterest'
+
+
+
+#-------- Definition of JSON arrays for name-contained IOCs ----------------------                               
+          
+    OutageAndRecoveryInfo-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/OutageAndRecoveryInfo-Single'
+    DsoThresholdMonitor-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/DsoThresholdMonitor-Single'
+        
+#--------------------------------- Definition ------------------------------------                          
+
+    resources-DSORecovery:
+      oneOf:
+        - $ref: '#/components/schemas/OutageAndRecoveryInfo-Single'
+        - $ref: '#/components/schemas/DsoThresholdMonitor-Single'        

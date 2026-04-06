@@ -12,15 +12,15 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_hfc_node_id_s OpenAPI_hfc_node_id_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_hfc_node_id_s OpenAPI_hfc_node_id_t;
-typedef struct OpenAPI_hfc_node_id_s {
+struct OpenAPI_hfc_node_id_s {
     char *hfc_nid;
-} OpenAPI_hfc_node_id_t;
+};
 
 OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_create(
     char *hfc_nid

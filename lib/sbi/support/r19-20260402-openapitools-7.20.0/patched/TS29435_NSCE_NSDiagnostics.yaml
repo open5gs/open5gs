@@ -1,0 +1,233 @@
+openapi: 3.0.0
+
+info:
+  title: NSCE Server Network Slice Diagnostics Service
+  version: 1.1.0
+  description: |
+    NSCE Server Network Slice Diagnostics Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.435 V19.3.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Network Slice Capability Enablement (NSCE) Server Service(s); Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.435/
+
+servers:
+  - url: '{apiRoot}/nsce-nsd/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /request:
+    post:
+      summary: Request network slice diagnostics information.
+      operationId: RequestNSDiagnostics
+      tags:
+        - Network Slice Diagnostics Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NwSliceDiagReq'
+      responses:
+        '200':
+          description: >
+            The network slice diagnostics request is successful received and processed
+            and the requested network slice diagnostics information shall be returned in the
+            response body.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NwSliceDiagResp'
+                minItems: 1
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    NwSliceDiagReq:
+      description: >
+        Represents the network slice diagnostics request.
+      type: object
+      properties:
+        servDgradInfos:
+          $ref: '#/components/schemas/ServDgradInfo'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - servDgradInfos
+
+    NwSliceDiagResp:
+      description: >
+        Represents the requested network slice diagnostics report.
+      type: object
+      properties:
+        startTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        endTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        dataReport:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataReport'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - startTime
+        - endTime
+        - dataReport
+
+    ServDgradInfo:
+      description: >
+        Represents the degraded service information.
+      type: object
+      properties:
+        valServiceId:
+          type: string
+        reqErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorInfo'
+          minItems: 1
+      required:
+        - valServiceId
+        - reqErrors
+
+    ErrorInfo:
+      description: >
+        Represents error related information.
+      type: object
+      properties:
+        errorName:
+          $ref: '#/components/schemas/Error'
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        ueIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        areaOfInterest:
+          $ref: 'TS29435_NSCE_NSInfoDelivery.yaml#/components/schemas/ServArea'
+        startTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        endTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - errorName
+        - netSliceId
+        - startTime
+        - endTime
+
+    DataReport:
+      description: >
+        Represents the reported data.
+      type: object
+      properties:
+        errorName:
+          $ref: '#/components/schemas/Error'
+        dataType:
+          $ref: '#/components/schemas/DataType'
+        dataOutput:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+      required:
+        - errorName
+        - dataType
+        - dataOutput
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    Error:
+      anyOf:
+      - type: string
+        enum:
+          - COMMUNICATION_ERROR
+          - RTT_ABOVE_LIMIT
+          - QOS_DOWNGRADE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration and is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents the errors causing service degradation.  
+        Possible values are:
+        - COMMUNICATION_ERROR: Indicates that the service degradation is due to a detected 
+          communication error.
+        - RTT_ABOVE_LIMIT: Indicates that the service degradation is due to the packet round trip 
+          time exceeding an upper threshold limit.
+        - QOS_DOWNGRADE: Indicates that the service degradation is due to QoS being downgraded.
+
+    DataType:
+      anyOf:
+      - type: string
+        enum:
+          - UE_DATA
+          - NETWORK_DATA
+          - APPLICATION_DATA
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration and is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents the reported data type.  
+        Possible values are:
+        - UE_DATA: Indicates that the reported data type is UE data.
+        - NETWORK_DATA: Indicates that the reported data type is Network data.
+        - APPLICATION_DATA: Indicates that the reported data type is Application data.

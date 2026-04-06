@@ -12,15 +12,15 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nf_instance_id_cond_s OpenAPI_nf_instance_id_cond_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nf_instance_id_cond_s OpenAPI_nf_instance_id_cond_t;
-typedef struct OpenAPI_nf_instance_id_cond_s {
+struct OpenAPI_nf_instance_id_cond_s {
     char *nf_instance_id;
-} OpenAPI_nf_instance_id_cond_t;
+};
 
 OpenAPI_nf_instance_id_cond_t *OpenAPI_nf_instance_id_cond_create(
     char *nf_instance_id

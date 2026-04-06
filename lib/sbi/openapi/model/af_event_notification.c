@@ -6,7 +6,9 @@
 
 OpenAPI_af_event_notification_t *OpenAPI_af_event_notification_create(
     OpenAPI_npcf_af_event_e event,
-    OpenAPI_list_t *flows
+    OpenAPI_list_t *flows,
+    bool is_retry_after,
+    int retry_after
 )
 {
     OpenAPI_af_event_notification_t *af_event_notification_local_var = ogs_malloc(sizeof(OpenAPI_af_event_notification_t));
@@ -14,6 +16,8 @@ OpenAPI_af_event_notification_t *OpenAPI_af_event_notification_create(
 
     af_event_notification_local_var->event = event;
     af_event_notification_local_var->flows = flows;
+    af_event_notification_local_var->is_retry_after = is_retry_after;
+    af_event_notification_local_var->retry_after = retry_after;
 
     return af_event_notification_local_var;
 }
@@ -71,6 +75,13 @@ cJSON *OpenAPI_af_event_notification_convertToJSON(OpenAPI_af_event_notification
     }
     }
 
+    if (af_event_notification->is_retry_after) {
+    if (cJSON_AddNumberToObject(item, "retryAfter", af_event_notification->retry_after) == NULL) {
+        ogs_error("OpenAPI_af_event_notification_convertToJSON() failed [retry_after]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -83,6 +94,7 @@ OpenAPI_af_event_notification_t *OpenAPI_af_event_notification_parseFromJSON(cJS
     OpenAPI_npcf_af_event_e eventVariable = 0;
     cJSON *flows = NULL;
     OpenAPI_list_t *flowsList = NULL;
+    cJSON *retry_after = NULL;
     event = cJSON_GetObjectItemCaseSensitive(af_event_notificationJSON, "event");
     if (!event) {
         ogs_error("OpenAPI_af_event_notification_parseFromJSON() failed [event]");
@@ -118,9 +130,19 @@ OpenAPI_af_event_notification_t *OpenAPI_af_event_notification_parseFromJSON(cJS
         }
     }
 
+    retry_after = cJSON_GetObjectItemCaseSensitive(af_event_notificationJSON, "retryAfter");
+    if (retry_after) {
+    if (!cJSON_IsNumber(retry_after)) {
+        ogs_error("OpenAPI_af_event_notification_parseFromJSON() failed [retry_after]");
+        goto end;
+    }
+    }
+
     af_event_notification_local_var = OpenAPI_af_event_notification_create (
         eventVariable,
-        flows ? flowsList : NULL
+        flows ? flowsList : NULL,
+        retry_after ? true : false,
+        retry_after ? retry_after->valuedouble : 0
     );
 
     return af_event_notification_local_var;

@@ -1,7 +1,7 @@
 /*
  * transport_protocol.h
  *
- * 
+ * Types of transport protocol used in a given IP endpoint of an NF Service Instance
  */
 
 #ifndef _OpenAPI_transport_protocol_H_

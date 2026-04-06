@@ -1,0 +1,260 @@
+openapi: 3.0.0
+
+info:
+  title: SS_ADAE_ServiceApiAnalytics
+  description: |
+    API for ADAE service API analytics service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.1.0"
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-adae-sa/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /service-api:
+    post:
+      description: >
+        Creates a new individual service API event subscription.
+      operationId: SrvApiSubs
+      tags:
+        - Service API event subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SrvApiSub'
+      callbacks:
+        saaNotification:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SrvApiNotif'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: Service API event subscription resource created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SrvApiSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /service-api/{srvApiId}:
+    get:
+      description: Retrieves an individual service API event subscription.
+      operationId: ReadIndSrvApiEventSubsc
+      tags:
+        - Individual service API event subscription (Document)
+      parameters:
+        - name: srvApiId
+          in: path
+          description: >
+            Identifier of an individual service API event subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >
+            The individual service API event subscription matching the srvApiId is retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SrvApiSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      description: Deletes an individual service API event subscription.
+      operationId: DeleteIndSrvApiEventSubsc
+      tags:
+        - Individual service API event subscription (Document)
+      parameters:
+        - name: srvApiId
+          in: path
+          description: >
+            Identifier of an individual service API event subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            The individual service API subscription matching the srvApiId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    SrvApiSub:
+      description: Represents an individual service API event subscription.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        analyticsType:
+          $ref: 'TS29549_SS_ADAE_VALPerformanceAnalytics.yaml#/components/schemas/AnalyticsType'
+        eventCriteria:
+          type: string
+          description: Criteria matching service API analytics event.
+        serviceApiName:
+          type: string
+          description: Service API name.
+        serviceApiType:
+          type: string
+          description: Service API type.
+        area:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        timeValidity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        timeHorizon:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        repReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - analyticsType
+        - notifUri
+        - eventCriteria
+#      oneOf:
+#        - required: [serviceApiName]
+#        - required: [serviceApiType]
+#
+    SrvApiNotif:
+      description: Represents notification of the service API event.
+      type: object
+      properties:
+        requestorId:
+          type: string
+          description: Identifier of the requestor of the analytics.
+        output:
+          type: string
+          description: Output for analytics.
+        area:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        confLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - requestorId
+        - output

@@ -1,7 +1,7 @@
 /*
  * privacy_check_related_action.h
  *
- * 
+ * Indicates actions related to privacy check.
  */
 
 #ifndef _OpenAPI_privacy_check_related_action_H_

@@ -1,7 +1,7 @@
 /*
  * sbi_binding_level.h
  *
- * 
+ * SBI Binding Level
  */
 
 #ifndef _OpenAPI_sbi_binding_level_H_

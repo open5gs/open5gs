@@ -7,7 +7,9 @@
 OpenAPI_easdf_info_t *OpenAPI_easdf_info_create(
     OpenAPI_list_t *s_nssai_easdf_info_list,
     OpenAPI_list_t *easdf_n6_ip_address_list,
-    OpenAPI_list_t *upf_n6_ip_address_list
+    OpenAPI_list_t *upf_n6_ip_address_list,
+    OpenAPI_list_t* n6_tunnel_info_list,
+    OpenAPI_list_t *dns_security_protocols
 )
 {
     OpenAPI_easdf_info_t *easdf_info_local_var = ogs_malloc(sizeof(OpenAPI_easdf_info_t));
@@ -16,6 +18,8 @@ OpenAPI_easdf_info_t *OpenAPI_easdf_info_create(
     easdf_info_local_var->s_nssai_easdf_info_list = s_nssai_easdf_info_list;
     easdf_info_local_var->easdf_n6_ip_address_list = easdf_n6_ip_address_list;
     easdf_info_local_var->upf_n6_ip_address_list = upf_n6_ip_address_list;
+    easdf_info_local_var->n6_tunnel_info_list = n6_tunnel_info_list;
+    easdf_info_local_var->dns_security_protocols = dns_security_protocols;
 
     return easdf_info_local_var;
 }
@@ -47,6 +51,20 @@ void OpenAPI_easdf_info_free(OpenAPI_easdf_info_t *easdf_info)
         }
         OpenAPI_list_free(easdf_info->upf_n6_ip_address_list);
         easdf_info->upf_n6_ip_address_list = NULL;
+    }
+    if (easdf_info->n6_tunnel_info_list) {
+        OpenAPI_list_for_each(easdf_info->n6_tunnel_info_list, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_interface_upf_info_item_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(easdf_info->n6_tunnel_info_list);
+        easdf_info->n6_tunnel_info_list = NULL;
+    }
+    if (easdf_info->dns_security_protocols) {
+        OpenAPI_list_free(easdf_info->dns_security_protocols);
+        easdf_info->dns_security_protocols = NULL;
     }
     ogs_free(easdf_info);
 }
@@ -110,6 +128,50 @@ cJSON *OpenAPI_easdf_info_convertToJSON(OpenAPI_easdf_info_t *easdf_info)
     }
     }
 
+    if (easdf_info->n6_tunnel_info_list) {
+    cJSON *n6_tunnel_info_list = cJSON_AddObjectToObject(item, "n6TunnelInfoList");
+    if (n6_tunnel_info_list == NULL) {
+        ogs_error("OpenAPI_easdf_info_convertToJSON() failed [n6_tunnel_info_list]");
+        goto end;
+    }
+    cJSON *localMapObject = n6_tunnel_info_list;
+    if (easdf_info->n6_tunnel_info_list) {
+        OpenAPI_list_for_each(easdf_info->n6_tunnel_info_list, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_easdf_info_convertToJSON() failed [n6_tunnel_info_list]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_easdf_info_convertToJSON() failed [n6_tunnel_info_list]");
+                goto end;
+            }
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_interface_upf_info_item_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_easdf_info_convertToJSON() failed [inner]");
+                goto end;
+            }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        }
+    }
+    }
+
+    if (easdf_info->dns_security_protocols != OpenAPI_dns_security_protocol_NULL) {
+    cJSON *dns_security_protocolsList = cJSON_AddArrayToObject(item, "dnsSecurityProtocols");
+    if (dns_security_protocolsList == NULL) {
+        ogs_error("OpenAPI_easdf_info_convertToJSON() failed [dns_security_protocols]");
+        goto end;
+    }
+    OpenAPI_list_for_each(easdf_info->dns_security_protocols, node) {
+        if (cJSON_AddStringToObject(dns_security_protocolsList, "", OpenAPI_dns_security_protocol_ToString((intptr_t)node->data)) == NULL) {
+            ogs_error("OpenAPI_easdf_info_convertToJSON() failed [dns_security_protocols]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -124,6 +186,10 @@ OpenAPI_easdf_info_t *OpenAPI_easdf_info_parseFromJSON(cJSON *easdf_infoJSON)
     OpenAPI_list_t *easdf_n6_ip_address_listList = NULL;
     cJSON *upf_n6_ip_address_list = NULL;
     OpenAPI_list_t *upf_n6_ip_address_listList = NULL;
+    cJSON *n6_tunnel_info_list = NULL;
+    OpenAPI_list_t *n6_tunnel_info_listList = NULL;
+    cJSON *dns_security_protocols = NULL;
+    OpenAPI_list_t *dns_security_protocolsList = NULL;
     s_nssai_easdf_info_list = cJSON_GetObjectItemCaseSensitive(easdf_infoJSON, "sNssaiEasdfInfoList");
     if (s_nssai_easdf_info_list) {
         cJSON *s_nssai_easdf_info_list_local = NULL;
@@ -196,10 +262,68 @@ OpenAPI_easdf_info_t *OpenAPI_easdf_info_parseFromJSON(cJSON *easdf_infoJSON)
         }
     }
 
+    n6_tunnel_info_list = cJSON_GetObjectItemCaseSensitive(easdf_infoJSON, "n6TunnelInfoList");
+    if (n6_tunnel_info_list) {
+        cJSON *n6_tunnel_info_list_local_map = NULL;
+        if (!cJSON_IsObject(n6_tunnel_info_list) && !cJSON_IsNull(n6_tunnel_info_list)) {
+            ogs_error("OpenAPI_easdf_info_parseFromJSON() failed [n6_tunnel_info_list]");
+            goto end;
+        }
+        if (cJSON_IsObject(n6_tunnel_info_list)) {
+            n6_tunnel_info_listList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(n6_tunnel_info_list_local_map, n6_tunnel_info_list) {
+                cJSON *localMapObject = n6_tunnel_info_list_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_interface_upf_info_item_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_easdf_info_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(n6_tunnel_info_listList, localMapKeyPair);
+            }
+        }
+    }
+
+    dns_security_protocols = cJSON_GetObjectItemCaseSensitive(easdf_infoJSON, "dnsSecurityProtocols");
+    if (dns_security_protocols) {
+        cJSON *dns_security_protocols_local = NULL;
+        if (!cJSON_IsArray(dns_security_protocols)) {
+            ogs_error("OpenAPI_easdf_info_parseFromJSON() failed [dns_security_protocols]");
+            goto end;
+        }
+
+        dns_security_protocolsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(dns_security_protocols_local, dns_security_protocols) {
+            OpenAPI_dns_security_protocol_e localEnum = OpenAPI_dns_security_protocol_NULL;
+            if (!cJSON_IsString(dns_security_protocols_local)) {
+                ogs_error("OpenAPI_easdf_info_parseFromJSON() failed [dns_security_protocols]");
+                goto end;
+            }
+            localEnum = OpenAPI_dns_security_protocol_FromString(dns_security_protocols_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"dns_security_protocols\" is not supported. Ignoring it ...",
+                         dns_security_protocols_local->valuestring);
+            } else {
+                OpenAPI_list_add(dns_security_protocolsList, (void *)localEnum);
+            }
+        }
+        if (dns_security_protocolsList->count == 0) {
+            ogs_error("OpenAPI_easdf_info_parseFromJSON() failed: Expected dns_security_protocolsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+    }
+
     easdf_info_local_var = OpenAPI_easdf_info_create (
         s_nssai_easdf_info_list ? s_nssai_easdf_info_listList : NULL,
         easdf_n6_ip_address_list ? easdf_n6_ip_address_listList : NULL,
-        upf_n6_ip_address_list ? upf_n6_ip_address_listList : NULL
+        upf_n6_ip_address_list ? upf_n6_ip_address_listList : NULL,
+        n6_tunnel_info_list ? n6_tunnel_info_listList : NULL,
+        dns_security_protocols ? dns_security_protocolsList : NULL
     );
 
     return easdf_info_local_var;
@@ -224,6 +348,20 @@ end:
         }
         OpenAPI_list_free(upf_n6_ip_address_listList);
         upf_n6_ip_address_listList = NULL;
+    }
+    if (n6_tunnel_info_listList) {
+        OpenAPI_list_for_each(n6_tunnel_info_listList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_interface_upf_info_item_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(n6_tunnel_info_listList);
+        n6_tunnel_info_listList = NULL;
+    }
+    if (dns_security_protocolsList) {
+        OpenAPI_list_free(dns_security_protocolsList);
+        dns_security_protocolsList = NULL;
     }
     return NULL;
 }

@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_notification_item_s OpenAPI_notification_item_t;
 #include "updated_item.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_notification_item_s OpenAPI_notification_item_t;
-typedef struct OpenAPI_notification_item_s {
+struct OpenAPI_notification_item_s {
     char *resource_id;
     OpenAPI_list_t *notif_items;
-} OpenAPI_notification_item_t;
+};
 
 OpenAPI_notification_item_t *OpenAPI_notification_item_create(
     char *resource_id,

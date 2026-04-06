@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_mbs_session_id_1_s OpenAPI_mbs_session_id_1_t;
 #include "ssm_1.h"
 #include "tmgi_1.h"
 
@@ -19,12 +20,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_mbs_session_id_1_s OpenAPI_mbs_session_id_1_t;
-typedef struct OpenAPI_mbs_session_id_1_s {
+struct OpenAPI_mbs_session_id_1_s {
     struct OpenAPI_tmgi_1_s *tmgi;
     struct OpenAPI_ssm_1_s *ssm;
     char *nid;
-} OpenAPI_mbs_session_id_1_t;
+};
 
 OpenAPI_mbs_session_id_1_t *OpenAPI_mbs_session_id_1_create(
     OpenAPI_tmgi_1_t *tmgi,

@@ -1,7 +1,7 @@
 /*
  * v2x_subscription_data.h
  *
- * 
+ * V2X Subscription Data
  */
 
 #ifndef _OpenAPI_v2x_subscription_data_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_v2x_subscription_data_s OpenAPI_v2x_subscription_data_t;
 #include "lte_v2x_auth.h"
 #include "nr_v2x_auth.h"
 
@@ -19,13 +20,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_v2x_subscription_data_s OpenAPI_v2x_subscription_data_t;
-typedef struct OpenAPI_v2x_subscription_data_s {
+struct OpenAPI_v2x_subscription_data_s {
     struct OpenAPI_nr_v2x_auth_s *nr_v2x_services_auth;
     struct OpenAPI_lte_v2x_auth_s *lte_v2x_services_auth;
     char *nr_ue_pc5_ambr;
     char *lte_pc5_ambr;
-} OpenAPI_v2x_subscription_data_t;
+};
 
 OpenAPI_v2x_subscription_data_t *OpenAPI_v2x_subscription_data_create(
     OpenAPI_nr_v2x_auth_t *nr_v2x_services_auth,

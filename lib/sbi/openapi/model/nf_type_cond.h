@@ -1,7 +1,7 @@
 /*
  * nf_type_cond.h
  *
- * Subscription to a set of NFs based on their NF Type
+ * 
  */
 
 #ifndef _OpenAPI_nf_type_cond_H_
@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nf_type_cond_s OpenAPI_nf_type_cond_t;
 #include "nf_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nf_type_cond_s OpenAPI_nf_type_cond_t;
-typedef struct OpenAPI_nf_type_cond_s {
+struct OpenAPI_nf_type_cond_s {
     OpenAPI_nf_type_e nf_type;
-} OpenAPI_nf_type_cond_t;
+};
 
 OpenAPI_nf_type_cond_t *OpenAPI_nf_type_cond_create(
     OpenAPI_nf_type_e nf_type

@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_protection_policy_s OpenAPI_protection_policy_t;
 #include "api_ie_mapping.h"
 #include "ie_type.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_protection_policy_s OpenAPI_protection_policy_t;
-typedef struct OpenAPI_protection_policy_s {
+struct OpenAPI_protection_policy_s {
     OpenAPI_list_t *api_ie_mapping_list;
     OpenAPI_list_t *data_type_enc_policy;
-} OpenAPI_protection_policy_t;
+};
 
 OpenAPI_protection_policy_t *OpenAPI_protection_policy_create(
     OpenAPI_list_t *api_ie_mapping_list,

@@ -1,7 +1,7 @@
 /*
  * nssai.h
  *
- * 
+ * Contains Network Slice Selection Assistance Information
  */
 
 #ifndef _OpenAPI_nssai_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nssai_s OpenAPI_nssai_t;
 #include "additional_snssai_data.h"
 #include "snssai.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nssai_s OpenAPI_nssai_t;
-typedef struct OpenAPI_nssai_s {
+struct OpenAPI_nssai_s {
     char *supported_features;
     OpenAPI_list_t *default_single_nssais;
     OpenAPI_list_t *single_nssais;
@@ -28,7 +28,7 @@ typedef struct OpenAPI_nssai_s {
     OpenAPI_list_t* additional_snssai_data;
     bool is_suppress_nssrg_ind;
     int suppress_nssrg_ind;
-} OpenAPI_nssai_t;
+};
 
 OpenAPI_nssai_t *OpenAPI_nssai_create(
     char *supported_features,

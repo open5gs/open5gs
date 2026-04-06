@@ -1,0 +1,373 @@
+openapi: 3.0.0
+
+info:
+  title: SS_ADAE_LocationAccuracyAnalytics
+  description: |
+    API for ADAE location accuracy performance analytics service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.1.0"
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-adae-laa/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /location-accuracy:
+    post:
+      description: >
+        Creates a new individual location accuracy performance event subscription.
+      operationId: LocAccurSubs
+      tags:
+        - Location accuracy performance event subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocAccurSub'
+      callbacks:
+        laaNotification:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/LocAccurNotif'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: Location accuracy subscription resource created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocAccurSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /location-accuracy/{locAccId}:
+    get:
+      description: Retrieves an individual location accuracy performance event subscription.
+      operationId: ReadIndLocAccurPerfEventSubsc
+      tags:
+        - Individual location accuracy performance event subscription (Document)
+      parameters:
+        - name: locAccId
+          in: path
+          description: >
+            Identifier of an individual location accuracy performance event subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >
+            The individual location accuracy subscription matching the locAccId is retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocAccurSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      description: Deletes an individual location accuracy performance event subscription.
+      operationId: DeleteIndLocAccurPerfEventSubsc
+      tags:
+        - Individual location accuracy performance event subscription (Document)
+      parameters:
+        - name: locAccId
+          in: path
+          description: >
+            Identifier of an individual location accuracy performance event subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            The individual location accuracy performance subscription matching the locAccId
+            is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    LocAccurSub:
+      description: >
+        Represents an individual location accuracy performance event subscription resource.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        analyticsId:
+          $ref: '#/components/schemas/LocAccurAnalytics'
+        analyticsType:
+          $ref: 'TS29549_SS_ADAE_VALPerformanceAnalytics.yaml#/components/schemas/AnalyticsType'
+        valUeIds:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: >
+            One or more VAL UE IDs whose analytics are subject to subcription.
+        accuracy:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/Accuracy'
+        valServiceId:
+          type: string
+          description: >
+            Identifier of the VAL service for which location accuracy analytics is requested.
+        confLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        area:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        timeValidity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        ueMobs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/UeMobility'
+          minItems: 1
+          description: Mobility and route information of the target VAL UEs.
+        repReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - analyticsType
+        - valUeIds
+        - accuracy
+        - notifUri
+
+    LocAccurNotif:
+      description: Represents notification of the location accuracy performance event.
+      type: object
+      properties:
+        analyticsOutput:
+          $ref: '#/components/schemas/LocAccurAnalyticsOutput'
+        output:
+          type: string
+          description: Event output data.
+        confLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+#      oneOf:
+#        - required: [analyticsOutput]
+#        - required: [output]
+#
+    LocAccurAnalyticsOutput:
+      description: >
+        Represents the location accuracy analytics output.
+      type: object
+      properties:
+        analyticsId:
+          $ref: '#/components/schemas/LocAccurAnalytics'
+        valUeIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        valServId:
+          type: string
+        predictions:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocAccurPrediction'
+          minItems: 1
+        sustainAnalytics:
+          $ref: '#/components/schemas/LocAccurSustain'
+      required:
+        - analyticsId
+
+    LocAccurPrediction:
+      description: >
+        Represents the location accuracy prediction analytics output.
+      type: object
+      properties:
+        accurChange:
+          $ref: '#/components/schemas/LocAccurChange'
+        areas:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+          minItems: 1
+        timeWnd:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        confLevel:
+          type: integer
+          minimum: 0
+          maximum: 100
+      required:
+        - accurChange
+
+    LocAccurSustain:
+      description: >
+        Represents the location accuracy sustainability analytics output.
+      type: object
+      properties:
+        areas:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+          minItems: 1
+        timeWnd:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        thr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        confLevel:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+# Simple data types and Enumerations
+
+    LocAccurAnalytics:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - LOCATION_ACCURACY_PREDICTION
+         - LOCATION_ACCURACY_SUSTAINABILITY
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the analytics identifier for location accuracy analytics.  
+#        Possible values are:
+#        - LOCATION_ACCURACY_PREDICTION: Indicates that the requested analytics is location
+#          accuracy prediction.
+#        - LOCATION_ACCURACY_SUSTAINABILITY: Indicates that the requested analytics is
+#          location accuracy sustainability.
+#
+    LocAccurChange:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - DOWNGRADE
+         - UPGRADE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Rerpresents the type of location accuracy change.  
+#        Possible values are:
+#        - DOWNGRADE: Indicates the downgrade of the location accuracy.
+#        - UPGRADE: Indicates the upgrade of the location accuracy.

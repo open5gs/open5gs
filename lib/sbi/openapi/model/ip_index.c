@@ -5,11 +5,13 @@
 #include "ip_index.h"
 
 OpenAPI_ip_index_t *OpenAPI_ip_index_create(
+char *value
 )
 {
     OpenAPI_ip_index_t *ip_index_local_var = ogs_malloc(sizeof(OpenAPI_ip_index_t));
     ogs_assert(ip_index_local_var);
 
+    ip_index_local_var->value = value;
 
     return ip_index_local_var;
 }
@@ -20,6 +22,10 @@ void OpenAPI_ip_index_free(OpenAPI_ip_index_t *ip_index)
 
     if (NULL == ip_index) {
         return;
+    }
+    if (ip_index->value) {
+        ogs_free(ip_index->value);
+        ip_index->value = NULL;
     }
     ogs_free(ip_index);
 }
@@ -44,6 +50,7 @@ OpenAPI_ip_index_t *OpenAPI_ip_index_parseFromJSON(cJSON *ip_indexJSON)
     OpenAPI_ip_index_t *ip_index_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     ip_index_local_var = OpenAPI_ip_index_create (
+        NULL
     );
 
     return ip_index_local_var;

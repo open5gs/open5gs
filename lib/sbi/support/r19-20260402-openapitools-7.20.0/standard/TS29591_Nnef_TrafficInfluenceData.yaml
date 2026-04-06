@@ -1,0 +1,338 @@
+openapi: 3.0.0
+
+info:
+  title: Nnef_TrafficInfluenceData
+  version: 1.1.1
+  description: |
+    NEF Traffic Influence Data Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.591 V19.6.0; 5G System; Network Exposure Function Southbound Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.591/
+
+servers:
+  - url: '{apiRoot}/nnef-traffic-influence-data/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nnef-traffic-influence-data
+
+paths:
+
+  /subscriptions:
+    post:
+      summary: subscribe to notifications
+      operationId: CreateIndividualSubcription
+      tags:
+        - Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrafficInfluDataSub'
+      responses:
+        '201':
+          description: >
+            Created. A representation of the created Individual Traffic Influence Data
+            Subscription resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrafficInfluDataSub'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nnef-traffic-influence-data/<apiVersion>/subscriptions/{subscriptionId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        myNotification:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/TrafficInfluDataNotify'
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: Subscription ID
+        required: true
+        schema:
+          type: string
+    get:
+      summary: retrieve subscription
+      operationId: GetIndividualSubcription
+      tags:
+        - IndividualSubscription (Document)
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrafficInfluDataSub'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: update subscription
+      operationId: ReplaceIndividualSubcription
+      tags:
+        - IndividualSubscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrafficInfluDataSub'
+      responses:
+        '200':
+          description: OK. Resource was succesfully modified and representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrafficInfluDataSub'
+        '204':
+          description: No Content. Resource was succesfully modified
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: unsubscribe from notifications
+      operationId: DeleteIndividualSubcription
+      tags:
+        - IndividualSubscription (Document)
+      responses:
+        '204':
+          description: No Content. Resource was succesfully deleted
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nnef-traffic-influence-data: Access to the Nnef_TrafficInfluenceData API
+
+  schemas:
+    TrafficInfluDataSub:
+      description: Represents an Individual Traffic Influence Subscription data.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifCorrId:
+          type: string
+          description: Notification correlation identifier.
+        dnns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+          description: Each element identifies a DNN.
+        snssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+          description: Each element identifies a slice.
+        supis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+          description: Each element identifies the user.
+        anyUe:
+          type: boolean
+          description: >
+            Identifies any UE when setting to true. Default value is false if omitted.
+        hplmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        ipv4Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+          description: Each element identifies an IPv4 address.
+        ipv6Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+          description: Each element identifies an IPv6 address.
+        rptInfo:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        immReports:
+          type: array
+          items:
+            $ref: 'TS29519_Application_Data.yaml#/components/schemas/TrafficInfluData'
+          minItems: 1
+          description: Immediate report with Traffic Influence Data that match this subscription.
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - notifUri
+        - notifCorrId
+      anyOf:
+        - required: [dnns]
+        - required: [snssais]
+
+    TrafficInfluDataNotify:
+      description: Represents notifications for traffic influence data.
+      type: object
+      properties:
+        notifCorrId:
+          type: string
+          description: Notification correlation identifier.
+        eventNotifications:
+          type: array
+          items:
+            $ref: 'TS29519_Application_Data.yaml#/components/schemas/TrafficInfluDataNotif'
+          minItems: 1
+          description: Notifications about Individual Events.
+      required:
+        - notifCorrId
+        - eventNotifications

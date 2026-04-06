@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_hss_authentication_info_request_s OpenAPI_hss_authentication_info_request_t;
 #include "access_network_id.h"
 #include "hss_auth_type.h"
 #include "node_type.h"
@@ -22,8 +23,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_hss_authentication_info_request_s OpenAPI_hss_authentication_info_request_t;
-typedef struct OpenAPI_hss_authentication_info_request_s {
+struct OpenAPI_hss_authentication_info_request_s {
     char *supported_features;
     OpenAPI_hss_auth_type_e hss_auth_type;
     int num_of_requested_vectors;
@@ -31,7 +31,7 @@ typedef struct OpenAPI_hss_authentication_info_request_s {
     struct OpenAPI_plmn_id_s *serving_network_id;
     struct OpenAPI_resynchronization_info_s *resynchronization_info;
     OpenAPI_access_network_id_e an_id;
-} OpenAPI_hss_authentication_info_request_t;
+};
 
 OpenAPI_hss_authentication_info_request_t *OpenAPI_hss_authentication_info_request_create(
     char *supported_features,

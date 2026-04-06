@@ -1,7 +1,7 @@
 /*
  * acs_info_1.h
  *
- * The ACS information for the 5G-RG is defined in BBF TR-069 [42] or in BBF TR-369
+ * The ACS information for the 5G-RG is defined in BBF TR-069 [42] or in BBF TR-369
  */
 
 #ifndef _OpenAPI_acs_info_1_H_
@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_acs_info_1_s OpenAPI_acs_info_1_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_acs_info_1_s OpenAPI_acs_info_1_t;
-typedef struct OpenAPI_acs_info_1_s {
+struct OpenAPI_acs_info_1_s {
     char *acs_url;
     char *acs_ipv4_addr;
     char *acs_ipv6_addr;
-} OpenAPI_acs_info_1_t;
+};
 
 OpenAPI_acs_info_1_t *OpenAPI_acs_info_1_create(
     char *acs_url,

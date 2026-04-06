@@ -8,7 +8,9 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_create(
     OpenAPI_list_t *supi_list,
     OpenAPI_list_t *gpsi_list,
     OpenAPI_list_t *allowed_af_ids,
-    OpenAPI_list_t* application_port_ids
+    OpenAPI_list_t* application_port_ids,
+    OpenAPI_list_t* af_id_gpsis,
+    OpenAPI_list_t* mtc_provider_gpsis
 )
 {
     OpenAPI_identity_data_t *identity_data_local_var = ogs_malloc(sizeof(OpenAPI_identity_data_t));
@@ -18,6 +20,8 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_create(
     identity_data_local_var->gpsi_list = gpsi_list;
     identity_data_local_var->allowed_af_ids = allowed_af_ids;
     identity_data_local_var->application_port_ids = application_port_ids;
+    identity_data_local_var->af_id_gpsis = af_id_gpsis;
+    identity_data_local_var->mtc_provider_gpsis = mtc_provider_gpsis;
 
     return identity_data_local_var;
 }
@@ -59,6 +63,26 @@ void OpenAPI_identity_data_free(OpenAPI_identity_data_t *identity_data)
         }
         OpenAPI_list_free(identity_data->application_port_ids);
         identity_data->application_port_ids = NULL;
+    }
+    if (identity_data->af_id_gpsis) {
+        OpenAPI_list_for_each(identity_data->af_id_gpsis, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            ogs_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(identity_data->af_id_gpsis);
+        identity_data->af_id_gpsis = NULL;
+    }
+    if (identity_data->mtc_provider_gpsis) {
+        OpenAPI_list_for_each(identity_data->mtc_provider_gpsis, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            ogs_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(identity_data->mtc_provider_gpsis);
+        identity_data->mtc_provider_gpsis = NULL;
     }
     ogs_free(identity_data);
 }
@@ -142,6 +166,58 @@ cJSON *OpenAPI_identity_data_convertToJSON(OpenAPI_identity_data_t *identity_dat
     }
     }
 
+    if (identity_data->af_id_gpsis) {
+    cJSON *af_id_gpsis = cJSON_AddObjectToObject(item, "afIdGpsis");
+    if (af_id_gpsis == NULL) {
+        ogs_error("OpenAPI_identity_data_convertToJSON() failed [af_id_gpsis]");
+        goto end;
+    }
+    cJSON *localMapObject = af_id_gpsis;
+    if (identity_data->af_id_gpsis) {
+        OpenAPI_list_for_each(identity_data->af_id_gpsis, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_identity_data_convertToJSON() failed [af_id_gpsis]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_identity_data_convertToJSON() failed [af_id_gpsis]");
+                goto end;
+            }
+            if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
+                ogs_error("OpenAPI_identity_data_convertToJSON() failed [inner]");
+                goto end;
+            }
+        }
+    }
+    }
+
+    if (identity_data->mtc_provider_gpsis) {
+    cJSON *mtc_provider_gpsis = cJSON_AddObjectToObject(item, "mtcProviderGpsis");
+    if (mtc_provider_gpsis == NULL) {
+        ogs_error("OpenAPI_identity_data_convertToJSON() failed [mtc_provider_gpsis]");
+        goto end;
+    }
+    cJSON *localMapObject = mtc_provider_gpsis;
+    if (identity_data->mtc_provider_gpsis) {
+        OpenAPI_list_for_each(identity_data->mtc_provider_gpsis, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_identity_data_convertToJSON() failed [mtc_provider_gpsis]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_identity_data_convertToJSON() failed [mtc_provider_gpsis]");
+                goto end;
+            }
+            if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
+                ogs_error("OpenAPI_identity_data_convertToJSON() failed [inner]");
+                goto end;
+            }
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -158,6 +234,10 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dat
     OpenAPI_list_t *allowed_af_idsList = NULL;
     cJSON *application_port_ids = NULL;
     OpenAPI_list_t *application_port_idsList = NULL;
+    cJSON *af_id_gpsis = NULL;
+    OpenAPI_list_t *af_id_gpsisList = NULL;
+    cJSON *mtc_provider_gpsis = NULL;
+    OpenAPI_list_t *mtc_provider_gpsisList = NULL;
     supi_list = cJSON_GetObjectItemCaseSensitive(identity_dataJSON, "supiList");
     if (supi_list) {
         cJSON *supi_list_local = NULL;
@@ -245,11 +325,61 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dat
         }
     }
 
+    af_id_gpsis = cJSON_GetObjectItemCaseSensitive(identity_dataJSON, "afIdGpsis");
+    if (af_id_gpsis) {
+        cJSON *af_id_gpsis_local_map = NULL;
+        if (!cJSON_IsObject(af_id_gpsis) && !cJSON_IsNull(af_id_gpsis)) {
+            ogs_error("OpenAPI_identity_data_parseFromJSON() failed [af_id_gpsis]");
+            goto end;
+        }
+        if (cJSON_IsObject(af_id_gpsis)) {
+            af_id_gpsisList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(af_id_gpsis_local_map, af_id_gpsis) {
+                cJSON *localMapObject = af_id_gpsis_local_map;
+                double *localDouble = NULL;
+                int *localInt = NULL;
+                if (!cJSON_IsString(localMapObject)) {
+                    ogs_error("OpenAPI_identity_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                OpenAPI_list_add(af_id_gpsisList, localMapKeyPair);
+            }
+        }
+    }
+
+    mtc_provider_gpsis = cJSON_GetObjectItemCaseSensitive(identity_dataJSON, "mtcProviderGpsis");
+    if (mtc_provider_gpsis) {
+        cJSON *mtc_provider_gpsis_local_map = NULL;
+        if (!cJSON_IsObject(mtc_provider_gpsis) && !cJSON_IsNull(mtc_provider_gpsis)) {
+            ogs_error("OpenAPI_identity_data_parseFromJSON() failed [mtc_provider_gpsis]");
+            goto end;
+        }
+        if (cJSON_IsObject(mtc_provider_gpsis)) {
+            mtc_provider_gpsisList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(mtc_provider_gpsis_local_map, mtc_provider_gpsis) {
+                cJSON *localMapObject = mtc_provider_gpsis_local_map;
+                double *localDouble = NULL;
+                int *localInt = NULL;
+                if (!cJSON_IsString(localMapObject)) {
+                    ogs_error("OpenAPI_identity_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                OpenAPI_list_add(mtc_provider_gpsisList, localMapKeyPair);
+            }
+        }
+    }
+
     identity_data_local_var = OpenAPI_identity_data_create (
         supi_list ? supi_listList : NULL,
         gpsi_list ? gpsi_listList : NULL,
         allowed_af_ids ? allowed_af_idsList : NULL,
-        application_port_ids ? application_port_idsList : NULL
+        application_port_ids ? application_port_idsList : NULL,
+        af_id_gpsis ? af_id_gpsisList : NULL,
+        mtc_provider_gpsis ? mtc_provider_gpsisList : NULL
     );
 
     return identity_data_local_var;
@@ -277,13 +407,33 @@ end:
     }
     if (application_port_idsList) {
         OpenAPI_list_for_each(application_port_idsList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             ogs_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(application_port_idsList);
         application_port_idsList = NULL;
+    }
+    if (af_id_gpsisList) {
+        OpenAPI_list_for_each(af_id_gpsisList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            ogs_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(af_id_gpsisList);
+        af_id_gpsisList = NULL;
+    }
+    if (mtc_provider_gpsisList) {
+        OpenAPI_list_for_each(mtc_provider_gpsisList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            ogs_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(mtc_provider_gpsisList);
+        mtc_provider_gpsisList = NULL;
     }
     return NULL;
 }

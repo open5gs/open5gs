@@ -5,35 +5,49 @@
 #include "search_result.h"
 
 OpenAPI_search_result_t *OpenAPI_search_result_create(
-    bool is_validity_period,
     int validity_period,
     OpenAPI_list_t *nf_instances,
+    OpenAPI_list_t *complete_nf_instances,
     char *search_id,
     bool is_num_nf_inst_complete,
     int num_nf_inst_complete,
     OpenAPI_preferred_search_t *preferred_search,
     char *nrf_supported_features,
     OpenAPI_list_t* nf_instance_list,
+    OpenAPI_search_result_info_t *search_result_info,
     bool is_altered_priority_ind,
     int altered_priority_ind,
-    OpenAPI_no_profile_match_info_t *no_profile_match_info
+    OpenAPI_no_profile_match_info_t *no_profile_match_info,
+    OpenAPI_list_t *ignored_query_params,
+    bool is_ind_com_with_del_disc_req,
+    int ind_com_with_del_disc_req,
+    bool is_ind_com_wo_del_disc_req,
+    int ind_com_wo_del_disc_req,
+    OpenAPI_ind_com_add_info_t *ind_com_add_info
 )
 {
     OpenAPI_search_result_t *search_result_local_var = ogs_malloc(sizeof(OpenAPI_search_result_t));
     ogs_assert(search_result_local_var);
 
-    search_result_local_var->is_validity_period = is_validity_period;
     search_result_local_var->validity_period = validity_period;
     search_result_local_var->nf_instances = nf_instances;
+    search_result_local_var->complete_nf_instances = complete_nf_instances;
     search_result_local_var->search_id = search_id;
     search_result_local_var->is_num_nf_inst_complete = is_num_nf_inst_complete;
     search_result_local_var->num_nf_inst_complete = num_nf_inst_complete;
     search_result_local_var->preferred_search = preferred_search;
     search_result_local_var->nrf_supported_features = nrf_supported_features;
     search_result_local_var->nf_instance_list = nf_instance_list;
+    search_result_local_var->search_result_info = search_result_info;
     search_result_local_var->is_altered_priority_ind = is_altered_priority_ind;
     search_result_local_var->altered_priority_ind = altered_priority_ind;
     search_result_local_var->no_profile_match_info = no_profile_match_info;
+    search_result_local_var->ignored_query_params = ignored_query_params;
+    search_result_local_var->is_ind_com_with_del_disc_req = is_ind_com_with_del_disc_req;
+    search_result_local_var->ind_com_with_del_disc_req = ind_com_with_del_disc_req;
+    search_result_local_var->is_ind_com_wo_del_disc_req = is_ind_com_wo_del_disc_req;
+    search_result_local_var->ind_com_wo_del_disc_req = ind_com_wo_del_disc_req;
+    search_result_local_var->ind_com_add_info = ind_com_add_info;
 
     return search_result_local_var;
 }
@@ -51,6 +65,13 @@ void OpenAPI_search_result_free(OpenAPI_search_result_t *search_result)
         }
         OpenAPI_list_free(search_result->nf_instances);
         search_result->nf_instances = NULL;
+    }
+    if (search_result->complete_nf_instances) {
+        OpenAPI_list_for_each(search_result->complete_nf_instances, node) {
+            OpenAPI_nf_profile_free(node->data);
+        }
+        OpenAPI_list_free(search_result->complete_nf_instances);
+        search_result->complete_nf_instances = NULL;
     }
     if (search_result->search_id) {
         ogs_free(search_result->search_id);
@@ -74,9 +95,24 @@ void OpenAPI_search_result_free(OpenAPI_search_result_t *search_result)
         OpenAPI_list_free(search_result->nf_instance_list);
         search_result->nf_instance_list = NULL;
     }
+    if (search_result->search_result_info) {
+        OpenAPI_search_result_info_free(search_result->search_result_info);
+        search_result->search_result_info = NULL;
+    }
     if (search_result->no_profile_match_info) {
         OpenAPI_no_profile_match_info_free(search_result->no_profile_match_info);
         search_result->no_profile_match_info = NULL;
+    }
+    if (search_result->ignored_query_params) {
+        OpenAPI_list_for_each(search_result->ignored_query_params, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(search_result->ignored_query_params);
+        search_result->ignored_query_params = NULL;
+    }
+    if (search_result->ind_com_add_info) {
+        OpenAPI_ind_com_add_info_free(search_result->ind_com_add_info);
+        search_result->ind_com_add_info = NULL;
     }
     ogs_free(search_result);
 }
@@ -92,11 +128,9 @@ cJSON *OpenAPI_search_result_convertToJSON(OpenAPI_search_result_t *search_resul
     }
 
     item = cJSON_CreateObject();
-    if (search_result->is_validity_period) {
     if (cJSON_AddNumberToObject(item, "validityPeriod", search_result->validity_period) == NULL) {
         ogs_error("OpenAPI_search_result_convertToJSON() failed [validity_period]");
         goto end;
-    }
     }
 
     if (!search_result->nf_instances) {
@@ -115,6 +149,22 @@ cJSON *OpenAPI_search_result_convertToJSON(OpenAPI_search_result_t *search_resul
             goto end;
         }
         cJSON_AddItemToArray(nf_instancesList, itemLocal);
+    }
+
+    if (search_result->complete_nf_instances) {
+    cJSON *complete_nf_instancesList = cJSON_AddArrayToObject(item, "completeNfInstances");
+    if (complete_nf_instancesList == NULL) {
+        ogs_error("OpenAPI_search_result_convertToJSON() failed [complete_nf_instances]");
+        goto end;
+    }
+    OpenAPI_list_for_each(search_result->complete_nf_instances, node) {
+        cJSON *itemLocal = OpenAPI_nf_profile_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_search_result_convertToJSON() failed [complete_nf_instances]");
+            goto end;
+        }
+        cJSON_AddItemToArray(complete_nf_instancesList, itemLocal);
+    }
     }
 
     if (search_result->search_id) {
@@ -181,6 +231,19 @@ cJSON *OpenAPI_search_result_convertToJSON(OpenAPI_search_result_t *search_resul
     }
     }
 
+    if (search_result->search_result_info) {
+    cJSON *search_result_info_local_JSON = OpenAPI_search_result_info_convertToJSON(search_result->search_result_info);
+    if (search_result_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_search_result_convertToJSON() failed [search_result_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "searchResultInfo", search_result_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_search_result_convertToJSON() failed [search_result_info]");
+        goto end;
+    }
+    }
+
     if (search_result->is_altered_priority_ind) {
     if (cJSON_AddBoolToObject(item, "alteredPriorityInd", search_result->altered_priority_ind) == NULL) {
         ogs_error("OpenAPI_search_result_convertToJSON() failed [altered_priority_ind]");
@@ -201,6 +264,47 @@ cJSON *OpenAPI_search_result_convertToJSON(OpenAPI_search_result_t *search_resul
     }
     }
 
+    if (search_result->ignored_query_params) {
+    cJSON *ignored_query_paramsList = cJSON_AddArrayToObject(item, "ignoredQueryParams");
+    if (ignored_query_paramsList == NULL) {
+        ogs_error("OpenAPI_search_result_convertToJSON() failed [ignored_query_params]");
+        goto end;
+    }
+    OpenAPI_list_for_each(search_result->ignored_query_params, node) {
+        if (cJSON_AddStringToObject(ignored_query_paramsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_search_result_convertToJSON() failed [ignored_query_params]");
+            goto end;
+        }
+    }
+    }
+
+    if (search_result->is_ind_com_with_del_disc_req) {
+    if (cJSON_AddBoolToObject(item, "indComWithDelDiscReq", search_result->ind_com_with_del_disc_req) == NULL) {
+        ogs_error("OpenAPI_search_result_convertToJSON() failed [ind_com_with_del_disc_req]");
+        goto end;
+    }
+    }
+
+    if (search_result->is_ind_com_wo_del_disc_req) {
+    if (cJSON_AddBoolToObject(item, "indComWoDelDiscReq", search_result->ind_com_wo_del_disc_req) == NULL) {
+        ogs_error("OpenAPI_search_result_convertToJSON() failed [ind_com_wo_del_disc_req]");
+        goto end;
+    }
+    }
+
+    if (search_result->ind_com_add_info) {
+    cJSON *ind_com_add_info_local_JSON = OpenAPI_ind_com_add_info_convertToJSON(search_result->ind_com_add_info);
+    if (ind_com_add_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_search_result_convertToJSON() failed [ind_com_add_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "indComAddInfo", ind_com_add_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_search_result_convertToJSON() failed [ind_com_add_info]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -212,6 +316,8 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
     cJSON *validity_period = NULL;
     cJSON *nf_instances = NULL;
     OpenAPI_list_t *nf_instancesList = NULL;
+    cJSON *complete_nf_instances = NULL;
+    OpenAPI_list_t *complete_nf_instancesList = NULL;
     cJSON *search_id = NULL;
     cJSON *num_nf_inst_complete = NULL;
     cJSON *preferred_search = NULL;
@@ -219,15 +325,25 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
     cJSON *nrf_supported_features = NULL;
     cJSON *nf_instance_list = NULL;
     OpenAPI_list_t *nf_instance_listList = NULL;
+    cJSON *search_result_info = NULL;
+    OpenAPI_search_result_info_t *search_result_info_local_nonprim = NULL;
     cJSON *altered_priority_ind = NULL;
     cJSON *no_profile_match_info = NULL;
     OpenAPI_no_profile_match_info_t *no_profile_match_info_local_nonprim = NULL;
+    cJSON *ignored_query_params = NULL;
+    OpenAPI_list_t *ignored_query_paramsList = NULL;
+    cJSON *ind_com_with_del_disc_req = NULL;
+    cJSON *ind_com_wo_del_disc_req = NULL;
+    cJSON *ind_com_add_info = NULL;
+    OpenAPI_ind_com_add_info_t *ind_com_add_info_local_nonprim = NULL;
     validity_period = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "validityPeriod");
-    if (validity_period) {
-    if (!cJSON_IsNumber(validity_period)) {
+    if (!validity_period) {
         ogs_error("OpenAPI_search_result_parseFromJSON() failed [validity_period]");
         goto end;
     }
+    if (!cJSON_IsNumber(validity_period)) {
+        ogs_error("OpenAPI_search_result_parseFromJSON() failed [validity_period]");
+        goto end;
     }
 
     nf_instances = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "nfInstances");
@@ -255,6 +371,30 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
             }
             OpenAPI_list_add(nf_instancesList, nf_instancesItem);
         }
+
+    complete_nf_instances = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "completeNfInstances");
+    if (complete_nf_instances) {
+        cJSON *complete_nf_instances_local = NULL;
+        if (!cJSON_IsArray(complete_nf_instances)) {
+            ogs_error("OpenAPI_search_result_parseFromJSON() failed [complete_nf_instances]");
+            goto end;
+        }
+
+        complete_nf_instancesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(complete_nf_instances_local, complete_nf_instances) {
+            if (!cJSON_IsObject(complete_nf_instances_local)) {
+                ogs_error("OpenAPI_search_result_parseFromJSON() failed [complete_nf_instances]");
+                goto end;
+            }
+            OpenAPI_nf_profile_t *complete_nf_instancesItem = OpenAPI_nf_profile_parseFromJSON(complete_nf_instances_local);
+            if (!complete_nf_instancesItem) {
+                ogs_error("No complete_nf_instancesItem");
+                goto end;
+            }
+            OpenAPI_list_add(complete_nf_instancesList, complete_nf_instancesItem);
+        }
+    }
 
     search_id = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "searchId");
     if (search_id) {
@@ -315,6 +455,15 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
         }
     }
 
+    search_result_info = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "searchResultInfo");
+    if (search_result_info) {
+    search_result_info_local_nonprim = OpenAPI_search_result_info_parseFromJSON(search_result_info);
+    if (!search_result_info_local_nonprim) {
+        ogs_error("OpenAPI_search_result_info_parseFromJSON failed [search_result_info]");
+        goto end;
+    }
+    }
+
     altered_priority_ind = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "alteredPriorityInd");
     if (altered_priority_ind) {
     if (!cJSON_IsBool(altered_priority_ind)) {
@@ -332,19 +481,73 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
     }
     }
 
+    ignored_query_params = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "ignoredQueryParams");
+    if (ignored_query_params) {
+        cJSON *ignored_query_params_local = NULL;
+        if (!cJSON_IsArray(ignored_query_params)) {
+            ogs_error("OpenAPI_search_result_parseFromJSON() failed [ignored_query_params]");
+            goto end;
+        }
+
+        ignored_query_paramsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(ignored_query_params_local, ignored_query_params) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(ignored_query_params_local)) {
+                ogs_error("OpenAPI_search_result_parseFromJSON() failed [ignored_query_params]");
+                goto end;
+            }
+            OpenAPI_list_add(ignored_query_paramsList, ogs_strdup(ignored_query_params_local->valuestring));
+        }
+    }
+
+    ind_com_with_del_disc_req = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "indComWithDelDiscReq");
+    if (ind_com_with_del_disc_req) {
+    if (!cJSON_IsBool(ind_com_with_del_disc_req)) {
+        ogs_error("OpenAPI_search_result_parseFromJSON() failed [ind_com_with_del_disc_req]");
+        goto end;
+    }
+    }
+
+    ind_com_wo_del_disc_req = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "indComWoDelDiscReq");
+    if (ind_com_wo_del_disc_req) {
+    if (!cJSON_IsBool(ind_com_wo_del_disc_req)) {
+        ogs_error("OpenAPI_search_result_parseFromJSON() failed [ind_com_wo_del_disc_req]");
+        goto end;
+    }
+    }
+
+    ind_com_add_info = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "indComAddInfo");
+    if (ind_com_add_info) {
+    ind_com_add_info_local_nonprim = OpenAPI_ind_com_add_info_parseFromJSON(ind_com_add_info);
+    if (!ind_com_add_info_local_nonprim) {
+        ogs_error("OpenAPI_ind_com_add_info_parseFromJSON failed [ind_com_add_info]");
+        goto end;
+    }
+    }
+
     search_result_local_var = OpenAPI_search_result_create (
-        validity_period ? true : false,
-        validity_period ? validity_period->valuedouble : 0,
+        
+        validity_period->valuedouble,
         nf_instancesList,
+        complete_nf_instances ? complete_nf_instancesList : NULL,
         search_id && !cJSON_IsNull(search_id) ? ogs_strdup(search_id->valuestring) : NULL,
         num_nf_inst_complete ? true : false,
         num_nf_inst_complete ? num_nf_inst_complete->valuedouble : 0,
         preferred_search ? preferred_search_local_nonprim : NULL,
         nrf_supported_features && !cJSON_IsNull(nrf_supported_features) ? ogs_strdup(nrf_supported_features->valuestring) : NULL,
         nf_instance_list ? nf_instance_listList : NULL,
+        search_result_info ? search_result_info_local_nonprim : NULL,
         altered_priority_ind ? true : false,
         altered_priority_ind ? altered_priority_ind->valueint : 0,
-        no_profile_match_info ? no_profile_match_info_local_nonprim : NULL
+        no_profile_match_info ? no_profile_match_info_local_nonprim : NULL,
+        ignored_query_params ? ignored_query_paramsList : NULL,
+        ind_com_with_del_disc_req ? true : false,
+        ind_com_with_del_disc_req ? ind_com_with_del_disc_req->valueint : 0,
+        ind_com_wo_del_disc_req ? true : false,
+        ind_com_wo_del_disc_req ? ind_com_wo_del_disc_req->valueint : 0,
+        ind_com_add_info ? ind_com_add_info_local_nonprim : NULL
     );
 
     return search_result_local_var;
@@ -356,13 +559,20 @@ end:
         OpenAPI_list_free(nf_instancesList);
         nf_instancesList = NULL;
     }
+    if (complete_nf_instancesList) {
+        OpenAPI_list_for_each(complete_nf_instancesList, node) {
+            OpenAPI_nf_profile_free(node->data);
+        }
+        OpenAPI_list_free(complete_nf_instancesList);
+        complete_nf_instancesList = NULL;
+    }
     if (preferred_search_local_nonprim) {
         OpenAPI_preferred_search_free(preferred_search_local_nonprim);
         preferred_search_local_nonprim = NULL;
     }
     if (nf_instance_listList) {
         OpenAPI_list_for_each(nf_instance_listList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_nf_instance_info_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
@@ -370,9 +580,24 @@ end:
         OpenAPI_list_free(nf_instance_listList);
         nf_instance_listList = NULL;
     }
+    if (search_result_info_local_nonprim) {
+        OpenAPI_search_result_info_free(search_result_info_local_nonprim);
+        search_result_info_local_nonprim = NULL;
+    }
     if (no_profile_match_info_local_nonprim) {
         OpenAPI_no_profile_match_info_free(no_profile_match_info_local_nonprim);
         no_profile_match_info_local_nonprim = NULL;
+    }
+    if (ignored_query_paramsList) {
+        OpenAPI_list_for_each(ignored_query_paramsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(ignored_query_paramsList);
+        ignored_query_paramsList = NULL;
+    }
+    if (ind_com_add_info_local_nonprim) {
+        OpenAPI_ind_com_add_info_free(ind_com_add_info_local_nonprim);
+        ind_com_add_info_local_nonprim = NULL;
     }
     return NULL;
 }

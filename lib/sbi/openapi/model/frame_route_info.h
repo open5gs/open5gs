@@ -1,7 +1,7 @@
 /*
  * frame_route_info.h
  *
- * 
+ * Contains Frame Route Information
  */
 
 #ifndef _OpenAPI_frame_route_info_H_
@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_frame_route_info_s OpenAPI_frame_route_info_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_frame_route_info_s OpenAPI_frame_route_info_t;
-typedef struct OpenAPI_frame_route_info_s {
+struct OpenAPI_frame_route_info_s {
     char *ipv4_mask;
     char *ipv6_prefix;
-} OpenAPI_frame_route_info_t;
+};
 
 OpenAPI_frame_route_info_t *OpenAPI_frame_route_info_create(
     char *ipv4_mask,

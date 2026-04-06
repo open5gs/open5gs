@@ -1,0 +1,69 @@
+openapi: 3.0.0
+info:
+  title: Mas_Configuration (5G Media Streaming)
+  version: 1.1.0
+  description: |
+    5GMS AS Configuration API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Mas_Configuration
+    description: '5G Media Streaming: Application Server Configuration (M3) APIs'
+
+externalDocs:
+  description: 'TS 26.512 V19.0.0; 5G Media Streaming (5GMS); Protocols'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.512/'
+
+servers:
+  - url: '{apiRoot}/3gpp-mas-configuration/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 29.512 clause 6.1.2.
+
+security:
+  - {}
+  - OAuth2ClientCredentials: []
+
+components:
+  securitySchemes:
+    OAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+paths:
+  # Server Certificates Configuration API
+  /certificates:
+    $ref: 'TS26512_Mas_Configuration_ServerCertificates.yaml#/paths/~1certificates'
+  /certificates/%7bafResourceId%7d:
+    $ref: 'TS26512_Mas_Configuration_ServerCertificates.yaml#/paths/~1certificates~1%7bafResourceId%7d'
+
+  # Content Preparation Templates Configuration API
+  /content-preparation-templates:
+    $ref: 'TS26512_Mas_Configuration_ContentPreparationTemplates.yaml#/paths/~1content-preparation-templates'
+  /content-preparation-templates/%7bafResourceId%7d:
+    $ref: 'TS26512_Mas_Configuration_ContentPreparationTemplates.yaml#/paths/~1content-preparation-templates~1%7bafResourceId%7d'
+
+  # Content Hosting Configurations API
+  /content-hosting-configurations:
+    $ref: 'TS26512_Mas_Configuration_ContentHosting.yaml#/paths/~1content-hosting-configurations'
+  /content-hosting-configurations/%7bafResourceId%7d:
+    $ref: 'TS26512_Mas_Configuration_ContentHosting.yaml#/paths/~1content-hosting-configurations~1%7bafResourceId%7d'
+  /content-hosting-configurations/%7bafResourceId%7d/active:
+    $ref: 'TS26512_Mas_Configuration_ContentHosting.yaml#/paths/~1content-hosting-configurations~1%7bafResourceId%7d~1active'
+  /content-hosting-configurations/%7bafResourceId%7d/purge:
+    $ref: 'TS26512_Mas_Configuration_ContentHosting.yaml#/paths/~1content-hosting-configurations~1%7bafResourceId%7d~1purge'
+
+  # Content Publishing Configurations API
+  /content-publishing-configurations:
+    $ref: 'TS26512_Mas_Configuration_ContentPublishing.yaml#/paths/~1content-publishing-configurations'
+  /content-publishing-configurations/%7bafResourceId%7d:
+    $ref: 'TS26512_Mas_Configuration_ContentPublishing.yaml#/paths/~1content-publishing-configurations~1%7bafResourceId%7d'
+  /content-publishing-configurations/%7bafResourceId%7d/active:
+    $ref: 'TS26512_Mas_Configuration_ContentPublishing.yaml#/paths/~1content-publishing-configurations~1%7bafResourceId%7d~1active'
+  /content-publishing-configurations/%7bafResourceId%7d/purge:
+    $ref: 'TS26512_Mas_Configuration_ContentPublishing.yaml#/paths/~1content-publishing-configurations~1%7bafResourceId%7d~1purge'

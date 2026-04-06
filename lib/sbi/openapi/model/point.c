@@ -5,7 +5,7 @@
 #include "point.h"
 
 OpenAPI_point_t *OpenAPI_point_create(
-    OpenAPI_supported_gad_shapes_t *shape,
+    OpenAPI_supported_gad_shapes_e shape,
     OpenAPI_geographical_coordinates_t *point
 )
 {
@@ -25,10 +25,6 @@ void OpenAPI_point_free(OpenAPI_point_t *point)
     if (NULL == point) {
         return;
     }
-    if (point->shape) {
-        OpenAPI_supported_gad_shapes_free(point->shape);
-        point->shape = NULL;
-    }
     if (point->point) {
         OpenAPI_geographical_coordinates_free(point->point);
         point->point = NULL;
@@ -47,17 +43,11 @@ cJSON *OpenAPI_point_convertToJSON(OpenAPI_point_t *point)
     }
 
     item = cJSON_CreateObject();
-    if (!point->shape) {
+    if (point->shape == OpenAPI_supported_gad_shapes_NULL) {
         ogs_error("OpenAPI_point_convertToJSON() failed [shape]");
         return NULL;
     }
-    cJSON *shape_local_JSON = OpenAPI_supported_gad_shapes_convertToJSON(point->shape);
-    if (shape_local_JSON == NULL) {
-        ogs_error("OpenAPI_point_convertToJSON() failed [shape]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "shape", shape_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "shape", OpenAPI_supported_gad_shapes_ToString(point->shape)) == NULL) {
         ogs_error("OpenAPI_point_convertToJSON() failed [shape]");
         goto end;
     }
@@ -86,7 +76,7 @@ OpenAPI_point_t *OpenAPI_point_parseFromJSON(cJSON *pointJSON)
     OpenAPI_point_t *point_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *shape = NULL;
-    OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
+    OpenAPI_supported_gad_shapes_e shapeVariable = 0;
     cJSON *point = NULL;
     OpenAPI_geographical_coordinates_t *point_local_nonprim = NULL;
     shape = cJSON_GetObjectItemCaseSensitive(pointJSON, "shape");
@@ -94,11 +84,11 @@ OpenAPI_point_t *OpenAPI_point_parseFromJSON(cJSON *pointJSON)
         ogs_error("OpenAPI_point_parseFromJSON() failed [shape]");
         goto end;
     }
-    shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
-    if (!shape_local_nonprim) {
-        ogs_error("OpenAPI_supported_gad_shapes_parseFromJSON failed [shape]");
+    if (!cJSON_IsString(shape)) {
+        ogs_error("OpenAPI_point_parseFromJSON() failed [shape]");
         goto end;
     }
+    shapeVariable = OpenAPI_supported_gad_shapes_FromString(shape->valuestring);
 
     point = cJSON_GetObjectItemCaseSensitive(pointJSON, "point");
     if (!point) {
@@ -112,16 +102,12 @@ OpenAPI_point_t *OpenAPI_point_parseFromJSON(cJSON *pointJSON)
     }
 
     point_local_var = OpenAPI_point_create (
-        shape_local_nonprim,
+        shapeVariable,
         point_local_nonprim
     );
 
     return point_local_var;
 end:
-    if (shape_local_nonprim) {
-        OpenAPI_supported_gad_shapes_free(shape_local_nonprim);
-        shape_local_nonprim = NULL;
-    }
     if (point_local_nonprim) {
         OpenAPI_geographical_coordinates_free(point_local_nonprim);
         point_local_nonprim = NULL;

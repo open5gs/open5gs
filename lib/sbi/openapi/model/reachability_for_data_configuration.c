@@ -5,7 +5,7 @@
 #include "reachability_for_data_configuration.h"
 
 OpenAPI_reachability_for_data_configuration_t *OpenAPI_reachability_for_data_configuration_create(
-    OpenAPI_reachability_for_data_report_config_t *report_cfg,
+    OpenAPI_reachability_for_data_report_config_e report_cfg,
     bool is_min_interval,
     int min_interval
 )
@@ -27,10 +27,6 @@ void OpenAPI_reachability_for_data_configuration_free(OpenAPI_reachability_for_d
     if (NULL == reachability_for_data_configuration) {
         return;
     }
-    if (reachability_for_data_configuration->report_cfg) {
-        OpenAPI_reachability_for_data_report_config_free(reachability_for_data_configuration->report_cfg);
-        reachability_for_data_configuration->report_cfg = NULL;
-    }
     ogs_free(reachability_for_data_configuration);
 }
 
@@ -45,17 +41,11 @@ cJSON *OpenAPI_reachability_for_data_configuration_convertToJSON(OpenAPI_reachab
     }
 
     item = cJSON_CreateObject();
-    if (!reachability_for_data_configuration->report_cfg) {
+    if (reachability_for_data_configuration->report_cfg == OpenAPI_reachability_for_data_report_config_NULL) {
         ogs_error("OpenAPI_reachability_for_data_configuration_convertToJSON() failed [report_cfg]");
         return NULL;
     }
-    cJSON *report_cfg_local_JSON = OpenAPI_reachability_for_data_report_config_convertToJSON(reachability_for_data_configuration->report_cfg);
-    if (report_cfg_local_JSON == NULL) {
-        ogs_error("OpenAPI_reachability_for_data_configuration_convertToJSON() failed [report_cfg]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "reportCfg", report_cfg_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "reportCfg", OpenAPI_reachability_for_data_report_config_ToString(reachability_for_data_configuration->report_cfg)) == NULL) {
         ogs_error("OpenAPI_reachability_for_data_configuration_convertToJSON() failed [report_cfg]");
         goto end;
     }
@@ -76,18 +66,18 @@ OpenAPI_reachability_for_data_configuration_t *OpenAPI_reachability_for_data_con
     OpenAPI_reachability_for_data_configuration_t *reachability_for_data_configuration_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *report_cfg = NULL;
-    OpenAPI_reachability_for_data_report_config_t *report_cfg_local_nonprim = NULL;
+    OpenAPI_reachability_for_data_report_config_e report_cfgVariable = 0;
     cJSON *min_interval = NULL;
     report_cfg = cJSON_GetObjectItemCaseSensitive(reachability_for_data_configurationJSON, "reportCfg");
     if (!report_cfg) {
         ogs_error("OpenAPI_reachability_for_data_configuration_parseFromJSON() failed [report_cfg]");
         goto end;
     }
-    report_cfg_local_nonprim = OpenAPI_reachability_for_data_report_config_parseFromJSON(report_cfg);
-    if (!report_cfg_local_nonprim) {
-        ogs_error("OpenAPI_reachability_for_data_report_config_parseFromJSON failed [report_cfg]");
+    if (!cJSON_IsString(report_cfg)) {
+        ogs_error("OpenAPI_reachability_for_data_configuration_parseFromJSON() failed [report_cfg]");
         goto end;
     }
+    report_cfgVariable = OpenAPI_reachability_for_data_report_config_FromString(report_cfg->valuestring);
 
     min_interval = cJSON_GetObjectItemCaseSensitive(reachability_for_data_configurationJSON, "minInterval");
     if (min_interval) {
@@ -98,17 +88,13 @@ OpenAPI_reachability_for_data_configuration_t *OpenAPI_reachability_for_data_con
     }
 
     reachability_for_data_configuration_local_var = OpenAPI_reachability_for_data_configuration_create (
-        report_cfg_local_nonprim,
+        report_cfgVariable,
         min_interval ? true : false,
         min_interval ? min_interval->valuedouble : 0
     );
 
     return reachability_for_data_configuration_local_var;
 end:
-    if (report_cfg_local_nonprim) {
-        OpenAPI_reachability_for_data_report_config_free(report_cfg_local_nonprim);
-        report_cfg_local_nonprim = NULL;
-    }
     return NULL;
 }
 

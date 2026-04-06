@@ -1,7 +1,7 @@
 /*
  * transfer_reason.h
  *
- * 
+ * Indicates UE Context Transfer Reason
  */
 
 #ifndef _OpenAPI_transfer_reason_H_

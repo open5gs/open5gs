@@ -6,7 +6,8 @@
 
 OpenAPI_ptw_parameters_1_t *OpenAPI_ptw_parameters_1_create(
     OpenAPI_operation_mode_e operation_mode,
-    char *ptw_value
+    char *ptw_value,
+    char *extended_ptw_value
 )
 {
     OpenAPI_ptw_parameters_1_t *ptw_parameters_1_local_var = ogs_malloc(sizeof(OpenAPI_ptw_parameters_1_t));
@@ -14,6 +15,7 @@ OpenAPI_ptw_parameters_1_t *OpenAPI_ptw_parameters_1_create(
 
     ptw_parameters_1_local_var->operation_mode = operation_mode;
     ptw_parameters_1_local_var->ptw_value = ptw_value;
+    ptw_parameters_1_local_var->extended_ptw_value = extended_ptw_value;
 
     return ptw_parameters_1_local_var;
 }
@@ -28,6 +30,10 @@ void OpenAPI_ptw_parameters_1_free(OpenAPI_ptw_parameters_1_t *ptw_parameters_1)
     if (ptw_parameters_1->ptw_value) {
         ogs_free(ptw_parameters_1->ptw_value);
         ptw_parameters_1->ptw_value = NULL;
+    }
+    if (ptw_parameters_1->extended_ptw_value) {
+        ogs_free(ptw_parameters_1->extended_ptw_value);
+        ptw_parameters_1->extended_ptw_value = NULL;
     }
     ogs_free(ptw_parameters_1);
 }
@@ -61,6 +67,13 @@ cJSON *OpenAPI_ptw_parameters_1_convertToJSON(OpenAPI_ptw_parameters_1_t *ptw_pa
         goto end;
     }
 
+    if (ptw_parameters_1->extended_ptw_value) {
+    if (cJSON_AddStringToObject(item, "extendedPtwValue", ptw_parameters_1->extended_ptw_value) == NULL) {
+        ogs_error("OpenAPI_ptw_parameters_1_convertToJSON() failed [extended_ptw_value]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -72,6 +85,7 @@ OpenAPI_ptw_parameters_1_t *OpenAPI_ptw_parameters_1_parseFromJSON(cJSON *ptw_pa
     cJSON *operation_mode = NULL;
     OpenAPI_operation_mode_e operation_modeVariable = 0;
     cJSON *ptw_value = NULL;
+    cJSON *extended_ptw_value = NULL;
     operation_mode = cJSON_GetObjectItemCaseSensitive(ptw_parameters_1JSON, "operationMode");
     if (!operation_mode) {
         ogs_error("OpenAPI_ptw_parameters_1_parseFromJSON() failed [operation_mode]");
@@ -93,9 +107,18 @@ OpenAPI_ptw_parameters_1_t *OpenAPI_ptw_parameters_1_parseFromJSON(cJSON *ptw_pa
         goto end;
     }
 
+    extended_ptw_value = cJSON_GetObjectItemCaseSensitive(ptw_parameters_1JSON, "extendedPtwValue");
+    if (extended_ptw_value) {
+    if (!cJSON_IsString(extended_ptw_value) && !cJSON_IsNull(extended_ptw_value)) {
+        ogs_error("OpenAPI_ptw_parameters_1_parseFromJSON() failed [extended_ptw_value]");
+        goto end;
+    }
+    }
+
     ptw_parameters_1_local_var = OpenAPI_ptw_parameters_1_create (
         operation_modeVariable,
-        ogs_strdup(ptw_value->valuestring)
+        ogs_strdup(ptw_value->valuestring),
+        extended_ptw_value && !cJSON_IsNull(extended_ptw_value) ? ogs_strdup(extended_ptw_value->valuestring) : NULL
     );
 
     return ptw_parameters_1_local_var;

@@ -12,6 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nf_service_s OpenAPI_nf_service_t;
+#include "callback_uri_prefix_item.h"
 #include "default_notification_subscription.h"
 #include "ext_snssai.h"
 #include "ip_end_point.h"
@@ -22,6 +24,9 @@
 #include "plmn_id_nid.h"
 #include "plmn_oauth2.h"
 #include "plmn_snssai.h"
+#include "rule_set.h"
+#include "selection_conditions.h"
+#include "service_name.h"
 #include "uri_scheme.h"
 #include "vendor_specific_feature.h"
 
@@ -29,10 +34,9 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nf_service_s OpenAPI_nf_service_t;
-typedef struct OpenAPI_nf_service_s {
+struct OpenAPI_nf_service_s {
     char *service_instance_id;
-    char *service_name;
+    OpenAPI_service_name_e service_name;
     OpenAPI_list_t *versions;
     OpenAPI_uri_scheme_e scheme;
     OpenAPI_nf_service_status_e nf_service_status;
@@ -40,6 +44,7 @@ typedef struct OpenAPI_nf_service_s {
     char *inter_plmn_fqdn;
     OpenAPI_list_t *ip_end_points;
     char *api_prefix;
+    OpenAPI_list_t *callback_uri_prefix_list;
     OpenAPI_list_t *default_notification_subscriptions;
     OpenAPI_list_t *allowed_plmns;
     OpenAPI_list_t *allowed_snpns;
@@ -48,6 +53,9 @@ typedef struct OpenAPI_nf_service_s {
     OpenAPI_list_t *allowed_nssais;
     OpenAPI_list_t* allowed_operations_per_nf_type;
     OpenAPI_list_t* allowed_operations_per_nf_instance;
+    bool is_allowed_operations_per_nf_instance_overrides;
+    int allowed_operations_per_nf_instance_overrides;
+    OpenAPI_list_t* allowed_scopes_rule_set;
     bool is_priority;
     int priority;
     bool is_capacity;
@@ -65,11 +73,20 @@ typedef struct OpenAPI_nf_service_s {
     bool is_oauth2_required;
     int oauth2_required;
     struct OpenAPI_plmn_oauth2_s *per_plmn_oauth2_req_list;
-} OpenAPI_nf_service_t;
+    struct OpenAPI_selection_conditions_s *selection_conditions;
+    bool is_canary_release;
+    int canary_release;
+    bool is_exclusive_canary_release_selection;
+    int exclusive_canary_release_selection;
+    char *shared_service_data_id;
+    char *shutdown_time;
+    bool is_canary_precedence_over_preferred;
+    int canary_precedence_over_preferred;
+};
 
 OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     char *service_instance_id,
-    char *service_name,
+    OpenAPI_service_name_e service_name,
     OpenAPI_list_t *versions,
     OpenAPI_uri_scheme_e scheme,
     OpenAPI_nf_service_status_e nf_service_status,
@@ -77,6 +94,7 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     char *inter_plmn_fqdn,
     OpenAPI_list_t *ip_end_points,
     char *api_prefix,
+    OpenAPI_list_t *callback_uri_prefix_list,
     OpenAPI_list_t *default_notification_subscriptions,
     OpenAPI_list_t *allowed_plmns,
     OpenAPI_list_t *allowed_snpns,
@@ -85,6 +103,9 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     OpenAPI_list_t *allowed_nssais,
     OpenAPI_list_t* allowed_operations_per_nf_type,
     OpenAPI_list_t* allowed_operations_per_nf_instance,
+    bool is_allowed_operations_per_nf_instance_overrides,
+    int allowed_operations_per_nf_instance_overrides,
+    OpenAPI_list_t* allowed_scopes_rule_set,
     bool is_priority,
     int priority,
     bool is_capacity,
@@ -101,7 +122,16 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     OpenAPI_list_t* supported_vendor_specific_features,
     bool is_oauth2_required,
     int oauth2_required,
-    OpenAPI_plmn_oauth2_t *per_plmn_oauth2_req_list
+    OpenAPI_plmn_oauth2_t *per_plmn_oauth2_req_list,
+    OpenAPI_selection_conditions_t *selection_conditions,
+    bool is_canary_release,
+    int canary_release,
+    bool is_exclusive_canary_release_selection,
+    int exclusive_canary_release_selection,
+    char *shared_service_data_id,
+    char *shutdown_time,
+    bool is_canary_precedence_over_preferred,
+    int canary_precedence_over_preferred
 );
 void OpenAPI_nf_service_free(OpenAPI_nf_service_t *nf_service);
 OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON);

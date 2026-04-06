@@ -1,7 +1,7 @@
 /*
  * ue_context_in_amf_data.h
  *
- * 
+ * Contains UE Context In AMF Data
  */
 
 #ifndef _OpenAPI_ue_context_in_amf_data_H_
@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_context_in_amf_data_s OpenAPI_ue_context_in_amf_data_t;
+#include "amf_info.h"
 #include "eps_interworking_info.h"
-#include "nudm_amf_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_context_in_amf_data_s OpenAPI_ue_context_in_amf_data_t;
-typedef struct OpenAPI_ue_context_in_amf_data_s {
+struct OpenAPI_ue_context_in_amf_data_s {
     struct OpenAPI_eps_interworking_info_s *eps_interworking_info;
     OpenAPI_list_t *amf_info;
-} OpenAPI_ue_context_in_amf_data_t;
+};
 
 OpenAPI_ue_context_in_amf_data_t *OpenAPI_ue_context_in_amf_data_create(
     OpenAPI_eps_interworking_info_t *eps_interworking_info,

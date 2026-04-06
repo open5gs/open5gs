@@ -12,13 +12,13 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_traffic_information_s OpenAPI_traffic_information_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_traffic_information_s OpenAPI_traffic_information_t;
-typedef struct OpenAPI_traffic_information_s {
+struct OpenAPI_traffic_information_s {
     char *uplink_rate;
     char *downlink_rate;
     bool is_uplink_volume;
@@ -27,7 +27,7 @@ typedef struct OpenAPI_traffic_information_s {
     long downlink_volume;
     bool is_total_volume;
     long total_volume;
-} OpenAPI_traffic_information_t;
+};
 
 OpenAPI_traffic_information_t *OpenAPI_traffic_information_create(
     char *uplink_rate,

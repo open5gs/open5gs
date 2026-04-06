@@ -6,7 +6,11 @@
 
 OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_notification_create(
     OpenAPI_n1_n2_message_transfer_cause_e cause,
-    char *n1n2_msg_data_uri
+    char *n1n2_msg_data_uri,
+    bool is_retry_after,
+    int retry_after,
+    bool is_max_waiting_time,
+    int max_waiting_time
 )
 {
     OpenAPI_n1_n2_msg_txfr_failure_notification_t *n1_n2_msg_txfr_failure_notification_local_var = ogs_malloc(sizeof(OpenAPI_n1_n2_msg_txfr_failure_notification_t));
@@ -14,6 +18,10 @@ OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_no
 
     n1_n2_msg_txfr_failure_notification_local_var->cause = cause;
     n1_n2_msg_txfr_failure_notification_local_var->n1n2_msg_data_uri = n1n2_msg_data_uri;
+    n1_n2_msg_txfr_failure_notification_local_var->is_retry_after = is_retry_after;
+    n1_n2_msg_txfr_failure_notification_local_var->retry_after = retry_after;
+    n1_n2_msg_txfr_failure_notification_local_var->is_max_waiting_time = is_max_waiting_time;
+    n1_n2_msg_txfr_failure_notification_local_var->max_waiting_time = max_waiting_time;
 
     return n1_n2_msg_txfr_failure_notification_local_var;
 }
@@ -61,6 +69,20 @@ cJSON *OpenAPI_n1_n2_msg_txfr_failure_notification_convertToJSON(OpenAPI_n1_n2_m
         goto end;
     }
 
+    if (n1_n2_msg_txfr_failure_notification->is_retry_after) {
+    if (cJSON_AddNumberToObject(item, "retryAfter", n1_n2_msg_txfr_failure_notification->retry_after) == NULL) {
+        ogs_error("OpenAPI_n1_n2_msg_txfr_failure_notification_convertToJSON() failed [retry_after]");
+        goto end;
+    }
+    }
+
+    if (n1_n2_msg_txfr_failure_notification->is_max_waiting_time) {
+    if (cJSON_AddNumberToObject(item, "maxWaitingTime", n1_n2_msg_txfr_failure_notification->max_waiting_time) == NULL) {
+        ogs_error("OpenAPI_n1_n2_msg_txfr_failure_notification_convertToJSON() failed [max_waiting_time]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -72,6 +94,8 @@ OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_no
     cJSON *cause = NULL;
     OpenAPI_n1_n2_message_transfer_cause_e causeVariable = 0;
     cJSON *n1n2_msg_data_uri = NULL;
+    cJSON *retry_after = NULL;
+    cJSON *max_waiting_time = NULL;
     cause = cJSON_GetObjectItemCaseSensitive(n1_n2_msg_txfr_failure_notificationJSON, "cause");
     if (!cause) {
         ogs_error("OpenAPI_n1_n2_msg_txfr_failure_notification_parseFromJSON() failed [cause]");
@@ -93,9 +117,29 @@ OpenAPI_n1_n2_msg_txfr_failure_notification_t *OpenAPI_n1_n2_msg_txfr_failure_no
         goto end;
     }
 
+    retry_after = cJSON_GetObjectItemCaseSensitive(n1_n2_msg_txfr_failure_notificationJSON, "retryAfter");
+    if (retry_after) {
+    if (!cJSON_IsNumber(retry_after)) {
+        ogs_error("OpenAPI_n1_n2_msg_txfr_failure_notification_parseFromJSON() failed [retry_after]");
+        goto end;
+    }
+    }
+
+    max_waiting_time = cJSON_GetObjectItemCaseSensitive(n1_n2_msg_txfr_failure_notificationJSON, "maxWaitingTime");
+    if (max_waiting_time) {
+    if (!cJSON_IsNumber(max_waiting_time)) {
+        ogs_error("OpenAPI_n1_n2_msg_txfr_failure_notification_parseFromJSON() failed [max_waiting_time]");
+        goto end;
+    }
+    }
+
     n1_n2_msg_txfr_failure_notification_local_var = OpenAPI_n1_n2_msg_txfr_failure_notification_create (
         causeVariable,
-        ogs_strdup(n1n2_msg_data_uri->valuestring)
+        ogs_strdup(n1n2_msg_data_uri->valuestring),
+        retry_after ? true : false,
+        retry_after ? retry_after->valuedouble : 0,
+        max_waiting_time ? true : false,
+        max_waiting_time ? max_waiting_time->valuedouble : 0
     );
 
     return n1_n2_msg_txfr_failure_notification_local_var;

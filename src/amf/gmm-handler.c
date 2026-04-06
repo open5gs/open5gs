@@ -927,14 +927,14 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
         amf_sess_xact_count(amf_ue) == xact_count) {
         if (UDM_SDM_SUBSCRIBED(amf_ue)) {
             r = amf_ue_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                    OpenAPI_service_name_nudm_sdm, NULL,
                     amf_nudm_sdm_build_subscription_delete,
                     amf_ue, state, NULL);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
         } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
             r = amf_ue_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                    OpenAPI_service_name_npcf_am_policy_control,
                     NULL,
                     amf_npcf_am_policy_control_build_delete,
                     amf_ue, state, NULL);
@@ -992,7 +992,7 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
             authentication_response_parameter->length);
 
     r = amf_ue_sbi_discover_and_send(
-            OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
+            OpenAPI_service_name_nausf_auth, NULL,
             amf_nausf_auth_build_authenticate_confirmation, amf_ue, 0, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);
@@ -1431,12 +1431,12 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
 
                 amf_nnssf_nsselection_param_t param;
 
-                ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+                OpenAPI_service_name_e service_name = OpenAPI_service_name_NULL;
                 OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
                 OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
 
-                service_type = OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION;
-                target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
+                service_name = OpenAPI_service_name_nsmf_pdusession;
+                target_nf_type = ogs_sbi_service_name_to_nf_type(service_name);
                 ogs_assert(target_nf_type);
                 requester_nf_type = NF_INSTANCE_TYPE(
                         ogs_sbi_self()->nf_instance);
@@ -1485,7 +1485,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                  * Check Visited SMF Instance
                  *******************************************/
                 v_smf_instance = OGS_SBI_GET_NF_INSTANCE(
-                        sess->sbi.service_type_array[service_type]);
+                        sess->sbi.service_name_array[service_name]);
                 if (!v_smf_instance) {
                     v_smf_instance =
                         ogs_sbi_nf_instance_find_by_discovery_param(
@@ -1496,7 +1496,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                         ogs_info("V-SMF Instance [%s](LIST)",
                                 v_smf_instance->id);
                         OGS_SBI_SETUP_NF_INSTANCE(
-                                sess->sbi.service_type_array[service_type],
+                                sess->sbi.service_name_array[service_name],
                                 v_smf_instance);
                     } else
                         ogs_info("No V-SMF Instance");
@@ -1602,7 +1602,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                             v_smf_instance,
                             h_smf_instance);
                     r = amf_sess_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NNSSF_NSSELECTION, NULL,
+                            OpenAPI_service_name_nnssf_nsselection, NULL,
                             amf_nnssf_nsselection_build_get,
                             ran_ue, sess, state, &param);
                     ogs_expect(r == OGS_OK);
@@ -1619,7 +1619,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                             v_smf_instance,
                             h_smf_instance);
                     r = amf_sess_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION,
+                            OpenAPI_service_name_nsmf_pdusession,
                             v_discovery_option,
                             amf_nsmf_pdusession_build_create_sm_context,
                             ran_ue, sess, state, NULL);
@@ -1639,7 +1639,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                 param.cause = OpenAPI_cause_REL_DUE_TO_DUPLICATE_SESSION_ID;
 
                 r = amf_sess_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                        OpenAPI_service_name_nsmf_pdusession, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
                         ran_ue, sess,
                         AMF_UPDATE_SM_CONTEXT_DUPLICATED_PDU_SESSION_ID,
@@ -1670,7 +1670,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                 param.ue_timezone = true;
 
                 r = amf_sess_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                        OpenAPI_service_name_nsmf_pdusession, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
                         ran_ue, sess,
                         AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param);
@@ -1683,7 +1683,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                 param.n1smbuf = sess->payload_container;
 
                 r = amf_sess_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                        OpenAPI_service_name_nsmf_pdusession, NULL,
                         amf_nsmf_pdusession_build_update_sm_context,
                         ran_ue, sess, AMF_UPDATE_SM_CONTEXT_MODIFIED, &param);
                 ogs_expect(r == OGS_OK);

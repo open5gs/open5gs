@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_port_management_container_s OpenAPI_port_management_container_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_port_management_container_s OpenAPI_port_management_container_t;
-typedef struct OpenAPI_port_management_container_s {
+struct OpenAPI_port_management_container_s {
     char *port_man_cont;
     int port_num;
-} OpenAPI_port_management_container_t;
+};
 
 OpenAPI_port_management_container_t *OpenAPI_port_management_container_create(
     char *port_man_cont,

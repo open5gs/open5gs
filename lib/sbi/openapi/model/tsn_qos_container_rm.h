@@ -12,31 +12,41 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_tsn_qos_container_rm_s OpenAPI_tsn_qos_container_rm_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_tsn_qos_container_rm_s OpenAPI_tsn_qos_container_rm_t;
-typedef struct OpenAPI_tsn_qos_container_rm_s {
+struct OpenAPI_tsn_qos_container_rm_s {
     bool is_max_tsc_burst_size_null;
     bool is_max_tsc_burst_size;
     int max_tsc_burst_size;
+    bool is_max_tsc_burst_size_small_null;
+    bool is_max_tsc_burst_size_small;
+    int max_tsc_burst_size_small;
     bool is_tsc_pack_delay_null;
     bool is_tsc_pack_delay;
     int tsc_pack_delay;
+    bool is_max_per_null;
+    char *max_per;
     bool is_tsc_prio_level_null;
     bool is_tsc_prio_level;
     int tsc_prio_level;
-} OpenAPI_tsn_qos_container_rm_t;
+};
 
 OpenAPI_tsn_qos_container_rm_t *OpenAPI_tsn_qos_container_rm_create(
     bool is_max_tsc_burst_size_null,
     bool is_max_tsc_burst_size,
     int max_tsc_burst_size,
+    bool is_max_tsc_burst_size_small_null,
+    bool is_max_tsc_burst_size_small,
+    int max_tsc_burst_size_small,
     bool is_tsc_pack_delay_null,
     bool is_tsc_pack_delay,
     int tsc_pack_delay,
+    bool is_max_per_null,
+    char *max_per,
     bool is_tsc_prio_level_null,
     bool is_tsc_prio_level,
     int tsc_prio_level

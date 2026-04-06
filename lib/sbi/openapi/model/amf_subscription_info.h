@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_amf_subscription_info_s OpenAPI_amf_subscription_info_t;
 #include "context_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_amf_subscription_info_s OpenAPI_amf_subscription_info_t;
-typedef struct OpenAPI_amf_subscription_info_s {
+struct OpenAPI_amf_subscription_info_s {
     char *amf_instance_id;
     char *subscription_id;
     char *subs_change_notify_correlation_id;
     struct OpenAPI_context_info_s *context_info;
-} OpenAPI_amf_subscription_info_t;
+};
 
 OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_create(
     char *amf_instance_id,

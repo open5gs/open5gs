@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_user_data_congestion_info_s OpenAPI_user_data_congestion_info_t;
 #include "congestion_info.h"
 #include "network_area_info.h"
 #include "snssai.h"
@@ -20,12 +21,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_user_data_congestion_info_s OpenAPI_user_data_congestion_info_t;
-typedef struct OpenAPI_user_data_congestion_info_s {
+struct OpenAPI_user_data_congestion_info_s {
     struct OpenAPI_network_area_info_s *network_area;
     struct OpenAPI_congestion_info_s *congestion_info;
     struct OpenAPI_snssai_s *snssai;
-} OpenAPI_user_data_congestion_info_t;
+};
 
 OpenAPI_user_data_congestion_info_t *OpenAPI_user_data_congestion_info_create(
     OpenAPI_network_area_info_t *network_area,

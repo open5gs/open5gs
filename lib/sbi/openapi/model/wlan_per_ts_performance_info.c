@@ -11,6 +11,7 @@ OpenAPI_wlan_per_ts_performance_info_t *OpenAPI_wlan_per_ts_performance_info_cre
     int rssi,
     bool is_rtt,
     int rtt,
+    bool is_traffic_info_null,
     OpenAPI_traffic_information_t *traffic_info,
     bool is_number_of_ues,
     int number_of_ues,
@@ -27,6 +28,7 @@ OpenAPI_wlan_per_ts_performance_info_t *OpenAPI_wlan_per_ts_performance_info_cre
     wlan_per_ts_performance_info_local_var->rssi = rssi;
     wlan_per_ts_performance_info_local_var->is_rtt = is_rtt;
     wlan_per_ts_performance_info_local_var->rtt = rtt;
+    wlan_per_ts_performance_info_local_var->is_traffic_info_null = is_traffic_info_null;
     wlan_per_ts_performance_info_local_var->traffic_info = traffic_info;
     wlan_per_ts_performance_info_local_var->is_number_of_ues = is_number_of_ues;
     wlan_per_ts_performance_info_local_var->number_of_ues = number_of_ues;
@@ -104,6 +106,11 @@ cJSON *OpenAPI_wlan_per_ts_performance_info_convertToJSON(OpenAPI_wlan_per_ts_pe
         ogs_error("OpenAPI_wlan_per_ts_performance_info_convertToJSON() failed [traffic_info]");
         goto end;
     }
+    } else if (wlan_per_ts_performance_info->is_traffic_info_null) {
+        if (cJSON_AddNullToObject(item, "trafficInfo") == NULL) {
+            ogs_error("OpenAPI_wlan_per_ts_performance_info_convertToJSON() failed [traffic_info]");
+            goto end;
+        }
     }
 
     if (wlan_per_ts_performance_info->is_number_of_ues) {
@@ -174,10 +181,12 @@ OpenAPI_wlan_per_ts_performance_info_t *OpenAPI_wlan_per_ts_performance_info_par
 
     traffic_info = cJSON_GetObjectItemCaseSensitive(wlan_per_ts_performance_infoJSON, "trafficInfo");
     if (traffic_info) {
+    if (!cJSON_IsNull(traffic_info)) {
     traffic_info_local_nonprim = OpenAPI_traffic_information_parseFromJSON(traffic_info);
     if (!traffic_info_local_nonprim) {
         ogs_error("OpenAPI_traffic_information_parseFromJSON failed [traffic_info]");
         goto end;
+    }
     }
     }
 
@@ -205,6 +214,7 @@ OpenAPI_wlan_per_ts_performance_info_t *OpenAPI_wlan_per_ts_performance_info_par
         rssi ? rssi->valuedouble : 0,
         rtt ? true : false,
         rtt ? rtt->valuedouble : 0,
+        traffic_info && cJSON_IsNull(traffic_info) ? true : false,
         traffic_info ? traffic_info_local_nonprim : NULL,
         number_of_ues ? true : false,
         number_of_ues ? number_of_ues->valuedouble : 0,

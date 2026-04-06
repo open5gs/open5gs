@@ -48,6 +48,7 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
     ogs_sbi_subscription_data_t *subscription_data = NULL;
     ogs_sbi_response_t *response = NULL;
     ogs_sbi_message_t message;
+    int service_name_id = OpenAPI_service_name_NULL;
 
     udr_sm_debug(e);
 
@@ -95,8 +96,10 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
             break;
         }
 
-        SWITCH(message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message.h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nnrf_nfm:
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY)
@@ -127,7 +130,7 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
             END
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NUDR_DR)
+        case OpenAPI_service_name_nudr_dr:
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA)
                 SWITCH(message.h.resource.component[2])
@@ -185,14 +188,14 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("Invalid API name [%s]", message.h.service.name);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                     "Invalid API name", message.h.resource.component[0],
                     NULL));
-        END
+        }
 
         /* In lib/sbi/server.c, notify_completed() releases 'request' buffer. */
         ogs_sbi_message_free(&message);
@@ -218,8 +221,10 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
             break;
         }
 
-        SWITCH(message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message.h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nnrf_nfm:
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
@@ -312,10 +317,10 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("Invalid API name [%s]", message.h.service.name);
             ogs_assert_if_reached();
-        END
+        }
 
         ogs_sbi_message_free(&message);
         ogs_sbi_response_free(response);

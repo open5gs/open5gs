@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_bsf_event_notification_s OpenAPI_bsf_event_notification_t;
 #include "bsf_event.h"
 #include "pcf_for_pdu_session_info.h"
 #include "pcf_for_ue_info.h"
@@ -21,13 +22,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_bsf_event_notification_s OpenAPI_bsf_event_notification_t;
-typedef struct OpenAPI_bsf_event_notification_s {
+struct OpenAPI_bsf_event_notification_s {
     OpenAPI_bsf_event_e event;
     struct OpenAPI_pcf_for_ue_info_s *pcf_for_ue_info;
     OpenAPI_list_t *pcf_for_pdu_sess_infos;
     OpenAPI_list_t *match_snssai_dnns;
-} OpenAPI_bsf_event_notification_t;
+};
 
 OpenAPI_bsf_event_notification_t *OpenAPI_bsf_event_notification_create(
     OpenAPI_bsf_event_e event,

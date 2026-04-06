@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_tai_s OpenAPI_tai_t;
 #include "plmn_id.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_tai_s OpenAPI_tai_t;
-typedef struct OpenAPI_tai_s {
+struct OpenAPI_tai_s {
     struct OpenAPI_plmn_id_s *plmn_id;
     char *tac;
     char *nid;
-} OpenAPI_tai_t;
+};
 
 OpenAPI_tai_t *OpenAPI_tai_create(
     OpenAPI_plmn_id_t *plmn_id,

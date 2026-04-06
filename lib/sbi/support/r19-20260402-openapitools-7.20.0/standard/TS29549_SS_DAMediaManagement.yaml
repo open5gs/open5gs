@@ -1,0 +1,326 @@
+openapi: 3.0.0
+
+info:
+  title: SS_DAMediaManagement
+  version: 1.0.1
+  description: |
+    SS_DAMediaManagement service to manage digital asset media on a DA server.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.6.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-da-medm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /media:
+    post:
+      description: Upload a new Individual DA media information.
+      operationId: UploadDAMedia
+      tags:
+        - DA media information (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DigitalAssetMedia'
+      responses:
+        '201':
+          description: Digital Asset Media resource is created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalAssetMedia'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /media/{daId}:
+    get:
+      description: Download an individual SEAL DA media information.
+      operationId: DownloadDAMedia
+      tags:
+        - Individual DA Media(Document)
+      parameters:
+        - name: daId
+          in: path
+          description: String identifying an individual DA media identity.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The DA media information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalAssetMedia'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      description: Updates an individual SEAL DA Media.
+      operationId: UpdateDAMedia
+      tags:
+        - Individual SEAL DA Media(Document)
+      parameters:
+        - name: daId
+          in: path
+          description: Identifier of an individual DA media resource.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: DA media information to be updated in DA server.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DigitalAssetMedia'
+      responses:
+        '200':
+          description: The DA Media is updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalAssetMedia'
+        '204':
+          description: No Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      description: Modify an existing DA Media.
+      operationId: ModifyDAMedia
+      tags:
+        - Individual SEAL DA Media(Document)
+      parameters:
+        - name: daId
+          in: path
+          description: Identifier of an individual SEAL DA Media.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/DigitalAssetMediaPatch'
+      responses:
+        '200':
+          description: >
+            The individual DA Media is modified successfully and
+            a representation of the updated DA Media is returned
+            in the request body.
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalAssetMedia'
+        '204':
+          description: >
+            No Content. The individual SEAL DA Media is
+            modified successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      description: Deletes an individual SEAL DA Media.
+      operationId: DeleteDAMedia
+      tags:
+        - Individual DA Media(Document)
+      parameters:
+        - name: daId
+          in: path
+          description: Identifier of an individual DA media information resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The individual DA Media matching daId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    DigitalAssetMedia:
+      description: Represents the DA Media information.
+      type: object
+      properties:
+        daId:
+          $ref: '#/components/schemas/DaId'
+        daMediaInfo:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/DaMediaInfo'
+          description: >
+            Represents the Information related to digital asset media.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        valServerId:
+          type: string
+
+    DigitalAssetMediaPatch:
+      description: Represents the DA Media information patch.
+      type: object
+      properties:
+        daMediaInfo:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/DaMediaInfo'
+          description: >
+            Represents the Information related to digital asset media.
+        valServerId:
+          type: string
+
+    DaMediaInfo:
+      description: Represents the DA Media information patch.
+      type: object
+      properties:
+        uri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        object:
+          type: string
+      anyOf:
+        - required: [uri]
+        - required: [object]
+
+# Simple data types and Enumerations
+
+    DaId:
+      description: Represents the identity of the digital asset identifier.
+      type: string

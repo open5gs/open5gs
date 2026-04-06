@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_requested_qos_s OpenAPI_requested_qos_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_requested_qos_s OpenAPI_requested_qos_t;
-typedef struct OpenAPI_requested_qos_s {
+struct OpenAPI_requested_qos_s {
     int _5qi;
     char *gbr_ul;
     char *gbr_dl;
-} OpenAPI_requested_qos_t;
+};
 
 OpenAPI_requested_qos_t *OpenAPI_requested_qos_create(
     int _5qi,

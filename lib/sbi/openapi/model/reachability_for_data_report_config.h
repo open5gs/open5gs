@@ -1,7 +1,7 @@
 /*
  * reachability_for_data_report_config.h
  *
- * 
+ * Indicates the configuration for report of reachability status for data. 
  */
 
 #ifndef _OpenAPI_reachability_for_data_report_config_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "reachability_for_data_report_config_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_reachability_for_data_report_config_s OpenAPI_reachability_for_data_report_config_t;
-typedef struct OpenAPI_reachability_for_data_report_config_s {
-} OpenAPI_reachability_for_data_report_config_t;
+typedef enum { OpenAPI_reachability_for_data_report_config_NULL = 0, OpenAPI_reachability_for_data_report_config_DIRECT_REPORT, OpenAPI_reachability_for_data_report_config_INDIRECT_REPORT } OpenAPI_reachability_for_data_report_config_e;
 
-OpenAPI_reachability_for_data_report_config_t *OpenAPI_reachability_for_data_report_config_create(
-);
-void OpenAPI_reachability_for_data_report_config_free(OpenAPI_reachability_for_data_report_config_t *reachability_for_data_report_config);
-OpenAPI_reachability_for_data_report_config_t *OpenAPI_reachability_for_data_report_config_parseFromJSON(cJSON *reachability_for_data_report_configJSON);
-cJSON *OpenAPI_reachability_for_data_report_config_convertToJSON(OpenAPI_reachability_for_data_report_config_t *reachability_for_data_report_config);
-OpenAPI_reachability_for_data_report_config_t *OpenAPI_reachability_for_data_report_config_copy(OpenAPI_reachability_for_data_report_config_t *dst, OpenAPI_reachability_for_data_report_config_t *src);
+char* OpenAPI_reachability_for_data_report_config_ToString(OpenAPI_reachability_for_data_report_config_e reachability_for_data_report_config);
+
+OpenAPI_reachability_for_data_report_config_e OpenAPI_reachability_for_data_report_config_FromString(char* reachability_for_data_report_config);
 
 #ifdef __cplusplus
 }

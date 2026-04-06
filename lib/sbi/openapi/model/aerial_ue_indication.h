@@ -1,7 +1,7 @@
 /*
  * aerial_ue_indication.h
  *
- * 
+ * Indicates the Aerial service for the UE is allowed or not allowed, possible values are - AERIAL_UE_ALLOWED: Aerial service for the UE is allowed. - AERIAL_UE_NOT_ALLOWED: Aerial service for the UE is not allowed. 
  */
 
 #ifndef _OpenAPI_aerial_ue_indication_H_

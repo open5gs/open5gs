@@ -58,7 +58,8 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
     }
 
     memset(&header, 0, sizeof(header));
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
+    header.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nnrf_nfm);
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_NF_INSTANCES;
     header.resource.component[1] = nf_instance->id;
@@ -76,6 +77,7 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
                 subscription_data->subscr_cond.service_name,
                 NULL,
                 subscription_data->requester_features);
+
         if (!NotificationData->nf_profile) {
             ogs_error("No nf_profile");
             goto end;

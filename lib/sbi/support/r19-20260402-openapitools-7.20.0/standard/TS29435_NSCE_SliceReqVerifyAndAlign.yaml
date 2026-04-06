@@ -1,0 +1,412 @@
+openapi: 3.0.0
+
+info:
+  title: NSCE Server Network Slice Requirements Verification and Alignment Service
+  version: 1.0.0
+  description: |
+    NSCE Server Network Slice Requirements Verification and Alignment Service.  
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.435 V18.1.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Network Slice Capability Enablement (NSCE) Server Service(s); Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.435/
+
+servers:
+  - url: '{apiRoot}/nsce-srva/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Request the creation of a Network Slice Requirements Verification and Alignment Subscription.
+      operationId: CreateSliceReqVerAlignSubsc
+      tags:
+        - Network Slice Requirements Verification and Alignment Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SliceReqVerAlignSubsc'
+      responses:
+        '201':
+          description: >
+            Created. The Network Slice Requirements Verification and Alignment Subscription
+            is successfully created and a representation of the created Individual Network
+            Slice Requirements Verification and Alignment Subscription resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceReqVerAlignSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Network Slice Requirements Verification
+                and Alignment Subscription resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        SliceReqVerAlignNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SliceReqVerAlignNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Network Slice Requirements Verification and Alignment
+                    Notification is successfully received and acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of the Individual Network Slice Requirements Verification
+          and Alignment Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Network Slice Requirements Verification and Alignment Subscription resource.
+      operationId: GetIndSliceReqVerAlignSubsc
+      tags:
+        - Individual Network Slice Requirements Verification and Alignment Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Network Slice Requirements Verification and Alignment
+            Subscription resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceReqVerAlignSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Network Slice Requirements Verification and Alignment Subscription resource.
+      operationId: UpdateIndSliceReqVerAlignSubsc
+      tags:
+        - Individual Network Slice Requirements Verification and Alignment Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SliceReqVerAlignSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Network Slice Requirements Verification and Alignment Subscription
+            resource is successfully updated and a representation of the updated resource shall
+            be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceReqVerAlignSubsc'
+        '204':
+          description: >
+            No Content. The Individual Network Slice Requirements Verification and Alignment
+            Subscription resource is successfully updated and no content is returned in the
+            response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Network Slice Requirements Verification and Alignment Subscription resource.
+      operationId: ModifyIndSliceReqVerAlignSubsc
+      tags:
+        - Individual Network Slice Requirements Verification and Alignment Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/SliceReqVerAlignSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Network Slice Requirements Verification and Alignment Subscription
+            resource is successfully modified and a representation of the updated resource shall
+            be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceReqVerAlignSubsc'
+        '204':
+          description: >
+            No Content. The Individual Network Slice Requirements Verification and Alignment
+            Subscription resource is successfully modified and no content is returned in the
+            response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Network Slice Requirements Verification and Alignment Subscription resource.
+      operationId: DeleteIndSliceReqVerAlignSubsc
+      tags:
+        - Individual Network Slice Requirements Verification and Alignment Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Network Slice Requirements Verification and Alignment
+            Subscription resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    SliceReqVerAlignSubsc:
+      type: object
+      description: >
+        Represents a Network Slice Requirements Verification and Alignment subscription.
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        valServId:
+          type: string
+          description: >
+            Contains the identifier of the VAL Service to which the requirement request is related.
+        valUeIds:
+          type: array
+          items:
+            type: string
+          description: >
+            Contains the list of the identifier(s) of the VAL UE(s) to which the subscription
+            is related.
+          minItems: 1
+        sliceReq:
+          type: array
+          items:
+            $ref: 'TS28541_SliceNrm.yaml#/components/schemas/ServiceProfile'
+          description: >
+            Contains the list of the slice requirements which need to be verified and aligned.
+          minItems: 1
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - notifUri
+        - valServId
+        - sliceReq
+        - netSliceId
+
+    SliceReqVerAlignSubscPatch:
+      type: object
+      description: >
+        Represents the requested modifications to a Network Slice Requirements Verification
+        and Alignment subscription.
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        valUeIds:
+          type: array
+          items:
+            type: string
+          description: >
+            Contains the updated list of the identifier(s) of the VAL UE(s) to which the
+            subscription is related.
+          minItems: 1
+        sliceReq:
+          type: array
+          items:
+            $ref: 'TS28541_SliceNrm.yaml#/components/schemas/ServiceProfile'
+          minItems: 1
+          description: >
+            Contains the updated list of the slice requirements which need to be verified and
+            aligned.
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+
+    SliceReqVerAlignNotif:
+      type: object
+      description: >
+        Represents a Network Slice Requirements Verification and Alignment notification.
+      properties:
+        subscriptionId:
+          type: string
+          description: >
+            Contains the identifier of the subscription to which the Network Slice Requirements
+            Verification and Alignment Notification is related.
+        sliceReqInfo:
+          type: array
+          items:
+            $ref: 'TS28541_SliceNrm.yaml#/components/schemas/ServiceProfile'
+          minItems: 1
+          description: >
+            Contains the information of the updated slice requirements (i.e., parameters and
+            characteristics).
+      required:
+        - subscriptionId
+        - sliceReqInfo
+
+
+#
+# ENUMERATIONS
+#

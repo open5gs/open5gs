@@ -1,7 +1,7 @@
 /*
  * n32_purpose.h
  *
- * 
+ * Usage purpose of establishing N32 connectivity
  */
 
 #ifndef _OpenAPI_n32_purpose_H_
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_n32_purpose_NULL = 0, OpenAPI_n32_purpose_ROAMING, OpenAPI_n32_purpose_INTER_PLMN_MOBILITY, OpenAPI_n32_purpose_SMS_INTERCONNECT, OpenAPI_n32_purpose_ROAMING_TEST, OpenAPI_n32_purpose_INTER_PLMN_MOBILITY_TEST, OpenAPI_n32_purpose_SMS_INTERCONNECT_TEST, OpenAPI_n32_purpose_SNPN_INTERCONNECT, OpenAPI_n32_purpose_SNPN_INTERCONNECT_TEST, OpenAPI_n32_purpose_DISASTER_ROAMING, OpenAPI_n32_purpose_DISASTER_ROAMING_TEST } OpenAPI_n32_purpose_e;
+typedef enum { OpenAPI_n32_purpose_NULL = 0, OpenAPI_n32_purpose_ROAMING, OpenAPI_n32_purpose_INTER_PLMN_MOBILITY, OpenAPI_n32_purpose_SMS_INTERCONNECT, OpenAPI_n32_purpose_ROAMING_TEST, OpenAPI_n32_purpose_INTER_PLMN_MOBILITY_TEST, OpenAPI_n32_purpose_SMS_INTERCONNECT_TEST, OpenAPI_n32_purpose_SNPN_INTERCONNECT, OpenAPI_n32_purpose_SNPN_INTERCONNECT_TEST, OpenAPI_n32_purpose_DISASTER_ROAMING, OpenAPI_n32_purpose_DISASTER_ROAMING_TEST, OpenAPI_n32_purpose_DATA_ANALYTICS_EXCHANGE, OpenAPI_n32_purpose_DATA_ANALYTICS_EXCHANGE_TEST } OpenAPI_n32_purpose_e;
 
 char* OpenAPI_n32_purpose_ToString(OpenAPI_n32_purpose_e n32_purpose);
 

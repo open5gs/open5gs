@@ -1,0 +1,798 @@
+openapi: 3.0.0
+
+info:
+  title: Nmbstf-distsession
+  version: 1.2.1
+  description: |
+    MBSTF Distribution Session Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.581 V19.3.0; 5G System; MBSDistribution Service.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.581/
+
+servers:
+  - url: '{apiRoot}/nmbstf-distsession/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nmbstf-distsession
+
+paths:
+  /dist-sessions:
+    post:
+      summary:  Create
+      tags:
+        - MBS distribution sessions collection
+      operationId: Create
+      requestBody:
+        description: >
+          Representation of the MBS distribution session to be created in the MBSTF
+          Creates an individual MBS distribution session resource in the MBSTF.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReqData'
+      responses:
+        '201':
+          description: >
+            Successful creation of an MBS session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRspData'
+          headers:
+            Location:
+              description: >
+                'Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/nmbstf-distsession/<apiVersion>/dist-sessions/{distSessionRef}'
+              required: true
+              schema:
+                type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /dist-sessions/{distSessionRef}:
+    patch:
+      summary:  Updates an individual MBS distribution session resource in the MBSTF.
+      tags:
+        - Individual MBS distribution session
+      operationId: Update
+      parameters:
+        - name: distSessionRef
+          in: path
+          required: true
+          description: Unique ID of the MBS distribution session
+          schema:
+            type: string
+      requestBody:
+        description: Data within the Update Request
+        required: true
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+      responses:
+        '204':
+          description: >
+            Successful modification of the MBS distribution session without content in the response. 
+        '200':
+          description: >
+            Successful response containing the updated representation of Distribution Session.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistSession'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary:  Deletes an individual MBS distribution session resource in the MBSTF. 
+      tags:
+        - Individual MBS distribution session
+      operationId: Destroy
+      parameters:
+        - name: distSessionRef
+          in: path
+          required: true
+          description: Unique ID of the MBS distribution session
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            Successful release of the MBS distribution session without content in the response.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    get:
+      summary:  Retrieves an individual MBS distribution session resource in the MBSTF.
+      tags:
+        - Individual MBS distribution session
+      operationId: Retrieve
+      parameters:
+        - name: distSessionRef
+          in: path
+          required: true
+          description: Unique ID of the MBS distribution session
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful retrieval of MBS distribution session parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistSession'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /dist-sessions/{distSessionRef}/subscriptions:
+    post:
+      summary:  StatusSubscribe creating a subscription
+      tags:
+        - Subscriptions collection for MBS distribution session
+      operationId: StatusSubscribe
+      parameters:
+        - name: distSessionRef
+          in: path
+          required: true
+          description: Unique ID of the MBS distribution session
+          schema:
+            type: string
+      requestBody:
+        description: Data within the StatusSubscribe Request
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusSubscribeReqData'
+      responses:
+        '201':
+          description: Data within a successful StatusSubscribe Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusSubscribeRspData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+      callbacks:
+        statusNotification:
+          '{$request.body#/subscription/notifyUri}':
+            post:
+              parameters:
+                - name: Content-Encoding
+                  in: header
+                  description: Content-Encoding, described in IETF RFC 9110
+                  schema:
+                    type: string
+              requestBody:
+                description: Notification Payload
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/StatusNotifyReqData'
+              responses:
+                '204':
+                  description: Expected response to a successful callback processing
+                  headers:
+                    Accept-Encoding:
+                      description: Accept-Encoding, described in IETF RFC 9110
+                      schema:
+                        type: string
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '501':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /dist-sessions/{distSessionRef}/subscriptions/{subscriptionId}:
+    delete:
+      summary:  StatusUnSubscribe to unsubscribe from the Status Subscription 
+      tags:
+        - Individual Subscription for an MBS session
+      operationId: StatusUnSubscribe
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Unique ID of the subscription
+          schema:
+            type: string
+        - name: distSessionRef
+          in: path
+          required: true
+          description: Unique ID of the MBS distribution session
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successful deletion of the subscription
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary:  StatusSubscribe to modify (update or renew) an individual subscription
+      tags:
+        - Individual Subscription for an MBS distribution session
+      operationId: StatusSubscribeMod
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Unique ID of the individual subscription to be modified
+          schema:
+            type: string
+        - name: distSessionRef
+          in: path
+          required: true
+          description: Unique ID of the MBS distribution session
+          schema:
+            type: string
+      requestBody:
+        description: Data to be modified in the DistSessionSubscription
+        required: true
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+      responses:
+        '200':
+          description: Successful modification of the individual Status Subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistSessionSubscription'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nmbstf-distsession: Access to the nmbstf-distsession API
+
+  schemas:
+#
+# STRUCTURED DATA TYPES
+#
+    CreateReqData:
+      description: Data within Create Request
+      type: object
+      properties:
+        distSession:
+          $ref: '#/components/schemas/DistSession'
+      required:
+        - distSession
+
+    CreateRspData:
+      description: Data within Create Response
+      type: object
+      properties:
+        distSession:
+          $ref: '#/components/schemas/DistSession'
+      required:
+        - distSession
+
+    DistSession:
+      description: Mbs Distribution Session Information
+      type: object
+      properties:
+        distSessionId:
+          type: string
+        distSessionState:
+          $ref: '#/components/schemas/DistSessionState'
+        mbUpfTunAddr:
+          writeOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TunnelAddress'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/TunnelAddress'
+        mbmsGwTunAddr: 
+          writeOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TunnelAddress'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/TunnelAddress'
+        upTrafficFlowInfo:
+          writeOnly: true
+          $ref: '#/components/schemas/UpTrafficFlowInfo'
+#          allOf:
+#            - $ref: '#/components/schemas/UpTrafficFlowInfo'
+        mbr:
+          writeOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxDelay:
+          writeOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudget'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudget'
+        objDistributionData:
+          $ref: '#/components/schemas/ObjDistributionData'
+        pktDistributionData:
+          $ref: '#/components/schemas/PktDistributionData'
+        fecInformation:
+          $ref: 'TS29580_Nmbsf_MBSUserDataIngestSession.yaml#/components/schemas/FECConfig'
+        dscpMarking:
+          type: string
+          writeOnly: true
+        distSessionSubscription:
+          $ref: '#/components/schemas/DistSessionSubscription'
+      required:
+        - distSessionId
+        - distSessionState
+        - mbUpfTunAddr
+        - mbr
+#      oneOf:
+#        - required: [ objDistributionData ]
+#        - required: [ pktDistributionData ]
+#
+#
+#
+    ObjDistributionData:
+      description: Info for Object Distribution Method
+      type: object
+      properties:
+        objDistributionOperatingMode:
+          $ref: '#/components/schemas/ObjDistributionOperatingMode'
+        objAcquisitionMethod:
+          $ref: '#/components/schemas/ObjAcquisitionMethod'
+        objAcquisitionIdsPull:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+        objAcquisitionIdPush:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        objIngestBaseUrl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        objDistributionBaseUrl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        objRepairExpBaseUrl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        objRepairIngestBaseUrl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+      required:
+        - objDistributionOperatingMode
+        - objAcquisitionMethod
+      allOf:
+        - oneOf:
+            - required: [ objAcquisitionIdsPull ]
+            - required: [ objAcquisitionIdPush ]
+        - not:
+            required: [ objRepairExpBaseUrl, objRepairIngestBaseUrl ]
+
+    PktDistributionData:
+      description: Info for Packet Distribution Method
+      type: object
+      properties:
+        pktDistributionOperatingMode:
+          $ref: '#/components/schemas/PktDistributionOperatingMode'
+        pktIngestMethod:
+          $ref: '#/components/schemas/PktIngestMethod'
+        mbStfIngestAddr:
+          $ref: '#/components/schemas/MbStfIngestAddr'
+      required:
+        - pktDistributionOperatingMode
+        - mbStfIngestAddr
+
+    StatusSubscribeReqData:
+      description: Data within the StatusSubscribe Request
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/DistSessionSubscription'
+      required:
+        - subscription
+
+    StatusSubscribeRspData:
+      description: Data within StatusSubscribe Response
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/DistSessionSubscription'
+        reportList:
+          $ref: '#/components/schemas/DistSessionEventReportList'
+      required:
+        - subscription
+
+    StatusNotifyReqData:
+      description: Status Notification
+      type: object
+      properties:
+        reportList:
+          $ref: '#/components/schemas/DistSessionEventReportList'
+      required:
+        - reportList
+
+    DistSessionSubscription:
+      description: Data within the Status Subscription
+      type: object
+      properties:
+        nfcInstanceId:
+          writeOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        eventList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DistSessionEventType'
+          minItems: 1
+        notifyUri:
+          writeOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifyCorrelationId:
+          type: string
+          writeOnly: true
+        expiryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        distSessionSubscUri:
+          readOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+      required:
+        - eventList
+        - notifyUri
+
+    DistSessionEventReportList:
+      description: List of Event Reports
+      type: object
+      properties:
+        eventReportList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DistSessionEventReport'
+          minItems: 1
+        notifyCorrelationId:
+          type: string
+      required:
+        - eventReportList
+
+    DistSessionEventReport:
+      description: Data related to a specific event
+      type: object
+      properties:
+        eventType:
+          $ref: '#/components/schemas/DistSessionEventType'
+        timeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - eventType
+
+    UpTrafficFlowInfo:
+      description: Protocol header values for User Plane packets passed to the MB-UPF
+      type: object
+      properties:
+        destIpAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        portNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        srcIpAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        transportSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - destIpAddr
+        - portNumber
+
+    MbStfIngestAddr:
+      description: MBSTF Ingest Addresses
+      type: object
+      properties:
+        afEgressTunAddr:
+          writeOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TunnelAddress'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/TunnelAddress'
+        mbStfIngressTunAddr:
+          readOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TunnelAddress'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/TunnelAddress'
+        afSsm:
+          writeOnly: true
+          $ref: '#/components/schemas/ExtSsm'
+#          allOf:
+#            - $ref: '#/components/schemas/ExtSsm'
+        mbStfListenAddr:
+          readOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TunnelAddress'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/TunnelAddress'
+    ExtSsm:
+      description: SSM and Port Number
+      type: object
+      properties:
+        ssm:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ssm'
+        portNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - ssm
+        - portNumber
+
+
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    DistSessionState:
+      description: Current State of MBS distribution session
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - INACTIVE
+        - ESTABLISHED
+        - ACTIVE
+        - DEACTIVATING
+#      - type: string
+#
+    ObjDistributionOperatingMode:
+      description: Mode of data ingestion for Object distribution method
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - SINGLE
+        - COLLECTION
+        - CAROUSEL
+        - STREAMING
+#      - type: string
+#
+    ObjAcquisitionMethod:
+      description: Object Acquisition Method
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - PULL
+        - PUSH
+#      - type: string
+#
+    PktDistributionOperatingMode:
+      description: Mode of data ingestion for Packet distribution method
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - PACKET_PROXY
+        - PACKET_FORWARD_ONLY
+#      - type: string
+#
+    DistSessionEventType:
+      description: Status Event Type
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - DATA_INGEST_FAILURE
+        - SESSION_DEACTIVATED
+        - SESSION_ACTIVATED
+        - SERVICE_MANAGEMENT_FAILURE
+        - DATA_INGEST_SESSION_ESTABLISHED
+        - DATA_INGEST_SESSION_TERMINATED
+#      - type: string
+#
+    PktIngestMethod:
+      description: Packet Ingest Method
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - MULTICAST
+        - UNICAST
+#      - type: string

@@ -1,0 +1,186 @@
+openapi: 3.0.0
+
+info:
+  title: Aimlec_AIMLEClientServiceOperations
+  version: 1.0.2
+  description: |
+    API for AIMLE Client Service Operations Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.560 V19.1.0; Artificial Intelligence / Machine Learning (AIML) Services – Service
+    Enabler Architecture Layer for Verticals (SEAL); Protocol Specification; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/24_series/24.560/'
+
+servers:
+  - url: '{apiRoot}/aimlec-serv-ops/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /perform:
+    post:
+      summary: >
+        Enables the AIMLE server to request the AIMLE client to perform the AIMLE client
+        service operation.
+      operationId: AimleServOperReq
+      tags:
+        - AIMLE service operation request
+      requestBody:
+        description: Contains the AIMLE client service operation request information.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AimleClientServOpReq'
+      responses:
+        '200':
+          description: Contains the AIMLE client service operation response information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AimleClientServOpResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+# Structured data types
+
+    AimleClientServOpReq:
+      description: Contains the AIMLE client service operation request information.
+      type: object
+      required:
+      - aimleServerId
+      - servOpId
+      - servOpMode
+      properties:
+        aimleServerId:
+          description: Represents the AIMLE server identifier.
+          type: string
+        valServiceId:
+          description: Represents the VAL service identifier.
+          type: string
+        servOpId:
+          description: Represents the AI/ML service operation identifier.
+          type: string
+        servOpMode:
+          $ref: '#/components/schemas/ServiceOperationMode'
+        servOpInfo:
+          $ref: '#/components/schemas/ServiceOperationInfo'
+        servOpModeCfg:
+          $ref: '#/components/schemas/ServiceOpModeConfiguration'
+        servOpModeStatRptg:
+          $ref: 'TS29549_SS_NetworkResourceMonitoring.yaml#/components/schemas/ReportingRequirements'
+
+    AimleClientServOpResp:
+      description: Contains the AIMLE client service operation response information.
+      type: object
+      required:
+      - servOpId
+      - servOpModeStatus
+      properties:
+        valServiceId:
+          description: Represents the VAL service identifier.
+          type: string
+        servOpId:
+          description: Represents the AI/ML service operation identifier.
+          type: string
+        servOpModeStatus:
+          $ref: '#/components/schemas/ServiceOperationMode'
+
+    ServiceOperationInfo:
+      description: Contains the AI/ML service operation information.
+      type: object
+      properties:
+        mlMdlContainer:
+          description: Represents the AI/ML service model container.
+          type: string
+        mlMdlUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        mlMdAggregUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        maxConvgTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+
+    ServiceOpModeConfiguration:
+      description: Contains the AI/ML service operation mode configuration.
+      type: object
+      properties:
+        maxLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxDurHour:
+          description: >
+            Indicates the maximum duration time of the AI/ML service operation expressed in hours.
+          type: integer
+        modelAccuracy:
+          description: >
+            Indicates the threshold value of the model accuracy expressed as a percentage to
+            stop the AI/ML service operation.
+          type: integer
+
+# Simple data types
+
+
+# Enumerations
+
+    ServiceOperationMode:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - START
+        - STOP
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          But is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the AIMLE service operation modes.
+#        Possible values are:
+#        - START: Indicates a request to start the AIMLE service operation or status of the AIMLE
+#          service operation.
+#        - STOP: Indicates a request to stop the AIMLE service operation or status of the AIMLE
+#          service operation.

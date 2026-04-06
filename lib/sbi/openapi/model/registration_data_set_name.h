@@ -1,7 +1,7 @@
 /*
  * registration_data_set_name.h
  *
- * 
+ * Indicates the names of registration data sets to be retrieved. 
  */
 
 #ifndef _OpenAPI_registration_data_set_name_H_

@@ -1,0 +1,150 @@
+openapi: 3.0.0
+info:
+  version: 1.2.0
+  title: Nausf_UPUProtection Service
+  description: |
+    AUSF UPU Protection Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.509 V17.6.0; 5G System; Authentication Server Services
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.509'
+
+servers:
+  - url: '{apiRoot}/nausf-upuprotection/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - nausf-upuprotection
+
+paths:
+  /{supi}/ue-upu:
+    post:
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpuInfo'
+        required: true
+      responses:
+        '200':
+          description: UpuSecurityInfo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpuSecurityInfo'
+        '503':
+          description: Service Unavailable
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nausf-upuprotection: Access to the Nausf_UPUProtection API
+
+  schemas:
+
+#
+# COMPLEX TYPES:
+#
+
+    UpuInfo:
+      description: Contains the UE parameters update Information.
+      type: object
+      properties:
+        upuDataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpuData'
+          minItems: 1
+        upuHeader:
+          $ref: '#/components/schemas/UpuHeader'
+        upuAckInd:
+          $ref: '#/components/schemas/UpuAckInd'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        upuTransparentInfo:
+          $ref: '#/components/schemas/UpuTransparentInfo'
+      required:
+        - upuDataList
+        - upuAckInd
+
+    UpuSecurityInfo:
+      description: Contains the material generated for securing of UPU. It contains at least the UPU-MAC-IAUSF and CounterUPU.
+      type: object
+      properties:
+        upuMacIausf:
+          $ref: '#/components/schemas/UpuMac'
+        counterUpu:
+          $ref: '#/components/schemas/CounterUpu'
+        upuXmacIue:
+          $ref: '#/components/schemas/UpuMac'
+      required:
+        - upuMacIausf
+        - counterUpu
+
+    UpuData:
+      description: Contains UE parameters update data set (e.g., the updated Routing ID Data or the Default configured NSSAI).
+      type: object
+      properties:
+        secPacket:
+          $ref: 'TS29509_Nausf_SoRProtection.yaml#/components/schemas/SecuredPacket'
+        defaultConfNssai:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        routingId:
+          $ref: 'TS29544_Nspaf_SecuredPacket.yaml#/components/schemas/RoutingId'
+
+#
+# SIMPLE TYPES:
+#
+
+    UpuMac:
+      description: MAC value for protecting UPU procedure (UPU-MAC-IAUSF and UPU-MAC-IUE).
+      type: string
+      pattern: '^[A-Fa-f0-9]{32}$'
+
+    CounterUpu:
+      description: CounterUPU.
+      type: string
+      pattern: '^[A-Fa-f0-9]{4}$'
+
+    UpuAckInd:
+      description: Contains the indication of whether the acknowledgement from UE is needed.
+      type: boolean
+
+    UpuHeader:
+      description: Contains the "UPU Header" IE as specified in clause 9.11.3.53A of 3GPP TS 24.501  (octet 4), encoded as 2 hexadecimal characters.
+      type: string
+      pattern: '^[A-Fa-f0-9]{2}$'
+
+    UpuTransparentInfo:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+

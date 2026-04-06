@@ -12,7 +12,9 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_route_selection_parameter_set_s OpenAPI_route_selection_parameter_set_t;
 #include "geographical_area.h"
+#include "pdu_session_type.h"
 #include "snssai.h"
 #include "tai_1.h"
 
@@ -20,15 +22,15 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_route_selection_parameter_set_s OpenAPI_route_selection_parameter_set_t;
-typedef struct OpenAPI_route_selection_parameter_set_s {
+struct OpenAPI_route_selection_parameter_set_s {
     char *dnn;
     struct OpenAPI_snssai_s *snssai;
     bool is_precedence;
     int precedence;
     OpenAPI_list_t *spatial_validity_areas;
     OpenAPI_list_t *spatial_validity_tais;
-} OpenAPI_route_selection_parameter_set_t;
+    OpenAPI_pdu_session_type_e pdu_sess_type;
+};
 
 OpenAPI_route_selection_parameter_set_t *OpenAPI_route_selection_parameter_set_create(
     char *dnn,
@@ -36,7 +38,8 @@ OpenAPI_route_selection_parameter_set_t *OpenAPI_route_selection_parameter_set_c
     bool is_precedence,
     int precedence,
     OpenAPI_list_t *spatial_validity_areas,
-    OpenAPI_list_t *spatial_validity_tais
+    OpenAPI_list_t *spatial_validity_tais,
+    OpenAPI_pdu_session_type_e pdu_sess_type
 );
 void OpenAPI_route_selection_parameter_set_free(OpenAPI_route_selection_parameter_set_t *route_selection_parameter_set);
 OpenAPI_route_selection_parameter_set_t *OpenAPI_route_selection_parameter_set_parseFromJSON(cJSON *route_selection_parameter_setJSON);

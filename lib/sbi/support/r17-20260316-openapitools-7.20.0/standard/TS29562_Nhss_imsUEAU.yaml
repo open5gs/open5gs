@@ -1,0 +1,247 @@
+openapi: 3.0.0
+
+info:
+  version: '1.1.0'
+  title: 'Nhss_imsUEAU'
+  description: |
+    Nhss UE Authentication Service for IMS.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.562 Home Subscriber Server (HSS) Services, version 17.5.0
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.562/'
+
+servers:
+  - url: '{apiRoot}/nhss-ims-ueau/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nhss-ims-ueau
+
+paths:
+
+  /{impi}/security-information/generate-sip-auth-data:
+    post:
+      summary: Generate authentication data for the UE based on the Auth-Scheme provided
+      operationId: GenerateSipAuthData
+      tags:
+        - Generate SIP Auth Data (Custom Operation)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-ims-ueau
+        - oAuth2ClientCredentials:
+          - nhss-ims-ueau
+          - nhss-ims-ueau:generate-sip-auth-data:invoke
+      parameters:
+        - name: impi
+          in: path
+          description: IMS Private Identity for the UE (IMPI)
+          required: true
+          schema:
+            $ref: '#/components/schemas/Impi'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SipAuthenticationInfoRequest'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SipAuthenticationInfoResult'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '405':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/405'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nhss-ims-ueau: Access to the Nhss IMS UE Authentication API
+            nhss-ims-ueau:generate-sip-auth-data:invoke: >
+              Access to invoke the Generate SIP Auth Data custom operation
+
+  schemas:
+
+#
+# COMPLEX TYPES:
+#
+
+    SipAuthenticationInfoRequest:
+      description: >
+        Contains input data to the SIP authentication request message (e.g. SIP authentication
+        scheme, requested number of authentication items, resynchronization information)
+      type: object
+      required:
+        - cscfServerName
+        - sipAuthenticationScheme
+      properties:
+        cscfServerName:
+          type: string
+        sipAuthenticationScheme:
+          $ref: '#/components/schemas/SipAuthenticationScheme'
+        sipNumberAuthItems:
+          $ref: '#/components/schemas/SipNumberAuthItems'
+        resynchronizationInfo:
+          $ref: '#/components/schemas/ResynchronizationInfo'
+
+    ResynchronizationInfo:
+      description: Contains RAND and AUTS
+      type: object
+      required:
+        - rand
+        - auts
+      properties:
+        rand:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/Rand'
+        auts:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/Auts'
+
+    SipAuthenticationInfoResult:
+      description: >
+        Contains authentication information returned in the SIP authentication response message
+        (e.g. authentication vectors, digest authentication parameters, line identifiers)
+      type: object
+      required:
+        - impi
+      properties:
+        impi:
+          $ref: '#/components/schemas/Impi'
+        3gAkaAvs:
+          type: array
+          items:
+            $ref: '#/components/schemas/3GAkaAv'
+          minItems: 1
+        digestAuth:
+          $ref: '#/components/schemas/DigestAuthentication'
+        lineIdentifierList:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineIdentifier'
+          minItems: 1
+        ipAddress:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+
+    3GAkaAv:
+      description: Contains RAND, XRES, AUTN, CK, and IK
+      type: object
+      required:
+        - rand
+        - xres
+        - autn
+        - ck
+        - ik
+      properties:
+        rand:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/Rand'
+        xres:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/Xres'
+        autn:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/Autn'
+        ck:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/ConfidentialityKey'
+        ik:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/IntegrityKey'
+
+    DigestAuthentication:
+      description: Parameters used for the Digest authentication scheme
+      type: object
+      required:
+        - digestRealm
+        - digestAlgorithm
+        - digestQop
+        - ha1
+      properties:
+        digestRealm:
+          type: string
+        digestAlgorithm:
+          $ref: '#/components/schemas/SipDigestAlgorithm'
+        digestQop:
+          $ref: '#/components/schemas/SipDigestQop'
+        ha1:
+          type: string
+
+#
+# SIMPLE TYPES:
+#
+
+    SipNumberAuthItems:
+      description: Indicates the number of requested SIP authentication items
+      type: integer
+      minimum: 1
+
+    Impi:
+      description: IMS Private Identity of the UE
+      type: string
+
+    LineIdentifier:
+      description: Line Identifier for the wireline access
+      type: string
+
+#
+# ENUMS:
+#
+
+    SipAuthenticationScheme:
+      description: Authentication scheme to be used in the SIP authentication request message
+      anyOf:
+        - type: string
+          enum:
+          - DIGEST-AKAV1-MD5
+          - DIGEST-HTTP
+          - NBA
+          - GIBA
+          - UNKNOWN
+        - type: string
+
+    SipDigestAlgorithm:
+      description: Algorithm used for the SIP Digest authentication scheme
+      anyOf:
+        - type: string
+          enum:
+          - MD5
+          - MD5_SESS
+        - type: string
+
+    SipDigestQop:
+      description: Quality of Protection for the SIP Digest authentication scheme
+      anyOf:
+        - type: string
+          enum:
+          - AUTH
+          - AUTH_INT
+        - type: string

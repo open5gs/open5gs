@@ -1,7 +1,7 @@
 /*
  * app_detection_notif_type.h
  *
- * 
+ * Indicates the notification type for Application Detection Control.
  */
 
 #ifndef _OpenAPI_app_detection_notif_type_H_

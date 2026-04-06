@@ -1,7 +1,7 @@
 /*
  * credit_management_status.h
  *
- * 
+ * Indicates the reason of the credit management session failure.
  */
 
 #ifndef _OpenAPI_credit_management_status_H_

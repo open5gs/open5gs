@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_dn_perf_info_s OpenAPI_dn_perf_info_t;
 #include "dn_perf.h"
 #include "snssai.h"
 
@@ -19,15 +20,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dn_perf_info_s OpenAPI_dn_perf_info_t;
-typedef struct OpenAPI_dn_perf_info_s {
+struct OpenAPI_dn_perf_info_s {
     char *app_id;
     char *dnn;
     struct OpenAPI_snssai_s *snssai;
     OpenAPI_list_t *dn_perf;
     bool is_confidence;
     int confidence;
-} OpenAPI_dn_perf_info_t;
+};
 
 OpenAPI_dn_perf_info_t *OpenAPI_dn_perf_info_create(
     char *app_id,

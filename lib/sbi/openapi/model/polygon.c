@@ -5,7 +5,7 @@
 #include "polygon.h"
 
 OpenAPI_polygon_t *OpenAPI_polygon_create(
-    OpenAPI_supported_gad_shapes_t *shape,
+    OpenAPI_supported_gad_shapes_e shape,
     OpenAPI_list_t *point_list
 )
 {
@@ -24,10 +24,6 @@ void OpenAPI_polygon_free(OpenAPI_polygon_t *polygon)
 
     if (NULL == polygon) {
         return;
-    }
-    if (polygon->shape) {
-        OpenAPI_supported_gad_shapes_free(polygon->shape);
-        polygon->shape = NULL;
     }
     if (polygon->point_list) {
         OpenAPI_list_for_each(polygon->point_list, node) {
@@ -50,17 +46,11 @@ cJSON *OpenAPI_polygon_convertToJSON(OpenAPI_polygon_t *polygon)
     }
 
     item = cJSON_CreateObject();
-    if (!polygon->shape) {
+    if (polygon->shape == OpenAPI_supported_gad_shapes_NULL) {
         ogs_error("OpenAPI_polygon_convertToJSON() failed [shape]");
         return NULL;
     }
-    cJSON *shape_local_JSON = OpenAPI_supported_gad_shapes_convertToJSON(polygon->shape);
-    if (shape_local_JSON == NULL) {
-        ogs_error("OpenAPI_polygon_convertToJSON() failed [shape]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "shape", shape_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "shape", OpenAPI_supported_gad_shapes_ToString(polygon->shape)) == NULL) {
         ogs_error("OpenAPI_polygon_convertToJSON() failed [shape]");
         goto end;
     }
@@ -92,7 +82,7 @@ OpenAPI_polygon_t *OpenAPI_polygon_parseFromJSON(cJSON *polygonJSON)
     OpenAPI_polygon_t *polygon_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *shape = NULL;
-    OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
+    OpenAPI_supported_gad_shapes_e shapeVariable = 0;
     cJSON *point_list = NULL;
     OpenAPI_list_t *point_listList = NULL;
     shape = cJSON_GetObjectItemCaseSensitive(polygonJSON, "shape");
@@ -100,11 +90,11 @@ OpenAPI_polygon_t *OpenAPI_polygon_parseFromJSON(cJSON *polygonJSON)
         ogs_error("OpenAPI_polygon_parseFromJSON() failed [shape]");
         goto end;
     }
-    shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
-    if (!shape_local_nonprim) {
-        ogs_error("OpenAPI_supported_gad_shapes_parseFromJSON failed [shape]");
+    if (!cJSON_IsString(shape)) {
+        ogs_error("OpenAPI_polygon_parseFromJSON() failed [shape]");
         goto end;
     }
+    shapeVariable = OpenAPI_supported_gad_shapes_FromString(shape->valuestring);
 
     point_list = cJSON_GetObjectItemCaseSensitive(polygonJSON, "pointList");
     if (!point_list) {
@@ -133,16 +123,12 @@ OpenAPI_polygon_t *OpenAPI_polygon_parseFromJSON(cJSON *polygonJSON)
         }
 
     polygon_local_var = OpenAPI_polygon_create (
-        shape_local_nonprim,
+        shapeVariable,
         point_listList
     );
 
     return polygon_local_var;
 end:
-    if (shape_local_nonprim) {
-        OpenAPI_supported_gad_shapes_free(shape_local_nonprim);
-        shape_local_nonprim = NULL;
-    }
     if (point_listList) {
         OpenAPI_list_for_each(point_listList, node) {
             OpenAPI_geographical_coordinates_free(node->data);

@@ -1,7 +1,7 @@
 /*
  * registration_reason.h
  *
- * 
+ * Indicates NF registration reason. 
  */
 
 #ifndef _OpenAPI_registration_reason_H_

@@ -7,7 +7,8 @@
 OpenAPI_nf_instance_info_t *OpenAPI_nf_instance_info_create(
     char *nrf_disc_api_uri,
     OpenAPI_preferred_search_t *preferred_search,
-    OpenAPI_list_t* nrf_altered_priorities
+    OpenAPI_list_t* nrf_altered_priorities,
+    char *nrf_supported_features
 )
 {
     OpenAPI_nf_instance_info_t *nf_instance_info_local_var = ogs_malloc(sizeof(OpenAPI_nf_instance_info_t));
@@ -16,6 +17,7 @@ OpenAPI_nf_instance_info_t *OpenAPI_nf_instance_info_create(
     nf_instance_info_local_var->nrf_disc_api_uri = nrf_disc_api_uri;
     nf_instance_info_local_var->preferred_search = preferred_search;
     nf_instance_info_local_var->nrf_altered_priorities = nrf_altered_priorities;
+    nf_instance_info_local_var->nrf_supported_features = nrf_supported_features;
 
     return nf_instance_info_local_var;
 }
@@ -44,6 +46,10 @@ void OpenAPI_nf_instance_info_free(OpenAPI_nf_instance_info_t *nf_instance_info)
         }
         OpenAPI_list_free(nf_instance_info->nrf_altered_priorities);
         nf_instance_info->nrf_altered_priorities = NULL;
+    }
+    if (nf_instance_info->nrf_supported_features) {
+        ogs_free(nf_instance_info->nrf_supported_features);
+        nf_instance_info->nrf_supported_features = NULL;
     }
     ogs_free(nf_instance_info);
 }
@@ -109,6 +115,13 @@ cJSON *OpenAPI_nf_instance_info_convertToJSON(OpenAPI_nf_instance_info_t *nf_ins
     }
     }
 
+    if (nf_instance_info->nrf_supported_features) {
+    if (cJSON_AddStringToObject(item, "nrfSupportedFeatures", nf_instance_info->nrf_supported_features) == NULL) {
+        ogs_error("OpenAPI_nf_instance_info_convertToJSON() failed [nrf_supported_features]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -122,6 +135,7 @@ OpenAPI_nf_instance_info_t *OpenAPI_nf_instance_info_parseFromJSON(cJSON *nf_ins
     OpenAPI_preferred_search_t *preferred_search_local_nonprim = NULL;
     cJSON *nrf_altered_priorities = NULL;
     OpenAPI_list_t *nrf_altered_prioritiesList = NULL;
+    cJSON *nrf_supported_features = NULL;
     nrf_disc_api_uri = cJSON_GetObjectItemCaseSensitive(nf_instance_infoJSON, "nrfDiscApiUri");
     if (nrf_disc_api_uri) {
     if (!cJSON_IsString(nrf_disc_api_uri) && !cJSON_IsNull(nrf_disc_api_uri)) {
@@ -169,10 +183,19 @@ OpenAPI_nf_instance_info_t *OpenAPI_nf_instance_info_parseFromJSON(cJSON *nf_ins
         }
     }
 
+    nrf_supported_features = cJSON_GetObjectItemCaseSensitive(nf_instance_infoJSON, "nrfSupportedFeatures");
+    if (nrf_supported_features) {
+    if (!cJSON_IsString(nrf_supported_features) && !cJSON_IsNull(nrf_supported_features)) {
+        ogs_error("OpenAPI_nf_instance_info_parseFromJSON() failed [nrf_supported_features]");
+        goto end;
+    }
+    }
+
     nf_instance_info_local_var = OpenAPI_nf_instance_info_create (
         nrf_disc_api_uri && !cJSON_IsNull(nrf_disc_api_uri) ? ogs_strdup(nrf_disc_api_uri->valuestring) : NULL,
         preferred_search ? preferred_search_local_nonprim : NULL,
-        nrf_altered_priorities ? nrf_altered_prioritiesList : NULL
+        nrf_altered_priorities ? nrf_altered_prioritiesList : NULL,
+        nrf_supported_features && !cJSON_IsNull(nrf_supported_features) ? ogs_strdup(nrf_supported_features->valuestring) : NULL
     );
 
     return nf_instance_info_local_var;
@@ -183,7 +206,7 @@ end:
     }
     if (nrf_altered_prioritiesList) {
         OpenAPI_list_for_each(nrf_altered_prioritiesList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             ogs_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

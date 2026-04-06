@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_serving_nf_identity_s OpenAPI_serving_nf_identity_t;
 #include "an_gw_address.h"
 #include "guami.h"
 #include "sgsn_address.h"
@@ -20,18 +21,21 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_serving_nf_identity_s OpenAPI_serving_nf_identity_t;
-typedef struct OpenAPI_serving_nf_identity_s {
+struct OpenAPI_serving_nf_identity_s {
     char *serv_nf_inst_id;
     struct OpenAPI_guami_s *guami;
+    bool is_an_gw_addr_null;
     struct OpenAPI_an_gw_address_s *an_gw_addr;
+    bool is_sgsn_addr_null;
     struct OpenAPI_sgsn_address_s *sgsn_addr;
-} OpenAPI_serving_nf_identity_t;
+};
 
 OpenAPI_serving_nf_identity_t *OpenAPI_serving_nf_identity_create(
     char *serv_nf_inst_id,
     OpenAPI_guami_t *guami,
+    bool is_an_gw_addr_null,
     OpenAPI_an_gw_address_t *an_gw_addr,
+    bool is_sgsn_addr_null,
     OpenAPI_sgsn_address_t *sgsn_addr
 );
 void OpenAPI_serving_nf_identity_free(OpenAPI_serving_nf_identity_t *serving_nf_identity);

@@ -312,7 +312,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         if (ran_ue) {
                             if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
                                 r = amf_ue_sbi_discover_and_send(
-                                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                                        OpenAPI_service_name_npcf_am_policy_control,
                                         NULL,
                                         amf_npcf_am_policy_control_build_create,
                                         amf_ue, 0, NULL);
@@ -704,7 +704,7 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             "duplicated PDU Session (psi: %d)", sess->psi);
                 } else if (ran_ue) {
                     r = amf_sess_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            OpenAPI_service_name_nsmf_pdusession, NULL,
                             amf_nsmf_pdusession_build_create_sm_context,
                             ran_ue, sess, AMF_CREATE_SM_CONTEXT_NO_STATE, NULL);
                     ogs_expect(r == OGS_OK);
@@ -1186,7 +1186,7 @@ int amf_nsmf_pdusession_handle_release_sm_context(
             if (ran_ue) {
                 if (!PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
                     r = amf_ue_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL, NULL,
+                            OpenAPI_service_name_npcf_am_policy_control, NULL,
                             amf_npcf_am_policy_control_build_create,
                             amf_ue, 0, NULL);
                     ogs_expect(r == OGS_OK);
@@ -1249,7 +1249,7 @@ int amf_nsmf_pdusession_handle_release_sm_context(
                                 "in de_registered",
                                 amf_ue->supi);
                         r = amf_ue_sbi_discover_and_send(
-                                OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                                OpenAPI_service_name_nudm_sdm, NULL,
                                 amf_nudm_sdm_build_subscription_delete,
                                 amf_ue, state, NULL);
                         ogs_expect(r == OGS_OK);
@@ -1258,7 +1258,7 @@ int amf_nsmf_pdusession_handle_release_sm_context(
                         ogs_info("[%s] PCF_AM_POLICY_ASSOCIATED "
                                 "in de_registered", amf_ue->supi);
                         r = amf_ue_sbi_discover_and_send(
-                                OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                                OpenAPI_service_name_npcf_am_policy_control,
                                 NULL,
                                 amf_npcf_am_policy_control_build_delete,
                                 amf_ue, state, NULL);
@@ -1323,14 +1323,14 @@ int amf_nsmf_pdusession_handle_release_sm_context(
                      */
                     if (UDM_SDM_SUBSCRIBED(amf_ue)) {
                         r = amf_ue_sbi_discover_and_send(
-                                OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                                OpenAPI_service_name_nudm_sdm, NULL,
                                 amf_nudm_sdm_build_subscription_delete,
                                 amf_ue, state, NULL);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
                     } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
                         r = amf_ue_sbi_discover_and_send(
-                                OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                                OpenAPI_service_name_npcf_am_policy_control,
                                 NULL,
                                 amf_npcf_am_policy_control_build_delete,
                                 amf_ue, state, NULL);
@@ -1361,14 +1361,14 @@ int amf_nsmf_pdusession_handle_release_sm_context(
                      */
                     if (UDM_SDM_SUBSCRIBED(amf_ue)) {
                         r = amf_ue_sbi_discover_and_send(
-                                OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                                OpenAPI_service_name_nudm_sdm, NULL,
                                 amf_nudm_sdm_build_subscription_delete,
                                 amf_ue, state, NULL);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
                     } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
                         r = amf_ue_sbi_discover_and_send(
-                                OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                                OpenAPI_service_name_npcf_am_policy_control,
                                 NULL,
                                 amf_npcf_am_policy_control_build_delete,
                                 amf_ue, state, NULL);
@@ -1383,7 +1383,7 @@ int amf_nsmf_pdusession_handle_release_sm_context(
                             gmm_state_authentication)) {
 
                     r = amf_ue_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NAUSF_AUTH, NULL,
+                            OpenAPI_service_name_nausf_auth, NULL,
                             amf_nausf_auth_build_authenticate,
                             amf_ue, 0, NULL);
                     ogs_expect(r == OGS_OK);

@@ -1,7 +1,7 @@
 /*
  * event.h
  *
- * Possible values are: - SUCCESS_UE_POL_DEL_SP: Successful UE Policy Delivery related to    the invocation of AF provisioned Service Parameters. - UNSUCCESS_UE_POL_DEL_SP: Unsuccessful UE Policy Delivery related to the invocation of AF    provisioned Service Parameters. 
+ * 
  */
 
 #ifndef _OpenAPI_event_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "event_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_event_s OpenAPI_event_t;
-typedef struct OpenAPI_event_s {
-} OpenAPI_event_t;
+typedef enum { OpenAPI_event_NULL = 0, OpenAPI_event_SUCCESS_UE_POL_DEL_SP, OpenAPI_event_UNSUCCESS_UE_POL_DEL_SP, OpenAPI_event_PARTLY_UNSUCC_UE_POL_DEL_SP, OpenAPI_event_UNSUCCESS_PCF_SERVICE_AUTHORIZATION } OpenAPI_event_e;
 
-OpenAPI_event_t *OpenAPI_event_create(
-);
-void OpenAPI_event_free(OpenAPI_event_t *event);
-OpenAPI_event_t *OpenAPI_event_parseFromJSON(cJSON *eventJSON);
-cJSON *OpenAPI_event_convertToJSON(OpenAPI_event_t *event);
-OpenAPI_event_t *OpenAPI_event_copy(OpenAPI_event_t *dst, OpenAPI_event_t *src);
+char* OpenAPI_event_ToString(OpenAPI_event_e event);
+
+OpenAPI_event_e OpenAPI_event_FromString(char* event);
 
 #ifdef __cplusplus
 }

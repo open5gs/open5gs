@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_api_ie_mapping_s OpenAPI_api_ie_mapping_t;
 #include "api_signature.h"
 #include "http_method.h"
 #include "ie_info.h"
@@ -20,12 +21,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_api_ie_mapping_s OpenAPI_api_ie_mapping_t;
-typedef struct OpenAPI_api_ie_mapping_s {
+struct OpenAPI_api_ie_mapping_s {
     struct OpenAPI_api_signature_s *api_signature;
     OpenAPI_http_method_e api_method;
     OpenAPI_list_t *ie_list;
-} OpenAPI_api_ie_mapping_t;
+};
 
 OpenAPI_api_ie_mapping_t *OpenAPI_api_ie_mapping_create(
     OpenAPI_api_signature_t *api_signature,

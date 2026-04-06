@@ -1,0 +1,601 @@
+openapi: 3.0.0
+
+info:
+  title: ECS EES Registration_API
+  description: |
+    API for EES Registration.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: 1.2.0
+
+externalDocs:
+  description: >
+    3GPP TS 29.558 V19.5.0 Enabling Edge Applications;
+    Application Programming Interface (API) specification; Stage 3
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.558/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/eecs-eesregistration/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.558.
+
+paths:
+  /registrations:
+    post:
+      summary: Create a new EES Registration
+      operationId: CreateEESRegistration
+      tags:
+        - EES Registrations (Collection)
+      description: Registers a new EES at the Edge Configuration Server.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EESRegistration'
+      responses:
+        '201':
+          description: EES information is registered successfully at ECS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EESRegistration'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /registrations/{registrationId}:
+    get:
+      summary: Get an Individual EES Registration
+      operationId: GetIndEESReg
+      tags:
+        - Individual EES Registration (Document)
+      description: Retrieve an Individual EES registration resource.
+      parameters:
+        - name: registrationId
+          in: path
+          description: Registration Id.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (The EES registration information at the Edge Configuration Server).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EESRegistration'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Update an Individual EES Registration
+      operationId: UpdateIndEESReg
+      tags:
+        - Individual EES Registration (Document)
+      description: Fully replace an existing EES Registration resource.
+      parameters:
+        - name: registrationId
+          in: path
+          description: EES Registration Id.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EESRegistration'
+      responses:
+        '200':
+          description: OK (The EES registration information is updated successfully).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EESRegistration'
+        '204':
+          description: >
+            No Content. The individual EES registration information is updated successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Modify an Individual EES Registration
+      operationId: ModifyIndEESReg
+      tags:
+        - Individual EES Registration (Document)
+      description: Partially update an existing EES Registration resource.
+      parameters:
+        - name: registrationId
+          in: path
+          description: EES registration Id.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Partial update an existing EES registration resource.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/EESRegistrationPatch'
+      responses:
+        '200':
+          description: >
+            The Individual EES registration is successfully modified and
+            the updated registration information is returned in the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EESRegistration'
+        '204':
+          description: >
+            No Content. The individual EES registration information is updated successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete an Individual EES Registration
+      operationId: DeleteIndEESReg
+      tags:
+        - Individual EES Registration (Document)
+      description: Delete an existing EES registration at ECS.
+      parameters:
+        - name: registrationId
+          in: path
+          description: Registration Id.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The individual EES registration is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    EESRegistration:
+      type: object
+      description: Represents an EES registration information.
+      properties:
+        eesProf:
+          $ref: '#/components/schemas/EESProfile'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - eesProf
+
+    EESProfile:
+      type: object
+      description: Represents the EES profile information.
+      properties:
+        eesId:
+          type: string
+          description: Identifier of the EES.
+        endPt:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        easIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Application identifiers of EASs that are registered with EES.
+        easBdlInfos:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASBundleInfo'
+            minItems: 1
+          minProperties: 1
+          description: >
+            The key used in this map for each entry is the EAS ID of the concerned EAS.
+            Within each EASBundleInfo encoded map entry of this attribute, the "mainEasId" attribute
+            shall not be present.
+        allowedMNOsInfo:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+            minItems: 1
+          minProperties: 1
+          description: >
+            The key of the map shall be the identifier of the EAS to which the provided allowed MNO
+            information within the map value corresponds.
+        ednInfoSets:
+          $ref: '#/components/schemas/EDNInfo'
+        easInstInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/EASInstantiationInfo'
+          minProperties: 1
+          description: >
+             Represents the EAS instantiation information for the EAS(s) registered at the EES.
+             The key of the map shall be the EAS ID to which the provided instantiation information
+             within the map value relates.
+        provId:
+          type: string
+          description: Identifier of the ECSP that provides the EES provider.
+        svcArea:
+          $ref: '#/components/schemas/ServiceArea'
+        appLocs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          minItems: 1
+          description: List of DNAI(s) associated with the EES.
+        svcContSupp:
+          type: array
+          items:
+            $ref: '#/components/schemas/ACRScenario'
+          minItems: 1
+          description: The ACR scenarios supported by the EES for service continuity.
+        svcContSuppExt1:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASBundleInfo'
+          minItems: 1
+          description: >
+            Represents the information related to the EES ability to handle bundled EAS coordinated
+            ACRs.
+            This attribute may be present only when the "svcContSupp" attribute is also present.
+            When this attribute is present, it indicates that the EES (identified by the "eesId"
+            attribute) is able to handle bundled EAS coordinated ACRs and contains the information
+            of the EAS bundle(s) for which the EES is able to handle bundled EAS coordinated ACRs.
+        eecRegConf:
+          type: boolean
+          description: >
+            Set to true if the EEC is required to register to the EES to use edge service.
+            Set to false if the EEC is not required to register to use edge services.
+        ueServingSat:
+          $ref: '#/components/schemas/UeServSatInfo'
+        easLoadInfoList:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/LoadInfo'
+          minProperties: 1
+          description: >
+            Represents the load information for each EAS identified by the "easIds" attribute.
+            The key of the map shall be set to the identifier of the EAS (among the ones provided
+            within the "easIds" attribute) for which the load info provided within the map value
+            corresponds.
+      required:
+        - eesId
+        - endPt
+        - eecRegConf
+
+    EESRegistrationPatch:
+      type: object
+      description: Represents partial update request of individual EES registration information.
+      properties:
+        eesProf:
+          $ref: '#/components/schemas/EESProfile'
+        expTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTimeRm'
+
+    ServiceArea:
+      type: object
+      description: Represents a service area information of the EdgeApp entity.
+      properties:
+        topServAr:
+          $ref: '#/components/schemas/TopologicalServiceArea'
+        geoServAr:
+          $ref: '#/components/schemas/GeographicalServiceArea'
+
+    TopologicalServiceArea:
+      type: object
+      description: Represents topological service area information.
+      properties:
+        ecgis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+          minItems: 1
+          description: A list of E-UTRA cell identities.
+        ncgis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+          minItems: 1
+          description: A list of NR cell identities.
+        tais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+          minItems: 1
+          description: A list of tracking area identities.
+        plmnIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+          minItems: 1
+          description: A list of serving network identities.
+
+    GeographicalServiceArea:
+      type: object
+      description: Represents geographical service area information.
+      properties:
+        geoArs:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+          description: A list of geographic area information.
+        civicAddrs:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CivicAddress'
+          minItems: 1
+          description: A list of civic address information.
+
+    EASInstantiationInfo:
+      type: object
+      description: Represents the EAS instantiation information.
+      properties:
+        easId:
+          type: string
+          description: Identifier of the EAS.
+        status:
+          $ref: '#/components/schemas/InstantiationStatus'
+        instCrit:
+          $ref: '#/components/schemas/InstantiationCriteria'
+      required:
+        - easId
+        - status
+
+    InstantiationCriteria:
+      type: object
+      description: Represents the instantiation criteria for an EAS.
+      properties:
+        instantiationTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        instWindows:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+          minItems: 1
+          description: A list time windows at which the EAS is instantiated.
+        scheds:
+          type: array
+          items:
+            $ref: 'TS29122_CpProvisioning.yaml#/components/schemas/ScheduledCommunicationTime'
+          minItems: 1
+          description: Represents the EAS instantiation schedule.
+#      oneOf:
+#        - required: [instantiationTime]
+#        - required: [instWindows]
+#        - required: [scheds]
+#
+    EDNInfo:
+      type: object
+      description: Represents EDN related information.
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        dnais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          minItems: 1
+      required:
+        - dnn
+
+    LoadInfo:
+      type: object
+      description: Represents the load information of an EEL entity.
+      properties:
+        loadLevel:
+          type: integer
+          minimum: 0
+          maximum: 100
+        loadWarningStat:
+          type: boolean
+          description: >
+            true indicates that load warning is activated.
+            false indicates that load warning is not activated.
+            The default value is "false" when this attribute is omitted.
+
+    UeServSatInfo:
+      type: object
+      description: Represents the EDN related information for the satellite.
+      properties:
+        dynServAreaInd:
+          type: boolean
+          description: >
+            Indicates whether the EES service area is mobile or not.
+            true indicates that the EES service area is mobile (e.g., case of a MEO or LEO
+            satellite).
+            false indicates that the EES service area is not mobile (e.g., case of a GEO
+            satellite).
+            The default value is "false" when this attribute is omitted.
+        satId:
+          type: string
+        trajId:
+          type: string
+        ascaiInfo:
+          $ref: '#/components/schemas/AppSatCovAvailInfo'
+      required:
+        - satId
+
+    AppSatCovAvailInfo:
+      type: object
+      description: Represents the Application Satellite Coverage Availability Information data.
+      properties:
+        covAvailInfo:
+          $ref: 'TS29549_SS_ASCAIInfoRetrieval.yaml#/components/schemas/AscaiInfo'
+      required:
+        - covAvailInfo
+
+
+    ACRScenario:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - EEC_INITIATED
+        - EEC_EXECUTED_VIA_SOURCE_EES
+        - EEC_EXECUTED_VIA_TARGET_EES
+        - SOURCE_EAS_DECIDED
+        - SOURCE_EES_EXECUTED
+        - EEL_MANAGED_ACR
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the ACR scenarios supported by EES.  
+#        Possible values are:
+#        - EEC_INITIATED: Represents the EEC initiated ACR scenario.
+#        - EEC_EXECUTED_VIA_SOURCE_EES: Represents the EEC ACR scenario executed via the S-EES.
+#        - EEC_EXECUTED_VIA_TARGET_EES: Represents the EEC ACR scenario executed via the T-EES.
+#        - SOURCE_EAS_DECIDED: Represents the EEC ACR scenario where the S-EAS decides to perform
+#          ACR.
+#        - SOURCE_EES_EXECUTED: Represents the EEC ACR scenario where S-EES executes the ACR.
+#        - EEL_MANAGED_ACR: Represents the EEC ACR scenario where the ACR is managed by the
+#          Edge Enabler Layer.
+#
+    InstantiationStatus:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - INSTANTIATED
+        - INSTANTIABLE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the instantiation status information of an EAS.  
+#        Possible values are:
+#        - INSTANTIATED: Indicates that the EAS status is instantiated.
+#        - INSTANTIABLE: Indicates that the EAS status is instantiable but not yet instantiated.

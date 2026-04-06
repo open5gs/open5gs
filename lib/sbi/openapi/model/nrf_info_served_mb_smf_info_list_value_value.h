@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nrf_info_served_mb_smf_info_list_value_value_s OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t;
 #include "mb_smf_info.h"
 #include "mbs_session.h"
 #include "snssai_mb_smf_info_item.h"
@@ -23,14 +24,13 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nrf_info_served_mb_smf_info_list_value_value_s OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t;
-typedef struct OpenAPI_nrf_info_served_mb_smf_info_list_value_value_s {
+struct OpenAPI_nrf_info_served_mb_smf_info_list_value_value_s {
     OpenAPI_list_t* s_nssai_info_list;
     OpenAPI_list_t* tmgi_range_list;
     OpenAPI_list_t *tai_list;
     OpenAPI_list_t *tai_range_list;
     OpenAPI_list_t* mbs_session_list;
-} OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t;
+};
 
 OpenAPI_nrf_info_served_mb_smf_info_list_value_value_t *OpenAPI_nrf_info_served_mb_smf_info_list_value_value_create(
     OpenAPI_list_t* s_nssai_info_list,

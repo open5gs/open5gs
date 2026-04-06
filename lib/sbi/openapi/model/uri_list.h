@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_uri_list_s OpenAPI_uri_list_t;
 #include "links_value_schema.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_uri_list_s OpenAPI_uri_list_t;
-typedef struct OpenAPI_uri_list_s {
+struct OpenAPI_uri_list_s {
     OpenAPI_list_t* _links;
     bool is_total_item_count;
     int total_item_count;
-} OpenAPI_uri_list_t;
+};
 
 OpenAPI_uri_list_t *OpenAPI_uri_list_create(
     OpenAPI_list_t* _links,

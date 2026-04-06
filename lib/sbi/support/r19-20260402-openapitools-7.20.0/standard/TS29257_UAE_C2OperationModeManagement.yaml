@@ -1,0 +1,572 @@
+openapi: 3.0.0
+
+info:
+  title: UAE Server C2 Operation Mode Management Service
+  version: 1.2.0
+  description: |
+    UAE Server C2 Operation Mode Management Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.257 V19.5.0; Application layer support for Uncrewed Aerial System (UAS);
+    UAS Application Enabler (UAE) Server Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.257/
+
+servers:
+  - url: '{apiRoot}/uae-c2opmode-mngt/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /initiate:
+    post:
+      summary: Request the provisioning of C2 Operation Mode configuration information for a UAS (i.e. pair of UAV and UAV-C).
+      operationId: InitiateC2OpModeConfig
+      tags:
+        - Initiate C2 Operation Mode configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfigureData'
+      responses:
+        '200':
+          description: >
+            The communicated C2 Operation Mode configuration information was successfully
+            received. The response body contains the feedback of the UAE Server on whether
+            this C2 Operation Mode configuration request is confirmed (i.e. can be undertaken
+            by the UAE Server) or not.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/C2Result'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        C2OpModeMngtCompletionNotification:
+          '{$request.body#/notificationUri}/c2mode-mngt-completion':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/C2OpModeMngtCompStatus'
+              responses:
+                '204':
+                  description: >
+                    No Content. The notification was succesfull and the C2 Operation Mode
+                    Management Completion status for the concerned UAS (i.e. pair of UAV
+                    and UAV-C) was successfully received and acknowledged by the service consumer.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+        SelectedC2CommunicationModeNotification:
+          '{$request.body#/notificationUri}/inform-selec-c2mode':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SelectedC2CommModeNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The notification was succesfull and the C2 Communication Mode
+                    selected by the concerned UAS (i.e. pair of UAV and UAV-C) was successfully
+                    received and acknowledged by the service consumer.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+        C2CommunicationModeSwitchingNotification:
+          '{$request.body#/notificationUri}/inform-c2mode-switch':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/C2CommModeSwitchNotif'
+              responses:
+                '200':
+                  description: >
+                    OK. The targeted C2 Communication Mode switching for the concerned UAS
+                    (i.e. pair of UAV and UAV-C) is successfully received. The response body
+                    contains the feedback of the service consumer on whether this C2 Communication
+                    Mode switching is confirmed (i.e. validated) or not.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/C2Result'
+                '204':
+                  description: >
+                    No Content. The targeted C2 Communication Mode switching for the concerned
+                    UAS (i.e. pair of UAV and UAV-C) is successfully received and acknowledged,
+                    and the service consumer does not need to confirm (i.e. validate) it.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    ConfigureData:
+      description: >
+        Represents the parameters to request to provision C2 Operation Mode configuration
+        information for a UAS (i.e. pair of UAV and UAV-C).
+      type: object
+      properties:
+        uassId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        uasId:
+          $ref: '#/components/schemas/UasId'
+        allowedC2CommModes:
+          type: array
+          items:
+            $ref: '#/components/schemas/C2CommMode'
+          minItems: 1
+        c2CommModeSwitchTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/C2CommModeSwitching'
+          minItems: 1
+        notificationUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        primaryC2CommMode:
+          $ref: '#/components/schemas/C2CommMode'
+        secondaryC2CommMode:
+          $ref: '#/components/schemas/C2CommMode'
+        c2SwitchPolicies:
+          $ref: '#/components/schemas/C2SwitchPolicies'
+        c2ServiceArea:
+          $ref: '#/components/schemas/C2ServiceArea'
+        c2DirectAvailRepReqs:
+          $ref: '#/components/schemas/C2DirectAvailRepReqs'
+        dualNetAssistC2Info:
+          $ref: '#/components/schemas/DualC2Data'
+        dualUTMNavC2Info:
+          $ref: '#/components/schemas/DualC2Data'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - uassId
+        - uasId
+        - allowedC2CommModes
+        - c2CommModeSwitchTypes
+        - notificationUri
+        - primaryC2CommMode
+        - c2SwitchPolicies
+
+    SelectedC2CommModeNotif:
+      description: >
+        Represents information on the C2 Communication Mode selected by a UAS (i.e. pair of
+        UAV and UAV-C).
+      type: object
+      properties:
+        uasId:
+          $ref: '#/components/schemas/UasId'
+        selPrimaryC2CommMode:
+          $ref: '#/components/schemas/C2CommMode'
+        selSecondaryC2CommMode:
+          $ref: '#/components/schemas/C2CommMode'
+      required:
+        - uasId
+        - selPrimaryC2CommMode
+
+    C2CommModeSwitchNotif:
+      description: >
+        Represents information on the targeted C2 Communication Mode switching for a UAS
+        (i.e. pair of UAV and UAV-C).
+      type: object
+      properties:
+        uaeServerId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        uasId:
+          $ref: '#/components/schemas/UasId'
+        c2CommModeSwitchType:
+          $ref: '#/components/schemas/C2CommModeSwitching'
+        switchingCause:
+          $ref: '#/components/schemas/C2SwitchingCause'
+      required:
+        - uaeServerId
+        - uasId
+        - c2CommModeSwitchType
+
+    C2Result:
+      description: Represents the result of an action related to C2 of a UAS.
+      type: object
+      properties:
+        c2OpConfirmed:
+          type: boolean
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - c2OpConfirmed
+
+    UasId:
+      description: Represents the identifier of a UAS (i.e. pair of UAV and UAV-C).
+      type: object
+      properties:
+        groupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        individualUasId:
+          type: array
+          items:
+            $ref: '#/components/schemas/UavId'
+          minItems: 2
+      oneOf:
+        - required: [groupId]
+        - required: [individualUasId]
+
+    UavId:
+      description: Represents the identifier of a UAV (e.g. UAV, UAV-C).
+      type: object
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        caaId:
+          type: string
+      anyOf:
+        - required: [gpsi]
+        - required: [caaId]
+
+    C2ServiceArea:
+      description: Represents a C2 service area.
+      type: object
+      properties:
+        ncgiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+        taiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+        geographicAreaList:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+      oneOf:
+        - required: [geographicAreaList]
+        - anyOf:
+          - required: [ncgiList]
+          - required: [taiList]
+
+    C2OpModeMngtCompStatus:
+      description: >
+        Represents the C2 Operation Mode Management Completion status for a UAV
+        (e.g. UAV, UAV-C).
+      type: object
+      properties:
+        uasId:
+          $ref: '#/components/schemas/UasId'
+        status:
+          $ref: '#/components/schemas/C2OpModeStatus'
+      required:
+        - uasId
+        - status
+
+    C2SwitchPolicies:
+      description: Represents the C2 operation mode switching policies.
+      type: object
+      properties:
+        directC2LinkQualityThrlds:
+          $ref: '#/components/schemas/C2LinkQualityThrlds'
+        uuC2LinkQualityThrlds:
+          $ref: '#/components/schemas/C2LinkQualityThrlds'
+        utmNavC2LinkQualityThrlds:
+          $ref: '#/components/schemas/C2LinkQualityThrlds'
+        dualC2Link1QualityThrlds:
+          $ref: '#/components/schemas/C2LinkQualityThrlds'
+        dualC2SimuLinksQualityThrlds:
+          $ref: '#/components/schemas/C2LinkQualityThrlds'
+
+    C2LinkQualityThrlds:
+      description: Represents the C2 link quality thresholds.
+      type: object
+      properties:
+        nrRsrpThrldLow:
+          type: integer
+          minimum: 0
+          maximum: 127
+        nrRsrpThrldHigh:
+          type: integer
+          minimum: 0
+          maximum: 127
+        nrRsrqThrldLow:
+          type: integer
+          minimum: 0
+          maximum: 127
+        nrRsrqThrldHigh:
+          type: integer
+          minimum: 0
+          maximum: 127
+        packetLossThrldLow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        packetLossThrldHigh:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+
+    C2DirectAvailRepReqs:
+      description: >
+        Represents the "Direct C2 Communication" mode availability reporting requirements.
+      type: object
+      properties:
+        proseAppCodeSuffixPool:
+          $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/ProseApplicationCodeSuffixPool'
+        proseAppMasks:
+          type: array
+          items:
+            $ref: 'TS29555_N5g-ddnmf_Discovery.yaml#/components/schemas/ProseApplicationMask'
+          minItems: 1
+        validity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        repReqs:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+      anyOf:
+        - required: [proseAppCodeSuffixPool]
+        - required: [validity]
+        - required: [repReqs]
+
+    DualC2Data:
+      description: >
+        Represents the Dual C2 communication mode related information.
+      type: object
+      properties:
+        link1C2SwitchPolicies:
+          $ref: '#/components/schemas/C2SwitchPolicies'
+        link1C2ServiceArea:
+          $ref: '#/components/schemas/C2ServiceArea'
+        link2C2SwitchPolicies:
+          $ref: '#/components/schemas/C2SwitchPolicies'
+        link2C2ServiceArea:
+          $ref: '#/components/schemas/C2ServiceArea'
+      anyOf:
+        - required: [link1C2SwitchPolicies]
+        - required: [link1C2ServiceArea]
+        - required: [link2C2SwitchPolicies]
+        - required: [link2C2ServiceArea]
+
+# ENUMS:
+
+    C2CommMode:
+      anyOf:
+        - type: string
+          enum:
+          - DIRECT_C2_COMMUNICATION
+          - NETWORK_ASSISTED_C2_COMMUNICATION
+          - NETWORK_ASSISTED_C2_COMMUNICATION_DUAL
+          - UTM_NAVIGATED_C2_COMMUNICATION
+          - UTM_NAVIGATED_C2_COMMUNICATION_DUAL
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the C2 Communication Mode.  
+        Possible values are:
+        - DIRECT_C2_COMMUNICATION: Indicates Direct C2 Communication mode.
+        - NETWORK_ASSISTED_C2_COMMUNICATION: Indicates Network-Assisted C2 Communication mode.
+        - NETWORK_ASSISTED_C2_COMMUNICATION_DUAL: Represents Network-Assisted C2 Communication mode
+          via a specific subscription/network (i.e., in case of Dual Network-Assisted C2
+          communications).
+        - UTM_NAVIGATED_C2_COMMUNICATION: Indicates UTM-Navigated C2 communication mode.
+        - UTM_NAVIGATED_C2_COMMUNICATION_DUAL: Represents UTM-Navigated C2 Communication mode via
+          a specific subscription/network (i.e., in case of Dual UTM-Navigated C2communications).
+
+    C2CommModeSwitching:
+      anyOf:
+        - type: string
+          enum:
+          - DIRECT_TO_NETWORK_ASSISTED_C2
+          - NETWORK_ASSISTED_TO_DIRECT_C2
+          - DIRECT_TO_UTM_NAVIGATED_C2
+          - NETWORK_ASSISTED_TO_UTM_NAVIGATED_C2
+          - NETWORK_ASSISTED_TO_NETWORK_ASSISTED
+          - UTM_NAVIGATED_TO_UTM_NAVIGATED
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the C2 Communication Mode Switching type.  
+        Possible values are:
+        - DIRECT_TO_NETWORK_ASSISTED_C2: Indicates the C2 Communication Mode switching from Direct
+          C2 Communication mode to Network-Assisted C2 Communication mode.
+        - NETWORK_ASSISTED_TO_DIRECT_C2: Indicates the C2 Communication Mode switching from
+          Network-Assisted C2 Communication mode to Direct C2 Communication mode.
+        - DIRECT_TO_UTM_NAVIGATED_C2: Indicates the C2 Communication Mode switching from
+          Direct C2 Communication mode to UTM-Navigated C2 communication mode.
+        - NETWORK_ASSISTED_TO_UTM_NAVIGATED_C2: Indicates the C2 Communication Mode switching
+          from Network-Assisted C2 Communication mode to UTM-Navigated C2 communication mode.
+        - NETWORK_ASSISTED_TO_NETWORK_ASSISTED: Represents the C2 Communication Mode switching
+          between two Network-Assisted C2 Communication modes (e.g., via different
+          subscriptions/networks).
+        - UTM_NAVIGATED_TO_UTM_NAVIGATED: Represents the C2 Communication Mode switching
+          between two UTM-Navigated C2 Communication modes (e.g., via different
+          subscriptions/networks).
+
+    C2SwitchingCause:
+      anyOf:
+        - type: string
+          enum:
+          - DIRECT_LINK_QUALITY_DEGRADATION
+          - DIRECT_LINK_AVAILABLE
+          - MOVING_BVLOS
+          - LOCATION_CHANGE
+          - TRAFFIC_CONTROL_NEEDED
+          - SECURITY_REASONS
+          - ACTIVE_LINK_DEGRADATION
+          - OTHER_REASONS
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the C2 Communication Mode switching cause.  
+        Possible values are:
+        - DIRECT_LINK_QUALITY_DEGRADATION: Indicates that the C2 Communication Mode switching
+          was triggered due to a degradation in the direct radio link quality.
+        - DIRECT_LINK_AVAILABLE: Indicates that the C2 Communication Mode switching was triggered
+          due to the availability of a direct link, i.e. direct radio link quality enables its
+          usage.
+        - MOVING_BVLOS: Indicates that the C2 Communication Mode switching was triggered due to
+          the UAV moving BVLOS.
+        - LOCATION_CHANGE: Indicates that the C2 Communication Mode switching was triggered due to
+          an actual or expected location/mobility of the UAV (e.g. which impacts the UAV-to-UAV-C
+          location).
+        - TRAFFIC_CONTROL_NEEDED: Indicates that the C2 Communication Mode switching was triggered
+          due to the necessity to have air traffic control.
+        - SECURITY_REASONS: Indicates that the C2 Communication Mode switching was triggered due to
+          security reasons.
+        - ACTIVE_LINK_DEGRADATION: Indicates that the C2 Communication Mode switching was triggered
+          due to a degradation of the active link in case of Dual C2 communications (e.g., Dual
+          Network-Assisted C2 communications, Dual UTM-Navigated C2 communications).
+        - OTHER_REASONS: Indicates that the C2 Communication Mode switching was triggered due to
+          other reasons (e.g. unpredictable event, unknown reason, weather conditions, topography,
+          etc.).
+
+    C2OpModeStatus:
+      anyOf:
+        - type: string
+          enum:
+          - SUCCESSFUL
+          - NOT_SUCCESSFUL
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the C2 operation mode management completion status.  
+        Possible values are:
+        - SUCCESSFUL: Indicates that the C2 operation mode configuration was successful.
+        - NOT_SUCCESSFUL: Indicates that the C2 operation mode configuration was not successful.

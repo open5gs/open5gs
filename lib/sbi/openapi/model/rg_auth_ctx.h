@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_rg_auth_ctx_s OpenAPI_rg_auth_ctx_t;
 #include "auth_result.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_rg_auth_ctx_s OpenAPI_rg_auth_ctx_t;
-typedef struct OpenAPI_rg_auth_ctx_s {
+struct OpenAPI_rg_auth_ctx_s {
     OpenAPI_auth_result_e auth_result;
     char *supi;
     bool is_auth_ind;
     int auth_ind;
-} OpenAPI_rg_auth_ctx_t;
+};
 
 OpenAPI_rg_auth_ctx_t *OpenAPI_rg_auth_ctx_create(
     OpenAPI_auth_result_e auth_result,

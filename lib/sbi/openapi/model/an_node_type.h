@@ -1,7 +1,7 @@
 /*
  * an_node_type.h
  *
- * 
+ * Access Network Node Type (gNB, ng-eNB...)
  */
 
 #ifndef _OpenAPI_an_node_type_H_

@@ -1,0 +1,397 @@
+openapi: 3.0.0
+
+info:
+  title: PIN Server Service Continuity Service
+  version: 1.1.1
+  description: |
+    PIN Server Service Continuity Information Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.583 V19.2.0; Application layer support for Personal IoT Network (PINAPP);
+    Personal IoT Network (PIN) Server Services; Stage 3.
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.583
+
+servers:
+  - url: '{apiRoot}/pin-as-servicecontinuity/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.3.1 of 3GPP TS 29.583.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Creates a new Individual Service Continuity Information Subscriptions resource
+      operationId: CreateServiceContinuityInfo
+      tags:
+        - Service Continuity Information Subscriptions (Collection)
+      description: Create a Subscription for reporting service continuity information to PAS.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceContinuityInfo'
+      responses:
+        '201':
+          description: >
+            Created. The individual Service Continuity information subscription resource is
+            created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceContinuityInfo'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        ServiceContinuityInfoNotification:
+          '{$request.body#/notificationAddr}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ServiceContinuityInfoNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription Id.
+          required: true
+          schema:
+            type: string
+
+    get:
+      summary: Read an Individual Service Continuity Information Subscriptions resource
+      operationId: ReadIndServiceContinuityInfo
+      tags:
+        - Individual Service Continuity Information Subscription (Document)
+      responses:
+        '200':
+          description: OK (Successfully get the Service Continuity information subscription).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceContinuityInfo'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update an Individual Service Continuity Information Subscriptions resource
+      operationId: UpdateIndServiceContinuityInfo
+      tags:
+        - Individual Service Continuity Information Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceContinuityInfo'
+      responses:
+        '200':
+          description: OK (Successfully modified The individual Service Continuity information).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceContinuityInfo'
+        '204':
+          description: No Content.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify an Individual Service Continuity Information Subscriptions resource
+      operationId: ModifyIndServiceContinuityInfo
+      tags:
+        - Individual Service Continuity Information Subscription (Document)
+      requestBody:
+        description: Partial update an existing Individual ServiceContinuity information.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/ServiceContinuityInfoPatch'
+      responses:
+        '200':
+          description: >
+            OK (The Individual ServiceContinuity information Subscription is successfully modified
+            and the updated subscription information is returned in the response).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceContinuityInfo'
+        '204':
+          description: >
+            No Content (The individual Service Continuity information subscription was modified
+            successfully).
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an Individual Service Continuity Information Subscriptions resource
+      operationId: DeleteIndServiceContinuityInfo
+      tags:
+        - Individual Service Continuity Information Subscription (Document)
+      responses:
+        '204':
+          description: The individual subscription is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+# Components
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    ServiceContinuityInfo:
+      type: object
+      description: Represents an Individual Service Continuity Information Subscription.
+      properties:
+        subsEvent:
+          $ref: '#/components/schemas/EventType'
+        notificationAddr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        pinId:
+          type: string
+          description: Identifies a PIN.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - subsEvent
+        - notificationAddr
+        - pinId
+
+    ServiceContinuityInfoPatch:
+      type: object
+      description: Represents the partial update of Individual Service Continuity Information.
+      properties:
+        subsEvent:
+          $ref: '#/components/schemas/EventType'
+        notificationAddr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        pinId:
+          type: string
+          description: Identifies a PIN.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+
+    ServiceContinuityInfoNotification:
+      type: object
+      description: Represent the service continuity information for notification.
+      properties:
+        subsId:
+          type: string
+          description: >
+            Identifies the individual service continuity information subscription for which 
+            the service continuity information notification is delivered.
+        repInfo:
+          $ref: '#/components/schemas/ServiceContinuityReportInfo'
+      required:
+        - subsId
+        - repInfo
+
+    ServiceContinuityReportInfo:
+      type: object
+      description: List of notifications that include the information of the service continuity.
+      properties:
+        acId:
+          type: string
+          description: Identifies an application client identifier.
+        pinId:
+          type: string
+          description: Identifies a PIN.
+        pegcId:
+          type: string
+          description: Identifies a PEGC.
+        serviceId:
+          type: string
+          description: Identifies a PIN service.
+        sessionId:
+          type: string
+          description: Identifies an application session.
+        targetPineId:
+          type: string
+          description: Identifies the PINE.
+        sessionDes:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/FlowInfo'
+      required:
+        - acId
+        - pinId
+        - pegcId
+        - serviceId
+        - sessionId
+        - targetPineId
+
+#
+# ENUMERATIONS
+#
+
+    EventType:
+      anyOf:
+      - type: string
+        enum:
+          - SERVICE_CONTINUITY_INFO
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration and is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Indicates service continuity happens in a PIN.  
+        Possible values are:
+        - SERVICE_CONTINUITY_INFO: Indicates service continuity happens in a PIN.

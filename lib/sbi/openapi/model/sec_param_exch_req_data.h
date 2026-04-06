@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sec_param_exch_req_data_s OpenAPI_sec_param_exch_req_data_t;
 #include "ipx_provider_sec_info.h"
 #include "protection_policy.h"
 
@@ -19,21 +20,22 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sec_param_exch_req_data_s OpenAPI_sec_param_exch_req_data_t;
-typedef struct OpenAPI_sec_param_exch_req_data_s {
+struct OpenAPI_sec_param_exch_req_data_s {
     char *n32f_context_id;
     OpenAPI_list_t *jwe_cipher_suite_list;
     OpenAPI_list_t *jws_cipher_suite_list;
     struct OpenAPI_protection_policy_s *protection_policy_info;
+    OpenAPI_list_t *sec_profiles;
     OpenAPI_list_t *ipx_provider_sec_info_list;
     char *sender;
-} OpenAPI_sec_param_exch_req_data_t;
+};
 
 OpenAPI_sec_param_exch_req_data_t *OpenAPI_sec_param_exch_req_data_create(
     char *n32f_context_id,
     OpenAPI_list_t *jwe_cipher_suite_list,
     OpenAPI_list_t *jws_cipher_suite_list,
     OpenAPI_protection_policy_t *protection_policy_info,
+    OpenAPI_list_t *sec_profiles,
     OpenAPI_list_t *ipx_provider_sec_info_list,
     char *sender
 );

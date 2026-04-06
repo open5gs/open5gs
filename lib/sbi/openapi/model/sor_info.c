@@ -12,6 +12,8 @@ OpenAPI_sor_info_t *OpenAPI_sor_info_create(
     char *provisioning_time,
     char *sor_transparent_container,
     char *sor_cmci,
+    char *sor_snpn_si,
+    char *sor_snpn_si_ls,
     bool is_store_sor_cmci_in_me,
     int store_sor_cmci_in_me,
     bool is_usim_support_of_sor_cmci,
@@ -28,6 +30,8 @@ OpenAPI_sor_info_t *OpenAPI_sor_info_create(
     sor_info_local_var->provisioning_time = provisioning_time;
     sor_info_local_var->sor_transparent_container = sor_transparent_container;
     sor_info_local_var->sor_cmci = sor_cmci;
+    sor_info_local_var->sor_snpn_si = sor_snpn_si;
+    sor_info_local_var->sor_snpn_si_ls = sor_snpn_si_ls;
     sor_info_local_var->is_store_sor_cmci_in_me = is_store_sor_cmci_in_me;
     sor_info_local_var->store_sor_cmci_in_me = store_sor_cmci_in_me;
     sor_info_local_var->is_usim_support_of_sor_cmci = is_usim_support_of_sor_cmci;
@@ -66,6 +70,14 @@ void OpenAPI_sor_info_free(OpenAPI_sor_info_t *sor_info)
     if (sor_info->sor_cmci) {
         ogs_free(sor_info->sor_cmci);
         sor_info->sor_cmci = NULL;
+    }
+    if (sor_info->sor_snpn_si) {
+        ogs_free(sor_info->sor_snpn_si);
+        sor_info->sor_snpn_si = NULL;
+    }
+    if (sor_info->sor_snpn_si_ls) {
+        ogs_free(sor_info->sor_snpn_si_ls);
+        sor_info->sor_snpn_si_ls = NULL;
     }
     ogs_free(sor_info);
 }
@@ -136,6 +148,20 @@ cJSON *OpenAPI_sor_info_convertToJSON(OpenAPI_sor_info_t *sor_info)
     }
     }
 
+    if (sor_info->sor_snpn_si) {
+    if (cJSON_AddStringToObject(item, "sorSnpnSi", sor_info->sor_snpn_si) == NULL) {
+        ogs_error("OpenAPI_sor_info_convertToJSON() failed [sor_snpn_si]");
+        goto end;
+    }
+    }
+
+    if (sor_info->sor_snpn_si_ls) {
+    if (cJSON_AddStringToObject(item, "sorSnpnSiLs", sor_info->sor_snpn_si_ls) == NULL) {
+        ogs_error("OpenAPI_sor_info_convertToJSON() failed [sor_snpn_si_ls]");
+        goto end;
+    }
+    }
+
     if (sor_info->is_store_sor_cmci_in_me) {
     if (cJSON_AddBoolToObject(item, "storeSorCmciInMe", sor_info->store_sor_cmci_in_me) == NULL) {
         ogs_error("OpenAPI_sor_info_convertToJSON() failed [store_sor_cmci_in_me]");
@@ -166,6 +192,8 @@ OpenAPI_sor_info_t *OpenAPI_sor_info_parseFromJSON(cJSON *sor_infoJSON)
     cJSON *provisioning_time = NULL;
     cJSON *sor_transparent_container = NULL;
     cJSON *sor_cmci = NULL;
+    cJSON *sor_snpn_si = NULL;
+    cJSON *sor_snpn_si_ls = NULL;
     cJSON *store_sor_cmci_in_me = NULL;
     cJSON *usim_support_of_sor_cmci = NULL;
     steering_container = cJSON_GetObjectItemCaseSensitive(sor_infoJSON, "steeringContainer");
@@ -229,6 +257,22 @@ OpenAPI_sor_info_t *OpenAPI_sor_info_parseFromJSON(cJSON *sor_infoJSON)
     }
     }
 
+    sor_snpn_si = cJSON_GetObjectItemCaseSensitive(sor_infoJSON, "sorSnpnSi");
+    if (sor_snpn_si) {
+    if (!cJSON_IsString(sor_snpn_si) && !cJSON_IsNull(sor_snpn_si)) {
+        ogs_error("OpenAPI_sor_info_parseFromJSON() failed [sor_snpn_si]");
+        goto end;
+    }
+    }
+
+    sor_snpn_si_ls = cJSON_GetObjectItemCaseSensitive(sor_infoJSON, "sorSnpnSiLs");
+    if (sor_snpn_si_ls) {
+    if (!cJSON_IsString(sor_snpn_si_ls) && !cJSON_IsNull(sor_snpn_si_ls)) {
+        ogs_error("OpenAPI_sor_info_parseFromJSON() failed [sor_snpn_si_ls]");
+        goto end;
+    }
+    }
+
     store_sor_cmci_in_me = cJSON_GetObjectItemCaseSensitive(sor_infoJSON, "storeSorCmciInMe");
     if (store_sor_cmci_in_me) {
     if (!cJSON_IsBool(store_sor_cmci_in_me)) {
@@ -254,6 +298,8 @@ OpenAPI_sor_info_t *OpenAPI_sor_info_parseFromJSON(cJSON *sor_infoJSON)
         ogs_strdup(provisioning_time->valuestring),
         sor_transparent_container && !cJSON_IsNull(sor_transparent_container) ? ogs_strdup(sor_transparent_container->valuestring) : NULL,
         sor_cmci && !cJSON_IsNull(sor_cmci) ? ogs_strdup(sor_cmci->valuestring) : NULL,
+        sor_snpn_si && !cJSON_IsNull(sor_snpn_si) ? ogs_strdup(sor_snpn_si->valuestring) : NULL,
+        sor_snpn_si_ls && !cJSON_IsNull(sor_snpn_si_ls) ? ogs_strdup(sor_snpn_si_ls->valuestring) : NULL,
         store_sor_cmci_in_me ? true : false,
         store_sor_cmci_in_me ? store_sor_cmci_in_me->valueint : 0,
         usim_support_of_sor_cmci ? true : false,

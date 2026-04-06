@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_status_notification_s OpenAPI_status_notification_t;
 #include "apn_rate_status.h"
 #include "eps_pdn_cnx_info.h"
 #include "small_data_rate_status.h"
@@ -22,8 +23,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_status_notification_s OpenAPI_status_notification_t;
-typedef struct OpenAPI_status_notification_s {
+struct OpenAPI_status_notification_s {
     struct OpenAPI_status_info_s *status_info;
     struct OpenAPI_small_data_rate_status_s *small_data_rate_status;
     struct OpenAPI_apn_rate_status_s *apn_rate_status;
@@ -33,7 +33,7 @@ typedef struct OpenAPI_status_notification_s {
     struct OpenAPI_eps_pdn_cnx_info_s *eps_pdn_cnx_info;
     char *inter_plmn_api_root;
     char *intra_plmn_api_root;
-} OpenAPI_status_notification_t;
+};
 
 OpenAPI_status_notification_t *OpenAPI_status_notification_create(
     OpenAPI_status_info_t *status_info,

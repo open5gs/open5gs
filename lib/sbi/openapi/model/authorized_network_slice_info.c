@@ -19,7 +19,9 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_c
     OpenAPI_list_t* nrf_oauth2_required,
     char *target_amf_service_set,
     OpenAPI_list_t *target_nssai,
-    OpenAPI_list_t *nsag_infos
+    OpenAPI_list_t *nsag_infos,
+    OpenAPI_list_t *mapping_of_nssai,
+    OpenAPI_list_t* snssai_info_rsp_data
 )
 {
     OpenAPI_authorized_network_slice_info_t *authorized_network_slice_info_local_var = ogs_malloc(sizeof(OpenAPI_authorized_network_slice_info_t));
@@ -40,6 +42,8 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_c
     authorized_network_slice_info_local_var->target_amf_service_set = target_amf_service_set;
     authorized_network_slice_info_local_var->target_nssai = target_nssai;
     authorized_network_slice_info_local_var->nsag_infos = nsag_infos;
+    authorized_network_slice_info_local_var->mapping_of_nssai = mapping_of_nssai;
+    authorized_network_slice_info_local_var->snssai_info_rsp_data = snssai_info_rsp_data;
 
     return authorized_network_slice_info_local_var;
 }
@@ -137,6 +141,23 @@ void OpenAPI_authorized_network_slice_info_free(OpenAPI_authorized_network_slice
         }
         OpenAPI_list_free(authorized_network_slice_info->nsag_infos);
         authorized_network_slice_info->nsag_infos = NULL;
+    }
+    if (authorized_network_slice_info->mapping_of_nssai) {
+        OpenAPI_list_for_each(authorized_network_slice_info->mapping_of_nssai, node) {
+            OpenAPI_mapping_of_snssai_free(node->data);
+        }
+        OpenAPI_list_free(authorized_network_slice_info->mapping_of_nssai);
+        authorized_network_slice_info->mapping_of_nssai = NULL;
+    }
+    if (authorized_network_slice_info->snssai_info_rsp_data) {
+        OpenAPI_list_for_each(authorized_network_slice_info->snssai_info_rsp_data, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_snssai_info_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(authorized_network_slice_info->snssai_info_rsp_data);
+        authorized_network_slice_info->snssai_info_rsp_data = NULL;
     }
     ogs_free(authorized_network_slice_info);
 }
@@ -343,6 +364,52 @@ cJSON *OpenAPI_authorized_network_slice_info_convertToJSON(OpenAPI_authorized_ne
     }
     }
 
+    if (authorized_network_slice_info->mapping_of_nssai) {
+    cJSON *mapping_of_nssaiList = cJSON_AddArrayToObject(item, "mappingOfNssai");
+    if (mapping_of_nssaiList == NULL) {
+        ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [mapping_of_nssai]");
+        goto end;
+    }
+    OpenAPI_list_for_each(authorized_network_slice_info->mapping_of_nssai, node) {
+        cJSON *itemLocal = OpenAPI_mapping_of_snssai_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [mapping_of_nssai]");
+            goto end;
+        }
+        cJSON_AddItemToArray(mapping_of_nssaiList, itemLocal);
+    }
+    }
+
+    if (authorized_network_slice_info->snssai_info_rsp_data) {
+    cJSON *snssai_info_rsp_data = cJSON_AddObjectToObject(item, "snssaiInfoRspData");
+    if (snssai_info_rsp_data == NULL) {
+        ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [snssai_info_rsp_data]");
+        goto end;
+    }
+    cJSON *localMapObject = snssai_info_rsp_data;
+    if (authorized_network_slice_info->snssai_info_rsp_data) {
+        OpenAPI_list_for_each(authorized_network_slice_info->snssai_info_rsp_data, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [snssai_info_rsp_data]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [snssai_info_rsp_data]");
+                goto end;
+            }
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_snssai_info_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_authorized_network_slice_info_convertToJSON() failed [inner]");
+                goto end;
+            }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -375,6 +442,10 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
     OpenAPI_list_t *target_nssaiList = NULL;
     cJSON *nsag_infos = NULL;
     OpenAPI_list_t *nsag_infosList = NULL;
+    cJSON *mapping_of_nssai = NULL;
+    OpenAPI_list_t *mapping_of_nssaiList = NULL;
+    cJSON *snssai_info_rsp_data = NULL;
+    OpenAPI_list_t *snssai_info_rsp_dataList = NULL;
     allowed_nssai_list = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "allowedNssaiList");
     if (allowed_nssai_list) {
         cJSON *allowed_nssai_list_local = NULL;
@@ -627,6 +698,56 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
         }
     }
 
+    mapping_of_nssai = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "mappingOfNssai");
+    if (mapping_of_nssai) {
+        cJSON *mapping_of_nssai_local = NULL;
+        if (!cJSON_IsArray(mapping_of_nssai)) {
+            ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [mapping_of_nssai]");
+            goto end;
+        }
+
+        mapping_of_nssaiList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(mapping_of_nssai_local, mapping_of_nssai) {
+            if (!cJSON_IsObject(mapping_of_nssai_local)) {
+                ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [mapping_of_nssai]");
+                goto end;
+            }
+            OpenAPI_mapping_of_snssai_t *mapping_of_nssaiItem = OpenAPI_mapping_of_snssai_parseFromJSON(mapping_of_nssai_local);
+            if (!mapping_of_nssaiItem) {
+                ogs_error("No mapping_of_nssaiItem");
+                goto end;
+            }
+            OpenAPI_list_add(mapping_of_nssaiList, mapping_of_nssaiItem);
+        }
+    }
+
+    snssai_info_rsp_data = cJSON_GetObjectItemCaseSensitive(authorized_network_slice_infoJSON, "snssaiInfoRspData");
+    if (snssai_info_rsp_data) {
+        cJSON *snssai_info_rsp_data_local_map = NULL;
+        if (!cJSON_IsObject(snssai_info_rsp_data) && !cJSON_IsNull(snssai_info_rsp_data)) {
+            ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [snssai_info_rsp_data]");
+            goto end;
+        }
+        if (cJSON_IsObject(snssai_info_rsp_data)) {
+            snssai_info_rsp_dataList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(snssai_info_rsp_data_local_map, snssai_info_rsp_data) {
+                cJSON *localMapObject = snssai_info_rsp_data_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_snssai_info_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(snssai_info_rsp_dataList, localMapKeyPair);
+            }
+        }
+    }
+
     authorized_network_slice_info_local_var = OpenAPI_authorized_network_slice_info_create (
         allowed_nssai_list ? allowed_nssai_listList : NULL,
         configured_nssai ? configured_nssaiList : NULL,
@@ -642,7 +763,9 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
         nrf_oauth2_required ? nrf_oauth2_requiredList : NULL,
         target_amf_service_set && !cJSON_IsNull(target_amf_service_set) ? ogs_strdup(target_amf_service_set->valuestring) : NULL,
         target_nssai ? target_nssaiList : NULL,
-        nsag_infos ? nsag_infosList : NULL
+        nsag_infos ? nsag_infosList : NULL,
+        mapping_of_nssai ? mapping_of_nssaiList : NULL,
+        snssai_info_rsp_data ? snssai_info_rsp_dataList : NULL
     );
 
     return authorized_network_slice_info_local_var;
@@ -688,7 +811,7 @@ end:
     }
     if (nrf_oauth2_requiredList) {
         OpenAPI_list_for_each(nrf_oauth2_requiredList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             ogs_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
@@ -709,6 +832,23 @@ end:
         }
         OpenAPI_list_free(nsag_infosList);
         nsag_infosList = NULL;
+    }
+    if (mapping_of_nssaiList) {
+        OpenAPI_list_for_each(mapping_of_nssaiList, node) {
+            OpenAPI_mapping_of_snssai_free(node->data);
+        }
+        OpenAPI_list_free(mapping_of_nssaiList);
+        mapping_of_nssaiList = NULL;
+    }
+    if (snssai_info_rsp_dataList) {
+        OpenAPI_list_for_each(snssai_info_rsp_dataList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_snssai_info_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(snssai_info_rsp_dataList);
+        snssai_info_rsp_dataList = NULL;
     }
     return NULL;
 }

@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nsi_information_s OpenAPI_nsi_information_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nsi_information_s OpenAPI_nsi_information_t;
-typedef struct OpenAPI_nsi_information_s {
+struct OpenAPI_nsi_information_s {
     char *nrf_id;
     char *nsi_id;
     char *nrf_nf_mgt_uri;
     char *nrf_access_token_uri;
     OpenAPI_list_t* nrf_oauth2_required;
-} OpenAPI_nsi_information_t;
+};
 
 OpenAPI_nsi_information_t *OpenAPI_nsi_information_create(
     char *nrf_id,

@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_prose_subscription_data_s OpenAPI_prose_subscription_data_t;
 #include "pro_se_allowed_plmn.h"
 #include "prose_service_auth.h"
 
@@ -19,12 +20,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_prose_subscription_data_s OpenAPI_prose_subscription_data_t;
-typedef struct OpenAPI_prose_subscription_data_s {
+struct OpenAPI_prose_subscription_data_s {
     struct OpenAPI_prose_service_auth_s *prose_service_auth;
     char *nr_ue_pc5_ambr;
     OpenAPI_list_t *prose_allowed_plmn;
-} OpenAPI_prose_subscription_data_t;
+};
 
 OpenAPI_prose_subscription_data_t *OpenAPI_prose_subscription_data_create(
     OpenAPI_prose_service_auth_t *prose_service_auth,

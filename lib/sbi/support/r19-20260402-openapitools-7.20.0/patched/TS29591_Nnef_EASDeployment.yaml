@@ -1,0 +1,339 @@
+openapi: 3.0.0
+
+info:
+  title: Nnef_EASDeployment
+  version: 1.2.0
+  description: |
+    NEF EAS Deployment service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.591 V19.5.0; 5G System; Network Exposure Function Southbound Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.591/
+
+servers:
+  - url: '{apiRoot}/nnef-eas-deployment/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nnef-eas-deployment
+
+paths:
+  /subscriptions:
+    post:
+      summary: subscribe to notifications
+      operationId: CreateIndividualSubcription
+      tags:
+        - Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EasDeploySubData'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EasDeploySubData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/nnef-eas-deployment/<apiVersion>/subscriptions/{subscriptionId}.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        notifUri:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EasDeployInfoNotif'
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    get:
+      summary: retrieve subscription
+      operationId: GetIndividualSubcription
+      tags:
+        - IndividualSubscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Event Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EasDeploySubData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: unsubscribe from notifications
+      operationId: DeleteIndividualSubcription
+      tags:
+        - IndividualSubscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Event Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was succesfully deleted
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nnef-eas-deployment: Access to the Nnef_EASDeployment API
+
+  schemas:
+    EasDeploySubData:
+      description: Represents an Individual EAS Deployment Event Subscription resource.
+      type: object
+      properties:
+        appId:
+          type: string
+        dnnSnssaiInfos:
+          type: array
+          items:
+            $ref: 'TS29522_AMInfluence.yaml#/components/schemas/DnnSnssaiInformation'
+          minItems: 1
+          description: Each of the element identifies a (DNN, S-NSSAI) combination.
+        eventId:
+          $ref: '#/components/schemas/EasEvent'
+        eventsNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EasDeployInfoData'
+          minItems: 1
+          description: >
+            Represents the EAS Deployment Information changes event(s) to be reported.
+            Shall only be present if the "immRep" attribute is included and sets to true,
+            and the current status of EAS Deployment Information is available.
+        immRep:
+          type: boolean
+          description: >
+            Indication of immediate reporting. Set to true: requires the immediate reporting of the 
+            current status of EAS Deployment Information, if available. Set to false (default): EAS 
+            Deployment Information event report occurs when the event is met.
+        interGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        notifId:
+          type: string
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - eventId
+        - notifId
+        - notifUri
+
+    EasDeployInfoNotif:
+      description: >
+        Represents notifications on EAS Deployment Information changes event(s) that occurred for an 
+        Individual EAS Deployment Event Subscription resource.
+      type: object
+      properties:
+        easDepNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EasDepNotification'
+          minItems: 1
+        notifId:
+          type: string
+      required:
+        - easDepNotifs
+        - notifId
+
+    EasDepNotification:
+      description: Represents the EAS Deployment Notifcation.
+      type: object
+      properties:
+        easDepInfo:
+          $ref: '#/components/schemas/EasDeployInfoData'
+        eventId:
+          $ref: '#/components/schemas/EasEvent'
+      required:
+        - easDepInfo
+        - eventId
+
+    EasDeployInfoData:
+      description: Represents the EAS Deployment Information to be reported.
+      type: object
+      properties:
+        appId:
+          type: string
+        dnaiInfos:
+          type: object
+          additionalProperties:
+            $ref: 'TS29522_EASDeployment.yaml#/components/schemas/DnaiInformation'
+          minProperties: 1
+          description: >
+            list of DNS server identifier (consisting of IP address and port) and/or IP address(s) 
+            of the EAS in the local DN for each DNAI. The key of map is the DNAI.
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        fqdnPatternList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/FqdnPatternMatchingRule'
+          minItems: 1
+        internalGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        targetAfId:
+          type: string
+          description: >
+            Identifier of the AF that is responsible for the EAS associated with this EAS
+            deployment information.
+        n6DelayPerDnaiEas:
+          type: array
+          items:
+            $ref: 'TS29522_EASDeployment.yaml#/components/schemas/N6DelayPerDnaiEas'
+          minItems: 1
+          description: >
+            N6 delay measurement assistance information per DNAI and/or EAS.
+      required:
+        - fqdnPatternList
+
+# Simple data types and Enumerations
+
+    EasEvent:
+      anyOf:
+      - type: string
+        enum:
+          - EAS_INFO_CHG
+      - type: string
+      description: |
+        Represents the EAS event.  
+        Possible values are：
+        - EAS_INFO_CHG: Indicates that the EAS Deployment Information is changed.

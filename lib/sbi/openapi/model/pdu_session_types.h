@@ -1,7 +1,7 @@
 /*
  * pdu_session_types.h
  *
- * 
+ * Contains a list of PDU session types
  */
 
 #ifndef _OpenAPI_pdu_session_types_H_
@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pdu_session_types_s OpenAPI_pdu_session_types_t;
 #include "pdu_session_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pdu_session_types_s OpenAPI_pdu_session_types_t;
-typedef struct OpenAPI_pdu_session_types_s {
+struct OpenAPI_pdu_session_types_s {
     OpenAPI_pdu_session_type_e default_session_type;
     OpenAPI_list_t *allowed_session_types;
-} OpenAPI_pdu_session_types_t;
+};
 
 OpenAPI_pdu_session_types_t *OpenAPI_pdu_session_types_create(
     OpenAPI_pdu_session_type_e default_session_type,

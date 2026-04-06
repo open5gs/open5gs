@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_additional_ee_subs_info_s OpenAPI_additional_ee_subs_info_t;
 #include "amf_subscription_info.h"
 #include "hss_subscription_info.h"
 #include "smf_subscription_info.h"
@@ -20,12 +21,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_additional_ee_subs_info_s OpenAPI_additional_ee_subs_info_t;
-typedef struct OpenAPI_additional_ee_subs_info_s {
+struct OpenAPI_additional_ee_subs_info_s {
     OpenAPI_list_t *amf_subscription_info_list;
     struct OpenAPI_smf_subscription_info_s *smf_subscription_info;
     struct OpenAPI_hss_subscription_info_s *hss_subscription_info;
-} OpenAPI_additional_ee_subs_info_t;
+};
 
 OpenAPI_additional_ee_subs_info_t *OpenAPI_additional_ee_subs_info_create(
     OpenAPI_list_t *amf_subscription_info_list,

@@ -1,7 +1,7 @@
 /*
  * condition_event_type.h
  *
- * 
+ * Indicates whether a notification is due to the NF Instance to start or stop being part of a condition for a subscription to a set of NFs 
  */
 
 #ifndef _OpenAPI_condition_event_type_H_

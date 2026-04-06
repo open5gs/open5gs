@@ -1,7 +1,7 @@
 /*
  * ipx_provider_sec_info.h
  *
- * Defines the security information list of an IPX
+ * Defines the security information list of an RI
  */
 
 #ifndef _OpenAPI_ipx_provider_sec_info_H_
@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ipx_provider_sec_info_s OpenAPI_ipx_provider_sec_info_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ipx_provider_sec_info_s OpenAPI_ipx_provider_sec_info_t;
-typedef struct OpenAPI_ipx_provider_sec_info_s {
+struct OpenAPI_ipx_provider_sec_info_s {
     char *ipx_provider_id;
     OpenAPI_list_t *raw_public_key_list;
     OpenAPI_list_t *certificate_list;
-} OpenAPI_ipx_provider_sec_info_t;
+};
 
 OpenAPI_ipx_provider_sec_info_t *OpenAPI_ipx_provider_sec_info_create(
     char *ipx_provider_id,

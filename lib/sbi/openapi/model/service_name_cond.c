@@ -5,7 +5,7 @@
 #include "service_name_cond.h"
 
 OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_create(
-    char *service_name
+    OpenAPI_service_name_e service_name
 )
 {
     OpenAPI_service_name_cond_t *service_name_cond_local_var = ogs_malloc(sizeof(OpenAPI_service_name_cond_t));
@@ -23,10 +23,6 @@ void OpenAPI_service_name_cond_free(OpenAPI_service_name_cond_t *service_name_co
     if (NULL == service_name_cond) {
         return;
     }
-    if (service_name_cond->service_name) {
-        ogs_free(service_name_cond->service_name);
-        service_name_cond->service_name = NULL;
-    }
     ogs_free(service_name_cond);
 }
 
@@ -41,11 +37,11 @@ cJSON *OpenAPI_service_name_cond_convertToJSON(OpenAPI_service_name_cond_t *serv
     }
 
     item = cJSON_CreateObject();
-    if (!service_name_cond->service_name) {
+    if (service_name_cond->service_name == OpenAPI_service_name_NULL) {
         ogs_error("OpenAPI_service_name_cond_convertToJSON() failed [service_name]");
         return NULL;
     }
-    if (cJSON_AddStringToObject(item, "serviceName", service_name_cond->service_name) == NULL) {
+    if (cJSON_AddStringToObject(item, "serviceName", OpenAPI_service_name_ToString(service_name_cond->service_name)) == NULL) {
         ogs_error("OpenAPI_service_name_cond_convertToJSON() failed [service_name]");
         goto end;
     }
@@ -59,6 +55,7 @@ OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_parseFromJSON(cJSON *serv
     OpenAPI_service_name_cond_t *service_name_cond_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *service_name = NULL;
+    OpenAPI_service_name_e service_nameVariable = 0;
     service_name = cJSON_GetObjectItemCaseSensitive(service_name_condJSON, "serviceName");
     if (!service_name) {
         ogs_error("OpenAPI_service_name_cond_parseFromJSON() failed [service_name]");
@@ -68,9 +65,10 @@ OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_parseFromJSON(cJSON *serv
         ogs_error("OpenAPI_service_name_cond_parseFromJSON() failed [service_name]");
         goto end;
     }
+    service_nameVariable = OpenAPI_service_name_FromString(service_name->valuestring);
 
     service_name_cond_local_var = OpenAPI_service_name_cond_create (
-        ogs_strdup(service_name->valuestring)
+        service_nameVariable
     );
 
     return service_name_cond_local_var;

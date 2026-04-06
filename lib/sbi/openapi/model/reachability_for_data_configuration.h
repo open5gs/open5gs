@@ -12,21 +12,21 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_reachability_for_data_configuration_s OpenAPI_reachability_for_data_configuration_t;
 #include "reachability_for_data_report_config.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_reachability_for_data_configuration_s OpenAPI_reachability_for_data_configuration_t;
-typedef struct OpenAPI_reachability_for_data_configuration_s {
-    struct OpenAPI_reachability_for_data_report_config_s *report_cfg;
+struct OpenAPI_reachability_for_data_configuration_s {
+    OpenAPI_reachability_for_data_report_config_e report_cfg;
     bool is_min_interval;
     int min_interval;
-} OpenAPI_reachability_for_data_configuration_t;
+};
 
 OpenAPI_reachability_for_data_configuration_t *OpenAPI_reachability_for_data_configuration_create(
-    OpenAPI_reachability_for_data_report_config_t *report_cfg,
+    OpenAPI_reachability_for_data_report_config_e report_cfg,
     bool is_min_interval,
     int min_interval
 );

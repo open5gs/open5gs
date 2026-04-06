@@ -12,23 +12,25 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nf_instance_info_s OpenAPI_nf_instance_info_t;
 #include "preferred_search.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nf_instance_info_s OpenAPI_nf_instance_info_t;
-typedef struct OpenAPI_nf_instance_info_s {
+struct OpenAPI_nf_instance_info_s {
     char *nrf_disc_api_uri;
     struct OpenAPI_preferred_search_s *preferred_search;
     OpenAPI_list_t* nrf_altered_priorities;
-} OpenAPI_nf_instance_info_t;
+    char *nrf_supported_features;
+};
 
 OpenAPI_nf_instance_info_t *OpenAPI_nf_instance_info_create(
     char *nrf_disc_api_uri,
     OpenAPI_preferred_search_t *preferred_search,
-    OpenAPI_list_t* nrf_altered_priorities
+    OpenAPI_list_t* nrf_altered_priorities,
+    char *nrf_supported_features
 );
 void OpenAPI_nf_instance_info_free(OpenAPI_nf_instance_info_t *nf_instance_info);
 OpenAPI_nf_instance_info_t *OpenAPI_nf_instance_info_parseFromJSON(cJSON *nf_instance_infoJSON);

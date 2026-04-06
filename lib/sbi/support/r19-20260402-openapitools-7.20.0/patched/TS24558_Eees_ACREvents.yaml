@@ -1,0 +1,427 @@
+openapi: 3.0.0
+
+info:
+  title: Eees_ACREvents
+  version: "1.2.0"
+  description: |
+    API for ACR events subscription and notification.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.558 V19.5.0 Enabling Edge Applications; Protocol specification.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/24_series/24.558/'
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/eees-acrevents/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.558
+
+paths:
+
+  /subscriptions:
+    post:
+      description: Creates a new individual ACR events subscription.
+      operationId: CreateACREventsSubscripton
+      tags:
+        - ACR events subscription (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ACREventsSubscription'
+      responses:
+        '201':
+          description: Individual ACR events subscription resource created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ACREventsSubscription'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        notificationDestination:
+          '{request.body#/notificationDestination}':
+            post:
+              requestBody:  # Contents of the callback message.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ACRInfoNotification'
+              responses:
+                '204':
+                  description: No Content (The receipt of the Notification is acknowledged).
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    put:
+      description: >
+        Updates an existing individual ACR events subscription identified by the subscriptionId.
+      operationId: UpdateACREventsSubscription
+      tags:
+        - Individual ACR Events Subscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifies an individual ACR Events subscription resource.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to replace the existing subscription.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ACREventsSubscription'
+      responses:
+        '200':
+          description: >
+            OK (An individual ACR Events subscription resource updated successfully).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ACREventsSubscription'
+        '204':
+          description: No Content (updated successfully).
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      description: >
+        Deletes an existing individual ACR events subscription identified by the subscriptionId.
+      operationId: DeleteACREventsSubscription
+      tags:
+        - Individual ACR Events Subscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifies an individual ACR Events subscription resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: An individual ACR Events subscription resource deleted successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      description: >
+        Partially modifies an existing individual ACR events subscription identified by
+        the subscriptionId.
+      operationId: ModifyACREventsSubscription
+      tags:
+        - Individual ACR Events Subscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifies an individual ACR Events subscription resource.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to replace the existing subscription.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/ACREventsSubscriptionPatch'
+      responses:
+        '200':
+          description: >
+            OK (An individual ACR Events subscription resource updated successfully).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ACREventsSubscription'
+        '204':
+          description: No Content (successful notification).
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+    ACREventsSubscription:
+      description: ACE Events subscription request.
+      type: object
+      properties:
+        eecId:
+          type: string
+          description: Represents a unique identifier of the EEC.
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        easIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: The list of application identifiers of the EASs.
+        acIds:
+          type: array
+          items:
+            type: string
+          description: List of AC identities.
+        eventIds:
+          $ref: '#/components/schemas/ACREventIDs'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        requestTestNotification:
+          type: boolean
+          description: >
+            Set to true by Subscriber to request the ECS to send a test notification. Set to
+            false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - eecId
+        - easIds
+        - eventIds
+        - notificationDestination
+
+    ACRInfoNotification:
+      description: Notification of ACR events information.
+      type: object
+      properties:
+        subId:
+          type: string
+          description: >
+            String identifying the Individual ACR events subscription for which the ACT
+            Information notification is delivered.
+        easId:
+          type: string
+          description: Application identifier of the EAS.
+        acId:
+          type: string
+          description: Identity of the AC.
+        eventId:
+          $ref: '#/components/schemas/ACREventIDs'
+        trgtInfo:
+          $ref: '#/components/schemas/TargetInfo'
+        acrStatus:
+          $ref: '#/components/schemas/ACRCompleteEventInfo'
+        eecCtxtReloc:
+          $ref: '#/components/schemas/EecCtxtRelocStatus'
+        acrScenarioList:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+        easBundleInfo:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASBundleInfo'
+        tEasEndPointBundleList:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minItems: 1
+      required:
+        - subId
+        - easId
+        - eventId
+
+    TargetInfo:
+      description: >
+        Details of the selected T-EAS and the T-EES. The trgetEASInfo attribute shall be present,
+        although they are not specified as a mandatory due to backward compatibility reasons.
+      type: object
+      properties:
+        trgetEASInfo:
+          $ref: 'TS24558_Eees_EASDiscovery.yaml#/components/schemas/DiscoveredEas'
+        trgetEESInfo:
+          $ref: 'TS24558_Eecs_ServiceProvisioning.yaml#/components/schemas/EDNConfigInfo'
+
+    ACREventsSubscriptionPatch:
+      description: An individual ACR events subscription resource to be updated.
+      type: object
+      properties:
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        easIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: The list of application identifiers of the EASs.
+        eventIds:
+          $ref: '#/components/schemas/ACREventIDs'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    ACREventIDs:
+      anyOf:
+      - type: string
+        enum:
+          - TARGET_INFORMATION
+          - ACR_COMPLETE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration and is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents the ACR events.  
+        Possible values are:
+        - TARGET_INFORMATION: Represents the target information event.
+        - ACR_COMPLETE: Represents the ACR complete event.
+
+    EecCtxtRelocStatus:
+      description: Indicates the registration id and expiry time of the registration.
+      type: object
+      properties:
+        implReg:
+          $ref: 'TS29558_Eees_EECContextRelocation.yaml#/components/schemas/ImplicitRegDetails'
+
+    ACRCompleteEventInfo:
+      description: Indicates the completed ACR result and target EAS endpoint info.
+      type: object
+      properties:
+        acrRes:
+          type: boolean
+          description: Indicates whether the ACR is successful or failure.
+        tEasEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        failReason:
+          type: string
+          description: Indicates the cause information for the failure.
+      required:
+        - acrRes
+        - tEasEndpoint

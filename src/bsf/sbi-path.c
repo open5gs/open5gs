@@ -36,9 +36,9 @@ int bsf_sbi_open(void)
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AF);
 
     /* Build NF service information. It will be transmitted to NRF. */
-    if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)) {
+    if (ogs_sbi_nf_service_is_available(OpenAPI_service_name_nbsf_management)) {
         service = ogs_sbi_nf_service_build_default(
-                    nf_instance, OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT);
+                    nf_instance, OpenAPI_service_name_nbsf_management);
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
@@ -52,7 +52,8 @@ int bsf_sbi_open(void)
         ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Setup Subscription-Data */
-    ogs_sbi_subscription_spec_add(OpenAPI_nf_type_SEPP, NULL);
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_SEPP, OpenAPI_service_name_NULL);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
@@ -75,7 +76,7 @@ bool bsf_sbi_send_request(
 }
 
 int bsf_sbi_discover_and_send(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(bsf_sess_t *sess, void *data),
         bsf_sess_t *sess, ogs_sbi_stream_t *stream, void *data)
@@ -83,13 +84,13 @@ int bsf_sbi_discover_and_send(
     ogs_sbi_xact_t *xact = NULL;
     int r;
 
-    ogs_assert(service_type);
+    ogs_assert(service_name);
     ogs_assert(sess);
     ogs_assert(stream);
     ogs_assert(build);
 
     xact = ogs_sbi_xact_add(
-            0, &sess->sbi, service_type, discovery_option,
+            0, &sess->sbi, service_name, discovery_option,
             (ogs_sbi_build_f)build, sess, data);
     if (!xact) {
         ogs_error("bsf_sbi_discover_and_send() failed");

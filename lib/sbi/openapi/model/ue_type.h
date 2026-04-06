@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "ue_type_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_type_s OpenAPI_ue_type_t;
-typedef struct OpenAPI_ue_type_s {
-} OpenAPI_ue_type_t;
+typedef enum { OpenAPI_ue_type_NULL = 0, OpenAPI_ue_type_AERIAL_UE } OpenAPI_ue_type_e;
 
-OpenAPI_ue_type_t *OpenAPI_ue_type_create(
-);
-void OpenAPI_ue_type_free(OpenAPI_ue_type_t *ue_type);
-OpenAPI_ue_type_t *OpenAPI_ue_type_parseFromJSON(cJSON *ue_typeJSON);
-cJSON *OpenAPI_ue_type_convertToJSON(OpenAPI_ue_type_t *ue_type);
-OpenAPI_ue_type_t *OpenAPI_ue_type_copy(OpenAPI_ue_type_t *dst, OpenAPI_ue_type_t *src);
+char* OpenAPI_ue_type_ToString(OpenAPI_ue_type_e ue_type);
+
+OpenAPI_ue_type_e OpenAPI_ue_type_FromString(char* ue_type);
 
 #ifdef __cplusplus
 }

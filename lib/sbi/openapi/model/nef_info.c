@@ -16,7 +16,11 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_create(
     OpenAPI_list_t *dnai_list,
     OpenAPI_list_t *un_trust_af_info_list,
     bool is_uas_nf_functionality_ind,
-    int uas_nf_functionality_ind
+    int uas_nf_functionality_ind,
+    bool is_multi_mem_af_sess_qos_ind,
+    int multi_mem_af_sess_qos_ind,
+    bool is_member_ue_sel_assist_ind,
+    int member_ue_sel_assist_ind
 )
 {
     OpenAPI_nef_info_t *nef_info_local_var = ogs_malloc(sizeof(OpenAPI_nef_info_t));
@@ -34,6 +38,10 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_create(
     nef_info_local_var->un_trust_af_info_list = un_trust_af_info_list;
     nef_info_local_var->is_uas_nf_functionality_ind = is_uas_nf_functionality_ind;
     nef_info_local_var->uas_nf_functionality_ind = uas_nf_functionality_ind;
+    nef_info_local_var->is_multi_mem_af_sess_qos_ind = is_multi_mem_af_sess_qos_ind;
+    nef_info_local_var->multi_mem_af_sess_qos_ind = multi_mem_af_sess_qos_ind;
+    nef_info_local_var->is_member_ue_sel_assist_ind = is_member_ue_sel_assist_ind;
+    nef_info_local_var->member_ue_sel_assist_ind = member_ue_sel_assist_ind;
 
     return nef_info_local_var;
 }
@@ -268,6 +276,20 @@ cJSON *OpenAPI_nef_info_convertToJSON(OpenAPI_nef_info_t *nef_info)
     }
     }
 
+    if (nef_info->is_multi_mem_af_sess_qos_ind) {
+    if (cJSON_AddBoolToObject(item, "multiMemAfSessQosInd", nef_info->multi_mem_af_sess_qos_ind) == NULL) {
+        ogs_error("OpenAPI_nef_info_convertToJSON() failed [multi_mem_af_sess_qos_ind]");
+        goto end;
+    }
+    }
+
+    if (nef_info->is_member_ue_sel_assist_ind) {
+    if (cJSON_AddBoolToObject(item, "memberUESelAssistInd", nef_info->member_ue_sel_assist_ind) == NULL) {
+        ogs_error("OpenAPI_nef_info_convertToJSON() failed [member_ue_sel_assist_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -296,6 +318,8 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
     cJSON *un_trust_af_info_list = NULL;
     OpenAPI_list_t *un_trust_af_info_listList = NULL;
     cJSON *uas_nf_functionality_ind = NULL;
+    cJSON *multi_mem_af_sess_qos_ind = NULL;
+    cJSON *member_ue_sel_assist_ind = NULL;
     nef_id = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "nefId");
     if (nef_id) {
     if (!cJSON_IsString(nef_id) && !cJSON_IsNull(nef_id)) {
@@ -492,6 +516,22 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
     }
     }
 
+    multi_mem_af_sess_qos_ind = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "multiMemAfSessQosInd");
+    if (multi_mem_af_sess_qos_ind) {
+    if (!cJSON_IsBool(multi_mem_af_sess_qos_ind)) {
+        ogs_error("OpenAPI_nef_info_parseFromJSON() failed [multi_mem_af_sess_qos_ind]");
+        goto end;
+    }
+    }
+
+    member_ue_sel_assist_ind = cJSON_GetObjectItemCaseSensitive(nef_infoJSON, "memberUESelAssistInd");
+    if (member_ue_sel_assist_ind) {
+    if (!cJSON_IsBool(member_ue_sel_assist_ind)) {
+        ogs_error("OpenAPI_nef_info_parseFromJSON() failed [member_ue_sel_assist_ind]");
+        goto end;
+    }
+    }
+
     nef_info_local_var = OpenAPI_nef_info_create (
         nef_id && !cJSON_IsNull(nef_id) ? ogs_strdup(nef_id->valuestring) : NULL,
         pfd_data ? pfd_data_local_nonprim : NULL,
@@ -504,7 +544,11 @@ OpenAPI_nef_info_t *OpenAPI_nef_info_parseFromJSON(cJSON *nef_infoJSON)
         dnai_list ? dnai_listList : NULL,
         un_trust_af_info_list ? un_trust_af_info_listList : NULL,
         uas_nf_functionality_ind ? true : false,
-        uas_nf_functionality_ind ? uas_nf_functionality_ind->valueint : 0
+        uas_nf_functionality_ind ? uas_nf_functionality_ind->valueint : 0,
+        multi_mem_af_sess_qos_ind ? true : false,
+        multi_mem_af_sess_qos_ind ? multi_mem_af_sess_qos_ind->valueint : 0,
+        member_ue_sel_assist_ind ? true : false,
+        member_ue_sel_assist_ind ? member_ue_sel_assist_ind->valueint : 0
     );
 
     return nef_info_local_var;

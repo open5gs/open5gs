@@ -12,23 +12,22 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "fqdn_rm.h"
+typedef struct OpenAPI_smf_registration_modification_s OpenAPI_smf_registration_modification_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_smf_registration_modification_s OpenAPI_smf_registration_modification_t;
-typedef struct OpenAPI_smf_registration_modification_s {
+struct OpenAPI_smf_registration_modification_s {
     char *smf_instance_id;
     char *smf_set_id;
-    struct OpenAPI_fqdn_rm_s *pgw_fqdn;
-} OpenAPI_smf_registration_modification_t;
+    char *pgw_fqdn;
+};
 
 OpenAPI_smf_registration_modification_t *OpenAPI_smf_registration_modification_create(
     char *smf_instance_id,
     char *smf_set_id,
-    OpenAPI_fqdn_rm_t *pgw_fqdn
+    char *pgw_fqdn
 );
 void OpenAPI_smf_registration_modification_free(OpenAPI_smf_registration_modification_t *smf_registration_modification);
 OpenAPI_smf_registration_modification_t *OpenAPI_smf_registration_modification_parseFromJSON(cJSON *smf_registration_modificationJSON);

@@ -12,11 +12,12 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_context_data_sets_s OpenAPI_context_data_sets_t;
 #include "amf3_gpp_access_registration.h"
 #include "amf_non3_gpp_access_registration.h"
 #include "ee_subscription.h"
 #include "ip_sm_gw_registration.h"
-#include "pei_update_info.h"
+#include "pei_update_info_1.h"
 #include "roaming_info_update.h"
 #include "sdm_subscription.h"
 #include "smf_registration.h"
@@ -27,8 +28,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_context_data_sets_s OpenAPI_context_data_sets_t;
-typedef struct OpenAPI_context_data_sets_s {
+struct OpenAPI_context_data_sets_s {
     struct OpenAPI_amf3_gpp_access_registration_s *amf3_gpp;
     struct OpenAPI_amf_non3_gpp_access_registration_s *amf_non3_gpp;
     OpenAPI_list_t *sdm_subscriptions;
@@ -37,10 +37,11 @@ typedef struct OpenAPI_context_data_sets_s {
     struct OpenAPI_smsf_registration_s *smsf_non3_gpp_access;
     OpenAPI_list_t *subscription_data_subscriptions;
     OpenAPI_list_t *smf_registrations;
+    bool is_ip_sm_gw_null;
     struct OpenAPI_ip_sm_gw_registration_s *ip_sm_gw;
     struct OpenAPI_roaming_info_update_s *roaming_info;
-    struct OpenAPI_pei_update_info_s *pei_info;
-} OpenAPI_context_data_sets_t;
+    struct OpenAPI_pei_update_info_1_s *pei_info;
+};
 
 OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_create(
     OpenAPI_amf3_gpp_access_registration_t *amf3_gpp,
@@ -51,9 +52,10 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_create(
     OpenAPI_smsf_registration_t *smsf_non3_gpp_access,
     OpenAPI_list_t *subscription_data_subscriptions,
     OpenAPI_list_t *smf_registrations,
+    bool is_ip_sm_gw_null,
     OpenAPI_ip_sm_gw_registration_t *ip_sm_gw,
     OpenAPI_roaming_info_update_t *roaming_info,
-    OpenAPI_pei_update_info_t *pei_info
+    OpenAPI_pei_update_info_1_t *pei_info
 );
 void OpenAPI_context_data_sets_free(OpenAPI_context_data_sets_t *context_data_sets);
 OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *context_data_setsJSON);

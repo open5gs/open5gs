@@ -1,7 +1,7 @@
 /*
  * sm_policy_association_release_cause.h
  *
- * 
+ * Represents the cause due to which the PCF requests the termination of the SM policy association. 
  */
 
 #ifndef _OpenAPI_sm_policy_association_release_cause_H_

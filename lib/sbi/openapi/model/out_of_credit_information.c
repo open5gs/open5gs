@@ -5,7 +5,7 @@
 #include "out_of_credit_information.h"
 
 OpenAPI_out_of_credit_information_t *OpenAPI_out_of_credit_information_create(
-    OpenAPI_final_unit_action_t *fin_unit_act,
+    OpenAPI_final_unit_action_e fin_unit_act,
     OpenAPI_list_t *flows
 )
 {
@@ -24,10 +24,6 @@ void OpenAPI_out_of_credit_information_free(OpenAPI_out_of_credit_information_t 
 
     if (NULL == out_of_credit_information) {
         return;
-    }
-    if (out_of_credit_information->fin_unit_act) {
-        OpenAPI_final_unit_action_free(out_of_credit_information->fin_unit_act);
-        out_of_credit_information->fin_unit_act = NULL;
     }
     if (out_of_credit_information->flows) {
         OpenAPI_list_for_each(out_of_credit_information->flows, node) {
@@ -50,17 +46,11 @@ cJSON *OpenAPI_out_of_credit_information_convertToJSON(OpenAPI_out_of_credit_inf
     }
 
     item = cJSON_CreateObject();
-    if (!out_of_credit_information->fin_unit_act) {
+    if (out_of_credit_information->fin_unit_act == OpenAPI_final_unit_action_NULL) {
         ogs_error("OpenAPI_out_of_credit_information_convertToJSON() failed [fin_unit_act]");
         return NULL;
     }
-    cJSON *fin_unit_act_local_JSON = OpenAPI_final_unit_action_convertToJSON(out_of_credit_information->fin_unit_act);
-    if (fin_unit_act_local_JSON == NULL) {
-        ogs_error("OpenAPI_out_of_credit_information_convertToJSON() failed [fin_unit_act]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "finUnitAct", fin_unit_act_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "finUnitAct", OpenAPI_final_unit_action_ToString(out_of_credit_information->fin_unit_act)) == NULL) {
         ogs_error("OpenAPI_out_of_credit_information_convertToJSON() failed [fin_unit_act]");
         goto end;
     }
@@ -90,7 +80,7 @@ OpenAPI_out_of_credit_information_t *OpenAPI_out_of_credit_information_parseFrom
     OpenAPI_out_of_credit_information_t *out_of_credit_information_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *fin_unit_act = NULL;
-    OpenAPI_final_unit_action_t *fin_unit_act_local_nonprim = NULL;
+    OpenAPI_final_unit_action_e fin_unit_actVariable = 0;
     cJSON *flows = NULL;
     OpenAPI_list_t *flowsList = NULL;
     fin_unit_act = cJSON_GetObjectItemCaseSensitive(out_of_credit_informationJSON, "finUnitAct");
@@ -98,11 +88,11 @@ OpenAPI_out_of_credit_information_t *OpenAPI_out_of_credit_information_parseFrom
         ogs_error("OpenAPI_out_of_credit_information_parseFromJSON() failed [fin_unit_act]");
         goto end;
     }
-    fin_unit_act_local_nonprim = OpenAPI_final_unit_action_parseFromJSON(fin_unit_act);
-    if (!fin_unit_act_local_nonprim) {
-        ogs_error("OpenAPI_final_unit_action_parseFromJSON failed [fin_unit_act]");
+    if (!cJSON_IsString(fin_unit_act)) {
+        ogs_error("OpenAPI_out_of_credit_information_parseFromJSON() failed [fin_unit_act]");
         goto end;
     }
+    fin_unit_actVariable = OpenAPI_final_unit_action_FromString(fin_unit_act->valuestring);
 
     flows = cJSON_GetObjectItemCaseSensitive(out_of_credit_informationJSON, "flows");
     if (flows) {
@@ -129,16 +119,12 @@ OpenAPI_out_of_credit_information_t *OpenAPI_out_of_credit_information_parseFrom
     }
 
     out_of_credit_information_local_var = OpenAPI_out_of_credit_information_create (
-        fin_unit_act_local_nonprim,
+        fin_unit_actVariable,
         flows ? flowsList : NULL
     );
 
     return out_of_credit_information_local_var;
 end:
-    if (fin_unit_act_local_nonprim) {
-        OpenAPI_final_unit_action_free(fin_unit_act_local_nonprim);
-        fin_unit_act_local_nonprim = NULL;
-    }
     if (flowsList) {
         OpenAPI_list_for_each(flowsList, node) {
             OpenAPI_flows_free(node->data);

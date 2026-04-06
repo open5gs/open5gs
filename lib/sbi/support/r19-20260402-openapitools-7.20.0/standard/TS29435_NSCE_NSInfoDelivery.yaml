@@ -1,0 +1,245 @@
+openapi: 3.0.0
+
+info:
+  title: NSCE Server Network Slice Information Delivery Service
+  version: 1.1.0
+  description: |
+    NSCE Server Network Slice Information Delivery Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.435 V19.3.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Network Slice Capability Enablement (NSCE) Server Service(s); Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.435/
+
+servers:
+  - url: '{apiRoot}/nsce-nsid/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /slice-info-sets:
+    get:
+      summary: Request the retrieval of Network Slice Information.
+      operationId: RetrieveNetSliceInfo
+      tags:
+        - Network Slice Information Sets (Collection)
+      parameters:
+        - name: val-serv-id
+          in: query
+          description: Contains the identifier of the targeted VAL service.
+          required: true
+          schema:
+            type: string
+        - name: req-slice-info
+          in: query
+          description: Contains the requested Network Slice Information type(s).
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ReqSliceInfo'
+            minItems: 1
+        - name: supp-feats
+          in: query
+          description: >
+            Contains the list of supported features among the ones defined in clause 6.16.8.
+            This query parameter shall be present only when feature negotiation needs to take
+            place.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            OK. The representation(s) of the "Individual Network Slice Information Set" resource(s)
+            corresponding to the requested Network Slice Information shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NSInfoRetResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /slice-info-sets/deliver:
+    post:
+      summary: Enables to request Network Slice Information delivery to another entity.
+      operationId: DeliverNetSliceInfo
+      tags:
+        - Network Slice Information Delivery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NSInfoDelReq'
+      responses:
+        '204':
+          description: >
+            No Content. The Network Slice Information delivery request is successfully received,
+            processed and completed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    NSInfoRetResp:
+      description: >
+        Represents a Network Slice Information Retrieval response.
+      type: object
+      properties:
+        sliceInfo:
+          $ref: '#/components/schemas/NSInfoSet'
+      required:
+        - sliceInfo
+
+    NSInfoDelReq:
+      description: >
+        Represents a Network Slice Information Delivery request.
+      type: object
+      properties:
+        valServId:
+          type: string
+        valUeIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        reqSliceInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReqSliceInfo'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - valServId
+        - valUeIds
+
+    NSInfoSet:
+      description: >
+        Represents a Network Slice Information Set.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        sst:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        sliceCovArea:
+          $ref: '#/components/schemas/ServArea'
+      anyOf:
+        - required: [snssai]
+        - required: [sst]
+        - required: [sliceCovArea]
+
+    ServArea:
+      description: >
+        Represents the network Slice Coverage Area.
+      type: object
+      properties:
+        tais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+          minItems: 1
+        geoAreas:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+      anyOf:
+        - required: [tais]
+        - required: [geoAreas]
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    ReqSliceInfo:
+      anyOf:
+        - type: string
+          enum:
+          - SNSSAI
+          - SST
+          - SLICE_COV_AREA
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the requested Network Slice Information type.  
+        Possible values are:
+        - SNSSAI: Indicates that the requested Network Slice Information is the S-NSSAI.
+        - SST: Indicates that the requested Network Slice Information is the SST.
+        - SLICE_COV_AREA: Indicates that the requested Network Slice Information is the Slice
+          Coverage Area.

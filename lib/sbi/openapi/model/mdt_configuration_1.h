@@ -12,7 +12,9 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "area_scope.h"
+typedef struct OpenAPI_mdt_configuration_1_s OpenAPI_mdt_configuration_1_t;
+#include "area_scope_1.h"
+#include "bluetooth_measurement_1.h"
 #include "collection_period_rmm_lte_mdt.h"
 #include "collection_period_rmm_nr_mdt.h"
 #include "event_for_mdt.h"
@@ -26,7 +28,7 @@
 #include "measurement_lte_for_mdt.h"
 #include "measurement_nr_for_mdt.h"
 #include "measurement_period_lte_mdt.h"
-#include "plmn_id_1.h"
+#include "plmn_id.h"
 #include "positioning_method_mdt.h"
 #include "report_amount_mdt.h"
 #include "report_interval_mdt.h"
@@ -34,25 +36,31 @@
 #include "report_type_mdt.h"
 #include "reporting_trigger.h"
 #include "sensor_measurement.h"
+#include "slice_scope_per_plmn_1.h"
+#include "wlan_measurement_1.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_mdt_configuration_1_s OpenAPI_mdt_configuration_1_t;
-typedef struct OpenAPI_mdt_configuration_1_s {
+struct OpenAPI_mdt_configuration_1_s {
     OpenAPI_job_type_e job_type;
     OpenAPI_report_type_mdt_e report_type;
-    struct OpenAPI_area_scope_s *area_scope;
+    struct OpenAPI_area_scope_1_s *area_scope;
     OpenAPI_list_t *measurement_lte_list;
     OpenAPI_list_t *measurement_nr_list;
     OpenAPI_list_t *sensor_measurement_list;
+    OpenAPI_list_t *sensor_measurement_lte_list;
     OpenAPI_list_t *reporting_trigger_list;
     OpenAPI_report_interval_mdt_e report_interval;
     OpenAPI_report_interval_nr_mdt_e report_interval_nr;
     OpenAPI_report_amount_mdt_e report_amount;
+    OpenAPI_list_t* report_amount_per_measurement_lte;
+    OpenAPI_list_t* report_amount_per_measurement_nr;
     bool is_event_threshold_rsrp;
     int event_threshold_rsrp;
+    bool is_mn_only_ind;
+    int mn_only_ind;
     bool is_event_threshold_rsrp_nr;
     int event_threshold_rsrp_nr;
     bool is_event_threshold_rsrq;
@@ -72,21 +80,33 @@ typedef struct OpenAPI_mdt_configuration_1_s {
     OpenAPI_list_t *mdt_allowed_plmn_id_list;
     OpenAPI_list_t *mbsfn_area_list;
     OpenAPI_list_t *inter_freq_target_list;
-} OpenAPI_mdt_configuration_1_t;
+    bool is_event_threshold_sinr_nr;
+    int event_threshold_sinr_nr;
+    struct OpenAPI_bluetooth_measurement_1_s *bluetooth_measurement_nr;
+    struct OpenAPI_bluetooth_measurement_1_s *bluetooth_measurement_lte;
+    struct OpenAPI_wlan_measurement_1_s *wlan_measurement_nr;
+    struct OpenAPI_wlan_measurement_1_s *wlan_measurement_lte;
+    OpenAPI_list_t *slice_area_scope;
+};
 
 OpenAPI_mdt_configuration_1_t *OpenAPI_mdt_configuration_1_create(
     OpenAPI_job_type_e job_type,
     OpenAPI_report_type_mdt_e report_type,
-    OpenAPI_area_scope_t *area_scope,
+    OpenAPI_area_scope_1_t *area_scope,
     OpenAPI_list_t *measurement_lte_list,
     OpenAPI_list_t *measurement_nr_list,
     OpenAPI_list_t *sensor_measurement_list,
+    OpenAPI_list_t *sensor_measurement_lte_list,
     OpenAPI_list_t *reporting_trigger_list,
     OpenAPI_report_interval_mdt_e report_interval,
     OpenAPI_report_interval_nr_mdt_e report_interval_nr,
     OpenAPI_report_amount_mdt_e report_amount,
+    OpenAPI_list_t* report_amount_per_measurement_lte,
+    OpenAPI_list_t* report_amount_per_measurement_nr,
     bool is_event_threshold_rsrp,
     int event_threshold_rsrp,
+    bool is_mn_only_ind,
+    int mn_only_ind,
     bool is_event_threshold_rsrp_nr,
     int event_threshold_rsrp_nr,
     bool is_event_threshold_rsrq,
@@ -105,7 +125,14 @@ OpenAPI_mdt_configuration_1_t *OpenAPI_mdt_configuration_1_create(
     OpenAPI_measurement_period_lte_mdt_e measurement_period_lte,
     OpenAPI_list_t *mdt_allowed_plmn_id_list,
     OpenAPI_list_t *mbsfn_area_list,
-    OpenAPI_list_t *inter_freq_target_list
+    OpenAPI_list_t *inter_freq_target_list,
+    bool is_event_threshold_sinr_nr,
+    int event_threshold_sinr_nr,
+    OpenAPI_bluetooth_measurement_1_t *bluetooth_measurement_nr,
+    OpenAPI_bluetooth_measurement_1_t *bluetooth_measurement_lte,
+    OpenAPI_wlan_measurement_1_t *wlan_measurement_nr,
+    OpenAPI_wlan_measurement_1_t *wlan_measurement_lte,
+    OpenAPI_list_t *slice_area_scope
 );
 void OpenAPI_mdt_configuration_1_free(OpenAPI_mdt_configuration_1_t *mdt_configuration_1);
 OpenAPI_mdt_configuration_1_t *OpenAPI_mdt_configuration_1_parseFromJSON(cJSON *mdt_configuration_1JSON);

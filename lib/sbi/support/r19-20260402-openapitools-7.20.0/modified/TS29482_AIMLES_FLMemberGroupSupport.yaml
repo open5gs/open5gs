@@ -1,0 +1,408 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLES Federated Learning Member Group Support Service
+  version: 1.0.0
+  description: |
+    AIMLE Server provides a service consumer to create, update, and delete an FL Member Support
+    Group for an FL process.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.0.0; Service Enabler Architecture Layer for Verticals (SEAL); Artificial
+    Intelligence Machine Learning Enablement (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/aimles-fl/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /configurations:
+    post:
+      summary: Create a new Individual FL Member Support Group resource.
+      operationId: CreateFLMemberGroupSupport
+      tags:
+        - FL Member Group Support (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlMbrSuppGrp'
+      responses:
+        '201':
+          description: >
+            New Individual FL Member Support Group for the FL process is Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlMbrSuppGrp'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /configurations/{configurationId}:
+    parameters:
+      - name: configurationId
+        in: path
+        description: String identifying an individual FL member support group resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual FL Member Support Group resource.
+      operationId: RetrieveFLMemberSupportGroup
+      tags:
+        - Individual FL Member Support Group (Document)
+      parameters:
+        - name: fl-member-id
+          in: query
+          description: ID of the FL member to be queried.
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The requested "Individual FL member support group” is retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlMbrSuppGrp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update completely an existing Individual FL Member Support Group resource.
+      operationId: UpdateFLMemberSupportGroup
+      tags:
+        - Individual FL Member Support Group (Document)
+      requestBody:
+        description: Configuration information to be completely updated.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlMbrSuppGrp'
+      responses:
+        '200':
+          description: OK. The configuration is updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlMbrSuppGrp'
+        '204':
+          description: No Content. Successful case but without any Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify partially an existing Individual FL Member Support Group resource.
+      operationId: ModifyPartiallyFLMemberSupportGroup
+      tags:
+        - Individual FL Member Support Group (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlMbrSuppGrpPatch'
+      responses:
+        '200':
+          description: >
+            OK. The individual FL member support group is partially modified successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlMbrSuppGrp'
+        '204':
+          description: successful case but without any Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes an individual FL member support group.
+      operationId: DeleteFLMemberSupportGroup
+      tags:
+        - Individual FL Member Support Group (Document)
+      responses:
+        '204':
+          description: The individual configuration matching configuration Id is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    FlMbrSuppGrp:
+      description: Represents a new Individual FL Member Support Group for an FL process.
+      type: object
+      properties:
+        valServId:
+          description: Identity of the VAL Service
+          type: string
+        mlModelId:
+          description: Identity of the ML Model
+          type: string
+        adaeAnalyticsId:
+          $ref: 'TS29549_SS_AADRF_DataManagement.yaml#/components/schemas/AdaeAnalyticsId'
+        mlTask:
+          $ref: '#/components/schemas/MlTaskInfo'
+        mlModelProfile:
+          $ref: 'TS29482_MLR_MLModelManagement.yaml#/components/schemas/MLModelProfile'
+        flMembers:
+          type: array
+          items:
+            $ref: '#/components/schemas/FLMember'
+          minItems: 1
+        flMbrSuppGrp:
+          type: array
+          items:
+            $ref: 'TS24560_Aimlec_FLGroupIndication.yaml#/components/schemas/FlGroupInfo'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      anyOf:
+        - required: [valServId]
+        - required: [mlModelId]
+        - required: [adaeAnalyticsId]
+
+    FlMbrSuppGrpPatch:
+      description: Represents individual FL Member Support Group to be  partially modified.
+      type: object
+      properties:
+        valServId:
+          description: Identity of the VAL Service
+          type: string
+        mlModelId:
+          description: Identity of the ML Model
+          type: string
+        adaeAnalyticsId:
+          $ref: 'TS29549_SS_AADRF_DataManagement.yaml#/components/schemas/AdaeAnalyticsId'
+        mlTask:
+          $ref: '#/components/schemas/MlTaskInfo'
+        mlModelProfile:
+          $ref: 'TS29482_MLR_MLModelManagement.yaml#/components/schemas/MLModelProfile'
+        flMembers:
+          type: array
+          items:
+            $ref: '#/components/schemas/FLMember'
+          minItems: 1
+
+    MlTaskInfo:
+      description: Represents information on the identity and type of the ML task.
+      type: object
+      properties:
+        mlTaskId:
+          description: Identity of the ML task
+          type: string
+        mlTaskType:
+          $ref: '#/components/schemas/MlTaskType'
+      required:
+        - mlTaskId
+        - mlTaskType
+
+    FLMember:
+      description: Represents information on candidate or selected FL member.
+      type: object
+      properties:
+        flMbrId:
+          description: Identity of the FL member
+          type: string
+        flMbrType:
+          $ref: '#/components/schemas/FlMbrType'
+        flMbrStatus:
+          $ref: '#/components/schemas/FlMbrStatus'
+        availability:
+          description: Contains availability of FL member.
+          type: string
+        constraints:
+          description: contains constraints of FL member.
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - flMbrId
+
+# Simple data types
+#
+
+# Enumerations
+#
+
+    MlTaskType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - FL_TRAINING
+         - FL_INFERENCE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the different types of the ML task.  
+#        Possible values are:
+#        - FL_TRAINING: Identifies an ML model training.
+#        - FL_INFERENCE: Identifies an ML model inference.
+#
+    FlMbrType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - FL_SERVER
+         - FL_CLIENT
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the different types of the ML member.  
+#        Possible values are:
+#        - FL_SERVER: Identifies an FL server.
+#        - FL_CLIENT: Identifies an FL client.
+#
+    FlMbrStatus:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - FL_CANDIDATE
+         - FL_SELECTED
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the information on the status of the ML member.  
+#        Possible values are:
+#        - FL_CANDIDATE: Identifies an FL member being a candidate.
+#        - FL_SELECTED: Identifies an FL member being selected.

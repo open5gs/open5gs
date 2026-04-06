@@ -7,7 +7,8 @@
 OpenAPI_roaming_info_update_t *OpenAPI_roaming_info_update_create(
     bool is_roaming,
     int roaming,
-    OpenAPI_plmn_id_t *serving_plmn
+    OpenAPI_plmn_id_t *serving_plmn,
+    OpenAPI_context_info_t *context_info
 )
 {
     OpenAPI_roaming_info_update_t *roaming_info_update_local_var = ogs_malloc(sizeof(OpenAPI_roaming_info_update_t));
@@ -16,6 +17,7 @@ OpenAPI_roaming_info_update_t *OpenAPI_roaming_info_update_create(
     roaming_info_update_local_var->is_roaming = is_roaming;
     roaming_info_update_local_var->roaming = roaming;
     roaming_info_update_local_var->serving_plmn = serving_plmn;
+    roaming_info_update_local_var->context_info = context_info;
 
     return roaming_info_update_local_var;
 }
@@ -30,6 +32,10 @@ void OpenAPI_roaming_info_update_free(OpenAPI_roaming_info_update_t *roaming_inf
     if (roaming_info_update->serving_plmn) {
         OpenAPI_plmn_id_free(roaming_info_update->serving_plmn);
         roaming_info_update->serving_plmn = NULL;
+    }
+    if (roaming_info_update->context_info) {
+        OpenAPI_context_info_free(roaming_info_update->context_info);
+        roaming_info_update->context_info = NULL;
     }
     ogs_free(roaming_info_update);
 }
@@ -67,6 +73,19 @@ cJSON *OpenAPI_roaming_info_update_convertToJSON(OpenAPI_roaming_info_update_t *
         goto end;
     }
 
+    if (roaming_info_update->context_info) {
+    cJSON *context_info_local_JSON = OpenAPI_context_info_convertToJSON(roaming_info_update->context_info);
+    if (context_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_roaming_info_update_convertToJSON() failed [context_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "contextInfo", context_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_roaming_info_update_convertToJSON() failed [context_info]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -78,6 +97,8 @@ OpenAPI_roaming_info_update_t *OpenAPI_roaming_info_update_parseFromJSON(cJSON *
     cJSON *roaming = NULL;
     cJSON *serving_plmn = NULL;
     OpenAPI_plmn_id_t *serving_plmn_local_nonprim = NULL;
+    cJSON *context_info = NULL;
+    OpenAPI_context_info_t *context_info_local_nonprim = NULL;
     roaming = cJSON_GetObjectItemCaseSensitive(roaming_info_updateJSON, "roaming");
     if (roaming) {
     if (!cJSON_IsBool(roaming)) {
@@ -97,10 +118,20 @@ OpenAPI_roaming_info_update_t *OpenAPI_roaming_info_update_parseFromJSON(cJSON *
         goto end;
     }
 
+    context_info = cJSON_GetObjectItemCaseSensitive(roaming_info_updateJSON, "contextInfo");
+    if (context_info) {
+    context_info_local_nonprim = OpenAPI_context_info_parseFromJSON(context_info);
+    if (!context_info_local_nonprim) {
+        ogs_error("OpenAPI_context_info_parseFromJSON failed [context_info]");
+        goto end;
+    }
+    }
+
     roaming_info_update_local_var = OpenAPI_roaming_info_update_create (
         roaming ? true : false,
         roaming ? roaming->valueint : 0,
-        serving_plmn_local_nonprim
+        serving_plmn_local_nonprim,
+        context_info ? context_info_local_nonprim : NULL
     );
 
     return roaming_info_update_local_var;
@@ -108,6 +139,10 @@ end:
     if (serving_plmn_local_nonprim) {
         OpenAPI_plmn_id_free(serving_plmn_local_nonprim);
         serving_plmn_local_nonprim = NULL;
+    }
+    if (context_info_local_nonprim) {
+        OpenAPI_context_info_free(context_info_local_nonprim);
+        context_info_local_nonprim = NULL;
     }
     return NULL;
 }

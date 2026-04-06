@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_amf_status_change_notification_s OpenAPI_amf_status_change_notification_t;
 #include "amf_status_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_amf_status_change_notification_s OpenAPI_amf_status_change_notification_t;
-typedef struct OpenAPI_amf_status_change_notification_s {
+struct OpenAPI_amf_status_change_notification_s {
     OpenAPI_list_t *amf_status_info_list;
-} OpenAPI_amf_status_change_notification_t;
+};
 
 OpenAPI_amf_status_change_notification_t *OpenAPI_amf_status_change_notification_create(
     OpenAPI_list_t *amf_status_info_list

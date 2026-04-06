@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "amf_event_type.h"
 
-OpenAPI_amf_event_type_t *OpenAPI_amf_event_type_create(
-)
+char* OpenAPI_amf_event_type_ToString(OpenAPI_amf_event_type_e amf_event_type)
 {
-    OpenAPI_amf_event_type_t *amf_event_type_local_var = ogs_malloc(sizeof(OpenAPI_amf_event_type_t));
-    ogs_assert(amf_event_type_local_var);
-
-
-    return amf_event_type_local_var;
+    const char *amf_event_typeArray[] =  { "NULL", "LOCATION_REPORT", "PRESENCE_IN_AOI_REPORT", "TIMEZONE_REPORT", "ACCESS_TYPE_REPORT", "REGISTRATION_STATE_REPORT", "CONNECTIVITY_STATE_REPORT", "REACHABILITY_REPORT", "COMMUNICATION_FAILURE_REPORT", "UES_IN_AREA_REPORT", "SUBSCRIPTION_ID_CHANGE", "SUBSCRIPTION_ID_ADDITION", "SUBSCRIPTION_TERMINATION", "LOSS_OF_CONNECTIVITY", "5GS_USER_STATE_REPORT", "AVAILABILITY_AFTER_DDN_FAILURE", "TYPE_ALLOCATION_CODE_REPORT", "FREQUENT_MOBILITY_REGISTRATION_REPORT", "SNSSAI_TA_MAPPING_REPORT", "UE_LOCATION_TRENDS", "UE_ACCESS_BEHAVIOR_TRENDS", "UE_MM_TRANSACTION_REPORT", "TRAJECTORY_TRACKING_REPORT", "SIGNALLING_MEASUREMENT_REPORT", "SIGNALLING_MEASUREMENT_UE_RELATED_REPORT", "ALTITUDE_REPORT" };
+    size_t sizeofArray = sizeof(amf_event_typeArray) / sizeof(amf_event_typeArray[0]);
+    if (amf_event_type < sizeofArray)
+        return (char *)amf_event_typeArray[amf_event_type];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_amf_event_type_free(OpenAPI_amf_event_type_t *amf_event_type)
+OpenAPI_amf_event_type_e OpenAPI_amf_event_type_FromString(char* amf_event_type)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == amf_event_type) {
-        return;
+    int stringToReturn = 0;
+    const char *amf_event_typeArray[] =  { "NULL", "LOCATION_REPORT", "PRESENCE_IN_AOI_REPORT", "TIMEZONE_REPORT", "ACCESS_TYPE_REPORT", "REGISTRATION_STATE_REPORT", "CONNECTIVITY_STATE_REPORT", "REACHABILITY_REPORT", "COMMUNICATION_FAILURE_REPORT", "UES_IN_AREA_REPORT", "SUBSCRIPTION_ID_CHANGE", "SUBSCRIPTION_ID_ADDITION", "SUBSCRIPTION_TERMINATION", "LOSS_OF_CONNECTIVITY", "5GS_USER_STATE_REPORT", "AVAILABILITY_AFTER_DDN_FAILURE", "TYPE_ALLOCATION_CODE_REPORT", "FREQUENT_MOBILITY_REGISTRATION_REPORT", "SNSSAI_TA_MAPPING_REPORT", "UE_LOCATION_TRENDS", "UE_ACCESS_BEHAVIOR_TRENDS", "UE_MM_TRANSACTION_REPORT", "TRAJECTORY_TRACKING_REPORT", "SIGNALLING_MEASUREMENT_REPORT", "SIGNALLING_MEASUREMENT_UE_RELATED_REPORT", "ALTITUDE_REPORT" };
+    size_t sizeofArray = sizeof(amf_event_typeArray) / sizeof(amf_event_typeArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(amf_event_type, amf_event_typeArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(amf_event_type);
-}
-
-cJSON *OpenAPI_amf_event_type_convertToJSON(OpenAPI_amf_event_type_t *amf_event_type)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (amf_event_type == NULL) {
-        ogs_error("OpenAPI_amf_event_type_convertToJSON() failed [AmfEventType]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_amf_event_type_t *OpenAPI_amf_event_type_parseFromJSON(cJSON *amf_event_typeJSON)
-{
-    OpenAPI_amf_event_type_t *amf_event_type_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    amf_event_type_local_var = OpenAPI_amf_event_type_create (
-    );
-
-    return amf_event_type_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_amf_event_type_t *OpenAPI_amf_event_type_copy(OpenAPI_amf_event_type_t *dst, OpenAPI_amf_event_type_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_amf_event_type_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_amf_event_type_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_amf_event_type_free(dst);
-    dst = OpenAPI_amf_event_type_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

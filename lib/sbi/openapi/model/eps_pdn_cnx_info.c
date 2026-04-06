@@ -7,6 +7,7 @@
 OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_create(
     char *pgw_s8c_fteid,
     char *pgw_node_name,
+    char *pgw_change_info,
     bool is_linked_bearer_id,
     int linked_bearer_id
 )
@@ -16,6 +17,7 @@ OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_create(
 
     eps_pdn_cnx_info_local_var->pgw_s8c_fteid = pgw_s8c_fteid;
     eps_pdn_cnx_info_local_var->pgw_node_name = pgw_node_name;
+    eps_pdn_cnx_info_local_var->pgw_change_info = pgw_change_info;
     eps_pdn_cnx_info_local_var->is_linked_bearer_id = is_linked_bearer_id;
     eps_pdn_cnx_info_local_var->linked_bearer_id = linked_bearer_id;
 
@@ -36,6 +38,10 @@ void OpenAPI_eps_pdn_cnx_info_free(OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info)
     if (eps_pdn_cnx_info->pgw_node_name) {
         ogs_free(eps_pdn_cnx_info->pgw_node_name);
         eps_pdn_cnx_info->pgw_node_name = NULL;
+    }
+    if (eps_pdn_cnx_info->pgw_change_info) {
+        ogs_free(eps_pdn_cnx_info->pgw_change_info);
+        eps_pdn_cnx_info->pgw_change_info = NULL;
     }
     ogs_free(eps_pdn_cnx_info);
 }
@@ -67,6 +73,13 @@ cJSON *OpenAPI_eps_pdn_cnx_info_convertToJSON(OpenAPI_eps_pdn_cnx_info_t *eps_pd
     }
     }
 
+    if (eps_pdn_cnx_info->pgw_change_info) {
+    if (cJSON_AddStringToObject(item, "pgwChangeInfo", eps_pdn_cnx_info->pgw_change_info) == NULL) {
+        ogs_error("OpenAPI_eps_pdn_cnx_info_convertToJSON() failed [pgw_change_info]");
+        goto end;
+    }
+    }
+
     if (eps_pdn_cnx_info->is_linked_bearer_id) {
     if (cJSON_AddNumberToObject(item, "linkedBearerId", eps_pdn_cnx_info->linked_bearer_id) == NULL) {
         ogs_error("OpenAPI_eps_pdn_cnx_info_convertToJSON() failed [linked_bearer_id]");
@@ -84,6 +97,7 @@ OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_parseFromJSON(cJSON *eps_pd
     OpenAPI_lnode_t *node = NULL;
     cJSON *pgw_s8c_fteid = NULL;
     cJSON *pgw_node_name = NULL;
+    cJSON *pgw_change_info = NULL;
     cJSON *linked_bearer_id = NULL;
     pgw_s8c_fteid = cJSON_GetObjectItemCaseSensitive(eps_pdn_cnx_infoJSON, "pgwS8cFteid");
     if (!pgw_s8c_fteid) {
@@ -103,6 +117,14 @@ OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_parseFromJSON(cJSON *eps_pd
     }
     }
 
+    pgw_change_info = cJSON_GetObjectItemCaseSensitive(eps_pdn_cnx_infoJSON, "pgwChangeInfo");
+    if (pgw_change_info) {
+    if (!cJSON_IsString(pgw_change_info) && !cJSON_IsNull(pgw_change_info)) {
+        ogs_error("OpenAPI_eps_pdn_cnx_info_parseFromJSON() failed [pgw_change_info]");
+        goto end;
+    }
+    }
+
     linked_bearer_id = cJSON_GetObjectItemCaseSensitive(eps_pdn_cnx_infoJSON, "linkedBearerId");
     if (linked_bearer_id) {
     if (!cJSON_IsNumber(linked_bearer_id)) {
@@ -114,6 +136,7 @@ OpenAPI_eps_pdn_cnx_info_t *OpenAPI_eps_pdn_cnx_info_parseFromJSON(cJSON *eps_pd
     eps_pdn_cnx_info_local_var = OpenAPI_eps_pdn_cnx_info_create (
         ogs_strdup(pgw_s8c_fteid->valuestring),
         pgw_node_name && !cJSON_IsNull(pgw_node_name) ? ogs_strdup(pgw_node_name->valuestring) : NULL,
+        pgw_change_info && !cJSON_IsNull(pgw_change_info) ? ogs_strdup(pgw_change_info->valuestring) : NULL,
         linked_bearer_id ? true : false,
         linked_bearer_id ? linked_bearer_id->valuedouble : 0
     );

@@ -6,6 +6,7 @@
 
 OpenAPI_cag_data_1_t *OpenAPI_cag_data_1_create(
     OpenAPI_list_t* cag_infos,
+    OpenAPI_list_t* conditional_cag_infos,
     char *provisioning_time
 )
 {
@@ -13,6 +14,7 @@ OpenAPI_cag_data_1_t *OpenAPI_cag_data_1_create(
     ogs_assert(cag_data_1_local_var);
 
     cag_data_1_local_var->cag_infos = cag_infos;
+    cag_data_1_local_var->conditional_cag_infos = conditional_cag_infos;
     cag_data_1_local_var->provisioning_time = provisioning_time;
 
     return cag_data_1_local_var;
@@ -34,6 +36,16 @@ void OpenAPI_cag_data_1_free(OpenAPI_cag_data_1_t *cag_data_1)
         }
         OpenAPI_list_free(cag_data_1->cag_infos);
         cag_data_1->cag_infos = NULL;
+    }
+    if (cag_data_1->conditional_cag_infos) {
+        OpenAPI_list_for_each(cag_data_1->conditional_cag_infos, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_conditional_cag_info_1_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(cag_data_1->conditional_cag_infos);
+        cag_data_1->conditional_cag_infos = NULL;
     }
     if (cag_data_1->provisioning_time) {
         ogs_free(cag_data_1->provisioning_time);
@@ -85,6 +97,36 @@ cJSON *OpenAPI_cag_data_1_convertToJSON(OpenAPI_cag_data_1_t *cag_data_1)
         }
     }
 
+    if (cag_data_1->conditional_cag_infos) {
+    cJSON *conditional_cag_infos = cJSON_AddObjectToObject(item, "conditionalCagInfos");
+    if (conditional_cag_infos == NULL) {
+        ogs_error("OpenAPI_cag_data_1_convertToJSON() failed [conditional_cag_infos]");
+        goto end;
+    }
+    cJSON *localMapObject = conditional_cag_infos;
+    if (cag_data_1->conditional_cag_infos) {
+        OpenAPI_list_for_each(cag_data_1->conditional_cag_infos, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_cag_data_1_convertToJSON() failed [conditional_cag_infos]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_cag_data_1_convertToJSON() failed [conditional_cag_infos]");
+                goto end;
+            }
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_conditional_cag_info_1_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_cag_data_1_convertToJSON() failed [inner]");
+                goto end;
+            }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        }
+    }
+    }
+
     if (cag_data_1->provisioning_time) {
     if (cJSON_AddStringToObject(item, "provisioningTime", cag_data_1->provisioning_time) == NULL) {
         ogs_error("OpenAPI_cag_data_1_convertToJSON() failed [provisioning_time]");
@@ -102,6 +144,8 @@ OpenAPI_cag_data_1_t *OpenAPI_cag_data_1_parseFromJSON(cJSON *cag_data_1JSON)
     OpenAPI_lnode_t *node = NULL;
     cJSON *cag_infos = NULL;
     OpenAPI_list_t *cag_infosList = NULL;
+    cJSON *conditional_cag_infos = NULL;
+    OpenAPI_list_t *conditional_cag_infosList = NULL;
     cJSON *provisioning_time = NULL;
     cag_infos = cJSON_GetObjectItemCaseSensitive(cag_data_1JSON, "cagInfos");
     if (!cag_infos) {
@@ -131,6 +175,32 @@ OpenAPI_cag_data_1_t *OpenAPI_cag_data_1_parseFromJSON(cJSON *cag_data_1JSON)
             }
         }
 
+    conditional_cag_infos = cJSON_GetObjectItemCaseSensitive(cag_data_1JSON, "conditionalCagInfos");
+    if (conditional_cag_infos) {
+        cJSON *conditional_cag_infos_local_map = NULL;
+        if (!cJSON_IsObject(conditional_cag_infos) && !cJSON_IsNull(conditional_cag_infos)) {
+            ogs_error("OpenAPI_cag_data_1_parseFromJSON() failed [conditional_cag_infos]");
+            goto end;
+        }
+        if (cJSON_IsObject(conditional_cag_infos)) {
+            conditional_cag_infosList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(conditional_cag_infos_local_map, conditional_cag_infos) {
+                cJSON *localMapObject = conditional_cag_infos_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_conditional_cag_info_1_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_cag_data_1_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(conditional_cag_infosList, localMapKeyPair);
+            }
+        }
+    }
+
     provisioning_time = cJSON_GetObjectItemCaseSensitive(cag_data_1JSON, "provisioningTime");
     if (provisioning_time) {
     if (!cJSON_IsString(provisioning_time) && !cJSON_IsNull(provisioning_time)) {
@@ -141,6 +211,7 @@ OpenAPI_cag_data_1_t *OpenAPI_cag_data_1_parseFromJSON(cJSON *cag_data_1JSON)
 
     cag_data_1_local_var = OpenAPI_cag_data_1_create (
         cag_infosList,
+        conditional_cag_infos ? conditional_cag_infosList : NULL,
         provisioning_time && !cJSON_IsNull(provisioning_time) ? ogs_strdup(provisioning_time->valuestring) : NULL
     );
 
@@ -148,13 +219,23 @@ OpenAPI_cag_data_1_t *OpenAPI_cag_data_1_parseFromJSON(cJSON *cag_data_1JSON)
 end:
     if (cag_infosList) {
         OpenAPI_list_for_each(cag_infosList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_cag_info_1_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(cag_infosList);
         cag_infosList = NULL;
+    }
+    if (conditional_cag_infosList) {
+        OpenAPI_list_for_each(conditional_cag_infosList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_conditional_cag_info_1_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(conditional_cag_infosList);
+        conditional_cag_infosList = NULL;
     }
     return NULL;
 }

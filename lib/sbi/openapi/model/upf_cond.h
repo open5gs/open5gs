@@ -12,23 +12,23 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_upf_cond_s OpenAPI_upf_cond_t;
 #include "tai.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_upf_cond_s OpenAPI_upf_cond_t;
 typedef enum { OpenAPI_upf_cond_CONDITIONTYPE_NULL = 0, OpenAPI_upf_cond_CONDITIONTYPE_UPF_COND } OpenAPI_upf_cond_condition_type_e;
 
 char* OpenAPI_upf_cond_condition_type_ToString(OpenAPI_upf_cond_condition_type_e condition_type);
 
 OpenAPI_upf_cond_condition_type_e OpenAPI_upf_cond_condition_type_FromString(char* condition_type);
-typedef struct OpenAPI_upf_cond_s {
+struct OpenAPI_upf_cond_s {
     OpenAPI_upf_cond_condition_type_e condition_type;
     OpenAPI_list_t *smf_serving_area;
     OpenAPI_list_t *tai_list;
-} OpenAPI_upf_cond_t;
+};
 
 OpenAPI_upf_cond_t *OpenAPI_upf_cond_create(
     OpenAPI_upf_cond_condition_type_e condition_type,

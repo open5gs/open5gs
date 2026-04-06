@@ -555,7 +555,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
             subscription_data->subscr_cond.nf_type = SubscrCond->nf_type;
         else if (SubscrCond->service_name)
             subscription_data->subscr_cond.service_name =
-                ogs_strdup(SubscrCond->service_name);
+                SubscrCond->service_name;
         else if (SubscrCond->nf_instance_id)
             subscription_data->subscr_cond.nf_instance_id = 
                 ogs_strdup(SubscrCond->nf_instance_id);
@@ -643,7 +643,8 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     ogs_assert(server);
 
     memset(&header, 0, sizeof(header));
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
+    header.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nnrf_nfm);
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS;
@@ -966,7 +967,7 @@ bool nrf_nnrf_handle_nf_profile_retrieval(
     memset(&sendmsg, 0, sizeof(sendmsg));
 
     sendmsg.NFProfile = ogs_nnrf_nfm_build_nf_profile(
-            nf_instance, NULL, NULL, true);
+            nf_instance, OpenAPI_service_name_NULL, NULL, true);
     if (!sendmsg.NFProfile) {
         ogs_error("ogs_nnrf_nfm_build_nf_profile() failed");
         return false;
@@ -1031,7 +1032,8 @@ bool nrf_nnrf_handle_nf_discover(
         if (discovery_option->num_of_service_names) {
             for (i = 0; i < discovery_option->num_of_service_names; i++)
                 ogs_debug("[%d] service-names[%s]", i,
-                    discovery_option->service_names[i]);
+                        OpenAPI_service_name_ToString(
+                            discovery_option->service_names[i]));
         }
         if (discovery_option->num_of_snssais) {
             for (i = 0; i < discovery_option->num_of_snssais; i++)
@@ -1083,6 +1085,11 @@ bool nrf_nnrf_handle_nf_discover(
     SearchResult = ogs_calloc(1, sizeof(*SearchResult));
     ogs_assert(SearchResult);
 
+    ogs_assert(ogs_local_conf()->time.nf_instance.validity_duration);
+    SearchResult->validity_period =
+        ogs_local_conf()->time.nf_instance.validity_duration;
+    ogs_assert(SearchResult->validity_period);
+
     SearchResult->nf_instances = OpenAPI_list_create();
     ogs_assert(SearchResult->nf_instances);
 
@@ -1116,7 +1123,7 @@ bool nrf_nnrf_handle_nf_discover(
                 nf_instance->fqdn ? nf_instance->fqdn : "NULL");
 
         NFProfile = ogs_nnrf_nfm_build_nf_profile(
-                nf_instance, NULL, discovery_option,
+                nf_instance, OpenAPI_service_name_NULL, discovery_option,
                 discovery_option &&
                 OGS_SBI_FEATURES_IS_SET(
                     discovery_option->requester_features,
@@ -1139,11 +1146,6 @@ bool nrf_nnrf_handle_nf_discover(
     if (SearchResult->nf_instances->count) {
 
         /* NF-Instances are Discovered */
-
-        SearchResult->is_validity_period = true;
-        SearchResult->validity_period =
-            ogs_local_conf()->time.nf_instance.validity_duration;
-        ogs_assert(SearchResult->validity_period);
 
         sendmsg.SearchResult = SearchResult;
         sendmsg.http.cache_control =
@@ -1328,6 +1330,9 @@ bool nrf_nnrf_handle_nf_discover(
         /* No Discovery */
 
         sendmsg.SearchResult = SearchResult;
+        sendmsg.http.cache_control =
+            ogs_msprintf("max-age=%d", SearchResult->validity_period);
+        ogs_assert(sendmsg.http.cache_control);
 
         response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
         ogs_assert(response);

@@ -36,9 +36,6 @@ void OpenAPI_ee_group_profile_data_free(OpenAPI_ee_group_profile_data_t *ee_grou
         return;
     }
     if (ee_group_profile_data->restricted_event_types) {
-        OpenAPI_list_for_each(ee_group_profile_data->restricted_event_types, node) {
-            OpenAPI_event_type_free(node->data);
-        }
         OpenAPI_list_free(ee_group_profile_data->restricted_event_types);
         ee_group_profile_data->restricted_event_types = NULL;
     }
@@ -46,7 +43,7 @@ void OpenAPI_ee_group_profile_data_free(OpenAPI_ee_group_profile_data_t *ee_grou
         OpenAPI_list_for_each(ee_group_profile_data->allowed_mtc_provider, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
-            ogs_free(localKeyValue->value);
+            OpenAPI_mtc_provider_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(ee_group_profile_data->allowed_mtc_provider);
@@ -78,19 +75,17 @@ cJSON *OpenAPI_ee_group_profile_data_convertToJSON(OpenAPI_ee_group_profile_data
     }
 
     item = cJSON_CreateObject();
-    if (ee_group_profile_data->restricted_event_types) {
+    if (ee_group_profile_data->restricted_event_types != OpenAPI_event_type_NULL) {
     cJSON *restricted_event_typesList = cJSON_AddArrayToObject(item, "restrictedEventTypes");
     if (restricted_event_typesList == NULL) {
         ogs_error("OpenAPI_ee_group_profile_data_convertToJSON() failed [restricted_event_types]");
         goto end;
     }
     OpenAPI_list_for_each(ee_group_profile_data->restricted_event_types, node) {
-        cJSON *itemLocal = OpenAPI_event_type_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        if (cJSON_AddStringToObject(restricted_event_typesList, "", OpenAPI_event_type_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_ee_group_profile_data_convertToJSON() failed [restricted_event_types]");
             goto end;
         }
-        cJSON_AddItemToArray(restricted_event_typesList, itemLocal);
     }
     }
 
@@ -179,16 +174,22 @@ OpenAPI_ee_group_profile_data_t *OpenAPI_ee_group_profile_data_parseFromJSON(cJS
         restricted_event_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(restricted_event_types_local, restricted_event_types) {
-            if (!cJSON_IsObject(restricted_event_types_local)) {
+            OpenAPI_event_type_e localEnum = OpenAPI_event_type_NULL;
+            if (!cJSON_IsString(restricted_event_types_local)) {
                 ogs_error("OpenAPI_ee_group_profile_data_parseFromJSON() failed [restricted_event_types]");
                 goto end;
             }
-            OpenAPI_event_type_t *restricted_event_typesItem = OpenAPI_event_type_parseFromJSON(restricted_event_types_local);
-            if (!restricted_event_typesItem) {
-                ogs_error("No restricted_event_typesItem");
-                goto end;
+            localEnum = OpenAPI_event_type_FromString(restricted_event_types_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"restricted_event_types\" is not supported. Ignoring it ...",
+                         restricted_event_types_local->valuestring);
+            } else {
+                OpenAPI_list_add(restricted_event_typesList, (void *)localEnum);
             }
-            OpenAPI_list_add(restricted_event_typesList, restricted_event_typesItem);
+        }
+        if (restricted_event_typesList->count == 0) {
+            ogs_error("OpenAPI_ee_group_profile_data_parseFromJSON() failed: Expected restricted_event_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -204,8 +205,6 @@ OpenAPI_ee_group_profile_data_t *OpenAPI_ee_group_profile_data_parseFromJSON(cJS
             OpenAPI_map_t *localMapKeyPair = NULL;
             cJSON_ArrayForEach(allowed_mtc_provider_local_map, allowed_mtc_provider) {
                 cJSON *localMapObject = allowed_mtc_provider_local_map;
-                double *localDouble = NULL;
-                int *localInt = NULL;
                 if (cJSON_IsObject(localMapObject)) {
                     localMapKeyPair = OpenAPI_map_create(
                         ogs_strdup(localMapObject->string), OpenAPI_mtc_provider_parseFromJSON(localMapObject));
@@ -265,17 +264,14 @@ OpenAPI_ee_group_profile_data_t *OpenAPI_ee_group_profile_data_parseFromJSON(cJS
     return ee_group_profile_data_local_var;
 end:
     if (restricted_event_typesList) {
-        OpenAPI_list_for_each(restricted_event_typesList, node) {
-            OpenAPI_event_type_free(node->data);
-        }
         OpenAPI_list_free(restricted_event_typesList);
         restricted_event_typesList = NULL;
     }
     if (allowed_mtc_providerList) {
         OpenAPI_list_for_each(allowed_mtc_providerList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
-            ogs_free(localKeyValue->value);
+            OpenAPI_mtc_provider_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(allowed_mtc_providerList);

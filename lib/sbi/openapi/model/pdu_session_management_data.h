@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pdu_session_management_data_s OpenAPI_pdu_session_management_data_t;
 #include "pdu_session_status.h"
 #include "pdu_session_type.h"
-#include "route_to_location.h"
+#include "route_to_location_1.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pdu_session_management_data_s OpenAPI_pdu_session_management_data_t;
-typedef struct OpenAPI_pdu_session_management_data_s {
+struct OpenAPI_pdu_session_management_data_s {
     OpenAPI_pdu_session_status_e pdu_session_status;
     char *pdu_session_status_ts;
     char *dnai;
@@ -38,7 +38,7 @@ typedef struct OpenAPI_pdu_session_management_data_s {
     int pdu_session_id;
     char *supp_feat;
     OpenAPI_list_t *reset_ids;
-} OpenAPI_pdu_session_management_data_t;
+};
 
 OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_create(
     OpenAPI_pdu_session_status_e pdu_session_status,

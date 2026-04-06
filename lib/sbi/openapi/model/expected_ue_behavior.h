@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_expected_ue_behavior_s OpenAPI_expected_ue_behavior_t;
 #include "user_location.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_expected_ue_behavior_s OpenAPI_expected_ue_behavior_t;
-typedef struct OpenAPI_expected_ue_behavior_s {
+struct OpenAPI_expected_ue_behavior_s {
     OpenAPI_list_t *exp_move_trajectory;
     char *validity_time;
-} OpenAPI_expected_ue_behavior_t;
+};
 
 OpenAPI_expected_ue_behavior_t *OpenAPI_expected_ue_behavior_create(
     OpenAPI_list_t *exp_move_trajectory,

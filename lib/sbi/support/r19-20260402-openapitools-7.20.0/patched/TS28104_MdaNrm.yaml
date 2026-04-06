@@ -1,0 +1,246 @@
+openapi: 3.0.1
+info:
+  title: MDA NRM
+  version: 19.3.0
+  description: >-
+    OAS 3.0.1 specification of the MDA NRM
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.104; MDA 
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.104/
+paths: {}
+components:
+  schemas:
+
+#-------- Definition of types-----------------------------------------------------
+    MDAType:
+      type: string
+      enum:
+        - COVERAGE_ANALYTICS_COVERAGE_PROBLEM_ANALYSIS
+        - COVERAGE_ANALYTICS_PAGING_OPTIMIZATION
+        - SLS_ANALYSIS_SERVICE_EXPERIENCE_ANALYSIS
+        - SLS_ANALYSIS_NETWORK_SLICE_THROUGHPUT_ANALYSIS
+        - SLS_ANALYSIS_NETWORK_SLICE_TRAFFIC_ANALYSIS
+        - SLS_ANALYSIS_E2E_LATENCY_ANALYSIS
+        - SLS_ANALYSIS_NETWORK_SLICE_LOAD_ANALYSIS
+        - UE_THROUGHPUT_ANALYSIS_TRAFFIC_CONGESTION_PROBLEM_ANALYSIS
+        - SLS_ANALYSIS_EDGE_APPLICATION_DEPLOYMENT_LOCATION_ANALYSIS
+        - SLS_ANALYSIS_EDGE_COMPUTING_PERFORMANCE_ANALYSIS
+        - SLS_ANALYSIS_TRAFFIC_CONGESTION_PREDICTION_ANALYSIS
+        - MDA_ASSISTED_FAULT_MANAGEMENT_FAILURE_PREDICTION
+        - MDA_ASSISTED_ENERGY_SAVING_ENERGY_SAVING_ANALYSIS
+        - MOBILITY_MANAGEMENT_ANALYTICS_MOBILITY_PERFORMANCE_ANALYSIS
+        - MOBILITY_MANAGEMENT_ANALYTICS_HANDOVER_OPTIMIZATION
+        - MAINTENANCE_MAINTENANCE_ANALYTICS
+        - MAINTENANCE_SOFTWARE_UPGRADE_VALIDATION_ANALYTICS
+        - RESOURCE_ANALYTICS_VIRTUALIZED_RESOURCE_UTILIZATION_ANALYSIS_NF
+        - RESOURCE_ANALYTICS_PHYSICAL_RESOURCE_UTILIZATION_ANALYSIS_NF
+        - RESOURCE_ANALYTICS_5GC_CONTROL_PLANE_CONGESTION_ANALYSIS
+        - PREDICTIONS_PM_DATA
+        - ATSSS_PERFORMANCE_TRAFFIC_STEERING_ANALYTICS
+        - CORRELATION_ANALYTICS_TRAINING_DATA_ANALYSIS
+        - CORRELATION_ANALYTICS_NF_SCALING_DIMENSIONING_DATA_ANALYSIS
+      
+
+    MDATypes:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/MDAType'
+
+    MDAOutputs:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/MDAOutputPerMDAType'
+
+    AnalyticsScopeType:
+      oneOf:
+        - type: object
+          properties:
+            managedEntitiesScope:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+        - type: object
+          properties:
+            areaScope:
+              type: array
+              uniqueItems: true
+              items:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+ 
+
+    MDAOutputPerMDAType:
+      type: object
+      properties:
+        mDAType:
+          $ref: '#/components/schemas/MDAType'
+        mDAOutputIEFilters:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/MDAOutputIEFilter'
+
+    MDAOutputIEFilter:
+      type: object
+      properties:
+        mDAOutputIEName:
+          type: string
+        filterValue:
+          type: string
+        threshold:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/ThresholdInfo'
+        analyticsPeriod:
+          $ref: '#/components/schemas/AnalyticsSchedule'
+        timeOut:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+
+    ReportingMethod:
+      type: string
+      enum:
+        - FILE
+        - STREAMING
+        - NOTIFICATION
+
+    ReportingTarget:
+      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Uri'
+      
+    AnalyticsSchedule:
+      oneOf:
+        - type: object
+          properties:
+            timeDurations:
+              type: array
+              uniqueItems: true
+              items:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow'
+        - type: object
+          properties:
+            granularityPeriod:
+              type: integer
+
+    ThresholdInfo:
+      type: object
+      properties:
+        monitoredMDAOutputIE:          
+          type: string
+        thresholdDirection:
+          type: string
+          enum:
+            - UP
+            - DOWN
+            - UP_AND_DOWN
+        thresholdValue:
+          oneOf:
+            - type: integer
+            - $ref: 'TS28623_ComDefs.yaml#/components/schemas/Float'
+        hysteresis:
+          oneOf:
+            - type: integer
+              minimum: 0
+            - type: number
+              format: float
+              minimum: 0
+
+
+#-------- Definition of types for name-containments ------
+    SubNetwork-ncO-MdaNrm:
+      type: object
+      properties:
+        MDAFunction:
+          $ref: '#/components/schemas/MDAFunction-Multiple'
+        MDAReport:
+          $ref: '#/components/schemas/MDAReport-Multiple'
+
+    ManagedElement-ncO-MdaNrm:
+      type: object
+      properties:
+        MDAFunction:
+          $ref: '#/components/schemas/MDAFunction-Multiple'
+#-------- Definition of abstract IOCs --------------------------------------------
+
+
+
+#-------- Definition of concrete IOCs --------------------------------------------
+    MDAFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    supportedMDACapabilities:
+                      $ref: '#/components/schemas/MDATypes'
+                    mLModelRefList:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'
+                    aIMLInferenceFunctionRefList:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'  
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            MDARequest:
+              $ref: '#/components/schemas/MDARequest-Multiple'
+            MDAReport:
+              $ref: '#/components/schemas/MDAReport-Multiple'
+
+    MDARequest-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - type: object
+                  properties:
+                    requestedMDAOutputs:
+                      $ref: '#/components/schemas/MDAOutputs'
+                    reportingMethod:
+                      $ref: '#/components/schemas/ReportingMethod'
+                    reportingTarget:
+                      $ref: '#/components/schemas/ReportingTarget'
+                    analyticsScope:
+                      $ref: '#/components/schemas/AnalyticsScopeType'
+                    startTime:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+                    stopTime:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+                    recommendationFilter:
+                      $ref: '#/components/schemas/AnalyticsScopeType'
+                    performanceThresholdInfo:
+                      type: array
+                      items:
+                        $ref: 'TS28623_ThresholdMonitorNrm.yaml#/components/schemas/ThresholdInfo'
+                    thresholdMonitorRefList:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'   
+    MDAReport-Single:
+      $ref: 'TS28104_MdaReport.yaml#/components/schemas/MDAReport'
+
+
+#-------- Definition of JSON arrays for name-contained IOCs ----------------------
+    MDAFunction-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/MDAFunction-Single'
+    MDARequest-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/MDARequest-Single'
+
+    MDAReport-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/MDAReport-Single'
+
+#-------- Definitions in TS 28.104 for TS 28.532 ---------------------------------
+
+    resources-mdaNrm:
+      oneOf:
+        - $ref: '#/components/schemas/MDAFunction-Single'
+        - $ref: '#/components/schemas/MDARequest-Single'
+        - $ref: '#/components/schemas/MDAReport-Single'

@@ -13,9 +13,14 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_create(
     OpenAPI_scheduled_communication_time_t *scheduled_communication_time,
     OpenAPI_scheduled_communication_type_e scheduled_communication_type,
     OpenAPI_list_t *expected_umts,
+    OpenAPI_list_t *trajectory_segments,
     OpenAPI_traffic_profile_e traffic_profile,
     OpenAPI_battery_indication_t *battery_indication,
-    char *validity_time
+    char *validity_time,
+    char *confidence_level,
+    char *accuracy_level,
+    bool is_accept_deviate_time,
+    int accept_deviate_time
 )
 {
     OpenAPI_expected_ue_behaviour_data_t *expected_ue_behaviour_data_local_var = ogs_malloc(sizeof(OpenAPI_expected_ue_behaviour_data_t));
@@ -29,9 +34,14 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_create(
     expected_ue_behaviour_data_local_var->scheduled_communication_time = scheduled_communication_time;
     expected_ue_behaviour_data_local_var->scheduled_communication_type = scheduled_communication_type;
     expected_ue_behaviour_data_local_var->expected_umts = expected_umts;
+    expected_ue_behaviour_data_local_var->trajectory_segments = trajectory_segments;
     expected_ue_behaviour_data_local_var->traffic_profile = traffic_profile;
     expected_ue_behaviour_data_local_var->battery_indication = battery_indication;
     expected_ue_behaviour_data_local_var->validity_time = validity_time;
+    expected_ue_behaviour_data_local_var->confidence_level = confidence_level;
+    expected_ue_behaviour_data_local_var->accuracy_level = accuracy_level;
+    expected_ue_behaviour_data_local_var->is_accept_deviate_time = is_accept_deviate_time;
+    expected_ue_behaviour_data_local_var->accept_deviate_time = accept_deviate_time;
 
     return expected_ue_behaviour_data_local_var;
 }
@@ -54,6 +64,13 @@ void OpenAPI_expected_ue_behaviour_data_free(OpenAPI_expected_ue_behaviour_data_
         OpenAPI_list_free(expected_ue_behaviour_data->expected_umts);
         expected_ue_behaviour_data->expected_umts = NULL;
     }
+    if (expected_ue_behaviour_data->trajectory_segments) {
+        OpenAPI_list_for_each(expected_ue_behaviour_data->trajectory_segments, node) {
+            OpenAPI_trajectory_segment_1_free(node->data);
+        }
+        OpenAPI_list_free(expected_ue_behaviour_data->trajectory_segments);
+        expected_ue_behaviour_data->trajectory_segments = NULL;
+    }
     if (expected_ue_behaviour_data->battery_indication) {
         OpenAPI_battery_indication_free(expected_ue_behaviour_data->battery_indication);
         expected_ue_behaviour_data->battery_indication = NULL;
@@ -61,6 +78,14 @@ void OpenAPI_expected_ue_behaviour_data_free(OpenAPI_expected_ue_behaviour_data_
     if (expected_ue_behaviour_data->validity_time) {
         ogs_free(expected_ue_behaviour_data->validity_time);
         expected_ue_behaviour_data->validity_time = NULL;
+    }
+    if (expected_ue_behaviour_data->confidence_level) {
+        ogs_free(expected_ue_behaviour_data->confidence_level);
+        expected_ue_behaviour_data->confidence_level = NULL;
+    }
+    if (expected_ue_behaviour_data->accuracy_level) {
+        ogs_free(expected_ue_behaviour_data->accuracy_level);
+        expected_ue_behaviour_data->accuracy_level = NULL;
     }
     ogs_free(expected_ue_behaviour_data);
 }
@@ -133,6 +158,22 @@ cJSON *OpenAPI_expected_ue_behaviour_data_convertToJSON(OpenAPI_expected_ue_beha
     }
     }
 
+    if (expected_ue_behaviour_data->trajectory_segments) {
+    cJSON *trajectory_segmentsList = cJSON_AddArrayToObject(item, "trajectorySegments");
+    if (trajectory_segmentsList == NULL) {
+        ogs_error("OpenAPI_expected_ue_behaviour_data_convertToJSON() failed [trajectory_segments]");
+        goto end;
+    }
+    OpenAPI_list_for_each(expected_ue_behaviour_data->trajectory_segments, node) {
+        cJSON *itemLocal = OpenAPI_trajectory_segment_1_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_expected_ue_behaviour_data_convertToJSON() failed [trajectory_segments]");
+            goto end;
+        }
+        cJSON_AddItemToArray(trajectory_segmentsList, itemLocal);
+    }
+    }
+
     if (expected_ue_behaviour_data->traffic_profile != OpenAPI_traffic_profile_NULL) {
     if (cJSON_AddStringToObject(item, "trafficProfile", OpenAPI_traffic_profile_ToString(expected_ue_behaviour_data->traffic_profile)) == NULL) {
         ogs_error("OpenAPI_expected_ue_behaviour_data_convertToJSON() failed [traffic_profile]");
@@ -160,6 +201,27 @@ cJSON *OpenAPI_expected_ue_behaviour_data_convertToJSON(OpenAPI_expected_ue_beha
     }
     }
 
+    if (expected_ue_behaviour_data->confidence_level) {
+    if (cJSON_AddStringToObject(item, "confidenceLevel", expected_ue_behaviour_data->confidence_level) == NULL) {
+        ogs_error("OpenAPI_expected_ue_behaviour_data_convertToJSON() failed [confidence_level]");
+        goto end;
+    }
+    }
+
+    if (expected_ue_behaviour_data->accuracy_level) {
+    if (cJSON_AddStringToObject(item, "accuracyLevel", expected_ue_behaviour_data->accuracy_level) == NULL) {
+        ogs_error("OpenAPI_expected_ue_behaviour_data_convertToJSON() failed [accuracy_level]");
+        goto end;
+    }
+    }
+
+    if (expected_ue_behaviour_data->is_accept_deviate_time) {
+    if (cJSON_AddNumberToObject(item, "acceptDeviateTime", expected_ue_behaviour_data->accept_deviate_time) == NULL) {
+        ogs_error("OpenAPI_expected_ue_behaviour_data_convertToJSON() failed [accept_deviate_time]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -178,11 +240,16 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_parseFr
     OpenAPI_scheduled_communication_type_e scheduled_communication_typeVariable = 0;
     cJSON *expected_umts = NULL;
     OpenAPI_list_t *expected_umtsList = NULL;
+    cJSON *trajectory_segments = NULL;
+    OpenAPI_list_t *trajectory_segmentsList = NULL;
     cJSON *traffic_profile = NULL;
     OpenAPI_traffic_profile_e traffic_profileVariable = 0;
     cJSON *battery_indication = NULL;
     OpenAPI_battery_indication_t *battery_indication_local_nonprim = NULL;
     cJSON *validity_time = NULL;
+    cJSON *confidence_level = NULL;
+    cJSON *accuracy_level = NULL;
+    cJSON *accept_deviate_time = NULL;
     stationary_indication = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "stationaryIndication");
     if (stationary_indication) {
     if (!cJSON_IsString(stationary_indication)) {
@@ -250,6 +317,30 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_parseFr
         }
     }
 
+    trajectory_segments = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "trajectorySegments");
+    if (trajectory_segments) {
+        cJSON *trajectory_segments_local = NULL;
+        if (!cJSON_IsArray(trajectory_segments)) {
+            ogs_error("OpenAPI_expected_ue_behaviour_data_parseFromJSON() failed [trajectory_segments]");
+            goto end;
+        }
+
+        trajectory_segmentsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(trajectory_segments_local, trajectory_segments) {
+            if (!cJSON_IsObject(trajectory_segments_local)) {
+                ogs_error("OpenAPI_expected_ue_behaviour_data_parseFromJSON() failed [trajectory_segments]");
+                goto end;
+            }
+            OpenAPI_trajectory_segment_1_t *trajectory_segmentsItem = OpenAPI_trajectory_segment_1_parseFromJSON(trajectory_segments_local);
+            if (!trajectory_segmentsItem) {
+                ogs_error("No trajectory_segmentsItem");
+                goto end;
+            }
+            OpenAPI_list_add(trajectory_segmentsList, trajectory_segmentsItem);
+        }
+    }
+
     traffic_profile = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "trafficProfile");
     if (traffic_profile) {
     if (!cJSON_IsString(traffic_profile)) {
@@ -276,6 +367,30 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_parseFr
     }
     }
 
+    confidence_level = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "confidenceLevel");
+    if (confidence_level) {
+    if (!cJSON_IsString(confidence_level) && !cJSON_IsNull(confidence_level)) {
+        ogs_error("OpenAPI_expected_ue_behaviour_data_parseFromJSON() failed [confidence_level]");
+        goto end;
+    }
+    }
+
+    accuracy_level = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "accuracyLevel");
+    if (accuracy_level) {
+    if (!cJSON_IsString(accuracy_level) && !cJSON_IsNull(accuracy_level)) {
+        ogs_error("OpenAPI_expected_ue_behaviour_data_parseFromJSON() failed [accuracy_level]");
+        goto end;
+    }
+    }
+
+    accept_deviate_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviour_dataJSON, "acceptDeviateTime");
+    if (accept_deviate_time) {
+    if (!cJSON_IsNumber(accept_deviate_time)) {
+        ogs_error("OpenAPI_expected_ue_behaviour_data_parseFromJSON() failed [accept_deviate_time]");
+        goto end;
+    }
+    }
+
     expected_ue_behaviour_data_local_var = OpenAPI_expected_ue_behaviour_data_create (
         stationary_indication ? stationary_indicationVariable : 0,
         communication_duration_time ? true : false,
@@ -285,9 +400,14 @@ OpenAPI_expected_ue_behaviour_data_t *OpenAPI_expected_ue_behaviour_data_parseFr
         scheduled_communication_time ? scheduled_communication_time_local_nonprim : NULL,
         scheduled_communication_type ? scheduled_communication_typeVariable : 0,
         expected_umts ? expected_umtsList : NULL,
+        trajectory_segments ? trajectory_segmentsList : NULL,
         traffic_profile ? traffic_profileVariable : 0,
         battery_indication ? battery_indication_local_nonprim : NULL,
-        validity_time && !cJSON_IsNull(validity_time) ? ogs_strdup(validity_time->valuestring) : NULL
+        validity_time && !cJSON_IsNull(validity_time) ? ogs_strdup(validity_time->valuestring) : NULL,
+        confidence_level && !cJSON_IsNull(confidence_level) ? ogs_strdup(confidence_level->valuestring) : NULL,
+        accuracy_level && !cJSON_IsNull(accuracy_level) ? ogs_strdup(accuracy_level->valuestring) : NULL,
+        accept_deviate_time ? true : false,
+        accept_deviate_time ? accept_deviate_time->valuedouble : 0
     );
 
     return expected_ue_behaviour_data_local_var;
@@ -302,6 +422,13 @@ end:
         }
         OpenAPI_list_free(expected_umtsList);
         expected_umtsList = NULL;
+    }
+    if (trajectory_segmentsList) {
+        OpenAPI_list_for_each(trajectory_segmentsList, node) {
+            OpenAPI_trajectory_segment_1_free(node->data);
+        }
+        OpenAPI_list_free(trajectory_segmentsList);
+        trajectory_segmentsList = NULL;
     }
     if (battery_indication_local_nonprim) {
         OpenAPI_battery_indication_free(battery_indication_local_nonprim);

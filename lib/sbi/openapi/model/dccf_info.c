@@ -8,7 +8,9 @@ OpenAPI_dccf_info_t *OpenAPI_dccf_info_create(
     OpenAPI_list_t *serving_nf_type_list,
     OpenAPI_list_t *serving_nf_set_id_list,
     OpenAPI_list_t *tai_list,
-    OpenAPI_list_t *tai_range_list
+    OpenAPI_list_t *tai_range_list,
+    bool is_data_subs_reloc_ind,
+    int data_subs_reloc_ind
 )
 {
     OpenAPI_dccf_info_t *dccf_info_local_var = ogs_malloc(sizeof(OpenAPI_dccf_info_t));
@@ -18,6 +20,8 @@ OpenAPI_dccf_info_t *OpenAPI_dccf_info_create(
     dccf_info_local_var->serving_nf_set_id_list = serving_nf_set_id_list;
     dccf_info_local_var->tai_list = tai_list;
     dccf_info_local_var->tai_range_list = tai_range_list;
+    dccf_info_local_var->is_data_subs_reloc_ind = is_data_subs_reloc_ind;
+    dccf_info_local_var->data_subs_reloc_ind = data_subs_reloc_ind;
 
     return dccf_info_local_var;
 }
@@ -128,6 +132,13 @@ cJSON *OpenAPI_dccf_info_convertToJSON(OpenAPI_dccf_info_t *dccf_info)
     }
     }
 
+    if (dccf_info->is_data_subs_reloc_ind) {
+    if (cJSON_AddBoolToObject(item, "dataSubsRelocInd", dccf_info->data_subs_reloc_ind) == NULL) {
+        ogs_error("OpenAPI_dccf_info_convertToJSON() failed [data_subs_reloc_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -144,6 +155,7 @@ OpenAPI_dccf_info_t *OpenAPI_dccf_info_parseFromJSON(cJSON *dccf_infoJSON)
     OpenAPI_list_t *tai_listList = NULL;
     cJSON *tai_range_list = NULL;
     OpenAPI_list_t *tai_range_listList = NULL;
+    cJSON *data_subs_reloc_ind = NULL;
     serving_nf_type_list = cJSON_GetObjectItemCaseSensitive(dccf_infoJSON, "servingNfTypeList");
     if (serving_nf_type_list) {
         cJSON *serving_nf_type_list_local = NULL;
@@ -243,11 +255,21 @@ OpenAPI_dccf_info_t *OpenAPI_dccf_info_parseFromJSON(cJSON *dccf_infoJSON)
         }
     }
 
+    data_subs_reloc_ind = cJSON_GetObjectItemCaseSensitive(dccf_infoJSON, "dataSubsRelocInd");
+    if (data_subs_reloc_ind) {
+    if (!cJSON_IsBool(data_subs_reloc_ind)) {
+        ogs_error("OpenAPI_dccf_info_parseFromJSON() failed [data_subs_reloc_ind]");
+        goto end;
+    }
+    }
+
     dccf_info_local_var = OpenAPI_dccf_info_create (
         serving_nf_type_list ? serving_nf_type_listList : NULL,
         serving_nf_set_id_list ? serving_nf_set_id_listList : NULL,
         tai_list ? tai_listList : NULL,
-        tai_range_list ? tai_range_listList : NULL
+        tai_range_list ? tai_range_listList : NULL,
+        data_subs_reloc_ind ? true : false,
+        data_subs_reloc_ind ? data_subs_reloc_ind->valueint : 0
     );
 
     return dccf_info_local_var;

@@ -1,0 +1,331 @@
+openapi: 3.0.0
+
+info:
+  title: Naf_Authentication
+  version: 1.2.0
+  description: |
+    AF Authentication Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.255 V19.3.0; 5G System;Uncrewed Aerial System Service Supplier (USS) Services; Stage
+    3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.255/
+
+servers:
+  - url: '{apiRoot}/naf-auth/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /request-auth:
+    post:
+      operationId: UAVAuthRequest
+      summary: UAV authentication
+      tags:
+        - UAV authentication
+      requestBody:
+        description: UAV authentication
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UAVAuthInfo'
+      responses:
+        '200':
+          description: UAV Auth response or message exchange
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UAVAuthResponse'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          description: >
+            The request is rejected by the USS and more details (not only the ProblemDetails) are
+            returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsAuthenticateAuthorize'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        reauthRevokeNotification:
+          '{request.body#/notifyUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ReauthRevokeNotify'
+              responses:
+                '204':
+                  description: Successful Notification response
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+
+
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+    UAVAuthInfo:
+      description: UAV auth data
+      type: object
+      required:
+        - gpsi
+        - serviceLevelId
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        serviceLevelId:
+          type: string
+        notifyUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifyCorrId:
+          type: string
+        ipAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        authMsg:
+          type: string
+          deprecated: true
+        authContainer:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthContainer'
+          minItems: 1
+        uavLocInfo:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    UAVAuthResponse:
+      description: UAV auth response data
+      type: object
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        authContainer:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthContainer'
+          minItems: 1
+        authMsg:
+          type: string
+          deprecated: true
+        authResult:
+          allOf:
+          - $ref: '#/components/schemas/AuthResult'
+          deprecated: true
+        serviceLevelId:
+          type: string
+        authSessAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        authProfIndex:
+          type: string
+        ussInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/UssInfo'
+          minItems: 1
+          description: Contains the USS addresses and corresponding geographical areas.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    UssInfo:
+      description: The USS address and the corresponding geographical area.
+      type: object
+      properties:
+        ussAddr:
+          $ref: 'TS29517_Naf_EventExposure.yaml#/components/schemas/AddrFqdn'
+        geoAreas:
+          type: array
+          items:
+            $ref: 'TS29522_AMPolicyAuthorization.yaml#/components/schemas/GeographicalArea'
+          minItems: 1
+          description: Contains the USS addresses and corresponding geographical areas.
+      required:
+        - ussAddr
+
+    ReauthRevokeNotify:
+      description: UAV related notification
+      type: object
+      required:
+        - gpsi
+        - serviceLevelId
+        - notifyType
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        serviceLevelId:
+          type: string
+        notifyCorrId:
+          type: string
+        authContainer:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthContainer'
+          minItems: 1
+        authMsg:
+          type: string
+          deprecated: true
+        notifyType:
+          $ref: '#/components/schemas/NotifyType'
+        ipAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+
+    AuthContainer:
+      description: Authentication/Authorization data
+      type: object
+      properties:
+        authMsgType:
+           $ref: '#/components/schemas/AuthMsgType'
+        authMsgPayload:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        authResult:
+          $ref: '#/components/schemas/AuthResult'
+
+    ProblemDetailsAuthenticateAuthorize:
+      description: Extends ProblemDetails to indicate more details during Authentication failure
+      allOf:
+        - $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        - $ref: '#/components/schemas/AdditionInfoAuthenticateAuthorize'
+
+    AdditionInfoAuthenticateAuthorize:
+      description: Indicates additional information during authentication failure
+      type: object
+      properties:
+        uasResRelInd:
+          type: boolean
+          description: >
+            Indicates to release the UAV resources during authentication failure, when set to
+            "true". Default is set to "false".
+
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+    AuthResult:
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - AUTH_SUCCESS
+      - AUTH_FAIL
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration but
+#            is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the result of authentication and/or authorization.  
+#        Possible values are:
+#        - AUTH_SUCCESS: The UUAA or C2 authorization has succeeded.
+#        - AUTH_FAIL: The UUAA or C2 authorization has failed.
+#
+    NotifyType:
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - REAUTHENTICATE
+      - REAUTHORIZE
+      - REVOKE
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration but
+#            is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the type of notification.  
+#        Possible values are:
+#        - REAUTHENTICATE: The UAV needs to be reauthenticated.
+#        - REAUTHORIZE: Authorization data needs to be updated to UAV.
+#        - REVOKE: Revoke UAV authentication and authorization.
+#
+    AuthMsgType:
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - UUAA
+      - C2AUTH
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration but
+#            is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the type of AA message.  
+#        Possible values are:
+#        - UUAA: Indicates that the type of the AA message is UUAA payload.
+#        - C2AUTH: Indicates that the type of the AA message is C2 authorization payload.

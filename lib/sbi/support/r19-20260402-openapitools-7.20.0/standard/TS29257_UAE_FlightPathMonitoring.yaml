@@ -1,0 +1,695 @@
+openapi: 3.0.0
+
+info:
+  title: UAE Server Flight Path Monitoring Service
+  version: 1.0.0
+  description: |
+    UAE Server Flight Path Monitoring Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.257 V19.5.0; Application layer support for Uncrewed Aerial System (UAS);
+    UAS Application Enabler (UAE) Server Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.257/
+
+servers:
+  - url: '{apiRoot}/uae-fpm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /configurations:
+    get:
+      summary: Retrieve all the active Flight Path Monitoring Configurations managed by the UAE Server.
+      operationId: FlightPathMonConfigs
+      tags:
+        - Flight Path Monitoring Configurations (Collection)
+      responses:
+        '200':
+          description: >
+            OK. All the active Flight Path Monitoring Configurations managed by the UAE Server shall
+            be returned.
+            When there are no active Flight Path Monitoring Configurations at the UAE Server, an
+            empty array shall be returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FlightPathMonConfig'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request the creation of a Flight Path Monitoring Configuration.
+      operationId: CreateFlightPathMonConfig
+      tags:
+        - Flight Path Monitoring Configurations (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightPathMonConfigReq'
+      responses:
+        '201':
+          description: >
+            Created. The Flight Path Monitoring Configuration is successfully created and a
+            representation of the created Individual Flight Path Monitoring Configuration resource
+            shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightPathMonConfigResp'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Flight Path Monitoring Configuration
+                resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        FlightPathMonConfigCompNotif:
+          '{$request.body#/monConfig/notifUri}/notify-comp':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/FlightPathMonConfigNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Flight Path Monitoring Configuration Completion Status
+                    Notification is successfully received and acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+        FlightPathMonEventsNotif:
+          '{$request.body#/monConfig/notifUri}/notify-events':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/FlightPathMonNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Flight Path Monitoring Events Notification is successfully
+                    received and acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /configurations/{configId}:
+    parameters:
+      - name: configId
+        in: path
+        description: >
+          Represents the identifier of the Individual Flight Path Monitoring Configuration resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Flight Path Monitoring Configuration resource.
+      operationId: GetIndFlightPathMonConfig
+      tags:
+        - Individual Flight Path Monitoring Configuration (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Flight Path Monitoring Configuration resource shall be
+            returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightPathMonConfig'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Flight Path Monitoring Configuration resource.
+      operationId: UpdateIndFlightPathMonConfig
+      tags:
+        - Individual Flight Path Monitoring Configuration (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightPathMonConfig'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Flight Path Monitoring Configuration resource is successfully updated
+            and arepresentation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightPathMonConfig'
+        '204':
+          description: >
+            No Content. The Individual Flight Path Monitoring Configuration resource is successfully
+            updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Flight Path Monitoring Configuration resource.
+      operationId: ModifyIndFlightPathMonConfig
+      tags:
+        - Individual Flight Path Monitoring Configuration (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/FlightPathMonConfigPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Flight Path Monitoring Configuration resource is successfully
+            modified and arepresentation of the updated resource shall be returned in the response
+            body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightPathMonConfig'
+        '204':
+          description: >
+            No Content. The Individual Flight Path Monitoring Configuration resource is successfully
+            modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Flight Path Monitoring Configuration resource.
+      operationId: DeleteIndFlightPathMonConfig
+      tags:
+        - Individual Flight Path Monitoring Configuration (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Flight Path Monitoring Configuration resource is successfully
+            deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    FlightPathMonConfigReq:
+      description: >
+        Represents the parameters to request the creation of a Flight Path Monitoring Configuration.
+      type: object
+      properties:
+        requestorId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        monConfig:
+          $ref: '#/components/schemas/FlightPathMonConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - requestorId
+        - monConfig
+
+    FlightPathMonConfigResp:
+      description: >
+        Represents the response to a Flight Path Monitoring Configuration creation request.
+      type: object
+      properties:
+        monConfig:
+          $ref: '#/components/schemas/FlightPathMonConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - monConfig
+
+    FlightPathMonConfig:
+      description: Represents a Flight Path Monitoring Configuration.
+      type: object
+      properties:
+        uasId:
+          $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/UasId'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        paramsUuPc5:
+          $ref: '#/components/schemas/FlightPathMonConfigParams'
+        paramsPc5:
+          $ref: '#/components/schemas/FlightPathMonConfigParams'
+      anyOf:
+        - required: [paramsUuPc5]
+        - required: [paramsPc5]
+
+    FlightPathMonConfigPatch:
+      description: >
+        Represents the parameters to request the modification of a Flight Path Monitoring
+        Configuration.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        paramsUuPc5:
+          $ref: '#/components/schemas/FlightPathMonConfigParamsRm'
+        paramsPc5:
+          $ref: '#/components/schemas/FlightPathMonConfigParamsRm'
+
+    FlightPathMonConfigParams:
+      description: Represents the flight path monitoring configuration parameters.
+      type: object
+      properties:
+        qosParams:
+          $ref: '#/components/schemas/QoSThresholds'
+        qoeParams:
+          $ref: '#/components/schemas/QoEThresholds'
+        validity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        waypointsList:
+          type: array
+          items:
+            $ref: '#/components/schemas/Waypoint'
+          minItems: 1
+        area:
+          $ref: 'TS29257_UAE_ChangeUSSManagement.yaml#/components/schemas/ServArea'
+        repReqs:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        endOfSessRepInd:
+          type: boolean
+          default: false
+          description: >
+            Indicates whether the flight path monitoring event(s) reporting shall be done only when
+            the session with the UAE Client ends (e.g., when the flight mission of the UAS is over).
+            true indicates that the flight path monitoring event(s) reporting shall be done only
+            when the session with the UAE Client ends.
+            false indicates that the flight path monitoring event(s) reporting shall be done only
+            when the session with the UAE Client ends.
+            The default value is "false" when this attribute is omitted.
+      anyOf:
+        - required: [qosParams]
+        - required: [qoeParams]
+        - required: [validity]
+        - required: [waypointsList]
+        - required: [area]
+        - required: [repReqs]
+        - required: [endOfSessRepInd]
+
+    FlightPathMonConfigParamsRm:
+      description: >
+        Represents the flight path monitoring configuration parameters.
+        This data type is defined in the same way as the FlightPathMonConfigParams data type but
+        with the OpenAPI nullable property set to true.
+      type: object
+      properties:
+        qosParams:
+          $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/C2LinkQualityThrlds'
+        validity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        waypointsList:
+          type: array
+          items:
+            $ref: '#/components/schemas/Waypoint'
+          minItems: 1
+        area:
+          $ref: 'TS29257_UAE_ChangeUSSManagement.yaml#/components/schemas/ServArea'
+        repReqs:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        endOfSessRepInd:
+          type: boolean
+          default: false
+          description: >
+            Indicates whether the flight path monitoring event(s) reporting shall be done only when
+            the session with the UAE Client ends (e.g., when the flight mission of the UAS is over).
+            true indicates that the flight path monitoring event(s) reporting shall be done only
+            when the session with the UAE Client ends.
+            false indicates that the flight path monitoring event(s) reporting shall be done only
+            when the session with the UAE Client ends.
+            The default value is "false" when this attribute is omitted.
+      nullable: true
+      anyOf:
+        - required: [qosParams]
+        - required: [validity]
+        - required: [waypointsList]
+        - required: [area]
+        - required: [repReqs]
+        - required: [endOfSessRepInd]
+
+    Waypoint:
+      description: Represents a waypoint along a flight path.
+      type: object
+      properties:
+        location:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        time:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - location
+        - time
+
+    FlightPathMonConfigNotif:
+      description: >
+        Represents a Flight Path Monitoring Configuration Completion Status Notification.
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/FlightPathMonConfigStatus'
+      required:
+        - status
+
+    FlightPathMonNotif:
+      description: Represents a Flight Path Monitoring Events Notification.
+      type: object
+      properties:
+        configId:
+          type: string
+        reportsUuPc5:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlightPathMonEventInfo'
+          minItems: 1
+        reportsPc5:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlightPathMonEventInfo'
+          minItems: 1
+      required:
+        - configId
+      anyOf:
+        - required: [reportsUuPc5]
+        - required: [reportsPc5]
+
+    FlightPathMonEventInfo:
+      description: Represents a Flight Path Monitoring Event report.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/FlightPathMonEvent'
+        timestamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        location:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+      required:
+        - event
+
+    QoSThresholds:
+      description: >
+        Represents QoS thresholds for flight path monitoring.
+      type: object
+      properties:
+        minLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avgLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        avgBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        minPackLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        avgPackLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        maxPackLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        minJitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        avgJitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxJitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+      anyOf:
+        - required: [minLatency]
+        - required: [avgLatency]
+        - required: [maxLatency]
+        - required: [minBitRate]
+        - required: [avgBitRate]
+        - required: [maxBitRate]
+        - required: [minPackLossRate]
+        - required: [avgPackLossRate]
+        - required: [maxPackLossRate]
+        - required: [minJitter]
+        - required: [avgJitter]
+        - required: [maxJitter]
+
+    QoEThresholds:
+      description: >
+        Represents QoE thresholds for flight path monitoring.
+      type: object
+      properties:
+        distDev:
+          type: number
+          format: double
+          minimum: 0
+        timeDev:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      anyOf:
+        - required: [distance]
+        - required: [timeDev]
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    FlightPathMonConfigStatus:
+      anyOf:
+        - type: string
+          enum:
+          - SUCCESSFUL
+          - FAILED
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the Flight Path Monitoring configuration completion status.  
+        Possible values are:
+        - SUCCESSFUL: Indicates that the Flight Path Monitoring Configuration was successful.
+        - FAILED: Indicates that the Flight Path Monitoring Configuration failed.
+
+    FlightPathMonEvent:
+      anyOf:
+      - type: string
+        enum:
+           - QOS
+           - QOE
+           - WAYPOINT
+           - AREA
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the Flight Path Monitoring event.  
+        Possible values are:
+        - QOS: Indicates that the Flight Path Monitoring event is a QoS event.
+        - QOE: Indicates that the Flight Path Monitoring event is a QoE event.
+        - WAYPOINT: Indicates that the Flight Path Monitoring event is a waypoint event.
+        - AREA: Indicates that the Flight Path Monitoring event is an area event.

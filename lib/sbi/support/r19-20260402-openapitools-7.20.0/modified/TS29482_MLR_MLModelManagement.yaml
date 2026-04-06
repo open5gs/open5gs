@@ -1,0 +1,667 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLE Server ML Model Management
+  version: 1.0.1
+  description: |
+    AIMLE Server ML Model Management Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 V19.1.0; Service Enabler Architecture Layer for Verticals (SEAL); Artificial
+    Intelligence Machine Learning Enablement (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/mlr-mlmm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /storages:
+    get:
+      summary: Retrieve one or several existing Individual ML Models Storage resource(s).
+      operationId: GetMLModelsStorages
+      tags:
+        - ML Models Storages (Collection)
+      parameters:
+        - name: storage-ids
+          in: query
+          description: Contains the identifier(s) of the targeted ML Models Storage resource(s).
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        - name: profile-ids
+          in: query
+          description: Contains identifier(s) of the profile(s) of the targeted stored ML Model(s).
+          required: false
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        - name: supp-feats
+          in: query
+          description: >
+            Contains the list of supported features among the ones defined in clause 6.2.1.8.
+            This query parameter shall be present only when feature negotiation is required.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual ML Models Storage resource(s) shall be returned.
+            If there are no available Individual ML Models Storage resource(s) fulfilling the
+            request, an empty array shall be returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MLModelsStorage'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request the creation of a ML Models Storage.
+      operationId: CreateMLModelsStorage
+      tags:
+        - ML Models Storages (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MLModelsStorage'
+      responses:
+        '201':
+          description: >
+            Created. The ML Models Storage is successfully created and a representation of the
+            created Individual ML Models Storage resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MLModelsStorage'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual ML Models Storage resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /storages/{storageId}:
+    parameters:
+      - name: storageId
+        in: path
+        description: >
+          Represents the identifier of the Individual ML Models Storage resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual ML Models Storage resource.
+      operationId: GetIndMLModelsStorage
+      tags:
+        - Individual ML Models Storage (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual ML Models Storage resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MLModelsStorage'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual ML Models Storage resource.
+      operationId: UpdateIndMLModelsStorage
+      tags:
+        - Individual ML Models Storage (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MLModelsStorage'
+      responses:
+        '200':
+          description: >
+            OK. The Individual ML Models Storage resource is successfully updated and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MLModelsStorage'
+        '204':
+          description: >
+            No Content. The Individual ML Models Storage resource is successfully updated and no
+            content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual ML Models Storage resource.
+      operationId: ModifyIndMLModelsStorage
+      tags:
+        - Individual ML Models Storage (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MLModelsStoragePatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual ML Models Storage resource is successfully modified and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MLModelsStorage'
+        '204':
+          description: >
+            No Content. The Individual ML Models Storage resource is successfully modified and no
+            content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual ML Models Storage resource.
+      operationId: DeleteIndMLModelsStorage
+      tags:
+        - Individual ML Models Storage (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual ML Models Storage resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    MLModelsStorage:
+      description: >
+        Represents a ML Models Storage.
+      type: object
+      properties:
+        mlModels:
+          type: array
+          items:
+            $ref: '#/components/schemas/MLModelProfile'
+          minItems: 1
+        mlModelsAddresses:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      anyOf:
+        - required: [mlModels]
+        - required: [mlModelsAddresses]
+
+    MLModelProfile:
+      description: >
+        Represents the ML Model Profile.
+      type: object
+      properties:
+        mlModelProfId:
+          type: string
+        aimleServId:
+          type: string
+        aimleRepId:
+          type: string
+        mlModelInfo:
+          $ref: '#/components/schemas/MLModel'
+        mlModelUri:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+      required:
+        - mlModelInfo
+
+    MLModel:
+      description: >
+        Represents a ML Model.
+      type: object
+      properties:
+        mlModelId:
+          type: string
+        adaeAnalyticsId:
+          $ref: 'TS29549_SS_AADRF_DataManagement.yaml#/components/schemas/AdaeAnalyticsId'
+        mlModelSize:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Volume'
+        mlModelSrcId:
+          type: string
+        valServiceIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        domain:
+          $ref: '#/components/schemas/MLModelDomain'
+        customDomain:
+          type: string
+        vendors:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        interopInfo:
+          type: string
+        phaseInfo:
+          $ref: '#/components/schemas/MLModelPhaseInfo'
+        storeDiscReqs:
+          $ref: '#/components/schemas/MLModelStoreDiscReqs'
+        usageReqs:
+          $ref: '#/components/schemas/MLModelUsageReqs'
+      required:
+        - mlModelId
+      anyOf:
+        - required: [vendors]
+        - required: [interopInfo]
+        - required: [phaseInfo]
+        - required: [storeDiscReqs]
+
+    MLModelPhaseInfo:
+      description: >
+        Represents the ML Model phase related information.
+      type: object
+      properties:
+        phase:
+          $ref: '#/components/schemas/MLModelPhase'
+        observedPerf:
+          $ref: '#/components/schemas/MLModelPerf'
+        trainingInfo:
+          $ref: '#/components/schemas/MLModelTrainingInfo'
+        contTrainInd:
+          type: boolean
+          default: false
+          description: >
+            Indicates whether the ML Model can be trained continuously or not.
+            true indicates that the ML Model can be trained continuously.
+            false indicates that the ML Model cannot be trained continuously.
+            The default value is false when this attribute is omitted.
+        contTrainParams:
+          type: string
+      required:
+        - phase
+
+    MLModelStoreDiscReqs:
+      description: >
+        Represents the ML Model storage and discovery requirements.
+      type: object
+      properties:
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        accessReqs:
+          $ref: '#/components/schemas/MLModelAccessReqs'
+      anyOf:
+        - required: [duration]
+        - required: [accessReqs]
+
+    MLModelUsageReqs:
+      description: >
+        Represents the ML Model usage requirements.
+      type: object
+      properties:
+        usages:
+          type: array
+          items:
+            $ref: '#/components/schemas/MLModelUsage'
+          minItems: 1
+      required:
+        - usages
+
+    MLModelPerf:
+      description: >
+        Represents the performance information of the ML Model.
+      type: object
+      properties:
+        resourceAddr:
+          type: integer
+          minimum: 0
+          maximum: 100
+        appSpecPerfData:
+          type: string
+      anyOf:
+        - required: [resourceAddr]
+        - required: [appSpecPerfData]
+
+    MLModelTrainingInfo:
+      description: >
+        Represents the ML Model training information.
+      type: object
+      properties:
+        dataSources:
+          type: string
+        dataVolume:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Volume'
+        freshness:
+          $ref: '#/components/schemas/DataFreshness'
+        baseModelId:
+          type: string
+      anyOf:
+        - required: [dataSources]
+        - required: [dataVolume]
+        - required: [freshness]
+        - required: [baseModelId]
+
+    MLModelAccessReqs:
+      description: >
+        Represents ML Model access requirements.
+      type: object
+      properties:
+        accessReq:
+          $ref: '#/components/schemas/AccessReqs'
+        valServerIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        valClientIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        timePeriod:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        location:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+      required:
+        - accessReq
+
+    MLModelsStoragePatch:
+      description: >
+        Represents the requested modifications to a ML Models Storage.
+      type: object
+      properties:
+        mlModels:
+          type: array
+          items:
+            $ref: '#/components/schemas/MLModelProfile'
+          minItems: 1
+        mlModelsAddresses:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minItems: 1
+
+#
+# Simple data types
+#
+
+#
+# ENUMERATIONS
+#
+
+    MLModelDomain:
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - SPEECH_RECOGNITION
+      - IMAGE_RECOGNITION
+      - IMAGE_PROCESSING
+      - LOCATION_PREDICTION
+      - CUSTOM
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the domain of the ML Model.  
+#        Possible values are:
+#        - SPEECH_RECOGNITION: Indicates that the domain of the ML Model is speech recognition.
+#        - IMAGE_RECOGNITION: Indicates that the domain of the ML Model is image recognition.
+#        - IMAGE_PROCESSING: Indicates that the domain of the ML Model is image processing.
+#        - LOCATION_PREDICTION: Indicates that the domain of the ML Model is location prediction.
+#        - CUSTOM: Indicates that the domain of the ML Model is a custom domain.
+#
+    MLModelPhase:
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - NOT_TRAINED
+      - IN_TRAINING
+      - TRAINED
+      - IN_RETRAINING
+      - DEPLOYED
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the ML Model phase.  
+#        Possible values are:
+#        - NOT_TRAINED: Indicates that the ML Model phase is that ML Model is not trained.
+#        - IN_TRAINING: Indicates that the ML Model phase is that the ML Model is in training.
+#        - TRAINED: Indicates that the ML Model phase is that the ML Model is trained.
+#        - IN_RETRAINING: Indicates that the ML Model phase is that the ML Model is in re-training.
+#        - DEPLOYED: Indicates that the ML Model phase is that the ML Model is deployed.
+#
+    MLModelUsage:
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - TRAINING
+      - INFERENCE
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the ML Model usage.  
+#        Possible values are:
+#        - TRAINING: Indicates that the ML Model usage is training.
+#        - INFERENCE: Indicates that the ML Model usage is inference.
+#
+    AccessReqs:
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - PUBLICLY_AVAILABLE
+      - RESTRICTED
+      - PRIVATE_USE_ONLY
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the ML Model access requirements.  
+#        Possible values are:
+#        - PUBLICLY_AVAILABLE: Indicates that the ML Model is publicly available.
+#        - RESTRICTED: Indicates that the ML Model is restricted.
+#        - PRIVATE_USE_ONLY: Indicates that the ML Model is for private use only.
+#
+    DataFreshness:
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - REAL_TIME
+      - NEAR_REAL_TIME
+      - HOURLY
+      - DAILY
+      - WEEKLY
+      - MONTHLY
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the data freshness level.  
+#        Possible values are:
+#        - REAL_TIME: Indicates that the data freshness level is real-time.
+#        - NEAR_REAL_TIME: Indicates that the data freshness level is near real-time.
+#        - HOURLY: Indicates that the data freshness level is hourly.
+#        - DAILY: Indicates that the data freshness level is daily.
+#        - WEEKLY: Indicates that the data freshness level is weekly.
+#        - MONTHLY: Indicates that the data freshness level is monthly.
+#
+# Data types describing alternative data types or combinations of data types:
+#

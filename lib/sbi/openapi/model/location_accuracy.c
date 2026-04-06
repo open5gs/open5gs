@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "location_accuracy.h"
 
-OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_create(
-)
+char* OpenAPI_location_accuracy_ToString(OpenAPI_location_accuracy_e location_accuracy)
 {
-    OpenAPI_location_accuracy_t *location_accuracy_local_var = ogs_malloc(sizeof(OpenAPI_location_accuracy_t));
-    ogs_assert(location_accuracy_local_var);
-
-
-    return location_accuracy_local_var;
+    const char *location_accuracyArray[] =  { "NULL", "CELL_LEVEL", "RAN_NODE_LEVEL", "TA_LEVEL", "PLMN_LEVEL", "N3IWF_LEVEL", "UE_IP", "UE_PORT" };
+    size_t sizeofArray = sizeof(location_accuracyArray) / sizeof(location_accuracyArray[0]);
+    if (location_accuracy < sizeofArray)
+        return (char *)location_accuracyArray[location_accuracy];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_location_accuracy_free(OpenAPI_location_accuracy_t *location_accuracy)
+OpenAPI_location_accuracy_e OpenAPI_location_accuracy_FromString(char* location_accuracy)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == location_accuracy) {
-        return;
+    int stringToReturn = 0;
+    const char *location_accuracyArray[] =  { "NULL", "CELL_LEVEL", "RAN_NODE_LEVEL", "TA_LEVEL", "PLMN_LEVEL", "N3IWF_LEVEL", "UE_IP", "UE_PORT" };
+    size_t sizeofArray = sizeof(location_accuracyArray) / sizeof(location_accuracyArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(location_accuracy, location_accuracyArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(location_accuracy);
-}
-
-cJSON *OpenAPI_location_accuracy_convertToJSON(OpenAPI_location_accuracy_t *location_accuracy)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (location_accuracy == NULL) {
-        ogs_error("OpenAPI_location_accuracy_convertToJSON() failed [LocationAccuracy]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_parseFromJSON(cJSON *location_accuracyJSON)
-{
-    OpenAPI_location_accuracy_t *location_accuracy_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    location_accuracy_local_var = OpenAPI_location_accuracy_create (
-    );
-
-    return location_accuracy_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_copy(OpenAPI_location_accuracy_t *dst, OpenAPI_location_accuracy_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_location_accuracy_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_location_accuracy_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_location_accuracy_free(dst);
-    dst = OpenAPI_location_accuracy_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

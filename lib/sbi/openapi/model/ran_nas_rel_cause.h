@@ -12,21 +12,21 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ran_nas_rel_cause_s OpenAPI_ran_nas_rel_cause_t;
 #include "ng_ap_cause.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ran_nas_rel_cause_s OpenAPI_ran_nas_rel_cause_t;
-typedef struct OpenAPI_ran_nas_rel_cause_s {
+struct OpenAPI_ran_nas_rel_cause_s {
     struct OpenAPI_ng_ap_cause_s *ng_ap_cause;
     bool is__5g_mm_cause;
     int _5g_mm_cause;
     bool is__5g_sm_cause;
     int _5g_sm_cause;
     char *eps_cause;
-} OpenAPI_ran_nas_rel_cause_t;
+};
 
 OpenAPI_ran_nas_rel_cause_t *OpenAPI_ran_nas_rel_cause_create(
     OpenAPI_ng_ap_cause_t *ng_ap_cause,

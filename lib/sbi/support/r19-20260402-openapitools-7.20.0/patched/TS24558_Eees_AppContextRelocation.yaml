@@ -1,0 +1,339 @@
+openapi: 3.0.0
+info:
+  title: Eees Application Context Relocation Service
+  version: "1.2.0"
+  description: |
+    Eees Application Context Relocation Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.558 V19.5.0; Enabling Edge Applications; Protocol specification; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/24.558/'
+
+servers:
+  - url: '{apiRoot}/eees-appctxtreloc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - eees-appctxtreloc
+
+paths:
+  /determine:
+    post:
+      summary: Request ACR determination.
+      operationId: Determine
+      tags:
+        - Determine ACR
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcrDetermReq'
+      responses:
+        '204':
+          description: No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /initiate:
+    post:
+      summary: Request the initiation of ACR.
+      operationId: Initiate
+      tags:
+        - Initiate ACR
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcrInitReq'
+      responses:
+        '204':
+          description: No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /declare:
+    post:
+      summary: Informs about the selected target EAS and provides the associated information.
+      operationId: Declare
+      tags:
+        - Declare selected target EAS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcrDecReq'
+      responses:
+        '204':
+          description: >
+            No Content. The selected target EAS information is successfully received.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            eees-appctxtreloc: Access to the Eees_AppContextRelocation API
+
+  schemas:
+    AcrDetermReq:
+      description: >
+        Represents the parameters to request ACR with action determination. The ueId attribute
+        shall be present, although it is not specified as a mandatory due to backward
+        compatibility reasons.
+      type: object
+      properties:
+        requestorId:
+          type: string
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        acId:
+          type: string
+        easId:
+          type: string
+        sEasEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        expectedLocArea:
+          $ref: '#/components/schemas/ExpectedLocationArea'
+        tunnel_Info:
+          $ref: 'TS29558_Eecs_TargetEESDiscovery.yaml#/components/schemas/TunnelInfo'
+      required:
+        - requestorId
+        - sEasEndpoint
+
+    AcrInitReq:
+      description: >
+        Represents the parameters to request ACR with action initiation. The ueId attribute
+        shall be present, although it is not specified as a mandatory due to backward
+        compatibility reasons.
+      type: object
+      properties:
+        requestorId:
+          type: string
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        acId:
+          type: string
+        easId:
+          type: string
+        tEasEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        sEasEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        prevTEasEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        routeReq:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteToLocation'
+        simInactTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        easNotifInd:
+          type: boolean
+          default: false
+        prevEasNotifInd:
+          type: boolean
+          default: false
+        eecCtxtReloc:
+          $ref: '#/components/schemas/EecCtxtReloc'
+        expectedLocArea:
+          $ref: '#/components/schemas/ExpectedLocationArea'
+        acrParams:
+          $ref: '#/components/schemas/AcrParameters'
+        acrModificationParams:
+          $ref: '#/components/schemas/AcrModificationParams'
+        easBundleInfo:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASBundleInfo'
+        tEasEndPointBundleList:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minItems: 1
+        ueIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+        expectedLocAreas:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExpectedLocationArea'
+          minItems: 1
+      required:
+        - requestorId
+        - tEasEndpoint
+        - easNotifInd
+
+    AcrDecReq:
+      description: >
+        Represents the parameters to inform about the selected target EAS and provide the
+        associated information.
+      type: object
+      properties:
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        acId:
+          type: string
+        tEasId:
+          type: string
+        tEasEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        expectedLocArea:
+          $ref: '#/components/schemas/ExpectedLocationArea'
+        easBundleInfo:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASBundleInfo'
+        tEasEndPointBundleList:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minItems: 1
+        requestorId:
+          description: >
+            Contains the identifier of the EAS that is sending the request. It shall be
+            included although it is not specified as a mandatory due to backward
+            compatibility reasons.
+          type: string
+        appGrpUeIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+          description: Contains a list of UE identifier(s) in the application group.
+      required:
+        - ueId
+        - tEasId
+        - tEasEndpoint
+
+    EecCtxtReloc:
+      description: Represents the EEC Context relocation information.
+      type: object
+      properties:
+        eecCtxtId:
+          type: string
+        sEesId:
+          type: string
+        sEecEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        tEesId:
+          type: string
+        tEecEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+      required:
+        - eecCtxtId
+
+    ExpectedLocationArea:
+      description: >
+        Represents the expected location or service area of UE.
+      type: object
+      properties:
+        locInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        svcArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+
+    AcrParameters:
+      description: >
+        Represents ACR parameters specific to ACR request initiated for Service continuity planning.
+      type: object
+      properties:
+        predictExpTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+
+    AcrModificationParams:
+      description: >
+        Represents ACR parameters specific to ACR modification request. The sEasEndpoint,
+        tEasEndpoint and acrParams attributes shall be present although they are not specified
+        as a mandatory due to backward compatibility reasons.
+      type: object
+      properties:
+        sEasEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        tEasEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        acrParams:
+          $ref: '#/components/schemas/AcrParameters'

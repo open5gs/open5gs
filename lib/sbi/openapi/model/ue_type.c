@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "ue_type.h"
 
-OpenAPI_ue_type_t *OpenAPI_ue_type_create(
-)
+char* OpenAPI_ue_type_ToString(OpenAPI_ue_type_e ue_type)
 {
-    OpenAPI_ue_type_t *ue_type_local_var = ogs_malloc(sizeof(OpenAPI_ue_type_t));
-    ogs_assert(ue_type_local_var);
-
-
-    return ue_type_local_var;
+    const char *ue_typeArray[] =  { "NULL", "AERIAL_UE" };
+    size_t sizeofArray = sizeof(ue_typeArray) / sizeof(ue_typeArray[0]);
+    if (ue_type < sizeofArray)
+        return (char *)ue_typeArray[ue_type];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_ue_type_free(OpenAPI_ue_type_t *ue_type)
+OpenAPI_ue_type_e OpenAPI_ue_type_FromString(char* ue_type)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == ue_type) {
-        return;
+    int stringToReturn = 0;
+    const char *ue_typeArray[] =  { "NULL", "AERIAL_UE" };
+    size_t sizeofArray = sizeof(ue_typeArray) / sizeof(ue_typeArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(ue_type, ue_typeArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(ue_type);
-}
-
-cJSON *OpenAPI_ue_type_convertToJSON(OpenAPI_ue_type_t *ue_type)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (ue_type == NULL) {
-        ogs_error("OpenAPI_ue_type_convertToJSON() failed [UeType]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_ue_type_t *OpenAPI_ue_type_parseFromJSON(cJSON *ue_typeJSON)
-{
-    OpenAPI_ue_type_t *ue_type_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    ue_type_local_var = OpenAPI_ue_type_create (
-    );
-
-    return ue_type_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_ue_type_t *OpenAPI_ue_type_copy(OpenAPI_ue_type_t *dst, OpenAPI_ue_type_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_ue_type_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_ue_type_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_ue_type_free(dst);
-    dst = OpenAPI_ue_type_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

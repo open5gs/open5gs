@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pp_profile_data_s OpenAPI_pp_profile_data_t;
 #include "allowed_mtc_provider_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pp_profile_data_s OpenAPI_pp_profile_data_t;
-typedef struct OpenAPI_pp_profile_data_s {
+struct OpenAPI_pp_profile_data_s {
     OpenAPI_list_t* allowed_mtc_providers;
     char *supported_features;
-} OpenAPI_pp_profile_data_t;
+};
 
 OpenAPI_pp_profile_data_t *OpenAPI_pp_profile_data_create(
     OpenAPI_list_t* allowed_mtc_providers,

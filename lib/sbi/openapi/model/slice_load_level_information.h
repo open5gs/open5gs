@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_slice_load_level_information_s OpenAPI_slice_load_level_information_t;
 #include "snssai.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_slice_load_level_information_s OpenAPI_slice_load_level_information_t;
-typedef struct OpenAPI_slice_load_level_information_s {
+struct OpenAPI_slice_load_level_information_s {
     int load_level_information;
     OpenAPI_list_t *snssais;
-} OpenAPI_slice_load_level_information_t;
+};
 
 OpenAPI_slice_load_level_information_t *OpenAPI_slice_load_level_information_create(
     int load_level_information,

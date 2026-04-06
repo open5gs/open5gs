@@ -1,7 +1,7 @@
 /*
  * registration_location_info.h
  *
- * 
+ * This data type contains the information about serving AMF, optional VGMLC and access type related information used by (H)GMLC. 
  */
 
 #ifndef _OpenAPI_registration_location_info_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_registration_location_info_s OpenAPI_registration_location_info_t;
 #include "access_type.h"
 #include "guami.h"
 #include "plmn_id.h"
@@ -21,14 +22,13 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_registration_location_info_s OpenAPI_registration_location_info_t;
-typedef struct OpenAPI_registration_location_info_s {
+struct OpenAPI_registration_location_info_s {
     char *amf_instance_id;
     struct OpenAPI_guami_s *guami;
     struct OpenAPI_plmn_id_s *plmn_id;
     struct OpenAPI_vgmlc_address_s *vgmlc_address;
     OpenAPI_list_t *access_type_list;
-} OpenAPI_registration_location_info_t;
+};
 
 OpenAPI_registration_location_info_t *OpenAPI_registration_location_info_create(
     char *amf_instance_id,

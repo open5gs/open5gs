@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pcf_binding_s OpenAPI_pcf_binding_t;
 #include "binding_level.h"
 #include "ip_end_point.h"
 #include "parameter_combination.h"
@@ -21,8 +22,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pcf_binding_s OpenAPI_pcf_binding_t;
-typedef struct OpenAPI_pcf_binding_s {
+struct OpenAPI_pcf_binding_s {
     char *supi;
     char *gpsi;
     char *ipv4_addr;
@@ -47,7 +47,7 @@ typedef struct OpenAPI_pcf_binding_s {
     OpenAPI_binding_level_e bind_level;
     OpenAPI_list_t *ipv4_frame_route_list;
     OpenAPI_list_t *ipv6_frame_route_list;
-} OpenAPI_pcf_binding_t;
+};
 
 OpenAPI_pcf_binding_t *OpenAPI_pcf_binding_create(
     char *supi,

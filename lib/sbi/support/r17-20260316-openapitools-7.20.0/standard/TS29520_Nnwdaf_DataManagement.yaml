@@ -1,0 +1,333 @@
+openapi: 3.0.0
+info:
+  title: Nnwdaf_DataManagement
+  version: 1.0.2
+  description: |
+    Nnwdaf_DataManagement API Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.520 V17.9.0; 5G System; Network Data Analytics Services.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.520/'
+servers:
+  - url: '{apiRoot}/nnwdaf-datamanagement/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nnwdaf-datamanagement
+paths:
+  /subscriptions:
+    post:
+      summary: subscribe to notifications
+      operationId: CreateIndividualSubcription
+      tags:
+        - Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NnwdafDataManagementSubsc'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NnwdafDataManagementSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nnwdaf-datamanagement/<apiVersion>/subscriptions/{subId}.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        myNotification:
+          '{$request.body#/notificURI}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NnwdafDataManagementNotif'
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+              callbacks:
+                Fetch:
+                  '{request.body#/fetchInstruct/fetchUri}':
+                    post:
+                      requestBody:
+                        required: true
+                        content:
+                          application/json:
+                            schema: 
+                              type: array
+                              items:
+                                type: string
+                              minItems: 1
+                              description: Indicate the fetch correlation identifier.
+                      responses:
+                        '200':
+                          description: Expected response to a valid request
+                          content:
+                            application/json:
+                              schema:
+                                $ref: '#/components/schemas/NnwdafDataManagementNotif'
+                        '307':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                        '308':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                        '400':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                        '401':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                        '403':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                        '404':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                        '406':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+                        '411':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                        '413':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                        '415':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                        '429':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                        '500':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                        '503':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                        default:
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /subscriptions/{subscriptionId}:
+    put:
+      summary: Update an existing Individual NWDAF Data Subscription.
+      operationId: UpdateNWDAFDataSubscription
+      tags:
+        - Individual NWDAF Data Management Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NnwdafDataManagementSubsc'
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Event Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource was succesfully modified and representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NnwdafDataManagementSubsc'
+        '204':
+          description: No Content. Resource was succesfully modified
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: unsubscribe from notifications
+      operationId: DeleteNWDAFDataSubscription
+      tags:
+        - Individual NWDAF Data Management Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Event Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was succesfully deleted
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nnwdaf-datamanagement: Access to the Nnwdaf_DataManagement API
+  schemas:
+    NnwdafDataManagementSubsc:
+      description: Represents an Individual NWDAF Data Management Subscription resource.
+      type: object
+      properties:
+        adrfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        adrfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        anaSub:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NnwdafEventsSubscription'
+        dataCollectPurposes:
+          type: array
+          items:
+            $ref: 'TS29574_Ndccf_DataManagement.yaml#/components/schemas/DataCollectionPurpose'
+          minItems: 1
+          description: >
+            The purposes of data collection. This attribute may only be provided if user consent
+            is reqiured depending on local policy and regulations and the consumer has
+            not checked user consent.
+        dataSub:
+          $ref: 'TS29575_Nadrf_DataManagement.yaml#/components/schemas/DataSubscription'
+        formatInstruct:
+          $ref: 'TS29574_Ndccf_DataManagement.yaml#/components/schemas/FormattingInstruction'
+        notifCorrId:
+          type: string
+        notificURI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        procInstruct:
+          $ref: 'TS29574_Ndccf_DataManagement.yaml#/components/schemas/ProcessingInstruction'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        targetNfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        targetNfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        timePeriod:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+      required:
+        - notifCorrId
+        - notificURI
+      oneOf:
+        - required: [anaSub]
+        - required: [dataSub]
+    NnwdafDataManagementNotif:
+      description: Represents an Individual Notification.
+      type: object
+      properties:
+        dataNotification:
+          $ref: 'TS29575_Nadrf_DataManagement.yaml#/components/schemas/DataNotification'
+        dataReports:
+          type: array
+          items:
+            $ref: 'TS29574_Ndccf_DataManagement.yaml#/components/schemas/NotifSummaryReport'
+          minItems: 1
+          description: List of summary reports of processed notifications.
+        notifCorrId:
+          type: string
+          description: Notification correlation identifier.
+        terminationReq:
+          type: string
+          description: >
+            It indicates that the termination of the data management subscription
+            is requested by the NWDAF.
+        fetchInstruct:
+          $ref: 'TS29576_Nmfaf_3caDataManagement.yaml#/components/schemas/FetchInstruction'
+        notifTimestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:  
+        - notifCorrId
+        - notifTimestamp
+      oneOf:
+        - required: [dataNotification]
+        - required: [dataReports]
+        - required: [fetchInstruct]
+

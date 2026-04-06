@@ -1,7 +1,7 @@
 /*
  * security_capability.h
  *
- * 
+ * Enumeration of security capabilities
  */
 
 #ifndef _OpenAPI_security_capability_H_

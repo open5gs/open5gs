@@ -44,9 +44,6 @@ void OpenAPI_prev_sub_info_free(OpenAPI_prev_sub_info_t *prev_sub_info)
         prev_sub_info->subscription_id = NULL;
     }
     if (prev_sub_info->nf_ana_events) {
-        OpenAPI_list_for_each(prev_sub_info->nf_ana_events, node) {
-            OpenAPI_nwdaf_event_free(node->data);
-        }
         OpenAPI_list_free(prev_sub_info->nf_ana_events);
         prev_sub_info->nf_ana_events = NULL;
     }
@@ -94,19 +91,17 @@ cJSON *OpenAPI_prev_sub_info_convertToJSON(OpenAPI_prev_sub_info_t *prev_sub_inf
         goto end;
     }
 
-    if (prev_sub_info->nf_ana_events) {
+    if (prev_sub_info->nf_ana_events != OpenAPI_nwdaf_event_NULL) {
     cJSON *nf_ana_eventsList = cJSON_AddArrayToObject(item, "nfAnaEvents");
     if (nf_ana_eventsList == NULL) {
         ogs_error("OpenAPI_prev_sub_info_convertToJSON() failed [nf_ana_events]");
         goto end;
     }
     OpenAPI_list_for_each(prev_sub_info->nf_ana_events, node) {
-        cJSON *itemLocal = OpenAPI_nwdaf_event_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        if (cJSON_AddStringToObject(nf_ana_eventsList, "", OpenAPI_nwdaf_event_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_prev_sub_info_convertToJSON() failed [nf_ana_events]");
             goto end;
         }
-        cJSON_AddItemToArray(nf_ana_eventsList, itemLocal);
     }
     }
 
@@ -178,16 +173,22 @@ OpenAPI_prev_sub_info_t *OpenAPI_prev_sub_info_parseFromJSON(cJSON *prev_sub_inf
         nf_ana_eventsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(nf_ana_events_local, nf_ana_events) {
-            if (!cJSON_IsObject(nf_ana_events_local)) {
+            OpenAPI_nwdaf_event_e localEnum = OpenAPI_nwdaf_event_NULL;
+            if (!cJSON_IsString(nf_ana_events_local)) {
                 ogs_error("OpenAPI_prev_sub_info_parseFromJSON() failed [nf_ana_events]");
                 goto end;
             }
-            OpenAPI_nwdaf_event_t *nf_ana_eventsItem = OpenAPI_nwdaf_event_parseFromJSON(nf_ana_events_local);
-            if (!nf_ana_eventsItem) {
-                ogs_error("No nf_ana_eventsItem");
-                goto end;
+            localEnum = OpenAPI_nwdaf_event_FromString(nf_ana_events_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"nf_ana_events\" is not supported. Ignoring it ...",
+                         nf_ana_events_local->valuestring);
+            } else {
+                OpenAPI_list_add(nf_ana_eventsList, (void *)localEnum);
             }
-            OpenAPI_list_add(nf_ana_eventsList, nf_ana_eventsItem);
+        }
+        if (nf_ana_eventsList->count == 0) {
+            ogs_error("OpenAPI_prev_sub_info_parseFromJSON() failed: Expected nf_ana_eventsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -226,9 +227,6 @@ OpenAPI_prev_sub_info_t *OpenAPI_prev_sub_info_parseFromJSON(cJSON *prev_sub_inf
     return prev_sub_info_local_var;
 end:
     if (nf_ana_eventsList) {
-        OpenAPI_list_for_each(nf_ana_eventsList, node) {
-            OpenAPI_nwdaf_event_free(node->data);
-        }
         OpenAPI_list_free(nf_ana_eventsList);
         nf_ana_eventsList = NULL;
     }

@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_non_ue_n2_info_subscription_create_data_s OpenAPI_non_ue_n2_info_subscription_create_data_t;
 #include "access_type.h"
 #include "global_ran_node_id.h"
 #include "n2_information_class.h"
@@ -20,15 +21,15 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_non_ue_n2_info_subscription_create_data_s OpenAPI_non_ue_n2_info_subscription_create_data_t;
-typedef struct OpenAPI_non_ue_n2_info_subscription_create_data_s {
+struct OpenAPI_non_ue_n2_info_subscription_create_data_s {
     OpenAPI_list_t *global_ran_node_list;
     OpenAPI_list_t *an_type_list;
     OpenAPI_n2_information_class_e n2_information_class;
     char *n2_notify_callback_uri;
     char *nf_id;
     char *supported_features;
-} OpenAPI_non_ue_n2_info_subscription_create_data_t;
+    char *notif_correlation_id;
+};
 
 OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscription_create_data_create(
     OpenAPI_list_t *global_ran_node_list,
@@ -36,7 +37,8 @@ OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscr
     OpenAPI_n2_information_class_e n2_information_class,
     char *n2_notify_callback_uri,
     char *nf_id,
-    char *supported_features
+    char *supported_features,
+    char *notif_correlation_id
 );
 void OpenAPI_non_ue_n2_info_subscription_create_data_free(OpenAPI_non_ue_n2_info_subscription_create_data_t *non_ue_n2_info_subscription_create_data);
 OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscription_create_data_parseFromJSON(cJSON *non_ue_n2_info_subscription_create_dataJSON);

@@ -1,0 +1,476 @@
+openapi: 3.0.0
+info:
+  version: 1.1.0
+  title: Nadrf_MLModelManagement
+  description: |
+    ADRF ML Model Management Service.  
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.575 V19.5.0; 5G System; Analytics Data Repository Services; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.575/'
+#
+servers:
+  - url: '{apiRoot}/nadrf-mlmodelmanagement/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+#
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nadrf-mlmodelmanagement
+#
+paths:
+  /mlmodel-store-records:
+    post:
+      summary: Creates a new Individual ADRF ML Model Store Record resource.
+      operationId: CreateADRFMLModelStoreRecord
+      tags:
+        - ADRF ML Model Store Records (Collection)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NadrfMLModelStoreRecord'
+        required: true
+        description: ADRF ML model store record to be stored.
+      responses:
+        '201':
+          description: Successful creation of new Individual ADRF ML Model Store Record resource.
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nadrf-mlmodelmanagement/<apiVersion>/mlmodel-store-records/{storeTransId}
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NadrfMLModelStoreRecord'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    get:
+      summary: Retrieves existing Individual ADRF ML Model Store Record.
+      operationId: GetAdrfMLModelStoreRecord
+      tags:
+        - ADRF ML Model Store Records (Collection)
+      parameters:
+        - name: store-trans-id
+          description: A storage transaction identifier of a ML model store record in ADRF.
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: model-unique-ids
+          description: Unique Model identifier of a ML model.
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        - name: supported-features
+          description: The features supported by the NF service consumer.
+          in: query
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: ML model store records are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NadrfMLModelStoreRecord'
+        '204':
+          description: No matching ADRF ML Model were found.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /mlmodel-store-records/{storeTransId}:
+    delete:
+      summary: Delete an existing Individual ADRF ML Model Store Record.
+      operationId: DeleteADRFMLModelStoreRecord
+      tags:
+        - Individual ADRF ML Model Store Record (Document)
+      parameters:
+        - name: storeTransId
+          in: path
+          description: String identifying a ML Model Store Record in ADRF.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >
+            Attempted to remove ML model(s) in the Individual ADRF ML Model Store Record resource.
+            The result is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MLModelDelResult'
+                minItems: 1
+        '204':
+          description: >
+            No Content. The Individual ADRF ML Model Store Record resource matching the
+            storeTransId was deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Update an existing Individual ADRF ML Model Store Record
+      operationId: UpdateADRFMLModelStoreRecord
+      tags:
+        - Individual ADRF ML Model Store Record (Document)
+      parameters:
+        - name: storeTransId
+          in: path
+          description: String identifying a ML Model Store Record in ADRF.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NadrfMLModelStoreRecord'
+        required: true
+      responses:
+        '200':
+          description: >
+            The Individual ADRF ML Model Store Record resource was modified successfully
+            and a representation of that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NadrfMLModelStoreRecord'
+        '204':
+          description: The Individual ADRF ML Model Store Record resource was modified successfully.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /remove-stored-mlmodel:
+    post:
+      summary: Remove stored ML model based on unique ML model identifier.
+      operationId: DeleteADRFMLModel
+      tags:
+        - ADRF Stored ML Model
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+              minItems: 1
+        required: true
+      responses:
+        '200':
+          description: >
+            The ADRF ML model matching the provided unique ML model identifier
+            was attempted to be deleted. The result is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MLModelDelResult'
+                minItems: 1
+        '204':
+          description: >
+            No Content. The ML models matching all identifiers provided in the request body
+            were deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+#
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nadrf-mlmodelmanagement: Access to the nadrf-mlmodelmanagement API
+#
+  schemas:
+#
+    NadrfMLModelStoreRecord:
+      description: Represents an Individual ADRF ML Model Store Record.
+      type: object
+      allOf:
+        - oneOf:
+          - required: [nfInstanceId]
+          - required: [nfSetId]
+        - anyOf:
+          - required: [mlModelInfo]
+          - required: [mlModels]
+      properties:
+        nfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        nfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        mlModelInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/MLModelInfo'
+          minItems: 1
+          description: List of ML Model Information.
+        mlModels:
+          type: array
+          items:
+            $ref: '#/components/schemas/MLModel'
+          minItems: 1
+          description: Represents ML Model(s).
+        modelStoreResult:
+          $ref: '#/components/schemas/ModelStoreResult'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        modelStoreResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModelStoreResult'
+          minItems: 1
+          description: Indicates the multiple model storage results.
+
+#
+    MLModelInfo:
+      description: Represents informatiom of the ML Model.
+      type: object
+      allOf:
+        - required: [modelUniqueId]
+        - required: [mlFileAddr]
+        - required: [mlStorageSize]
+      properties:
+        modelUniqueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        mlFileAddr:
+          $ref: 'TS29520_Nnwdaf_MLModelProvision.yaml#/components/schemas/MLModelAddr'
+        mlStorageSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        allowConsumerList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowedConsumer'
+          minItems: 1
+          description: The allowed consumer list of the ML Model.
+#
+    AllowedConsumer:
+      description: Represents informatiom of the allowed consumer list of the ML Model.
+      type: object
+      properties:
+        nfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        nfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+      oneOf:
+        - required: [nfInstanceId]
+        - required: [nfSetId]
+#
+    MLModelDelResult:
+      description: Represents informatiom of the ML Model.
+      type: object
+      allOf:
+        - required: [modelUniqueId]
+        - required: [deleteResult]
+      properties:
+        modelUniqueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        deleteResult:
+          $ref: '#/components/schemas/DeleteResult'
+#
+    MLModel:
+      description: Represents an ML Model.
+      type: object
+      allOf:
+        - required: [modelUniqueId]
+        - required: [mlModel]
+      properties:
+        modelUniqueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        mlModel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Binary'
+        allowConsumerList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowedConsumer'
+          minItems: 1
+          description: The allowed consumer list of the ML Model.
+#
+    ModelStoreResult:
+      description: Contains information about ML Model storage result.
+      type: object
+      allOf:
+        - required: [modelUniqueId]
+        - required: [storeResult]
+      properties:
+        modelUniqueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        storeResult:
+          $ref: '#/components/schemas/StoreResult'
+#
+# ENUMERATIONS DATA TYPES
+#
+    DeleteResult:
+      anyOf:
+      - type: string
+        enum:
+          - ML_MODEL_DELETED
+          - ML_MODEL_NOT_FOUND
+          - ML_MODEL_FOUND_BUT_NOT_DELETED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents the store result type.  
+        Possible values are:
+        - ML_MODEL_DELETED: Indicates that the ML model was deleted in ADRF.
+        - ML_MODEL_NOT_FOUND: Indicates that the ML model was not found in ADRF.
+        - ML_MODEL_FOUND_BUT_NOT_DELETED: Indicates that the ML model was found in ADRF but not
+          deleted.
+
+#
+    StoreResult:
+      anyOf:
+      - type: string
+        enum:
+          - ML_MODEL_FILE_STORED_IN_ADRF
+          - ML_MODEL_FILE_ADDRESS_NOT_FOUND
+          - ML_MODEL_FILE_DOWNLOAD_FAILED
+          - RETRIEVAL_ML_MODEL_NOT_ALLOWED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents the store result type.  
+        Possible values are:
+        - ML_MODEL_FILE_STORED_IN_ADRF: Indicates that the ML model was successfully stored in ADRF.
+        - ML_MODEL_FILE_ADDRESS_NOT_FOUND: Indicates the failure cause of ML model storage is
+          because the ML model file address was not found.
+        - ML_MODEL_FILE_DOWNLOAD_FAILED: Indicates the failure cause of ML model storage is
+          because the download of the ML model file failed.
+        - RETRIEVAL_ML_MODEL_NOT_ALLOWED: Indicates the failure cause of ML model retrieval is
+          because the retrieval of the ML model is not allowed.

@@ -12,13 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_mm_context_s OpenAPI_mm_context_t;
 #include "access_type.h"
+#include "dereg_inact_timer_info.h"
 #include "eps_nas_security_mode.h"
 #include "expected_ue_behavior.h"
 #include "global_ran_node_id.h"
 #include "nas_security_mode.h"
 #include "nssaa_status.h"
 #include "nssai_mapping.h"
+#include "partially_allowed_snssai.h"
+#include "slice_replacement_mapping.h"
 #include "snssai.h"
 #include "ue_differentiation_info.h"
 #include "uuaa_mm_status.h"
@@ -27,8 +31,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_mm_context_s OpenAPI_mm_context_t;
-typedef struct OpenAPI_mm_context_s {
+struct OpenAPI_mm_context_s {
     OpenAPI_access_type_e access_type;
     struct OpenAPI_nas_security_mode_s *nas_security_mode;
     struct OpenAPI_eps_nas_security_mode_s *eps_nas_security_mode;
@@ -41,6 +44,8 @@ typedef struct OpenAPI_mm_context_s {
     OpenAPI_list_t *allowed_nssai;
     OpenAPI_list_t *nssai_mapping_list;
     OpenAPI_list_t *allowed_home_nssai;
+    OpenAPI_list_t *partially_allowed_nssai;
+    OpenAPI_list_t *replaced_snssai_mapping_list;
     OpenAPI_list_t *ns_instance_list;
     struct OpenAPI_expected_ue_behavior_s *expected_u_ebehavior;
     struct OpenAPI_ue_differentiation_info_s *ue_differentiation_info;
@@ -55,7 +60,10 @@ typedef struct OpenAPI_mm_context_s {
     OpenAPI_list_t *nssaa_status_list;
     OpenAPI_list_t *pending_nssai_mapping_list;
     OpenAPI_uuaa_mm_status_e uuaa_mm_status;
-} OpenAPI_mm_context_t;
+    OpenAPI_list_t* dereg_inact_timer_list;
+    bool is_vo_support_match_ind;
+    int vo_support_match_ind;
+};
 
 OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     OpenAPI_access_type_e access_type,
@@ -70,6 +78,8 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     OpenAPI_list_t *allowed_nssai,
     OpenAPI_list_t *nssai_mapping_list,
     OpenAPI_list_t *allowed_home_nssai,
+    OpenAPI_list_t *partially_allowed_nssai,
+    OpenAPI_list_t *replaced_snssai_mapping_list,
     OpenAPI_list_t *ns_instance_list,
     OpenAPI_expected_ue_behavior_t *expected_u_ebehavior,
     OpenAPI_ue_differentiation_info_t *ue_differentiation_info,
@@ -83,7 +93,10 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_create(
     int an_n2_ap_id,
     OpenAPI_list_t *nssaa_status_list,
     OpenAPI_list_t *pending_nssai_mapping_list,
-    OpenAPI_uuaa_mm_status_e uuaa_mm_status
+    OpenAPI_uuaa_mm_status_e uuaa_mm_status,
+    OpenAPI_list_t* dereg_inact_timer_list,
+    bool is_vo_support_match_ind,
+    int vo_support_match_ind
 );
 void OpenAPI_mm_context_free(OpenAPI_mm_context_t *mm_context);
 OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON);

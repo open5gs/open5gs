@@ -1,0 +1,244 @@
+openapi: 3.0.0
+info:
+  title: Maf_Provisioning_ProvisioningSessions
+  version: 1.0.1
+  description: |
+    Media Delivery: Provisioning Sessions API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Maf_Provisioning_ProvisioningSessions
+    description: 'Media Delivery: Provisioning Sessions API'
+
+externalDocs:
+  description: 'TS 26.510 V18.4.0; Media Delivery; Interactions and APIs for media session handling'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.510/'
+
+servers:
+  - url: '{apiRoot}/3gpp-maf-provisioning/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 26.510 clause 7.1.3.
+
+security:
+  - {}
+  - OAuth2: []
+
+paths:
+  /provisioning-sessions:
+    get:
+      operationId: enumerateProvisioningSessions
+      summary: "Retrieve a list of Provisioning Session resource identifiers currently registered with the Media AF"
+      responses:
+        '200': # OK
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    post:
+      operationId: createProvisioningSession
+      summary: 'Create a new Provisioning Session'
+      security:
+        - OAuth2:
+          - provisioning-session_create
+      requestBody:
+        description: 'A JSON representation of a Provisioning Session.'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProvisioningSession'
+      responses:
+        '201':
+          description: 'Provisioning Session Created'
+          headers:
+            Location:
+              description: 'URL including the resource identifier of the newly created Provisioning Session.'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvisioningSession'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /provisioning-sessions/{provisioningSessionId}:
+    parameters:
+        - name: provisioningSessionId
+          in: path
+          required: true
+          schema:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          description: 'The resource identifier of an existing Provisioning Session.'
+    get:
+      operationId: getProvisioningSessionById
+      summary: 'Retrieve an existing Provisioning Session'
+      security:
+        - OAuth2:
+          - provisioning-session_retrieve
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvisioningSession'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      operationId: destroyProvisioningSession
+      summary: 'Destroy an existing Provisioning Session'
+      security:
+        - OAuth2:
+          - provisioning-session_destroy
+      responses:
+        '204': # No Content
+          description: 'Provisioning Session Destroyed'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            provisioning-session_create: Create a Provisioning Session resource
+            provisioning-session_retrieve: Retrieve a Provisioning Session resource
+            provisioning-session_destroy: Destroy a Provisioning Session resource
+
+  schemas:
+    ProvisioningSession:
+      type: object
+      description: "A representation of a Provisioning Session."
+      required:
+        - provisioningSessionId
+        - provisioningSessionType
+        - externalServiceId
+        - appId
+      properties:
+        provisioningSessionId:
+          readOnly: true
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+#          allOf:
+#            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        provisioningSessionType:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ProvisioningSessionType'
+        externalServiceId:
+          type: string
+        aspId:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/AspId'
+        appId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        locationReporting:
+          type: boolean
+          default: false
+        serverCertificateIds:
+          readOnly: true
+          type: array
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          minItems: 1
+          uniqueItems: true
+        contentPreparationTemplateIds:
+          readOnly: true
+          type: array
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          minItems: 1
+          uniqueItems: true
+        metricsReportingConfigurationIds:
+          readOnly: true
+          type: array
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          minItems: 1
+          uniqueItems: true
+        policyTemplateIds:
+          readOnly: true
+          type: array
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          minItems: 1
+          uniqueItems: true
+        edgeResourcesConfigurationIds:
+          readOnly: true
+          type: array
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          minItems: 1
+          uniqueItems: true
+        eventDataProcessingConfigurationIds:
+          readOnly: true
+          type: array
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          minItems: 1
+          uniqueItems: true

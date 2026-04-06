@@ -1,7 +1,7 @@
 /*
  * redundant_transmission_exp_info.h
  *
- * The redundant transmission experience related information. When subscribed event is  \&quot;RED_TRANS_EXP\&quot;, the \&quot;redTransInfos\&quot; attribute shall be included. 
+ * The redundant transmission experience related information. When subscribed event is \&quot;RED_TRANS_EXP\&quot;, the \&quot;redTransInfos\&quot; attribute shall be included. 
  */
 
 #ifndef _OpenAPI_redundant_transmission_exp_info_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_redundant_transmission_exp_info_s OpenAPI_redundant_transmission_exp_info_t;
 #include "network_area_info.h"
 #include "redundant_transmission_exp_per_ts.h"
 
@@ -19,12 +20,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_redundant_transmission_exp_info_s OpenAPI_redundant_transmission_exp_info_t;
-typedef struct OpenAPI_redundant_transmission_exp_info_s {
+struct OpenAPI_redundant_transmission_exp_info_s {
     struct OpenAPI_network_area_info_s *spatial_valid_con;
     char *dnn;
     OpenAPI_list_t *red_trans_exps;
-} OpenAPI_redundant_transmission_exp_info_t;
+};
 
 OpenAPI_redundant_transmission_exp_info_t *OpenAPI_redundant_transmission_exp_info_create(
     OpenAPI_network_area_info_t *spatial_valid_con,

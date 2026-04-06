@@ -12,13 +12,13 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_threshold_level_s OpenAPI_threshold_level_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_threshold_level_s OpenAPI_threshold_level_t;
-typedef struct OpenAPI_threshold_level_s {
+struct OpenAPI_threshold_level_s {
     bool is_cong_level;
     int cong_level;
     bool is_nf_load_level;
@@ -31,15 +31,27 @@ typedef struct OpenAPI_threshold_level_s {
     int nf_storage_usage;
     char *avg_traffic_rate;
     char *max_traffic_rate;
+    char *min_traffic_rate;
+    char *agg_traffic_rate;
+    bool is_var_traffic_rate;
+    float var_traffic_rate;
     bool is_avg_packet_delay;
     int avg_packet_delay;
     bool is_max_packet_delay;
     int max_packet_delay;
+    bool is_var_packet_delay;
+    float var_packet_delay;
     bool is_avg_packet_loss_rate;
     int avg_packet_loss_rate;
+    bool is_max_packet_loss_rate;
+    int max_packet_loss_rate;
+    bool is_var_packet_loss_rate;
+    float var_packet_loss_rate;
     bool is_svc_exp_level;
     float svc_exp_level;
-} OpenAPI_threshold_level_t;
+    bool is_speed;
+    float speed;
+};
 
 OpenAPI_threshold_level_t *OpenAPI_threshold_level_create(
     bool is_cong_level,
@@ -54,14 +66,26 @@ OpenAPI_threshold_level_t *OpenAPI_threshold_level_create(
     int nf_storage_usage,
     char *avg_traffic_rate,
     char *max_traffic_rate,
+    char *min_traffic_rate,
+    char *agg_traffic_rate,
+    bool is_var_traffic_rate,
+    float var_traffic_rate,
     bool is_avg_packet_delay,
     int avg_packet_delay,
     bool is_max_packet_delay,
     int max_packet_delay,
+    bool is_var_packet_delay,
+    float var_packet_delay,
     bool is_avg_packet_loss_rate,
     int avg_packet_loss_rate,
+    bool is_max_packet_loss_rate,
+    int max_packet_loss_rate,
+    bool is_var_packet_loss_rate,
+    float var_packet_loss_rate,
     bool is_svc_exp_level,
-    float svc_exp_level
+    float svc_exp_level,
+    bool is_speed,
+    float speed
 );
 void OpenAPI_threshold_level_free(OpenAPI_threshold_level_t *threshold_level);
 OpenAPI_threshold_level_t *OpenAPI_threshold_level_parseFromJSON(cJSON *threshold_levelJSON);

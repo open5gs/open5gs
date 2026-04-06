@@ -1,0 +1,644 @@
+openapi: 3.0.1
+info:
+  title: Provisioning MnS
+  version: 19.2.0
+  description: >-
+    OAS 3.0.1 definition of the Provisioning MnS
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.532; Generic management services
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.532/
+servers:
+  - url: '{MnSRoot}/ProvMnS/{MnSVersion}/{URI-LDN-first-part}'
+    variables:
+      MnSRoot:
+        description: See clause 4.4.2 of TS 32.158
+        default: http://example.com/3GPPManagement
+      MnSVersion:
+        description: Version number of the OpenAPI definition
+        default: XXX
+      URI-LDN-first-part:
+        description: See clause 4.4.2 of TS 32.158
+        default: ''
+paths:
+  '/{className}={id}':
+    parameters:
+      - name: className
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    put:
+      summary: Replaces a complete single resource or creates it if it does not exist
+      description: >-
+        With HTTP PUT a complete resource is replaced or created if it does not
+        exist. The target resource is identified by the target URI.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Resource'
+      responses:
+        '200':
+          description: >-
+            Success case ("200 OK").
+            This status code shall be returned when the resource is replaced, and
+            when the replaced resource representation is not identical to the resource
+            representation in the request.
+            This status code may be returned when the resource is updated and when the
+            updated resource representation is identical to the resource representation
+            in the request.
+            The representation of the updated resource is returned in the response
+            message body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '201':
+          description: >-
+            Success case ("201 Created").
+            This status code shall be returned when the resource is created.
+            The representation of the created resource is returned in the response
+            message body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '204':
+          description: >-
+            Success case ("204 No Content").
+            This status code may be returned only when the replaced resource
+            representation is identical to the representation in the request.
+            The response has no message body.
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponseDefault'
+      callbacks:
+        notifyMOICreation:
+          '{request.body#/notificationRecipientAddress}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NotifyMoiCreation'
+              responses:
+                '204':
+                  description: >-
+                    Success case ("204 No Content").
+                    The notification is successfully delivered. The response
+                    has no message body.
+                default:
+                  description: Error case.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'
+        notifyMOIDeletion:
+          '{request.body#/notificationRecipientAddress}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NotifyMoiDeletion'
+              responses:
+                '204':
+                  description: >-
+                    Success case ("204 No Content").
+                    The notification is successfully delivered. The response
+                    has no message body.
+                default:
+                  description: Error case.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'
+        notifyMOIAttributeValueChanges:
+          '{request.body#/notificationRecipientAddress}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NotifyMoiAttributeValueChanges'
+              responses:
+                '204':
+                  description: >-
+                    Success case ("204 No Content").
+                    The notification is successfully delivered. The response
+                    has no message body.
+                default:
+                  description: Error case.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'
+        notifyEvent:
+          '{request.body#/notificationRecipientAddress}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NotifyEvent'
+              responses:
+                '204':
+                  description: >-
+                    Success case ("204 No Content").
+                    The notification is successfully delivered. The response
+                    has no message body.
+                default:
+                  description: Error case.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'
+        notifyMOIChanges:
+          '{request.body#/notificationRecipientAddress}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NotifyMoiChanges'
+                  application/yang-data+json:
+                    schema:
+                      $ref: '#/components/schemas/NotifyMoiChanges'
+              responses:
+                '204':
+                  description: >-
+                    Success case ("204 No Content").
+                    The notification is successfully delivered. The response
+                    has no message body.
+                default:
+                  description: Error case.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'
+        notifyPotentialFaultyDataNodeTree:
+          '{request.body#/notificationRecipientAddress}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NotifyPotentialFaultyDataNodeTree'
+              responses:
+                '204':
+                  description: >-
+                    Success case ("204 No Content").
+                    The notification is successfully delivered. The response
+                    has no message body.
+                default:
+                  description: Error case.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'
+        notifyDataNodeTreeSyncRecommended:
+          '{request.body#/notificationRecipientAddress}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NotifyDataNodeTreeSyncRecommended'
+              responses:
+                '204':
+                  description: >-
+                    Success case ("204 No Content").
+                    The notification is successfully delivered. The response
+                    has no message body.
+                default:
+                  description: Error case.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'
+    get:
+      summary: Reads one or multiple resources
+      description: >-
+        With HTTP GET resources are read. The resources to be retrieved are
+        identified with the target URI. The attributes and fields parameter
+        of the query components allow to select the resource properties to be returned.
+      parameters:
+        - name: scope
+          in: query
+          description: >-
+            This parameter extends the set of targeted resources beyond the base
+            resource identified with the path component of the URI.
+          required: false
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scope'
+        - name: filter
+          in: query
+          description: >-
+            This parameter reduces the targeted set of resources by applying a
+            filter to the scoped set of resource representations. Only resource
+            representations for which the filter construct evaluates to "true"
+            are targeted.
+          required: false
+          schema:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/JexConditions'
+        - name: attributes
+          in: query
+          description: >-
+            This parameter specifies the attributes of the scoped resources that
+            are returned.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+        - name: fields
+          in: query
+          description: >-
+            This parameter specifies the attribute field of the scoped resources
+            that are returned.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+        - name: dataNodeSelector
+          in: query
+          description: >-
+            This parameter contains an expression allowing to conditionally
+            select data nodes.
+          required: false
+          schema:
+            oneOf:
+              - $ref: 'TS28623_ComDefs.yaml#/components/schemas/JexNodeSelectionBasic'
+              - $ref: 'TS28623_ComDefs.yaml#/components/schemas/JexNodeSelectionAdvanced'
+
+      responses:
+        '200':
+          description: >-
+            Success case ("200 OK").
+            The resources identified in the request for retrieval are returned
+            in the response message body. In case the attributes or fields query
+            parameters are used, only the selected attributes or sub-attributes are
+            returned. The response message body is constructed according to the
+            hierarchical response construction method (TS 32.158 [15]).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+            application/vnd.3gpp.object-tree-hierarchical+json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+            application/vnd.3gpp.object-tree-flat+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Resource'
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponseGet'
+    patch:
+      summary: Patches one or multiple resources
+      description: >-
+        With HTTP PATCH resources are created, updated or deleted. The resources
+        to be modified are identified with the target URI (base resource) and
+        the patch document included in the request message body.
+      requestBody:
+        description: >-
+          The request body describes changes to be made to the target resources.
+          The following patch media types are available
+            - "application/merge-patch+json" (RFC 7396)
+            - "application/3gpp-merge-patch+json" (TS 32.158)
+            - "application/json-patch+json" (RFC 6902)
+            - "application/3gpp-json-patch+json" (TS 32.158)
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/Resource'
+          application/3gpp-merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/Resource'
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PatchItem'
+          application/3gpp-json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PatchItem'
+      responses:
+        '200':
+          description: >-
+            Success case ("200 OK").
+            This status code is returned when the updated the resource representations
+            shall be returned for some reason.
+            The resource representations are returned in the response message body. The
+            response message body is constructed according to the hierarchical response
+            construction method (TS 32.158 [15])
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '204':
+          description: >-
+            Success case ("204 No Content").
+            This status code is returned when there is no need to return the updated
+            resource representations.
+            The response message body is empty.
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponseDefault'
+                  - $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponsePatch'
+    delete:
+      summary: Deletes one resource
+      description: >-
+        With HTTP DELETE one resource is deleted. The resources to be deleted is
+        identified with the target URI.
+      responses:
+        '204':
+          description: >-
+            Success case ("204 No Content").
+            This status code is returned, when the resource has been successfully deleted.
+            The response body is empty.
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponseDefault'
+  '/{URI-LDN-first-part}':
+    parameters:
+      - name: URI-LDN-first-part
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      summary: Creates a complete single resource
+      description: >-
+        With HTTP POST a complete single resource is created. The identifier of the new
+        resource is assigned by the MnS producer.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Resource'
+      responses:
+        '201':
+          description: >-
+            Success case ("201 Created").
+            This status code shall be returned when the resource is created.
+            The representation of the created resource is returned in the response
+            message body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponseDefault'
+components:
+  schemas:
+    CmNotificationTypes:
+      type: string
+      enum:
+        - notifyMOICreation
+        - notifyMOIDeletion
+        - notifyMOIAttributeValueChanges
+        - notifyEvent
+        - notifyMOIChanges
+        - notifyPotentialFaultyDataNodeTree
+        - notifyDataNodeTreeSyncRecommended
+    SourceIndicator:
+      type: string
+      enum:
+        - RESOURCE_OPERATION
+        - MANAGEMENT_OPERATION
+        - SON_OPERATION
+        - UNKNOWN
+    ScopeType:
+      type: string
+      enum:
+        - BASE_ONLY
+        - BASE_NTH_LEVEL
+        - BASE_SUBTREE
+        - BASE_ALL
+    Operation:
+      type: string
+      enum:
+        - add
+        - remove
+        - replace
+    Insert:
+      type: string
+      enum:
+        - before
+        - after
+    PatchOperation:
+      type: string
+      enum:
+        - add
+        - replace
+        - remove
+        - copy
+        - move
+        - test
+    Resource:
+      oneOf:
+        - type: object
+          properties:
+            id:
+              type: string
+            objectClass:
+              type: string
+            objectInstance:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+            attributes:
+              type: object
+          additionalProperties:
+            type: array
+            items:
+              type: object
+          required:
+            - id
+        - $ref: 'TS28623_FeatureNrm.yaml#/components/schemas/resources-feature'
+    Scope:
+      type: object
+      properties:
+        scopeType:
+          $ref: '#/components/schemas/ScopeType'
+        scopeLevel:
+          type: integer
+    CorrelatedNotification:
+      type: object
+      properties:
+        source:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        notificationIds:
+          type: array
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationId'
+      required:
+        - source
+        - notificationIds
+    MoiChange:
+      type: object
+      properties:
+        notificationId:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationId'
+        correlatedNotifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/CorrelatedNotification'
+        additionalText:
+          type: string
+        sourceIndicator:
+          $ref: '#/components/schemas/SourceIndicator'
+        op:
+          $ref: '#/components/schemas/Operation'
+        path:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Uri'
+        insert:
+          $ref: '#/components/schemas/Insert'
+        value: {}
+        oldValue: {}
+      required:
+        - notificationId
+        - op
+        - path
+    NotifyMoiCreation:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          properties:
+            correlatedNotifications:
+              type: array
+              items:
+                $ref: '#/components/schemas/CorrelatedNotification'
+            additionalText:
+              type: string
+            sourceIndicator:
+              $ref: '#/components/schemas/SourceIndicator'
+            attributeList:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+    NotifyMoiDeletion:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          properties:
+            correlatedNotifications:
+              type: array
+              items:
+                $ref: '#/components/schemas/CorrelatedNotification'
+            additionalText:
+              type: string
+            sourceIndicator:
+              $ref: '#/components/schemas/SourceIndicator'
+            attributeList:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+    NotifyMoiAttributeValueChanges:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          properties:
+            correlatedNotifications:
+              type: array
+              items:
+                $ref: '#/components/schemas/CorrelatedNotification'
+            additionalText:
+              type: string
+            sourceIndicator:
+              $ref: '#/components/schemas/SourceIndicator'
+            attributeListValueChanges:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeValueChangeSet'
+          required:
+            - attributeListValueChanges
+    NotifyEvent:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          required:
+            - specificProblem
+          properties:
+            specificProblem:
+              $ref: 'TS28111_FaultNrm.yaml#/components/schemas/SpecificProblem'
+            additionalText:
+              type: string
+            additionalInformation:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+    NotifyMoiChanges:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          properties:
+            moiChanges:
+              type: array
+              items:
+                $ref: '#/components/schemas/MoiChange'
+          required:
+            - moiChanges
+    NotifyPotentialFaultyDataNodeTree:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          properties:
+            scope:
+              $ref: 'TS28623_SubscriptionControlNrm.yaml#/components/schemas/Scope'
+    NotifyDataNodeTreeSyncRecommended:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          properties:
+            scope:
+              $ref: 'TS28623_SubscriptionControlNrm.yaml#/components/schemas/Scope'
+    PatchItem:
+      type: object
+      properties:
+        op:
+          $ref: '#/components/schemas/PatchOperation'
+        from:
+          type: string
+        path:
+          type: string
+        value:
+          nullable: true
+      required:
+        - op
+        - path

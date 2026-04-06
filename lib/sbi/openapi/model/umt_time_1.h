@@ -1,7 +1,7 @@
 /*
  * umt_time_1.h
  *
- * 
+ * Contains Umt Time
  */
 
 #ifndef _OpenAPI_umt_time_1_H_
@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_umt_time_1_s OpenAPI_umt_time_1_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_umt_time_1_s OpenAPI_umt_time_1_t;
-typedef struct OpenAPI_umt_time_1_s {
+struct OpenAPI_umt_time_1_s {
     char *time_of_day;
     int day_of_week;
-} OpenAPI_umt_time_1_t;
+};
 
 OpenAPI_umt_time_1_t *OpenAPI_umt_time_1_create(
     char *time_of_day,

@@ -1,0 +1,517 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLES_SplitOpEvent
+  version: 1.0.1
+  description: |
+    API for AIMLES Split Operation Event Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.1.0; Artificial Intelligence Machine Learning Enablement
+    (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/aimles-splitopevent/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Request the creation of an Individual AIMLE Split Operation Event Subscription.
+      operationId: CreateAimleSplitOpEventSubscription
+      tags:
+        - AIMLE Split Operation Event Subscription (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SplitOpEventSub'
+      responses:
+        '201':
+          description: >
+            The requested Individual AIMLE Split Operation Event Subscription is
+            successfully created and a representation of the created resource is
+            returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SplitOpEventSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        myNotification:
+          '{$request.body#/notifUri}': 
+            post:
+              summary: Notify on the requested data.
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SplitOpEventNotif'
+              responses:
+                '204':
+                  description: The notification is successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the Individual AIMLE Split Operation Event Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing the Individual AIMLE Split Operation Event Subscription
+       resource.
+      operationId: GetIndAimleSplitOpEventSub
+      tags:
+        - Individual AIMLE Split Operation Event Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual AIMLE Split Operation Event Subscription
+            resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SplitOpEventSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual AIMLE Split Operation Event
+        Subscription resource.
+      operationId: UpdateIndAimleSplitOpEventSub
+      tags:
+        - Individual AIMLE Split Operation Event Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SplitOpEventSub'
+      responses:
+        '200':
+          description: >
+            OK. The Individual AIMLE Split Operation Event Subscription resource is
+            successfully updated and a representation of the updated resource shall be
+            returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SplitOpEventSub'
+        '204':
+          description: >
+            No Content. The Individual AIMLE Split Operation Event Subscription
+            resource is successfully updated and no content is returned in the
+            response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing AIMLE Split Operation Event Subscription
+        resource.
+      operationId: ModifyIndAimleSplitOpEventSub
+      tags:
+        - Individual AIMLE Split Operation Event Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SplitOpEventSubPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual AIMLE Split Operation Event Subscription resource is
+            successfully modified and a representation of the updated resource shall
+            be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SplitOpEventSub'
+        '204':
+          description: >
+            No Content. The Individual AIMLE Split Operation Event Subscription
+            resource is successfully modified and no content is returned in the
+            response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Remove the Individual AIMLE Split Operation Event Subscription.
+      operationId: UnsubscribeAimleSplitOpEventSub
+      tags:
+        - Individual AIMLE Split Operation Event Subscription (Document)
+      responses:
+        '204':
+          description: >
+            The individual AIMLE Split Operation Event Subscription resource
+            matching the subscriptionId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    SplitOpEventSub:
+      description: Represents the AIMLE Split Operation Event Subscription information.
+      type: object
+      properties:
+        splitOpPipelineId:
+          type: string
+        reportReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        splitOpEventId:
+          $ref: '#/components/schemas/SplitOpEventId'
+        discFilters:
+          $ref: '#/components/schemas/DiscFilters'
+        assistInfo:
+          $ref: '#/components/schemas/AssistanceInfo'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - splitOpPipelineId
+        - notifUri
+        - splitOpEventId
+
+    SplitOpEventSubPatch:
+      description: >
+        Represents the requested modifications to the AIMLE Split Operation Event subscription.
+        information.
+      type: object
+      properties:
+        reportReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        splitOpEventId:
+          $ref: '#/components/schemas/SplitOpEventId'
+        discFilters:
+          $ref: '#/components/schemas/DiscFilters'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    SplitOpEventNotif:
+      description: >
+        Represents the AIMLE Split Operation Event notification.
+      type: object
+      properties:
+        splitOpEventId:
+          $ref: '#/components/schemas/SplitOpEventId'
+        availabilityInfo:
+          $ref: '#/components/schemas/AvailabilityInfo'
+        splitOpPipelineInfo:
+          $ref: '#/components/schemas/SplitOpPipelineInfo'
+        assistanceInfo:
+          $ref: '#/components/schemas/AssistanceInfo'
+      required:
+        - splitOpEventId
+
+    DiscFilters:
+      description: >
+        Represents the set of characteristics to determine matching split operation profiles
+        or nodes.
+      type: object
+      properties:
+        stageInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/StageInfo'
+          minItems: 1
+        usageInfo:
+          $ref: 'TS29482_AIMLES_SplitOpNodeRegistration.yaml#/components/schemas/UsageInformation'
+        minNodes:
+          type: string
+      required:
+        - stageInfo
+
+    AssistanceInfo:
+      description: Represents the assistance information for subscription.
+      type: object
+      properties:
+        deliveryTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        achievableQoS:
+          type: string
+        qosSuggestion:
+          type: string
+
+    SplitOpPipelineInfo:
+      description: Represents split operation pipeline information. 
+      type: object
+      properties:
+        splitOpProfile:
+          $ref: '#/components/schemas/SplitOpProfile'
+        subEventId:
+          $ref: '#/components/schemas/SubEventId'
+
+    AvailabilityInfo:
+      description: >
+        Represents the availability information of split operation pipeline.
+      type: object
+      properties:
+        splitOpProfile:
+          type: array
+          items:
+            $ref: '#/components/schemas/SplitOpProfile'
+          minItems: 1
+        availableNodes:
+          type: string
+
+    SplitOpProfile:
+      description: >
+        Represents the split operation profile that service consumer participates to.
+      type: object
+      properties:
+        splitOpPipelineId:
+          type: string
+        stageInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/StageInfo'
+          minItems: 1
+        usageInfo:
+          $ref: 'TS29482_AIMLES_SplitOpNodeRegistration.yaml#/components/schemas/UsageInformation'
+        headEp:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        tailEp:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+      required:
+        - splitOpPipelineId
+        - headEp
+        - tailEp
+        - stageInfo
+
+    StageInfo:
+      description: Represents the information about split operation stages.
+      type: object
+      properties:
+        stageId:
+          type: string
+        numNodes:
+          type: string
+        headEp:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        tailEp:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        nodeOrder:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minItems: 1
+        mlModelId:
+          type: string
+      required:
+        - stageId
+        - headEp
+        - tailEp
+        - nodeOrder
+        - mlModelId
+
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+    SplitOpEventId:
+      anyOf:
+      - type: string
+        enum:
+           - SPLIT_OP_AVAILABILITY
+           - SPLIT_OP_PIPELINE_INFO
+           - SPLIT_OP_ASSISTANCE_INFO
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the split operation events.  
+        Possible values are:
+        - SPLIT_OP_AVAILABILITY: Indicates split operation availability event.
+        - SPLIT_OP_PIPELINE_INFO: Indicates split operation pipeline information event.
+        - SPLIT_OP_ASSISTANCE_INFO: Indicates split operation assistance information event.
+
+    SubEventId:
+      anyOf:
+      - type: string
+        enum:
+           - CREATED
+           - UPDATED
+           - DELETED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the sub event of split operation pipeline.  
+        Possible values are:
+        - CREATED: Indicates that a new split operation profile is created.
+        - UPDATED: Indicates that an existing split operation profile is updated.
+        - DELETED: Indicates that an existing split operation profile is deleted.
+#

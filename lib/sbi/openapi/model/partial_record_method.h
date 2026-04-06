@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "partial_record_method_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_partial_record_method_s OpenAPI_partial_record_method_t;
-typedef struct OpenAPI_partial_record_method_s {
-} OpenAPI_partial_record_method_t;
+typedef enum { OpenAPI_partial_record_method_NULL = 0, OpenAPI_partial_record_method__DEFAULT, OpenAPI_partial_record_method_INDIVIDUAL } OpenAPI_partial_record_method_e;
 
-OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_create(
-);
-void OpenAPI_partial_record_method_free(OpenAPI_partial_record_method_t *partial_record_method);
-OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_parseFromJSON(cJSON *partial_record_methodJSON);
-cJSON *OpenAPI_partial_record_method_convertToJSON(OpenAPI_partial_record_method_t *partial_record_method);
-OpenAPI_partial_record_method_t *OpenAPI_partial_record_method_copy(OpenAPI_partial_record_method_t *dst, OpenAPI_partial_record_method_t *src);
+char* OpenAPI_partial_record_method_ToString(OpenAPI_partial_record_method_e partial_record_method);
+
+OpenAPI_partial_record_method_e OpenAPI_partial_record_method_FromString(char* partial_record_method);
 
 #ifdef __cplusplus
 }

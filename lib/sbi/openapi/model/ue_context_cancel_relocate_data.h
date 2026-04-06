@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_context_cancel_relocate_data_s OpenAPI_ue_context_cancel_relocate_data_t;
 #include "ref_to_binary_data.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_context_cancel_relocate_data_s OpenAPI_ue_context_cancel_relocate_data_t;
-typedef struct OpenAPI_ue_context_cancel_relocate_data_s {
+struct OpenAPI_ue_context_cancel_relocate_data_s {
     char *supi;
     struct OpenAPI_ref_to_binary_data_s *relocation_cancel_request;
-} OpenAPI_ue_context_cancel_relocate_data_t;
+};
 
 OpenAPI_ue_context_cancel_relocate_data_t *OpenAPI_ue_context_cancel_relocate_data_create(
     char *supi,

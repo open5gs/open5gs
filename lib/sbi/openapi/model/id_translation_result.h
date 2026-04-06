@@ -1,7 +1,7 @@
 /*
  * id_translation_result.h
  *
- * 
+ * Contains Identifier translation result
  */
 
 #ifndef _OpenAPI_id_translation_result_H_
@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_id_translation_result_s OpenAPI_id_translation_result_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_id_translation_result_s OpenAPI_id_translation_result_t;
-typedef struct OpenAPI_id_translation_result_s {
+struct OpenAPI_id_translation_result_s {
     char *supported_features;
     char *supi;
     char *gpsi;
     OpenAPI_list_t *additional_supis;
     OpenAPI_list_t *additional_gpsis;
-} OpenAPI_id_translation_result_t;
+};
 
 OpenAPI_id_translation_result_t *OpenAPI_id_translation_result_create(
     char *supported_features,

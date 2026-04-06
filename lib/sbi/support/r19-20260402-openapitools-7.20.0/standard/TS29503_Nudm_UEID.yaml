@@ -1,0 +1,99 @@
+openapi: 3.0.0
+
+info:
+  version: '1.1.0'
+  title: 'Nudm_UEIdentifier'
+  description: |
+    UDM UE Identifier Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.503 Unified Data Management Services, version 19.5.0
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.503/'
+
+servers:
+  - url: '{apiRoot}/nudm-ueid/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - oAuth2ClientCredentials:
+    - nudm-ueid
+  - {}
+
+paths:
+  /deconceal:
+    post:
+      summary: Deconceal the SUCI to the SUPI
+      operationId: Deconceal
+      tags:
+        - Deconceal
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeconcealReqData'
+        required: true
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeconcealRspData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nudm-ueid: Access to the nudm-ueid API
+
+
+  schemas:
+
+# STRUCTURED TYPES:
+
+    DeconcealReqData:
+      description: Deconceal Request Data
+      type: object
+      required:
+        - suci
+      properties:
+        suci:
+          $ref: 'TS29509_Nausf_UEAuthentication.yaml#/components/schemas/Suci'
+
+    DeconcealRspData:
+      description: Deconceal Response Data
+      type: object
+      required:
+        - supi
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+
+# SIMPLE TYPES:
+
+
+# ENUMS:

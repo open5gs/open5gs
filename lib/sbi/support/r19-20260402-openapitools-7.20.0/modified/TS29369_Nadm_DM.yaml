@@ -1,0 +1,491 @@
+openapi: 3.0.0
+
+info:
+  version: '1.0.1'
+  title: 'Nadm_DM'
+  description: |
+    Nadm Data Management Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.369 Ambient IoT Data Management Services, version 19.2.0
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.369/'
+
+servers:
+  - url: '{apiRoot}/nadm-dm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - oAuth2ClientCredentials:
+    - nadm-dm
+  - {}
+
+paths:
+  /aiot-device-profile-data/{aiotDevPermId}:
+    get:
+      summary: get AIoT Device Profile Data for a give AIoT Device
+      operationId: Get AIoT Device Profile Data
+      tags:
+        - AIoT Device Profile Data Retrieval
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nadm-dm
+        - oAuth2ClientCredentials:
+          - nadm-dm
+          - nadm-dm:aiot-device-profile-data:read
+      parameters:
+        - name: aiotDevPermId
+          in: path
+          description: AIoT Device Permanent ID
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotDevPermId'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiotDevProfileData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    patch:
+      summary: modify AIoT Device Profile Data for a give AIoT Device
+      operationId: Modify AIoT Device Profile Data
+      tags:
+        - AIoT Device Profile Data Update
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nadm-dm
+        - oAuth2ClientCredentials:
+          - nadm-dm
+          - nadm-dm:aiot-device-profile-data:modify
+      parameters:
+        - name: aiotDevPermId
+          in: path
+          description: AIoT Device Permanent ID
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotDevPermId'
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/AiotDevProfileData'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '204':
+          description: Expected response to a valid request
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+  /aiot-device-profile-data:
+    get:
+      summary: get AIoT Device Profile Data for a bundled AIoT Devices
+      operationId: Get Bundled AIoT Device Profile Data
+      tags:
+        - Bundled AIoT Device Profile Data Retrieval
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nadm-dm
+        - oAuth2ClientCredentials:
+          - nadm-dm
+          - nadm-dm:aiot-device-profile-data:read
+      parameters:
+        - name: requester-aiot-devices-id
+          in: query
+          description: a list of AIoT Device Permanent ID
+          required: true
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotDevPermId'
+            minItems: 1
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiotDevProfileDataList'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+    patch:
+      summary: modify bundled AIoT Device Profile Data for bundled AIoT devices.
+      operationId: Modify bundled AIoT Device Profile Data
+      tags:
+        - Bundled AIoT Device Profile Data Update
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nadm-dm
+        - oAuth2ClientCredentials:
+          - nadm-dm
+          - nadm-dm:aiot-device-profile-data:modify
+      parameters:
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        content:
+          application/merge-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '204':
+          description: Expected response to a valid request
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+  /af-authorization-data:
+    get:
+      summary: get AF Authorization Data
+      operationId: Get AF Authorization Data
+      tags:
+        - AF Authorization Data Retrieval
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nadm-dm
+        - oAuth2ClientCredentials:
+          - nadm-dm
+          - nadm-dm:af-authorization-data:read
+      parameters:
+        - name: af-id
+          in: query
+          description: AF ID
+          required: false
+          schema:
+            $ref: '#/components/schemas/AfId'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AfAuthorizationData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nadm-dm: Access to the Nadm_DM API
+            nadm-dm:aiot-device-profile-data:read: Access to read AIoT Device Profile Data
+            nadm-dm:aiot-device-profile-data:modify: Access to update AIoT Device Profile Data
+            nadm-dm:af-authorization-data:read: Access to read AF Authorization Data
+
+  schemas:
+#
+# STRUCTURED TYPES
+#
+
+    AiotDevProfileData:
+      description: Contains the AIoT Device Profile Data.
+      type: object
+      required:
+        - aiotDevPermId
+        - lastKnownAiotfInfo
+      properties:
+        aiotDevPermId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotDevPermId'
+        lastKnownAiotfInfo:
+          $ref: '#/components/schemas/LastKnownAiotfInfo'
+        tidCurrent:
+          $ref: '#/components/schemas/Tid'
+        tidPrevious:
+          $ref: '#/components/schemas/Tid'
+        tidHandlingInformation:
+          $ref: '#/components/schemas/TidHandlingInformation'
+
+    LastKnownAiotfInfo:
+      description: Contains the Last Known AIoTF Info.
+      type: object
+      required:
+        - lastKnownAiotfInfoInd
+      properties:
+        lastKnownAiotfInfoInd:
+          type: boolean
+        lastKnownAiotfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        lastKnownAiotfAddress:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        lastKnownAiotfFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+
+    IndividualAfAuthorizationData:
+      description: Contains the AF Authorization Data for an individual AF.
+      type: object
+      required:
+        - afId
+      properties:
+        afId:
+          $ref: '#/components/schemas/AfId'
+        allowedArea:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotArea'
+        allowedServiceOperations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowedServiceOperation'
+          minItems: 1
+        allowedTargetAiotDevices:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowedTargetAiotDevice'
+          minItems: 1
+
+    AllowedTargetAiotDevice:
+      description: >
+        Contains the permanent AIoT Device ID or the filtering information,
+        either aiotDevPermId, or filteringInfo shall be present.
+      type: object
+      properties:
+        aiotDevPermId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotDevPermId'
+        filteringInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotFilteringInformation'
+
+    AfAuthorizationData:
+      description: Contains the AF Authorization Data.
+      type: object
+      required:
+        - afAuthData
+      properties:
+        afAuthData:
+          type: object
+          description: >
+            'Map carrying the AF Authorization Data. 
+            The key of the map is the AF ID of the corresponding Authorization Data'
+          additionalProperties:
+            $ref: '#/components/schemas/IndividualAfAuthorizationData'
+          minProperties: 1
+#
+# SIMPLE TYPES
+#
+
+    AfId:
+      description: Indicates the identifier used to identify the AF.
+      type: string
+
+    Tid:
+      description: Temporary ID of the AIoT device.
+      type: string
+      pattern: '^[A-Fa-f0-9]{32}$'
+
+
+    TidHandlingInformation:
+      description: Contains the T-ID handling information
+      type: object
+      required:
+        - tidType
+      properties:
+        tidType:
+          $ref: '#/components/schemas/TidType'
+        tidHandlingInformation:
+          type: boolean
+
+    AiotDevProfileDataList:
+      description: AIoT Device Profile Data of a list of AIoT devices.
+      type: object
+      required:
+        - aiotDevProfileDataList
+      properties:
+        aiotDevProfileDataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiotDevProfileData'
+          minItems: 1
+
+
+#
+# ENUMS
+#
+
+    AllowedServiceOperation:
+      description: The Allowed Service Operation.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - INVENTORY
+        - READ
+        - WRITE
+        - PERMANENT_DISABLE
+#        - type: string
+#
+    TidType:
+      description: Indicates the type of T-ID.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - STORED
+        - CONCEALED
+#        - type: string

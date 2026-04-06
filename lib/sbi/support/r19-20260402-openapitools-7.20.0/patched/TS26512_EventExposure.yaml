@@ -1,0 +1,318 @@
+openapi: 3.0.0
+
+info:
+  title: 5GMS Event Exposure
+  version: 1.1.1
+  description: |
+    5GMS Event Exposure syntax
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: 5GMS Event Exposure
+    description: '5G Media Streaming: Event Exposure'
+
+externalDocs:
+  description: 'TS 26.512 V18.6.0; 5G Media Streaming (5GMS); Protocols'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.512/'
+
+paths: {}
+
+components:
+  schemas:
+    BaseEventCollection:
+      type: object
+      description: Abstract base data type describing a collection of event records
+      required:
+        - collectionTimestamp
+        - startTimestamp
+        - endTimestamp
+        - sampleCount
+        - streamingDirection
+        - summarisations
+        - records
+      properties:
+        collectionTimestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+          # The date–time at which this collection was exposed by the Data Collection AF as an event to its subscribed event consumers.
+        startTimestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+          # Date–time of earliest data sample included in or summarised by this collection.
+        endTimestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+          # Date–time of latest data sample included in or summarised by this collection.
+        sampleCount:
+          type: integer
+          minimum: 1
+          description: The number of data samples included in or summarised by this collection.
+        streamingDirection:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ProvisioningSessionType'
+        summarisations:
+          type: array
+          minItems: 1
+          items: 
+            $ref: 'TS26532_Ndcaf_DataReportingProvisioning.yaml#/components/schemas/DataAggregationFunctionType'
+          description: One or more data aggregation functions that have been applied to the UE data to produce summary records present in this collection.
+        records:
+          type: array
+          minItems: 0
+          items: {}
+          description: Type of record is defined by concrete data type.
+
+    BaseEventRecord:
+      type: object
+      description: Abstract base data type describing a single UE data record or summarising a set of UE data records.
+      required:
+        - recordType
+        - recordTimestamp
+        - appId
+      properties:
+        recordType:
+          $ref: '#/components/schemas/EventRecordType'
+        recordTimestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+          # The date–time at which the UE data carried in this record was sampled or summarised.
+        appId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+          # Identifying the application to which the UE data carried in this record pertains.
+        provisioningSessionId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          # The identifier of the Provisioning Session to which this record pertains. Present only for individual data sample record type.
+        sessionId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/MediaDeliverySessionId'
+          # A value synthesised by the 5GMS System that uniquely identifies the media streaming session to which this record pertains. Present only for individual data sample record type.
+        ueIdentification:
+          type: string
+          description: GPSI of the requesting UE or a stable globally unique string identifying the requesting Media Session Handler. Present only for individual data sample record type and only when exposure is permitted by the data exposure restrictions in force for the event type in question.
+        dataNetworkName:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          # Identifying the Data Network of the M4 media streaming session. Present only for individual data sample record type.
+        sliceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          # The S-NSSAI identifying the Network Slice of the M4 media streaming session. Present only for individual data sample record type.
+        ueLocations:
+          type: array
+          minItems: 0
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+          description: The location of the UE when the data described by this record was sampled. Present only for individual data sample record type and only when exposure is permitted by the data exposure restrictions in force for the event in question.
+
+    EventRecordType:
+      description: Enumeration of event record types.
+      anyOf:
+        - type: string
+          enum:
+            - INDIVIDUAL_SAMPLE
+            - SUMMARY_MEAN
+            - SUMMARY_MINIMUM
+            - SUMMARY_MAXIMUM
+            - SUMMARY_SUM
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+
+    QoEMetricsCollection:
+      description: A collection of QoE Metrics Event records.
+      allOf:
+        - $ref: '#/components/schemas/BaseEventCollection'
+        - type: object
+          required:
+            - records
+          properties:
+            records:
+              type: array
+              minItems: 0
+              items:
+                $ref: '#/components/schemas/QoEMetricsEvent'
+              description: A set of QoE Metrics Event records, each one describing a QoE metrics report or summarising a set of QoE metrics reports.
+
+    QoEMetricsEvent:
+      description: A QoE Metrics Event record.
+      allOf:
+        - $ref: '#/components/schemas/BaseEventRecord'
+        - type: object
+          required:
+            - metricType
+          properties:
+            metricType:
+              $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+              # A fully-qualified term identifier that uniquely identifies the QoE metrics reporting scheme and the type of QoE metric included in this record, as specified in clause E.2, up to but excluding the first hierarchical separator.
+            samples:
+              type: array
+              minItems: 1
+              items:
+                type: object
+                required:
+                  - metrics
+                properties:
+                  sampleTimestamp:
+                    $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+                    # The moment in time at which this QoE metric was sampled.
+                  sampleDuration:
+                    $ref: 'TS26510_CommonData.yaml#/components/schemas/Duration'
+                    # The time duration over which this QoE metric was sampled.
+                  mediaTimestamp:
+                    $ref: 'TS26510_CommonData.yaml#/components/schemas/Duration'
+                    # The time point in the media at which this QoE metric was sampled.
+                  metrics:
+                    type: array
+                    minItems: 1
+                    description: A set of key–value pairs for the samples metrics associated with this QoE metric sample.
+                    items:
+                      type: object
+                      description: A name and optional value for a QoE metric within a QoE metric sample.
+                      required:
+                        - key
+                      properties:
+                        key:
+                          type: string
+                          description: A token that uniquely identifies the type of metric within the scope of the event type.
+                        value: {}
+
+    ConsumptionReportingUnitsCollection:
+      description: A collection of Consumption Reporting Event records.
+      allOf:
+        - $ref: '#/components/schemas/BaseEventCollection'
+        - type: object
+          required:
+            - records
+          properties:
+            records:
+              type: array
+              minItems: 0
+              items:
+                $ref: '#/components/schemas/ConsumptionReportingEvent'
+              description: A set of records, each one describing a Consumption Reporting Unit.
+
+    ConsumptionReportingEvent:
+      description: A Consumption Reporting Event record, corresponding to a Consumption Reporting Unit.
+      allOf:
+        - $ref: '#/components/schemas/BaseEventRecord'
+        - type: object
+          required:
+            - unitDuration
+            - mediaPlayerEntryUrl
+            - mediaComponentIdentifier
+          properties:
+            unitDuration:
+              $ref: 'TS26510_CommonData.yaml#/components/schemas/Duration'
+              # The duration of this consumption reporting unit.
+            clientEndpointAddress:
+              $ref: 'TS26510_CommonData.yaml#/components/schemas/EndpointAddress'
+              # The endpoint address of the UE that consumed media.
+            serverEndpointAddress:
+              $ref: 'TS26510_CommonData.yaml#/components/schemas/EndpointAddress'
+              # The endpoint address of the 5GMS AS from which media was consumed.
+            mediaPlayerEntryUrl:
+              $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+              # The Media Player Entry URL to which this consumption reporting unit pertains.
+            mediaComponentIdentifier:
+              type: string
+              description: A token (e.g., an MPEG DASH representation identifier) identifying the media component of the Media Player Entry that was consumed during this consumption reporting unit.
+
+    NetworkAssistanceInvocationsCollection:
+      description: A collection of Network Assistance Invocation Event records.
+      allOf:
+        - $ref: '#/components/schemas/BaseEventCollection'
+        - type: object
+          required:
+            - records
+          properties:
+            records:
+              type: array
+              minItems: 0
+              items:
+                $ref: '#/components/schemas/NetworkAssistanceInvocationEvent'
+              description: A set of records, each one describing a Network Assistance invocation or summarising a set of Network Assistance invocations.
+
+    NetworkAssistanceInvocationEvent:
+      description: A Network Assistance Invocation Event record.
+      allOf:
+        - $ref: '#/components/schemas/BaseEventRecord'
+        - type: object
+          required:
+            - networkAssistanceType
+          properties:
+            networkAssistanceType:
+              $ref: '#/components/schemas/NetworkAssistanceType'
+              # The type of Network Assistance solicited by the Media Session Handler.
+        - $ref: 'TS26512_CommonData.yaml#/components/schemas/NetworkAssistanceInvocation'
+
+    NetworkAssistanceType:
+      description: The type of network assistance sought by the Media Session Handler.
+      anyOf:
+        - type: string
+          enum:
+            - AF_THROUGHPUT_ESTIMATION
+            - AF_DELIVERY_BOOST
+            - ANBR_THROUGHPUT_ESTIMATION
+            - ANBR_DELIVERY_BOOST
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+
+    DynamicPolicyInvocationsCollection:
+      description: A collection of Dynamic Policy Invocation Event records.
+      allOf:
+        - $ref: '#/components/schemas/BaseEventCollection'
+        - type: object
+          required:
+            - records
+          properties:
+            records:
+              type: array
+              minItems: 0
+              items:
+                $ref: '#/components/schemas/DynamicPolicyInvocationEvent'
+              description: A set of records, each one describing a dynamic policy invocation.
+
+    DynamicPolicyInvocationEvent:
+      description: A Dynamic Policy Invocation Event record.
+      allOf:
+        - $ref: '#/components/schemas/BaseEventRecord'
+        - type: object
+          required:
+            - policyTemplateId
+          properties:
+            policyTemplateId:
+              $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+            applicationFlowDescriptions:
+              type: array
+              minItems: 1
+              items:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/ApplicationFlowDescription'
+              description: The set of Service Data Flows to which the Media Session Handler requested that the Policy Template be applied. At least a domain name or one packet filter shall be present.
+            requestedQoS:
+              $ref: 'TS26510_CommonData.yaml#/components/schemas/UnidirectionalQoSSpecification'
+              # The network QoS parameters (if any) requested by the Media Session Handler.
+            enforcementMethod:
+              type: string
+              description: The policy enforcement method chosen by the 5GMS AF.
+            enforcementBitRate:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+              # The enforcement bit rate (if any) selected by the 5GMS AF.
+
+    MediaStreamingAccessesCollection:
+      description: A collection of Media Streaming Access Event records.
+      allOf:
+        - $ref: '#/components/schemas/BaseEventCollection'
+        - type: object
+          required:
+            - records
+          properties:
+            records:
+              type: array
+              minItems: 0
+              items:
+                $ref: '#/components/schemas/MediaStreamingAccessEvent'
+              description: A set of records, each one describing one media streaming access.
+
+    MediaStreamingAccessEvent:
+      description: A Media Streaming Access Event record.
+      allOf:
+        - $ref: '#/components/schemas/BaseEventRecord'
+        - $ref: 'TS26512_CommonData.yaml#/components/schemas/MediaStreamingAccess'

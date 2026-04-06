@@ -11,7 +11,8 @@ OpenAPI_ie_info_t *OpenAPI_ie_info_create(
     char *rsp_ie,
     bool is_is_modifiable,
     int is_modifiable,
-    OpenAPI_list_t* is_modifiable_by_ipx
+    OpenAPI_list_t* is_modifiable_by_ipx,
+    char *ancestor_ie
 )
 {
     OpenAPI_ie_info_t *ie_info_local_var = ogs_malloc(sizeof(OpenAPI_ie_info_t));
@@ -24,6 +25,7 @@ OpenAPI_ie_info_t *OpenAPI_ie_info_create(
     ie_info_local_var->is_is_modifiable = is_is_modifiable;
     ie_info_local_var->is_modifiable = is_modifiable;
     ie_info_local_var->is_modifiable_by_ipx = is_modifiable_by_ipx;
+    ie_info_local_var->ancestor_ie = ancestor_ie;
 
     return ie_info_local_var;
 }
@@ -52,6 +54,10 @@ void OpenAPI_ie_info_free(OpenAPI_ie_info_t *ie_info)
         }
         OpenAPI_list_free(ie_info->is_modifiable_by_ipx);
         ie_info->is_modifiable_by_ipx = NULL;
+    }
+    if (ie_info->ancestor_ie) {
+        ogs_free(ie_info->ancestor_ie);
+        ie_info->ancestor_ie = NULL;
     }
     ogs_free(ie_info);
 }
@@ -132,6 +138,13 @@ cJSON *OpenAPI_ie_info_convertToJSON(OpenAPI_ie_info_t *ie_info)
     }
     }
 
+    if (ie_info->ancestor_ie) {
+    if (cJSON_AddStringToObject(item, "ancestorIe", ie_info->ancestor_ie) == NULL) {
+        ogs_error("OpenAPI_ie_info_convertToJSON() failed [ancestor_ie]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -149,6 +162,7 @@ OpenAPI_ie_info_t *OpenAPI_ie_info_parseFromJSON(cJSON *ie_infoJSON)
     cJSON *is_modifiable = NULL;
     cJSON *is_modifiable_by_ipx = NULL;
     OpenAPI_list_t *is_modifiable_by_ipxList = NULL;
+    cJSON *ancestor_ie = NULL;
     ie_loc = cJSON_GetObjectItemCaseSensitive(ie_infoJSON, "ieLoc");
     if (!ie_loc) {
         ogs_error("OpenAPI_ie_info_parseFromJSON() failed [ie_loc]");
@@ -225,6 +239,14 @@ OpenAPI_ie_info_t *OpenAPI_ie_info_parseFromJSON(cJSON *ie_infoJSON)
         }
     }
 
+    ancestor_ie = cJSON_GetObjectItemCaseSensitive(ie_infoJSON, "ancestorIe");
+    if (ancestor_ie) {
+    if (!cJSON_IsString(ancestor_ie) && !cJSON_IsNull(ancestor_ie)) {
+        ogs_error("OpenAPI_ie_info_parseFromJSON() failed [ancestor_ie]");
+        goto end;
+    }
+    }
+
     ie_info_local_var = OpenAPI_ie_info_create (
         ie_locVariable,
         ie_typeVariable,
@@ -232,14 +254,15 @@ OpenAPI_ie_info_t *OpenAPI_ie_info_parseFromJSON(cJSON *ie_infoJSON)
         rsp_ie && !cJSON_IsNull(rsp_ie) ? ogs_strdup(rsp_ie->valuestring) : NULL,
         is_modifiable ? true : false,
         is_modifiable ? is_modifiable->valueint : 0,
-        is_modifiable_by_ipx ? is_modifiable_by_ipxList : NULL
+        is_modifiable_by_ipx ? is_modifiable_by_ipxList : NULL,
+        ancestor_ie && !cJSON_IsNull(ancestor_ie) ? ogs_strdup(ancestor_ie->valuestring) : NULL
     );
 
     return ie_info_local_var;
 end:
     if (is_modifiable_by_ipxList) {
         OpenAPI_list_for_each(is_modifiable_by_ipxList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             ogs_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

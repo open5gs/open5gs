@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ncgi_tai_s OpenAPI_ncgi_tai_t;
 #include "ncgi.h"
 #include "tai.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ncgi_tai_s OpenAPI_ncgi_tai_t;
-typedef struct OpenAPI_ncgi_tai_s {
+struct OpenAPI_ncgi_tai_s {
     struct OpenAPI_tai_s *tai;
     OpenAPI_list_t *cell_list;
-} OpenAPI_ncgi_tai_t;
+};
 
 OpenAPI_ncgi_tai_t *OpenAPI_ncgi_tai_create(
     OpenAPI_tai_t *tai,

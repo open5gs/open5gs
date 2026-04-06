@@ -1,7 +1,7 @@
 /*
  * bsf_subscription_resp.h
  *
- * It represents a response to a modification or creation request of an Individual Binding  Subscription resource. It may contain the notification of the already met events. 
+ * It represents a response to a modification or creation request of an Individual Binding Subscription resource. It may contain the notification of the already met events. 
  */
 
 #ifndef _OpenAPI_bsf_subscription_resp_H_
@@ -12,7 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "binding_level.h"
+typedef struct OpenAPI_bsf_subscription_resp_s OpenAPI_bsf_subscription_resp_t;
 #include "bsf_event.h"
 #include "bsf_event_notification.h"
 #include "bsf_notification.h"
@@ -23,8 +23,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_bsf_subscription_resp_s OpenAPI_bsf_subscription_resp_t;
-typedef struct OpenAPI_bsf_subscription_resp_s {
+struct OpenAPI_bsf_subscription_resp_s {
     OpenAPI_list_t *events;
     char *notif_uri;
     char *notif_corre_id;
@@ -32,12 +31,10 @@ typedef struct OpenAPI_bsf_subscription_resp_s {
     char *gpsi;
     struct OpenAPI_snssai_dnn_pair_s *snssai_dnn_pairs;
     OpenAPI_list_t *add_snssai_dnn_pairs;
+    char *expiry;
     char *supp_feat;
-    char *pcf_id;
-    char *pcf_set_id;
-    OpenAPI_binding_level_e bind_level;
     OpenAPI_list_t *event_notifs;
-} OpenAPI_bsf_subscription_resp_t;
+};
 
 OpenAPI_bsf_subscription_resp_t *OpenAPI_bsf_subscription_resp_create(
     OpenAPI_list_t *events,
@@ -47,10 +44,8 @@ OpenAPI_bsf_subscription_resp_t *OpenAPI_bsf_subscription_resp_create(
     char *gpsi,
     OpenAPI_snssai_dnn_pair_t *snssai_dnn_pairs,
     OpenAPI_list_t *add_snssai_dnn_pairs,
+    char *expiry,
     char *supp_feat,
-    char *pcf_id,
-    char *pcf_set_id,
-    OpenAPI_binding_level_e bind_level,
     OpenAPI_list_t *event_notifs
 );
 void OpenAPI_bsf_subscription_resp_free(OpenAPI_bsf_subscription_resp_t *bsf_subscription_resp);

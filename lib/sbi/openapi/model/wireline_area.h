@@ -1,7 +1,7 @@
 /*
  * wireline_area.h
  *
- * One and only one of the \&quot;globLineIds\&quot;, \&quot;hfcNIds\&quot;, \&quot;areaCodeB\&quot; and \&quot;areaCodeC\&quot; attributes shall be included in a WirelineArea data structure 
+ * One and only one of the \&quot;globLineIds\&quot;, \&quot;hfcNIds\&quot;, \&quot;areaCodeB\&quot;,d \&quot;areaCodeC\&quot; and  combGciAndHfcNIds attributes shall be included in a WirelineArea data structure 
  */
 
 #ifndef _OpenAPI_wireline_area_H_
@@ -12,24 +12,27 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_wireline_area_s OpenAPI_wireline_area_t;
+#include "comb_gci_and_hfc_n_ids.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_wireline_area_s OpenAPI_wireline_area_t;
-typedef struct OpenAPI_wireline_area_s {
+struct OpenAPI_wireline_area_s {
     OpenAPI_list_t *global_line_ids;
     OpenAPI_list_t *hfc_n_ids;
     char *area_code_b;
     char *area_code_c;
-} OpenAPI_wireline_area_t;
+    OpenAPI_list_t *comb_gci_and_hfc_n_ids;
+};
 
 OpenAPI_wireline_area_t *OpenAPI_wireline_area_create(
     OpenAPI_list_t *global_line_ids,
     OpenAPI_list_t *hfc_n_ids,
     char *area_code_b,
-    char *area_code_c
+    char *area_code_c,
+    OpenAPI_list_t *comb_gci_and_hfc_n_ids
 );
 void OpenAPI_wireline_area_free(OpenAPI_wireline_area_t *wireline_area);
 OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_areaJSON);

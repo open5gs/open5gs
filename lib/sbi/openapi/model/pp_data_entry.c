@@ -15,8 +15,11 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_create(
     bool is_ecs_addr_config_info_null,
     OpenAPI_ecs_addr_config_info_1_t *ecs_addr_config_info,
     OpenAPI_list_t *additional_ecs_addr_config_infos,
+    OpenAPI_list_t* ecs_addr_config_info_per_plmn,
     bool is_ec_restriction_null,
-    OpenAPI_ec_restriction_1_t *ec_restriction
+    OpenAPI_ec_restriction_1_t *ec_restriction,
+    OpenAPI_list_t *slice_usage_control_infos,
+    OpenAPI_cag_provision_information_1_t *cag_provision_info
 )
 {
     OpenAPI_pp_data_entry_t *pp_data_entry_local_var = ogs_malloc(sizeof(OpenAPI_pp_data_entry_t));
@@ -32,8 +35,11 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_create(
     pp_data_entry_local_var->is_ecs_addr_config_info_null = is_ecs_addr_config_info_null;
     pp_data_entry_local_var->ecs_addr_config_info = ecs_addr_config_info;
     pp_data_entry_local_var->additional_ecs_addr_config_infos = additional_ecs_addr_config_infos;
+    pp_data_entry_local_var->ecs_addr_config_info_per_plmn = ecs_addr_config_info_per_plmn;
     pp_data_entry_local_var->is_ec_restriction_null = is_ec_restriction_null;
     pp_data_entry_local_var->ec_restriction = ec_restriction;
+    pp_data_entry_local_var->slice_usage_control_infos = slice_usage_control_infos;
+    pp_data_entry_local_var->cag_provision_info = cag_provision_info;
 
     return pp_data_entry_local_var;
 }
@@ -72,9 +78,30 @@ void OpenAPI_pp_data_entry_free(OpenAPI_pp_data_entry_t *pp_data_entry)
         OpenAPI_list_free(pp_data_entry->additional_ecs_addr_config_infos);
         pp_data_entry->additional_ecs_addr_config_infos = NULL;
     }
+    if (pp_data_entry->ecs_addr_config_info_per_plmn) {
+        OpenAPI_list_for_each(pp_data_entry->ecs_addr_config_info_per_plmn, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_ecs_addr_config_info_1_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(pp_data_entry->ecs_addr_config_info_per_plmn);
+        pp_data_entry->ecs_addr_config_info_per_plmn = NULL;
+    }
     if (pp_data_entry->ec_restriction) {
         OpenAPI_ec_restriction_1_free(pp_data_entry->ec_restriction);
         pp_data_entry->ec_restriction = NULL;
+    }
+    if (pp_data_entry->slice_usage_control_infos) {
+        OpenAPI_list_for_each(pp_data_entry->slice_usage_control_infos, node) {
+            OpenAPI_slice_usage_control_info_1_free(node->data);
+        }
+        OpenAPI_list_free(pp_data_entry->slice_usage_control_infos);
+        pp_data_entry->slice_usage_control_infos = NULL;
+    }
+    if (pp_data_entry->cag_provision_info) {
+        OpenAPI_cag_provision_information_1_free(pp_data_entry->cag_provision_info);
+        pp_data_entry->cag_provision_info = NULL;
     }
     ogs_free(pp_data_entry);
 }
@@ -170,6 +197,36 @@ cJSON *OpenAPI_pp_data_entry_convertToJSON(OpenAPI_pp_data_entry_t *pp_data_entr
     }
     }
 
+    if (pp_data_entry->ecs_addr_config_info_per_plmn) {
+    cJSON *ecs_addr_config_info_per_plmn = cJSON_AddObjectToObject(item, "ecsAddrConfigInfoPerPlmn");
+    if (ecs_addr_config_info_per_plmn == NULL) {
+        ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [ecs_addr_config_info_per_plmn]");
+        goto end;
+    }
+    cJSON *localMapObject = ecs_addr_config_info_per_plmn;
+    if (pp_data_entry->ecs_addr_config_info_per_plmn) {
+        OpenAPI_list_for_each(pp_data_entry->ecs_addr_config_info_per_plmn, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [ecs_addr_config_info_per_plmn]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [ecs_addr_config_info_per_plmn]");
+                goto end;
+            }
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_ecs_addr_config_info_1_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [inner]");
+                goto end;
+            }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        }
+    }
+    }
+
     if (pp_data_entry->ec_restriction) {
     cJSON *ec_restriction_local_JSON = OpenAPI_ec_restriction_1_convertToJSON(pp_data_entry->ec_restriction);
     if (ec_restriction_local_JSON == NULL) {
@@ -186,6 +243,35 @@ cJSON *OpenAPI_pp_data_entry_convertToJSON(OpenAPI_pp_data_entry_t *pp_data_entr
             ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [ec_restriction]");
             goto end;
         }
+    }
+
+    if (pp_data_entry->slice_usage_control_infos) {
+    cJSON *slice_usage_control_infosList = cJSON_AddArrayToObject(item, "sliceUsageControlInfos");
+    if (slice_usage_control_infosList == NULL) {
+        ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [slice_usage_control_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(pp_data_entry->slice_usage_control_infos, node) {
+        cJSON *itemLocal = OpenAPI_slice_usage_control_info_1_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [slice_usage_control_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(slice_usage_control_infosList, itemLocal);
+    }
+    }
+
+    if (pp_data_entry->cag_provision_info) {
+    cJSON *cag_provision_info_local_JSON = OpenAPI_cag_provision_information_1_convertToJSON(pp_data_entry->cag_provision_info);
+    if (cag_provision_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [cag_provision_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "cagProvisionInfo", cag_provision_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_pp_data_entry_convertToJSON() failed [cag_provision_info]");
+        goto end;
+    }
     }
 
 end:
@@ -206,8 +292,14 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_parseFromJSON(cJSON *pp_data_entr
     OpenAPI_ecs_addr_config_info_1_t *ecs_addr_config_info_local_nonprim = NULL;
     cJSON *additional_ecs_addr_config_infos = NULL;
     OpenAPI_list_t *additional_ecs_addr_config_infosList = NULL;
+    cJSON *ecs_addr_config_info_per_plmn = NULL;
+    OpenAPI_list_t *ecs_addr_config_info_per_plmnList = NULL;
     cJSON *ec_restriction = NULL;
     OpenAPI_ec_restriction_1_t *ec_restriction_local_nonprim = NULL;
+    cJSON *slice_usage_control_infos = NULL;
+    OpenAPI_list_t *slice_usage_control_infosList = NULL;
+    cJSON *cag_provision_info = NULL;
+    OpenAPI_cag_provision_information_1_t *cag_provision_info_local_nonprim = NULL;
     communication_characteristics = cJSON_GetObjectItemCaseSensitive(pp_data_entryJSON, "communicationCharacteristics");
     if (communication_characteristics) {
     if (!cJSON_IsNull(communication_characteristics)) {
@@ -286,6 +378,32 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_parseFromJSON(cJSON *pp_data_entr
         }
     }
 
+    ecs_addr_config_info_per_plmn = cJSON_GetObjectItemCaseSensitive(pp_data_entryJSON, "ecsAddrConfigInfoPerPlmn");
+    if (ecs_addr_config_info_per_plmn) {
+        cJSON *ecs_addr_config_info_per_plmn_local_map = NULL;
+        if (!cJSON_IsObject(ecs_addr_config_info_per_plmn) && !cJSON_IsNull(ecs_addr_config_info_per_plmn)) {
+            ogs_error("OpenAPI_pp_data_entry_parseFromJSON() failed [ecs_addr_config_info_per_plmn]");
+            goto end;
+        }
+        if (cJSON_IsObject(ecs_addr_config_info_per_plmn)) {
+            ecs_addr_config_info_per_plmnList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(ecs_addr_config_info_per_plmn_local_map, ecs_addr_config_info_per_plmn) {
+                cJSON *localMapObject = ecs_addr_config_info_per_plmn_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_ecs_addr_config_info_1_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_pp_data_entry_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(ecs_addr_config_info_per_plmnList, localMapKeyPair);
+            }
+        }
+    }
+
     ec_restriction = cJSON_GetObjectItemCaseSensitive(pp_data_entryJSON, "ecRestriction");
     if (ec_restriction) {
     if (!cJSON_IsNull(ec_restriction)) {
@@ -294,6 +412,39 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_parseFromJSON(cJSON *pp_data_entr
         ogs_error("OpenAPI_ec_restriction_1_parseFromJSON failed [ec_restriction]");
         goto end;
     }
+    }
+    }
+
+    slice_usage_control_infos = cJSON_GetObjectItemCaseSensitive(pp_data_entryJSON, "sliceUsageControlInfos");
+    if (slice_usage_control_infos) {
+        cJSON *slice_usage_control_infos_local = NULL;
+        if (!cJSON_IsArray(slice_usage_control_infos)) {
+            ogs_error("OpenAPI_pp_data_entry_parseFromJSON() failed [slice_usage_control_infos]");
+            goto end;
+        }
+
+        slice_usage_control_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(slice_usage_control_infos_local, slice_usage_control_infos) {
+            if (!cJSON_IsObject(slice_usage_control_infos_local)) {
+                ogs_error("OpenAPI_pp_data_entry_parseFromJSON() failed [slice_usage_control_infos]");
+                goto end;
+            }
+            OpenAPI_slice_usage_control_info_1_t *slice_usage_control_infosItem = OpenAPI_slice_usage_control_info_1_parseFromJSON(slice_usage_control_infos_local);
+            if (!slice_usage_control_infosItem) {
+                ogs_error("No slice_usage_control_infosItem");
+                goto end;
+            }
+            OpenAPI_list_add(slice_usage_control_infosList, slice_usage_control_infosItem);
+        }
+    }
+
+    cag_provision_info = cJSON_GetObjectItemCaseSensitive(pp_data_entryJSON, "cagProvisionInfo");
+    if (cag_provision_info) {
+    cag_provision_info_local_nonprim = OpenAPI_cag_provision_information_1_parseFromJSON(cag_provision_info);
+    if (!cag_provision_info_local_nonprim) {
+        ogs_error("OpenAPI_cag_provision_information_1_parseFromJSON failed [cag_provision_info]");
+        goto end;
     }
     }
 
@@ -308,8 +459,11 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_parseFromJSON(cJSON *pp_data_entr
         ecs_addr_config_info && cJSON_IsNull(ecs_addr_config_info) ? true : false,
         ecs_addr_config_info ? ecs_addr_config_info_local_nonprim : NULL,
         additional_ecs_addr_config_infos ? additional_ecs_addr_config_infosList : NULL,
+        ecs_addr_config_info_per_plmn ? ecs_addr_config_info_per_plmnList : NULL,
         ec_restriction && cJSON_IsNull(ec_restriction) ? true : false,
-        ec_restriction ? ec_restriction_local_nonprim : NULL
+        ec_restriction ? ec_restriction_local_nonprim : NULL,
+        slice_usage_control_infos ? slice_usage_control_infosList : NULL,
+        cag_provision_info ? cag_provision_info_local_nonprim : NULL
     );
 
     return pp_data_entry_local_var;
@@ -329,9 +483,30 @@ end:
         OpenAPI_list_free(additional_ecs_addr_config_infosList);
         additional_ecs_addr_config_infosList = NULL;
     }
+    if (ecs_addr_config_info_per_plmnList) {
+        OpenAPI_list_for_each(ecs_addr_config_info_per_plmnList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_ecs_addr_config_info_1_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(ecs_addr_config_info_per_plmnList);
+        ecs_addr_config_info_per_plmnList = NULL;
+    }
     if (ec_restriction_local_nonprim) {
         OpenAPI_ec_restriction_1_free(ec_restriction_local_nonprim);
         ec_restriction_local_nonprim = NULL;
+    }
+    if (slice_usage_control_infosList) {
+        OpenAPI_list_for_each(slice_usage_control_infosList, node) {
+            OpenAPI_slice_usage_control_info_1_free(node->data);
+        }
+        OpenAPI_list_free(slice_usage_control_infosList);
+        slice_usage_control_infosList = NULL;
+    }
+    if (cag_provision_info_local_nonprim) {
+        OpenAPI_cag_provision_information_1_free(cag_provision_info_local_nonprim);
+        cag_provision_info_local_nonprim = NULL;
     }
     return NULL;
 }

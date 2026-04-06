@@ -1,0 +1,175 @@
+openapi: 3.0.0
+
+info:
+  title: 'Nmbsmf_TMGI'
+  version: 1.1.0
+  description: |
+    MB-SMF TMGI Service.
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.532 V19.3.0; 5G System; 5G Multicast-Broadcast Session Management Services;
+    Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.532/
+
+servers:
+  - url: '{apiRoot}/nmbsmf-tmgi/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nmbsmf-tmgi
+
+paths:
+  /tmgi:
+    post:
+      summary:  Allocate TMGIs
+      tags:
+        - TMGI collection
+      operationId: AllocateTmgi
+      requestBody:
+        description: representation of the TMGIs to be created in the MB-SMF
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TmgiAllocate'
+      responses:
+        '200':
+          description: successful allocation of TMGIs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TmgiAllocated'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Deallocate one or more TMGIs
+      operationId: TMGIDeallocate
+      tags:
+        - TMGI collection
+      parameters:
+        - name: tmgi-list
+          in: query
+          description: One of more TMGIs to be deallocated
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS29571_CommonData.yaml#/components/schemas/Tmgi'
+                minItems: 1
+      responses:
+        '204':
+          description: successful deallocation of TMGIs
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nmbsmf-tmgi: Access to the nmbsmf-tmgi API
+
+  schemas:
+    # API specific definitions
+#
+# STRUCTURED DATA TYPES
+#
+    TmgiAllocate:
+      description: Data within TMGI Allocate Request
+      type: object
+      properties:
+        tmgiNumber:
+          description: The number of requested TMGIs
+          type: integer
+          minimum: 1
+          maximum: 255
+        tmgiList:
+          description: The list of TMGIs to be refreshed
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tmgi'
+          minItems: 1
+
+    TmgiAllocated:
+      description: Data within TMGI Allocate Response
+      type: object
+      properties:
+        tmgiList:
+          description: One or more TMGI values
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tmgi'
+          minItems: 1
+        expirationTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        nid:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Nid'
+      required:
+        - tmgiList
+        - expirationTime
+
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#

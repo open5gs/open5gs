@@ -1,7 +1,7 @@
 /*
  * pgw_info.h
  *
- * 
+ * Contains PGW Information
  */
 
 #ifndef _OpenAPI_pgw_info_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pgw_info_s OpenAPI_pgw_info_t;
 #include "ip_address.h"
 #include "plmn_id.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pgw_info_s OpenAPI_pgw_info_t;
-typedef struct OpenAPI_pgw_info_s {
+struct OpenAPI_pgw_info_s {
     char *dnn;
     char *pgw_fqdn;
     struct OpenAPI_ip_address_s *pgw_ip_addr;
@@ -29,7 +29,9 @@ typedef struct OpenAPI_pgw_info_s {
     int epdg_ind;
     char *pcf_id;
     char *registration_time;
-} OpenAPI_pgw_info_t;
+    bool is_wildcard_ind;
+    int wildcard_ind;
+};
 
 OpenAPI_pgw_info_t *OpenAPI_pgw_info_create(
     char *dnn,
@@ -39,7 +41,9 @@ OpenAPI_pgw_info_t *OpenAPI_pgw_info_create(
     bool is_epdg_ind,
     int epdg_ind,
     char *pcf_id,
-    char *registration_time
+    char *registration_time,
+    bool is_wildcard_ind,
+    int wildcard_ind
 );
 void OpenAPI_pgw_info_free(OpenAPI_pgw_info_t *pgw_info);
 OpenAPI_pgw_info_t *OpenAPI_pgw_info_parseFromJSON(cJSON *pgw_infoJSON);

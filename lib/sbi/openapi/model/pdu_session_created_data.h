@@ -12,26 +12,30 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pdu_session_created_data_s OpenAPI_pdu_session_created_data_t;
 #include "ambr.h"
 #include "eps_bearer_info.h"
 #include "eps_pdn_cnx_info.h"
+#include "hrsbo_info_from_hplmn.h"
 #include "ip_address.h"
+#include "local_offloading_mgt_info_to_ismf.h"
 #include "max_integrity_protected_data_rate.h"
 #include "pdu_session_type.h"
+#include "pending_update_info.h"
 #include "qos_flow_setup_item.h"
 #include "redundant_pdu_session_information.h"
 #include "ref_to_binary_data.h"
 #include "roaming_charging_profile.h"
 #include "snssai.h"
 #include "tunnel_info.h"
+#include "uli_change_granularity.h"
 #include "up_security.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pdu_session_created_data_s OpenAPI_pdu_session_created_data_t;
-typedef struct OpenAPI_pdu_session_created_data_s {
+struct OpenAPI_pdu_session_created_data_s {
     OpenAPI_pdu_session_type_e pdu_session_type;
     char *ssc_mode;
     struct OpenAPI_tunnel_info_s *hcn_tunnel_info;
@@ -44,6 +48,7 @@ typedef struct OpenAPI_pdu_session_created_data_s {
     bool is_pdu_session_id;
     int pdu_session_id;
     struct OpenAPI_snssai_s *s_nssai;
+    struct OpenAPI_snssai_s *additional_snssai;
     bool is_enable_pause_charging;
     int enable_pause_charging;
     char *ue_ipv4_address;
@@ -68,6 +73,7 @@ typedef struct OpenAPI_pdu_session_created_data_s {
     bool is_ma_accepted_ind;
     int ma_accepted_ind;
     char *home_provided_charging_id;
+    char *home_provided_smf_charging_id;
     bool is_nef_ext_buf_support_ind;
     int nef_ext_buf_support_ind;
     bool is_small_data_rate_control_enabled;
@@ -81,7 +87,13 @@ typedef struct OpenAPI_pdu_session_created_data_s {
     int nspu_support_ind;
     char *inter_plmn_api_root;
     char *intra_plmn_api_root;
-} OpenAPI_pdu_session_created_data_t;
+    char *udm_group_id;
+    char *pcf_group_id;
+    struct OpenAPI_hrsbo_info_from_hplmn_s *hrsbo_info;
+    struct OpenAPI_local_offloading_mgt_info_to_ismf_s *local_offload_mgt_info;
+    OpenAPI_list_t *pending_update_info_list;
+    OpenAPI_uli_change_granularity_e uli_change_granularity;
+};
 
 OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     OpenAPI_pdu_session_type_e pdu_session_type,
@@ -96,6 +108,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     bool is_pdu_session_id,
     int pdu_session_id,
     OpenAPI_snssai_t *s_nssai,
+    OpenAPI_snssai_t *additional_snssai,
     bool is_enable_pause_charging,
     int enable_pause_charging,
     char *ue_ipv4_address,
@@ -120,6 +133,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     bool is_ma_accepted_ind,
     int ma_accepted_ind,
     char *home_provided_charging_id,
+    char *home_provided_smf_charging_id,
     bool is_nef_ext_buf_support_ind,
     int nef_ext_buf_support_ind,
     bool is_small_data_rate_control_enabled,
@@ -132,7 +146,13 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     bool is_nspu_support_ind,
     int nspu_support_ind,
     char *inter_plmn_api_root,
-    char *intra_plmn_api_root
+    char *intra_plmn_api_root,
+    char *udm_group_id,
+    char *pcf_group_id,
+    OpenAPI_hrsbo_info_from_hplmn_t *hrsbo_info,
+    OpenAPI_local_offloading_mgt_info_to_ismf_t *local_offload_mgt_info,
+    OpenAPI_list_t *pending_update_info_list,
+    OpenAPI_uli_change_granularity_e uli_change_granularity
 );
 void OpenAPI_pdu_session_created_data_free(OpenAPI_pdu_session_created_data_t *pdu_session_created_data);
 OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJSON(cJSON *pdu_session_created_dataJSON);

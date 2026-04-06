@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_charging_data_s OpenAPI_charging_data_t;
 #include "metering_method.h"
 #include "reporting_level.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_charging_data_s OpenAPI_charging_data_t;
-typedef struct OpenAPI_charging_data_s {
+struct OpenAPI_charging_data_s {
     char *chg_id;
     OpenAPI_metering_method_e metering_method;
     bool is_offline;
@@ -39,7 +39,7 @@ typedef struct OpenAPI_charging_data_s {
     bool is_af_charging_identifier;
     int af_charging_identifier;
     char *af_charg_id;
-} OpenAPI_charging_data_t;
+};
 
 OpenAPI_charging_data_t *OpenAPI_charging_data_create(
     char *chg_id,

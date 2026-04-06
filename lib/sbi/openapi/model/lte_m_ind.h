@@ -12,15 +12,15 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_lte_m_ind_s OpenAPI_lte_m_ind_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_lte_m_ind_s OpenAPI_lte_m_ind_t;
-typedef struct OpenAPI_lte_m_ind_s {
+struct OpenAPI_lte_m_ind_s {
     int lte_cat_m_ind;
-} OpenAPI_lte_m_ind_t;
+};
 
 OpenAPI_lte_m_ind_t *OpenAPI_lte_m_ind_create(
     int lte_cat_m_ind

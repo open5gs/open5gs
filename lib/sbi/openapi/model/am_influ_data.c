@@ -11,6 +11,7 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_create(
     char *supi,
     bool is_any_ue_ind,
     int any_ue_ind,
+    OpenAPI_list_t *roam_ue_plmn_ids,
     bool is_policy_duration,
     int policy_duration,
     OpenAPI_list_t *ev_subs,
@@ -20,6 +21,7 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_create(
     bool is_thru_req,
     int thru_req,
     OpenAPI_list_t *cov_req,
+    OpenAPI_slice_repl_req_info_t *af_slice_repl_req_info,
     char *supported_features,
     char *res_uri,
     OpenAPI_list_t *reset_ids
@@ -34,6 +36,7 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_create(
     am_influ_data_local_var->supi = supi;
     am_influ_data_local_var->is_any_ue_ind = is_any_ue_ind;
     am_influ_data_local_var->any_ue_ind = any_ue_ind;
+    am_influ_data_local_var->roam_ue_plmn_ids = roam_ue_plmn_ids;
     am_influ_data_local_var->is_policy_duration = is_policy_duration;
     am_influ_data_local_var->policy_duration = policy_duration;
     am_influ_data_local_var->ev_subs = ev_subs;
@@ -43,6 +46,7 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_create(
     am_influ_data_local_var->is_thru_req = is_thru_req;
     am_influ_data_local_var->thru_req = thru_req;
     am_influ_data_local_var->cov_req = cov_req;
+    am_influ_data_local_var->af_slice_repl_req_info = af_slice_repl_req_info;
     am_influ_data_local_var->supported_features = supported_features;
     am_influ_data_local_var->res_uri = res_uri;
     am_influ_data_local_var->reset_ids = reset_ids;
@@ -79,10 +83,14 @@ void OpenAPI_am_influ_data_free(OpenAPI_am_influ_data_t *am_influ_data)
         ogs_free(am_influ_data->supi);
         am_influ_data->supi = NULL;
     }
-    if (am_influ_data->ev_subs) {
-        OpenAPI_list_for_each(am_influ_data->ev_subs, node) {
-            OpenAPI_am_influ_event_free(node->data);
+    if (am_influ_data->roam_ue_plmn_ids) {
+        OpenAPI_list_for_each(am_influ_data->roam_ue_plmn_ids, node) {
+            OpenAPI_plmn_id_free(node->data);
         }
+        OpenAPI_list_free(am_influ_data->roam_ue_plmn_ids);
+        am_influ_data->roam_ue_plmn_ids = NULL;
+    }
+    if (am_influ_data->ev_subs) {
         OpenAPI_list_free(am_influ_data->ev_subs);
         am_influ_data->ev_subs = NULL;
     }
@@ -107,6 +115,10 @@ void OpenAPI_am_influ_data_free(OpenAPI_am_influ_data_t *am_influ_data)
         }
         OpenAPI_list_free(am_influ_data->cov_req);
         am_influ_data->cov_req = NULL;
+    }
+    if (am_influ_data->af_slice_repl_req_info) {
+        OpenAPI_slice_repl_req_info_free(am_influ_data->af_slice_repl_req_info);
+        am_influ_data->af_slice_repl_req_info = NULL;
     }
     if (am_influ_data->supported_features) {
         ogs_free(am_influ_data->supported_features);
@@ -188,6 +200,22 @@ cJSON *OpenAPI_am_influ_data_convertToJSON(OpenAPI_am_influ_data_t *am_influ_dat
     }
     }
 
+    if (am_influ_data->roam_ue_plmn_ids) {
+    cJSON *roam_ue_plmn_idsList = cJSON_AddArrayToObject(item, "roamUePlmnIds");
+    if (roam_ue_plmn_idsList == NULL) {
+        ogs_error("OpenAPI_am_influ_data_convertToJSON() failed [roam_ue_plmn_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(am_influ_data->roam_ue_plmn_ids, node) {
+        cJSON *itemLocal = OpenAPI_plmn_id_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_am_influ_data_convertToJSON() failed [roam_ue_plmn_ids]");
+            goto end;
+        }
+        cJSON_AddItemToArray(roam_ue_plmn_idsList, itemLocal);
+    }
+    }
+
     if (am_influ_data->is_policy_duration) {
     if (cJSON_AddNumberToObject(item, "policyDuration", am_influ_data->policy_duration) == NULL) {
         ogs_error("OpenAPI_am_influ_data_convertToJSON() failed [policy_duration]");
@@ -195,19 +223,17 @@ cJSON *OpenAPI_am_influ_data_convertToJSON(OpenAPI_am_influ_data_t *am_influ_dat
     }
     }
 
-    if (am_influ_data->ev_subs) {
+    if (am_influ_data->ev_subs != OpenAPI_am_influ_event_NULL) {
     cJSON *ev_subsList = cJSON_AddArrayToObject(item, "evSubs");
     if (ev_subsList == NULL) {
         ogs_error("OpenAPI_am_influ_data_convertToJSON() failed [ev_subs]");
         goto end;
     }
     OpenAPI_list_for_each(am_influ_data->ev_subs, node) {
-        cJSON *itemLocal = OpenAPI_am_influ_event_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        if (cJSON_AddStringToObject(ev_subsList, "", OpenAPI_am_influ_event_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_am_influ_data_convertToJSON() failed [ev_subs]");
             goto end;
         }
-        cJSON_AddItemToArray(ev_subsList, itemLocal);
     }
     }
 
@@ -262,6 +288,19 @@ cJSON *OpenAPI_am_influ_data_convertToJSON(OpenAPI_am_influ_data_t *am_influ_dat
     }
     }
 
+    if (am_influ_data->af_slice_repl_req_info) {
+    cJSON *af_slice_repl_req_info_local_JSON = OpenAPI_slice_repl_req_info_convertToJSON(am_influ_data->af_slice_repl_req_info);
+    if (af_slice_repl_req_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_am_influ_data_convertToJSON() failed [af_slice_repl_req_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "afSliceReplReqInfo", af_slice_repl_req_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_am_influ_data_convertToJSON() failed [af_slice_repl_req_info]");
+        goto end;
+    }
+    }
+
     if (am_influ_data->supported_features) {
     if (cJSON_AddStringToObject(item, "supportedFeatures", am_influ_data->supported_features) == NULL) {
         ogs_error("OpenAPI_am_influ_data_convertToJSON() failed [supported_features]");
@@ -305,6 +344,8 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_parseFromJSON(cJSON *am_influ_dat
     cJSON *inter_group_id = NULL;
     cJSON *supi = NULL;
     cJSON *any_ue_ind = NULL;
+    cJSON *roam_ue_plmn_ids = NULL;
+    OpenAPI_list_t *roam_ue_plmn_idsList = NULL;
     cJSON *policy_duration = NULL;
     cJSON *ev_subs = NULL;
     OpenAPI_list_t *ev_subsList = NULL;
@@ -315,6 +356,8 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_parseFromJSON(cJSON *am_influ_dat
     cJSON *thru_req = NULL;
     cJSON *cov_req = NULL;
     OpenAPI_list_t *cov_reqList = NULL;
+    cJSON *af_slice_repl_req_info = NULL;
+    OpenAPI_slice_repl_req_info_t *af_slice_repl_req_info_local_nonprim = NULL;
     cJSON *supported_features = NULL;
     cJSON *res_uri = NULL;
     cJSON *reset_ids = NULL;
@@ -388,6 +431,30 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_parseFromJSON(cJSON *am_influ_dat
     }
     }
 
+    roam_ue_plmn_ids = cJSON_GetObjectItemCaseSensitive(am_influ_dataJSON, "roamUePlmnIds");
+    if (roam_ue_plmn_ids) {
+        cJSON *roam_ue_plmn_ids_local = NULL;
+        if (!cJSON_IsArray(roam_ue_plmn_ids)) {
+            ogs_error("OpenAPI_am_influ_data_parseFromJSON() failed [roam_ue_plmn_ids]");
+            goto end;
+        }
+
+        roam_ue_plmn_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(roam_ue_plmn_ids_local, roam_ue_plmn_ids) {
+            if (!cJSON_IsObject(roam_ue_plmn_ids_local)) {
+                ogs_error("OpenAPI_am_influ_data_parseFromJSON() failed [roam_ue_plmn_ids]");
+                goto end;
+            }
+            OpenAPI_plmn_id_t *roam_ue_plmn_idsItem = OpenAPI_plmn_id_parseFromJSON(roam_ue_plmn_ids_local);
+            if (!roam_ue_plmn_idsItem) {
+                ogs_error("No roam_ue_plmn_idsItem");
+                goto end;
+            }
+            OpenAPI_list_add(roam_ue_plmn_idsList, roam_ue_plmn_idsItem);
+        }
+    }
+
     policy_duration = cJSON_GetObjectItemCaseSensitive(am_influ_dataJSON, "policyDuration");
     if (policy_duration) {
     if (!cJSON_IsNumber(policy_duration)) {
@@ -407,16 +474,22 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_parseFromJSON(cJSON *am_influ_dat
         ev_subsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(ev_subs_local, ev_subs) {
-            if (!cJSON_IsObject(ev_subs_local)) {
+            OpenAPI_am_influ_event_e localEnum = OpenAPI_am_influ_event_NULL;
+            if (!cJSON_IsString(ev_subs_local)) {
                 ogs_error("OpenAPI_am_influ_data_parseFromJSON() failed [ev_subs]");
                 goto end;
             }
-            OpenAPI_am_influ_event_t *ev_subsItem = OpenAPI_am_influ_event_parseFromJSON(ev_subs_local);
-            if (!ev_subsItem) {
-                ogs_error("No ev_subsItem");
-                goto end;
+            localEnum = OpenAPI_am_influ_event_FromString(ev_subs_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"ev_subs\" is not supported. Ignoring it ...",
+                         ev_subs_local->valuestring);
+            } else {
+                OpenAPI_list_add(ev_subsList, (void *)localEnum);
             }
-            OpenAPI_list_add(ev_subsList, ev_subsItem);
+        }
+        if (ev_subsList->count == 0) {
+            ogs_error("OpenAPI_am_influ_data_parseFromJSON() failed: Expected ev_subsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -489,6 +562,15 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_parseFromJSON(cJSON *am_influ_dat
         }
     }
 
+    af_slice_repl_req_info = cJSON_GetObjectItemCaseSensitive(am_influ_dataJSON, "afSliceReplReqInfo");
+    if (af_slice_repl_req_info) {
+    af_slice_repl_req_info_local_nonprim = OpenAPI_slice_repl_req_info_parseFromJSON(af_slice_repl_req_info);
+    if (!af_slice_repl_req_info_local_nonprim) {
+        ogs_error("OpenAPI_slice_repl_req_info_parseFromJSON failed [af_slice_repl_req_info]");
+        goto end;
+    }
+    }
+
     supported_features = cJSON_GetObjectItemCaseSensitive(am_influ_dataJSON, "supportedFeatures");
     if (supported_features) {
     if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
@@ -533,6 +615,7 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_parseFromJSON(cJSON *am_influ_dat
         supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
         any_ue_ind ? true : false,
         any_ue_ind ? any_ue_ind->valueint : 0,
+        roam_ue_plmn_ids ? roam_ue_plmn_idsList : NULL,
         policy_duration ? true : false,
         policy_duration ? policy_duration->valuedouble : 0,
         ev_subs ? ev_subsList : NULL,
@@ -542,6 +625,7 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_parseFromJSON(cJSON *am_influ_dat
         thru_req ? true : false,
         thru_req ? thru_req->valueint : 0,
         cov_req ? cov_reqList : NULL,
+        af_slice_repl_req_info ? af_slice_repl_req_info_local_nonprim : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         res_uri && !cJSON_IsNull(res_uri) ? ogs_strdup(res_uri->valuestring) : NULL,
         reset_ids ? reset_idsList : NULL
@@ -563,10 +647,14 @@ end:
         OpenAPI_list_free(dnn_snssai_infosList);
         dnn_snssai_infosList = NULL;
     }
-    if (ev_subsList) {
-        OpenAPI_list_for_each(ev_subsList, node) {
-            OpenAPI_am_influ_event_free(node->data);
+    if (roam_ue_plmn_idsList) {
+        OpenAPI_list_for_each(roam_ue_plmn_idsList, node) {
+            OpenAPI_plmn_id_free(node->data);
         }
+        OpenAPI_list_free(roam_ue_plmn_idsList);
+        roam_ue_plmn_idsList = NULL;
+    }
+    if (ev_subsList) {
         OpenAPI_list_free(ev_subsList);
         ev_subsList = NULL;
     }
@@ -583,6 +671,10 @@ end:
         }
         OpenAPI_list_free(cov_reqList);
         cov_reqList = NULL;
+    }
+    if (af_slice_repl_req_info_local_nonprim) {
+        OpenAPI_slice_repl_req_info_free(af_slice_repl_req_info_local_nonprim);
+        af_slice_repl_req_info_local_nonprim = NULL;
     }
     if (reset_idsList) {
         OpenAPI_list_for_each(reset_idsList, node) {

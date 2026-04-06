@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_scp_domain_info_s OpenAPI_scp_domain_info_t;
 #include "ip_end_point.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_scp_domain_info_s OpenAPI_scp_domain_info_t;
-typedef struct OpenAPI_scp_domain_info_s {
+struct OpenAPI_scp_domain_info_s {
     char *scp_fqdn;
     OpenAPI_list_t *scp_ip_end_points;
     char *scp_prefix;
     OpenAPI_list_t* scp_ports;
-} OpenAPI_scp_domain_info_t;
+};
 
 OpenAPI_scp_domain_info_t *OpenAPI_scp_domain_info_create(
     char *scp_fqdn,

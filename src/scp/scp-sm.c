@@ -48,6 +48,7 @@ void scp_state_operational(ogs_fsm_t *s, scp_event_t *e)
     ogs_sbi_response_t *response = NULL;
     ogs_sbi_message_t message;
     ogs_sbi_xact_t *sbi_xact = NULL;
+    int service_name_id = OpenAPI_service_name_NULL;
     ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
 
     scp_sm_debug(e);
@@ -97,8 +98,10 @@ void scp_state_operational(ogs_fsm_t *s, scp_event_t *e)
             break;
         }
 
-        SWITCH(message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message.h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nnrf_nfm:
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY)
@@ -128,13 +131,13 @@ void scp_state_operational(ogs_fsm_t *s, scp_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("Invalid API name [%s]", message.h.service.name);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                     "Invalid API name", message.h.service.name, NULL));
-        END
+        }
 
         /* In lib/sbi/server.c, notify_completed() releases 'request' buffer. */
         ogs_sbi_message_free(&message);
@@ -160,8 +163,10 @@ void scp_state_operational(ogs_fsm_t *s, scp_event_t *e)
             break;
         }
 
-        SWITCH(message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message.h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nnrf_nfm:
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
@@ -252,10 +257,10 @@ void scp_state_operational(ogs_fsm_t *s, scp_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("Invalid service name [%s]", message.h.service.name);
             ogs_assert_if_reached();
-        END
+        }
 
         ogs_sbi_message_free(&message);
         ogs_sbi_response_free(response);

@@ -1,0 +1,247 @@
+openapi: 3.0.0
+info:
+  title: Namf_AIoT
+  version: 1.0.0
+  description: |
+    AMF AIoT Service.
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.518 V19.5.0; 5G System; Access and Mobility Management Services
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.518/'
+
+servers:
+  - url: '{apiRoot}/namf-aiot/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - namf-aiot
+
+paths: 
+  /transfer:
+    post:
+      summary: Request to transfer AIoT data towards NG-RAN or AIoT devices.
+      operationId: MessageDelivery
+      tags:
+        - AIoT Message Delivery Request (custom operation without associated resources)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiotMessageReq'
+          multipart/related:  # message with binary body part(s)
+            schema:
+              type: object
+              properties: # Request parts
+                jsonData:
+                  $ref: '#/components/schemas/AiotMessageReq'
+                binaryDataN2Information:
+                  type: string
+                  format: binary
+            encoding:
+              jsonData:
+                contentType: application/json
+              binaryDataN2Information:
+                contentType: application/vnd.3gpp.ngap
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string
+      responses:
+        '204':
+          description: >
+            No Content. The message is successfully received and processed.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        AIoTInformationNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AiotInfoNotification'
+                  multipart/related:  # message with binary body part(s)
+                      schema:
+                        type: object
+                        properties: 
+                          jsonData:
+                            $ref: '#/components/schemas/AiotInfoNotification'
+                          binaryDataN2Information:
+                            type: string
+                            format: binary
+                      encoding:
+                        jsonData:
+                          contentType: application/json
+                        binaryDataN2Information:
+                          contentType: application/vnd.3gpp.ngap
+                          headers:
+                            Content-Id:
+                              schema:
+                                type: string
+              responses:
+                '204':
+                  description: >
+                    No Content. The AIoT Information Notification is successfully received and
+                    acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            namf-aiot: Access to the Namf_AIoT API.
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    AiotMessageReq:
+      description: Represents the AIoT message delivery request.
+      type: object
+      properties:
+        ranNodeId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GlobalRanNodeId'
+        aiotMessage:
+          $ref: '#/components/schemas/AiotMessage'
+        aiotMessageType:
+          $ref: '#/components/schemas/AiotMessageType'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        ranAiotDeviceNgapId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        aiotfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        correlationId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint16'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ranNodeId
+        - aiotMessage
+        - notifUri
+        - aiotMessageType
+        - aiotfId
+        - correlationId
+
+
+    AiotInfoNotification:
+      description: Represents the AIoT information notification.
+      type: object
+      properties:
+        aiotMessage:
+          $ref: '#/components/schemas/AiotMessage'
+        aiotMessageType:
+          $ref: '#/components/schemas/AiotMessageType'
+      required:
+        - aiotMessage
+        - aiotMessageType
+
+
+
+    AiotMessage:
+      description: Represents the AIoT message from or to NG-RAN.
+      type: object
+      properties:
+        ngapMessageType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        aiotNgapData:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+      required:
+        - aiotNgapData
+        - ngapMessageType
+
+#
+# SIMPLE DATA TYPES
+#
+
+
+
+#
+# ENUMERATIONS
+
+
+    AiotMessageType:
+      description: AIoT NGAP Message Type
+      anyOf:
+      - type: string
+        enum:
+          - INVENTORY_REQUEST
+          - COMMAND_REQUEST
+          - AIOT_SESSION_RELEASE_COMMAND
+          - INVENTORY_REPONSE
+          - INVENTORY_FAILURE
+          - INVENTORY_REPORT
+          - COMMAND_RESPONSE
+          - COMMAND_FAILURE
+          - AIOT_SESSION_RELEASE_COMPLETE
+          - AIOT_SESSION_RELEASE_REQUEST
+      - type: string

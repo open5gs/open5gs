@@ -34,7 +34,8 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UECM;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudm_uecm);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = amf_ue->supi;
     message.h.resource.component[1] =
@@ -112,7 +113,8 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration_delete(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PATCH;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UECM;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudm_uecm);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = amf_ue->supi;
     message.h.resource.component[1] =
@@ -156,7 +158,8 @@ ogs_sbi_request_t *amf_nudm_sdm_build_get(amf_ue_t *amf_ue, void *data)
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_SDM;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudm_sdm);
     message.h.api.version = (char *)OGS_SBI_API_V2;
     message.h.resource.component[0] = amf_ue->supi;
     message.h.resource.component[1] = data;
@@ -189,7 +192,8 @@ ogs_sbi_request_t *amf_nudm_sdm_build_subscription(amf_ue_t *amf_ue, void *data)
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_SDM;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudm_sdm);
     message.h.api.version = (char *)OGS_SBI_API_V2;
     message.h.resource.component[0] = amf_ue->supi;
     message.h.resource.component[1] =

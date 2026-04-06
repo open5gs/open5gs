@@ -5,7 +5,7 @@
 #include "congestion_info.h"
 
 OpenAPI_congestion_info_t *OpenAPI_congestion_info_create(
-    OpenAPI_congestion_type_t *cong_type,
+    OpenAPI_congestion_type_e cong_type,
     OpenAPI_time_window_t *time_intev,
     OpenAPI_threshold_level_t *nsi,
     bool is_confidence,
@@ -34,10 +34,6 @@ void OpenAPI_congestion_info_free(OpenAPI_congestion_info_t *congestion_info)
 
     if (NULL == congestion_info) {
         return;
-    }
-    if (congestion_info->cong_type) {
-        OpenAPI_congestion_type_free(congestion_info->cong_type);
-        congestion_info->cong_type = NULL;
     }
     if (congestion_info->time_intev) {
         OpenAPI_time_window_free(congestion_info->time_intev);
@@ -75,17 +71,11 @@ cJSON *OpenAPI_congestion_info_convertToJSON(OpenAPI_congestion_info_t *congesti
     }
 
     item = cJSON_CreateObject();
-    if (!congestion_info->cong_type) {
+    if (congestion_info->cong_type == OpenAPI_congestion_type_NULL) {
         ogs_error("OpenAPI_congestion_info_convertToJSON() failed [cong_type]");
         return NULL;
     }
-    cJSON *cong_type_local_JSON = OpenAPI_congestion_type_convertToJSON(congestion_info->cong_type);
-    if (cong_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_congestion_info_convertToJSON() failed [cong_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "congType", cong_type_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "congType", OpenAPI_congestion_type_ToString(congestion_info->cong_type)) == NULL) {
         ogs_error("OpenAPI_congestion_info_convertToJSON() failed [cong_type]");
         goto end;
     }
@@ -168,7 +158,7 @@ OpenAPI_congestion_info_t *OpenAPI_congestion_info_parseFromJSON(cJSON *congesti
     OpenAPI_congestion_info_t *congestion_info_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *cong_type = NULL;
-    OpenAPI_congestion_type_t *cong_type_local_nonprim = NULL;
+    OpenAPI_congestion_type_e cong_typeVariable = 0;
     cJSON *time_intev = NULL;
     OpenAPI_time_window_t *time_intev_local_nonprim = NULL;
     cJSON *nsi = NULL;
@@ -183,11 +173,11 @@ OpenAPI_congestion_info_t *OpenAPI_congestion_info_parseFromJSON(cJSON *congesti
         ogs_error("OpenAPI_congestion_info_parseFromJSON() failed [cong_type]");
         goto end;
     }
-    cong_type_local_nonprim = OpenAPI_congestion_type_parseFromJSON(cong_type);
-    if (!cong_type_local_nonprim) {
-        ogs_error("OpenAPI_congestion_type_parseFromJSON failed [cong_type]");
+    if (!cJSON_IsString(cong_type)) {
+        ogs_error("OpenAPI_congestion_info_parseFromJSON() failed [cong_type]");
         goto end;
     }
+    cong_typeVariable = OpenAPI_congestion_type_FromString(cong_type->valuestring);
 
     time_intev = cJSON_GetObjectItemCaseSensitive(congestion_infoJSON, "timeIntev");
     if (!time_intev) {
@@ -268,7 +258,7 @@ OpenAPI_congestion_info_t *OpenAPI_congestion_info_parseFromJSON(cJSON *congesti
     }
 
     congestion_info_local_var = OpenAPI_congestion_info_create (
-        cong_type_local_nonprim,
+        cong_typeVariable,
         time_intev_local_nonprim,
         nsi_local_nonprim,
         confidence ? true : false,
@@ -279,10 +269,6 @@ OpenAPI_congestion_info_t *OpenAPI_congestion_info_parseFromJSON(cJSON *congesti
 
     return congestion_info_local_var;
 end:
-    if (cong_type_local_nonprim) {
-        OpenAPI_congestion_type_free(cong_type_local_nonprim);
-        cong_type_local_nonprim = NULL;
-    }
     if (time_intev_local_nonprim) {
         OpenAPI_time_window_free(time_intev_local_nonprim);
         time_intev_local_nonprim = NULL;

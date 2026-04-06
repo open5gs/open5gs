@@ -19,7 +19,11 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_create(
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
     OpenAPI_n4_information_t *n4_info_ext2,
-    OpenAPI_n4_information_t *n4_info_ext3
+    OpenAPI_n4_information_t *n4_info_ext3,
+    bool is_retry_after,
+    int retry_after,
+    bool is_max_waiting_time,
+    int max_waiting_time
 )
 {
     OpenAPI_vsmf_update_error_t *vsmf_update_error_local_var = ogs_malloc(sizeof(OpenAPI_vsmf_update_error_t));
@@ -40,6 +44,10 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_create(
     vsmf_update_error_local_var->n4_info_ext1 = n4_info_ext1;
     vsmf_update_error_local_var->n4_info_ext2 = n4_info_ext2;
     vsmf_update_error_local_var->n4_info_ext3 = n4_info_ext3;
+    vsmf_update_error_local_var->is_retry_after = is_retry_after;
+    vsmf_update_error_local_var->retry_after = retry_after;
+    vsmf_update_error_local_var->is_max_waiting_time = is_max_waiting_time;
+    vsmf_update_error_local_var->max_waiting_time = max_waiting_time;
 
     return vsmf_update_error_local_var;
 }
@@ -262,6 +270,20 @@ cJSON *OpenAPI_vsmf_update_error_convertToJSON(OpenAPI_vsmf_update_error_t *vsmf
     }
     }
 
+    if (vsmf_update_error->is_retry_after) {
+    if (cJSON_AddNumberToObject(item, "retryAfter", vsmf_update_error->retry_after) == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [retry_after]");
+        goto end;
+    }
+    }
+
+    if (vsmf_update_error->is_max_waiting_time) {
+    if (cJSON_AddNumberToObject(item, "maxWaitingTime", vsmf_update_error->max_waiting_time) == NULL) {
+        ogs_error("OpenAPI_vsmf_update_error_convertToJSON() failed [max_waiting_time]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -292,6 +314,8 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     OpenAPI_n4_information_t *n4_info_ext2_local_nonprim = NULL;
     cJSON *n4_info_ext3 = NULL;
     OpenAPI_n4_information_t *n4_info_ext3_local_nonprim = NULL;
+    cJSON *retry_after = NULL;
+    cJSON *max_waiting_time = NULL;
     error = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "error");
     if (!error) {
         ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [error]");
@@ -422,6 +446,22 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
     }
     }
 
+    retry_after = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "retryAfter");
+    if (retry_after) {
+    if (!cJSON_IsNumber(retry_after)) {
+        ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [retry_after]");
+        goto end;
+    }
+    }
+
+    max_waiting_time = cJSON_GetObjectItemCaseSensitive(vsmf_update_errorJSON, "maxWaitingTime");
+    if (max_waiting_time) {
+    if (!cJSON_IsNumber(max_waiting_time)) {
+        ogs_error("OpenAPI_vsmf_update_error_parseFromJSON() failed [max_waiting_time]");
+        goto end;
+    }
+    }
+
     vsmf_update_error_local_var = OpenAPI_vsmf_update_error_create (
         error_local_nonprim,
         pti ? true : false,
@@ -437,7 +477,11 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf
         n4_info ? n4_info_local_nonprim : NULL,
         n4_info_ext1 ? n4_info_ext1_local_nonprim : NULL,
         n4_info_ext2 ? n4_info_ext2_local_nonprim : NULL,
-        n4_info_ext3 ? n4_info_ext3_local_nonprim : NULL
+        n4_info_ext3 ? n4_info_ext3_local_nonprim : NULL,
+        retry_after ? true : false,
+        retry_after ? retry_after->valuedouble : 0,
+        max_waiting_time ? true : false,
+        max_waiting_time ? max_waiting_time->valuedouble : 0
     );
 
     return vsmf_update_error_local_var;

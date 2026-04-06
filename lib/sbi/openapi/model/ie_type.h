@@ -1,7 +1,7 @@
 /*
  * ie_type.h
  *
- * 
+ * Enumeration of types of IEs (i.e kind of IE) to specify the protection policy
  */
 
 #ifndef _OpenAPI_ie_type_H_
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_ie_type_NULL = 0, OpenAPI_ie_type_UEID, OpenAPI_ie_type_LOCATION, OpenAPI_ie_type_KEY_MATERIAL, OpenAPI_ie_type_AUTHENTICATION_MATERIAL, OpenAPI_ie_type_AUTHORIZATION_TOKEN, OpenAPI_ie_type_OTHER, OpenAPI_ie_type_NONSENSITIVE } OpenAPI_ie_type_e;
+typedef enum { OpenAPI_ie_type_NULL = 0, OpenAPI_ie_type_UEID, OpenAPI_ie_type_LOCATION, OpenAPI_ie_type_KEY_MATERIAL, OpenAPI_ie_type_AUTHENTICATION_MATERIAL, OpenAPI_ie_type_AUTHORIZATION_TOKEN, OpenAPI_ie_type_RECURSIVE_NON_LEAF, OpenAPI_ie_type_OTHER, OpenAPI_ie_type_NONSENSITIVE } OpenAPI_ie_type_e;
 
 char* OpenAPI_ie_type_ToString(OpenAPI_ie_type_e ie_type);
 

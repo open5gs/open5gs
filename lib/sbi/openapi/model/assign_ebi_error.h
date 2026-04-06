@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_assign_ebi_error_s OpenAPI_assign_ebi_error_t;
 #include "assign_ebi_failed.h"
 #include "problem_details.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_assign_ebi_error_s OpenAPI_assign_ebi_error_t;
-typedef struct OpenAPI_assign_ebi_error_s {
+struct OpenAPI_assign_ebi_error_s {
     struct OpenAPI_problem_details_s *error;
     struct OpenAPI_assign_ebi_failed_s *failure_details;
-} OpenAPI_assign_ebi_error_t;
+};
 
 OpenAPI_assign_ebi_error_t *OpenAPI_assign_ebi_error_create(
     OpenAPI_problem_details_t *error,

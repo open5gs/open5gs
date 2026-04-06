@@ -10,7 +10,8 @@ OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscr
     OpenAPI_n2_information_class_e n2_information_class,
     char *n2_notify_callback_uri,
     char *nf_id,
-    char *supported_features
+    char *supported_features,
+    char *notif_correlation_id
 )
 {
     OpenAPI_non_ue_n2_info_subscription_create_data_t *non_ue_n2_info_subscription_create_data_local_var = ogs_malloc(sizeof(OpenAPI_non_ue_n2_info_subscription_create_data_t));
@@ -22,6 +23,7 @@ OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscr
     non_ue_n2_info_subscription_create_data_local_var->n2_notify_callback_uri = n2_notify_callback_uri;
     non_ue_n2_info_subscription_create_data_local_var->nf_id = nf_id;
     non_ue_n2_info_subscription_create_data_local_var->supported_features = supported_features;
+    non_ue_n2_info_subscription_create_data_local_var->notif_correlation_id = notif_correlation_id;
 
     return non_ue_n2_info_subscription_create_data_local_var;
 }
@@ -55,6 +57,10 @@ void OpenAPI_non_ue_n2_info_subscription_create_data_free(OpenAPI_non_ue_n2_info
     if (non_ue_n2_info_subscription_create_data->supported_features) {
         ogs_free(non_ue_n2_info_subscription_create_data->supported_features);
         non_ue_n2_info_subscription_create_data->supported_features = NULL;
+    }
+    if (non_ue_n2_info_subscription_create_data->notif_correlation_id) {
+        ogs_free(non_ue_n2_info_subscription_create_data->notif_correlation_id);
+        non_ue_n2_info_subscription_create_data->notif_correlation_id = NULL;
     }
     ogs_free(non_ue_n2_info_subscription_create_data);
 }
@@ -132,6 +138,13 @@ cJSON *OpenAPI_non_ue_n2_info_subscription_create_data_convertToJSON(OpenAPI_non
     }
     }
 
+    if (non_ue_n2_info_subscription_create_data->notif_correlation_id) {
+    if (cJSON_AddStringToObject(item, "notifCorrelationId", non_ue_n2_info_subscription_create_data->notif_correlation_id) == NULL) {
+        ogs_error("OpenAPI_non_ue_n2_info_subscription_create_data_convertToJSON() failed [notif_correlation_id]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -149,6 +162,7 @@ OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscr
     cJSON *n2_notify_callback_uri = NULL;
     cJSON *nf_id = NULL;
     cJSON *supported_features = NULL;
+    cJSON *notif_correlation_id = NULL;
     global_ran_node_list = cJSON_GetObjectItemCaseSensitive(non_ue_n2_info_subscription_create_dataJSON, "globalRanNodeList");
     if (global_ran_node_list) {
         cJSON *global_ran_node_list_local = NULL;
@@ -240,13 +254,22 @@ OpenAPI_non_ue_n2_info_subscription_create_data_t *OpenAPI_non_ue_n2_info_subscr
     }
     }
 
+    notif_correlation_id = cJSON_GetObjectItemCaseSensitive(non_ue_n2_info_subscription_create_dataJSON, "notifCorrelationId");
+    if (notif_correlation_id) {
+    if (!cJSON_IsString(notif_correlation_id) && !cJSON_IsNull(notif_correlation_id)) {
+        ogs_error("OpenAPI_non_ue_n2_info_subscription_create_data_parseFromJSON() failed [notif_correlation_id]");
+        goto end;
+    }
+    }
+
     non_ue_n2_info_subscription_create_data_local_var = OpenAPI_non_ue_n2_info_subscription_create_data_create (
         global_ran_node_list ? global_ran_node_listList : NULL,
         an_type_list ? an_type_listList : NULL,
         n2_information_classVariable,
         ogs_strdup(n2_notify_callback_uri->valuestring),
         nf_id && !cJSON_IsNull(nf_id) ? ogs_strdup(nf_id->valuestring) : NULL,
-        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        notif_correlation_id && !cJSON_IsNull(notif_correlation_id) ? ogs_strdup(notif_correlation_id->valuestring) : NULL
     );
 
     return non_ue_n2_info_subscription_create_data_local_var;

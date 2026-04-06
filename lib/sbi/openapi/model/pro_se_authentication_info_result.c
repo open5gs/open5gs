@@ -6,7 +6,7 @@
 
 OpenAPI_pro_se_authentication_info_result_t *OpenAPI_pro_se_authentication_info_result_create(
     OpenAPI_auth_type_e auth_type,
-    OpenAPI_pro_se_authentication_vectors_t *prose_authentication_vectors,
+    OpenAPI_list_t *prose_authentication_vectors,
     char *supi,
     char *supported_features
 )
@@ -30,7 +30,10 @@ void OpenAPI_pro_se_authentication_info_result_free(OpenAPI_pro_se_authenticatio
         return;
     }
     if (pro_se_authentication_info_result->prose_authentication_vectors) {
-        OpenAPI_pro_se_authentication_vectors_free(pro_se_authentication_info_result->prose_authentication_vectors);
+        OpenAPI_list_for_each(pro_se_authentication_info_result->prose_authentication_vectors, node) {
+            OpenAPI_av_eap_aka_prime_free(node->data);
+        }
+        OpenAPI_list_free(pro_se_authentication_info_result->prose_authentication_vectors);
         pro_se_authentication_info_result->prose_authentication_vectors = NULL;
     }
     if (pro_se_authentication_info_result->supi) {
@@ -65,15 +68,18 @@ cJSON *OpenAPI_pro_se_authentication_info_result_convertToJSON(OpenAPI_pro_se_au
     }
 
     if (pro_se_authentication_info_result->prose_authentication_vectors) {
-    cJSON *prose_authentication_vectors_local_JSON = OpenAPI_pro_se_authentication_vectors_convertToJSON(pro_se_authentication_info_result->prose_authentication_vectors);
-    if (prose_authentication_vectors_local_JSON == NULL) {
+    cJSON *prose_authentication_vectorsList = cJSON_AddArrayToObject(item, "proseAuthenticationVectors");
+    if (prose_authentication_vectorsList == NULL) {
         ogs_error("OpenAPI_pro_se_authentication_info_result_convertToJSON() failed [prose_authentication_vectors]");
         goto end;
     }
-    cJSON_AddItemToObject(item, "proseAuthenticationVectors", prose_authentication_vectors_local_JSON);
-    if (item->child == NULL) {
-        ogs_error("OpenAPI_pro_se_authentication_info_result_convertToJSON() failed [prose_authentication_vectors]");
-        goto end;
+    OpenAPI_list_for_each(pro_se_authentication_info_result->prose_authentication_vectors, node) {
+        cJSON *itemLocal = OpenAPI_av_eap_aka_prime_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_pro_se_authentication_info_result_convertToJSON() failed [prose_authentication_vectors]");
+            goto end;
+        }
+        cJSON_AddItemToArray(prose_authentication_vectorsList, itemLocal);
     }
     }
 
@@ -102,7 +108,7 @@ OpenAPI_pro_se_authentication_info_result_t *OpenAPI_pro_se_authentication_info_
     cJSON *auth_type = NULL;
     OpenAPI_auth_type_e auth_typeVariable = 0;
     cJSON *prose_authentication_vectors = NULL;
-    OpenAPI_pro_se_authentication_vectors_t *prose_authentication_vectors_local_nonprim = NULL;
+    OpenAPI_list_t *prose_authentication_vectorsList = NULL;
     cJSON *supi = NULL;
     cJSON *supported_features = NULL;
     auth_type = cJSON_GetObjectItemCaseSensitive(pro_se_authentication_info_resultJSON, "authType");
@@ -118,11 +124,26 @@ OpenAPI_pro_se_authentication_info_result_t *OpenAPI_pro_se_authentication_info_
 
     prose_authentication_vectors = cJSON_GetObjectItemCaseSensitive(pro_se_authentication_info_resultJSON, "proseAuthenticationVectors");
     if (prose_authentication_vectors) {
-    prose_authentication_vectors_local_nonprim = OpenAPI_pro_se_authentication_vectors_parseFromJSON(prose_authentication_vectors);
-    if (!prose_authentication_vectors_local_nonprim) {
-        ogs_error("OpenAPI_pro_se_authentication_vectors_parseFromJSON failed [prose_authentication_vectors]");
-        goto end;
-    }
+        cJSON *prose_authentication_vectors_local = NULL;
+        if (!cJSON_IsArray(prose_authentication_vectors)) {
+            ogs_error("OpenAPI_pro_se_authentication_info_result_parseFromJSON() failed [prose_authentication_vectors]");
+            goto end;
+        }
+
+        prose_authentication_vectorsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(prose_authentication_vectors_local, prose_authentication_vectors) {
+            if (!cJSON_IsObject(prose_authentication_vectors_local)) {
+                ogs_error("OpenAPI_pro_se_authentication_info_result_parseFromJSON() failed [prose_authentication_vectors]");
+                goto end;
+            }
+            OpenAPI_av_eap_aka_prime_t *prose_authentication_vectorsItem = OpenAPI_av_eap_aka_prime_parseFromJSON(prose_authentication_vectors_local);
+            if (!prose_authentication_vectorsItem) {
+                ogs_error("No prose_authentication_vectorsItem");
+                goto end;
+            }
+            OpenAPI_list_add(prose_authentication_vectorsList, prose_authentication_vectorsItem);
+        }
     }
 
     supi = cJSON_GetObjectItemCaseSensitive(pro_se_authentication_info_resultJSON, "supi");
@@ -143,16 +164,19 @@ OpenAPI_pro_se_authentication_info_result_t *OpenAPI_pro_se_authentication_info_
 
     pro_se_authentication_info_result_local_var = OpenAPI_pro_se_authentication_info_result_create (
         auth_typeVariable,
-        prose_authentication_vectors ? prose_authentication_vectors_local_nonprim : NULL,
+        prose_authentication_vectors ? prose_authentication_vectorsList : NULL,
         supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
     return pro_se_authentication_info_result_local_var;
 end:
-    if (prose_authentication_vectors_local_nonprim) {
-        OpenAPI_pro_se_authentication_vectors_free(prose_authentication_vectors_local_nonprim);
-        prose_authentication_vectors_local_nonprim = NULL;
+    if (prose_authentication_vectorsList) {
+        OpenAPI_list_for_each(prose_authentication_vectorsList, node) {
+            OpenAPI_av_eap_aka_prime_free(node->data);
+        }
+        OpenAPI_list_free(prose_authentication_vectorsList);
+        prose_authentication_vectorsList = NULL;
     }
     return NULL;
 }

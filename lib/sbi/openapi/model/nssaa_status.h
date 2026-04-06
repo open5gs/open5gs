@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nssaa_status_s OpenAPI_nssaa_status_t;
 #include "auth_status.h"
 #include "snssai.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nssaa_status_s OpenAPI_nssaa_status_t;
-typedef struct OpenAPI_nssaa_status_s {
+struct OpenAPI_nssaa_status_s {
     struct OpenAPI_snssai_s *snssai;
     OpenAPI_auth_status_e status;
-} OpenAPI_nssaa_status_t;
+};
 
 OpenAPI_nssaa_status_t *OpenAPI_nssaa_status_create(
     OpenAPI_snssai_t *snssai,

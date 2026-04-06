@@ -5,8 +5,8 @@
 #include "dn_performance_req.h"
 
 OpenAPI_dn_performance_req_t *OpenAPI_dn_performance_req_create(
-    OpenAPI_dn_perf_ordering_criterion_t *dn_perf_order_criter,
-    OpenAPI_matching_direction_t *order,
+    OpenAPI_dn_perf_ordering_criterion_e dn_perf_order_criter,
+    OpenAPI_matching_direction_e order,
     OpenAPI_list_t *report_thresholds
 )
 {
@@ -26,14 +26,6 @@ void OpenAPI_dn_performance_req_free(OpenAPI_dn_performance_req_t *dn_performanc
 
     if (NULL == dn_performance_req) {
         return;
-    }
-    if (dn_performance_req->dn_perf_order_criter) {
-        OpenAPI_dn_perf_ordering_criterion_free(dn_performance_req->dn_perf_order_criter);
-        dn_performance_req->dn_perf_order_criter = NULL;
-    }
-    if (dn_performance_req->order) {
-        OpenAPI_matching_direction_free(dn_performance_req->order);
-        dn_performance_req->order = NULL;
     }
     if (dn_performance_req->report_thresholds) {
         OpenAPI_list_for_each(dn_performance_req->report_thresholds, node) {
@@ -56,27 +48,15 @@ cJSON *OpenAPI_dn_performance_req_convertToJSON(OpenAPI_dn_performance_req_t *dn
     }
 
     item = cJSON_CreateObject();
-    if (dn_performance_req->dn_perf_order_criter) {
-    cJSON *dn_perf_order_criter_local_JSON = OpenAPI_dn_perf_ordering_criterion_convertToJSON(dn_performance_req->dn_perf_order_criter);
-    if (dn_perf_order_criter_local_JSON == NULL) {
-        ogs_error("OpenAPI_dn_performance_req_convertToJSON() failed [dn_perf_order_criter]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "dnPerfOrderCriter", dn_perf_order_criter_local_JSON);
-    if (item->child == NULL) {
+    if (dn_performance_req->dn_perf_order_criter != OpenAPI_dn_perf_ordering_criterion_NULL) {
+    if (cJSON_AddStringToObject(item, "dnPerfOrderCriter", OpenAPI_dn_perf_ordering_criterion_ToString(dn_performance_req->dn_perf_order_criter)) == NULL) {
         ogs_error("OpenAPI_dn_performance_req_convertToJSON() failed [dn_perf_order_criter]");
         goto end;
     }
     }
 
-    if (dn_performance_req->order) {
-    cJSON *order_local_JSON = OpenAPI_matching_direction_convertToJSON(dn_performance_req->order);
-    if (order_local_JSON == NULL) {
-        ogs_error("OpenAPI_dn_performance_req_convertToJSON() failed [order]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "order", order_local_JSON);
-    if (item->child == NULL) {
+    if (dn_performance_req->order != OpenAPI_matching_direction_NULL) {
+    if (cJSON_AddStringToObject(item, "order", OpenAPI_matching_direction_ToString(dn_performance_req->order)) == NULL) {
         ogs_error("OpenAPI_dn_performance_req_convertToJSON() failed [order]");
         goto end;
     }
@@ -107,27 +87,27 @@ OpenAPI_dn_performance_req_t *OpenAPI_dn_performance_req_parseFromJSON(cJSON *dn
     OpenAPI_dn_performance_req_t *dn_performance_req_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *dn_perf_order_criter = NULL;
-    OpenAPI_dn_perf_ordering_criterion_t *dn_perf_order_criter_local_nonprim = NULL;
+    OpenAPI_dn_perf_ordering_criterion_e dn_perf_order_criterVariable = 0;
     cJSON *order = NULL;
-    OpenAPI_matching_direction_t *order_local_nonprim = NULL;
+    OpenAPI_matching_direction_e orderVariable = 0;
     cJSON *report_thresholds = NULL;
     OpenAPI_list_t *report_thresholdsList = NULL;
     dn_perf_order_criter = cJSON_GetObjectItemCaseSensitive(dn_performance_reqJSON, "dnPerfOrderCriter");
     if (dn_perf_order_criter) {
-    dn_perf_order_criter_local_nonprim = OpenAPI_dn_perf_ordering_criterion_parseFromJSON(dn_perf_order_criter);
-    if (!dn_perf_order_criter_local_nonprim) {
-        ogs_error("OpenAPI_dn_perf_ordering_criterion_parseFromJSON failed [dn_perf_order_criter]");
+    if (!cJSON_IsString(dn_perf_order_criter)) {
+        ogs_error("OpenAPI_dn_performance_req_parseFromJSON() failed [dn_perf_order_criter]");
         goto end;
     }
+    dn_perf_order_criterVariable = OpenAPI_dn_perf_ordering_criterion_FromString(dn_perf_order_criter->valuestring);
     }
 
     order = cJSON_GetObjectItemCaseSensitive(dn_performance_reqJSON, "order");
     if (order) {
-    order_local_nonprim = OpenAPI_matching_direction_parseFromJSON(order);
-    if (!order_local_nonprim) {
-        ogs_error("OpenAPI_matching_direction_parseFromJSON failed [order]");
+    if (!cJSON_IsString(order)) {
+        ogs_error("OpenAPI_dn_performance_req_parseFromJSON() failed [order]");
         goto end;
     }
+    orderVariable = OpenAPI_matching_direction_FromString(order->valuestring);
     }
 
     report_thresholds = cJSON_GetObjectItemCaseSensitive(dn_performance_reqJSON, "reportThresholds");
@@ -155,21 +135,13 @@ OpenAPI_dn_performance_req_t *OpenAPI_dn_performance_req_parseFromJSON(cJSON *dn
     }
 
     dn_performance_req_local_var = OpenAPI_dn_performance_req_create (
-        dn_perf_order_criter ? dn_perf_order_criter_local_nonprim : NULL,
-        order ? order_local_nonprim : NULL,
+        dn_perf_order_criter ? dn_perf_order_criterVariable : 0,
+        order ? orderVariable : 0,
         report_thresholds ? report_thresholdsList : NULL
     );
 
     return dn_performance_req_local_var;
 end:
-    if (dn_perf_order_criter_local_nonprim) {
-        OpenAPI_dn_perf_ordering_criterion_free(dn_perf_order_criter_local_nonprim);
-        dn_perf_order_criter_local_nonprim = NULL;
-    }
-    if (order_local_nonprim) {
-        OpenAPI_matching_direction_free(order_local_nonprim);
-        order_local_nonprim = NULL;
-    }
     if (report_thresholdsList) {
         OpenAPI_list_for_each(report_thresholdsList, node) {
             OpenAPI_threshold_level_free(node->data);

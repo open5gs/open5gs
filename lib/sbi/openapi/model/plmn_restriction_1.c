@@ -5,12 +5,13 @@
 #include "plmn_restriction_1.h"
 
 OpenAPI_plmn_restriction_1_t *OpenAPI_plmn_restriction_1_create(
-    OpenAPI_set_t *rat_restrictions,
+    OpenAPI_list_t *rat_restrictions,
     OpenAPI_list_t *forbidden_areas,
     OpenAPI_service_area_restriction_1_t *service_area_restriction,
     OpenAPI_list_t *core_network_type_restrictions,
-    OpenAPI_set_t *primary_rat_restrictions,
-    OpenAPI_set_t *secondary_rat_restrictions
+    OpenAPI_list_t *access_type_restrictions,
+    OpenAPI_list_t *primary_rat_restrictions,
+    OpenAPI_list_t *secondary_rat_restrictions
 )
 {
     OpenAPI_plmn_restriction_1_t *plmn_restriction_1_local_var = ogs_malloc(sizeof(OpenAPI_plmn_restriction_1_t));
@@ -20,6 +21,7 @@ OpenAPI_plmn_restriction_1_t *OpenAPI_plmn_restriction_1_create(
     plmn_restriction_1_local_var->forbidden_areas = forbidden_areas;
     plmn_restriction_1_local_var->service_area_restriction = service_area_restriction;
     plmn_restriction_1_local_var->core_network_type_restrictions = core_network_type_restrictions;
+    plmn_restriction_1_local_var->access_type_restrictions = access_type_restrictions;
     plmn_restriction_1_local_var->primary_rat_restrictions = primary_rat_restrictions;
     plmn_restriction_1_local_var->secondary_rat_restrictions = secondary_rat_restrictions;
 
@@ -51,6 +53,10 @@ void OpenAPI_plmn_restriction_1_free(OpenAPI_plmn_restriction_1_t *plmn_restrict
     if (plmn_restriction_1->core_network_type_restrictions) {
         OpenAPI_list_free(plmn_restriction_1->core_network_type_restrictions);
         plmn_restriction_1->core_network_type_restrictions = NULL;
+    }
+    if (plmn_restriction_1->access_type_restrictions) {
+        OpenAPI_list_free(plmn_restriction_1->access_type_restrictions);
+        plmn_restriction_1->access_type_restrictions = NULL;
     }
     if (plmn_restriction_1->primary_rat_restrictions) {
         OpenAPI_list_free(plmn_restriction_1->primary_rat_restrictions);
@@ -131,6 +137,20 @@ cJSON *OpenAPI_plmn_restriction_1_convertToJSON(OpenAPI_plmn_restriction_1_t *pl
     }
     }
 
+    if (plmn_restriction_1->access_type_restrictions != OpenAPI_access_type_NULL) {
+    cJSON *access_type_restrictionsList = cJSON_AddArrayToObject(item, "accessTypeRestrictions");
+    if (access_type_restrictionsList == NULL) {
+        ogs_error("OpenAPI_plmn_restriction_1_convertToJSON() failed [access_type_restrictions]");
+        goto end;
+    }
+    OpenAPI_list_for_each(plmn_restriction_1->access_type_restrictions, node) {
+        if (cJSON_AddStringToObject(access_type_restrictionsList, "", OpenAPI_access_type_ToString((intptr_t)node->data)) == NULL) {
+            ogs_error("OpenAPI_plmn_restriction_1_convertToJSON() failed [access_type_restrictions]");
+            goto end;
+        }
+    }
+    }
+
     if (plmn_restriction_1->primary_rat_restrictions != OpenAPI_rat_type_NULL) {
     cJSON *primary_rat_restrictionsList = cJSON_AddArrayToObject(item, "primaryRatRestrictions");
     if (primary_rat_restrictionsList == NULL) {
@@ -175,6 +195,8 @@ OpenAPI_plmn_restriction_1_t *OpenAPI_plmn_restriction_1_parseFromJSON(cJSON *pl
     OpenAPI_service_area_restriction_1_t *service_area_restriction_local_nonprim = NULL;
     cJSON *core_network_type_restrictions = NULL;
     OpenAPI_list_t *core_network_type_restrictionsList = NULL;
+    cJSON *access_type_restrictions = NULL;
+    OpenAPI_list_t *access_type_restrictionsList = NULL;
     cJSON *primary_rat_restrictions = NULL;
     OpenAPI_list_t *primary_rat_restrictionsList = NULL;
     cJSON *secondary_rat_restrictions = NULL;
@@ -272,6 +294,36 @@ OpenAPI_plmn_restriction_1_t *OpenAPI_plmn_restriction_1_parseFromJSON(cJSON *pl
         }
     }
 
+    access_type_restrictions = cJSON_GetObjectItemCaseSensitive(plmn_restriction_1JSON, "accessTypeRestrictions");
+    if (access_type_restrictions) {
+        cJSON *access_type_restrictions_local = NULL;
+        if (!cJSON_IsArray(access_type_restrictions)) {
+            ogs_error("OpenAPI_plmn_restriction_1_parseFromJSON() failed [access_type_restrictions]");
+            goto end;
+        }
+
+        access_type_restrictionsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(access_type_restrictions_local, access_type_restrictions) {
+            OpenAPI_access_type_e localEnum = OpenAPI_access_type_NULL;
+            if (!cJSON_IsString(access_type_restrictions_local)) {
+                ogs_error("OpenAPI_plmn_restriction_1_parseFromJSON() failed [access_type_restrictions]");
+                goto end;
+            }
+            localEnum = OpenAPI_access_type_FromString(access_type_restrictions_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"access_type_restrictions\" is not supported. Ignoring it ...",
+                         access_type_restrictions_local->valuestring);
+            } else {
+                OpenAPI_list_add(access_type_restrictionsList, (void *)localEnum);
+            }
+        }
+        if (access_type_restrictionsList->count == 0) {
+            ogs_error("OpenAPI_plmn_restriction_1_parseFromJSON() failed: Expected access_type_restrictionsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+    }
+
     primary_rat_restrictions = cJSON_GetObjectItemCaseSensitive(plmn_restriction_1JSON, "primaryRatRestrictions");
     if (primary_rat_restrictions) {
         cJSON *primary_rat_restrictions_local = NULL;
@@ -337,6 +389,7 @@ OpenAPI_plmn_restriction_1_t *OpenAPI_plmn_restriction_1_parseFromJSON(cJSON *pl
         forbidden_areas ? forbidden_areasList : NULL,
         service_area_restriction ? service_area_restriction_local_nonprim : NULL,
         core_network_type_restrictions ? core_network_type_restrictionsList : NULL,
+        access_type_restrictions ? access_type_restrictionsList : NULL,
         primary_rat_restrictions ? primary_rat_restrictionsList : NULL,
         secondary_rat_restrictions ? secondary_rat_restrictionsList : NULL
     );
@@ -361,6 +414,10 @@ end:
     if (core_network_type_restrictionsList) {
         OpenAPI_list_free(core_network_type_restrictionsList);
         core_network_type_restrictionsList = NULL;
+    }
+    if (access_type_restrictionsList) {
+        OpenAPI_list_free(access_type_restrictionsList);
+        access_type_restrictionsList = NULL;
     }
     if (primary_rat_restrictionsList) {
         OpenAPI_list_free(primary_rat_restrictionsList);

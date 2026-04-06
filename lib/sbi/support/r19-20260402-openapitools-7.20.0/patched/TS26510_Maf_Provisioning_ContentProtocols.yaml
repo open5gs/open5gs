@@ -1,0 +1,119 @@
+openapi: 3.0.0
+info:
+  title: Maf_Provisioning_ContentProtocols
+  version: 1.0.1
+  description: |
+    Media Delivery: Content Protocols Discovery API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Maf_Provisioning_ContentProtocols
+    description: 'Media Delivery: Content Protocols Discovery API'
+
+externalDocs:
+  description: 'TS 26.510 V18.4.0; Media Delivery; Interactions and APIs for media session handling'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.510/'
+
+servers:
+  - url: '{apiRoot}/3gpp-maf-provisioning/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 26.510 clause 7.1.3.
+
+security:
+  - {}
+  - OAuth2: [] 
+
+paths:
+  /provisioning-sessions/{provisioningSessionId}/content-protocols:
+    parameters:
+      - name: provisioningSessionId
+        in: path
+        required: true
+        schema: 
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The resource identifier of an existing Provisioning Session.'
+    get:
+      operationId: retrieveContentProtocols
+      summary: 'Retrieve the set of Content Protocols supported by the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - content-protocols_retrieve
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentProtocols'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Provisioning Session no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            content-protocols_retrieve: Retrieve the Content Protocols Descriptor resource
+
+  schemas:
+    ContentProtocolDescriptor:
+      type: object
+      description: "A descriptor describing a content protocol."
+      required:
+        - termIdentifier
+      properties:
+        termIdentifier:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        descriptionLocator:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+    ContentProtocols:
+      type: object
+      description: "A representation of the Content Protocols resource."
+      properties:
+        downlinkIngestProtocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentProtocolDescriptor'
+          minItems: 1
+        uplinkEgestProtocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentProtocolDescriptor'
+          minItems: 1
+        downlinkDistributionProtocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentProtocolDescriptor'
+          minItems: 1
+        uplinkContributionProtocols:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentProtocolDescriptor'
+          minItems: 1
+        geoFencingLocatorTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1

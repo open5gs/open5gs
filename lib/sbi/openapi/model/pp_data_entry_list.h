@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pp_data_entry_list_s OpenAPI_pp_data_entry_list_t;
 #include "pp_data_entry.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pp_data_entry_list_s OpenAPI_pp_data_entry_list_t;
-typedef struct OpenAPI_pp_data_entry_list_s {
+struct OpenAPI_pp_data_entry_list_s {
     OpenAPI_list_t *pp_data_entry_list;
     char *supported_features;
-} OpenAPI_pp_data_entry_list_t;
+};
 
 OpenAPI_pp_data_entry_list_t *OpenAPI_pp_data_entry_list_create(
     OpenAPI_list_t *pp_data_entry_list,

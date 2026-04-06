@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nrf_info_served_udm_info_value_s OpenAPI_nrf_info_served_udm_info_value_t;
 #include "identity_range.h"
 #include "internal_group_id_range.h"
 #include "suci_info.h"
@@ -22,8 +23,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nrf_info_served_udm_info_value_s OpenAPI_nrf_info_served_udm_info_value_t;
-typedef struct OpenAPI_nrf_info_served_udm_info_value_s {
+struct OpenAPI_nrf_info_served_udm_info_value_s {
     char *group_id;
     OpenAPI_list_t *supi_ranges;
     OpenAPI_list_t *gpsi_ranges;
@@ -31,7 +31,9 @@ typedef struct OpenAPI_nrf_info_served_udm_info_value_s {
     OpenAPI_list_t *routing_indicators;
     OpenAPI_list_t *internal_group_identifiers_ranges;
     OpenAPI_list_t *suci_infos;
-} OpenAPI_nrf_info_served_udm_info_value_t;
+    bool is_any_ue_udm_single_instance;
+    int any_ue_udm_single_instance;
+};
 
 OpenAPI_nrf_info_served_udm_info_value_t *OpenAPI_nrf_info_served_udm_info_value_create(
     char *group_id,
@@ -40,7 +42,9 @@ OpenAPI_nrf_info_served_udm_info_value_t *OpenAPI_nrf_info_served_udm_info_value
     OpenAPI_list_t *external_group_identifiers_ranges,
     OpenAPI_list_t *routing_indicators,
     OpenAPI_list_t *internal_group_identifiers_ranges,
-    OpenAPI_list_t *suci_infos
+    OpenAPI_list_t *suci_infos,
+    bool is_any_ue_udm_single_instance,
+    int any_ue_udm_single_instance
 );
 void OpenAPI_nrf_info_served_udm_info_value_free(OpenAPI_nrf_info_served_udm_info_value_t *nrf_info_served_udm_info_value);
 OpenAPI_nrf_info_served_udm_info_value_t *OpenAPI_nrf_info_served_udm_info_value_parseFromJSON(cJSON *nrf_info_served_udm_info_valueJSON);

@@ -7,9 +7,9 @@
 OpenAPI_gera_location_t *OpenAPI_gera_location_create(
     char *location_number,
     OpenAPI_cell_global_id_t *cgi,
-    OpenAPI_routing_area_id_t *rai,
     OpenAPI_service_area_id_t *sai,
     OpenAPI_location_area_id_t *lai,
+    OpenAPI_routing_area_id_t *rai,
     char *vlr_number,
     char *msc_number,
     bool is_age_of_location_information,
@@ -24,9 +24,9 @@ OpenAPI_gera_location_t *OpenAPI_gera_location_create(
 
     gera_location_local_var->location_number = location_number;
     gera_location_local_var->cgi = cgi;
-    gera_location_local_var->rai = rai;
     gera_location_local_var->sai = sai;
     gera_location_local_var->lai = lai;
+    gera_location_local_var->rai = rai;
     gera_location_local_var->vlr_number = vlr_number;
     gera_location_local_var->msc_number = msc_number;
     gera_location_local_var->is_age_of_location_information = is_age_of_location_information;
@@ -53,10 +53,6 @@ void OpenAPI_gera_location_free(OpenAPI_gera_location_t *gera_location)
         OpenAPI_cell_global_id_free(gera_location->cgi);
         gera_location->cgi = NULL;
     }
-    if (gera_location->rai) {
-        OpenAPI_routing_area_id_free(gera_location->rai);
-        gera_location->rai = NULL;
-    }
     if (gera_location->sai) {
         OpenAPI_service_area_id_free(gera_location->sai);
         gera_location->sai = NULL;
@@ -64,6 +60,10 @@ void OpenAPI_gera_location_free(OpenAPI_gera_location_t *gera_location)
     if (gera_location->lai) {
         OpenAPI_location_area_id_free(gera_location->lai);
         gera_location->lai = NULL;
+    }
+    if (gera_location->rai) {
+        OpenAPI_routing_area_id_free(gera_location->rai);
+        gera_location->rai = NULL;
     }
     if (gera_location->vlr_number) {
         ogs_free(gera_location->vlr_number);
@@ -119,19 +119,6 @@ cJSON *OpenAPI_gera_location_convertToJSON(OpenAPI_gera_location_t *gera_locatio
     }
     }
 
-    if (gera_location->rai) {
-    cJSON *rai_local_JSON = OpenAPI_routing_area_id_convertToJSON(gera_location->rai);
-    if (rai_local_JSON == NULL) {
-        ogs_error("OpenAPI_gera_location_convertToJSON() failed [rai]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "rai", rai_local_JSON);
-    if (item->child == NULL) {
-        ogs_error("OpenAPI_gera_location_convertToJSON() failed [rai]");
-        goto end;
-    }
-    }
-
     if (gera_location->sai) {
     cJSON *sai_local_JSON = OpenAPI_service_area_id_convertToJSON(gera_location->sai);
     if (sai_local_JSON == NULL) {
@@ -154,6 +141,19 @@ cJSON *OpenAPI_gera_location_convertToJSON(OpenAPI_gera_location_t *gera_locatio
     cJSON_AddItemToObject(item, "lai", lai_local_JSON);
     if (item->child == NULL) {
         ogs_error("OpenAPI_gera_location_convertToJSON() failed [lai]");
+        goto end;
+    }
+    }
+
+    if (gera_location->rai) {
+    cJSON *rai_local_JSON = OpenAPI_routing_area_id_convertToJSON(gera_location->rai);
+    if (rai_local_JSON == NULL) {
+        ogs_error("OpenAPI_gera_location_convertToJSON() failed [rai]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "rai", rai_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_gera_location_convertToJSON() failed [rai]");
         goto end;
     }
     }
@@ -211,12 +211,12 @@ OpenAPI_gera_location_t *OpenAPI_gera_location_parseFromJSON(cJSON *gera_locatio
     cJSON *location_number = NULL;
     cJSON *cgi = NULL;
     OpenAPI_cell_global_id_t *cgi_local_nonprim = NULL;
-    cJSON *rai = NULL;
-    OpenAPI_routing_area_id_t *rai_local_nonprim = NULL;
     cJSON *sai = NULL;
     OpenAPI_service_area_id_t *sai_local_nonprim = NULL;
     cJSON *lai = NULL;
     OpenAPI_location_area_id_t *lai_local_nonprim = NULL;
+    cJSON *rai = NULL;
+    OpenAPI_routing_area_id_t *rai_local_nonprim = NULL;
     cJSON *vlr_number = NULL;
     cJSON *msc_number = NULL;
     cJSON *age_of_location_information = NULL;
@@ -240,15 +240,6 @@ OpenAPI_gera_location_t *OpenAPI_gera_location_parseFromJSON(cJSON *gera_locatio
     }
     }
 
-    rai = cJSON_GetObjectItemCaseSensitive(gera_locationJSON, "rai");
-    if (rai) {
-    rai_local_nonprim = OpenAPI_routing_area_id_parseFromJSON(rai);
-    if (!rai_local_nonprim) {
-        ogs_error("OpenAPI_routing_area_id_parseFromJSON failed [rai]");
-        goto end;
-    }
-    }
-
     sai = cJSON_GetObjectItemCaseSensitive(gera_locationJSON, "sai");
     if (sai) {
     sai_local_nonprim = OpenAPI_service_area_id_parseFromJSON(sai);
@@ -263,6 +254,15 @@ OpenAPI_gera_location_t *OpenAPI_gera_location_parseFromJSON(cJSON *gera_locatio
     lai_local_nonprim = OpenAPI_location_area_id_parseFromJSON(lai);
     if (!lai_local_nonprim) {
         ogs_error("OpenAPI_location_area_id_parseFromJSON failed [lai]");
+        goto end;
+    }
+    }
+
+    rai = cJSON_GetObjectItemCaseSensitive(gera_locationJSON, "rai");
+    if (rai) {
+    rai_local_nonprim = OpenAPI_routing_area_id_parseFromJSON(rai);
+    if (!rai_local_nonprim) {
+        ogs_error("OpenAPI_routing_area_id_parseFromJSON failed [rai]");
         goto end;
     }
     }
@@ -318,9 +318,9 @@ OpenAPI_gera_location_t *OpenAPI_gera_location_parseFromJSON(cJSON *gera_locatio
     gera_location_local_var = OpenAPI_gera_location_create (
         location_number && !cJSON_IsNull(location_number) ? ogs_strdup(location_number->valuestring) : NULL,
         cgi ? cgi_local_nonprim : NULL,
-        rai ? rai_local_nonprim : NULL,
         sai ? sai_local_nonprim : NULL,
         lai ? lai_local_nonprim : NULL,
+        rai ? rai_local_nonprim : NULL,
         vlr_number && !cJSON_IsNull(vlr_number) ? ogs_strdup(vlr_number->valuestring) : NULL,
         msc_number && !cJSON_IsNull(msc_number) ? ogs_strdup(msc_number->valuestring) : NULL,
         age_of_location_information ? true : false,
@@ -336,10 +336,6 @@ end:
         OpenAPI_cell_global_id_free(cgi_local_nonprim);
         cgi_local_nonprim = NULL;
     }
-    if (rai_local_nonprim) {
-        OpenAPI_routing_area_id_free(rai_local_nonprim);
-        rai_local_nonprim = NULL;
-    }
     if (sai_local_nonprim) {
         OpenAPI_service_area_id_free(sai_local_nonprim);
         sai_local_nonprim = NULL;
@@ -347,6 +343,10 @@ end:
     if (lai_local_nonprim) {
         OpenAPI_location_area_id_free(lai_local_nonprim);
         lai_local_nonprim = NULL;
+    }
+    if (rai_local_nonprim) {
+        OpenAPI_routing_area_id_free(rai_local_nonprim);
+        rai_local_nonprim = NULL;
     }
     return NULL;
 }

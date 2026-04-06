@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "service_experience_type.h"
 
-OpenAPI_service_experience_type_t *OpenAPI_service_experience_type_create(
-)
+char* OpenAPI_service_experience_type_ToString(OpenAPI_service_experience_type_e service_experience_type)
 {
-    OpenAPI_service_experience_type_t *service_experience_type_local_var = ogs_malloc(sizeof(OpenAPI_service_experience_type_t));
-    ogs_assert(service_experience_type_local_var);
-
-
-    return service_experience_type_local_var;
+    const char *service_experience_typeArray[] =  { "NULL", "VOICE", "VIDEO", "OTHER" };
+    size_t sizeofArray = sizeof(service_experience_typeArray) / sizeof(service_experience_typeArray[0]);
+    if (service_experience_type < sizeofArray)
+        return (char *)service_experience_typeArray[service_experience_type];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_service_experience_type_free(OpenAPI_service_experience_type_t *service_experience_type)
+OpenAPI_service_experience_type_e OpenAPI_service_experience_type_FromString(char* service_experience_type)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == service_experience_type) {
-        return;
+    int stringToReturn = 0;
+    const char *service_experience_typeArray[] =  { "NULL", "VOICE", "VIDEO", "OTHER" };
+    size_t sizeofArray = sizeof(service_experience_typeArray) / sizeof(service_experience_typeArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(service_experience_type, service_experience_typeArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(service_experience_type);
-}
-
-cJSON *OpenAPI_service_experience_type_convertToJSON(OpenAPI_service_experience_type_t *service_experience_type)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (service_experience_type == NULL) {
-        ogs_error("OpenAPI_service_experience_type_convertToJSON() failed [ServiceExperienceType]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_service_experience_type_t *OpenAPI_service_experience_type_parseFromJSON(cJSON *service_experience_typeJSON)
-{
-    OpenAPI_service_experience_type_t *service_experience_type_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    service_experience_type_local_var = OpenAPI_service_experience_type_create (
-    );
-
-    return service_experience_type_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_service_experience_type_t *OpenAPI_service_experience_type_copy(OpenAPI_service_experience_type_t *dst, OpenAPI_service_experience_type_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_service_experience_type_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_service_experience_type_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_service_experience_type_free(dst);
-    dst = OpenAPI_service_experience_type_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

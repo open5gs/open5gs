@@ -10,7 +10,12 @@ OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_create(
     OpenAPI_plmn_id_t *serving_network,
     OpenAPI_list_t *not_to_transfer_ebi_list,
     bool is_ran_unchanged_ind,
-    int ran_unchanged_ind
+    int ran_unchanged_ind,
+    bool is_hrsbo_support_ind,
+    int hrsbo_support_ind,
+    bool is_ismf_lom_support_ind,
+    int ismf_lom_support_ind,
+    OpenAPI_list_t *stored_offload_ids
 )
 {
     OpenAPI_sm_context_retrieve_data_t *sm_context_retrieve_data_local_var = ogs_malloc(sizeof(OpenAPI_sm_context_retrieve_data_t));
@@ -22,6 +27,11 @@ OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_create(
     sm_context_retrieve_data_local_var->not_to_transfer_ebi_list = not_to_transfer_ebi_list;
     sm_context_retrieve_data_local_var->is_ran_unchanged_ind = is_ran_unchanged_ind;
     sm_context_retrieve_data_local_var->ran_unchanged_ind = ran_unchanged_ind;
+    sm_context_retrieve_data_local_var->is_hrsbo_support_ind = is_hrsbo_support_ind;
+    sm_context_retrieve_data_local_var->hrsbo_support_ind = hrsbo_support_ind;
+    sm_context_retrieve_data_local_var->is_ismf_lom_support_ind = is_ismf_lom_support_ind;
+    sm_context_retrieve_data_local_var->ismf_lom_support_ind = ismf_lom_support_ind;
+    sm_context_retrieve_data_local_var->stored_offload_ids = stored_offload_ids;
 
     return sm_context_retrieve_data_local_var;
 }
@@ -47,6 +57,13 @@ void OpenAPI_sm_context_retrieve_data_free(OpenAPI_sm_context_retrieve_data_t *s
         }
         OpenAPI_list_free(sm_context_retrieve_data->not_to_transfer_ebi_list);
         sm_context_retrieve_data->not_to_transfer_ebi_list = NULL;
+    }
+    if (sm_context_retrieve_data->stored_offload_ids) {
+        OpenAPI_list_for_each(sm_context_retrieve_data->stored_offload_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(sm_context_retrieve_data->stored_offload_ids);
+        sm_context_retrieve_data->stored_offload_ids = NULL;
     }
     ogs_free(sm_context_retrieve_data);
 }
@@ -120,6 +137,34 @@ cJSON *OpenAPI_sm_context_retrieve_data_convertToJSON(OpenAPI_sm_context_retriev
     }
     }
 
+    if (sm_context_retrieve_data->is_hrsbo_support_ind) {
+    if (cJSON_AddBoolToObject(item, "hrsboSupportInd", sm_context_retrieve_data->hrsbo_support_ind) == NULL) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [hrsbo_support_ind]");
+        goto end;
+    }
+    }
+
+    if (sm_context_retrieve_data->is_ismf_lom_support_ind) {
+    if (cJSON_AddBoolToObject(item, "ismfLomSupportInd", sm_context_retrieve_data->ismf_lom_support_ind) == NULL) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [ismf_lom_support_ind]");
+        goto end;
+    }
+    }
+
+    if (sm_context_retrieve_data->stored_offload_ids) {
+    cJSON *stored_offload_idsList = cJSON_AddArrayToObject(item, "storedOffloadIds");
+    if (stored_offload_idsList == NULL) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [stored_offload_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(sm_context_retrieve_data->stored_offload_ids, node) {
+        if (cJSON_AddStringToObject(stored_offload_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_sm_context_retrieve_data_convertToJSON() failed [stored_offload_ids]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -137,6 +182,10 @@ OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_parseFromJS
     cJSON *not_to_transfer_ebi_list = NULL;
     OpenAPI_list_t *not_to_transfer_ebi_listList = NULL;
     cJSON *ran_unchanged_ind = NULL;
+    cJSON *hrsbo_support_ind = NULL;
+    cJSON *ismf_lom_support_ind = NULL;
+    cJSON *stored_offload_ids = NULL;
+    OpenAPI_list_t *stored_offload_idsList = NULL;
     target_mme_cap = cJSON_GetObjectItemCaseSensitive(sm_context_retrieve_dataJSON, "targetMmeCap");
     if (target_mme_cap) {
     target_mme_cap_local_nonprim = OpenAPI_mme_capabilities_parseFromJSON(target_mme_cap);
@@ -199,13 +248,55 @@ OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_parseFromJS
     }
     }
 
+    hrsbo_support_ind = cJSON_GetObjectItemCaseSensitive(sm_context_retrieve_dataJSON, "hrsboSupportInd");
+    if (hrsbo_support_ind) {
+    if (!cJSON_IsBool(hrsbo_support_ind)) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_parseFromJSON() failed [hrsbo_support_ind]");
+        goto end;
+    }
+    }
+
+    ismf_lom_support_ind = cJSON_GetObjectItemCaseSensitive(sm_context_retrieve_dataJSON, "ismfLomSupportInd");
+    if (ismf_lom_support_ind) {
+    if (!cJSON_IsBool(ismf_lom_support_ind)) {
+        ogs_error("OpenAPI_sm_context_retrieve_data_parseFromJSON() failed [ismf_lom_support_ind]");
+        goto end;
+    }
+    }
+
+    stored_offload_ids = cJSON_GetObjectItemCaseSensitive(sm_context_retrieve_dataJSON, "storedOffloadIds");
+    if (stored_offload_ids) {
+        cJSON *stored_offload_ids_local = NULL;
+        if (!cJSON_IsArray(stored_offload_ids)) {
+            ogs_error("OpenAPI_sm_context_retrieve_data_parseFromJSON() failed [stored_offload_ids]");
+            goto end;
+        }
+
+        stored_offload_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(stored_offload_ids_local, stored_offload_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(stored_offload_ids_local)) {
+                ogs_error("OpenAPI_sm_context_retrieve_data_parseFromJSON() failed [stored_offload_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(stored_offload_idsList, ogs_strdup(stored_offload_ids_local->valuestring));
+        }
+    }
+
     sm_context_retrieve_data_local_var = OpenAPI_sm_context_retrieve_data_create (
         target_mme_cap ? target_mme_cap_local_nonprim : NULL,
         sm_context_type ? sm_context_typeVariable : 0,
         serving_network ? serving_network_local_nonprim : NULL,
         not_to_transfer_ebi_list ? not_to_transfer_ebi_listList : NULL,
         ran_unchanged_ind ? true : false,
-        ran_unchanged_ind ? ran_unchanged_ind->valueint : 0
+        ran_unchanged_ind ? ran_unchanged_ind->valueint : 0,
+        hrsbo_support_ind ? true : false,
+        hrsbo_support_ind ? hrsbo_support_ind->valueint : 0,
+        ismf_lom_support_ind ? true : false,
+        ismf_lom_support_ind ? ismf_lom_support_ind->valueint : 0,
+        stored_offload_ids ? stored_offload_idsList : NULL
     );
 
     return sm_context_retrieve_data_local_var;
@@ -224,6 +315,13 @@ end:
         }
         OpenAPI_list_free(not_to_transfer_ebi_listList);
         not_to_transfer_ebi_listList = NULL;
+    }
+    if (stored_offload_idsList) {
+        OpenAPI_list_for_each(stored_offload_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(stored_offload_idsList);
+        stored_offload_idsList = NULL;
     }
     return NULL;
 }

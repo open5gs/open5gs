@@ -7,7 +7,7 @@
 OpenAPI_pro_se_authentication_ctx_t *OpenAPI_pro_se_authentication_ctx_create(
     OpenAPI_auth_type_e auth_type,
     OpenAPI_list_t* _links,
-    OpenAPI_pro_se_auth_data_t *pro_se_auth_data,
+    char *pro_se_auth_data,
     char *supported_features
 )
 {
@@ -40,7 +40,7 @@ void OpenAPI_pro_se_authentication_ctx_free(OpenAPI_pro_se_authentication_ctx_t 
         pro_se_authentication_ctx->_links = NULL;
     }
     if (pro_se_authentication_ctx->pro_se_auth_data) {
-        OpenAPI_pro_se_auth_data_free(pro_se_authentication_ctx->pro_se_auth_data);
+        ogs_free(pro_se_authentication_ctx->pro_se_auth_data);
         pro_se_authentication_ctx->pro_se_auth_data = NULL;
     }
     if (pro_se_authentication_ctx->supported_features) {
@@ -106,13 +106,7 @@ cJSON *OpenAPI_pro_se_authentication_ctx_convertToJSON(OpenAPI_pro_se_authentica
         ogs_error("OpenAPI_pro_se_authentication_ctx_convertToJSON() failed [pro_se_auth_data]");
         return NULL;
     }
-    cJSON *pro_se_auth_data_local_JSON = OpenAPI_pro_se_auth_data_convertToJSON(pro_se_authentication_ctx->pro_se_auth_data);
-    if (pro_se_auth_data_local_JSON == NULL) {
-        ogs_error("OpenAPI_pro_se_authentication_ctx_convertToJSON() failed [pro_se_auth_data]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "proSeAuthData", pro_se_auth_data_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "proSeAuthData", pro_se_authentication_ctx->pro_se_auth_data) == NULL) {
         ogs_error("OpenAPI_pro_se_authentication_ctx_convertToJSON() failed [pro_se_auth_data]");
         goto end;
     }
@@ -137,7 +131,6 @@ OpenAPI_pro_se_authentication_ctx_t *OpenAPI_pro_se_authentication_ctx_parseFrom
     cJSON *_links = NULL;
     OpenAPI_list_t *_linksList = NULL;
     cJSON *pro_se_auth_data = NULL;
-    OpenAPI_pro_se_auth_data_t *pro_se_auth_data_local_nonprim = NULL;
     cJSON *supported_features = NULL;
     auth_type = cJSON_GetObjectItemCaseSensitive(pro_se_authentication_ctxJSON, "authType");
     if (!auth_type) {
@@ -183,9 +176,8 @@ OpenAPI_pro_se_authentication_ctx_t *OpenAPI_pro_se_authentication_ctx_parseFrom
         ogs_error("OpenAPI_pro_se_authentication_ctx_parseFromJSON() failed [pro_se_auth_data]");
         goto end;
     }
-    pro_se_auth_data_local_nonprim = OpenAPI_pro_se_auth_data_parseFromJSON(pro_se_auth_data);
-    if (!pro_se_auth_data_local_nonprim) {
-        ogs_error("OpenAPI_pro_se_auth_data_parseFromJSON failed [pro_se_auth_data]");
+    if (!cJSON_IsString(pro_se_auth_data)) {
+        ogs_error("OpenAPI_pro_se_authentication_ctx_parseFromJSON() failed [pro_se_auth_data]");
         goto end;
     }
 
@@ -200,7 +192,7 @@ OpenAPI_pro_se_authentication_ctx_t *OpenAPI_pro_se_authentication_ctx_parseFrom
     pro_se_authentication_ctx_local_var = OpenAPI_pro_se_authentication_ctx_create (
         auth_typeVariable,
         _linksList,
-        pro_se_auth_data_local_nonprim,
+        ogs_strdup(pro_se_auth_data->valuestring),
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );
 
@@ -208,17 +200,13 @@ OpenAPI_pro_se_authentication_ctx_t *OpenAPI_pro_se_authentication_ctx_parseFrom
 end:
     if (_linksList) {
         OpenAPI_list_for_each(_linksList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_links_value_schema_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(_linksList);
         _linksList = NULL;
-    }
-    if (pro_se_auth_data_local_nonprim) {
-        OpenAPI_pro_se_auth_data_free(pro_se_auth_data_local_nonprim);
-        pro_se_auth_data_local_nonprim = NULL;
     }
     return NULL;
 }

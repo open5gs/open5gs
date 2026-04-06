@@ -12,21 +12,21 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_qos_flow_notify_item_s OpenAPI_qos_flow_notify_item_t;
 #include "notification_cause.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_qos_flow_notify_item_s OpenAPI_qos_flow_notify_item_t;
-typedef struct OpenAPI_qos_flow_notify_item_s {
+struct OpenAPI_qos_flow_notify_item_s {
     int qfi;
     OpenAPI_notification_cause_e notification_cause;
     bool is_current_qos_profile_index;
     int current_qos_profile_index;
     bool is_null_qo_s_profile_index;
     int null_qo_s_profile_index;
-} OpenAPI_qos_flow_notify_item_t;
+};
 
 OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_create(
     int qfi,

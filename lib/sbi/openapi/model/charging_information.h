@@ -12,20 +12,20 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_charging_information_s OpenAPI_charging_information_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_charging_information_s OpenAPI_charging_information_t;
-typedef struct OpenAPI_charging_information_s {
+struct OpenAPI_charging_information_s {
     char *primary_chf_address;
     char *secondary_chf_address;
     char *primary_chf_set_id;
     char *primary_chf_instance_id;
     char *secondary_chf_set_id;
     char *secondary_chf_instance_id;
-} OpenAPI_charging_information_t;
+};
 
 OpenAPI_charging_information_t *OpenAPI_charging_information_create(
     char *primary_chf_address,

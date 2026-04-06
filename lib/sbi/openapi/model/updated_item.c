@@ -6,7 +6,6 @@
 
 OpenAPI_updated_item_t *OpenAPI_updated_item_create(
     char *item,
-    bool is_value_null,
     OpenAPI_any_type_t *value
 )
 {
@@ -14,7 +13,6 @@ OpenAPI_updated_item_t *OpenAPI_updated_item_create(
     ogs_assert(updated_item_local_var);
 
     updated_item_local_var->item = item;
-    updated_item_local_var->is_value_null = is_value_null;
     updated_item_local_var->value = value;
 
     return updated_item_local_var;
@@ -103,7 +101,6 @@ OpenAPI_updated_item_t *OpenAPI_updated_item_parseFromJSON(cJSON *updated_itemJS
 
     updated_item_local_var = OpenAPI_updated_item_create (
         ogs_strdup(item->valuestring),
-        value && cJSON_IsNull(value) ? true : false,
         value_local_object
     );
 

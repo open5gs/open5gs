@@ -1,0 +1,588 @@
+openapi: 3.0.0
+info:
+  title: Nudsf_Timer
+  version: 1.2.0
+  description: |
+    Nudsf Timer Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.598 UDSF Services, V19.4.0.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.598/'
+
+servers:
+  - url: '{apiRoot}/nudsf-timer/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nudsf-timer
+
+paths:
+
+  /{realmId}/{storageId}/timers:
+    summary: Access to all Timers of a Storage
+    description: >
+      root of all Timers of a Storage
+    get:
+      summary: Timers search with get
+      description: Retrieve one or multiple TimerIDs based on filter
+      operationId: SearchTimer
+      tags:
+        - Timer Search
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-timer
+        - oAuth2ClientCredentials:
+          - nudsf-timer
+          - nudsf-timer:timer:read
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: filter
+          in: query
+          description: Query filter using conditions on tags
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29598_Nudsf_DataRepository.yaml#/components/schemas/SearchExpression'
+        - name: expired-filter
+          in: query
+          description: Used to query for expired timers.
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Successful case. Response contains result of the search.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimerIdList'
+        '204':
+          description: >
+            The search condition does not match any Timer.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete one or multiple timers based on filter
+      operationId: DeleteTimers
+      tags:
+        - Timers Delete
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-timer
+        - oAuth2ClientCredentials:
+          - nudsf-timer
+          - nudsf-timer:timer:modify
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier(name) of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: filter
+          in: query
+          description: A filter that determines the set of timers to be deleted
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29598_Nudsf_DataRepository.yaml#/components/schemas/SearchExpression'
+        - name: expired-filter
+          in: query
+          description: Presence indicates that only expired timers are to be deleted.
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
+      responses:
+        '200':
+          description: Successful case. Response contains result of the search.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimerDeleteResponse'
+        '204':
+          description: Successful case.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /{realmId}/{storageId}/timers/{timerId}:
+    summary: Access to a specific Timer, identified by its TimerId
+    description: >
+      Access to a specific Timer
+    put:
+      summary: Create/Replace Timer
+      description: Create or Modify a Timer with a user provided TimerId
+      operationId: CreateOrModifyTimer
+      tags:
+        - Timer Start
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-timer
+        - oAuth2ClientCredentials:
+          - nudsf-timer
+          - nudsf-timer:timer:create
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier(name) of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: timerId
+          in: path
+          description: Identifier of the Timer
+          required: true
+          schema:
+            $ref: '#/components/schemas/TimerId'
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Timer'
+        required: true
+      responses:
+        '201':
+          description: Timer successfully created
+        '204':
+          description: Timer successfully replaced
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        timerExpiry:
+          '{$request.body#/callbackReference}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Timer'
+              responses:
+                '204':
+                  description: Callback executed successfully
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Timer modification
+      description: update a specific Timer
+      operationId: UpdateTimer
+      tags:
+      - Timer Update
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-timer
+        - oAuth2ClientCredentials:
+          - nudsf-timer
+          - nudsf-timer:timer:modify
+      parameters:
+      - name: realmId
+        in: path
+        description: Identifier of the Realm
+        required: true
+        schema:
+          type: string
+          example: Realm01
+      - name: storageId
+        in: path
+        description: Identifier of the Storage
+        required: true
+        schema:
+          type: string
+          example: Storage01
+      - name: timerId
+        in: path
+        description: Identifier of the Timer
+        required: true
+        schema:
+          $ref: '#/components/schemas/TimerId'
+      - name: supported-features
+        in: query
+        description: Features required to be supported by the target NF
+        schema:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        description: Timer data to patch
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '200':
+          description: >
+            One or more modification instructions have been discarded,
+            the execution report is returned in response PatchResult.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '204':
+          description: >
+            Successful case. The timer has been successfully updated and no return is expected.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete a Timer with an user provided TimerId
+      operationId: DeleteTimer
+      tags:
+        - Timer Stop
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-timer
+        - oAuth2ClientCredentials:
+          - nudsf-timer
+          - nudsf-timer:timer:modify
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier(name) of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: timerId
+          in: path
+          description: Identifier of the Timer
+          required: true
+          schema:
+            $ref: '#/components/schemas/TimerId'
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '204':
+          description: Successful case.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    get:
+      summary: Timer access
+      description: retrieve one specific Timer
+      operationId: GetTimer
+      tags:
+      - Timer Get
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-timer
+        - oAuth2ClientCredentials:
+          - nudsf-timer
+          - nudsf-timer:timer:read
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: timerId
+          in: path
+          description: Identifier of the Timer
+          required: true
+          schema:
+            $ref: '#/components/schemas/TimerId'
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200' : #result ok
+          description: Successful case.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Timer'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nudsf-timer: Access to the nudsf-timer API
+            nudsf-timer:timer:read: Access to read timers
+            nudsf-timer:timer:modify: Access to update timers
+            nudsf-timer:timer:create: Access to create timers
+
+  schemas:
+
+# STRUCTURED TYPES:
+
+    Timer:
+      description: Represents a timer.
+      type: object
+      required:
+        - expires
+      properties:
+        timerId:
+          $ref: '#/components/schemas/TimerId'
+        expires:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        metaTags:
+          description: >
+            A map (list of key-value pairs where a tagName of type string serves as key)
+            of tagValue lists
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+            minItems: 1
+          minProperties: 1
+        callbackReference:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        deleteAfter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        periodicRepetition:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        repetitionCount:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        schemaId:
+          $ref: 'TS29598_Nudsf_DataRepository.yaml#/components/schemas/SchemaId'
+
+    TimerIdList:
+      description: Represents a list of timer IDs.
+      type: object
+      required:
+        - timerIds
+      properties:
+        timerIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimerId'
+          minItems: 1
+
+    TimerDeleteResponse:
+      description: Response to timer deletion
+      allOf:
+        - $ref: '#/components/schemas/TimerIdList'
+        - $ref: '#/components/schemas/FailedTimerIdList'
+
+    FailedTimerIdList:
+      description: List of Timer IDs that failed to be deleted
+      type: object
+      properties:
+        failedTimerIdList:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimerId'
+          minItems: 1
+
+
+# SIMPLE TYPES:
+
+    TimerId:
+      description: Represents the identifier of a timer.
+      type: string

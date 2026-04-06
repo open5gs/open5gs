@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_dn_perf_s OpenAPI_dn_perf_t;
 #include "addr_fqdn.h"
 #include "network_area_info.h"
 #include "perf_data.h"
@@ -22,15 +23,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dn_perf_s OpenAPI_dn_perf_t;
-typedef struct OpenAPI_dn_perf_s {
+struct OpenAPI_dn_perf_s {
     struct OpenAPI_addr_fqdn_s *app_server_ins_addr;
     struct OpenAPI_upf_information_s *upf_info;
     char *dnai;
     struct OpenAPI_perf_data_s *perf_data;
     struct OpenAPI_network_area_info_s *spatial_valid_con;
     struct OpenAPI_time_window_s *temporal_valid_con;
-} OpenAPI_dn_perf_t;
+};
 
 OpenAPI_dn_perf_t *OpenAPI_dn_perf_create(
     OpenAPI_addr_fqdn_t *app_server_ins_addr,

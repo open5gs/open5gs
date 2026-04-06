@@ -1,0 +1,240 @@
+openapi: 3.0.1
+info:
+  title: File Data Reporting MnS
+  version: 19.1.0
+  description: >-
+    OAS 3.0.1 definition of the File Data Reporting MnS
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.532; Generic management services
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.532/
+servers:
+  - url: '{MnSRoot}/fileDataReportingMnS/{MnSVersion}'
+    variables:
+      MnSRoot:
+        description: See clause 4.4.3 of TS 32.158
+        default: http://example.com/3GPPManagement
+      MnSVersion:
+        description: Version number of the OpenAPI definition
+        default: XXX
+paths:
+  /files:
+    get:
+      summary: Read information about available files
+      description: >-
+        Information about available files is read with HTTP GET. The files for
+        which information shall be returned are identified with the path
+        component (base resource) and the query component (fileDataType, beginTime,
+        endTime) of the URI.
+      parameters:
+        - name: fileDataType
+          in: query
+          description: >-
+            This parameter selects files based on the file data type.
+          required: true
+          schema:
+            $ref: '#/components/schemas/FileDataType'
+        - name: beginTime
+          in: query
+          description: >-
+            This parameter selects files based on the earliest time they
+            became available
+          required: false
+          schema:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+        - name: endTime
+          in: query
+          description: >-
+            This parameter selects files based on the latest time they
+            became available
+          required: false
+          schema:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+      responses:
+        '200':
+          description: >-
+            'Success case ("200 OK").
+            The resources identified in the request for retrieval are returned
+            in the response message body.'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FileInfo'
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'
+  /subscriptions:
+    post:
+      summary: Create a subscription
+      description: >-
+        To create a subscription the representation of the subscription is
+        POSTed on the /subscriptions collection resource.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/Subscription'
+      responses:
+        '201':
+          description: >-
+            Success case ("201 Created").
+            The representation of the newly created subscription resource shall
+            be returned.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/Subscription'
+          headers:
+            Location:
+              description: URI of the newly created subscription resource
+              required: true
+              schema:
+                type: string
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'
+      callbacks:
+        notifyFileReady:
+          '{request.body#/consumerReference}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NotifyFileReady'
+              responses:
+                '204':
+                  description: >-
+                    Success case ("204 No Content").
+                    The notification is successfully delivered. The response message
+                    body is absent.
+                default:
+                  description: Error case.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'
+        notifyFilePreparationError:
+          '{request.body#/consumerReference}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NotifyFilePreparationError'
+              responses:
+                '204':
+                  description: >-
+                    Success case ("204 No Content").
+                    The notification is successfully delivered. The response message
+                    body is absent.
+                default:
+                  description: Error case.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}:
+    delete:
+      summary: Delete a subscription
+      description: >-
+        The subscription is deleted by deleting the corresponding subscription
+        resource. The resource to be deleted is identified with the path
+        component of the URI.
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifies the subscription to be deleted.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >-
+            Success case ("204 No Content").
+            The subscription resource has been deleted. The response message body
+            is absent.
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    FileDataType:
+      type: string
+      enum:
+        - Performance
+        - Trace
+        - Analytics
+        - Proprietary
+    FileNotificationTypes:
+      type: string
+      enum:
+        - notifyFileReady
+        - notifyFilePreparationError
+    FileInfo:
+      type: object
+      properties:
+        fileLocation:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Uri'
+        fileSize:
+          type: integer
+        fileReadyTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+        fileExpirationTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+        fileCompression:
+          type: string
+        fileFormat:
+          type: string
+        fileDataType:
+           $ref: '#/components/schemas/FileDataType'
+        jobId:
+          type: string
+    FileCreationErrorInfoList:
+      type: object
+      properties:
+        fileLocation:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Uri'
+        fileDataType:
+           $ref: '#/components/schemas/FileDataType'
+        jobId:
+          type: string   
+    NotifyFileReady:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          properties:
+            fileInfoList:
+              type: array
+              items:
+                $ref: '#/components/schemas/FileInfo'
+            additionalText:
+              type: string
+    NotifyFilePreparationError:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          properties:
+            fileInfoList:
+              type: array
+              items:
+                $ref: '#/components/schemas/FileCreationErrorInfoList'
+            reason:
+              type: string
+            additionalText:
+              type: string

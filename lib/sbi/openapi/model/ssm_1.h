@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ssm_1_s OpenAPI_ssm_1_t;
 #include "ip_addr_1.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ssm_1_s OpenAPI_ssm_1_t;
-typedef struct OpenAPI_ssm_1_s {
+struct OpenAPI_ssm_1_s {
     struct OpenAPI_ip_addr_1_s *source_ip_addr;
     struct OpenAPI_ip_addr_1_s *dest_ip_addr;
-} OpenAPI_ssm_1_t;
+};
 
 OpenAPI_ssm_1_t *OpenAPI_ssm_1_create(
     OpenAPI_ip_addr_1_t *source_ip_addr,

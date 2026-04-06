@@ -1,0 +1,509 @@
+openapi: 3.0.0
+info:
+  title: EES Session with QoS API
+  description: |
+    API for EES Session with Qos service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: 1.2.1
+externalDocs:
+  description: >
+    3GPP TS 29.558 V19.6.0 Enabling Edge Applications;
+    Application Programming Interface (API) specification; Stage 3
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.558/
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/eees-session-with-qos/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.558.
+
+paths:
+  /sessions:
+    post:
+      summary: Create a new Individual Session with QoS resource
+      operationId: CreateIndSessionWithQoS
+      tags:
+        - Sessions with QoS (Collection)
+      description: >
+        Request reservation of resources for a data session between AC and EAS with a specific QoS.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionWithQoS'
+      responses:
+        '201':
+          description: Created (Successful creation)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionWithQoS'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        notificationDestination:
+          '{$request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/UserPlaneEventNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    get:
+      summary: Read all Sessions with QoS resource
+      operationId: ReadAllSessionsWithQoS
+      tags:
+        - Sessions with QoS (Collection)
+      description: Retrieve all the Session With QoS information.
+      parameters:
+        - name: eas-id
+          in: query
+          description: Identifier of the EAS which querying the status of subscriptions.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (Successful get all of the active subscriptions)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SessionWithQoS'
+                minItems: 1
+                description: >
+                  All the subscription information related to the request URI is returned
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /sessions/{sessionId}:
+    put:
+      summary: Update an Individual Session with QoS resource
+      operationId: UpdateIndSessionWithQoS
+      tags:
+        - Individual Session with QoS (Document)
+      description: >
+        Fully replace an existing Individual Session with QoS resource identified by a sessionId.
+      parameters:
+        - name: sessionId
+          in: path
+          description: Session Id.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionWithQoS'
+      responses:
+        '200':
+          description: >
+            The individual Session with QoS is successfully modified and the updated
+            session with QoS context information is returned in the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionWithQoS'
+        '204':
+          description: No Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify an Individual Session with QoS resource
+      operationId: ModifyIndSessionWithQoS
+      tags:
+        - Individual Session with QoS (Document)
+      parameters:
+        - name: sessionId
+          in: path
+          description: session Id.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: >
+          Partial update an existing Individual Session with QoS resource identified by a sessionId.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/SessionWithQoSPatch'
+      responses:
+        '200':
+          description: >
+            The individual Session with QoS is successfully modified and the updated
+            session with QoS context information is returned in the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionWithQoS'
+        '204':
+          description: No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an Individual Session with QoS resource
+      operationId: DeleteIndSessionWithQoS
+      tags:
+        - Individual Session with QoS (Document)
+      description: Remove an Individual Session with QoS resource identified by a sessionId.
+      parameters:
+        - name: sessionId
+          in: path
+          description: session Id.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            The individual Session with QoS resource matching the sessionId is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    get:
+      summary: Read Individual Session with QoS resource
+      operationId: ReadIndSessionWithQoS
+      tags:
+        - Individual Session with QoS (Document)
+      description: Read a subscription resource for a sessionId.
+      parameters:
+        - name: sessionId
+          in: path
+          description: Session Id.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The subscription information related to the request URI is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionWithQoS'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+# Components
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    SessionWithQoS:
+      type: object
+      description: Represents an Individual Session with QoS Subscription.
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        easId:
+          type: string
+          description: Identifier of an EAS.
+        ueIpv4Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ueIpv6Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv6Addr'
+        ipDomain:
+          type: string
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        intGrpId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        extGrpId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExternalGroupId'
+        ipFlows:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/FlowDescription'
+          minItems: 1
+          description: Contains the flow description for the Uplink and/or Downlink IP flows.
+        trafFilterInfo:
+          $ref: 'TS29558_Eees_ACRManagementEvent.yaml#/components/schemas/TrafficFilterInfo'
+        qosReference:
+          type: string
+          description: Identifies a pre-defined QoS information.
+        altQosReference:
+          type: array
+          items:
+            type: string
+          description: >
+            Identifies an ordered list of pre-defined QoS information.
+            The lower the index of the array for a given entry, the higher the priority.
+        events:
+          type: array
+          items:
+            $ref: 'TS29122_AsSessionWithQoS.yaml#/components/schemas/UserPlaneEvent'
+          description: Indicates the events subscribed by the EAS.
+        sponsorInformation:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/SponsorInformation'
+        qosMonInfo:
+          $ref: 'TS29122_AsSessionWithQoS.yaml#/components/schemas/QosMonitoringInformation'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        maxbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        disUeNotif:
+          type: boolean
+          description: >
+            Indicates to disable QoS flow parameters signalling to the UE when the SMF is notified
+            by the NG-RAN of changes in the fulfilled QoS situation when it is included and set to
+            "true". The fulfilled situation is either the QoS profile or an Alternative QoS Profile.
+            The default value "false" shall apply, if the attribute is not present and has not been
+            supplied previously.
+        requestTestNotification:
+          type: boolean
+          description: >
+            Set to true by Subscriber to request the EES to send a test notification
+            as defined in 3GPP TS 29.122. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - easId
+        - ipFlows
+
+    SessionWithQoSPatch:
+      type: object
+      description: Represents a modification request of Individual Session with QoS Subscription.
+      properties:
+        ipFlows:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/FlowDescription'
+          minItems: 1
+          description: Contains the flow description for the Uplink and/or Downlink IP flows.
+        trafFilterInfo:
+          $ref: 'TS29558_Eees_ACRManagementEvent.yaml#/components/schemas/TrafficFilterInfo'
+        qosReference:
+          type: string
+          description: Identifies a pre-defined QoS information.
+        altQosReference:
+          type: array
+          items:
+            type: string
+          description: >
+            Identifies an ordered list of pre-defined QoS information.
+            The lower the index of the array for a given entry, the higher the priority.
+        events:
+          type: array
+          items:
+            $ref: 'TS29122_AsSessionWithQoS.yaml#/components/schemas/UserPlaneEvent'
+          description: Indicates the events subscribed by the EAS.
+        sponsorInformation:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/SponsorInformation'
+        qosMonInfo:
+          $ref: 'TS29122_AsSessionWithQoS.yaml#/components/schemas/QosMonitoringInformationRm'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        maxbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        maxbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        disUeNotif:
+          type: boolean
+
+    UserPlaneEventNotification:
+      type: object
+      description: Represents the user plane event notification.
+      properties:
+        sessionId:
+          type: string
+          description: >
+            String identifying the individual data session information for which
+            the QoS event notification is delivered.
+        eventReports:
+          type: array
+          items:
+            $ref: 'TS29122_AsSessionWithQoS.yaml#/components/schemas/UserPlaneEventReport'
+          minItems: 1
+          description: >
+            Contains the flow description for the Uplink and/or Downlink IP flows.
+      required:
+        - sessionId
+        - eventReports

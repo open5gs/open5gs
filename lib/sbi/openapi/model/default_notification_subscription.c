@@ -7,13 +7,15 @@
 OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscription_create(
     OpenAPI_notification_type_e notification_type,
     char *callback_uri,
+    char *inter_plmn_callback_uri,
     OpenAPI_n1_message_class_e n1_message_class,
     OpenAPI_n2_information_class_e n2_information_class,
     OpenAPI_list_t *versions,
     char *binding,
     char *accepted_encoding,
     char *supported_features,
-    OpenAPI_list_t* service_info_list
+    OpenAPI_list_t* service_info_list,
+    char *callback_uri_prefix
 )
 {
     OpenAPI_default_notification_subscription_t *default_notification_subscription_local_var = ogs_malloc(sizeof(OpenAPI_default_notification_subscription_t));
@@ -21,6 +23,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
 
     default_notification_subscription_local_var->notification_type = notification_type;
     default_notification_subscription_local_var->callback_uri = callback_uri;
+    default_notification_subscription_local_var->inter_plmn_callback_uri = inter_plmn_callback_uri;
     default_notification_subscription_local_var->n1_message_class = n1_message_class;
     default_notification_subscription_local_var->n2_information_class = n2_information_class;
     default_notification_subscription_local_var->versions = versions;
@@ -28,6 +31,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
     default_notification_subscription_local_var->accepted_encoding = accepted_encoding;
     default_notification_subscription_local_var->supported_features = supported_features;
     default_notification_subscription_local_var->service_info_list = service_info_list;
+    default_notification_subscription_local_var->callback_uri_prefix = callback_uri_prefix;
 
     return default_notification_subscription_local_var;
 }
@@ -42,6 +46,10 @@ void OpenAPI_default_notification_subscription_free(OpenAPI_default_notification
     if (default_notification_subscription->callback_uri) {
         ogs_free(default_notification_subscription->callback_uri);
         default_notification_subscription->callback_uri = NULL;
+    }
+    if (default_notification_subscription->inter_plmn_callback_uri) {
+        ogs_free(default_notification_subscription->inter_plmn_callback_uri);
+        default_notification_subscription->inter_plmn_callback_uri = NULL;
     }
     if (default_notification_subscription->versions) {
         OpenAPI_list_for_each(default_notification_subscription->versions, node) {
@@ -71,6 +79,10 @@ void OpenAPI_default_notification_subscription_free(OpenAPI_default_notification
         }
         OpenAPI_list_free(default_notification_subscription->service_info_list);
         default_notification_subscription->service_info_list = NULL;
+    }
+    if (default_notification_subscription->callback_uri_prefix) {
+        ogs_free(default_notification_subscription->callback_uri_prefix);
+        default_notification_subscription->callback_uri_prefix = NULL;
     }
     ogs_free(default_notification_subscription);
 }
@@ -102,6 +114,13 @@ cJSON *OpenAPI_default_notification_subscription_convertToJSON(OpenAPI_default_n
     if (cJSON_AddStringToObject(item, "callbackUri", default_notification_subscription->callback_uri) == NULL) {
         ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [callback_uri]");
         goto end;
+    }
+
+    if (default_notification_subscription->inter_plmn_callback_uri) {
+    if (cJSON_AddStringToObject(item, "interPlmnCallbackUri", default_notification_subscription->inter_plmn_callback_uri) == NULL) {
+        ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [inter_plmn_callback_uri]");
+        goto end;
+    }
     }
 
     if (default_notification_subscription->n1_message_class != OpenAPI_n1_message_class_NULL) {
@@ -183,6 +202,13 @@ cJSON *OpenAPI_default_notification_subscription_convertToJSON(OpenAPI_default_n
     }
     }
 
+    if (default_notification_subscription->callback_uri_prefix) {
+    if (cJSON_AddStringToObject(item, "callbackUriPrefix", default_notification_subscription->callback_uri_prefix) == NULL) {
+        ogs_error("OpenAPI_default_notification_subscription_convertToJSON() failed [callback_uri_prefix]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -194,6 +220,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
     cJSON *notification_type = NULL;
     OpenAPI_notification_type_e notification_typeVariable = 0;
     cJSON *callback_uri = NULL;
+    cJSON *inter_plmn_callback_uri = NULL;
     cJSON *n1_message_class = NULL;
     OpenAPI_n1_message_class_e n1_message_classVariable = 0;
     cJSON *n2_information_class = NULL;
@@ -205,6 +232,7 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
     cJSON *supported_features = NULL;
     cJSON *service_info_list = NULL;
     OpenAPI_list_t *service_info_listList = NULL;
+    cJSON *callback_uri_prefix = NULL;
     notification_type = cJSON_GetObjectItemCaseSensitive(default_notification_subscriptionJSON, "notificationType");
     if (!notification_type) {
         ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [notification_type]");
@@ -224,6 +252,14 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
     if (!cJSON_IsString(callback_uri)) {
         ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [callback_uri]");
         goto end;
+    }
+
+    inter_plmn_callback_uri = cJSON_GetObjectItemCaseSensitive(default_notification_subscriptionJSON, "interPlmnCallbackUri");
+    if (inter_plmn_callback_uri) {
+    if (!cJSON_IsString(inter_plmn_callback_uri) && !cJSON_IsNull(inter_plmn_callback_uri)) {
+        ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [inter_plmn_callback_uri]");
+        goto end;
+    }
     }
 
     n1_message_class = cJSON_GetObjectItemCaseSensitive(default_notification_subscriptionJSON, "n1MessageClass");
@@ -315,16 +351,26 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
         }
     }
 
+    callback_uri_prefix = cJSON_GetObjectItemCaseSensitive(default_notification_subscriptionJSON, "callbackUriPrefix");
+    if (callback_uri_prefix) {
+    if (!cJSON_IsString(callback_uri_prefix) && !cJSON_IsNull(callback_uri_prefix)) {
+        ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [callback_uri_prefix]");
+        goto end;
+    }
+    }
+
     default_notification_subscription_local_var = OpenAPI_default_notification_subscription_create (
         notification_typeVariable,
         ogs_strdup(callback_uri->valuestring),
+        inter_plmn_callback_uri && !cJSON_IsNull(inter_plmn_callback_uri) ? ogs_strdup(inter_plmn_callback_uri->valuestring) : NULL,
         n1_message_class ? n1_message_classVariable : 0,
         n2_information_class ? n2_information_classVariable : 0,
         versions ? versionsList : NULL,
         binding && !cJSON_IsNull(binding) ? ogs_strdup(binding->valuestring) : NULL,
         accepted_encoding && !cJSON_IsNull(accepted_encoding) ? ogs_strdup(accepted_encoding->valuestring) : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
-        service_info_list ? service_info_listList : NULL
+        service_info_list ? service_info_listList : NULL,
+        callback_uri_prefix && !cJSON_IsNull(callback_uri_prefix) ? ogs_strdup(callback_uri_prefix->valuestring) : NULL
     );
 
     return default_notification_subscription_local_var;
@@ -338,7 +384,7 @@ end:
     }
     if (service_info_listList) {
         OpenAPI_list_for_each(service_info_listList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_def_sub_service_info_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

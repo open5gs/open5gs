@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_v2x_capability_s OpenAPI_v2x_capability_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_v2x_capability_s OpenAPI_v2x_capability_t;
-typedef struct OpenAPI_v2x_capability_s {
+struct OpenAPI_v2x_capability_s {
     bool is_lte_v2x;
     int lte_v2x;
     bool is_nr_v2x;
     int nr_v2x;
-} OpenAPI_v2x_capability_t;
+};
 
 OpenAPI_v2x_capability_t *OpenAPI_v2x_capability_create(
     bool is_lte_v2x,

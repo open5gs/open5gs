@@ -1,7 +1,7 @@
 /*
  * ec_restriction_1.h
  *
- * 
+ * Contains Enhanced Coverage Restriction Parameters
  */
 
 #ifndef _OpenAPI_ec_restriction_1_H_
@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ec_restriction_1_s OpenAPI_ec_restriction_1_t;
 #include "plmn_ec_info_1.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ec_restriction_1_s OpenAPI_ec_restriction_1_t;
-typedef struct OpenAPI_ec_restriction_1_s {
+struct OpenAPI_ec_restriction_1_s {
     char *af_instance_id;
     int reference_id;
     OpenAPI_list_t *plmn_ec_infos;
     char *mtc_provider_information;
-} OpenAPI_ec_restriction_1_t;
+};
 
 OpenAPI_ec_restriction_1_t *OpenAPI_ec_restriction_1_create(
     char *af_instance_id,

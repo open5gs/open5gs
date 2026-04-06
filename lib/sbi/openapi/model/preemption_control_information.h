@@ -1,7 +1,7 @@
 /*
  * preemption_control_information.h
  *
- * 
+ * Represents Pre-emption control information.
  */
 
 #ifndef _OpenAPI_preemption_control_information_H_

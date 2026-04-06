@@ -6,6 +6,7 @@
 
 OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_create(
     OpenAPI_serv_auth_info_e serv_auth_info,
+    OpenAPI_list_t *direct_notif_reports,
     OpenAPI_list_t *ue_ids,
     char *supp_feat
 )
@@ -14,6 +15,7 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_c
     ogs_assert(app_session_context_resp_data_local_var);
 
     app_session_context_resp_data_local_var->serv_auth_info = serv_auth_info;
+    app_session_context_resp_data_local_var->direct_notif_reports = direct_notif_reports;
     app_session_context_resp_data_local_var->ue_ids = ue_ids;
     app_session_context_resp_data_local_var->supp_feat = supp_feat;
 
@@ -26,6 +28,13 @@ void OpenAPI_app_session_context_resp_data_free(OpenAPI_app_session_context_resp
 
     if (NULL == app_session_context_resp_data) {
         return;
+    }
+    if (app_session_context_resp_data->direct_notif_reports) {
+        OpenAPI_list_for_each(app_session_context_resp_data->direct_notif_reports, node) {
+            OpenAPI_direct_notification_report_free(node->data);
+        }
+        OpenAPI_list_free(app_session_context_resp_data->direct_notif_reports);
+        app_session_context_resp_data->direct_notif_reports = NULL;
     }
     if (app_session_context_resp_data->ue_ids) {
         OpenAPI_list_for_each(app_session_context_resp_data->ue_ids, node) {
@@ -56,6 +65,22 @@ cJSON *OpenAPI_app_session_context_resp_data_convertToJSON(OpenAPI_app_session_c
     if (cJSON_AddStringToObject(item, "servAuthInfo", OpenAPI_serv_auth_info_ToString(app_session_context_resp_data->serv_auth_info)) == NULL) {
         ogs_error("OpenAPI_app_session_context_resp_data_convertToJSON() failed [serv_auth_info]");
         goto end;
+    }
+    }
+
+    if (app_session_context_resp_data->direct_notif_reports) {
+    cJSON *direct_notif_reportsList = cJSON_AddArrayToObject(item, "directNotifReports");
+    if (direct_notif_reportsList == NULL) {
+        ogs_error("OpenAPI_app_session_context_resp_data_convertToJSON() failed [direct_notif_reports]");
+        goto end;
+    }
+    OpenAPI_list_for_each(app_session_context_resp_data->direct_notif_reports, node) {
+        cJSON *itemLocal = OpenAPI_direct_notification_report_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_app_session_context_resp_data_convertToJSON() failed [direct_notif_reports]");
+            goto end;
+        }
+        cJSON_AddItemToArray(direct_notif_reportsList, itemLocal);
     }
     }
 
@@ -92,6 +117,8 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_p
     OpenAPI_lnode_t *node = NULL;
     cJSON *serv_auth_info = NULL;
     OpenAPI_serv_auth_info_e serv_auth_infoVariable = 0;
+    cJSON *direct_notif_reports = NULL;
+    OpenAPI_list_t *direct_notif_reportsList = NULL;
     cJSON *ue_ids = NULL;
     OpenAPI_list_t *ue_idsList = NULL;
     cJSON *supp_feat = NULL;
@@ -102,6 +129,30 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_p
         goto end;
     }
     serv_auth_infoVariable = OpenAPI_serv_auth_info_FromString(serv_auth_info->valuestring);
+    }
+
+    direct_notif_reports = cJSON_GetObjectItemCaseSensitive(app_session_context_resp_dataJSON, "directNotifReports");
+    if (direct_notif_reports) {
+        cJSON *direct_notif_reports_local = NULL;
+        if (!cJSON_IsArray(direct_notif_reports)) {
+            ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON() failed [direct_notif_reports]");
+            goto end;
+        }
+
+        direct_notif_reportsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(direct_notif_reports_local, direct_notif_reports) {
+            if (!cJSON_IsObject(direct_notif_reports_local)) {
+                ogs_error("OpenAPI_app_session_context_resp_data_parseFromJSON() failed [direct_notif_reports]");
+                goto end;
+            }
+            OpenAPI_direct_notification_report_t *direct_notif_reportsItem = OpenAPI_direct_notification_report_parseFromJSON(direct_notif_reports_local);
+            if (!direct_notif_reportsItem) {
+                ogs_error("No direct_notif_reportsItem");
+                goto end;
+            }
+            OpenAPI_list_add(direct_notif_reportsList, direct_notif_reportsItem);
+        }
     }
 
     ue_ids = cJSON_GetObjectItemCaseSensitive(app_session_context_resp_dataJSON, "ueIds");
@@ -138,12 +189,20 @@ OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_p
 
     app_session_context_resp_data_local_var = OpenAPI_app_session_context_resp_data_create (
         serv_auth_info ? serv_auth_infoVariable : 0,
+        direct_notif_reports ? direct_notif_reportsList : NULL,
         ue_ids ? ue_idsList : NULL,
         supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL
     );
 
     return app_session_context_resp_data_local_var;
 end:
+    if (direct_notif_reportsList) {
+        OpenAPI_list_for_each(direct_notif_reportsList, node) {
+            OpenAPI_direct_notification_report_free(node->data);
+        }
+        OpenAPI_list_free(direct_notif_reportsList);
+        direct_notif_reportsList = NULL;
+    }
     if (ue_idsList) {
         OpenAPI_list_for_each(ue_idsList, node) {
             OpenAPI_ue_identity_info_free(node->data);

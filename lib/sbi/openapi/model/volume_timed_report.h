@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_volume_timed_report_s OpenAPI_volume_timed_report_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_volume_timed_report_s OpenAPI_volume_timed_report_t;
-typedef struct OpenAPI_volume_timed_report_s {
+struct OpenAPI_volume_timed_report_s {
     char *start_time_stamp;
     char *end_time_stamp;
     long downlink_volume;
     long uplink_volume;
-} OpenAPI_volume_timed_report_t;
+};
 
 OpenAPI_volume_timed_report_t *OpenAPI_volume_timed_report_create(
     char *start_time_stamp,

@@ -1,7 +1,7 @@
 /*
  * packet_filter_info.h
  *
- * Contains the information from a single packet filter sent from the SMF to the PCF.
+ * Contains the information from a single packet filter sent from the SMF to the PCF. 
  */
 
 #ifndef _OpenAPI_packet_filter_info_H_
@@ -12,21 +12,21 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_packet_filter_info_s OpenAPI_packet_filter_info_t;
 #include "flow_direction.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_packet_filter_info_s OpenAPI_packet_filter_info_t;
-typedef struct OpenAPI_packet_filter_info_s {
+struct OpenAPI_packet_filter_info_s {
     char *pack_filt_id;
     char *pack_filt_cont;
     char *tos_traffic_class;
     char *spi;
     char *flow_label;
     OpenAPI_flow_direction_e flow_direction;
-} OpenAPI_packet_filter_info_t;
+};
 
 OpenAPI_packet_filter_info_t *OpenAPI_packet_filter_info_create(
     char *pack_filt_id,

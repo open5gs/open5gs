@@ -1,0 +1,1155 @@
+openapi: 3.0.0
+
+info:
+  title: N5g-ddnmf_Discovery API
+  version: '1.2.0'
+  description: |
+    N5g-ddnmf_Discovery Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.555 V19.2.0; 5G System; 5G Direct Discovery Name Management Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.555/
+
+servers:
+  - url: '{apiRoot}/n5g-ddnmf-disc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - n5g-ddnmf-disc
+
+paths:
+  /{ueId}/announce-authorize/{discEntryId}:
+    put:
+      summary: Obtain the authorization to announce for a UE
+      operationId: ObtainAnnounceAuth
+      tags:
+        - Obtain the authorization to announce for a UE
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - n5g-ddnmf-disc
+        - oAuth2ClientCredentials:
+          - n5g-ddnmf-disc
+          - n5g-ddnmf-disc:announce-authorize:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: discEntryId
+          in: path
+          description: Discovery Entry Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/DiscoveryEntryId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnnounceAuthData'
+        required: true
+      responses:
+        '201':
+          description: Successful creation of the resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnounceAuthData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/n5g-ddnmf-disc>/<apiVersion>/{ueId}/announce-authorize/{discEntryId}
+              required: true
+              schema:
+                type: string
+        '204':
+          description: Successful update of the resource.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    patch:
+      summary: Update the authorization for announcing for a UE
+      operationId: UpdateAnnounceAuth
+      tags:
+        - Update the authorization for announcing for a UE
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - n5g-ddnmf-disc
+        - oAuth2ClientCredentials:
+          - n5g-ddnmf-disc
+          - n5g-ddnmf-disc:announce-authorize:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: discEntryId
+          in: path
+          description: Discovery Entry Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/DiscoveryEntryId'
+      requestBody:
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/AnnounceUpdateData'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '204':
+          description: Expected response to a valid request
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '422':
+          description: Unprocessable Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+  /{ueId}/monitor-authorize/{discEntryId}:
+    put:
+      summary: Obtain the authorization to monitor for a UE
+      operationId: ObtainMonitorAuth
+      tags:
+        - Obtain the authorization to monitor for a UE
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - n5g-ddnmf-disc
+        - oAuth2ClientCredentials:
+          - n5g-ddnmf-disc
+          - n5g-ddnmf-disc:monitor-authorize:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: discEntryId
+          in: path
+          description: Discovery Entry Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/DiscoveryEntryId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonitorAuthReqData'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorAuthRespData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/n5g-ddnmf-disc>/<apiVersion>/{ueId}/monitor-authorize/{discEntryId}
+              required: true
+              schema:
+                type: string
+        '204':
+          description: Successful update of the resource.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    patch:
+      summary: Update the authorization for monitoring for a UE
+      operationId: UpdateMonitorAuth
+      tags:
+        - Update the authorization for monitoring for a UE
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - n5g-ddnmf-disc
+        - oAuth2ClientCredentials:
+          - n5g-ddnmf-disc
+          - n5g-ddnmf-disc:monitor-authorize:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: discEntryId
+          in: path
+          description: Discovery Entry Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/DiscoveryEntryId'
+      requestBody:
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/MonitorUpdateData'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '204':
+          description: Expected response to a valid request
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '422':
+          description: Unprocessable Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+      callbacks:
+        onMonitorUpdateResult:
+          '{$request.body#/monitorUpdateResultCallbackRef}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/MonitorUpdateResult'
+              responses:
+                '204':
+                  description: Successful Notification response
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  description: Unexpected error
+        onMatchInformation:
+          '{request.body#/matchInfoCallbackRef}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/MatchInformation'
+              responses:
+                '204':
+                  description: Successful Notification response
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  description: Unexpected error
+
+
+  /{ueId}/discovery-authorize/{discEntryId}:
+    put:
+      summary: >
+        Obtain the authorization from the 5G DDNMF for a discoverer UE in the PLMN to operate 
+        Model B restricted discovery
+      operationId: ObtainDiscAuth
+      tags:
+        - Obtain the authorization for a discoverer UE
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - n5g-ddnmf-disc
+        - oAuth2ClientCredentials:
+          - n5g-ddnmf-disc
+          - n5g-ddnmf-disc:discovery-authorize:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: discEntryId
+          in: path
+          description: Discovery Entry Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/DiscoveryEntryId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscoveryAuthReqData'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryAuthRespData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/n5g-ddnmf-disc>/<apiVersion>/{ueId}/discovery-authorize/{discEntryId}
+              required: true
+              schema:
+                type: string
+        '204':
+          description: Successful update of the resource.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+      callbacks:
+        onMatchInformation:
+          '{request.body#/matchInfoCallbackRef}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/MatchInformation'
+              responses:
+                '204':
+                  description: Successful Notification response
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  description: Unexpected error
+
+
+  /{ueId}/match-report:
+    post:
+      summary: Obtain the information about the indicated discovery code from the 5G DDNMF
+      operationId: MatchReport
+      tags:
+        - Obtain the information about the indicated discovery code
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - n5g-ddnmf-disc
+        - oAuth2ClientCredentials:
+          - n5g-ddnmf-disc
+          - n5g-ddnmf-disc:match-report:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MatchReportReqData'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchReportRespData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            n5g-ddnmf-disc: Access to the N5g-ddnmf_Discovery API
+            n5g-ddnmf-disc:announce-authorize:modify: >
+              Access to modify the authorization to announce for a UE in the PLMN
+            n5g-ddnmf-disc:monitor-authorize:modify: >
+              Access to modify the authorization for monitoring for an UE in the PLMN
+            n5g-ddnmf-disc:discovery-authorize:modify: >
+              Access to modify the authorization from the 5G DDNMF for a discoverer UE in the 
+              PLMN to operate Model B restricted discovery
+            n5g-ddnmf-disc:match-report:invoke: >
+              Access to invoke the information about the indicated discovery code
+
+  schemas:
+
+# COMPLEX TYPES:
+
+    AnnounceAuthData:
+      type: object
+      description: Represents Data used to request the authorization to announce for a UE
+      required:
+        - discType
+      properties:
+        discType:
+          $ref: '#/components/schemas/DiscoveryType'
+        openDiscData:
+          $ref: '#/components/schemas/AnnounceDiscDataForOpen'
+        restrictedDiscData:
+          $ref: '#/components/schemas/AnnounceDiscDataForRestricted'
+
+    AnnounceDiscDataForOpen:
+      type: object
+      description: >
+        Represents Data for open discovery used to request the authorization to announce for a UE
+      required:
+        - proseAppId
+        - validityTime
+      properties:
+        proseAppId:
+          $ref: '#/components/schemas/ProseApplicationId'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        proseAppCode:
+          $ref: '#/components/schemas/ProseApplicationCode'
+        proseAppCodePrefix:
+          $ref: '#/components/schemas/ProseApplicationPrefix'
+        proseAppCodeSuffixPool:
+          $ref: '#/components/schemas/ProseApplicationCodeSuffixPool'
+        metaData:
+          $ref: '#/components/schemas/MetaData'
+
+    AnnounceDiscDataForRestricted:
+      type: object
+      description: >
+        Represents Data for restricted discovery used to request the authorization to announce 
+        for a UE
+      required:
+        - rpauid
+        - appId
+        - validityTime
+      properties:
+        rpauid:
+          $ref: '#/components/schemas/Rpauid'
+        appId:
+          $ref: '#/components/schemas/ApplicationId'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        proseRestrictedCode:
+          $ref: '#/components/schemas/ProseRestrictedCode'
+        proseRestrictedPrefix:
+          $ref: '#/components/schemas/ProseRestrictedPrefix'
+        codeSuffixPool:
+          $ref: '#/components/schemas/RestrictedCodeSuffixPool'
+
+    AnnounceUpdateData:
+      type: object
+      description: Represents Announce Authorize Data to update
+      required:
+        - discType
+        - validityTime
+      properties:
+        discType:
+          $ref: '#/components/schemas/DiscoveryType'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        proseAppCode:
+          $ref: '#/components/schemas/ProseApplicationCode'
+
+    MonitorAuthReqData:
+      type: object
+      description: Represents Data used to request the authorization to monitor for a UE
+      required:
+        - discType
+      properties:
+        discType:
+          $ref: '#/components/schemas/DiscoveryType'
+        openDiscData:
+          $ref: '#/components/schemas/MonitorDiscDataForOpen'
+        restrictedDiscData:
+          $ref: '#/components/schemas/MonitorDiscDataForRestricted'
+
+    MonitorAuthRespData:
+      type: object
+      description: Represents the obtained Monitor Authorize Data for a UE
+      properties:
+        authDataOpen:
+          $ref: '#/components/schemas/MonitorAuthDataForOpen'
+        authDataRestricted:
+          $ref: '#/components/schemas/MonitorAuthDataForRestricted'
+
+    MonitorDiscDataForOpen:
+      type: object
+      description: >
+        Represents Data for open discovery used to request the authorization to monitor for a UE
+      required:
+        - proseAppIdNames
+      properties:
+        proseAppIdNames:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProseApplicationIdName'
+          minItems: 1
+
+    MonitorDiscDataForRestricted:
+      type: object
+      description: >
+        Represents Data for restricted discovery used to request the authorization to monitor for 
+        a UE
+      required:
+        - rpauid
+        - targetPduid
+        - appId
+        - targetRpauid
+      properties:
+        rpauid:
+          $ref: '#/components/schemas/Rpauid'
+        targetPduid:
+          $ref: '#/components/schemas/Pduid'
+        appId:
+          $ref: '#/components/schemas/ApplicationId'
+        targetRpauid:
+          $ref: '#/components/schemas/Rpauid'
+
+    MonitorAuthDataForOpen:
+      type: object
+      description: Represents the obtained Announce Authorize Data for open discovery for a UE
+      required:
+        - proseAppMasks
+        - ttl
+      properties:
+        proseAppCodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProseApplicationCode'
+          minItems: 1
+        proseAppPrefix:
+          $ref: '#/components/schemas/ProseApplicationPrefix'
+        proseAppMasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProseApplicationMask'
+          minItems: 1
+        ttl:
+          type: integer
+
+    MonitorAuthDataForRestricted:
+      type: object
+      description: Represents the obtained Announce Authorize Data for restricted discovery for a UE
+      required:
+        - proseRestrictedCode
+        - validityTime
+      properties:
+        proseRestrictedCode:
+          $ref: '#/components/schemas/ProseRestrictedCode'
+        addProseRestrictedCodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProseRestrictedCode'
+          minItems: 1
+        proseRestrictedPrefix:
+          $ref: '#/components/schemas/ProseRestrictedPrefix'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+
+    MonitorUpdateData:
+      type: object
+      description: Represents Monitor Authorize Data to update.
+      required:
+        - discType
+      properties:
+        discType:
+          $ref: '#/components/schemas/DiscoveryType'
+        openUpdateData:
+          $ref: '#/components/schemas/MonitorUpdateDataForOpen'
+        restrictedUpdateData:
+          $ref: '#/components/schemas/MonitorUpdateDataForRestricted'
+
+    DiscoveryAuthReqData:
+      type: object
+      description: Represents Data used to request the authorization for a discoverer UE.
+      required:
+        - discType
+      properties:
+        discType:
+          $ref: '#/components/schemas/DiscoveryType'
+        restrictedDiscData:
+          $ref: '#/components/schemas/DiscDataForRestricted'
+
+    DiscoveryAuthRespData:
+      type: object
+      description: Represents the obtained authorization Data for a discoverer UE
+      properties:
+        authDataRestricted:
+          $ref: '#/components/schemas/AuthDataForRestricted'
+
+    DiscDataForRestricted:
+      type: object
+      description: >
+        Represents Data for restricted discovery used to request the authorization for a 
+        discoverer UE
+      required:
+        - rpauid
+        - targetPduid
+        - appId
+        - targetRpauid
+      properties:
+        rpauid:
+          $ref: '#/components/schemas/Rpauid'
+        targetPduid:
+          $ref: '#/components/schemas/Pduid'
+        appId:
+          $ref: '#/components/schemas/ApplicationId'
+        targetRpauid:
+          $ref: '#/components/schemas/Rpauid'
+
+    AuthDataForRestricted:
+      type: object
+      description: >
+        Represents obtained authorization Data for restricted discovery for a discoverer UE
+      required:
+        - proseQueryCodes
+        - proseRespCode
+        - validityTime
+      properties:
+        proseQueryCodes:
+          items:
+            $ref: '#/components/schemas/ProseQueryCode'
+          minItems: 1
+        proseRespCode:
+          $ref: '#/components/schemas/ProseResponseCode'
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+
+    MatchReportReqData:
+      type: object
+      description: Represents the Match Report information
+      required:
+        - discType
+      properties:
+        discType:
+          $ref: '#/components/schemas/DiscoveryType'
+        proseAppCodes:
+          items:
+            $ref: '#/components/schemas/ProseApplicationCode'
+          minItems: 1
+        moniteredPlmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+
+    MatchReportRespData:
+      type: object
+      description: Represents Match Report Acknowledgement
+      properties:
+        proseAppIdNames:
+          items:
+            $ref: '#/components/schemas/ProseApplicationIdName'
+          minItems: 1
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        metaData:
+          $ref: '#/components/schemas/MetaData'
+        metaDataIndexMasks:
+          items:
+            $ref: '#/components/schemas/MetaDataIndexMask'
+          minItems: 1
+
+    MonitorUpdateResult:
+      type: object
+      description: Represents the monitoring revocation results.
+      required:
+        - discType
+        - proseRestrictedCode
+        - appId
+        - bannedRpauid
+        - bannedPduid
+        - revocationResult
+      properties:
+        discType:
+            $ref: '#/components/schemas/DiscoveryType'
+        proseRestrictedCode:
+            $ref: '#/components/schemas/ProseRestrictedCode'
+        appId:
+            $ref: '#/components/schemas/ApplicationId'
+        bannedRpauid:
+            $ref: '#/components/schemas/Rpauid'
+        bannedPduid:
+            $ref: '#/components/schemas/Pduid'
+        revocationResult:
+            $ref: '#/components/schemas/RevocationResult'
+
+    MatchInformation:
+      type: object
+      description: >
+        Represents a report including a matching result, and the information that
+        can be used for charging purpose.
+      required:
+        - discType
+      properties:
+        discType:
+            $ref: '#/components/schemas/DiscoveryType'
+        openMatchInfoForOpen:
+            $ref: '#/components/schemas/MatchInfoForOpen'
+        restrictedMatchInfo:
+            $ref: '#/components/schemas/MatchInfoForRestricted'
+
+    MatchInfoForOpen:
+      type: object
+      description: >
+        Represents a report including a matching result, and the information that
+        can be used for charging purpose for the open discovery type.
+      required:
+        - supi
+        - appId
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        appId:
+          items:
+            $ref: '#/components/schemas/ApplicationId'
+          minItems: 1
+
+    MatchInfoForRestricted:
+      type: object
+      description: >
+        Represents a report including a matching result, and the information that
+        can be used for charging purpose for the restricted discovery type.
+      required:
+        - supi
+        - rpauid
+        - targetRpauid
+        - proseRestrictedCode
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        rpauid:
+            $ref: '#/components/schemas/Rpauid'
+        targetRpauid:
+            $ref: '#/components/schemas/Rpauid'
+        proseRestrictedCode:
+            $ref: '#/components/schemas/ProseRestrictedCode'
+
+    RestrictedCodeSuffixPool:
+      type: object
+      description: Contains the Restricted Code Suffix Pool.
+      anyOf:
+        - required: [ codeSuffixList ]
+        - required: [ codeSuffixRangeList ]
+      properties:
+        codeSuffixList:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestrictedCodeSuffix'
+          minItems: 1
+        codeSuffixRangeList:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestrictedCodeSuffixRange'
+          minItems: 1
+
+    RestrictedCodeSuffixRange:
+      type: object
+      description: Contains a range of the Restricted Code Suffixes which are consecutive.
+      required:
+        - beginningSuffix
+        - endingSuffix
+      properties:
+        beginningSuffix:
+          $ref: '#/components/schemas/RestrictedCodeSuffix'
+        endingSuffix:
+          $ref: '#/components/schemas/RestrictedCodeSuffix'
+
+    ProseApplicationCodeSuffixPool:
+      type: object
+      description: Contains the Prose Application Code Suffix Pool.
+      anyOf:
+        - required: [ codeSuffix ]
+        - required: [ codeSuffixRange ]
+      properties:
+        codeSuffix:
+          $ref: '#/components/schemas/ProseAppCodeSuffix'
+        codeSuffixRange:
+          $ref: '#/components/schemas/ProseAppCodeSuffixRange'
+
+    ProseAppCodeSuffixRange:
+      type: object
+      description: Contains a range of the Prose Application Code Suffixes which are consecutive.
+      required:
+        - beginningSuffix
+        - endingSuffix
+      properties:
+        beginningSuffix:
+          $ref: '#/components/schemas/ProseAppCodeSuffix'
+        endingSuffix:
+          $ref: '#/components/schemas/ProseAppCodeSuffix'
+
+    MonitorUpdateDataForOpen:
+      type: object
+      description: Represents Monitor Update Data for the Discovery Type "OPEN".
+      required:
+        - proseAppIdName
+        - ttl
+      properties:
+        proseAppIdName:
+          $ref: '#/components/schemas/ProseApplicationIdName'
+        ttl:
+          type: integer
+          minimum: 0
+
+    MonitorUpdateDataForRestricted:
+      type: object
+      description: Represents Monitor Update Data for the Discovery Type "RESTRICTED".
+      required:
+        - proseRestrictedCode
+        - appId
+        - bannedRpauid
+        - bannedPduid
+      properties:
+        proseRestrictedCode:
+          $ref: '#/components/schemas/ProseRestrictedCode'
+        appId:
+          $ref: '#/components/schemas/ApplicationId'
+        bannedRpauid:
+          $ref: '#/components/schemas/Rpauid'
+        bannedPduid:
+          $ref: '#/components/schemas/Pduid'
+        monitorUpdateResultCallbackRef:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+
+
+
+# SIMPLE TYPES:
+    DiscoveryEntryId:
+      description: Contains the Discovery Entry ID.
+      type: string
+
+    ProseApplicationId:
+      description: Contains the ProSe Application ID.
+      type: string
+
+    ProseApplicationCode:
+      description: Contains the ProSe Application Code.
+      type: string
+
+    Rpauid:
+      description: Contains the RPAUID.
+      type: string
+
+    ApplicationId:
+      description: Contains the Application ID.
+      type: string
+
+    ProseRestrictedCode:
+      description: Contains the ProSe Restricted Code.
+      type: string
+
+    ProseRestrictedPrefix:
+      description: Contains the ProSe Restricted Code Prefix.
+      type: string
+
+    MetaData:
+      description: Contains the metadata.
+      type: string
+
+    ProseApplicationIdName:
+      description: Contains the ProSe Application ID name.
+      type: string
+
+    Pduid:
+      description: Contains the PDUID.
+      type: string
+
+    ProseApplicationPrefix:
+      description: Contains the Prose Application Code Prefix.
+      type: string
+
+    ProseApplicationMask:
+      description: Contains the Prose Application Mask.
+      type: string
+
+    ProseQueryCode:
+      description: Contains the ProSe Query Code.
+      type: string
+
+    ProseResponseCode:
+      description: Contains the ProSe Response Code.
+      type: string
+
+    MetaDataIndexMask:
+      description: Contains the Meta Data Index Mask.
+      type: string
+
+    RestrictedCodeSuffix:
+      description: Contains the ProSe Restricted Code Suffix.
+      type: string
+
+    ProseAppCodeSuffix:
+      description: Contains the ProSe Application Code Suffix.
+      type: string
+
+# ENUMS:
+
+    DiscoveryType:
+      anyOf:
+      - type: string
+        enum:
+          - OPEN
+          - RESTRICTED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - OPEN: Discovery type is "open".
+        - RESTRICTED: Discovery type is "restricted".
+
+
+    RevocationResult:
+      anyOf:
+      - type: string
+        enum:
+          - SUCCESSFUL
+          - FAILED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - SUCCESSFUL: The Monitoring Revocation is successful.
+        - FAILED: The Monitoring Revocation is failed.

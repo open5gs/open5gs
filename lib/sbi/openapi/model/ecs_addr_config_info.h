@@ -1,7 +1,7 @@
 /*
  * ecs_addr_config_info.h
  *
- * 
+ * Contains ECS Address Configuration Information
  */
 
 #ifndef _OpenAPI_ecs_addr_config_info_H_
@@ -12,22 +12,33 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ecs_addr_config_info_s OpenAPI_ecs_addr_config_info_t;
+#include "ecs_auth_method.h"
 #include "ecs_server_addr.h"
+#include "snssai.h"
 #include "spatial_validity_cond.h"
+#include "supported_plmn.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ecs_addr_config_info_s OpenAPI_ecs_addr_config_info_t;
-typedef struct OpenAPI_ecs_addr_config_info_s {
+struct OpenAPI_ecs_addr_config_info_s {
     struct OpenAPI_ecs_server_addr_s *ecs_server_addr;
     struct OpenAPI_spatial_validity_cond_s *spatial_validity_cond;
-} OpenAPI_ecs_addr_config_info_t;
+    char *dnn;
+    struct OpenAPI_snssai_s *snssai;
+    OpenAPI_list_t *ecs_auth_methods;
+    OpenAPI_list_t *supported_plmns;
+};
 
 OpenAPI_ecs_addr_config_info_t *OpenAPI_ecs_addr_config_info_create(
     OpenAPI_ecs_server_addr_t *ecs_server_addr,
-    OpenAPI_spatial_validity_cond_t *spatial_validity_cond
+    OpenAPI_spatial_validity_cond_t *spatial_validity_cond,
+    char *dnn,
+    OpenAPI_snssai_t *snssai,
+    OpenAPI_list_t *ecs_auth_methods,
+    OpenAPI_list_t *supported_plmns
 );
 void OpenAPI_ecs_addr_config_info_free(OpenAPI_ecs_addr_config_info_t *ecs_addr_config_info);
 OpenAPI_ecs_addr_config_info_t *OpenAPI_ecs_addr_config_info_parseFromJSON(cJSON *ecs_addr_config_infoJSON);

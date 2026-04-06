@@ -360,7 +360,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
     ogs_assert(cause_value == OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
 
 
-    r = smf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+    r = smf_sbi_discover_and_send(OpenAPI_service_name_nudm_sdm, NULL,
             smf_nudm_sdm_build_subscription, sess, stream, 0,
             (char *)OGS_SBI_RESOURCE_NAME_SM_DATA);
     ogs_expect(r == OGS_OK);
@@ -472,7 +472,7 @@ bool smf_nudm_sdm_handle_subscription(smf_sess_t *sess, ogs_sbi_stream_t *stream
         smf_sbi_send_sm_context_created_data(sess, stream);
 
     r = smf_sbi_discover_and_send(
-            OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
+            OpenAPI_service_name_npcf_smpolicycontrol, NULL,
             smf_npcf_smpolicycontrol_build_create, sess, stream, 0, NULL);
     ogs_expect(r == OGS_OK);
     ogs_assert(r != OGS_ERROR);

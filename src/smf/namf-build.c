@@ -54,7 +54,8 @@ ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_COMM;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_namf_comm);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
     message.h.resource.component[1] = smf_ue->supi;

@@ -1,0 +1,314 @@
+openapi: 3.0.0
+
+info:
+  title: EES Application Traffic Influence Service
+  version: 1.0.0
+  description: |
+    EES Application Traffic Influence Service.  
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.558 V18.6.0; Enabling Edge Applications;
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.558/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/eees-tie/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+paths:
+  /instances:
+    post:
+      summary: Create application traffic influence trigger from EAS.
+      operationId: CreateTraffInfluInstance
+      tags:
+        - Traffic Influence (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppTrafficInfluence'
+      responses:
+        '201':
+          description: Create a new individual Application Traffic Influence Instance.
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppTrafficInfluence'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /instances/{instanceId}:
+    parameters:
+      - name: instanceId
+        in: path
+        description: Instance Id.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Read an Individual Application Traffic Influence Instance.
+      operationId: GetIndTraffInfluInstance
+      tags:
+        - Individual ACR Management Events Subscription (Document)
+      responses:
+        '200':
+          description: OK. The Individual Application Traffic Influence Instance is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppTrafficInfluence'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update an Individual Application Traffic Influence Instance.
+      operationId: UpdateIndTraffInfluInstance
+      tags:
+        - Individual Traffic Influence Instance (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppTrafficInfluence'
+      responses:
+        '200':
+          description: >
+            The Individual Application Traffic Influence Instance is successfully modified and the
+            representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppTrafficInfluence'
+        '204':
+          description: No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify an Individual Application Traffic Influence Instance.
+      operationId: ModifyIndTraffInfluInstance
+      tags:
+        - Individual Traffic Influence Instance (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/AppTrafficInfluencePatch'
+      responses:
+        '200':
+          description: >
+            The Individual Application Traffic Influence Instance is successfully modified and the
+            representation of the updated resource is returned in the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppTrafficInfluence'
+        '204':
+          description: No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an Individual Traffic Influence Instance.
+      operationId: DeleteIndTraffInfluInstance
+      tags:
+        - Individual Traffic Influence Instance (Document)
+      responses:
+        '204':
+          description: >
+            The Individual Traffic Influence Instance is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    AppTrafficInfluence:
+      description: >
+        Represents the application traffic influence information.
+      type: object
+      properties:
+        requestorId:
+          type: string
+          description: Contains the identifier of the service consumer that is sending the request.
+        tgtUes:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_ACRManagementEvent.yaml#/components/schemas/TargetUeIdentification' 
+          minItems: 1
+        addTgtUes:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_ACRManagementEvent.yaml#/components/schemas/TargetUeIdentification' 
+          minItems: 1
+        deleTgtUes:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_ACRManagementEvent.yaml#/components/schemas/TargetUeIdentification' 
+          minItems: 1
+        anyUe:
+          type: boolean
+          description: >
+            Indicates whether the request applies to any UE.
+            true indicates that the request applies to any UE.
+            False indicates that the request does not apply to any UE.
+            The default value when this attribute is omitted is false.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    AppTrafficInfluencePatch:
+      description: >
+        Represents the update of application traffic influence information.
+      type: object
+      properties:
+        addTgtUes:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_ACRManagementEvent.yaml#/components/schemas/TargetUeIdentification' 
+          minItems: 1
+        deleTgtUes:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_ACRManagementEvent.yaml#/components/schemas/TargetUeIdentification' 
+          minItems: 1
+        anyUe:
+          type: boolean
+          description: >
+            Indicates whether the request applies to any UE.
+            true indicates that the request applies to any UE.
+            False indicates that the request does not apply to any UE.

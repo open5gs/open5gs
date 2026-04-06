@@ -1,0 +1,454 @@
+openapi: 3.0.0
+
+info:
+  title: UAE Server UAV Dynamic Information Service
+  version: 1.1.0
+  description: |
+    UAE Server UAV Dynamic Information Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.257 V19.5.0; Application layer support for Uncrewed Aerial System (UAS);
+    UAS Application Enabler (UAE) Server Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.257/
+
+servers:
+  - url: '{apiRoot}/uae-udi/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    get:
+      summary: Retrieve all the active UAV Dynamic Information Subscriptions managed by the UAE Server.
+      operationId: GetDynUavSubscs
+      tags:
+        - UAV Dynamic Information Subscriptions (Collection)
+      responses:
+        '200':
+          description: >
+            OK. All the active UAV Dynamic Information Subscriptions managed by the UAE Server shall
+            be returned.
+            When there are no active UAV Dynamic Information Subscriptions at the UAE Server, an
+            empty array shall be returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UAVDynInfoSubsc'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request the creation of a UAV Dynamic Information Subscription.
+      operationId: CreateDynUavSubsc
+      tags:
+        - UAV Dynamic Information Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UAVDynInfoSubsc'
+      responses:
+        '201':
+          description: >
+            Created. The UAV Dynamic Information Subscription is successfully created and a
+            representation of the created Individual UAV Dynamic Information Subscription resource 
+            shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UAVDynInfoSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual UAV Dynamic Information Subscription
+                resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        UAVDynInfoNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/UAVDynInfoNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The UAV Dynamic Information Notification is successfully received
+                    and Acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscId}:
+    parameters:
+      - name: subscId
+        in: path
+        description: >
+          Represents the identifier of the Individual UAV Dynamic Information Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual UAV Dynamic Information Subscription resource.
+      operationId: GetIndDynUavSubsc
+      tags:
+        - Individual UAV Dynamic Information Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The representation of the requested Individual UAV Dynamic Information Subscription
+            resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UAVDynInfoSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual UAV Dynamic Information Subscription resource.
+      operationId: UpdateIndDynUavSubsc
+      tags:
+        - Individual UAV Dynamic Information Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UAVDynInfoSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual UAV Dynamic Information Subscription resource is successfully updated
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UAVDynInfoSubsc'
+        '204':
+          description: >
+            No Content. The Individual UAV Dynamic Information Subscription resource is successfully
+            updated and no content is returned in the response body
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual UAV Dynamic Information Subscription resource.
+      operationId: ModifyIndDynUavSubsc
+      tags:
+        - Individual UAV Dynamic Information Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/UAVDynInfoSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual UAV Dynamic Information Subscription resource is successfully
+            modified and a representation of the updated resource shall be returned in the response
+            body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UAVDynInfoSubsc'
+        '204':
+          description: >
+            No Content. The Individual UAV Dynamic Information Subscription resource is successfully
+            modified and no content is returned in the response body
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual UAV Dynamic Information Subscription resource.
+      operationId: DeleteIndDynUavSubsc
+      tags:
+        - Individual UAV Dynamic Information Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual UAV Dynamic Information Subscription resource is successfully
+            deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    UAVDynInfoSubsc:
+      description: >
+        Represents a UAV Dynamic Information Subscription.
+      type: object
+      properties:
+        uavId:
+          $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/UavId'
+        proxRangInfo:
+          $ref: '#/components/schemas/ProxRangInfo'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - uavId
+        - proxRangInfo
+        - notifUri
+
+    UAVDynInfoSubscPatch:
+      description: >
+        Represents the requested modifications to a UAV Dynamic Information Subscription.
+      type: object
+      properties:
+        proxRangInfo:
+          $ref: '#/components/schemas/ProxRangInfo'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    UAVDynInfoNotif:
+      description: >
+        Represents a UAV Dynamic Information Notification.
+      type: object
+      properties:
+        subscId:
+          type: string
+        hostUavLoc:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        uavsInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/UavInfo'
+          minItems: 1
+      required:
+        - subscId
+        - hostUavLoc
+        - uavsInfo
+
+    ProxRangInfo:
+      description: >
+        Represents the proximity range information.
+      type: object
+      properties:
+        range:
+          type: number
+          format: double
+          minimum: 0
+        rangeInfo:
+          type: string
+      anyOf:
+        - required: [range]
+        - required: [rangeInfo]
+
+    UavInfo:
+      description: >
+        Represents the UAV information related to the UAV detection in an application defined
+        proximity range.
+      type: object
+      properties:
+        nearbyUavId:
+          $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/UavId'
+        nearbyUavLoc:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        nearbyUavDist:
+          $ref: '#/components/schemas/UavDistance'
+      required:
+        - nearbyUavId
+        - nearbyUavLoc
+        - nearbyUavDist
+
+
+# SIMPLE DATA TYPES
+#
+
+    UavDistance:
+      description: >
+        Represents the linear distance between two UAVs.
+      type: number
+      format: double
+      minimum: 0
+
+#
+# ENUMERATIONS
+#

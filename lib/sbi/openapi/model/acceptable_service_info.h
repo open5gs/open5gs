@@ -12,23 +12,32 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_acceptable_service_info_s OpenAPI_acceptable_service_info_t;
 #include "media_component.h"
+#include "tsn_qos_container.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_acceptable_service_info_s OpenAPI_acceptable_service_info_t;
-typedef struct OpenAPI_acceptable_service_info_s {
+struct OpenAPI_acceptable_service_info_s {
     OpenAPI_list_t* acc_bw_med_comps;
     char *mar_bw_ul;
     char *mar_bw_dl;
-} OpenAPI_acceptable_service_info_t;
+    char *mir_bw_ul;
+    char *mir_bw_dl;
+    struct OpenAPI_tsn_qos_container_s *tsn_qos;
+    OpenAPI_list_t *add_acc_qos_combs;
+};
 
 OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_create(
     OpenAPI_list_t* acc_bw_med_comps,
     char *mar_bw_ul,
-    char *mar_bw_dl
+    char *mar_bw_dl,
+    char *mir_bw_ul,
+    char *mir_bw_dl,
+    OpenAPI_tsn_qos_container_t *tsn_qos,
+    OpenAPI_list_t *add_acc_qos_combs
 );
 void OpenAPI_acceptable_service_info_free(OpenAPI_acceptable_service_info_t *acceptable_service_info);
 OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON(cJSON *acceptable_service_infoJSON);

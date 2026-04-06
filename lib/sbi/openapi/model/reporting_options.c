@@ -5,7 +5,7 @@
 #include "reporting_options.h"
 
 OpenAPI_reporting_options_t *OpenAPI_reporting_options_create(
-    OpenAPI_event_report_mode_t *report_mode,
+    OpenAPI_event_report_mode_e report_mode,
     bool is_max_num_of_reports,
     int max_num_of_reports,
     char *expiry,
@@ -15,7 +15,10 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_create(
     int guard_time,
     bool is_report_period,
     int report_period,
-    OpenAPI_notification_flag_e notif_flag
+    OpenAPI_notification_flag_e notif_flag,
+    OpenAPI_muting_exception_instructions_t *muting_exc_instructions,
+    OpenAPI_muting_notifications_settings_t *muting_not_settings,
+    OpenAPI_list_t *var_rep_period_info
 )
 {
     OpenAPI_reporting_options_t *reporting_options_local_var = ogs_malloc(sizeof(OpenAPI_reporting_options_t));
@@ -32,6 +35,9 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_create(
     reporting_options_local_var->is_report_period = is_report_period;
     reporting_options_local_var->report_period = report_period;
     reporting_options_local_var->notif_flag = notif_flag;
+    reporting_options_local_var->muting_exc_instructions = muting_exc_instructions;
+    reporting_options_local_var->muting_not_settings = muting_not_settings;
+    reporting_options_local_var->var_rep_period_info = var_rep_period_info;
 
     return reporting_options_local_var;
 }
@@ -43,13 +49,24 @@ void OpenAPI_reporting_options_free(OpenAPI_reporting_options_t *reporting_optio
     if (NULL == reporting_options) {
         return;
     }
-    if (reporting_options->report_mode) {
-        OpenAPI_event_report_mode_free(reporting_options->report_mode);
-        reporting_options->report_mode = NULL;
-    }
     if (reporting_options->expiry) {
         ogs_free(reporting_options->expiry);
         reporting_options->expiry = NULL;
+    }
+    if (reporting_options->muting_exc_instructions) {
+        OpenAPI_muting_exception_instructions_free(reporting_options->muting_exc_instructions);
+        reporting_options->muting_exc_instructions = NULL;
+    }
+    if (reporting_options->muting_not_settings) {
+        OpenAPI_muting_notifications_settings_free(reporting_options->muting_not_settings);
+        reporting_options->muting_not_settings = NULL;
+    }
+    if (reporting_options->var_rep_period_info) {
+        OpenAPI_list_for_each(reporting_options->var_rep_period_info, node) {
+            OpenAPI_var_rep_period_free(node->data);
+        }
+        OpenAPI_list_free(reporting_options->var_rep_period_info);
+        reporting_options->var_rep_period_info = NULL;
     }
     ogs_free(reporting_options);
 }
@@ -65,14 +82,8 @@ cJSON *OpenAPI_reporting_options_convertToJSON(OpenAPI_reporting_options_t *repo
     }
 
     item = cJSON_CreateObject();
-    if (reporting_options->report_mode) {
-    cJSON *report_mode_local_JSON = OpenAPI_event_report_mode_convertToJSON(reporting_options->report_mode);
-    if (report_mode_local_JSON == NULL) {
-        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [report_mode]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "reportMode", report_mode_local_JSON);
-    if (item->child == NULL) {
+    if (reporting_options->report_mode != OpenAPI_event_report_mode_NULL) {
+    if (cJSON_AddStringToObject(item, "reportMode", OpenAPI_event_report_mode_ToString(reporting_options->report_mode)) == NULL) {
         ogs_error("OpenAPI_reporting_options_convertToJSON() failed [report_mode]");
         goto end;
     }
@@ -120,6 +131,48 @@ cJSON *OpenAPI_reporting_options_convertToJSON(OpenAPI_reporting_options_t *repo
     }
     }
 
+    if (reporting_options->muting_exc_instructions) {
+    cJSON *muting_exc_instructions_local_JSON = OpenAPI_muting_exception_instructions_convertToJSON(reporting_options->muting_exc_instructions);
+    if (muting_exc_instructions_local_JSON == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [muting_exc_instructions]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "mutingExcInstructions", muting_exc_instructions_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [muting_exc_instructions]");
+        goto end;
+    }
+    }
+
+    if (reporting_options->muting_not_settings) {
+    cJSON *muting_not_settings_local_JSON = OpenAPI_muting_notifications_settings_convertToJSON(reporting_options->muting_not_settings);
+    if (muting_not_settings_local_JSON == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [muting_not_settings]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "mutingNotSettings", muting_not_settings_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [muting_not_settings]");
+        goto end;
+    }
+    }
+
+    if (reporting_options->var_rep_period_info) {
+    cJSON *var_rep_period_infoList = cJSON_AddArrayToObject(item, "varRepPeriodInfo");
+    if (var_rep_period_infoList == NULL) {
+        ogs_error("OpenAPI_reporting_options_convertToJSON() failed [var_rep_period_info]");
+        goto end;
+    }
+    OpenAPI_list_for_each(reporting_options->var_rep_period_info, node) {
+        cJSON *itemLocal = OpenAPI_var_rep_period_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_reporting_options_convertToJSON() failed [var_rep_period_info]");
+            goto end;
+        }
+        cJSON_AddItemToArray(var_rep_period_infoList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -129,7 +182,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
     OpenAPI_reporting_options_t *reporting_options_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *report_mode = NULL;
-    OpenAPI_event_report_mode_t *report_mode_local_nonprim = NULL;
+    OpenAPI_event_report_mode_e report_modeVariable = 0;
     cJSON *max_num_of_reports = NULL;
     cJSON *expiry = NULL;
     cJSON *sampling_ratio = NULL;
@@ -137,13 +190,19 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
     cJSON *report_period = NULL;
     cJSON *notif_flag = NULL;
     OpenAPI_notification_flag_e notif_flagVariable = 0;
+    cJSON *muting_exc_instructions = NULL;
+    OpenAPI_muting_exception_instructions_t *muting_exc_instructions_local_nonprim = NULL;
+    cJSON *muting_not_settings = NULL;
+    OpenAPI_muting_notifications_settings_t *muting_not_settings_local_nonprim = NULL;
+    cJSON *var_rep_period_info = NULL;
+    OpenAPI_list_t *var_rep_period_infoList = NULL;
     report_mode = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "reportMode");
     if (report_mode) {
-    report_mode_local_nonprim = OpenAPI_event_report_mode_parseFromJSON(report_mode);
-    if (!report_mode_local_nonprim) {
-        ogs_error("OpenAPI_event_report_mode_parseFromJSON failed [report_mode]");
+    if (!cJSON_IsString(report_mode)) {
+        ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [report_mode]");
         goto end;
     }
+    report_modeVariable = OpenAPI_event_report_mode_FromString(report_mode->valuestring);
     }
 
     max_num_of_reports = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "maxNumOfReports");
@@ -195,8 +254,50 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
     notif_flagVariable = OpenAPI_notification_flag_FromString(notif_flag->valuestring);
     }
 
+    muting_exc_instructions = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "mutingExcInstructions");
+    if (muting_exc_instructions) {
+    muting_exc_instructions_local_nonprim = OpenAPI_muting_exception_instructions_parseFromJSON(muting_exc_instructions);
+    if (!muting_exc_instructions_local_nonprim) {
+        ogs_error("OpenAPI_muting_exception_instructions_parseFromJSON failed [muting_exc_instructions]");
+        goto end;
+    }
+    }
+
+    muting_not_settings = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "mutingNotSettings");
+    if (muting_not_settings) {
+    muting_not_settings_local_nonprim = OpenAPI_muting_notifications_settings_parseFromJSON(muting_not_settings);
+    if (!muting_not_settings_local_nonprim) {
+        ogs_error("OpenAPI_muting_notifications_settings_parseFromJSON failed [muting_not_settings]");
+        goto end;
+    }
+    }
+
+    var_rep_period_info = cJSON_GetObjectItemCaseSensitive(reporting_optionsJSON, "varRepPeriodInfo");
+    if (var_rep_period_info) {
+        cJSON *var_rep_period_info_local = NULL;
+        if (!cJSON_IsArray(var_rep_period_info)) {
+            ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [var_rep_period_info]");
+            goto end;
+        }
+
+        var_rep_period_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(var_rep_period_info_local, var_rep_period_info) {
+            if (!cJSON_IsObject(var_rep_period_info_local)) {
+                ogs_error("OpenAPI_reporting_options_parseFromJSON() failed [var_rep_period_info]");
+                goto end;
+            }
+            OpenAPI_var_rep_period_t *var_rep_period_infoItem = OpenAPI_var_rep_period_parseFromJSON(var_rep_period_info_local);
+            if (!var_rep_period_infoItem) {
+                ogs_error("No var_rep_period_infoItem");
+                goto end;
+            }
+            OpenAPI_list_add(var_rep_period_infoList, var_rep_period_infoItem);
+        }
+    }
+
     reporting_options_local_var = OpenAPI_reporting_options_create (
-        report_mode ? report_mode_local_nonprim : NULL,
+        report_mode ? report_modeVariable : 0,
         max_num_of_reports ? true : false,
         max_num_of_reports ? max_num_of_reports->valuedouble : 0,
         expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
@@ -206,14 +307,28 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *repo
         guard_time ? guard_time->valuedouble : 0,
         report_period ? true : false,
         report_period ? report_period->valuedouble : 0,
-        notif_flag ? notif_flagVariable : 0
+        notif_flag ? notif_flagVariable : 0,
+        muting_exc_instructions ? muting_exc_instructions_local_nonprim : NULL,
+        muting_not_settings ? muting_not_settings_local_nonprim : NULL,
+        var_rep_period_info ? var_rep_period_infoList : NULL
     );
 
     return reporting_options_local_var;
 end:
-    if (report_mode_local_nonprim) {
-        OpenAPI_event_report_mode_free(report_mode_local_nonprim);
-        report_mode_local_nonprim = NULL;
+    if (muting_exc_instructions_local_nonprim) {
+        OpenAPI_muting_exception_instructions_free(muting_exc_instructions_local_nonprim);
+        muting_exc_instructions_local_nonprim = NULL;
+    }
+    if (muting_not_settings_local_nonprim) {
+        OpenAPI_muting_notifications_settings_free(muting_not_settings_local_nonprim);
+        muting_not_settings_local_nonprim = NULL;
+    }
+    if (var_rep_period_infoList) {
+        OpenAPI_list_for_each(var_rep_period_infoList, node) {
+            OpenAPI_var_rep_period_free(node->data);
+        }
+        OpenAPI_list_free(var_rep_period_infoList);
+        var_rep_period_infoList = NULL;
     }
     return NULL;
 }

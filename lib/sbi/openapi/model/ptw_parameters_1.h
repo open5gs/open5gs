@@ -1,7 +1,7 @@
 /*
  * ptw_parameters_1.h
  *
- * 
+ * Contains paging time window parameters
  */
 
 #ifndef _OpenAPI_ptw_parameters_1_H_
@@ -12,21 +12,23 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ptw_parameters_1_s OpenAPI_ptw_parameters_1_t;
 #include "operation_mode.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ptw_parameters_1_s OpenAPI_ptw_parameters_1_t;
-typedef struct OpenAPI_ptw_parameters_1_s {
+struct OpenAPI_ptw_parameters_1_s {
     OpenAPI_operation_mode_e operation_mode;
     char *ptw_value;
-} OpenAPI_ptw_parameters_1_t;
+    char *extended_ptw_value;
+};
 
 OpenAPI_ptw_parameters_1_t *OpenAPI_ptw_parameters_1_create(
     OpenAPI_operation_mode_e operation_mode,
-    char *ptw_value
+    char *ptw_value,
+    char *extended_ptw_value
 );
 void OpenAPI_ptw_parameters_1_free(OpenAPI_ptw_parameters_1_t *ptw_parameters_1);
 OpenAPI_ptw_parameters_1_t *OpenAPI_ptw_parameters_1_parseFromJSON(cJSON *ptw_parameters_1JSON);

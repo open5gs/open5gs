@@ -125,7 +125,7 @@ OpenAPI_scp_domain_routing_information_t *OpenAPI_scp_domain_routing_information
 end:
     if (scp_domain_listList) {
         OpenAPI_list_for_each(scp_domain_listList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_scp_domain_connectivity_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

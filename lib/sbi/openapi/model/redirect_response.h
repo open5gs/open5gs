@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_redirect_response_s OpenAPI_redirect_response_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_redirect_response_s OpenAPI_redirect_response_t;
-typedef struct OpenAPI_redirect_response_s {
+struct OpenAPI_redirect_response_s {
     char *cause;
     char *target_scp;
     char *target_sepp;
-} OpenAPI_redirect_response_t;
+};
 
 OpenAPI_redirect_response_t *OpenAPI_redirect_response_create(
     char *cause,

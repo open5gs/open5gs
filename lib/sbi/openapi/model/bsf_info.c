@@ -13,7 +13,9 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_create(
     char *rx_diam_realm,
     char *group_id,
     OpenAPI_list_t *supi_ranges,
-    OpenAPI_list_t *gpsi_ranges
+    OpenAPI_list_t *gpsi_ranges,
+    OpenAPI_list_t *service_scenario_inds,
+    OpenAPI_list_t *mac_addr_patterns
 )
 {
     OpenAPI_bsf_info_t *bsf_info_local_var = ogs_malloc(sizeof(OpenAPI_bsf_info_t));
@@ -28,6 +30,8 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_create(
     bsf_info_local_var->group_id = group_id;
     bsf_info_local_var->supi_ranges = supi_ranges;
     bsf_info_local_var->gpsi_ranges = gpsi_ranges;
+    bsf_info_local_var->service_scenario_inds = service_scenario_inds;
+    bsf_info_local_var->mac_addr_patterns = mac_addr_patterns;
 
     return bsf_info_local_var;
 }
@@ -92,6 +96,17 @@ void OpenAPI_bsf_info_free(OpenAPI_bsf_info_t *bsf_info)
         }
         OpenAPI_list_free(bsf_info->gpsi_ranges);
         bsf_info->gpsi_ranges = NULL;
+    }
+    if (bsf_info->service_scenario_inds) {
+        OpenAPI_list_free(bsf_info->service_scenario_inds);
+        bsf_info->service_scenario_inds = NULL;
+    }
+    if (bsf_info->mac_addr_patterns) {
+        OpenAPI_list_for_each(bsf_info->mac_addr_patterns, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(bsf_info->mac_addr_patterns);
+        bsf_info->mac_addr_patterns = NULL;
     }
     ogs_free(bsf_info);
 }
@@ -220,6 +235,34 @@ cJSON *OpenAPI_bsf_info_convertToJSON(OpenAPI_bsf_info_t *bsf_info)
     }
     }
 
+    if (bsf_info->service_scenario_inds != OpenAPI_service_scenario_ind_NULL) {
+    cJSON *service_scenario_indsList = cJSON_AddArrayToObject(item, "serviceScenarioInds");
+    if (service_scenario_indsList == NULL) {
+        ogs_error("OpenAPI_bsf_info_convertToJSON() failed [service_scenario_inds]");
+        goto end;
+    }
+    OpenAPI_list_for_each(bsf_info->service_scenario_inds, node) {
+        if (cJSON_AddStringToObject(service_scenario_indsList, "", OpenAPI_service_scenario_ind_ToString((intptr_t)node->data)) == NULL) {
+            ogs_error("OpenAPI_bsf_info_convertToJSON() failed [service_scenario_inds]");
+            goto end;
+        }
+    }
+    }
+
+    if (bsf_info->mac_addr_patterns) {
+    cJSON *mac_addr_patternsList = cJSON_AddArrayToObject(item, "macAddrPatterns");
+    if (mac_addr_patternsList == NULL) {
+        ogs_error("OpenAPI_bsf_info_convertToJSON() failed [mac_addr_patterns]");
+        goto end;
+    }
+    OpenAPI_list_for_each(bsf_info->mac_addr_patterns, node) {
+        if (cJSON_AddStringToObject(mac_addr_patternsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_bsf_info_convertToJSON() failed [mac_addr_patterns]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -243,6 +286,10 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
     OpenAPI_list_t *supi_rangesList = NULL;
     cJSON *gpsi_ranges = NULL;
     OpenAPI_list_t *gpsi_rangesList = NULL;
+    cJSON *service_scenario_inds = NULL;
+    OpenAPI_list_t *service_scenario_indsList = NULL;
+    cJSON *mac_addr_patterns = NULL;
+    OpenAPI_list_t *mac_addr_patternsList = NULL;
     dnn_list = cJSON_GetObjectItemCaseSensitive(bsf_infoJSON, "dnnList");
     if (dnn_list) {
         cJSON *dnn_list_local = NULL;
@@ -405,6 +452,57 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
         }
     }
 
+    service_scenario_inds = cJSON_GetObjectItemCaseSensitive(bsf_infoJSON, "serviceScenarioInds");
+    if (service_scenario_inds) {
+        cJSON *service_scenario_inds_local = NULL;
+        if (!cJSON_IsArray(service_scenario_inds)) {
+            ogs_error("OpenAPI_bsf_info_parseFromJSON() failed [service_scenario_inds]");
+            goto end;
+        }
+
+        service_scenario_indsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(service_scenario_inds_local, service_scenario_inds) {
+            OpenAPI_service_scenario_ind_e localEnum = OpenAPI_service_scenario_ind_NULL;
+            if (!cJSON_IsString(service_scenario_inds_local)) {
+                ogs_error("OpenAPI_bsf_info_parseFromJSON() failed [service_scenario_inds]");
+                goto end;
+            }
+            localEnum = OpenAPI_service_scenario_ind_FromString(service_scenario_inds_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"service_scenario_inds\" is not supported. Ignoring it ...",
+                         service_scenario_inds_local->valuestring);
+            } else {
+                OpenAPI_list_add(service_scenario_indsList, (void *)localEnum);
+            }
+        }
+        if (service_scenario_indsList->count == 0) {
+            ogs_error("OpenAPI_bsf_info_parseFromJSON() failed: Expected service_scenario_indsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+    }
+
+    mac_addr_patterns = cJSON_GetObjectItemCaseSensitive(bsf_infoJSON, "macAddrPatterns");
+    if (mac_addr_patterns) {
+        cJSON *mac_addr_patterns_local = NULL;
+        if (!cJSON_IsArray(mac_addr_patterns)) {
+            ogs_error("OpenAPI_bsf_info_parseFromJSON() failed [mac_addr_patterns]");
+            goto end;
+        }
+
+        mac_addr_patternsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(mac_addr_patterns_local, mac_addr_patterns) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(mac_addr_patterns_local)) {
+                ogs_error("OpenAPI_bsf_info_parseFromJSON() failed [mac_addr_patterns]");
+                goto end;
+            }
+            OpenAPI_list_add(mac_addr_patternsList, ogs_strdup(mac_addr_patterns_local->valuestring));
+        }
+    }
+
     bsf_info_local_var = OpenAPI_bsf_info_create (
         dnn_list ? dnn_listList : NULL,
         ip_domain_list ? ip_domain_listList : NULL,
@@ -414,7 +512,9 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON)
         rx_diam_realm && !cJSON_IsNull(rx_diam_realm) ? ogs_strdup(rx_diam_realm->valuestring) : NULL,
         group_id && !cJSON_IsNull(group_id) ? ogs_strdup(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
-        gpsi_ranges ? gpsi_rangesList : NULL
+        gpsi_ranges ? gpsi_rangesList : NULL,
+        service_scenario_inds ? service_scenario_indsList : NULL,
+        mac_addr_patterns ? mac_addr_patternsList : NULL
     );
 
     return bsf_info_local_var;
@@ -460,6 +560,17 @@ end:
         }
         OpenAPI_list_free(gpsi_rangesList);
         gpsi_rangesList = NULL;
+    }
+    if (service_scenario_indsList) {
+        OpenAPI_list_free(service_scenario_indsList);
+        service_scenario_indsList = NULL;
+    }
+    if (mac_addr_patternsList) {
+        OpenAPI_list_for_each(mac_addr_patternsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(mac_addr_patternsList);
+        mac_addr_patternsList = NULL;
     }
     return NULL;
 }

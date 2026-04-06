@@ -280,7 +280,9 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                 ogs_assert(server);
 
                 memset(&header, 0, sizeof(header));
-                header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_COMM;
+                header.service.name =
+                    OpenAPI_service_name_ToString(
+                            OpenAPI_service_name_namf_comm);
                 header.api.version = (char *)OGS_SBI_API_V1;
                 header.resource.component[0] =
                     (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
@@ -342,7 +344,9 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
             ogs_assert(server);
 
             memset(&header, 0, sizeof(header));
-            header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_COMM;
+            header.service.name =
+                OpenAPI_service_name_ToString(
+                        OpenAPI_service_name_namf_comm);
             header.api.version = (char *)OGS_SBI_API_V1;
             header.resource.component[0] =
                 (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
@@ -416,7 +420,9 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
                 ogs_assert(server);
 
                 memset(&header, 0, sizeof(header));
-                header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_COMM;
+                header.service.name =
+                    OpenAPI_service_name_ToString(
+                            OpenAPI_service_name_namf_comm);
                 header.api.version = (char *)OGS_SBI_API_V1;
                 header.resource.component[0] =
                     (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
@@ -706,14 +712,14 @@ int amf_namf_callback_handle_dereg_notify(
 
     if (UDM_SDM_SUBSCRIBED(amf_ue)) {
         r = amf_ue_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                OpenAPI_service_name_nudm_sdm, NULL,
                 amf_nudm_sdm_build_subscription_delete,
                 amf_ue, state, NULL);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
         r = amf_ue_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                OpenAPI_service_name_npcf_am_policy_control,
                 NULL,
                 amf_npcf_am_policy_control_build_delete,
                 amf_ue, state, NULL);
@@ -1048,14 +1054,14 @@ int amf_namf_callback_handle_sdm_data_change_notify(
 
             if (UDM_SDM_SUBSCRIBED(amf_ue)) {
                 r = amf_ue_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+                        OpenAPI_service_name_nudm_sdm, NULL,
                         amf_nudm_sdm_build_subscription_delete,
                         amf_ue, state, NULL);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
                 r = amf_ue_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
+                        OpenAPI_service_name_npcf_am_policy_control,
                         NULL,
                         amf_npcf_am_policy_control_build_delete,
                         amf_ue, state, NULL);
@@ -1208,8 +1214,8 @@ int amf_namf_comm_handle_ue_context_transfer_request(
     UeContext._5g_mm_capability = encoded_gmm_capability;
 
     pcf_nf_instance = OGS_SBI_GET_NF_INSTANCE(
-            amf_ue->sbi.service_type_array[
-            OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL]);
+            amf_ue->sbi.service_name_array[
+            OpenAPI_service_name_npcf_am_policy_control]);
     if (pcf_nf_instance) {
         UeContext.pcf_id = pcf_nf_instance->id;
     } else {

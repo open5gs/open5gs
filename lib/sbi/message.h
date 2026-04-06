@@ -458,7 +458,7 @@ typedef struct ogs_sbi_discovery_option_s {
     char *requester_nf_instance_id;
 
     int num_of_service_names;
-    char *service_names[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];
+    OpenAPI_service_name_e service_names[OGS_SBI_MAX_NUM_OF_SERVICE_NAME];
 
     int num_of_snssais;
     ogs_s_nssai_t snssais[OGS_MAX_NUM_OF_SLICE];
@@ -697,7 +697,7 @@ void ogs_sbi_discovery_option_set_dnn(
 
 void ogs_sbi_discovery_option_add_service_names(
         ogs_sbi_discovery_option_t *discovery_option,
-        char *service_name);
+        OpenAPI_service_name_e service_name);
 char *ogs_sbi_discovery_option_build_service_names(
         ogs_sbi_discovery_option_t *discovery_option);
 void ogs_sbi_discovery_option_parse_service_names(

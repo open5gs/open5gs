@@ -12,17 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_event_reporting_requirement_s OpenAPI_event_reporting_requirement_t;
 #include "accuracy.h"
 #include "analytics_metadata.h"
 #include "analytics_metadata_indication.h"
+#include "time_window.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_event_reporting_requirement_s OpenAPI_event_reporting_requirement_t;
-typedef struct OpenAPI_event_reporting_requirement_s {
-    struct OpenAPI_accuracy_s *accuracy;
+struct OpenAPI_event_reporting_requirement_s {
+    OpenAPI_accuracy_e accuracy;
     OpenAPI_list_t *acc_per_subset;
     char *start_ts;
     char *end_ts;
@@ -37,10 +38,11 @@ typedef struct OpenAPI_event_reporting_requirement_s {
     char *time_ana_needed;
     OpenAPI_list_t *ana_meta;
     struct OpenAPI_analytics_metadata_indication_s *ana_meta_ind;
-} OpenAPI_event_reporting_requirement_t;
+    struct OpenAPI_time_window_s *hist_ana_time_period;
+};
 
 OpenAPI_event_reporting_requirement_t *OpenAPI_event_reporting_requirement_create(
-    OpenAPI_accuracy_t *accuracy,
+    OpenAPI_accuracy_e accuracy,
     OpenAPI_list_t *acc_per_subset,
     char *start_ts,
     char *end_ts,
@@ -54,7 +56,8 @@ OpenAPI_event_reporting_requirement_t *OpenAPI_event_reporting_requirement_creat
     int max_supi_nbr,
     char *time_ana_needed,
     OpenAPI_list_t *ana_meta,
-    OpenAPI_analytics_metadata_indication_t *ana_meta_ind
+    OpenAPI_analytics_metadata_indication_t *ana_meta_ind,
+    OpenAPI_time_window_t *hist_ana_time_period
 );
 void OpenAPI_event_reporting_requirement_free(OpenAPI_event_reporting_requirement_t *event_reporting_requirement);
 OpenAPI_event_reporting_requirement_t *OpenAPI_event_reporting_requirement_parseFromJSON(cJSON *event_reporting_requirementJSON);

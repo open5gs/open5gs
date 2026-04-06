@@ -1,0 +1,2477 @@
+openapi: 3.0.1
+info:
+  title: 3GPP Plan Provisioning Management API
+  version: 19.2.0
+  description: >-
+    OAS 3.0.1 specification of API for managing network configuration plans and related jobs
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.572; Generic management services
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.572/
+servers:
+  - url: '{MnSRoot}/plan-management/{MnSVersion}'
+    variables:
+      MnSRoot:
+        description: See clause 4.4.2 of TS 32.158
+        default: http://example.com/cm
+      MnSVersion:
+        description: Version number of the OpenAPI definition
+        default: v1
+
+# Note the examples are demonstrative only and may not all contain all required attributes for the given MO types.
+paths:
+  /plan-descriptors:
+    post:
+      tags:
+        - Plan Descriptor Management 
+      summary: Create a new plan descriptor
+      description: Creates a new configuration plan descriptor that can be later activated.
+      operationId: createPlanDescriptor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanConfigurationDescriptorRequest'
+            example:
+              name: "Rollout-5G-Dublin-East"
+              version: "1.0.0"
+              description: "This is the plan for the new 5G rollout in Dublin east."
+              customProperties:
+                technology-type: "NR"
+                location: "Dublin"
+              configChangesContentType: YANG_BASED
+              configChanges:
+                - modifyOperator: "create"
+                  changeId: "add-nr-cell-001"
+                  description: "Add new NR cell for initial deployment in Dublin-4 area."
+                  target: "/SubNetwork=Irl/MeContext=Dublin-1/ManagedElement=1/GNBDUFunction=1"
+                  value:
+                    NRCellDU:
+                      - id: '4'
+                        attributes:
+                          userLabel: "Dublin-1-Cell-4"
+                          ssbDuration: 2
+      responses:
+        '201':
+          description: Plan descriptor created successfully 
+          headers:
+            Location:
+              description: URI of the created plan descriptor.
+              schema:
+                type: string
+                format: uri-reference  
+                example: "/plan-descriptors/my-plan11"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanConfigurationDescriptorResponse' 
+        '400':
+          description: Invalid request parameters or malformed input.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '409': 
+          description: A plan descriptor with the given ID already exists.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+    get:
+      tags:
+        - Plan Descriptor Management 
+      summary: Get plan configuration descriptors 
+      description: Retrieve a list of  existing plan descriptors.
+      operationId: getPlanDescriptors 
+      responses:
+        '200':  
+          description: List of the plan configuration descriptors retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array 
+                items:
+                  $ref: '#/components/schemas/DescriptorListEntry'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+  /plan-descriptors/{id}:  
+    parameters: 
+      - in: path
+        name: id
+        schema:
+          type: string
+          description: Unique identifier of the plan descriptor.
+          example: "NewNetworkElement10-group-plan-001"
+        required: true 
+
+    get: 
+      tags:
+        - Plan Descriptor Management
+      summary: Get a specific plan descriptor by ID
+      description: Retrieve the details of a single plan descriptor using its unique identifier.
+      operationId: getPlanDescriptorById
+      responses:
+        '200':
+          description: Plan descriptor retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanConfigurationDescriptorResponse' 
+        '404': 
+          description: Plan descriptor does not exist
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+    put:
+      tags:
+        - Plan Descriptor Management 
+      summary: Replace a plan descriptor
+      description: Replace a configuration plan descriptor
+      operationId: putPlanDescriptor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanConfigurationDescriptorRequest'
+            example:
+              {
+                "name": "Rollout-5G-Dublin-East",
+                "description": "This is the plan for the new 5G rollout in Dublin east.",
+                "customProperties": {
+                  "technology-type": "NR",
+                  "location": "Dublin"
+                },
+                "configChanges": [
+                  {
+                    "modifyOperator": "merge",
+                    "changeId": "Dublin-Center_DC-01_555777999",
+                    "target": "/SubNetwork=Dublin-Center/ManagedElement=DC-001/NRCellDU=1",
+                    "value": {
+                          "ssbDuration": 2
+                    }
+                  }
+                ]
+              } 
+      responses:
+        '204':
+          description: Plan descriptor replaced successfully. No content is returned
+        '400':
+          description: Invalid request parameters or malformed input.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':  
+          description: Plan descriptor not found. 
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+                
+    delete:
+      tags:
+        - Plan Descriptor Management
+      summary: Delete a plan descriptor by ID
+      description: Deletes a specific configuration plan descriptor using its unique identifier
+      operationId: deletePlanDescriptorById
+      responses:
+        '204': 
+          description: Plan descriptor deleted successfully.
+        '404':
+          description: Plan descriptor not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'  ##EDITOR The example in swagger is very strange. The example cannot be the same for put and delete. TODO LATER
+        '409': 
+          description: Conflict - The plan descriptor cannot be deleted due to its current state or dependencies (For example, it is referenced in a plan group descriptor). 
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+  /plan-group-descriptors:
+    post:
+      tags:
+        - Plan Group Descriptor Management 
+      summary: Create a new plan group descriptor
+      description: Creates a new configuration plan group descriptor that can be later activated.
+      operationId: createPlanGroupDescriptor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanConfigurationGroupDescriptor'
+
+      responses:
+        '201':
+          description: Plan group descriptor created successfully 
+          headers:
+            Location:
+              description: URI of the created plan descriptor.
+              schema:
+                type: string
+                format: uri-reference  
+                example: "/plan-group-descriptors/mygroup-11"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanConfigurationGroupDescriptorResponse' 
+        '400':
+          description: Invalid request parameters or malformed input.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail' 
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+    get:
+      tags:
+        - Plan Group Descriptor Management 
+      summary: Get plan configuration descriptors
+      description: Retrieve a list of existing plan descriptors.
+      operationId: getPlanGroupDescriptors 
+      responses:
+        '200':  
+          description: List of the plan configuration descriptors retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array 
+                items: 
+                  $ref: '#/components/schemas/DescriptorListEntry'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+  /plan-group-descriptors/{id}:  
+    parameters: 
+      - in: path
+        name: id
+        schema:
+          type: string
+          description: Unique identifier of the plan group descriptor.
+          example: "NewNetworkElement10-group-plan-001"
+        required: true 
+
+    get: 
+      tags:
+        - Plan Group Descriptor Management
+      summary: Get a specific plan group descriptor by ID
+      description: Retrieve the details of a plan group descriptor using its unique identifier.
+      operationId: getPlanGroupDescriptorById
+      responses:
+        '200':
+          description: Plan group descriptor retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanConfigurationGroupDescriptorResponse' 
+        '404': 
+          description: Plan group descriptor does not exist
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+    put:
+      tags:
+        - Plan Group Descriptor Management 
+      summary: Replace a plan group descriptor
+      description: Replace a configuration plan group descriptor
+      operationId: putPlanGroupDescriptor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanConfigurationGroupDescriptor'
+      responses:
+        '200':
+          description: Plan group descriptor replaced successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanConfigurationGroupDescriptorResponse' 
+        '400': 
+          description: Invalid request parameters or malformed input.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':   
+          description: Plan group descriptor not found. 
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+                
+    delete:
+      tags:
+        - Plan Group Descriptor Management
+      summary: Delete a plan group descriptor by ID
+      description: Deletes a plan group descriptor using its unique identifier
+      operationId: deletePlanGroupDescriptorById
+      responses:
+        '204': 
+          description: Plan descriptor deleted successfully.
+        '404':
+          description: Plan descriptor not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '409':  
+          description: The plan group descriptor cannot be deleted due to its current state or dependencies (For example, it is referenced in a plan group descriptor).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+   
+  /fallback-descriptors:
+    get:
+      tags:
+        - Fallback Descriptor Management 
+      summary: Get fallback configuration descriptors 
+      description: Retrieve a list of  existing fallback descriptors.
+      operationId: getFallbackDescriptors 
+      responses:
+        '200':  
+          description: List of the fallback configuration descriptors retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array 
+                items: 
+                  $ref: '#/components/schemas/DescriptorListEntry'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+  /fallback-descriptors/{id}:
+    parameters: 
+      - in: path
+        name: id
+        schema:
+          type: string
+          description: Unique identifier of the fallback descriptor.
+          example: "Fallback-Dublin-plan-001"
+        required: true 
+    get: 
+      tags:
+        - Fallback Descriptor Management
+      summary: Get a specific fallback descriptor by ID
+      description: Retrieve the details of a single fallback descriptor using its unique identifier.
+      operationId: getFallbackDescriptorById
+      responses:
+        '200':
+          description: Fallback Plan descriptor retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FallbackConfigurationDescriptorResponse'
+        '404': 
+          description: Fallback descriptor does not exist
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+    delete:
+      tags:
+        - Fallback Descriptor Management
+      summary: Delete a Fallback descriptor by ID
+      description: Deletes a specific fallback plan descriptor using its unique identifier
+      operationId: deleteFallbackDescriptorById
+      responses:
+        '204': 
+          description: Fallback descriptor deleted successfully.
+        '404':
+          description: Fallback descriptor not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'  ##EDITOR The example in swagger is very strange. The example cannot be the same for put and delete. TODO LATER
+        '409': 
+          description: Conflict - The fallback descriptor cannot be deleted due to its current state. 
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+  /trigger-descriptors:
+    post:
+      tags:
+        - Trigger Descriptor Management 
+      summary: Create a new trigger descriptor
+      description: Creates a new trigger descriptor
+      operationId: createTriggerDescriptor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerDescriptorRequest'
+ 
+      responses:
+        '201':
+          description: Trigger descriptor created successfully 
+          headers:
+            Location:
+              description: URI of the created trigger descriptor.
+              schema:
+                type: string
+                format: uri-reference
+                example: "/trigger-descriptors/mytrigger-11"  
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerDescriptorResponse' 
+        '400':
+          description: Invalid request parameters or malformed input.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail' 
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+    get:
+      tags:
+        - Trigger Descriptor Management 
+      summary: Get trigger descriptors
+      description: Retrieve a list of existing trigger descriptors.
+      operationId: getTriggerDescriptors 
+      responses:
+        '200':
+          description: List of the trigger descriptors retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type:  array
+                items: 
+                  $ref: '#/components/schemas/DescriptorListEntry'
+
+  /trigger-descriptors/{id}:  
+    parameters: 
+      - in: path
+        name: id
+        schema:
+          type: string
+          description: Unique identifier of the  descriptor.
+          example: "NewNetworkElement10-trigger-001"
+        required: true 
+
+    get: 
+      tags:
+        - Trigger Descriptor Management
+      summary: Get a specific trigger descriptor by ID
+      description: Retrieve the details of a single descriptor using its unique identifier.
+      operationId: getTriggerDescriptorById
+      responses:
+        '200':
+          description: Trigger descriptor retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerDescriptorResponse'
+        '404': 
+          description: Trigger descriptor not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+    put:
+      tags:
+        - Trigger Descriptor Management 
+      summary: Replace a trigger descriptor  
+      description: Replace a trigger descriptor
+      operationId: putTriggerDescriptor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerDescriptorRequest'
+      responses:
+        '204':  
+          description: Trigger descriptor created successfully  
+        '400':
+          description: Invalid request parameters or malformed input.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '404':  
+          description: Trigger descriptor not found 
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+                
+    delete:
+      tags:
+        - Trigger Descriptor Management
+      summary: Delete a trigger descriptor by ID
+      description: Deletes a specific trigger descriptor using its unique identifier
+      operationId: deleteTriggerDescriptorById
+      responses:
+        '204': 
+          description: Trigger descriptor deleted successfully.
+        '404':
+          description: Trigger descriptor not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail' 
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+                        
+  /plan-activation-jobs:
+    post:
+      tags:
+        - Activation Management
+      summary: Create a new plan activation job  
+      description: Creates and starts a new plan activation job based on an existing plan descriptor (or plan group descriptor or fallback descriptor).  The new job's ID will be generated by the server and returned in the Location header.
+      operationId: createActivationJob
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivationJobWritableProperties'
+      responses:
+        '201':
+          description: Plan activation job created successfully.
+                       The response body provides job details, and the Location header points to the new job.
+          headers:
+            Location:
+              description: URI of the created job resource.
+              schema:
+                type: string
+                format: uri-reference  
+                example: "/plan-activation-jobs/myjob-111"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationJob'
+        '400':  
+          description: Invalid request payload or parameters (e.g., malformed JSON, missing required fields).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+    get:
+      tags:
+        - Activation Management
+      summary: Get plan activation jobs
+      description: Retrieve a list of plan activation jobs. 
+      operationId: getActivationJobs
+      parameters:
+        - in: query
+          name: job-state
+          schema:
+            $ref: '#/components/schemas/JobState'
+          description: Filter jobs by their current state.
+          example: "RUNNING"
+      responses:
+        '200':
+          description: List of plan activation jobs retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobListEntry' 
+        '400':  
+          description: Invalid query parameters
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+  /plan-activation-jobs/{id}:  
+    parameters:  
+      - in: path
+        name: id
+        schema:
+          type: string
+          description: Unique identifier of the plan activation job.
+          example: "Dublin-plan-activation-001"
+        required: true 
+    get:
+      tags:
+        - Activation Management
+      summary: Get plan activation job details by ID
+      description: Retrieve detailed information about a specific plan activation job using its unique identifier.
+      operationId: getActivationJobById
+      responses:
+        '200':
+          description: Job details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationJob'  
+        '404':
+          description: Job not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+    delete:
+      tags:
+        - Activation Management
+      summary: Delete a plan activation job by ID
+      description: Deletes a specific plan activation job, typically if it's not in a terminal state (e.g., running, completed, failed).
+      operationId: deleteActivationJobById
+      responses:
+        '204':
+          description: Job deleted successfully. No content is returned.
+        '404':
+          description: Job not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '409': 
+          description:  Cannot delete job in its current state (e.g., already running). 
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+    patch:
+      tags:
+        - Activation Management
+      summary: Cancel the activation job 
+      description: Cancel the activation job
+      operationId: cancelActivationJobById      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelRequest'  
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/CancelRequest'
+      responses:
+        '202': 
+          description: Job cancel request was accepted and cancellation is ongoing 
+        '204':
+          description: Job cancel request was successfully completed 
+        '404':
+          description: Job not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Semantic error - e.g. job was not in RUNNING state
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+  /plan-activation-jobs/{id}/status:
+    get:
+      tags:
+        - Activation Management 
+      summary: Get job status 
+      description: Retrieve the current status of a specific plan activation job using its unique identifier. 
+      operationId: getJobStatus 
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            description: Unique identifier of the plan activation job.
+            example: "Dublin-plan-activation-001"
+          required: true 
+      responses:
+        '200':
+          description: Job status retrieved successfully. 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationJobStatus' 
+        '404':
+          description: Job not found. 
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail' 
+        '500': 
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+  /plan-activation-jobs/{id}/activation-details:
+    get:
+      tags:
+        - Activation Management
+      summary: Get activation details
+      description: Retrieve detailed information about the activation results of a job
+      operationId: getActivationDetails
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            description: Unique identifier of the plan activation job.
+            example: "Dublin-plan-activation-001"
+          required: true 
+        - name: expand
+          in: query
+          description: >-
+            By default the activation details results shall include the FAILED operations only.  This parameter indicates whether to expand all details of the activation results to also include the 'SUCCEEDED' operations.
+          required: false
+          schema:
+            type: string
+            enum:
+              - all
+      responses:
+        '200':
+          description: Activation details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionDetails' 
+        '404':
+          description: Job not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+
+  /plan-validation-jobs:  
+    post:
+      tags:
+        - Validation Management
+      summary: Create a new plan validation job
+      description: Creates and starts a new plan validation job based on an existing plan descriptor.  The new job's ID will be generated by the server and returned in the Location header.
+      operationId: createValidationJob
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationJobRequest'
+      responses:
+        '201':
+          description: Plan validation job created successfully.
+                       The response body provides job details, and the Location header points to the new job.
+          headers:
+            Location:
+              description: URI of the created job resource.
+              schema:
+                type: string
+                format: uri-reference
+                example: "/plan-validation-jobs/myjob-111"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationJob'
+        '400':
+          description: Invalid request payload or parameters (e.g., malformed JSON, missing required fields).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+    get:
+      tags:
+        - Validation Management
+      summary: Get plan validation jobs
+      description: Retrieve a list of plan validation jobs. 
+      operationId: getValidationJobs
+      parameters:
+        - in: query
+          name: job-state
+          schema:
+            $ref: '#/components/schemas/JobState' 
+          description: Filter jobs by their current state.
+          example: "job-state=COMPLETED" # Example state for validation jobs
+      responses:
+        '200':
+          description: List of plan validation jobs retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobListEntry'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+                
+  /plan-validation-jobs/{id}:  
+    parameters:  
+      - in: path
+        name: id
+        schema:
+          type: string
+          description: Unique identifier of the plan validation job.
+          example: "Dublin-plan-validation-001"
+        required: true 
+    get:
+      tags:
+        - Validation Management
+      summary: Get plan validation job details by ID
+      description: Retrieve detailed information about a specific plan validation job using its unique identifier.
+      operationId: getValidationJobById
+      responses:
+        '200':
+          description: Job details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationJob'
+        '404':
+          description: Job not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+    delete:
+      tags:
+        - Validation Management
+      summary: Delete a plan validation job by ID
+      description: Deletes a specific plan validation job, typically if it's not in a terminal state (e.g., running, completed, failed).
+      operationId: deleteValidationJobById
+      responses:
+        '204':
+          description: Job deleted successfully. No content is returned.
+        '404':
+          description: Job not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+    patch:
+      tags:
+        - Validation Management
+      summary: Cancel the validation job
+      description: Cancel the validation job
+      operationId: cancelValidationJobById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelRequest'
+      responses:
+        '202': 
+          description: Job cancel request was accepted and cancellation is ongoing 
+        '204':
+          description: Job cancel request was successfully completed 
+        '404':
+          description: Job not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '422':
+          description: Semantic error - e.g. job was not in RUNNING state
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+        '500':
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+
+  /plan-validation-jobs/{id}/status:
+    get:
+      tags:
+        - Validation Management 
+      summary: Get job status 
+      description: Retrieve the current status of a specific plan validation job using its unique identifier. 
+      operationId: getValidationJobStatus 
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            description: Unique identifier of the plan validation job.
+            example: "Dublin-plan-validation-001"
+          required: true 
+      responses:
+        '200':
+          description: Job status retrieved successfully. 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationJobStatus' 
+        '404':
+          description: Job not found. 
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail' 
+        '500': 
+          description: Internal server error.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'
+
+  /plan-validation-jobs/{id}/validation-details:
+    get:
+      tags:
+        - Validation Management
+      summary: Get validation details
+      description: Retrieve detailed information about the validation results of a job
+      operationId: getValidationDetails
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            description: Unique identifier of the plan validation job.
+            example: "Dublin-South-plan-validation-001"
+          required: true 
+        - name: details
+          in: query
+          description: Selects the level of details to return.
+          schema:
+            type: string
+            enum: [summary, all]
+            default: all
+      responses:
+        '200':
+          description: Validation details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionDetails' 
+        '404':
+          description: Job not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetail'             
+                
+components:
+  schemas:
+    PlanConfigurationDescriptor:
+      allOf:
+        - $ref: '#/components/schemas/PlanConfigurationDescriptorBaseProperties'
+        - type: object
+          required:
+            - id
+            - activationMode
+            - lastModifiedAt
+            - validationState
+            - configChangesContentType
+            - configChanges
+          properties: 
+            id:
+              type: string
+              description: The identifier of the planned configuration
+              example: plan-001
+            configChanges:
+              description: "The plan configuration changes"
+              type: array
+              items:
+                $ref: '#/components/schemas/ConfigChange'
+            validationState:
+              type: string
+              enum: [NOT_VALIDATED, VALID, INVALID]
+              default : NOT_VALIDATED
+              description: The validation state of the plan. 
+              example: NOT_VALIDATED
+            lastModifiedAt:
+              type: string
+              format: date-time
+              description: the last time the plan was modified
+              example: 2025-03-06T16:50:26-08:00
+            lastValidatedAt:
+              type: string
+              format: date-time
+              description: last time the plan was validated
+              example: 2025-03-06T16:50:29-08:00
+              
+     
+    PlanConfigurationDescriptorRequest:
+      allOf:
+        - $ref: '#/components/schemas/PlanConfigurationDescriptorBaseProperties'
+        - type: object
+          required:
+            - configChanges
+          properties: 
+            configChanges:
+              description: "The plan configuration changes"
+              type: array
+              items:
+                $ref: '#/components/schemas/ConfigChangeWritable'
+
+    PlanConfigurationDescriptorResponse:
+      allOf:
+        - $ref: '#/components/schemas/PlanConfigurationDescriptor'
+        - type: object
+          properties: 
+            _links:
+              $ref: '#/components/schemas/SelfLink'
+#              allOf:
+#                - $ref: '#/components/schemas/SelfLink'
+              example: 
+                self:
+                  href: "{root-url}/plan-management/v1/plan-descriptors/pd-001"
+                  templated: true
+                  type: "application/json"
+                  title: "The newly created PlanConfigurationDescriptor"
+
+    PlanConfigurationDescriptorBaseProperties:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Descriptive name of the plan group configuration descriptor
+          example: Rollout-5G-Dublin-East
+        version:
+          type: string
+          description: The version of the planned configuration. Its format is implementation specific.
+          example: "1.0.0"
+        description:
+          type: string
+          description: Used to describe the purpose of the plan configuration
+          example: This is the plan for the new 5G rollout in Dublin east.
+        customProperties:
+          type: object
+          description: A dynamic set of custom properties provided by client
+          additionalProperties: true 
+          example:
+              technology-type: NR
+              location: Dublin
+        configChangesContentType:
+          $ref: '#/components/schemas/ConfigChangesContentType'
+        activationMode:
+          type: string
+          enum: [ATOMIC, BEST_EFFORT, STOP_ON_ERROR] 
+          default : BEST_EFFORT
+          description: Specifies the execution behavior when the plan is activated
+          example: BEST_EFFORT
+
+    PlanConfigurationGroupDescriptor:
+      type: object
+      required :
+        - members
+      properties:
+        id:
+          type: string
+          description: Unique id of the plan group configuration descriptor
+          example: "plan-001"
+        name:
+          type: string
+          description: Descriptive name of the plan group configuration descriptor
+          example: "Rollout-5G-Dublin-East"
+        version:
+          type: string
+          description: version of the plan group configuration descriptor
+          example: "1.0.0"
+        description:
+          type: string
+          description: Used to describe the purpose of the plan group configuration
+          example: "This is the plan for the new 5G rollout in Dublin east."
+        customProperties:
+          type: object
+          description: A dynamic set of custom properties provided by client
+          additionalProperties: true 
+          example:
+              technology-type: NR
+              location: Dublin
+        isOrdered:
+          type: boolean
+          description: Specifies if the members of the planned configuration group are ordered. When ordered, the planned configuration group members shall be validated/activated in the specified order. When not ordered the planned configuration group members can be validated/activated in any order
+          default: false
+        isFailOnMemberConflicts:
+          type: boolean
+          description: Specifies if the activation shall fail on detection of conflicts between planned configuration group members, or if the operations shall be processed as if there were no conflicts
+          default: false
+        activationMode:
+          type: string
+          enum: [ATOMIC, BEST_EFFORT, STOP_ON_ERROR] 
+          default : "BEST_EFFORT"
+          description: Specifies the execution behavior when the plan configuration group is activated 
+          example: "BEST_EFFORT"
+        validationState:
+          type: string
+          enum: [NOT_VALIDATED, PARTIALLY_VALID, VALID, INVALID]
+          default : "NOT_VALIDATED"
+          description: The validation state for the last time plan configuration group was validated 
+          example: "NOT_VALIDATED"
+        lastModifiedAt:
+          type: string
+          format: date-time
+          description: the last time the plan was modified
+          example: "2025-03-06T16:50:26-08:00"
+        lastValidatedAt:
+          type: string
+          format: date-time
+          description: last time the plan was validated
+          example: "2025-03-06T16:50:29-08:00"
+        members:
+          type: array
+          description: list of plan or plan group descriptor identifiers 
+          items:
+            $ref: '#/components/schemas/Member'
+          example:
+              - planConfigDescrId: pcd-network-101
+              - planConfigGroupDescrId: pgc-europe-east-group
+              - planConfigDescrId: pcd-radio-tuning-005
+              - planConfigGroupDescrId: pgc-5g-core-rollout
+              
+    PlanConfigurationGroupDescriptorResponse:
+      allOf:
+        - $ref: '#/components/schemas/PlanConfigurationGroupDescriptor'
+        - type: object
+          required:
+            - id
+            - activationMode
+            - validationState
+            - isOrdered
+            - isFailOnMemberConflicts
+            - members
+          properties: 
+            _links:
+              type: object
+              description: Hypermedia links for plan descriptor
+              $ref: '#/components/schemas/SelfLink'
+#              allOf:
+#                - $ref: '#/components/schemas/SelfLink'
+              example: 
+                self:
+                  href: "{root-url}/plan-management/v1/plan-group-descriptors/pgd-001"
+                  templated: true
+                  type: "application/json"
+                  title: "The newly created PlanConfigurationGroupDescriptor"   
+              
+
+    Member:
+      type: object
+      description: |
+        Defines a member identified by EITHER a single Plan Configuration Descriptor ID 
+        OR a Plan Configuration Group Descriptor ID, but not both.
+      oneOf:
+        - type: object
+          required: [planConfigDescrId]
+          properties:
+            planConfigDescrId:
+              type: string
+              description: Unique id of the plan configuration descriptor.
+              example: "pcd-001"
+        - type: object
+          required: [planConfigGroupDescrId]
+          properties:
+            planConfigGroupDescrId:
+              type: string
+              description: Unique id of the plan configuration group descriptor.
+              example: "pgc-001"             
+
+    FallbackConfigurationDescriptor:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique id of the fallback configuration descriptor
+          example: "fallback-001"
+        name:
+          type: string
+          description: Descriptive name of the fallback configuration descriptor
+          example: "Fallback-Rollout-5G-Dublin-East"
+        description:
+          type: string
+          description: Used to describe the purpose of the fallback configuration
+          example: "Fallback for configuration plan Rollout-5G-Dublin-East."
+        version:
+          type: string
+          description: The version of the fallback configuration. Its format is implementation specific.
+          example: 1.0.0
+        customProperties:
+          type: object
+          description: A dynamic set of custom properties provided by client
+          additionalProperties: true 
+          example:
+              technology-type: NR
+              location: Dublin
+        activationJob:
+          type: string
+          description: The identifier of the related activation job.
+      required:
+        - activationJob
+      oneOf:
+        - type: object
+          description: COMPLETE_RESTORE type fallback
+          required:
+            - fallbackConfig
+          properties:
+            fallbackConfig:
+              type: string
+              description: The fallback configuration associated with COMPLETE_RESTORE
+        - type: object
+          description: The configuration changes associated with UNDO type fallback
+          properties:
+            configChangesContentType:
+              $ref: '#/components/schemas/ConfigChangesContentType'
+            configChanges:
+              type: array
+              description: |
+                The configuration change set specifying the configuration in case the fallback configuration is of the "UNDO" type. The format of "configChanges" is specified in "configChangesContentType". Exactly one of this element or the fallbackConfig shall be present.
+              items:
+                $ref: '#/components/schemas/ConfigChangeWritable'   
+          required:
+            - configChanges
+            - configChangesContentType           
+              
+    FallbackConfigurationDescriptorResponse:
+      allOf:
+        - $ref: '#/components/schemas/FallbackConfigurationDescriptor'
+        - type: object
+          properties: 
+            _links:
+              type: object
+              description: Hypermedia links for fallback descriptor
+              $ref: '#/components/schemas/SelfLink'
+#              allOf:
+#                - $ref: '#/components/schemas/SelfLink'
+              example: 
+                self:
+                  href: "{root-url}/plan-management/v1/fallback-descriptors/pd-001"
+                  templated: true
+                  type: "application/json"
+                  title: "The newly created FallbackConfigurationDescriptor"     
+
+    TriggerDescriptorRequest:
+      $ref: '#/components/schemas/TriggerDescriptorBaseProperties'
+#      allOf:
+#        - $ref: '#/components/schemas/TriggerDescriptorBaseProperties'
+    TriggerDescriptorResponse:
+      allOf:
+        - $ref: '#/components/schemas/TriggerDescriptor'
+        - type: object
+          properties: 
+            _links:
+              type: object
+              description: Hypermedia links for trigger descriptor
+              $ref: '#/components/schemas/SelfLink'
+#              allOf:
+#                - $ref: '#/components/schemas/SelfLink'
+              example: 
+                self:
+                  href: "{root-url}/plan-management/v1/trigger-descriptors/trigger-001"
+                  templated: true
+                  type: "application/json"
+                  title: "The newly created TriggerDescriptor"
+
+    TriggerDescriptorBaseProperties:
+      type: object
+      required:
+        - conditionExpression
+        - evaluationPeriod
+        - activationJobs
+      properties:
+        name:
+          type: string
+          description: Descriptive name of the trigger descriptor
+          example: "Rollout-5G-Dublin-East"
+        description:
+          type: string
+          description: Used to describe the purpose of the trigger
+          example: "This is the plan for the new 5G rollout in Dublin east."
+        version:
+          type: string
+          description: an optional version for the Trigger Descriptor
+          example: "1.0.0"
+        customProperties:
+          type: object
+          description: A dynamic set of custom properties provided by client
+          additionalProperties: true 
+          example:
+              technology-type: NR
+              location: Dublin
+        conditionExpression:
+          type: string
+          description: The condition expression
+        activationJobs:
+          type: array
+          items:
+            type : string
+          description: The identifiers of one or more activation jobs that shall be triggered by this condition.
+        startEvaluationAt:
+          type: string
+          format: date-time
+          description: The date and time at which the evaluation of the condition expression shall start. The evaluation result is set to "False" before that date and time. If the information element is not specified, evaluation of the trigger condition shall start immediately.
+          example: "2025-03-06T16:50:26-08:00"
+        stopEvaluationAt:
+          type: string
+          format: date-time
+          description: The date and time at which the evaluation of the condition expression shall stop. The evaluation result is set to "False" after that date and time. If the information element is not specified, evaluation of the trigger condition shall continue until the deletion of the trigger condition descriptor.
+          example: "2025-03-06T16:50:26-08:00"
+        isTriggerOnce:
+          type: boolean
+          default : true
+          description: The boolean indication, if the trigger is disarmed after the first firing.
+          example: false
+        evaluationPeriod:
+          type: integer
+          description: The evaluation period specifies the interval of time in seconds  between two consecutive condition expression evaluations.
+        hysteresis:
+          type: object
+          $ref: '#/components/schemas/Hysteresis'
+#          allOf:
+#           - $ref: '#/components/schemas/Hysteresis'
+          description: The hysteresis, when present, specifies that the trigger shall not be activated immediately when the evaluation result changes from false to true or a specified number of times.  Values greater or equal to 1 are allowed
+      additionalProperties: true
+
+    Hysteresis:
+      type: object
+      properties: 
+        timeOfTrueEvaluations:
+          type: integer
+          description: The hysteresis, when present, specifies that the trigger shall not be activated immediately, when the evaluation result changes from false to true, but only when the evaluation results is true for a specified time (which must be a multiple of the evaluation period). Unit is seconds
+        numberOfTrueEvaluations:
+          type: integer
+          description: This information element, when present, specifies that the trigger shall not be activated immediately, when the evaluation result changes from false to true, but only when the evaluation results is true for a specified time (which must be a multiple of the evaluation period) or a specified number of times.
+
+    TriggerDescriptor:
+      allOf:
+        - $ref: '#/components/schemas/TriggerDescriptorBaseProperties'
+        - type: object
+          properties:
+            id:
+              type: string
+              description: Unique id of the plan configuration descriptor
+              example: "trigger-001"
+            currentEvaluationResult:
+              type: boolean
+              default : false
+              description: The current result of evaluating the "condition-expression".
+              example: false
+            lastModifiedAt:
+              type: string
+              format: date-time
+              description: The date and time at which the trigger condition was modified the last time by a MnS consumer. Upon creation of the trigger condition descriptor the value of the information element is set to the date and time at which the descriptor is created.
+              example: "2025-03-06T16:50:29-08:00"
+            lastTriggeredAt:
+              type: string
+              format: date-time
+              description: The date and time at which the evaluation result of the trigger condition changed the last time from "False" to "True".
+              example: "2025-03-06T16:50:29-08:00"
+            isTriggerActive:
+              type: boolean
+              default : false
+              description: The indication if the trigger can start activation jobs (trigger is active), or if the trigger cannot start activation jobs (trigger is inactive).
+              example: false
+          required:
+            - conditionExpression
+            - evaluationPeriod
+
+    DescriptorListEntry: 
+      type: object
+      properties:
+        id:
+          type: string
+          description: id of the descriptor.
+          example: plan-descriptor-1
+        name:
+          type: string
+          description: name of the descriptor.
+          example: Dublin East Rollout
+        version:
+          type: string
+          description: version of the descriptor.
+          example: "1.0.0"
+        description:
+          type: string
+          description: description/purpose of the descriptor.
+          example: "plan-descriptor-1"
+      required :
+        - id
+        
+    JobListEntry: 
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              description: id of the job.
+              example: plan-job-1
+            name:
+              type: string
+              description: name of the job.
+              example: Dublin East Rollout Job
+            description:
+              type: string
+              description: description/purpose of the job.
+              example: Job to do dublin east rollout
+            jobState:
+              $ref: '#/components/schemas/JobState'
+          required :
+            - id
+            - jobState
+
+    ActivationJobWritableProperties:
+      type: object  
+      properties:
+        name:
+          type: string
+          description: Name of the activation job
+          example: "Dublin East Cell Deployment"
+        description:
+          type: string
+          description: Human-readable description of the job
+          example: "Optimize the Dublin area network"
+        mnsConsumerId:
+          type: array
+          description: The consumer that created and/or started the job. It may indicated a human user and/or one or more applications initiating the job. E.g. ["userid:janedoe", "appid:12314"] 
+          items:
+            type: string
+        isFallbackEnabled:
+          type: boolean
+          description: Whether fallback should be enabled for this job
+          default: false
+        serviceImpact:
+          type: string
+          enum: [LEAST_SERVICE_IMPACT, SHORTEST_TIME]
+          description: Additional job-specific parameters
+          default: "SHORTEST_TIME"
+        isImmediateActivation:
+          type: boolean
+          description: Specifies if the activation job shall start immediately or, alternatively, by conditional activation.
+          default: true
+      oneOf:
+          - $ref: '#/components/schemas/PlanRef'
+          - $ref: '#/components/schemas/PlanGroupRef'
+          - $ref: '#/components/schemas/EmbeddedPlan'
+          - $ref: '#/components/schemas/EmbeddedPlanGroup'
+          - $ref: '#/components/schemas/FallbackPlanRef'     
+      example:
+        {
+          "name" : "5G-Dublin-East-Rollout",
+          "description" : "Optimize the 5G network in Dublin East",
+          "planConfigDescr" : {
+            "activationMode" : "ATOMIC",  
+            "customProperties" : {
+              "technology-type": "NR",
+              "location": "Dublin"
+            },
+            "configChangesContentType" : "YANG_BASED", 
+            "configChanges": [
+              {
+                "modifyOperator": "merge",
+                "changeId": "Dublin-Center_DC-01_555777999",
+                "target": "/SubNetwork=Dublin-Center/ManagedElement=DC-001/NRCellDU=1",
+                "value": {
+                    "ssbDuration": 2
+                }
+              }
+            ]
+          }
+        }
+
+    PlanRef:
+      type: object
+      required: [planConfigDescrId]
+      properties:
+        planConfigDescrId:
+          type: string
+
+    EmbeddedPlan:
+      type: object
+      required: [planConfigDescr]
+      properties:
+        planConfigDescr:
+          $ref: '#/components/schemas/PlanConfigurationDescriptorRequest'
+
+    PlanGroupRef:
+      type: object
+      required: [planConfigGroupDescrId]
+      properties:
+        planConfigGroupDescrId:
+          type: string
+
+    EmbeddedPlanGroup:
+      type: object
+      required: [planConfigGroupDescr]
+      properties:
+        planConfigGroupDescr:
+          $ref: '#/components/schemas/PlanConfigurationGroupDescriptor'
+
+    FallbackPlanRef:
+      type: object
+      required: [fallbackConfigDescrId]
+      properties:
+        fallbackConfigDescrId:
+          type: string
+
+    ActivationJobStatus:
+      allOf:     
+        - type: object
+          properties:
+            jobState: { $ref: '#/components/schemas/JobState' }
+            activationState: { $ref: '#/components/schemas/ActivationState' }
+            startedAt: { type: string, format: date-time }
+            stoppedAt: { type: string, format: date-time }
+          required: [jobState, activationState]
+
+
+    ActivationJob:
+      allOf:
+        - $ref: '#/components/schemas/ActivationJobWritableProperties'      
+        - type: object
+          properties:
+            id:
+              type: string
+              description: id of the activation job
+              example: "job-id-3985199134"
+            jobState:
+              $ref: '#/components/schemas/JobState'
+#              allOf:
+#                - $ref: '#/components/schemas/JobState'
+              example: "COMPLETED"
+            activationState:
+              $ref: '#/components/schemas/ActivationState'
+#              allOf:
+#                - $ref: '#/components/schemas/ActivationState'
+              example: "ACTIVATED"
+            startedAt:
+              type: string
+              format: date-time
+              example: "2024-12-02T13:16:54.088Z"
+            stoppedAt:
+              type: string
+              format: date-time
+              example: "2024-12-02T13:16:58.088Z"   
+            jobDetails:
+              $ref: '#/components/schemas/JobDetails'
+#              allOf:
+#                - $ref: '#/components/schemas/JobDetails'
+            activationDetails:
+              $ref: '#/components/schemas/ExecutionDetails'
+#              allOf:
+#                - $ref: '#/components/schemas/ExecutionDetails'
+            cancelRequest:   
+              type: boolean
+              description: This boolean attribute allows to request to cancel the activation process by setting its value to "True". Setting the value to "False" has no observable result. Once the value is set to "True" it is immutable
+              default: false
+            createdFallbackConfigDescrId:   
+              type: string
+              description: Id of the created Fallback Plan Configuration Descriptor
+              example: "fallback-plan-descriptor-001"
+            _links:
+              $ref: '#/components/schemas/ActivationJobLinks'
+          required: [id, jobState, jobDetails, activationState, activationDetails, _links]
+          additionalProperties : true
+        
+    ValidationJobRequest:
+      $ref: '#/components/schemas/ValidationJobBaseProperties'
+#      allOf:
+#        - $ref: '#/components/schemas/ValidationJobBaseProperties' 
+      example:
+        {
+          "name" : "5G-Dublin-East-Rollout",
+          "description" : "Optimize the 5G network in Dublin East",
+          "planConfigDescr" : {
+            "activationMode" : "ATOMIC",  
+            "customProperties" : {
+              "technology-type": "NR",
+              "location": "Dublin"
+            },
+            "configChangesContentType" : "YANG_BASED",
+            "configChanges": [
+              {
+                "modifyOperator": "merge",
+                "changeId": "Dublin-Center_DC-01_555777999",
+                "target": "/SubNetwork=Dublin-Center/ManagedElement=DC-001/NRCellDU=1",
+                "value": {
+                    "ssbDuration": 2
+                }
+              }
+            ]
+          }
+        }
+
+    ValidationJobBaseProperties:
+      type: object    
+      properties:
+        name:
+          type: string
+          description: Name of the validation job
+          example: "Dublin East Cell Deployment"
+        description:
+          type: string
+          description: Human-readable description of the job
+          example: "Optimize the Dublin area network"
+        mnsConsumerId:
+          type: array
+          description: The consumer that created and/or started the job. It may indicated a human user and/or one or more applications initiating the job. E.g. ["userid:janedoe", "appid:12314"] 
+          items:
+            type: string
+        validationMode:
+          type: string
+          enum: [CONTINUE_ON_ERROR, STOP_ON_ERROR] 
+          default : "CONTINUE_ON_ERROR"
+          description: Specifies the execution behavior when the plan is activated          
+
+      oneOf:
+          - $ref: '#/components/schemas/PlanRef'
+          - $ref: '#/components/schemas/PlanGroupRef'
+          - $ref: '#/components/schemas/EmbeddedPlan'
+          - $ref: '#/components/schemas/EmbeddedPlanGroup'
+          - $ref: '#/components/schemas/FallbackPlanRef'     
+      example:
+        {
+          "name" : "5G-Dublin-East-Rollout",
+          "description" : "Optimize the 5G network in Dublin East",
+          "planConfigDescr" : {
+            "activationMode" : "ATOMIC",  
+            "customProperties" : {
+              "technology-type": "NR",
+              "location": "Dublin"
+            },
+            "configChangesContentType" : "YANG_BASED", 
+            "configChanges": [
+              {
+                "modifyOperator": "merge",
+                "changeId": "Dublin-Center_DC-01_555777999",
+                "target": "/SubNetwork=Dublin-Center/ManagedElement=DC-001/NRCellDU=1",
+                "value": {
+                    "ssbDuration": 2
+                }
+              }
+            ]
+          }
+        }
+      additionalProperties : true
+
+    ValidationJob:
+      allOf:
+        - $ref: '#/components/schemas/ValidationJobBaseProperties' 
+        - $ref: '#/components/schemas/ValidationJobStatus'
+        - type: object
+          properties:             
+            id:
+              type: string
+              description: id of the validation job
+              example: "job-id-3985199134"
+            currentConfigTime:
+              type: string
+              format : date-time
+              description: The date and time of the current configuration state against which the planned configuration or planned configuration group is validated.
+            cancelRequest:
+              type: boolean
+              description: boolean indicating the request of a job cancellation
+              default: false
+              example: true 
+            jobDetails:
+              $ref: '#/components/schemas/JobDetails'
+            validationDetails:
+              $ref: '#/components/schemas/ExecutionDetails'
+            _links:
+              $ref: '#/components/schemas/ValidationJobLinks'
+          required:
+            - id
+            - jobState
+            - jobDetails
+            - cancelRequest
+            - validationMode
+            - validationState
+            - validationDetails
+            - _links
+
+    ValidationJobStatus:
+      type: object   
+      required: [jobState, validationState]
+      properties:
+        jobState:
+          $ref: '#/components/schemas/JobState'
+#          allOf:
+#            - $ref: '#/components/schemas/JobState'
+          example: "COMPLETED"
+        validationState:
+          $ref: '#/components/schemas/ValidationState'
+#          allOf:
+#            - $ref: '#/components/schemas/ValidationState'
+          example: "NOT_VALIDATED"
+        startedAt:
+          type: string
+          format: date-time
+          example: "2024-12-02T13:16:54.088Z"
+        stoppedAt:
+          type: string
+          format: date-time
+          example: "2024-12-02T13:16:58.088Z"   
+
+    ConfigChangeWritable:
+      type: object
+      properties:
+        modifyOperator:
+          type: string
+          enum: [create, merge, merge-create, delete]  
+          description: The operation to perform
+          example: "create"
+        description:
+          type: string
+          description: text describing the change
+          example: "modify NR cell for optimisation"
+        target:
+          type: string
+          description: Target data node path
+          example: "/_3gpp-common-subnetwork:SubNetwork=Irl/3gpp-common-mecontext:MeContext=Dublin-1/_3gpp_nrm_managedelement:ManagedElement=1/_3gpp_nrm_nrcelldu:NRCellDU=4"
+        changeId:
+          description:  The identifier of the operation. It may or may not be provided If provided, it shall be unique within an instance of "configChanges" and it shall be provided for all changes in "configChanges".
+          example: "cell-operation-001"
+        value:
+          type: object
+          additionalProperties: true # Allows any nested properties within 'value'
+          description: Value to apply (for create/merge/merge-create operations)
+      additionalProperties: true # Allows for additional properties to be provided
+      required:
+        - modifyOperator
+        - target
+
+    ConfigChange:
+      type: object
+      properties:
+        modifyOperator:
+          type: string
+          enum: [create, merge, merge-create, delete]  
+          description: The operation to perform
+          example: "create"
+        description:
+          type: string
+          description: text describing the change
+          example: "modify NR cell for optimisation"
+        target:
+          type: string
+          description: Target data node path
+          example: "/_3gpp-common-subnetwork:SubNetwork=Irl/3gpp-common-mecontext:MeContext=Dublin-1/_3gpp_nrm_managedelement:ManagedElement=1/_3gpp_nrm_nrcelldu:NRCellDU=4"
+        value:
+          type: object
+          additionalProperties: true # Allows any nested properties within 'value'
+          description: Value to apply (for create/merge/merge-create operations)
+        changeId:
+          type: string
+          description: The identifier of the operation. It may or may not be provided. If provided, it shall be unique within an instance of "configChanges" and it shall be provided for all changes in "configChanges".
+          example: "cell-operation-001"
+      additionalProperties: true # Allows for additional properties to be provided
+      required:
+        - modifyOperator
+        - target
+            
+    ActivationJobLinks:
+      allOf:
+        - type: object
+          properties:
+            self:
+              allOf:
+                - $ref: '#/components/schemas/LinkObject' 
+                - type: object
+                  properties:
+                    href: 
+                      type: string
+                      default: "{apiRoot}/plan-management/v1/plan-activation-jobs/{activationJobId}"
+                    title: 
+                      type: string
+                      enum: 
+                        - "Link to the plan activation job" 
+                    method: 
+                      type: string
+                      enum:
+                        - "GET" 
+                  example: 
+                    href: "{apiRoot}/plan-management/v1/plan-activation-jobs/activation-job-001"
+                    title: "Link to the plan activation job"
+                    type: "application/json"
+                    templated: true
+                    method: GET
+            descriptor:
+              description: A URI reference to the plan or plan group configuration descriptor
+              allOf:
+                - $ref: '#/components/schemas/LinkObject' # Any other link will conform to LinkObject schema
+                - type: object
+                  properties:
+                    href: 
+                      type: string
+                      example: "{apiRoot}/plan-management/v1/plan-descriptors/{id}"
+                    title: 
+                      type: string
+                      enum: 
+                        - "Link to the plan (or plan group) configuration descriptor" 
+                    method: 
+                      type: string
+                      enum:
+                        - "GET" # This means the method MUST be "GET"  
+                  example: 
+                    href: "{apiRoot}/plan-management/v1/plan-descriptors/plan-descriptor-001"
+                    title: "Link reference to the plan (or plan group) configuration descriptor"
+                    type: "application/json"
+                    templated: true
+                    method: GET
+            status:
+              allOf:
+                - $ref: '#/components/schemas/LinkObject' # Any other link will conform to LinkObject schema
+                - type: object
+                  properties:
+                    href: 
+                      type: string
+                      default: "{apiRoot}/plan-management/v1/plan-activation-jobs/{id}/status"
+                    title: 
+                      type: string
+                      enum: 
+                        - "Link to GET the job status"
+                    method: 
+                      type: string
+                      enum:
+                        - "GET" # This means the method MUST be "GET"
+              description: A URI reference to the status information
+              example: 
+                href: "{apiRoot}/plan-management/v1/plan-activation-jobs/myjob-111/status"
+                title: "Link to GET the job status"
+                type: "application/json"
+                templated: true
+                method: GET
+            validationDetails:
+              allOf:
+                - $ref: '#/components/schemas/LinkObject' # Any other link will conform to LinkObject schema
+                - type: object
+                  properties:
+                    href: 
+                      type: string
+                      default: "{apiRoot}/plan-management/v1/plan-activation-jobs/{id}/activation-details"
+                    title: 
+                      type: string
+                      enum: 
+                        - "Link to GET the job details"
+                    method: 
+                      type: string
+                      enum:
+                        - "GET"
+              description: A URI reference to the status information
+              example: 
+                href: "{apiRoot}/plan-management/v1/plan-activation-jobs/myjob-111/status"
+                title: "Link to GET the job status"
+                type: "application/json"
+                templated: true
+                method: GET
+            cancel:
+              allOf:
+                - $ref: '#/components/schemas/LinkObject' # Any other link 
+                - type: object
+                  properties:
+                    href: 
+                      type: string
+                      default: "{apiRoot}/plan-management/v1/plan-activation-jobs/{id}"
+                    title: 
+                      type: string
+                      enum: 
+                        - "Link to cancel the job"
+                    method: 
+                      type: string
+                      enum:
+                        - "PATCH"
+              description: A URI reference to cancel the job
+              example: 
+                href: "{apiRoot}/plan-management/v1/plan-activation-jobs/myjob-111"
+                title: "Link to cancel the job"
+                type: "application/json"
+                templated: true
+                method: PATCH
+            fallback:
+              $ref: '#/components/schemas/LinkObject'
+#              allOf:
+#                - $ref: '#/components/schemas/LinkObject' 
+              description: A URI reference to the fallback plan descriptor
+              example: 
+                href: "{apiRoot}/plan-management/v1/fallback-descriptors/fallback-myjob-111"
+                templated: true
+                type: "application/json"
+                title: "A URI reference to the fallback plan descriptor"
+                method: GET
+          # additionalProperties to allow any other dynamic links
+          additionalProperties:
+            $ref: '#/components/schemas/LinkObject' # Any other link will conform to LinkObject schema
+          required:
+            - self 
+            - descriptor
+            - status
+            - validationDetails
+            - cancel
+         
+    ValidationJobLinks:
+      allOf:
+        - type: object
+          properties:
+            self:
+              allOf:
+                - $ref: '#/components/schemas/LinkObject' 
+                - type: object
+                  properties:
+                    href: 
+                      type: string
+                      default: "{apiRoot}/plan-management/v1/plan-validation-jobs/{validationJobId}"
+                    title: 
+                      type: string
+                      enum: 
+                        - "Link to the plan validation job" 
+                    method: 
+                      type: string
+                      enum:
+                        - "GET" 
+                  example: 
+                    href: "{apiRoot}/plan-management/v1/plan-validation-jobs/val-job-001"
+                    title: "Link to the plan validation job"
+                    type: "application/json"
+                    templated: true
+                    method: GET
+            descriptor:
+              description: A URI reference to the plan (or plan group) configuration descriptor
+              allOf:
+                - $ref: '#/components/schemas/LinkObject' # Any other link will conform to LinkObject schema
+                - type: object
+                  properties:
+                    href: 
+                      type: string
+                      example: "{apiRoot}/plan-management/v1/plan-descriptors/{id}"
+                    title: 
+                      type: string
+                      enum: 
+                        - "Link to the plan (or plan group) configuration descriptor" 
+                    method: 
+                      type: string
+                      enum:
+                        - "GET"   
+                  example: 
+                    href: "{apiRoot}/plan-management/v1/plan-descriptors/plan-descriptor-001"
+                    title: "Link reference to the plan (or plan group) configuration descriptor"
+                    type: "application/json"
+                    templated: true
+                    method: GET
+            status:
+              allOf:
+                - $ref: '#/components/schemas/LinkObject' # Any other link will conform to LinkObject schema
+                - type: object
+                  properties:
+                    href: 
+                      type: string
+                      default: "{apiRoot}/plan-management/v1/plan-validation-jobs/{id}/status"
+                    title: 
+                      type: string
+                      enum: 
+                        - "Link to GET the job status"
+                    method: 
+                      type: string
+                      enum:
+                        - "GET"
+              description: A URI reference to the status information
+              example: 
+                href: "{apiRoot}/plan-management/v1/plan-validation-jobs/myjob-111/status"
+                title: "Link to GET the job status"
+                type: "application/json"
+                templated: true
+                method: GET
+            validationDetails:
+              allOf:
+                - $ref: '#/components/schemas/LinkObject' # Any other link will conform to LinkObject schema
+                - type: object
+                  properties:
+                    href: 
+                      type: string
+                      default: "{apiRoot}/plan-management/v1/plan-validation-jobs/{id}/activation-details"
+                    title: 
+                      type: string
+                      enum: 
+                        - "Link to GET the job details"
+                    method: 
+                      type: string
+                      enum:
+                        - "GET"
+              description: A URI reference to the status information
+              example: 
+                href: "{apiRoot}/plan-management/v1/plan-validation-jobs/myjob-111/status"
+                title: "Link to GET the job status"
+                type: "application/json"
+                templated: true
+                method: GET
+            cancel:
+              allOf:
+                - $ref: '#/components/schemas/LinkObject' # Any other link 
+                - type: object
+                  properties:
+                    href: 
+                      type: string
+                      default: "{apiRoot}/plan-management/v1/plan-validation-jobs/{id}"
+                    title: 
+                      type: string
+                      enum: 
+                        - "Link to cancel the job"
+                    method: 
+                      type: string
+                      enum:
+                        - "PATCH"
+              description: A URI reference to cancel the job
+              example: 
+                href: "{apiRoot}/plan-management/v1/plan-validation-jobs/myjob-111"
+                title: "Link to cancel the job"
+                type: "application/json"
+                templated: true
+                method: PATCH
+          # additionalProperties to allow any other dynamic links
+          additionalProperties:
+            $ref: '#/components/schemas/LinkObject' # Any other link will conform to LinkObject schema
+          required:
+            - self 
+            - descriptor
+            - status
+            - validationDetails
+            - cancel
+
+    JobState:
+      type: string
+      enum: [NOT_STARTED, QUEUED, RUNNING, CANCELLING, CANCELLED, COMPLETED, FAILED]
+      default: NOT_STARTED
+      example: "COMPLETED"
+  
+    JobDetails:
+      properties:
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+      additionalProperties: true
+
+
+    ExecutionDetails:
+      type: object
+      description: Details of the execution of the operations that are contained in the planned configuration or planned configuration group referenced in the job.
+      properties:
+        summary:
+          $ref: '#/components/schemas/SummaryStatus'
+        results:
+          type: array  
+          items:
+            $ref: '#/components/schemas/Result'
+        memberConflicts:
+          type: array  
+          items:
+            $ref: '#/components/schemas/MemberConflict'
+      example:
+        summary:
+          notFinished: 0
+          succeeded: 1
+          failed: 0
+          rollbackSucceeded: 0
+          rollbackFailed: 0
+          conflicting: 0
+        results: []
+        memberConflicts: []
+
+
+    ValidationState:
+      type: string
+      enum: [UNKNOWN, VALIDATION_SUCCEEDED, VALIDATION_FAILED]
+      example: "VALIDATION_SUCCEEDED"
+
+    ActivationState:
+      type: string
+      enum: [NOT_STARTED, ACTIVATED, ACTIVATION_FAILED, PARTIALLY_ACTIVATED, ACTIVATION_FAILED_ROLLED_BACK, ACTIVATION_FAILED_ROLLBACK_FAILED]
+      example: "ACTIVATED"
+      
+    Result:
+      type: object
+      description: Details of the execution of the operations that are contained in the planned configuration.
+      properties:
+        planConfigDescrId:
+          type: string
+          description : If planned configuration groups are activated, this information elements specifies the planned configuration descriptor identifier, for which error details are reported. If a planned configuration is activated or validated, this information element is absent.
+          example: "descriptor-001"
+        state:
+          type: string
+          enum: [NOT_STARTED, PROCESSING, SUCCEEDED, FAILED]
+          default: NOT_STARTED
+          description: The state of the operation activation.
+          example: "SUCCEEDED"
+        target:
+          type: string
+          example: "/SubNetwork=1/MeContext=2/ManagedElement=3"
+        errors:
+            type: array
+            items:
+              $ref: '#/components/schemas/ErrorDetail'
+      required:
+        - target
+        - state
+#      oneOf:
+#        - required:
+#            - changeId
+#          properties:
+#            changeId:
+#              type: string
+#              description: The identifier of the operation. It may or may not be provided If provided, it shall be unique within an instance of "configChanges" and it shall be provided for all changes in "configChanges".
+#              example: "change-cell-001-1"
+#        - required:
+#            - changeIndex
+#          properties:
+#            changeIndex:
+#              type: integer
+#              description: The identification of the operation. It is the positional index of the operation in the operation set ("changeIndex"). The positional index of the leftmost element is "0". Exactly one of "changeId" or "changeIndex" shall be provided.
+#              example: 0
+      example:
+        changeId: changeId-002-update-config
+        target: /SubNetwork=1/MeContext=2/ManagedElement=3
+        state: FAILED
+        errors:
+          - type: VALIDATION_ERROR
+            title: Validation Error
+            reason: VALUE_INVALID
+            detail: The provided value 'some-value' for 'someAttr' is not allowed. Valid values are 'some-value-x', 'some-value-y'.
+            path: /SubNetwork=1/MeContext=2/ManagedElement=3/attributes/someAttr
+            errorInfo:
+              attributeName: someAttr
+              invalidValue: some-value
+
+    SummaryStatus:
+      type: object
+      properties:
+        notFinished:
+          type: integer
+          example: 1
+        succeeded:
+          type: integer
+          example: 3
+        failed:
+          type: integer
+          example: 3
+        rollbackSucceeded:
+          type: integer
+          example: 0
+        rollbackFailed:
+          type: integer
+          example: 0
+        conflicting:
+          type: integer
+          example: 0
+
+    MemberConflict:
+      type: object
+      properties:
+        memberConflict :
+          type: array
+          items:
+            $ref: '#/components/schemas/MemberOp'
+
+    MemberOp:
+      type: object
+      description: The identification of two or more operation members that have a conflict.
+      properties:
+        planConfigDescrId: 
+          type: string
+          description: The plan configuration descriptor Id.
+        target: 
+          description: The path of the target change resource.
+          type: string
+      required:
+        - planConfigDescrId
+        - target
+#      oneOf:
+#        - required:
+#            - changeId
+#          properties:
+#            changeId:
+#              type: string
+#              description: The identifier of the operation. It may or may not be provided If provided, it shall be unique within an instance of "configChanges" and it shall be provided for all changes in "configChanges".
+#              example: "change-cell-001-1"
+#        - required:
+#            - changeIndex
+#          properties:
+#            changeIndex:
+#              type: integer
+#              description: The identification of the operation. It is the positional index of the operation in the operation set ("changeIndex"). The positional index of the leftmost element is "0". Exactly one of "changeId" or "changeIndex" shall be provided.
+#              example: 0
+#
+    ConfigChangesContentType:
+      type: string
+      description: The supported configuration content types.
+      enum:
+        - YANG_BASED  # confliguration format is aligned with RFC 9751 modelling specifications with some relaxed rules
+        - OPENAPI_BASED  # confliguration format is aligned with an OpenAPI model definition  
+      default: YANG_BASED    
+
+    CancelRequest:
+      type: object
+      properties:
+        cancelRequest:
+          type: boolean
+          description: Must be set to true to initiate cancellation.
+          # Restricts the boolean to only allow the 'true' value
+          enum: [true]
+      required:
+        - cancelRequest
+      # This ensures no other fields (like status or priority) can be sent in this specific PATCH
+      additionalProperties: false
+
+    ErrorDetail:
+      type: object
+      properties:
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type
+          example: "Data already exists; cannot be created"
+        type:
+          type: string
+          description: The type of the error
+          enum: 
+            - SCHEMA_VALIDATION_ERROR
+            - DATA_NODE_TREE_ERROR
+            - MODIFICATION_NOT_ALLOWED
+            - ACCESS_CONTROL_CONFLICT
+            - APPLICATION_LAYER_ERROR
+            - SERVER_ERROR
+            - OTHER
+        reason:
+          type: string
+          enum:
+            - NEW_DATA_NODE_NAME_INVALID
+            - NEW_DATA_NODE_VALUE_INVALID
+            - NEW_DATA_NODE_CONTAINMENT_INVALID
+            - FINAL_DATA_NODE_VALUE_INVALID
+            - FINAL_DATA_NODE_UNIQUENESS_INVALID
+            - FINAL_DATA_NODE_MULTIPLICITY_INVALID
+            - FINAL_DATA_NODE_CARDINALITY_INVALID
+            - TARGET_DATA_NODE_NOT_FOUND
+            - TARGET_DATA_NODE_PARENT_NOT_FOUND
+            - TARGET_DATA_NODE_FOUND
+            - TARGET_DATA_NODE_NOT_WRITABLE
+            - TARGET_DATA_NODE_INVARIANT
+            - TARGET_DATA_NODE_CREATION_NOT_ALLOWED
+            - TARGET_DATA_NODE_DELETION_NOT_ALLOWED
+            - ACCESS_DENIED
+            - OTHER
+          example: "NEW_DATA_NODE_CONTAINMENT_INVALID"
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of the problem.
+          example: "NRCellDU=1234 already exists in the network"
+        badDataNode:
+          type: string
+          example: "/_3gpp-common-subnetwork:SubNetwork=Irl/_3gpp-common-mecontext:MeContext=Dublin-1"
+        errorInfo : 
+          type: object
+          description: additional error info (e.g. stackdump)
+          additionalProperties: true
+      required:
+        - type
+        - badDataNode
+          
+    LinkObject:
+      type: object
+      description: Defines the structure of a single hypermedia link.
+      properties:
+        href:
+          type: string
+          format: uri-reference # Use uri-reference for relative paths (allows for absolute or relative uri)
+          description: The target URI of the link.
+        templated:
+          type: boolean
+          description: Indicates if the href is a URI Template (RFC 6570).
+          default: true
+        type:
+          type: string
+          description: The content type expected when following this link (MIME type).
+        title:
+          type: string
+          description: A human-readable title that describes the link's purpose.
+        method:
+          type: string
+          enum: [GET, POST, PUT, DELETE, PATCH]
+          description: The HTTP method to use for this action link.
+      required:
+        - href
+
+    SelfLink:
+      type: object
+      description: Hypermedia links for this resource, including fixed and dynamic relations.
+      properties:
+        self:
+          $ref: '#/components/schemas/LinkObject'
+#          allOf:
+#            - $ref: '#/components/schemas/LinkObject'
+          description: A link to the resource itself.
+      # additionalProperties to allow any other dynamic links
+      additionalProperties:
+        $ref: '#/components/schemas/LinkObject' # Any other link will conform to LinkObject schema
+      required:
+        - self 
+      example: # demonstrates a typical _links object in an actual response
+        self:
+          href: "{root-url}/plan-management/v1/plan-descriptors/pd-001"
+          templated: true
+          type: "application/json"
+          title: "The newly created PlanConfigurationDescriptor"
+        help:
+          href: "{root-url}/help-service/v1/topics/plan-descriptors"
+          templated: true
+          type: "application/json"
+          title: "online help for the plan descriptor"

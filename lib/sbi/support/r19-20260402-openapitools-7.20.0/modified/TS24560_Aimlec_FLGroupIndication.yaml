@@ -1,0 +1,249 @@
+openapi: 3.0.0
+
+info:
+  title: Aimlec_FLGroupIndication
+  version: 1.0.2
+  description: |
+    API for AIMLE Client Federated Learning Group Indication Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.560 V19.1.0; Artificial Intelligence / Machine Learning (AIML) Services – 
+    Service enabler Architecture Layer for Verticals (SEAL) Protocol Specification; Stage 3.
+  url: http://www.3gpp.org/ftp/Specs/archive/24_series/24.560/
+
+servers:
+  - url: '{apiRoot}/aimlec-flgi/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /indicate:
+    post:
+      summary: Indicates FL group information to FL group member
+      operationId: IndicateFLMemberInfo
+      tags:
+        - Indicate FL group
+      requestBody:
+        description: Contains the FL group member information.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndFlMember'
+      responses:
+        '204':
+          description: No Content (Success)
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+# Structured data types
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+    IndFlMember:
+      description: Indicates the FL member the information on FL member group.
+      type: object
+      properties:
+        serverId:
+          type: string
+          description: Identifier of the indicating AIMLE server.
+        valServiceId:
+          type: string
+          description: Identifier of the VAL service for which the grouping indication is applied.
+        mlModelId:
+          type: string
+          description: Identifier of the ML model for which the grouping indication is applied.
+        analyticsId:
+          type: string
+          description: >
+            Identifier of the ADAE analytics service, the FL grouping is based on, if 
+            the FL process is used for that ADAE analytics service.
+        flGroupIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlGroupInfo'
+          minItems: 1
+          description: >
+            List of the AIMLE identifiers of that created or modified FL group for the FL process.
+        flGroupDelInfo:
+          $ref: '#/components/schemas/FlGroupDeletionInfo'
+      required:
+        - serverId
+        - flGroupIds
+
+    FlGroupInfo:
+      description: Represents the FL group information.
+      type: object
+      required:
+      - flGroupId
+      properties:
+        flGroupId:
+          description: Contains the FL group identifier.
+          type: string
+        flMembers:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlMemberData'
+          minItems: 1
+          description: Contains FL member data.
+
+    FlMemberData:
+      description: >
+        Represents the FL group member data e.g. FL member identifier, address. At least one of
+        the flMemberId and flMemberAddr shall be present, although they are not specified as a
+        conditional due to backward compatibility reasons.
+      type: object
+      properties:
+        flMemberId:
+          type: string
+          description: Identifier of the FL members
+        flMemberAddr:
+          $ref: 'TS29549_SS_NetworkResourceAdaptation.yaml#/components/schemas/ValUeAddrInfo'
+        flMemberInfo:
+          $ref: '#/components/schemas/FlMemberInfo'
+
+    FlMemberInfo:
+      description: Represents the FL member information e.g. availability, constraint, FL role.
+      type: object
+      properties:
+        availability:
+          $ref: '#/components/schemas/FlMemberAvailability'
+        constraints:
+          description: Represents the FL group member constraints.
+          type: array
+          items:
+            $ref: '#/components/schemas/FlMemberConstraint'
+          minItems: 1
+        role:
+          $ref: '#/components/schemas/FlMemberRole'
+
+    FlGroupDeletionInfo:
+      description: Indicates the FL group deletion information.
+      type: object
+      properties:
+        cause:
+          $ref: '#/components/schemas/FlGroupDelCause'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+
+
+# Simple data types
+
+
+# Enumerations
+
+
+    FlMemberAvailability:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - AVAILABLE
+        - NOT_AVAILABLE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          But is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the information regarding FL member availability of the VAL UE.  
+#        Possible values are:
+#        - AVAILABLE: The FL member is available.
+#        - NOT_AVAILABLE: The FL member is not available.
+#
+    FlMemberConstraint:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - LIMITED_MEMORY
+        - LIMITED_PROCCESSING
+        - LIMITED_ACCESS
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          But is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the FL member constraint information of the VAL UE.  
+#        Possible values are:
+#        - LIMITED_MEMORY: Indicates a limited memory load.
+#        - LIMITED_PROCCESSING: Indicates a limited processing power.
+#        - LIMITED_ACCESS: Indicates a limited access to only the local data.
+#
+    FlMemberRole:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - FL_CLIENT
+        - FL_SERVER
+        - FL_AGGREGATOR
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          But is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the FL member role of the VAL UE.  
+#        Possible values are:
+#        - FL_CLIENT: Indicates an FL client role.
+#        - FL_SERVER: Indicates an FL server role.
+#        - FL_AGGREGATOR: Indicates an FL aggregator role.
+#
+    FlGroupDelCause:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - SRV_TERMINATION
+        - OUT_OF_SRV_AREA
+#      - type: string
+#        description: >
+#          This string provides information on the FL group deletion cause.
+#      description: |
+#        Represents the information regarding FL group deletion cause as AI/ML service termination or
+#        UE has moved out of the service area.  
+#        Possible values are:
+#        - SRV_TERMINATION: Indicates the AI/ML service termination.
+#        - OUT_OF_SRV_AREA: Indicates the UE has moved out of the service area.

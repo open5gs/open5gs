@@ -1,0 +1,233 @@
+openapi: 3.0.1
+info:
+  title: CCL NRM
+  version: 19.1.0
+  description: >-
+    OAS 3.0.1 definition of the CCL NRM
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.567; management aspect of closed control loops
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.567/
+paths: {}
+components:
+  schemas:
+
+  #-------- Definition of types for name-containments ------
+    SubNetwork-ncO-CCLNrm:
+      type: object
+      properties:
+        ClosedControlLoop:
+          $ref: '#/components/schemas/ClosedControlLoop-Multiple'
+       
+   #-------Definition of generic IOCs ----------#  
+
+    ClosedControlLoop-Single:
+      description: >-
+        This IOC represents the properties of an CCL management information between MnS consumer and MnS producer.  
+      allOf:
+      - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'    
+      - type: object
+        properties: 
+          cCLComponentsInfo:
+            type: array
+            items:
+              $ref: '#/components/schemas/CCLComponentsInfo'
+            description: >-
+              It indicates information on the constituent components of a CCL.
+          administrativeState:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/AdministrativeState'
+          operationalState:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/AdministrativeState'
+          cCLPriority:
+            type: integer
+            minimum: 1
+            maximum: 10
+            description: This provides the priority of the CCL. This will be the numerical value between 1 to 10, with 1 being the least priority.   
+          cCLComponentList:
+            type: array
+            items:
+              $ref: '#/components/schemas/CCLComponent'
+            description: >-
+              It indicates the list of components ating as steps of the CCL. 
+          cCLType:
+            type: string
+            enum:
+             - ENERGYOPTIMIZATION
+             - SLICEASSURANCE
+          cCLActionTrigger:
+            type: string
+          desiredBehavior:
+            type: string
+            enum:
+             - DECISION_ACTIVATION
+             - NOTIFY_RCOMMENDATION
+             - DO_NOTHING 
+          cCLPurposeRefList:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+    CCLScope-Single:
+      description: It indicates a scope of a CCL. 
+      allOf:
+      - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'    
+      - type: object
+        properties:
+          cCLPurposeRefList:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'      
+    CCLReport-Single:
+      description: This class represents the reported outcomes on a CCL instance. 
+      allOf:
+      - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'    
+      - type: object
+        properties:
+          scopeType:
+           type: string
+           enum:
+             - CCL_MEASUREMENT_SCOPE
+             - CCL_TARGET_SCOPE
+             - CCL_CONTROL_SCOPE
+             - CCL_IMPACT_SCOPE
+    ConflictManagementAndCoordinationEntity-Single:
+      description: This defines the conflict management functionality. 
+      allOf:
+      - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'    
+      - type: object
+        properties:
+          coordinationCapability:
+            type: string
+            description: >-
+              It indicates a capability of a coordination entity to coordinate CCL conflicts.
+          coordinatedCCLsScopes:
+            type: string
+          cCLActionConflictsHandling:
+            $ref: '#/components/schemas/CCLActionConflictsHandling'
+    FaultManagement:
+      description: This IOC represents the Fault Management CCL purpose. 
+      allOf:
+      - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'    
+      - type: object
+        properties:
+          faultManagementAlarmIdList:
+            type: array
+            items:
+              type: string
+          faultManagementBackUpObjectRequirement:
+            type: boolean
+          faultManagementIsolateObjectRequirement:
+            type: boolean
+          faultManagementTimeWindow:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow'
+          clearUserId:
+            type: string          
+
+#-------Definition of the generic dataType --------------#    
+    CCLComponentsInfo:
+      type: object
+      properties:
+        cCLComponentInfoId:
+          type: string
+        cCLSteps:
+          type: string
+          enum:
+            - DATA_COLLECTION
+            - ANALYSIS
+            - DECISION
+            - EXECUTION
+    CCLComponent:
+      type: object
+      properties:
+        cCLComponentIdentification:
+          type: string
+        cCLComponentRole:
+          type: string
+          enum:
+            - MONITOR
+            - ANALYSIS
+            - DECISION
+            - EXECUTION
+            - OTHER 
+    FaultManagementCCLReport:
+      type: object
+      properties:
+        generatedAlarmResultList:
+          type: array
+          items:
+            type: string
+        faultManagementCCLReportTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+          
+    GeneratedAlarmResult:
+      type: object
+      properties:
+        alarmId:
+          type: string
+        alarmClearedStatus:
+          type: boolean
+        identifiedRootCauseInformation:
+          type: string
+        enhancedCorrelationInformation:
+          type: array
+          items:
+            type: string
+            
+    CCLScopeCoordinationCapability:
+      type: object
+      properties:
+        cCLCoordinationCapabilityID:
+          type: string
+          
+    CCLActionConflictsHandling:
+      type: object
+      properties:
+        conflictInformation:
+          $ref: '#/components/schemas/ConflictInformation'
+        conflictResolution:
+          $ref: '#/components/schemas/ConflictResolution'
+        targetCCL:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+          
+    ConflictInformation:
+      type: object
+      properties:
+        conflictingCCLId:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        conflictingActions:
+          type: string
+          
+    ConflictResolution:
+      type: object
+      properties:
+        conflictingCCLId:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        cCLGoalBreachPercentage:
+          type: integer
+  #-------Definition of the generic dataType --------------#
+
+
+   #------Definition of JSON arrays for name-contained IOCs ---------------#
+    ClosedControlLoop-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ClosedControlLoop-Single'    
+
+    CCLScope-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/CCLScope-Single'
+   
+    CCLReport-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/CCLReport-Single'
+
+    ConflictManagementAndCoordinationEntity-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ConflictManagementAndCoordinationEntity-Single'      
+
+      
+    resources-CCLNrm:
+      oneOf:
+       - $ref: '#/components/schemas/ClosedControlLoop-Single'       
+       - $ref: '#/components/schemas/CCLScope-Single'
+       - $ref: '#/components/schemas/CCLReport-Single'
+       - $ref: '#/components/schemas/ConflictManagementAndCoordinationEntity-Single'       

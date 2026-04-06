@@ -5,17 +5,18 @@
 #include "amf_event.h"
 
 OpenAPI_amf_event_t *OpenAPI_amf_event_create(
-    OpenAPI_amf_event_type_t *type,
+    OpenAPI_amf_event_type_e type,
     bool is_immediate_flag,
     int immediate_flag,
     OpenAPI_list_t *area_list,
     OpenAPI_list_t *location_filter_list,
+    OpenAPI_list_t *location_trends_filter_list,
     bool is_ref_id,
     int ref_id,
     OpenAPI_list_t *traffic_descriptor_list,
     bool is_report_ue_reachable,
     int report_ue_reachable,
-    OpenAPI_reachability_filter_t *reachability_filter,
+    OpenAPI_reachability_filter_e reachability_filter,
     bool is_udm_detect_ind,
     int udm_detect_ind,
     bool is_max_reports,
@@ -31,7 +32,23 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_create(
     char *next_report,
     bool is_idle_status_ind,
     int idle_status_ind,
-    OpenAPI_dispersion_area_t *dispersion_area
+    OpenAPI_dispersion_area_t *dispersion_area,
+    char *next_periodic_report_time,
+    bool is_adjust_ao_ion_ra,
+    int adjust_ao_ion_ra,
+    bool is_ran_timing_synchro_status_change,
+    int ran_timing_synchro_status_change,
+    OpenAPI_list_t *notify_for_supi_list,
+    OpenAPI_list_t *notify_for_group_list,
+    OpenAPI_list_t *notify_for_snssai_dnn_list,
+    bool is_reporting_threshold,
+    int reporting_threshold,
+    OpenAPI_trajectory_t *assign_trajectory,
+    OpenAPI_sm_comm_failure_filter_t *sm_comm_failure_filter,
+    bool is_ue_pos_cap_requested_ind,
+    int ue_pos_cap_requested_ind,
+    OpenAPI_list_t *tw_list,
+    OpenAPI_uav_altitude_reporting_config_t *uav_altitude_reporting_config
 )
 {
     OpenAPI_amf_event_t *amf_event_local_var = ogs_malloc(sizeof(OpenAPI_amf_event_t));
@@ -42,6 +59,7 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_create(
     amf_event_local_var->immediate_flag = immediate_flag;
     amf_event_local_var->area_list = area_list;
     amf_event_local_var->location_filter_list = location_filter_list;
+    amf_event_local_var->location_trends_filter_list = location_trends_filter_list;
     amf_event_local_var->is_ref_id = is_ref_id;
     amf_event_local_var->ref_id = ref_id;
     amf_event_local_var->traffic_descriptor_list = traffic_descriptor_list;
@@ -64,6 +82,22 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_create(
     amf_event_local_var->is_idle_status_ind = is_idle_status_ind;
     amf_event_local_var->idle_status_ind = idle_status_ind;
     amf_event_local_var->dispersion_area = dispersion_area;
+    amf_event_local_var->next_periodic_report_time = next_periodic_report_time;
+    amf_event_local_var->is_adjust_ao_ion_ra = is_adjust_ao_ion_ra;
+    amf_event_local_var->adjust_ao_ion_ra = adjust_ao_ion_ra;
+    amf_event_local_var->is_ran_timing_synchro_status_change = is_ran_timing_synchro_status_change;
+    amf_event_local_var->ran_timing_synchro_status_change = ran_timing_synchro_status_change;
+    amf_event_local_var->notify_for_supi_list = notify_for_supi_list;
+    amf_event_local_var->notify_for_group_list = notify_for_group_list;
+    amf_event_local_var->notify_for_snssai_dnn_list = notify_for_snssai_dnn_list;
+    amf_event_local_var->is_reporting_threshold = is_reporting_threshold;
+    amf_event_local_var->reporting_threshold = reporting_threshold;
+    amf_event_local_var->assign_trajectory = assign_trajectory;
+    amf_event_local_var->sm_comm_failure_filter = sm_comm_failure_filter;
+    amf_event_local_var->is_ue_pos_cap_requested_ind = is_ue_pos_cap_requested_ind;
+    amf_event_local_var->ue_pos_cap_requested_ind = ue_pos_cap_requested_ind;
+    amf_event_local_var->tw_list = tw_list;
+    amf_event_local_var->uav_altitude_reporting_config = uav_altitude_reporting_config;
 
     return amf_event_local_var;
 }
@@ -75,10 +109,6 @@ void OpenAPI_amf_event_free(OpenAPI_amf_event_t *amf_event)
     if (NULL == amf_event) {
         return;
     }
-    if (amf_event->type) {
-        OpenAPI_amf_event_type_free(amf_event->type);
-        amf_event->type = NULL;
-    }
     if (amf_event->area_list) {
         OpenAPI_list_for_each(amf_event->area_list, node) {
             OpenAPI_amf_event_area_free(node->data);
@@ -87,11 +117,12 @@ void OpenAPI_amf_event_free(OpenAPI_amf_event_t *amf_event)
         amf_event->area_list = NULL;
     }
     if (amf_event->location_filter_list) {
-        OpenAPI_list_for_each(amf_event->location_filter_list, node) {
-            OpenAPI_location_filter_free(node->data);
-        }
         OpenAPI_list_free(amf_event->location_filter_list);
         amf_event->location_filter_list = NULL;
+    }
+    if (amf_event->location_trends_filter_list) {
+        OpenAPI_list_free(amf_event->location_trends_filter_list);
+        amf_event->location_trends_filter_list = NULL;
     }
     if (amf_event->traffic_descriptor_list) {
         OpenAPI_list_for_each(amf_event->traffic_descriptor_list, node) {
@@ -99,10 +130,6 @@ void OpenAPI_amf_event_free(OpenAPI_amf_event_t *amf_event)
         }
         OpenAPI_list_free(amf_event->traffic_descriptor_list);
         amf_event->traffic_descriptor_list = NULL;
-    }
-    if (amf_event->reachability_filter) {
-        OpenAPI_reachability_filter_free(amf_event->reachability_filter);
-        amf_event->reachability_filter = NULL;
     }
     if (amf_event->presence_info_list) {
         OpenAPI_list_for_each(amf_event->presence_info_list, node) {
@@ -137,6 +164,50 @@ void OpenAPI_amf_event_free(OpenAPI_amf_event_t *amf_event)
         OpenAPI_dispersion_area_free(amf_event->dispersion_area);
         amf_event->dispersion_area = NULL;
     }
+    if (amf_event->next_periodic_report_time) {
+        ogs_free(amf_event->next_periodic_report_time);
+        amf_event->next_periodic_report_time = NULL;
+    }
+    if (amf_event->notify_for_supi_list) {
+        OpenAPI_list_for_each(amf_event->notify_for_supi_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(amf_event->notify_for_supi_list);
+        amf_event->notify_for_supi_list = NULL;
+    }
+    if (amf_event->notify_for_group_list) {
+        OpenAPI_list_for_each(amf_event->notify_for_group_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(amf_event->notify_for_group_list);
+        amf_event->notify_for_group_list = NULL;
+    }
+    if (amf_event->notify_for_snssai_dnn_list) {
+        OpenAPI_list_for_each(amf_event->notify_for_snssai_dnn_list, node) {
+            OpenAPI_snssai_dnn_item_free(node->data);
+        }
+        OpenAPI_list_free(amf_event->notify_for_snssai_dnn_list);
+        amf_event->notify_for_snssai_dnn_list = NULL;
+    }
+    if (amf_event->assign_trajectory) {
+        OpenAPI_trajectory_free(amf_event->assign_trajectory);
+        amf_event->assign_trajectory = NULL;
+    }
+    if (amf_event->sm_comm_failure_filter) {
+        OpenAPI_sm_comm_failure_filter_free(amf_event->sm_comm_failure_filter);
+        amf_event->sm_comm_failure_filter = NULL;
+    }
+    if (amf_event->tw_list) {
+        OpenAPI_list_for_each(amf_event->tw_list, node) {
+            OpenAPI_time_window_free(node->data);
+        }
+        OpenAPI_list_free(amf_event->tw_list);
+        amf_event->tw_list = NULL;
+    }
+    if (amf_event->uav_altitude_reporting_config) {
+        OpenAPI_uav_altitude_reporting_config_free(amf_event->uav_altitude_reporting_config);
+        amf_event->uav_altitude_reporting_config = NULL;
+    }
     ogs_free(amf_event);
 }
 
@@ -151,17 +222,11 @@ cJSON *OpenAPI_amf_event_convertToJSON(OpenAPI_amf_event_t *amf_event)
     }
 
     item = cJSON_CreateObject();
-    if (!amf_event->type) {
+    if (amf_event->type == OpenAPI_amf_event_type_NULL) {
         ogs_error("OpenAPI_amf_event_convertToJSON() failed [type]");
         return NULL;
     }
-    cJSON *type_local_JSON = OpenAPI_amf_event_type_convertToJSON(amf_event->type);
-    if (type_local_JSON == NULL) {
-        ogs_error("OpenAPI_amf_event_convertToJSON() failed [type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "type", type_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "type", OpenAPI_amf_event_type_ToString(amf_event->type)) == NULL) {
         ogs_error("OpenAPI_amf_event_convertToJSON() failed [type]");
         goto end;
     }
@@ -189,19 +254,31 @@ cJSON *OpenAPI_amf_event_convertToJSON(OpenAPI_amf_event_t *amf_event)
     }
     }
 
-    if (amf_event->location_filter_list) {
+    if (amf_event->location_filter_list != OpenAPI_location_filter_NULL) {
     cJSON *location_filter_listList = cJSON_AddArrayToObject(item, "locationFilterList");
     if (location_filter_listList == NULL) {
         ogs_error("OpenAPI_amf_event_convertToJSON() failed [location_filter_list]");
         goto end;
     }
     OpenAPI_list_for_each(amf_event->location_filter_list, node) {
-        cJSON *itemLocal = OpenAPI_location_filter_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        if (cJSON_AddStringToObject(location_filter_listList, "", OpenAPI_location_filter_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_amf_event_convertToJSON() failed [location_filter_list]");
             goto end;
         }
-        cJSON_AddItemToArray(location_filter_listList, itemLocal);
+    }
+    }
+
+    if (amf_event->location_trends_filter_list != OpenAPI_location_filter_NULL) {
+    cJSON *location_trends_filter_listList = cJSON_AddArrayToObject(item, "locationTrendsFilterList");
+    if (location_trends_filter_listList == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [location_trends_filter_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(amf_event->location_trends_filter_list, node) {
+        if (cJSON_AddStringToObject(location_trends_filter_listList, "", OpenAPI_location_filter_ToString((intptr_t)node->data)) == NULL) {
+            ogs_error("OpenAPI_amf_event_convertToJSON() failed [location_trends_filter_list]");
+            goto end;
+        }
     }
     }
 
@@ -235,14 +312,8 @@ cJSON *OpenAPI_amf_event_convertToJSON(OpenAPI_amf_event_t *amf_event)
     }
     }
 
-    if (amf_event->reachability_filter) {
-    cJSON *reachability_filter_local_JSON = OpenAPI_reachability_filter_convertToJSON(amf_event->reachability_filter);
-    if (reachability_filter_local_JSON == NULL) {
-        ogs_error("OpenAPI_amf_event_convertToJSON() failed [reachability_filter]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "reachabilityFilter", reachability_filter_local_JSON);
-    if (item->child == NULL) {
+    if (amf_event->reachability_filter != OpenAPI_reachability_filter_NULL) {
+    if (cJSON_AddStringToObject(item, "reachabilityFilter", OpenAPI_reachability_filter_ToString(amf_event->reachability_filter)) == NULL) {
         ogs_error("OpenAPI_amf_event_convertToJSON() failed [reachability_filter]");
         goto end;
     }
@@ -375,6 +446,140 @@ cJSON *OpenAPI_amf_event_convertToJSON(OpenAPI_amf_event_t *amf_event)
     }
     }
 
+    if (amf_event->next_periodic_report_time) {
+    if (cJSON_AddStringToObject(item, "nextPeriodicReportTime", amf_event->next_periodic_report_time) == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [next_periodic_report_time]");
+        goto end;
+    }
+    }
+
+    if (amf_event->is_adjust_ao_ion_ra) {
+    if (cJSON_AddBoolToObject(item, "adjustAoIOnRa", amf_event->adjust_ao_ion_ra) == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [adjust_ao_ion_ra]");
+        goto end;
+    }
+    }
+
+    if (amf_event->is_ran_timing_synchro_status_change) {
+    if (cJSON_AddBoolToObject(item, "ranTimingSynchroStatusChange", amf_event->ran_timing_synchro_status_change) == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [ran_timing_synchro_status_change]");
+        goto end;
+    }
+    }
+
+    if (amf_event->notify_for_supi_list) {
+    cJSON *notify_for_supi_listList = cJSON_AddArrayToObject(item, "notifyForSupiList");
+    if (notify_for_supi_listList == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [notify_for_supi_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(amf_event->notify_for_supi_list, node) {
+        if (cJSON_AddStringToObject(notify_for_supi_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_amf_event_convertToJSON() failed [notify_for_supi_list]");
+            goto end;
+        }
+    }
+    }
+
+    if (amf_event->notify_for_group_list) {
+    cJSON *notify_for_group_listList = cJSON_AddArrayToObject(item, "notifyForGroupList");
+    if (notify_for_group_listList == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [notify_for_group_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(amf_event->notify_for_group_list, node) {
+        if (cJSON_AddStringToObject(notify_for_group_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_amf_event_convertToJSON() failed [notify_for_group_list]");
+            goto end;
+        }
+    }
+    }
+
+    if (amf_event->notify_for_snssai_dnn_list) {
+    cJSON *notify_for_snssai_dnn_listList = cJSON_AddArrayToObject(item, "notifyForSnssaiDnnList");
+    if (notify_for_snssai_dnn_listList == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [notify_for_snssai_dnn_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(amf_event->notify_for_snssai_dnn_list, node) {
+        cJSON *itemLocal = OpenAPI_snssai_dnn_item_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_amf_event_convertToJSON() failed [notify_for_snssai_dnn_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(notify_for_snssai_dnn_listList, itemLocal);
+    }
+    }
+
+    if (amf_event->is_reporting_threshold) {
+    if (cJSON_AddNumberToObject(item, "reportingThreshold", amf_event->reporting_threshold) == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [reporting_threshold]");
+        goto end;
+    }
+    }
+
+    if (amf_event->assign_trajectory) {
+    cJSON *assign_trajectory_local_JSON = OpenAPI_trajectory_convertToJSON(amf_event->assign_trajectory);
+    if (assign_trajectory_local_JSON == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [assign_trajectory]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "assignTrajectory", assign_trajectory_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [assign_trajectory]");
+        goto end;
+    }
+    }
+
+    if (amf_event->sm_comm_failure_filter) {
+    cJSON *sm_comm_failure_filter_local_JSON = OpenAPI_sm_comm_failure_filter_convertToJSON(amf_event->sm_comm_failure_filter);
+    if (sm_comm_failure_filter_local_JSON == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [sm_comm_failure_filter]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "smCommFailureFilter", sm_comm_failure_filter_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [sm_comm_failure_filter]");
+        goto end;
+    }
+    }
+
+    if (amf_event->is_ue_pos_cap_requested_ind) {
+    if (cJSON_AddBoolToObject(item, "uePosCapRequestedInd", amf_event->ue_pos_cap_requested_ind) == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [ue_pos_cap_requested_ind]");
+        goto end;
+    }
+    }
+
+    if (amf_event->tw_list) {
+    cJSON *tw_listList = cJSON_AddArrayToObject(item, "twList");
+    if (tw_listList == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [tw_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(amf_event->tw_list, node) {
+        cJSON *itemLocal = OpenAPI_time_window_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_amf_event_convertToJSON() failed [tw_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(tw_listList, itemLocal);
+    }
+    }
+
+    if (amf_event->uav_altitude_reporting_config) {
+    cJSON *uav_altitude_reporting_config_local_JSON = OpenAPI_uav_altitude_reporting_config_convertToJSON(amf_event->uav_altitude_reporting_config);
+    if (uav_altitude_reporting_config_local_JSON == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [uav_altitude_reporting_config]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "uavAltitudeReportingConfig", uav_altitude_reporting_config_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_amf_event_convertToJSON() failed [uav_altitude_reporting_config]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -384,18 +589,20 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
     OpenAPI_amf_event_t *amf_event_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *type = NULL;
-    OpenAPI_amf_event_type_t *type_local_nonprim = NULL;
+    OpenAPI_amf_event_type_e typeVariable = 0;
     cJSON *immediate_flag = NULL;
     cJSON *area_list = NULL;
     OpenAPI_list_t *area_listList = NULL;
     cJSON *location_filter_list = NULL;
     OpenAPI_list_t *location_filter_listList = NULL;
+    cJSON *location_trends_filter_list = NULL;
+    OpenAPI_list_t *location_trends_filter_listList = NULL;
     cJSON *ref_id = NULL;
     cJSON *traffic_descriptor_list = NULL;
     OpenAPI_list_t *traffic_descriptor_listList = NULL;
     cJSON *report_ue_reachable = NULL;
     cJSON *reachability_filter = NULL;
-    OpenAPI_reachability_filter_t *reachability_filter_local_nonprim = NULL;
+    OpenAPI_reachability_filter_e reachability_filterVariable = 0;
     cJSON *udm_detect_ind = NULL;
     cJSON *max_reports = NULL;
     cJSON *presence_info_list = NULL;
@@ -412,16 +619,35 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
     cJSON *idle_status_ind = NULL;
     cJSON *dispersion_area = NULL;
     OpenAPI_dispersion_area_t *dispersion_area_local_nonprim = NULL;
+    cJSON *next_periodic_report_time = NULL;
+    cJSON *adjust_ao_ion_ra = NULL;
+    cJSON *ran_timing_synchro_status_change = NULL;
+    cJSON *notify_for_supi_list = NULL;
+    OpenAPI_list_t *notify_for_supi_listList = NULL;
+    cJSON *notify_for_group_list = NULL;
+    OpenAPI_list_t *notify_for_group_listList = NULL;
+    cJSON *notify_for_snssai_dnn_list = NULL;
+    OpenAPI_list_t *notify_for_snssai_dnn_listList = NULL;
+    cJSON *reporting_threshold = NULL;
+    cJSON *assign_trajectory = NULL;
+    OpenAPI_trajectory_t *assign_trajectory_local_nonprim = NULL;
+    cJSON *sm_comm_failure_filter = NULL;
+    OpenAPI_sm_comm_failure_filter_t *sm_comm_failure_filter_local_nonprim = NULL;
+    cJSON *ue_pos_cap_requested_ind = NULL;
+    cJSON *tw_list = NULL;
+    OpenAPI_list_t *tw_listList = NULL;
+    cJSON *uav_altitude_reporting_config = NULL;
+    OpenAPI_uav_altitude_reporting_config_t *uav_altitude_reporting_config_local_nonprim = NULL;
     type = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "type");
     if (!type) {
         ogs_error("OpenAPI_amf_event_parseFromJSON() failed [type]");
         goto end;
     }
-    type_local_nonprim = OpenAPI_amf_event_type_parseFromJSON(type);
-    if (!type_local_nonprim) {
-        ogs_error("OpenAPI_amf_event_type_parseFromJSON failed [type]");
+    if (!cJSON_IsString(type)) {
+        ogs_error("OpenAPI_amf_event_parseFromJSON() failed [type]");
         goto end;
     }
+    typeVariable = OpenAPI_amf_event_type_FromString(type->valuestring);
 
     immediate_flag = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "immediateFlag");
     if (immediate_flag) {
@@ -466,16 +692,52 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
         location_filter_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(location_filter_list_local, location_filter_list) {
-            if (!cJSON_IsObject(location_filter_list_local)) {
+            OpenAPI_location_filter_e localEnum = OpenAPI_location_filter_NULL;
+            if (!cJSON_IsString(location_filter_list_local)) {
                 ogs_error("OpenAPI_amf_event_parseFromJSON() failed [location_filter_list]");
                 goto end;
             }
-            OpenAPI_location_filter_t *location_filter_listItem = OpenAPI_location_filter_parseFromJSON(location_filter_list_local);
-            if (!location_filter_listItem) {
-                ogs_error("No location_filter_listItem");
+            localEnum = OpenAPI_location_filter_FromString(location_filter_list_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"location_filter_list\" is not supported. Ignoring it ...",
+                         location_filter_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(location_filter_listList, (void *)localEnum);
+            }
+        }
+        if (location_filter_listList->count == 0) {
+            ogs_error("OpenAPI_amf_event_parseFromJSON() failed: Expected location_filter_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+    }
+
+    location_trends_filter_list = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "locationTrendsFilterList");
+    if (location_trends_filter_list) {
+        cJSON *location_trends_filter_list_local = NULL;
+        if (!cJSON_IsArray(location_trends_filter_list)) {
+            ogs_error("OpenAPI_amf_event_parseFromJSON() failed [location_trends_filter_list]");
+            goto end;
+        }
+
+        location_trends_filter_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(location_trends_filter_list_local, location_trends_filter_list) {
+            OpenAPI_location_filter_e localEnum = OpenAPI_location_filter_NULL;
+            if (!cJSON_IsString(location_trends_filter_list_local)) {
+                ogs_error("OpenAPI_amf_event_parseFromJSON() failed [location_trends_filter_list]");
                 goto end;
             }
-            OpenAPI_list_add(location_filter_listList, location_filter_listItem);
+            localEnum = OpenAPI_location_filter_FromString(location_trends_filter_list_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"location_trends_filter_list\" is not supported. Ignoring it ...",
+                         location_trends_filter_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(location_trends_filter_listList, (void *)localEnum);
+            }
+        }
+        if (location_trends_filter_listList->count == 0) {
+            ogs_error("OpenAPI_amf_event_parseFromJSON() failed: Expected location_trends_filter_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -521,11 +783,11 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
 
     reachability_filter = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "reachabilityFilter");
     if (reachability_filter) {
-    reachability_filter_local_nonprim = OpenAPI_reachability_filter_parseFromJSON(reachability_filter);
-    if (!reachability_filter_local_nonprim) {
-        ogs_error("OpenAPI_reachability_filter_parseFromJSON failed [reachability_filter]");
+    if (!cJSON_IsString(reachability_filter)) {
+        ogs_error("OpenAPI_amf_event_parseFromJSON() failed [reachability_filter]");
         goto end;
     }
+    reachability_filterVariable = OpenAPI_reachability_filter_FromString(reachability_filter->valuestring);
     }
 
     udm_detect_ind = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "udmDetectInd");
@@ -653,18 +915,176 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
     }
     }
 
+    next_periodic_report_time = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "nextPeriodicReportTime");
+    if (next_periodic_report_time) {
+    if (!cJSON_IsString(next_periodic_report_time) && !cJSON_IsNull(next_periodic_report_time)) {
+        ogs_error("OpenAPI_amf_event_parseFromJSON() failed [next_periodic_report_time]");
+        goto end;
+    }
+    }
+
+    adjust_ao_ion_ra = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "adjustAoIOnRa");
+    if (adjust_ao_ion_ra) {
+    if (!cJSON_IsBool(adjust_ao_ion_ra)) {
+        ogs_error("OpenAPI_amf_event_parseFromJSON() failed [adjust_ao_ion_ra]");
+        goto end;
+    }
+    }
+
+    ran_timing_synchro_status_change = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "ranTimingSynchroStatusChange");
+    if (ran_timing_synchro_status_change) {
+    if (!cJSON_IsBool(ran_timing_synchro_status_change)) {
+        ogs_error("OpenAPI_amf_event_parseFromJSON() failed [ran_timing_synchro_status_change]");
+        goto end;
+    }
+    }
+
+    notify_for_supi_list = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "notifyForSupiList");
+    if (notify_for_supi_list) {
+        cJSON *notify_for_supi_list_local = NULL;
+        if (!cJSON_IsArray(notify_for_supi_list)) {
+            ogs_error("OpenAPI_amf_event_parseFromJSON() failed [notify_for_supi_list]");
+            goto end;
+        }
+
+        notify_for_supi_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(notify_for_supi_list_local, notify_for_supi_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(notify_for_supi_list_local)) {
+                ogs_error("OpenAPI_amf_event_parseFromJSON() failed [notify_for_supi_list]");
+                goto end;
+            }
+            OpenAPI_list_add(notify_for_supi_listList, ogs_strdup(notify_for_supi_list_local->valuestring));
+        }
+    }
+
+    notify_for_group_list = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "notifyForGroupList");
+    if (notify_for_group_list) {
+        cJSON *notify_for_group_list_local = NULL;
+        if (!cJSON_IsArray(notify_for_group_list)) {
+            ogs_error("OpenAPI_amf_event_parseFromJSON() failed [notify_for_group_list]");
+            goto end;
+        }
+
+        notify_for_group_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(notify_for_group_list_local, notify_for_group_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(notify_for_group_list_local)) {
+                ogs_error("OpenAPI_amf_event_parseFromJSON() failed [notify_for_group_list]");
+                goto end;
+            }
+            OpenAPI_list_add(notify_for_group_listList, ogs_strdup(notify_for_group_list_local->valuestring));
+        }
+    }
+
+    notify_for_snssai_dnn_list = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "notifyForSnssaiDnnList");
+    if (notify_for_snssai_dnn_list) {
+        cJSON *notify_for_snssai_dnn_list_local = NULL;
+        if (!cJSON_IsArray(notify_for_snssai_dnn_list)) {
+            ogs_error("OpenAPI_amf_event_parseFromJSON() failed [notify_for_snssai_dnn_list]");
+            goto end;
+        }
+
+        notify_for_snssai_dnn_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(notify_for_snssai_dnn_list_local, notify_for_snssai_dnn_list) {
+            if (!cJSON_IsObject(notify_for_snssai_dnn_list_local)) {
+                ogs_error("OpenAPI_amf_event_parseFromJSON() failed [notify_for_snssai_dnn_list]");
+                goto end;
+            }
+            OpenAPI_snssai_dnn_item_t *notify_for_snssai_dnn_listItem = OpenAPI_snssai_dnn_item_parseFromJSON(notify_for_snssai_dnn_list_local);
+            if (!notify_for_snssai_dnn_listItem) {
+                ogs_error("No notify_for_snssai_dnn_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(notify_for_snssai_dnn_listList, notify_for_snssai_dnn_listItem);
+        }
+    }
+
+    reporting_threshold = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "reportingThreshold");
+    if (reporting_threshold) {
+    if (!cJSON_IsNumber(reporting_threshold)) {
+        ogs_error("OpenAPI_amf_event_parseFromJSON() failed [reporting_threshold]");
+        goto end;
+    }
+    }
+
+    assign_trajectory = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "assignTrajectory");
+    if (assign_trajectory) {
+    assign_trajectory_local_nonprim = OpenAPI_trajectory_parseFromJSON(assign_trajectory);
+    if (!assign_trajectory_local_nonprim) {
+        ogs_error("OpenAPI_trajectory_parseFromJSON failed [assign_trajectory]");
+        goto end;
+    }
+    }
+
+    sm_comm_failure_filter = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "smCommFailureFilter");
+    if (sm_comm_failure_filter) {
+    sm_comm_failure_filter_local_nonprim = OpenAPI_sm_comm_failure_filter_parseFromJSON(sm_comm_failure_filter);
+    if (!sm_comm_failure_filter_local_nonprim) {
+        ogs_error("OpenAPI_sm_comm_failure_filter_parseFromJSON failed [sm_comm_failure_filter]");
+        goto end;
+    }
+    }
+
+    ue_pos_cap_requested_ind = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "uePosCapRequestedInd");
+    if (ue_pos_cap_requested_ind) {
+    if (!cJSON_IsBool(ue_pos_cap_requested_ind)) {
+        ogs_error("OpenAPI_amf_event_parseFromJSON() failed [ue_pos_cap_requested_ind]");
+        goto end;
+    }
+    }
+
+    tw_list = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "twList");
+    if (tw_list) {
+        cJSON *tw_list_local = NULL;
+        if (!cJSON_IsArray(tw_list)) {
+            ogs_error("OpenAPI_amf_event_parseFromJSON() failed [tw_list]");
+            goto end;
+        }
+
+        tw_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(tw_list_local, tw_list) {
+            if (!cJSON_IsObject(tw_list_local)) {
+                ogs_error("OpenAPI_amf_event_parseFromJSON() failed [tw_list]");
+                goto end;
+            }
+            OpenAPI_time_window_t *tw_listItem = OpenAPI_time_window_parseFromJSON(tw_list_local);
+            if (!tw_listItem) {
+                ogs_error("No tw_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(tw_listList, tw_listItem);
+        }
+    }
+
+    uav_altitude_reporting_config = cJSON_GetObjectItemCaseSensitive(amf_eventJSON, "uavAltitudeReportingConfig");
+    if (uav_altitude_reporting_config) {
+    uav_altitude_reporting_config_local_nonprim = OpenAPI_uav_altitude_reporting_config_parseFromJSON(uav_altitude_reporting_config);
+    if (!uav_altitude_reporting_config_local_nonprim) {
+        ogs_error("OpenAPI_uav_altitude_reporting_config_parseFromJSON failed [uav_altitude_reporting_config]");
+        goto end;
+    }
+    }
+
     amf_event_local_var = OpenAPI_amf_event_create (
-        type_local_nonprim,
+        typeVariable,
         immediate_flag ? true : false,
         immediate_flag ? immediate_flag->valueint : 0,
         area_list ? area_listList : NULL,
         location_filter_list ? location_filter_listList : NULL,
+        location_trends_filter_list ? location_trends_filter_listList : NULL,
         ref_id ? true : false,
         ref_id ? ref_id->valuedouble : 0,
         traffic_descriptor_list ? traffic_descriptor_listList : NULL,
         report_ue_reachable ? true : false,
         report_ue_reachable ? report_ue_reachable->valueint : 0,
-        reachability_filter ? reachability_filter_local_nonprim : NULL,
+        reachability_filter ? reachability_filterVariable : 0,
         udm_detect_ind ? true : false,
         udm_detect_ind ? udm_detect_ind->valueint : 0,
         max_reports ? true : false,
@@ -680,15 +1100,27 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
         next_report && !cJSON_IsNull(next_report) ? ogs_strdup(next_report->valuestring) : NULL,
         idle_status_ind ? true : false,
         idle_status_ind ? idle_status_ind->valueint : 0,
-        dispersion_area ? dispersion_area_local_nonprim : NULL
+        dispersion_area ? dispersion_area_local_nonprim : NULL,
+        next_periodic_report_time && !cJSON_IsNull(next_periodic_report_time) ? ogs_strdup(next_periodic_report_time->valuestring) : NULL,
+        adjust_ao_ion_ra ? true : false,
+        adjust_ao_ion_ra ? adjust_ao_ion_ra->valueint : 0,
+        ran_timing_synchro_status_change ? true : false,
+        ran_timing_synchro_status_change ? ran_timing_synchro_status_change->valueint : 0,
+        notify_for_supi_list ? notify_for_supi_listList : NULL,
+        notify_for_group_list ? notify_for_group_listList : NULL,
+        notify_for_snssai_dnn_list ? notify_for_snssai_dnn_listList : NULL,
+        reporting_threshold ? true : false,
+        reporting_threshold ? reporting_threshold->valuedouble : 0,
+        assign_trajectory ? assign_trajectory_local_nonprim : NULL,
+        sm_comm_failure_filter ? sm_comm_failure_filter_local_nonprim : NULL,
+        ue_pos_cap_requested_ind ? true : false,
+        ue_pos_cap_requested_ind ? ue_pos_cap_requested_ind->valueint : 0,
+        tw_list ? tw_listList : NULL,
+        uav_altitude_reporting_config ? uav_altitude_reporting_config_local_nonprim : NULL
     );
 
     return amf_event_local_var;
 end:
-    if (type_local_nonprim) {
-        OpenAPI_amf_event_type_free(type_local_nonprim);
-        type_local_nonprim = NULL;
-    }
     if (area_listList) {
         OpenAPI_list_for_each(area_listList, node) {
             OpenAPI_amf_event_area_free(node->data);
@@ -697,11 +1129,12 @@ end:
         area_listList = NULL;
     }
     if (location_filter_listList) {
-        OpenAPI_list_for_each(location_filter_listList, node) {
-            OpenAPI_location_filter_free(node->data);
-        }
         OpenAPI_list_free(location_filter_listList);
         location_filter_listList = NULL;
+    }
+    if (location_trends_filter_listList) {
+        OpenAPI_list_free(location_trends_filter_listList);
+        location_trends_filter_listList = NULL;
     }
     if (traffic_descriptor_listList) {
         OpenAPI_list_for_each(traffic_descriptor_listList, node) {
@@ -710,13 +1143,9 @@ end:
         OpenAPI_list_free(traffic_descriptor_listList);
         traffic_descriptor_listList = NULL;
     }
-    if (reachability_filter_local_nonprim) {
-        OpenAPI_reachability_filter_free(reachability_filter_local_nonprim);
-        reachability_filter_local_nonprim = NULL;
-    }
     if (presence_info_listList) {
         OpenAPI_list_for_each(presence_info_listList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_presence_info_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
@@ -742,6 +1171,46 @@ end:
     if (dispersion_area_local_nonprim) {
         OpenAPI_dispersion_area_free(dispersion_area_local_nonprim);
         dispersion_area_local_nonprim = NULL;
+    }
+    if (notify_for_supi_listList) {
+        OpenAPI_list_for_each(notify_for_supi_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(notify_for_supi_listList);
+        notify_for_supi_listList = NULL;
+    }
+    if (notify_for_group_listList) {
+        OpenAPI_list_for_each(notify_for_group_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(notify_for_group_listList);
+        notify_for_group_listList = NULL;
+    }
+    if (notify_for_snssai_dnn_listList) {
+        OpenAPI_list_for_each(notify_for_snssai_dnn_listList, node) {
+            OpenAPI_snssai_dnn_item_free(node->data);
+        }
+        OpenAPI_list_free(notify_for_snssai_dnn_listList);
+        notify_for_snssai_dnn_listList = NULL;
+    }
+    if (assign_trajectory_local_nonprim) {
+        OpenAPI_trajectory_free(assign_trajectory_local_nonprim);
+        assign_trajectory_local_nonprim = NULL;
+    }
+    if (sm_comm_failure_filter_local_nonprim) {
+        OpenAPI_sm_comm_failure_filter_free(sm_comm_failure_filter_local_nonprim);
+        sm_comm_failure_filter_local_nonprim = NULL;
+    }
+    if (tw_listList) {
+        OpenAPI_list_for_each(tw_listList, node) {
+            OpenAPI_time_window_free(node->data);
+        }
+        OpenAPI_list_free(tw_listList);
+        tw_listList = NULL;
+    }
+    if (uav_altitude_reporting_config_local_nonprim) {
+        OpenAPI_uav_altitude_reporting_config_free(uav_altitude_reporting_config_local_nonprim);
+        uav_altitude_reporting_config_local_nonprim = NULL;
     }
     return NULL;
 }

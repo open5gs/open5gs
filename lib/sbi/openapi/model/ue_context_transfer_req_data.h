@@ -12,28 +12,28 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_context_transfer_req_data_s OpenAPI_ue_context_transfer_req_data_t;
 #include "access_type.h"
 #include "n1_message_container.h"
-#include "plmn_id.h"
+#include "plmn_id_nid.h"
 #include "transfer_reason.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_context_transfer_req_data_s OpenAPI_ue_context_transfer_req_data_t;
-typedef struct OpenAPI_ue_context_transfer_req_data_s {
+struct OpenAPI_ue_context_transfer_req_data_s {
     OpenAPI_transfer_reason_e reason;
     OpenAPI_access_type_e access_type;
-    struct OpenAPI_plmn_id_s *plmn_id;
+    struct OpenAPI_plmn_id_nid_s *plmn_id;
     struct OpenAPI_n1_message_container_s *reg_request;
     char *supported_features;
-} OpenAPI_ue_context_transfer_req_data_t;
+};
 
 OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_create(
     OpenAPI_transfer_reason_e reason,
     OpenAPI_access_type_e access_type,
-    OpenAPI_plmn_id_t *plmn_id,
+    OpenAPI_plmn_id_nid_t *plmn_id,
     OpenAPI_n1_message_container_t *reg_request,
     char *supported_features
 );

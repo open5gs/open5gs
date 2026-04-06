@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_candidate_for_replacement_s OpenAPI_candidate_for_replacement_t;
 #include "snssai.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_candidate_for_replacement_s OpenAPI_candidate_for_replacement_t;
-typedef struct OpenAPI_candidate_for_replacement_s {
+struct OpenAPI_candidate_for_replacement_s {
     struct OpenAPI_snssai_s *snssai;
     bool is_dnns_null;
     OpenAPI_list_t *dnns;
-} OpenAPI_candidate_for_replacement_t;
+};
 
 OpenAPI_candidate_for_replacement_t *OpenAPI_candidate_for_replacement_create(
     OpenAPI_snssai_t *snssai,

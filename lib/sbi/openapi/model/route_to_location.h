@@ -12,20 +12,20 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_route_to_location_s OpenAPI_route_to_location_t;
 #include "route_information.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_route_to_location_s OpenAPI_route_to_location_t;
-typedef struct OpenAPI_route_to_location_s {
+struct OpenAPI_route_to_location_s {
     char *dnai;
     bool is_route_info_null;
     struct OpenAPI_route_information_s *route_info;
     bool is_route_prof_id_null;
     char *route_prof_id;
-} OpenAPI_route_to_location_t;
+};
 
 OpenAPI_route_to_location_t *OpenAPI_route_to_location_create(
     char *dnai,

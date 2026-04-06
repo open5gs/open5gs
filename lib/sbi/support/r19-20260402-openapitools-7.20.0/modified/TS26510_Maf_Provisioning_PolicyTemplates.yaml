@@ -1,0 +1,370 @@
+openapi: 3.0.0
+info:
+  title: Maf_Provisioning_PolicyTemplates
+  version: 1.1.0
+  description: |
+    Media Delivery: Policy Templates Provisioning API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Maf_Provisioning_PolicyTemplates
+    description: 'Media Delivery: Policy Templates Provisioning API'
+
+externalDocs:
+  description: 'TS 26.510 V19.0.0; Media Delivery; Interactions and APIs for media session handling'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.510/'
+
+servers:
+  - url: '{apiRoot}/3gpp-maf-provisioning/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 26.510 clause 7.1.3.
+
+security:
+  - {}
+  - OAuth2: [] 
+
+paths:
+  /provisioning-sessions/{provisioningSessionId}/policy-templates:
+    parameters:
+      - name: provisioningSessionId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The resource identifier of an existing Provisioning Session.'
+    post:
+      operationId: createPolicyTemplate
+      summary: 'Create and upload a new Policy Template for the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - policy-template_create
+      requestBody:
+        description: 'A JSON representation of a Policy Template'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyTemplate'
+      responses:
+        '201': # OK
+          description: 'Policy Template Created'
+          headers:
+            Location:
+              description: 'URL of the newly created Policy Template resource.'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyTemplate'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /provisioning-sessions/{provisioningSessionId}/policy-templates/{policyTemplateId}:
+    parameters:
+      - name: provisioningSessionId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'A unique identifier of the Provisioning Session.'
+      - name: policyTemplateId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'A resource identifier of a Policy Template.'
+    get:
+      operationId: retrievePolicyTemplate
+      summary: 'Retrieve a representation of an existing Policy Template in the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - policy-template_retrieve
+      responses:
+        '200': # OK
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyTemplate'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    put:
+      operationId: replacePolicyTemplate
+      summary: 'Replace a Policy Template for the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - policy-template_replace
+      requestBody:
+        description: 'A JSON representation of a Policy Template'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyTemplate'
+      responses:
+        '200': # OK
+          description: 'Policy Template Replaced'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyTemplate'
+        '204': # No Content
+          description: 'Policy Template Unchanged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    patch:
+      operationId: patchPolicyTemplate
+      summary: 'Patch the Policy Template for the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - policy-template_patch
+      requestBody:
+        description: 'A JSON representation of a Policy Template'
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/PolicyTemplate'
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/PolicyTemplate'
+      responses:
+        '200': # OK
+          description: 'Policy Template Patched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyTemplate'
+        '204': # No Content
+          description: 'Policy Template Unchanged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    delete: 
+      operationId: destroyPolicyTemplate
+      security:
+        - OAuth2:
+          - policy-template_destroy
+      responses:
+        '204': # No Content
+          description: 'Policy Template Destroyed'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            policy-template_create: Create a Policy Template resource
+            policy-template_retrieve: Retrieve a Policy Template resource
+            policy-template_replace: Replace a Policy Template resource
+            policy-template_patch: Patch a Policy Template resource
+            policy-template_destroy: Destroy a Policy Template resource
+
+  schemas:
+    PolicyTemplate:
+      type: object
+      description: "A representation of a Policy Template resource."
+      required:
+        - policyTemplateId
+        - state
+        - stateReason
+        - externalReference
+      anyOf:
+        - required: [qoSSpecifications]
+        - required: [chargingSpecification]
+        - required: [bdtPolicyId]
+        - required: [bdtSpecification]
+      properties:
+        policyTemplateId:
+          readOnly: true
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+#          allOf:
+#            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        state:
+          readOnly: true
+#          anyOf:
+#            - type: string
+          type: string
+          enum:
+            - PENDING
+            - INVALID
+            - READY
+            - SUSPENDED
+#            - type: string
+#              description: >
+#                This string provides forward-compatibility with future
+#                extensions to the enumeration but is not used to encode
+#                content defined in the present version of this API.
+        stateReason:
+          readOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        externalReference:
+          type: string
+        applicationSessionContexts:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            anyOf:
+              - required: [sliceInfo]
+              - required: [dnn]
+            properties:
+              sliceInfo:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+              dnn:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        qoSSpecifications:
+          type: array
+          minItems: 1
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/PolicyConstraints'
+        chargingSpecification:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ChargingSpecification'
+        bdtPolicyId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/BdtReferenceId'
+        bdtSpecification:
+          $ref: '#/components/schemas/BdtPolicySchedule'
+        l4SEnablementPreference:
+          type: boolean
+          default: false
+        qoSMonitoringConfiguration:
+          $ref: 'TS29122_AsSessionWithQoS.yaml#/components/schemas/QosMonitoringInformation'
+
+    BdtPolicySchedule:
+      type: object
+      description: "Background Data Transfer policy schedule specification."
+      required:
+        - windows
+      properties:
+        startDate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Date'
+        endDate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Date'
+        windows:
+          type: object
+          properties:
+            startTime:
+              $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeOfDay'
+            duration:
+              $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationMin'
+            daysInWeek:
+              type: array
+              minItems: 1
+              maxItems: 7
+              items:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/DayOfWeek'
+            numberOfOccurrences:
+              type: integer
+              minimum: 1
+            numberOfUes:
+              type: integer
+              minimum: 1
+            estimatedDataVolumePerUe:
+              $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThreshold'
+            aggregatedDownlinkBitRate:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+            aggregatedUplinkBitRate:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'

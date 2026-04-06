@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_context_release_data_s OpenAPI_sm_context_release_data_t;
 #include "cause.h"
 #include "n2_sm_info_type.h"
 #include "ng_ap_cause.h"
@@ -22,8 +23,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_context_release_data_s OpenAPI_sm_context_release_data_t;
-typedef struct OpenAPI_sm_context_release_data_s {
+struct OpenAPI_sm_context_release_data_s {
     OpenAPI_cause_e cause;
     struct OpenAPI_ng_ap_cause_s *ng_ap_cause;
     bool is__5g_mm_cause_value;
@@ -37,7 +37,7 @@ typedef struct OpenAPI_sm_context_release_data_s {
     OpenAPI_n2_sm_info_type_e n2_sm_info_type;
     bool is_ismf_release_only;
     int ismf_release_only;
-} OpenAPI_sm_context_release_data_t;
+};
 
 OpenAPI_sm_context_release_data_t *OpenAPI_sm_context_release_data_create(
     OpenAPI_cause_e cause,

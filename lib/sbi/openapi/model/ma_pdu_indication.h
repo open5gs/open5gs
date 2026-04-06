@@ -1,7 +1,7 @@
 /*
  * ma_pdu_indication.h
  *
- * 
+ * Contains the MA PDU session indication, i.e., MA PDU Request or MA PDU Network-Upgrade Allowed. 
  */
 
 #ifndef _OpenAPI_ma_pdu_indication_H_

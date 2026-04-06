@@ -1,0 +1,465 @@
+openapi: 3.0.0
+
+info:
+  title: 'MF Media Resource Management (MRM) Service'
+  version: 1.1.1
+  description: |
+    MF Media Resource Management (MRM) Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.176 V19.5.0; IP Multimedia Subsystem (IMS); Media Function (MF) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.176/
+
+servers:
+  - url: '{apiRoot}/nmf-mrm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nmf-mrm
+
+paths:
+
+  /contexts:
+    post:
+      summary: Create a new  media context.
+      operationId: CreateMediaContext
+      tags:
+        - MediaContext(Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaContext'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaContext'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/nmf-mrm/<version>/contexts/{contextId}
+              required: true
+              schema:
+                type: string
+        '307':
+          description: Temporary Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target MF.
+              required: true
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target MF.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '409':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/409'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /contexts/{contextId}:
+
+    patch:
+      summary: Update Media Context
+      operationId: UpdateMediaContext
+      tags:
+        - Media Context ID (Document)
+      parameters:
+        - name: contextId
+          in: path
+          required: true
+          description: Unique ID of the Media Context to update.
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaContext'
+        '204':
+          description: Expected response with empty body
+        '307':
+          description: Temporary Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target MF.
+              required: true
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target MF.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '409':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/409'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '412':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/412'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes a given Media Context
+      operationId: DeleteMediaContext
+      tags:
+        - Media Context ID (Document)
+      parameters:
+        - name: contextId
+          in: path
+          required: true
+          description: Unique ID of the Media Context to delete.
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Expected response to a successful deletion.
+        '307':
+          description: Temporary Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target MF.
+              required: true
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target MF.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nmf-mrm: Access to the Nmf_MRM API.
+
+  schemas:
+
+    MediaContext:
+      description: Information of a Media Context in a MF.
+      type: object
+      required:
+        - terminations
+      properties:
+        contextId:
+          type: string
+        terminations:
+          type: array
+          items:
+            $ref: '#/components/schemas/TerminationInfo'
+          minItems: 1
+
+    TerminationInfo:
+      description: Represents the termination information.
+      type: object
+      required:
+        - terminationId
+        - medias
+      properties:
+        terminationId:
+          type: string
+        medias:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaInfo'
+          minItems: 1
+
+    MediaInfo:
+      description: Represents the media information.
+      type: object
+      required:
+        - mediaId
+        - mediaResourceType
+      properties:
+        mediaId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MediaId'
+        associatedMediaId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MediaId'
+        mediaResourceType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MediaResourceType'
+        localMbEndpoint:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Endpoint'
+        remoteMbEndpoint:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Endpoint'
+        dcMedia:
+          $ref: '#/components/schemas/DcMedia'
+        arMedia:
+          $ref: '#/components/schemas/ArMedia'
+        localNonDcMedia:
+          $ref: '#/components/schemas/NonDcMedia'
+        remoteNonDcMedia:
+          $ref: '#/components/schemas/NonDcMedia'
+        mediaProcessingUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        avatarMedia:
+          $ref: '#/components/schemas/AvatarMedia'
+        mdc2AVEndpoint:
+          $ref: '#/components/schemas/Mdc2AVEndpoint'
+
+
+
+    DcMedia:
+      description: Represents the DC media descriptor.
+      type: object
+      required:
+        - streams
+        - mediaProxyConfig
+      properties:
+        mediaProxyConfig:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MediaProxy'
+        replaceHttpUrl:
+          type: object
+          description: >
+            Contains a list of replacement HTTP URLs. The streamId attribute
+            within the ReplaceHttpUrl data type is the key of the map.
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ReplaceHttpUrl'
+          minProperties: 1
+        mdc1Info:
+          $ref: '#/components/schemas/Mdc1Info'
+        mdc2Info:
+          $ref: '#/components/schemas/Mdc2Info'
+        streams:
+          type: object
+          description: >
+            Contains a data channel mapping and configuration information. The streamId
+            attribute within the DcStream data type is the key of the map.
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/DcStream'
+          minProperties: 1
+        maxMessageSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MaxMessageSize'
+        localDcEndpoint:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DcEndpoint'
+        remoteDcEndpoint:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DcEndpoint'
+        interworkingInfo:
+          $ref: 'TS29175_Nimsas_MediaControl.yaml#/components/schemas/InterworkingInstruction'
+
+
+    Mdc1Info:
+      description: Represents the information of MDC1 interface.
+      type: object
+      properties:
+        remoteMdc1Endpoint:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MdcEndpoint'
+        localMdc1Endpoint:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MdcEndpoint'
+
+    Mdc2Info:
+      description: Represents the information of MDC2 interface.
+      type: object
+      properties:
+        remoteMdc2Endpoint:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MdcEndpoint'
+        localMdc2Endpoint:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MdcEndpoint'
+        mdc2Protocol:
+          $ref: '#/components/schemas/Mdc2Protocol'
+
+    ArMedia:
+      description: Represents the AR media descriptor.
+      type: object
+      required:
+        - mediaProcessingSpec
+      properties:
+        mediaProcessingSpec:
+          type: string
+
+    AvatarMedia:
+      description: Represents the Avatar media descriptor.
+      type: object
+      required:
+        - renderingMode
+      properties:
+        resourceUrl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        mediaProcessSpec:
+          type: string
+        renderingMode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RenderingMode'
+        resourceUeId:
+          $ref: 'TS29562_Nhss_imsSDM.yaml#/components/schemas/ImsPublicId'
+        requesterUeId:
+          $ref: 'TS29562_Nhss_imsSDM.yaml#/components/schemas/ImsPublicId'
+        avatarId:
+          $ref: '#/components/schemas/AvatarId'
+
+
+    NonDcMedia:
+      description: Represents the audio and video media
+      type: object
+      required:
+        - sdpmLine
+        - sdpaLines
+      properties:
+        sdpmLine:
+          $ref: '#/components/schemas/SdpString'
+        sdpaLines:
+          type: array
+          items:
+            $ref: '#/components/schemas/SdpString'
+        associatedDcMediaId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MediaId'
+
+    Mdc2AVEndpoint:
+      description: Represents the audio or video endpoint information on MDC2 interface
+      type: object
+      properties:
+        audioMediaEndpointDcAs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Endpoint'
+        audioMediaEndpointMf:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Endpoint'
+        videoMediaEndpointDcAs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Endpoint'
+        videoMediaEndpointMf:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Endpoint'
+
+
+    SdpString:
+      description: The content after "m=" of the "m=" line and the content after "a=" of the asocciated "a=" lines.
+      type: string
+
+    AvatarId:
+      description: A string identifier used to identify an avatar representation.
+      type: string
+
+    Mdc2Protocol:
+      description: The type of the transport layer protocols for MDC2 interface.
+      anyOf:
+        - type: string
+          enum:
+            - UDP/DTLS/SCTP
+            - TCP
+            - UDP
+            - SCTP
+            - TCP/TLS
+            - SCTP/DTLS
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.

@@ -12,9 +12,11 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_service_experience_info_s OpenAPI_service_experience_info_t;
 #include "addr_fqdn.h"
 #include "location_info.h"
 #include "network_area_info.h"
+#include "pdu_session_info_1.h"
 #include "rat_freq_information.h"
 #include "service_experience_type.h"
 #include "snssai.h"
@@ -25,15 +27,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_service_experience_info_s OpenAPI_service_experience_info_t;
-typedef struct OpenAPI_service_experience_info_s {
+struct OpenAPI_service_experience_info_s {
     struct OpenAPI_svc_experience_s *svc_exprc;
     bool is_svc_exprc_variance;
     float svc_exprc_variance;
     OpenAPI_list_t *supis;
     struct OpenAPI_snssai_s *snssai;
     char *app_id;
-    struct OpenAPI_service_experience_type_s *srv_expc_type;
+    OpenAPI_service_experience_type_e srv_expc_type;
     OpenAPI_list_t *ue_locs;
     struct OpenAPI_upf_information_s *upf_info;
     char *dnai;
@@ -46,7 +47,8 @@ typedef struct OpenAPI_service_experience_info_s {
     bool is_ratio;
     int ratio;
     struct OpenAPI_rat_freq_information_s *rat_freq;
-} OpenAPI_service_experience_info_t;
+    struct OpenAPI_pdu_session_info_1_s *pdu_ses_info;
+};
 
 OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_create(
     OpenAPI_svc_experience_t *svc_exprc,
@@ -55,7 +57,7 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_create(
     OpenAPI_list_t *supis,
     OpenAPI_snssai_t *snssai,
     char *app_id,
-    OpenAPI_service_experience_type_t *srv_expc_type,
+    OpenAPI_service_experience_type_e srv_expc_type,
     OpenAPI_list_t *ue_locs,
     OpenAPI_upf_information_t *upf_info,
     char *dnai,
@@ -67,7 +69,8 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_create(
     char *nsi_id,
     bool is_ratio,
     int ratio,
-    OpenAPI_rat_freq_information_t *rat_freq
+    OpenAPI_rat_freq_information_t *rat_freq,
+    OpenAPI_pdu_session_info_1_t *pdu_ses_info
 );
 void OpenAPI_service_experience_info_free(OpenAPI_service_experience_info_t *service_experience_info);
 OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON(cJSON *service_experience_infoJSON);

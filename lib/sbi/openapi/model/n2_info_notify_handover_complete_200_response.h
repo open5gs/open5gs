@@ -12,14 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_n2_info_notify_handover_complete_200_response_s OpenAPI_n2_info_notify_handover_complete_200_response_t;
 #include "n2_info_notification_rsp_data.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n2_info_notify_handover_complete_200_response_s OpenAPI_n2_info_notify_handover_complete_200_response_t;
-typedef struct OpenAPI_n2_info_notify_handover_complete_200_response_s {
+struct OpenAPI_n2_info_notify_handover_complete_200_response_s {
     struct OpenAPI_n2_info_notification_rsp_data_s *json_data;
     OpenAPI_binary_t* binary_data_n2_information_ext1;
     OpenAPI_binary_t* binary_data_n2_information_ext2;
@@ -37,7 +37,7 @@ typedef struct OpenAPI_n2_info_notify_handover_complete_200_response_s {
     OpenAPI_binary_t* binary_data_n2_information_ext14;
     OpenAPI_binary_t* binary_data_n2_information_ext15;
     OpenAPI_binary_t* binary_data_n2_information_ext16;
-} OpenAPI_n2_info_notify_handover_complete_200_response_t;
+};
 
 OpenAPI_n2_info_notify_handover_complete_200_response_t *OpenAPI_n2_info_notify_handover_complete_200_response_create(
     OpenAPI_n2_info_notification_rsp_data_t *json_data,

@@ -7,7 +7,7 @@
 OpenAPI_location_area_1_t *OpenAPI_location_area_1_create(
     OpenAPI_list_t *geographic_areas,
     OpenAPI_list_t *civic_addresses,
-    OpenAPI_network_area_info_1_t *nw_area_info,
+    OpenAPI_network_area_info_2_t *nw_area_info,
     OpenAPI_umt_time_1_t *umt_time
 )
 {
@@ -44,7 +44,7 @@ void OpenAPI_location_area_1_free(OpenAPI_location_area_1_t *location_area_1)
         location_area_1->civic_addresses = NULL;
     }
     if (location_area_1->nw_area_info) {
-        OpenAPI_network_area_info_1_free(location_area_1->nw_area_info);
+        OpenAPI_network_area_info_2_free(location_area_1->nw_area_info);
         location_area_1->nw_area_info = NULL;
     }
     if (location_area_1->umt_time) {
@@ -98,7 +98,7 @@ cJSON *OpenAPI_location_area_1_convertToJSON(OpenAPI_location_area_1_t *location
     }
 
     if (location_area_1->nw_area_info) {
-    cJSON *nw_area_info_local_JSON = OpenAPI_network_area_info_1_convertToJSON(location_area_1->nw_area_info);
+    cJSON *nw_area_info_local_JSON = OpenAPI_network_area_info_2_convertToJSON(location_area_1->nw_area_info);
     if (nw_area_info_local_JSON == NULL) {
         ogs_error("OpenAPI_location_area_1_convertToJSON() failed [nw_area_info]");
         goto end;
@@ -136,7 +136,7 @@ OpenAPI_location_area_1_t *OpenAPI_location_area_1_parseFromJSON(cJSON *location
     cJSON *civic_addresses = NULL;
     OpenAPI_list_t *civic_addressesList = NULL;
     cJSON *nw_area_info = NULL;
-    OpenAPI_network_area_info_1_t *nw_area_info_local_nonprim = NULL;
+    OpenAPI_network_area_info_2_t *nw_area_info_local_nonprim = NULL;
     cJSON *umt_time = NULL;
     OpenAPI_umt_time_1_t *umt_time_local_nonprim = NULL;
     geographic_areas = cJSON_GetObjectItemCaseSensitive(location_area_1JSON, "geographicAreas");
@@ -189,9 +189,9 @@ OpenAPI_location_area_1_t *OpenAPI_location_area_1_parseFromJSON(cJSON *location
 
     nw_area_info = cJSON_GetObjectItemCaseSensitive(location_area_1JSON, "nwAreaInfo");
     if (nw_area_info) {
-    nw_area_info_local_nonprim = OpenAPI_network_area_info_1_parseFromJSON(nw_area_info);
+    nw_area_info_local_nonprim = OpenAPI_network_area_info_2_parseFromJSON(nw_area_info);
     if (!nw_area_info_local_nonprim) {
-        ogs_error("OpenAPI_network_area_info_1_parseFromJSON failed [nw_area_info]");
+        ogs_error("OpenAPI_network_area_info_2_parseFromJSON failed [nw_area_info]");
         goto end;
     }
     }
@@ -229,7 +229,7 @@ end:
         civic_addressesList = NULL;
     }
     if (nw_area_info_local_nonprim) {
-        OpenAPI_network_area_info_1_free(nw_area_info_local_nonprim);
+        OpenAPI_network_area_info_2_free(nw_area_info_local_nonprim);
         nw_area_info_local_nonprim = NULL;
     }
     if (umt_time_local_nonprim) {

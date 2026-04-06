@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_release_sm_context_request_s OpenAPI_release_sm_context_request_t;
 #include "sm_context_release_data.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_release_sm_context_request_s OpenAPI_release_sm_context_request_t;
-typedef struct OpenAPI_release_sm_context_request_s {
+struct OpenAPI_release_sm_context_request_s {
     struct OpenAPI_sm_context_release_data_s *json_data;
     OpenAPI_binary_t* binary_data_n2_sm_information;
-} OpenAPI_release_sm_context_request_t;
+};
 
 OpenAPI_release_sm_context_request_t *OpenAPI_release_sm_context_request_create(
     OpenAPI_sm_context_release_data_t *json_data,

@@ -1,0 +1,56 @@
+openapi: 3.0.0
+info:
+  title: MBS User Services Object Manifest
+  version: 2.0.0
+  description: |
+    MBS User Services Object Manifest syntax
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+tags:
+  - name: MBS User Services Object Manifest
+    description: '5G Media Streaming: Common Data Types'
+externalDocs:
+  description: 'TS 26.517 V18.1.0; 5G Multicast-Broadcast User Services; Protocols and Formats'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.517/'
+paths: {}
+components:
+  schemas:
+    ObjectManifest:
+      type: object
+      description: A manifest describing a set of binary objects to be transmitted by the MBSTF as part of the MBS Distribution Session.
+      required:
+        - objects
+      properties:
+        updateInterval:
+          type: integer
+          format: int32
+          description: The time period (in seconds) after which the MBSTF attempts to re-acquire the object manfiest when pull-based object acquisition is provisioned.
+        objects:
+          type: array
+          description: The list of binary objects to be carouselled from the MBSTF to the MBSTF Client.
+          items:
+            $ref: '#/components/schemas/Object'
+    Object:
+        type: object
+        description: A binary object to be transmitted by the MBSTF as part of the MBS Distribution Session.
+        required:
+          - locator
+        properties:
+          locator:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+          repetitionInterval:
+            type: integer
+            format: int32
+            description: The MBSTF sends the object repeatedly to the MBSTF Client with the given interval (in milliseconds). This parameter is ignored in the case of Object Collection operating mode.
+          keepUpdatedInterval:
+            type: integer
+            format: int32
+            description: The MBSTF checks for changes to the object with the given interval (in seconds). This parameter is ignored in the case of Object Collection operating mode.
+          earliestFetchTime:
+            type: string
+            format: date-time
+            description: The MBSTF shall pull each object from its origin location no sooner than this time or, if this parameter is omitted, at a time of its choosing.
+          latestFetchTime:
+            type: string
+            format: date-time
+            description: The MBSTF shall pull each object from its origin location no later than this time, or, if this parameter is omitted, at a time of its choosing.

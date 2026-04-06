@@ -1,0 +1,141 @@
+openapi: 3.0.0
+
+info:
+  title: Nslpkmf_SLPKMFKeyRequest
+  version: '1.1.0'
+  description: |
+    SLPKMF KeyRequest Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.586 V19.3.0; 5G System; SideLink Positioning Key Management Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.586/
+
+servers:
+  - url: '{apiRoot}/nslpkmf-keyrequest/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nslpkmf-keyrequest
+
+paths:
+  /ranging-keys/request:
+    post:
+      summary: Request Keying Materials for ranging
+      operationId: UnicastKey
+      tags:
+        - Ranging Keys Collection (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnicastKeyReqData'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnicastKeyRspData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nslpkmf-keyrequest: Access to the Nslpkmf_SLPKMFKeyRequest API
+
+  schemas:
+#
+#  Structured Data Types
+#
+    UnicastKeyReqData:
+      description: Representation of the input to request the keying material.
+      type: object
+      properties:
+        rangingSlAppId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        kslpFreshness1:
+          $ref: '#/components/schemas/KslpFreshnessParameter1'
+        slpkId:
+          $ref: '#/components/schemas/SlpkId'
+      required:
+        - rangingSlAppId
+        - kslpFreshness1
+        - slpkId
+
+
+    UnicastKeyRspData:
+      description: Representation of the successfully requested keying material.
+      type: object
+      properties:
+        kslp:
+          $ref: '#/components/schemas/Kslp'
+        kslpFreshness2:
+          $ref: '#/components/schemas/KslpFreshnessParameter2'
+      required:
+        - kslp
+        - kslpFreshness2
+
+#
+#  Simple Data Types
+#
+    SlpkId:
+      description: Ranging User Key ID
+      type: string
+
+    Kslp:
+      description: Key for RANGING AND SIDELINK POSITIONING
+      type: string
+
+    KslpFreshnessParameter1:
+      description: KSLP Freshness Parameter 1
+      type: string
+
+    KslpFreshnessParameter2:
+      description: KSLP Freshness Parameter 2
+      type: string
+
+
+#
+#  Enumeration Data Types
+#

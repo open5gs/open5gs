@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_policy_update_s OpenAPI_policy_update_t;
 #include "ambr.h"
 #include "as_time_distribution_param.h"
 #include "pcf_ue_callback_info.h"
@@ -19,7 +20,10 @@
 #include "presence_info_rm.h"
 #include "request_trigger.h"
 #include "service_area_restriction.h"
+#include "slice_repl_req.h"
+#include "slice_usg_ctrl_info.h"
 #include "smf_selection_data.h"
+#include "snssai_replace_info.h"
 #include "ue_slice_mbr.h"
 #include "wireline_service_area_restriction.h"
 
@@ -27,8 +31,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_policy_update_s OpenAPI_policy_update_t;
-typedef struct OpenAPI_policy_update_s {
+struct OpenAPI_policy_update_s {
     char *resource_uri;
     bool is_triggers_null;
     OpenAPI_list_t *triggers;
@@ -36,6 +39,8 @@ typedef struct OpenAPI_policy_update_s {
     struct OpenAPI_wireline_service_area_restriction_s *wl_serv_area_res;
     bool is_rfsp;
     int rfsp;
+    bool is_rfsp_val_time;
+    int rfsp_val_time;
     bool is_target_rfsp;
     int target_rfsp;
     bool is_smf_sel_info_null;
@@ -50,7 +55,12 @@ typedef struct OpenAPI_policy_update_s {
     OpenAPI_list_t *match_pdus;
     bool is_as_time_dis_param_null;
     struct OpenAPI_as_time_distribution_param_s *as_time_dis_param;
-} OpenAPI_policy_update_t;
+    bool is_snssai_repl_infos_null;
+    OpenAPI_list_t* snssai_repl_infos;
+    OpenAPI_list_t* slice_usg_ctrl_info_sets;
+    struct OpenAPI_slice_repl_req_s *slice_repl_req;
+    char *supp_feat;
+};
 
 OpenAPI_policy_update_t *OpenAPI_policy_update_create(
     char *resource_uri,
@@ -60,6 +70,8 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_create(
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res,
     bool is_rfsp,
     int rfsp,
+    bool is_rfsp_val_time,
+    int rfsp_val_time,
     bool is_target_rfsp,
     int target_rfsp,
     bool is_smf_sel_info_null,
@@ -73,7 +85,12 @@ OpenAPI_policy_update_t *OpenAPI_policy_update_create(
     bool is_match_pdus_null,
     OpenAPI_list_t *match_pdus,
     bool is_as_time_dis_param_null,
-    OpenAPI_as_time_distribution_param_t *as_time_dis_param
+    OpenAPI_as_time_distribution_param_t *as_time_dis_param,
+    bool is_snssai_repl_infos_null,
+    OpenAPI_list_t* snssai_repl_infos,
+    OpenAPI_list_t* slice_usg_ctrl_info_sets,
+    OpenAPI_slice_repl_req_t *slice_repl_req,
+    char *supp_feat
 );
 void OpenAPI_policy_update_free(OpenAPI_policy_update_t *policy_update);
 OpenAPI_policy_update_t *OpenAPI_policy_update_parseFromJSON(cJSON *policy_updateJSON);

@@ -1,0 +1,872 @@
+openapi: 3.0.0
+
+info:
+  title: SS_AADRF_DataManagement
+  description: |
+    API for A-ADRF Data Management Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.1.1"
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.6.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-aadrf-datamanagement/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /subscriptions:
+    post:
+      summary: Create Individual A-ADRF Data Management Subscription.
+      operationId: CreateAADRFEventSubscription
+      tags:
+        - A-ADRF Data Management Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataManageSub'
+      responses:
+        '201':
+          description: >
+            The requested Individual A-ADRF Data Management Subscription is successfully created and
+            a representation of the created resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataManageSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        myNotification:
+          '{$request.body#/notifUri}': 
+            post:
+              summary: Notify on the requested data.
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/DataManageNotification'
+              responses:
+                '204':
+                  description: The notification is successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the Individual A-ADRF Data Management Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    delete:
+      summary: Remove the Individual A-ADRF Data Management Subscription.
+      operationId: UnsubscribeAADRFEventSubscription
+      tags:
+        - Individual A-ADRF Data Management Subscription (Document).
+      responses:
+        '204':
+          description: >
+            The individual A-ADRF Data Management Subscription resource matching the subscriptionId
+            is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /store:
+    post:
+      summary: Enables a service consumer to request data storage.
+      operationId: StoreData
+      tags:
+        - Data Storage Service
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataStoreReq'
+        required: true
+      responses:
+        '200':
+          description: >
+            Successful case. The data storage request is successfully received and processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataStoreResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        delNotification:
+          '{$request.body#/delNotifUri}':
+            post:
+              summary: Report the removal of the previously stored data.
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/DataRemovalNotification'
+              responses:
+                '204':
+                  description: The notification is successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /remove:
+    post:
+      summary: Enables a service consumer to request data removal.
+      operationId: RemoveData
+      tags:
+        - Data Removal Service
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataRemovalReq'
+        required: true
+      responses:
+        '200':
+          description: >
+            Successful case. The data removal request is successfully received and processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataRemovalResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    DataManageSub:
+      description: Represents the event subscriptions.
+      type: object
+      properties:
+        eventSubscriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventSubscription'
+          minItems: 1
+          description: Subscribed events.
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        notifCorrId:
+          type: string
+          description: Notification correlation identifier.
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - eventSubscriptions
+        - notifUri
+
+    EventSubscription:
+      description: Represents the event subscription.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/AadrfEvent'
+        dataCollectReq:
+          type: string
+        dataProducerIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: The list of Data Producer IDs.
+        valUes:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: The target VAL UE(s) identifiers.
+        valServerId:
+          type: string
+          description: The target VAL server ID.
+        valServiceId:
+          type: string
+          description: The VAL service ID.
+        profileCriteria:
+          type: string
+        validConds:
+          $ref: 'TS29549_SS_Events.yaml#/components/schemas/ValidityConditions'
+        snssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+          description: Identification(s) of network slice(s) to which the subscription applies.
+        edgeReq:
+          $ref: '#/components/schemas/EdgeReq'
+        apiLogReq:
+          $ref: '#/components/schemas/ApiLogReq'
+        s2sAnaReq:
+          $ref: '#/components/schemas/S2SAnalyticsReq'
+        ueRatAnaReq:
+          $ref: '#/components/schemas/UERatAnalyticsReq'
+      required:
+        - event
+
+    EdgeReq:
+      description: Represents the EDGE data request requirement.
+      type: object
+      properties:
+        dnais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          minItems: 1
+          description: Identifiers the DN Access Identifier.
+        dnns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+          description: Identifiers the DN Access Identifier.
+        destEasId:
+          type: string
+          description: Identifier for the destination EAS.
+        destEesId:
+          type: string
+          description: Identifier for the destination EES.
+      anyOf:
+        - required: [dnais]
+        - required: [dnns]
+        - required: [destEasId]
+        - required: [destEesId]
+
+    ApiLogReq:
+      description: Represents the API log request requirement.
+      type: object
+      properties:
+        apiRequestorInfo:
+          type: string
+        apiId:
+          type: string
+          description: String identifying the API invoked.
+        apiName:
+          type: string
+          description: Name of the API which was invoked.
+        apiVersion:
+          type: string
+          description: Version of the API which was invoked.
+        inputParameters:
+          type: string
+          description: List of input parameters.
+        result:
+          type: string
+          description: For HTTP protocol, it contains HTTP status code of the invocation.
+        apiInvokerId:
+          type: string
+          description: Identity of the API invoker which invoked the service API.
+        exposureLvl:
+          $ref: '#/components/schemas/ExposureLevel'
+        apiAggreInfo:
+          type: string
+      required:
+        - apiRequestorInfo
+
+    S2SAnalyticsReq:
+      description: >
+        Represents the Server to Server analytics data request requirement.
+      type: object
+      properties:
+        serverInfoList:
+          type: array
+          items:
+            $ref: 'TS29549_SS_ADAE_ServerToServerPerformanceAnalytics.yaml#/components/schemas/ServerInfo'
+          minItems: 1
+        timeVal:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+      required:
+        - serverInfoList
+
+    UERatAnalyticsReq:
+      description: Represents the UE RAT connectivity analytics requirements.
+      type: object
+      properties:
+        area:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        timeVal:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        valUeAddrInfo:
+          type: array
+          items:
+            $ref: 'TS29549_SS_NetworkResourceAdaptation.yaml#/components/schemas/ValUeAddrInfo'
+          minItems: 1
+      required:
+        - valUeAddrInfo
+
+    DataManageNotification:
+      description: Represents the notification to the consumer.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/AadrfEvent'
+        notifCorrId:
+          type: string
+          description: Notification correlation identifier.
+        valServerId:
+          type: string
+          description: The target VAL server ID.
+        valServiceId:
+          type: string
+          description: The VAL service ID.
+        valUeIds:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: The target VAL UE(s) identifiers.
+        locAccuracy:
+          type: string
+        validConds:
+          $ref: 'TS29549_SS_Events.yaml#/components/schemas/ValidityConditions'
+        apiLogs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiLogInfo'
+          minItems: 1
+          description: The API logs information.
+        rttDeviation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        snssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+          description: Identification(s) of network slice(s) to which the subscription applies.
+        edgeInfo:
+          $ref: '#/components/schemas/EdgeInfo'
+        s2SAnaResp:
+          $ref: '#/components/schemas/S2SAnalyticsInfo'
+        ueRatAnaInfo:
+          $ref: '#/components/schemas/UERatAnalyticsInfo'
+      required:
+        - event
+
+    ApiLogInfo:
+      description: Represents the API log data.
+      type: object
+      properties:
+        apiId:
+          type: string
+          description: String identifying the API invoked.
+        apiName:
+          type: string
+          description: Name of the API which was invoked.
+        failNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        apiAvailableInd:
+          type: boolean
+          description: Indicates the API availability.
+        apiVerChgNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        apiLocChg:
+          type: boolean
+          description: Indicates the API location changes for the target API.
+        apiThrottlingEvents:
+          type: string
+        invokeNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        apiVersion:
+          type: string
+          description: Version of the API which was invoked.
+      required:
+        - apiId
+
+    EdgeInfo:
+      description: Represents the EDGE related data.
+      type: object
+      properties:
+        edgeReq:
+          $ref: '#/components/schemas/EdgeReq'
+        output:
+          type: string
+
+    S2SAnalyticsInfo:
+      description: >
+        Represents the Server to Server analytics data information.
+      type: object
+      properties:
+        dataOutput:
+          $ref: 'TS29549_SS_ADAE_ServerToServerPerformanceAnalytics.yaml#/components/schemas/S2SPerfAnalyticsData'
+        serverInfoList:
+          type: array
+          items:
+            $ref: 'TS29549_SS_ADAE_ServerToServerPerformanceAnalytics.yaml#/components/schemas/ServerInfo'
+          minItems: 1
+      required:
+        - dataOutput
+        - serverInfoList
+
+    UERatAnalyticsInfo:
+      description: Represents the UE RAT Connectivity Analytics data information.
+      type: object
+      properties:
+        analyticsOut:
+          type: array
+          items:
+            $ref: 'TS29549_SS_ADAE_UeRatConnectivityAnalytics.yaml#/components/schemas/UeRatAnalyticsOutput'
+          minItems: 1
+      required:
+        - analyticsOut
+
+    DataStoreReq:
+      description: Represents the data storage request.
+      type: object
+      properties:
+        subDataStore:
+          $ref: '#/components/schemas/DataStoreSub'
+        dirStorage:
+          $ref: '#/components/schemas/Data'
+        storeHandl:
+          $ref: '#/components/schemas/StorageHandlingInfo'
+        delNotifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      oneOf:
+        - required: [subDataStore]
+        - required: [dirStorage]
+
+    DataStoreSub:
+      description: Represents the requirements for subscription based data storage.
+      type: object
+      properties:
+        dataProdId:
+          type: string
+        analyticsId:
+          type: string
+        analyticsType:
+          $ref: 'TS29549_SS_ADAE_VALPerformanceAnalytics.yaml#/components/schemas/AnalyticsType'
+        analyticsMode:
+          $ref: '#/components/schemas/AnalyticsMode'
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataProducerProfile'
+          minItems: 1
+        area:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+
+    Data:
+      description: Represent the data for storage at A-ADRF.
+      type: object
+      properties:
+        dataType:
+          $ref: '#/components/schemas/DataType'
+        content:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+        timestamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        analyticsId:
+          $ref: '#/components/schemas/AdaeAnalyticsId'
+        analyticsType:
+          $ref: 'TS29549_SS_ADAE_VALPerformanceAnalytics.yaml#/components/schemas/AnalyticsType'
+        dataSource:
+          $ref: '#/components/schemas/DataSourceInfo'
+      required:
+        - dataType
+        - content
+        - timestamp
+        - analyticsId
+        - analyticsType
+        - dataSource
+
+    DataProducerProfile:
+      description: Represents the data producer profile.
+      type: object
+      properties:
+        profile:
+          type: string
+      oneOf:
+        - required: [profile]
+
+    DataSourceInfo:
+      description: Represents the data source information.
+      type: object
+      properties:
+        source:
+          type: string
+      oneOf:
+        - required: [source]
+
+    StorageHandlingInfo:
+      description: Represent the storage handing information.
+      type: object
+      properties:
+        lifetime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        delNotifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+      anyOf:
+        - required: [lifetime]
+        - required: [delNotifUri]
+
+    DataStoreResp:
+      description: Represents the data storage response.
+      type: object
+      properties:
+        storeHandl:
+          $ref: '#/components/schemas/StorageHandlingInfo'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - storeHandl
+
+    AnalyticsMode:
+      description: Represents the analytics mode.
+      type: object
+      properties:
+        mode:
+          $ref: '#/components/schemas/Mode'
+        isMlEnab:
+          type: boolean
+      required:
+        - mode
+
+    DataRemovalReq:
+      description: Represents the data removal request.
+      type: object
+      properties:
+        dataSetIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - dataSetIds
+
+    DataRemovalResp:
+      description: Represents the data removal response.
+      type: object
+      properties:
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataRemovalReport'
+          minItems: 1
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - reports
+
+    DataRemovalNotification:
+      description: Represents the data removal notification.
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Data'
+        dataSetIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - data
+        - dataSetIds
+
+    DataRemovalReport:
+      description: Represents the data removal report.
+      type: object
+      properties:
+        dataSetIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        delRes:
+          $ref: '#/components/schemas/DeletionResult'
+      required:
+        - dataSetIds
+        - delRes
+
+# Simple data types and Enumerations
+    AadrfEvent:
+      anyOf:
+      - type: string
+        enum:
+           - HISTORICAL_SERVICEAPI
+           - NETWORK_SLICE
+           - EDGE_DATA
+           - LOCATION_ACCURACY
+           - SERVER_TO_SERVER_ANALYTICS
+           - UE_RAT_ANALYTICS
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Indicates the subscribed events.  
+        Possible values are:
+        - HISTORICAL_SERVICEAPI: The event for historical service API logs.
+        - NETWORK_SLICE: The event for the network slice data.
+        - EDGE_DATA: The event for the EDGE related data.
+        - LOCATION_ACCURACY: The event for the location accuracy data.
+        - SERVER_TO_SERVER_ANALYTICS: The event for the Server to Server analytics data.
+        - UE_RAT_ANALYTICS: The event for the UE RAT Connectivity analytics data.
+
+    ExposureLevel:
+      anyOf:
+      - type: string
+        enum:
+           - READ
+           - WRITE
+           - DELETE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Indicates the exposure level.  
+        Possible values are:
+        - READ: The exposure level for the logs to be exposed is read.
+        - WRITE: The exposure level for the logs to be exposed is write.
+        - DELETE: The exposure level for the logs to be exposed is delete.
+
+    DataType:
+      anyOf:
+      - type: string
+        enum:
+           - DATA
+           - ANALYTICS
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the type of data.
+
+    Mode:
+      anyOf:
+      - type: string
+        enum:
+           - ONLINE
+           - OFFLINE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the supported modes of analytics.
+
+    AdaeAnalyticsId:
+      anyOf:
+      - type: string
+        enum:
+           - VAL_SERVER_PERF
+           - VAL_SESSION_PERF
+           - SLICE_PERFORMANCE_ANALYTICS
+           - UE_TO_UE_PERFORMANCE_ANALYTICS
+           - LOCATION_ACCURACY_PREDICTION
+           - LOCATION_ACCURACY_SUSTAINABILITY
+           - SERVICE_API_ANALYTICS
+           - SLICE_USAGE_PATTERN_ANALYTICS
+           - EDGE_LOAD_ANALYTICS
+           - GROUP_ROUTE
+           - GROUP_MEMBER_DEVIATION
+           - TARGET_WITH_OTHER_UES
+           - ANY_UES_IN_LOC
+           - APP_MEMBER_CAPABILITY_ANALYTICS
+           - UE_RAT_CONNECTIVITY_ANALYTICS
+           - SERVER_TO_SERVER_PERFORMANCE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Indicates the subscribed events.  
+        Possible values are:
+        - VAL_SERVER_PERF: Indicates that requested analytics is VAL server performance analytics.
+        - VAL_SESSION_PERF: Indicates that requested analytics is VAL session performance analytics.
+        - SLICE_PERFORMANCE_ANALYTICS: Indicates that requested analytics is slice performance analytics.
+        - UE_TO_UE_PERFORMANCE_ANALYTICS: Indicates that requested analytics is UE-to-UE performance analytics.
+        - LOCATION_ACCURACY_PREDICTION: Indicates that the requested analytics is location accuracy prediction.
+        - LOCATION_ACCURACY_SUSTAINABILITY: Indicates that the requested analytics is location accuracy sustainability.
+        - SERVICE_API_ANALYTICS: Indicates that the requested analytics is service API analytics.
+        - SLICE_USAGE_PATTERN_ANALYTICS: Indicated that the requested analytics is slice usage pattern analytics.
+        - EDGE_LOAD_ANALYTICS: Indicated that the requested analytics is edge load analytics.
+        - GROUP_ROUTE: Indicates that the requested analytics is UE group route analytics.
+        - GROUP_MEMBER_DEVIATION: Indicates that the requested analytics is UE group member deviation analytics.
+        - TARGET_WITH_OTHER_UES: Indicates that the requested analytics is collision detection between the sets of target and other VAL UEs within a location.
+        - ANY_UES_IN_LOC: Indicates that the requested analytics is collision detection between any VAL UEs within given location.
+        - APP_MEMBER_CAPABILITY_ANALYTICS: Indicates that the identifier of the Application layer AIML member capability analytics event.
+        - UE_RAT_CONNECTIVITY_ANALYTICS: Indicates that the requested analytics is UE RAT connectivity analytics event.
+        - SERVER_TO_SERVER_PERFORMANCE: Indicates that the requested analytics is Server-to-Server Performance Analytics.
+
+    DeletionResult:
+      anyOf:
+      - type: string
+        enum:
+           - DELETED
+           - NOT_FOUND
+           - FOUND_NOT_DELETED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the deletion result.

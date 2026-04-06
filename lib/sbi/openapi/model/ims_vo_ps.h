@@ -1,7 +1,7 @@
 /*
  * ims_vo_ps.h
  *
- * 
+ * It represents the information indicating homogeneity of IMS Voice over PS Sessions support for the UE 
  */
 
 #ifndef _OpenAPI_ims_vo_ps_H_

@@ -1,7 +1,7 @@
 /*
  * nf_service_status.h
  *
- * 
+ * Status of a given NF Service Instance of an NF Instance stored in NRF
  */
 
 #ifndef _OpenAPI_nf_service_status_H_
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_nf_service_status_NULL = 0, OpenAPI_nf_service_status_REGISTERED, OpenAPI_nf_service_status_SUSPENDED, OpenAPI_nf_service_status_UNDISCOVERABLE } OpenAPI_nf_service_status_e;
+typedef enum { OpenAPI_nf_service_status_NULL = 0, OpenAPI_nf_service_status_REGISTERED, OpenAPI_nf_service_status_SUSPENDED, OpenAPI_nf_service_status_UNDISCOVERABLE, OpenAPI_nf_service_status_CANARY_RELEASE } OpenAPI_nf_service_status_e;
 
 char* OpenAPI_nf_service_status_ToString(OpenAPI_nf_service_status_e nf_service_status);
 

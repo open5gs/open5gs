@@ -1,7 +1,7 @@
 /*
  * dispersion_ordering_criterion.h
  *
- * Possible values are: - TIME_SLOT_START: Indicates the order of time slot start. - DISPERSION: Indicates the order of data/transaction dispersion. - CLASSIFICATION: Indicates the order of data/transaction classification. - RANKING: Indicates the order of data/transaction ranking. - PERCENTILE_RANKING: Indicates the order of data/transaction percentile ranking. 
+ * 
  */
 
 #ifndef _OpenAPI_dispersion_ordering_criterion_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "dispersion_ordering_criterion_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dispersion_ordering_criterion_s OpenAPI_dispersion_ordering_criterion_t;
-typedef struct OpenAPI_dispersion_ordering_criterion_s {
-} OpenAPI_dispersion_ordering_criterion_t;
+typedef enum { OpenAPI_dispersion_ordering_criterion_NULL = 0, OpenAPI_dispersion_ordering_criterion_TIME_SLOT_START, OpenAPI_dispersion_ordering_criterion_DISPERSION, OpenAPI_dispersion_ordering_criterion_CLASSIFICATION, OpenAPI_dispersion_ordering_criterion_RANKING, OpenAPI_dispersion_ordering_criterion_PERCENTILE_RANKING } OpenAPI_dispersion_ordering_criterion_e;
 
-OpenAPI_dispersion_ordering_criterion_t *OpenAPI_dispersion_ordering_criterion_create(
-);
-void OpenAPI_dispersion_ordering_criterion_free(OpenAPI_dispersion_ordering_criterion_t *dispersion_ordering_criterion);
-OpenAPI_dispersion_ordering_criterion_t *OpenAPI_dispersion_ordering_criterion_parseFromJSON(cJSON *dispersion_ordering_criterionJSON);
-cJSON *OpenAPI_dispersion_ordering_criterion_convertToJSON(OpenAPI_dispersion_ordering_criterion_t *dispersion_ordering_criterion);
-OpenAPI_dispersion_ordering_criterion_t *OpenAPI_dispersion_ordering_criterion_copy(OpenAPI_dispersion_ordering_criterion_t *dst, OpenAPI_dispersion_ordering_criterion_t *src);
+char* OpenAPI_dispersion_ordering_criterion_ToString(OpenAPI_dispersion_ordering_criterion_e dispersion_ordering_criterion);
+
+OpenAPI_dispersion_ordering_criterion_e OpenAPI_dispersion_ordering_criterion_FromString(char* dispersion_ordering_criterion);
 
 #ifdef __cplusplus
 }

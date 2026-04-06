@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_utra_location_s OpenAPI_utra_location_t;
 #include "cell_global_id.h"
 #include "location_area_id.h"
 #include "routing_area_id.h"
@@ -21,8 +22,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_utra_location_s OpenAPI_utra_location_t;
-typedef struct OpenAPI_utra_location_s {
+struct OpenAPI_utra_location_s {
     struct OpenAPI_cell_global_id_s *cgi;
     struct OpenAPI_service_area_id_s *sai;
     struct OpenAPI_location_area_id_s *lai;
@@ -32,7 +32,7 @@ typedef struct OpenAPI_utra_location_s {
     char *ue_location_timestamp;
     char *geographical_information;
     char *geodetic_information;
-} OpenAPI_utra_location_t;
+};
 
 OpenAPI_utra_location_t *OpenAPI_utra_location_create(
     OpenAPI_cell_global_id_t *cgi,

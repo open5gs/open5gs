@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_routing_area_id_s OpenAPI_routing_area_id_t;
 #include "plmn_id.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_routing_area_id_s OpenAPI_routing_area_id_t;
-typedef struct OpenAPI_routing_area_id_s {
+struct OpenAPI_routing_area_id_s {
     struct OpenAPI_plmn_id_s *plmn_id;
     char *lac;
     char *rac;
-} OpenAPI_routing_area_id_t;
+};
 
 OpenAPI_routing_area_id_t *OpenAPI_routing_area_id_create(
     OpenAPI_plmn_id_t *plmn_id,

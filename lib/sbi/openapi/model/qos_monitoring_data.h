@@ -12,6 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_qos_monitoring_data_s OpenAPI_qos_monitoring_data_t;
+#include "qos_monitoring_param_type.h"
 #include "reporting_frequency.h"
 #include "requested_qos_monitoring_parameter.h"
 
@@ -19,9 +21,9 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_qos_monitoring_data_s OpenAPI_qos_monitoring_data_t;
-typedef struct OpenAPI_qos_monitoring_data_s {
+struct OpenAPI_qos_monitoring_data_s {
     char *qm_id;
+    OpenAPI_qos_monitoring_param_type_e qos_mon_param_type;
     OpenAPI_list_t *req_qos_mon_params;
     OpenAPI_list_t *rep_freqs;
     bool is_rep_thresh_dl_null;
@@ -33,6 +35,12 @@ typedef struct OpenAPI_qos_monitoring_data_s {
     bool is_rep_thresh_rp_null;
     bool is_rep_thresh_rp;
     int rep_thresh_rp;
+    bool is_con_thresh_dl_null;
+    bool is_con_thresh_dl;
+    int con_thresh_dl;
+    bool is_con_thresh_ul_null;
+    bool is_con_thresh_ul;
+    int con_thresh_ul;
     bool is_wait_time_null;
     bool is_wait_time;
     int wait_time;
@@ -45,10 +53,21 @@ typedef struct OpenAPI_qos_monitoring_data_s {
     char *notify_corre_id;
     bool is_direct_notif_ind;
     int direct_notif_ind;
-} OpenAPI_qos_monitoring_data_t;
+    bool is_avrg_wndw_null;
+    bool is_avrg_wndw;
+    int avrg_wndw;
+    bool is_rep_thresh_dat_rate_ul_null;
+    char *rep_thresh_dat_rate_ul;
+    bool is_rep_thresh_dat_rate_dl_null;
+    char *rep_thresh_dat_rate_dl;
+    OpenAPI_list_t *avl_bitrate_ul_thrs;
+    OpenAPI_list_t *avl_bitrate_dl_thrs;
+    char *data_coll_app_id;
+};
 
 OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     char *qm_id,
+    OpenAPI_qos_monitoring_param_type_e qos_mon_param_type,
     OpenAPI_list_t *req_qos_mon_params,
     OpenAPI_list_t *rep_freqs,
     bool is_rep_thresh_dl_null,
@@ -60,6 +79,12 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     bool is_rep_thresh_rp_null,
     bool is_rep_thresh_rp,
     int rep_thresh_rp,
+    bool is_con_thresh_dl_null,
+    bool is_con_thresh_dl,
+    int con_thresh_dl,
+    bool is_con_thresh_ul_null,
+    bool is_con_thresh_ul,
+    int con_thresh_ul,
     bool is_wait_time_null,
     bool is_wait_time,
     int wait_time,
@@ -71,7 +96,17 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     bool is_notify_corre_id_null,
     char *notify_corre_id,
     bool is_direct_notif_ind,
-    int direct_notif_ind
+    int direct_notif_ind,
+    bool is_avrg_wndw_null,
+    bool is_avrg_wndw,
+    int avrg_wndw,
+    bool is_rep_thresh_dat_rate_ul_null,
+    char *rep_thresh_dat_rate_ul,
+    bool is_rep_thresh_dat_rate_dl_null,
+    char *rep_thresh_dat_rate_dl,
+    OpenAPI_list_t *avl_bitrate_ul_thrs,
+    OpenAPI_list_t *avl_bitrate_dl_thrs,
+    char *data_coll_app_id
 );
 void OpenAPI_qos_monitoring_data_free(OpenAPI_qos_monitoring_data_t *qos_monitoring_data);
 OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *qos_monitoring_dataJSON);

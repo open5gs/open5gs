@@ -1,7 +1,7 @@
 /*
  * reporting_frequency.h
  *
- * 
+ * Indicates the frequency for the reporting.
  */
 
 #ifndef _OpenAPI_reporting_frequency_H_
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_reporting_frequency_NULL = 0, OpenAPI_reporting_frequency_EVENT_TRIGGERED, OpenAPI_reporting_frequency_PERIODIC, OpenAPI_reporting_frequency_SESSION_RELEASE } OpenAPI_reporting_frequency_e;
+typedef enum { OpenAPI_reporting_frequency_NULL = 0, OpenAPI_reporting_frequency_EVENT_TRIGGERED, OpenAPI_reporting_frequency_PERIODIC } OpenAPI_reporting_frequency_e;
 
 char* OpenAPI_reporting_frequency_ToString(OpenAPI_reporting_frequency_e reporting_frequency);
 

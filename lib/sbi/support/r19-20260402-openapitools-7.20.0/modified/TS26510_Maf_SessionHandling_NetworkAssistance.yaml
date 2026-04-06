@@ -1,0 +1,416 @@
+openapi: 3.0.0
+info:
+  title: Maf_SessionHandling_NetworkAssistance
+  version: 1.0.3
+  description: |
+    Media Delivery: Network Assistance API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Maf_SessionHandling_NetworkAssistance
+    description: 'Media Delivery: Network Assistance API'
+
+externalDocs:
+  description: 'TS 26.510 V18.5.0; Media Delivery; Interactions and APIs for media session handling'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.510/'
+
+servers:
+  - url: '{apiRoot}/3gpp-maf-session-handling/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 26.510 clause 7.1.3.
+
+security:
+  - {}
+  - OAuth2: []
+
+paths:
+  /provisioning-sessions/{provisioningSessionId}/network-assistance-sessions/:
+    parameters:
+      - name: provisioningSessionId
+        description: 'A valid Provisioning Session identifier'
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+    post:
+      operationId: createNetworkAssistanceSession
+      summary: 'Create a new Network Assistance Session.'
+      security:
+        - OAuth2:
+          - network-assistance-session_create
+      requestBody:
+        description: 'The initial parameters for the Network Assistance Session resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetworkAssistanceSession'
+      responses:
+        '201': # OK
+          description: 'Network Assistance Session Created'
+          headers:
+            Location:
+              description: 'The URL of the newly created Network Assistance Session resource'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkAssistanceSession'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '403': # Forbidden: The client is authorized to invoke the operation, but lacks the required permission
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /provisioning-sessions/{provisioningSessionId}/network-assistance-sessions/{naSessionId}:
+    parameters:
+      - name: provisioningSessionId
+        description: 'A valid Provisioning Session identifier'
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+      - name: naSessionId
+        description: 'The resource identifier of an existing Network Assistance Session resource'
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+    get:
+      operationId: retrieveNetworkAssistanceSession
+      summary: 'Retrieve an existing Network Assistance Session resource'
+      security:
+        - OAuth2:
+          - network-assistance-session_retrieve
+      responses:
+        '200': # OK
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/NetworkAssistanceSession'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    put:
+      operationId: replaceNetworkAssistanceSession
+      summary: 'Replace an existing Network Assistance Session resource'
+      security:
+        - OAuth2:
+          - network-assistance-session_replace
+      requestBody:
+        description: 'A replacement JSON representation of a Network Assistance Session resource'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetworkAssistanceSession'
+      responses:
+        '200': # OK
+          description: 'Network Assistance Session Replaced'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkAssistanceSession'
+        '204': # No Content
+          description: 'Network Assistance Session Unchanged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    patch:
+      operationId: patchNetworkAssistanceSession
+      summary: 'Patch an existing Network Assistance Session resource'
+      security:
+        - OAuth2:
+          - network-assistance-session_patch
+      requestBody:
+        description: 'A JSON patch to a Network Assistance Session resource'
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/NetworkAssistanceSession'
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/NetworkAssistanceSession'
+      responses:
+        '200': # OK
+          description: 'Network Assistance Session Patched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkAssistanceSession'
+        '204': # No Content
+          description: 'Network Assistance Session Unchanged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    delete:
+      operationId: destroyNetworkAssistanceSession
+      summary: 'Destroy an existing Network Assistance Session resource'
+      security:
+        - OAuth2:
+          - network-assistance-session_destroy
+      responses:
+        '204': # No Content
+          description: 'Network Assistance Session Destroyed'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /provisioning-sessions/{provisioningSessionId}/network-assistance-sessions/{naSessionId}/recommendation:
+    parameters:
+      - name: provisioningSessionId
+        description: 'A valid Provisioning Session identifier'
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+    get:
+      operationId: requestBitRateRecommendation
+      summary: 'Obtain a bit rate recommendation for the next recommendation window'
+      security:
+        - OAuth2:
+          - network-assistance-session_bit-rate-recommendation
+      parameters:
+        - name: naSessionId
+          description: 'The resource identifier of an existing Network Assistance Session resource'
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                  $ref: 'TS26510_CommonData.yaml#/components/schemas/ClientPolicySpecification'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+
+  /provisioning-sessions/{provisioningSessionId}/network-assistance-sessions/{naSessionId}/boost:
+    parameters:
+      - name: provisioningSessionId
+        description: 'A valid Provisioning Session identifier'
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+    post:
+      operationId: requestDeliveryBoost
+      summary: 'Request a delivery boost'
+      security:
+        - OAuth2:
+          - network-assistance-session_delivery-boost
+      parameters:
+        - name: naSessionId
+          description: 'The resource identifier of an existing Network Assistance Session resource'
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Delivery Boost Request Processed'
+          content:
+            application/json:
+              schema:
+                  $ref: 'TS26510_CommonData.yaml#/components/schemas/OperationSuccessResponse'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden: The request is denied
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            network-assistance-session_create: Create a Network Assistance Session resource
+            network-assistance-session_retrieve: Retrieve a Network Assistance Session resource
+            network-assistance-session_replace: Replace a Network Assistance Session resource
+            network-assistance-session_patch: Patch a Network Assistance Session resource
+            network-assistance-session_destroy: Destroy a Network Assistance Session resource
+            network-assistance-session_bit-rate-recommendation: Obtain a bit rate recommendation in connection with this Network Assistance Session resource
+            network-assistance-session_delivey-boost: Request a delivery boost in connection with this Network Assistance Session resource
+        authorizationCode:
+          authorizationUrl: '{authorizationUrl}'
+          tokenUrl: '{tokenUrl}'
+          scopes: 
+            network-assistance-session_create: Create a Network Assistance Session resource
+            network-assistance-session_retrieve: Retrieve a Network Assistance Session resource
+            network-assistance-session_replace: Replace a Network Assistance Session resource
+            network-assistance-session_patch: Patch a Network Assistance Session resource
+            network-assistance-session_destroy: Destroy a Network Assistance Session resource
+            network-assistance-session_bit-rate-recommendation: Obtain a bit rate recommendation in connection with this Network Assistance Session resource
+            network-assistance-session_delivey-boost: Request a delivery boost in connection with this Network Assistance Session resource
+
+  schemas:
+    NetworkAssistanceSession:
+      description: "A representation of a Network Assistance Session resource."
+      type: object
+      required: 
+        - naSessionId
+        - provisioningSessionId
+        - sessionId
+        - applicationFlowDescription
+      properties:
+        naSessionId:
+          readOnly: true
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+#          allOf:
+#            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        provisioningSessionId:
+          readOnly: true
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+#          allOf:
+#            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        sessionId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/MediaDeliverySessionId'
+        sliceInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dataNetworkName:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        location:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/TypedLocation'
+        policyTemplateId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        componentReference:
+          type: string
+          minLength: 1
+        applicationFlowDescription:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ApplicationFlowDescription'
+        requestedQoS:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ClientPolicySpecification'
+        recommendedQoS:
+          readOnly: true
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ClientPolicySpecification'
+#          allOf:
+#            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ClientPolicySpecification'

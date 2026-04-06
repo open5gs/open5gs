@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_uncertainty_ellipse_s OpenAPI_uncertainty_ellipse_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_uncertainty_ellipse_s OpenAPI_uncertainty_ellipse_t;
-typedef struct OpenAPI_uncertainty_ellipse_s {
+struct OpenAPI_uncertainty_ellipse_s {
     float semi_major;
     float semi_minor;
     int orientation_major;
-} OpenAPI_uncertainty_ellipse_t;
+};
 
 OpenAPI_uncertainty_ellipse_t *OpenAPI_uncertainty_ellipse_create(
     float semi_major,

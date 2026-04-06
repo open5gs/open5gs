@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_n2_sm_information_s OpenAPI_n2_sm_information_t;
 #include "n2_info_content.h"
 #include "snssai.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n2_sm_information_s OpenAPI_n2_sm_information_t;
-typedef struct OpenAPI_n2_sm_information_s {
+struct OpenAPI_n2_sm_information_s {
     int pdu_session_id;
     struct OpenAPI_n2_info_content_s *n2_info_content;
     struct OpenAPI_snssai_s *s_nssai;
@@ -28,7 +28,7 @@ typedef struct OpenAPI_n2_sm_information_s {
     struct OpenAPI_snssai_s *iwk_snssai;
     bool is_subject_to_ho;
     int subject_to_ho;
-} OpenAPI_n2_sm_information_t;
+};
 
 OpenAPI_n2_sm_information_t *OpenAPI_n2_sm_information_create(
     int pdu_session_id,

@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_target_ue_information_s OpenAPI_target_ue_information_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_target_ue_information_s OpenAPI_target_ue_information_t;
-typedef struct OpenAPI_target_ue_information_s {
+struct OpenAPI_target_ue_information_s {
     bool is_any_ue;
     int any_ue;
     OpenAPI_list_t *supis;
     OpenAPI_list_t *gpsis;
     OpenAPI_list_t *int_group_ids;
-} OpenAPI_target_ue_information_t;
+};
 
 OpenAPI_target_ue_information_t *OpenAPI_target_ue_information_create(
     bool is_any_ue,

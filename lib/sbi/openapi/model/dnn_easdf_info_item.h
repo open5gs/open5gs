@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_dnn_easdf_info_item_s OpenAPI_dnn_easdf_info_item_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dnn_easdf_info_item_s OpenAPI_dnn_easdf_info_item_t;
-typedef struct OpenAPI_dnn_easdf_info_item_s {
+struct OpenAPI_dnn_easdf_info_item_s {
     char *dnn;
     OpenAPI_list_t *dnai_list;
-} OpenAPI_dnn_easdf_info_item_t;
+};
 
 OpenAPI_dnn_easdf_info_item_t *OpenAPI_dnn_easdf_info_item_create(
     char *dnn,

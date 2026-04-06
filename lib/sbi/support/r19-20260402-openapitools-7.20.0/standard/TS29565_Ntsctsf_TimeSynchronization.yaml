@@ -1,0 +1,838 @@
+openapi: 3.0.0
+
+info:
+  title: Ntsctsf_TimeSynchronization Service API
+  version: 1.2.0
+  description: |
+    TSCTSF Time Synchronization Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.565 V19.5.0; 5G System; Time Sensitive Communication and Time Synchronization Function 
+    Services; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.565/'
+servers:
+  - url: '{apiRoot}/ntsctsf-time-sync/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - ntsctsf-time-sync
+
+paths:
+  /subscriptions:
+    post:
+      summary: Creates a new subscription to notification of capability of time synchronization service resource
+      operationId: TimeSynchronizationExposureSubscriptions
+      tags:
+        - Time Synchronization Exposure Subscriptions (Collection)
+      requestBody:
+        description: Contains the information for the creation the resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeSyncExposureSubsc'
+      responses:
+        '201':
+          description: Successful creation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSyncExposureSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created individual time synchronization exposure
+                subscription resource, according to the structure
+                {apiRoot}/ntsctsf-time-sync/<apiVersion>/subscriptions/{subscriptionId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        subsEventNotification:
+          '{$request.body#/subsNotifUri':
+            post:
+              requestBody:
+                description: Notification of an event occurrence in the TSCTSF.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/TimeSyncExposureSubsNotif'
+              responses:
+                '204':
+                  description: The receipt of the notification is acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    get:
+      summary: "Reads an existing Individual Time Synchronization Exposure Subscription"
+      operationId: GetIndividualTimeSynchronizationExposureSubscription
+      tags:
+        - Individual Time Synchronization Exposure Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          description: String identifying an Individual Time Synchronization Exposure Subscription
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A representation of the resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSyncExposureSubsc'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      operationId: ReplaceIndividualTimeSynchronizationExposureSubscription
+      summary: Replace an individual Time Synchronization Exposure Subscription
+      tags:
+        - IndividualTimeSynchronizationExposureSubscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeSyncExposureSubsc'
+      parameters:
+        - name: subscriptionId
+          description: String identifying an Individual Time Synchronization Exposure Subscription.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource was successfully modified and representation is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSyncExposureSubsc'
+        '204':
+          description: No Content. Resource was successfully modified.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      operationId: DeleteIndividualTimeSynchronizationExposureSubscription
+      summary: Delete an Individual TimeSynchronization Exposure Subscription
+      tags:
+        - Individual Time Synchronization Exposure Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: String identifying an Individual Time Synchronization Exposure Subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was successfully deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}/configurations:
+    post:
+      summary: "Create a new Individual Time Synchronization Exposure Configuration"
+      operationId: CreateIndividualTimeSynchronizationExposureConfiguration
+      tags:
+        - Individual Time Synchronization Exposure Configuration (Document)
+      parameters:
+        - name: subscriptionId
+          description: String identifying an Individual Time Synchronization Exposure Subscription.
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Contains the information for the creation the resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeSyncExposureConfig'
+      responses:
+        '201':
+          description: Successful creation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSyncExposureConfig'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created individual time synchronization exposure
+                configuration resource, according to the structure
+                {apiRoot}/ntsctsf-time-sync/<apiVersion>/subscriptions/{subscriptionId}
+                /configurations/{configurationId}
+              required: true
+              schema:
+                type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        configEventNotification:
+          '{$request.body#/configNotifUri':
+            post:
+              requestBody:
+                description: Notification of an event occurrence in the TSCTSF.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/TimeSyncExposureConfigNotif'
+              responses:
+                '204':
+                  description: The receipt of the notification is acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}/configurations/{configurationId}:
+    get:
+      summary: "Reads an existing Individual Time Synchronization Exposure Configuration"
+      operationId: GetIndividualTimeSynchronizationExposureConfiguration
+      tags:
+        - Individual Time Synchronization Exposure Configuration (Document)
+      parameters:
+        - name: subscriptionId
+          description: String identifying an Individual Time Synchronization Exposure Subscription.
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: configurationId
+          description: String identifying an Individual Time Synchronization Exposure Configuration.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A representation of the resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSyncExposureConfig'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      operationId: ReplaceIndividualTimeSynchronizationExposureConfiguration
+      summary: Replace an individual Time Synchronization Exposure Configuration
+      tags:
+        - IndividualTimeSynchronizationExposureConfiguration (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeSyncExposureConfig'
+      parameters:
+        - name: subscriptionId
+          description: String identifying an Individual Time Synchronization Exposure Subscription.
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: configurationId
+          description: String identifying an Individual Time Synchronization Exposure Configuration.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource was successfully modified and representation is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSyncExposureConfig'
+        '204':
+          description: No Content. Resource was successfully modified.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      operationId: DeleteIndividualTimeSynchronizationExposureConfiguration
+      summary: Delete an Individual TimeSynchronization Exposure Configuration
+      tags:
+        - Individual Time Synchronization Exposure Configuration (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: String identifying an Individual Time Synchronization Exposure Subscription.
+          required: true
+          schema:
+            type: string
+        - name: configurationId
+          description: String identifying an Individual Time Synchronization Exposure Configuration.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was successfully deleted
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            ntsctsf-time-sync: Access to the Ntsctsf_TimeSynchronization API
+
+  schemas:
+    TimeSyncExposureSubsc:
+      description: >
+        Contains the parameters for the subscription to notification of capability of time 
+        synchronization service.
+      type: object
+      properties:
+        supis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        gpsis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+        interGrpId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        exterGrpId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExternalGroupId'
+        anyUeInd:
+          type: boolean
+          description: >
+            Identifies whether the request applies to any UE. This attribute shall set to true if 
+            applicable for any UE, otherwise, set to false.
+        notifMethod:
+          $ref: 'TS29508_Nsmf_EventExposure.yaml#/components/schemas/NotificationMethod'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        subscribedEvents:
+          type: array
+          items:
+            $ref: 'TS29522_TimeSyncExposure.yaml#/components/schemas/SubscribedEvent'
+          minItems: 1
+        eventFilters:
+          type: array
+          items:
+            $ref: 'TS29522_TimeSyncExposure.yaml#/components/schemas/EventFilter'
+          minItems: 1
+        subsNotifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        subsNotifId:
+          type: string
+          description: Notification Correlation ID assigned by the NF service consumer.
+        maxReportNbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        repPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - subsNotifUri
+        - subsNotifId
+        - dnn
+        - snssai
+        - subscribedEvents
+      oneOf:
+        - required: [supis]
+        - required: [interGrpId]
+        - required: [gpsis]
+        - required: [exterGrpId]
+        - required: [anyUeInd]
+
+    TimeSyncExposureSubsNotif:
+      description: Contains the notification of time synchronization service.
+      type: object
+      properties:
+        subsNotifId:
+          type: string
+          description: Notification Correlation ID assigned by the NF service consumer.
+        eventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubsEventNotification'
+          minItems: 1
+
+    SubsEventNotification:
+      description: >
+        Contains the notification of capability of time synchronization for a list of UEs.
+      type: object
+      properties:
+        event:
+          $ref: 'TS29522_TimeSyncExposure.yaml#/components/schemas/SubscribedEvent'
+        timeSyncCapas:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSyncCapability'
+          minItems: 1
+      required:
+        - event
+
+    TimeSyncCapability:
+      description: Contains the capability of time synchronization service.
+      type: object
+      properties:
+        upNodeId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+        gmCapables:
+          type: array
+          items:
+            $ref: 'TS29522_TimeSyncExposure.yaml#/components/schemas/GmCapable'
+          minItems: 1
+        asTimeRes:
+          $ref: 'TS29522_TimeSyncExposure.yaml#/components/schemas/AsTimeResource'
+        ptpCapForUes:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PtpCapabilitiesPerUe'
+          minProperties: 1
+          description: >
+            Contains the PTP capabilities supported by each of the SUPI(s). The key of the map is the
+            SUPI.
+        ptpCapForGpsis:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PtpCapabilitiesPerUe'
+          minProperties: 1
+          description: >
+            Contains the PTP capabilities supported by each of the GPSI(s). The key of the map is
+            the GPSI.
+      required:
+        - upNodeId
+      anyOf:
+        - required: [gmCapables]
+        - required: [asTimeRes]
+
+    PtpCapabilitiesPerUe:
+      description: Contains the supported PTP capabilities per UE.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        ptpCaps:
+          type: array
+          items:
+            $ref: 'TS29522_TimeSyncExposure.yaml#/components/schemas/ReportedCapability'
+          minItems: 1
+      required:
+        - ptpCaps
+      oneOf:
+        - required: [supi]
+        - required: [gpsi]
+
+    TimeSyncExposureConfigNotif:
+      description: Contains the notification of time synchronization service state.
+      type: object
+      properties:
+        configNotifId:
+          type: string
+          description: Notification Correlation ID assigned by the NF service consumer.
+        stateOfConfig:
+          $ref: '#/components/schemas/StateOfConfiguration'
+      required:
+        - configNotifId
+        - stateOfConfig
+
+    StateOfConfiguration:
+      description: >
+        Contains the state of the time synchronization configuration and the clock quality
+        acceptance criteria result.
+      type: object
+      properties:
+        stateNwtt:
+          type: boolean
+          description: >
+            When any of the PTP port state(s)in NW-TT is Leader, Follower or Passive, it is
+            included and set to trueto indicate the current state of the time synchronization
+            configuration for the NW-TT port(s) of the PTP instance is active; when
+            PTP port state isin any other case, it is included and set to false to indicate
+            the state ofconfiguration for the NW-TT port(s) of the PTP instance
+            is inactive. Default value is false.
+        clkQltIndOfNwtt:
+            $ref: 'TS29522_TimeSyncExposure.yaml#/components/schemas/AcceptanceCriteriaResultIndication'
+        stateOfDstts:
+          description: >
+            Contains the PTP port states and the clock quality acceptance criteria result of the
+            DS-TT(s).
+          type: array
+          items:
+            $ref: '#/components/schemas/StateOfDstt'
+          minItems: 1
+
+    StateOfDstt:
+      description: Contains the PTP port state of a DS-TT.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        state:
+          type: boolean
+          description: >
+            When the PTP port state is Leader, Follower or Passive, it is included and set to true
+            to indicate the state of configuration for DS-TT port is active; when PTP port state is
+            in any other case, it is included and set to false to indicate the state of
+            configuration for DS-TT port is inactive.
+        clkQltIndOfDstt:
+            $ref: 'TS29522_TimeSyncExposure.yaml#/components/schemas/AcceptanceCriteriaResultIndication'
+      required:
+        - state
+      oneOf:
+        - required: [supi]
+        - required: [gpsi]
+
+    TimeSyncExposureConfig:
+      description: Contains the Time Synchronization Configuration parameters.
+      type: object
+      properties:
+        upNodeId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+        reqPtpIns:
+          $ref: '#/components/schemas/PtpInstance'
+        gmEnable:
+          type: boolean
+          description: >
+            Indicates that the AF requests 5GS to act as a grandmaster for PTP or gPTP if it is 
+            included and set to true.
+        gmPrio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        timeDom:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        timeSyncErrBdgt:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        configNotifId:
+          type: string
+          description: Notification Correlation ID assigned by the NF service consumer.
+        configNotifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        tempValidity:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/TemporalValidity'
+        covReq:
+          type: array
+          description: >
+            Identifies a list of Tracking Areas per serving network where time
+            synchronization service configuration is allowed.
+          items:
+            $ref: 'TS29534_Npcf_AMPolicyAuthorization.yaml#/components/schemas/ServiceAreaCoverageInfo'
+          minItems: 1
+        clkQltDetLvl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ClockQualityDetailLevel'
+        clkQltAcptCri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ClockQualityAcceptanceCriterion'
+      required: 
+        - upNodeId
+        - reqPtpIns
+        - timeDom
+        - configNotifId
+        - configNotifUri
+
+    PtpInstance:
+      description: Contains PTP instance configuration and activation requested by the AF.
+      type: object
+      properties:
+        instanceType:
+          $ref: 'TS29522_TimeSyncExposure.yaml#/components/schemas/InstanceType'
+        protocol:
+          $ref: 'TS29522_TimeSyncExposure.yaml#/components/schemas/Protocol'
+        ptpProfile:
+            type: string
+        portConfigs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConfigForPort'
+          minItems: 1
+      required:
+        - instanceType
+        - protocol
+        - ptpProfile
+
+    ConfigForPort:
+      description: Contains configuration for each port.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        n6Ind:
+          type: boolean
+          enum:
+            - true
+        ptpEnable:
+          type: boolean
+        logSyncInter:
+          type: integer
+        logSyncInterInd:
+          type: boolean
+        logAnnouInter:
+          type: integer
+        logAnnouInterInd:
+          type: boolean
+      oneOf:
+        - required: [supi]
+        - required: [gpsi]
+        - required: [n6Ind]

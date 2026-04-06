@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_context_retrieved_data_s OpenAPI_sm_context_retrieved_data_t;
 #include "af_coordination_info.h"
 #include "apn_rate_status.h"
 #include "sm_context.h"
@@ -21,8 +22,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_context_retrieved_data_s OpenAPI_sm_context_retrieved_data_t;
-typedef struct OpenAPI_sm_context_retrieved_data_s {
+struct OpenAPI_sm_context_retrieved_data_s {
     char *ue_eps_pdn_connection;
     struct OpenAPI_sm_context_s *sm_context;
     struct OpenAPI_small_data_rate_status_s *small_data_rate_status;
@@ -30,7 +30,7 @@ typedef struct OpenAPI_sm_context_retrieved_data_s {
     bool is_dl_data_waiting_ind;
     int dl_data_waiting_ind;
     struct OpenAPI_af_coordination_info_s *af_coordination_info;
-} OpenAPI_sm_context_retrieved_data_t;
+};
 
 OpenAPI_sm_context_retrieved_data_t *OpenAPI_sm_context_retrieved_data_create(
     char *ue_eps_pdn_connection,

@@ -143,7 +143,7 @@ OpenAPI_uri_list_t *OpenAPI_uri_list_parseFromJSON(cJSON *uri_listJSON)
 end:
     if (_linksList) {
         OpenAPI_list_for_each(_linksList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_links_value_schema_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

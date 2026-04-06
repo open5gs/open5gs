@@ -14,7 +14,9 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_create(
     bool is_auth_aaa,
     int auth_aaa,
     char *routing_id,
-    OpenAPI_list_t *pvs_info
+    OpenAPI_list_t *pvs_info,
+    bool is_msk_ind,
+    int msk_ind
 )
 {
     OpenAPI_authentication_info_result_t *authentication_info_result_local_var = ogs_malloc(sizeof(OpenAPI_authentication_info_result_t));
@@ -30,6 +32,8 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_create(
     authentication_info_result_local_var->auth_aaa = auth_aaa;
     authentication_info_result_local_var->routing_id = routing_id;
     authentication_info_result_local_var->pvs_info = pvs_info;
+    authentication_info_result_local_var->is_msk_ind = is_msk_ind;
+    authentication_info_result_local_var->msk_ind = msk_ind;
 
     return authentication_info_result_local_var;
 }
@@ -151,6 +155,13 @@ cJSON *OpenAPI_authentication_info_result_convertToJSON(OpenAPI_authentication_i
     }
     }
 
+    if (authentication_info_result->is_msk_ind) {
+    if (cJSON_AddBoolToObject(item, "mskInd", authentication_info_result->msk_ind) == NULL) {
+        ogs_error("OpenAPI_authentication_info_result_convertToJSON() failed [msk_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -170,6 +181,7 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
     cJSON *routing_id = NULL;
     cJSON *pvs_info = NULL;
     OpenAPI_list_t *pvs_infoList = NULL;
+    cJSON *msk_ind = NULL;
     auth_type = cJSON_GetObjectItemCaseSensitive(authentication_info_resultJSON, "authType");
     if (!auth_type) {
         ogs_error("OpenAPI_authentication_info_result_parseFromJSON() failed [auth_type]");
@@ -254,6 +266,14 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
         }
     }
 
+    msk_ind = cJSON_GetObjectItemCaseSensitive(authentication_info_resultJSON, "mskInd");
+    if (msk_ind) {
+    if (!cJSON_IsBool(msk_ind)) {
+        ogs_error("OpenAPI_authentication_info_result_parseFromJSON() failed [msk_ind]");
+        goto end;
+    }
+    }
+
     authentication_info_result_local_var = OpenAPI_authentication_info_result_create (
         auth_typeVariable,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
@@ -264,7 +284,9 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFr
         auth_aaa ? true : false,
         auth_aaa ? auth_aaa->valueint : 0,
         routing_id && !cJSON_IsNull(routing_id) ? ogs_strdup(routing_id->valuestring) : NULL,
-        pvs_info ? pvs_infoList : NULL
+        pvs_info ? pvs_infoList : NULL,
+        msk_ind ? true : false,
+        msk_ind ? msk_ind->valueint : 0
     );
 
     return authentication_info_result_local_var;

@@ -1,7 +1,7 @@
 /*
  * steer_mode_indicator.h
  *
- * 
+ * Contains Autonomous load-balance indicator or UE-assistance indicator.
  */
 
 #ifndef _OpenAPI_steer_mode_indicator_H_

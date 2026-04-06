@@ -6,7 +6,7 @@
 
 char* OpenAPI_ie_location_ToString(OpenAPI_ie_location_e ie_location)
 {
-    const char *ie_locationArray[] =  { "NULL", "URI_PARAM", "HEADER", "BODY", "MULTIPART_BINARY" };
+    const char *ie_locationArray[] =  { "NULL", "URI_PARAM", "HEADER", "BODY", "MULTIPART_BINARY", "URI_PATH" };
     size_t sizeofArray = sizeof(ie_locationArray) / sizeof(ie_locationArray[0]);
     if (ie_location < sizeofArray)
         return (char *)ie_locationArray[ie_location];
@@ -17,7 +17,7 @@ char* OpenAPI_ie_location_ToString(OpenAPI_ie_location_e ie_location)
 OpenAPI_ie_location_e OpenAPI_ie_location_FromString(char* ie_location)
 {
     int stringToReturn = 0;
-    const char *ie_locationArray[] =  { "NULL", "URI_PARAM", "HEADER", "BODY", "MULTIPART_BINARY" };
+    const char *ie_locationArray[] =  { "NULL", "URI_PARAM", "HEADER", "BODY", "MULTIPART_BINARY", "URI_PATH" };
     size_t sizeofArray = sizeof(ie_locationArray) / sizeof(ie_locationArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(ie_location, ie_locationArray[stringToReturn]) == 0) {

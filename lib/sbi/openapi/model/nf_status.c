@@ -6,7 +6,7 @@
 
 char* OpenAPI_nf_status_ToString(OpenAPI_nf_status_e nf_status)
 {
-    const char *nf_statusArray[] =  { "NULL", "REGISTERED", "SUSPENDED", "UNDISCOVERABLE" };
+    const char *nf_statusArray[] =  { "NULL", "REGISTERED", "SUSPENDED", "UNDISCOVERABLE", "CANARY_RELEASE" };
     size_t sizeofArray = sizeof(nf_statusArray) / sizeof(nf_statusArray[0]);
     if (nf_status < sizeofArray)
         return (char *)nf_statusArray[nf_status];
@@ -17,7 +17,7 @@ char* OpenAPI_nf_status_ToString(OpenAPI_nf_status_e nf_status)
 OpenAPI_nf_status_e OpenAPI_nf_status_FromString(char* nf_status)
 {
     int stringToReturn = 0;
-    const char *nf_statusArray[] =  { "NULL", "REGISTERED", "SUSPENDED", "UNDISCOVERABLE" };
+    const char *nf_statusArray[] =  { "NULL", "REGISTERED", "SUSPENDED", "UNDISCOVERABLE", "CANARY_RELEASE" };
     size_t sizeofArray = sizeof(nf_statusArray) / sizeof(nf_statusArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(nf_status, nf_statusArray[stringToReturn]) == 0) {

@@ -1,7 +1,7 @@
 /*
  * app_session_context_resp_data.h
  *
- * Describes the authorization data of an Individual Application Session Context created by the PCF.
+ * Describes the authorization data of an Individual Application Session Context created by the PCF. 
  */
 
 #ifndef _OpenAPI_app_session_context_resp_data_H_
@@ -12,6 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_app_session_context_resp_data_s OpenAPI_app_session_context_resp_data_t;
+#include "direct_notification_report.h"
 #include "serv_auth_info.h"
 #include "ue_identity_info.h"
 
@@ -19,15 +21,16 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_app_session_context_resp_data_s OpenAPI_app_session_context_resp_data_t;
-typedef struct OpenAPI_app_session_context_resp_data_s {
+struct OpenAPI_app_session_context_resp_data_s {
     OpenAPI_serv_auth_info_e serv_auth_info;
+    OpenAPI_list_t *direct_notif_reports;
     OpenAPI_list_t *ue_ids;
     char *supp_feat;
-} OpenAPI_app_session_context_resp_data_t;
+};
 
 OpenAPI_app_session_context_resp_data_t *OpenAPI_app_session_context_resp_data_create(
     OpenAPI_serv_auth_info_e serv_auth_info,
+    OpenAPI_list_t *direct_notif_reports,
     OpenAPI_list_t *ue_ids,
     char *supp_feat
 );

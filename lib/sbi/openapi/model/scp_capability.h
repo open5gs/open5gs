@@ -1,7 +1,7 @@
 /*
  * scp_capability.h
  *
- * 
+ * Indicates the capabilities supported by an SCP
  */
 
 #ifndef _OpenAPI_scp_capability_H_

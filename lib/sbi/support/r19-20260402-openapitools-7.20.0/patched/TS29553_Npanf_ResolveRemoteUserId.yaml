@@ -1,0 +1,110 @@
+openapi: 3.0.0
+info:
+  version: '1.2.0'
+  title: 'Npanf_ResolveRemoteUserId'
+  description: |
+    PAnF Resolve Remote User Id Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.553 V19.2.0; 5G System; 5G ProSe Anchor Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.553/
+
+servers:
+  - url: '{apiRoot}/npanf-userid/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - npanf-userid
+
+paths:
+  /prose-resolution/get:
+    post:
+      summary: Request to resolve the Remote User ID
+      operationId: ProseResolve
+      tags:
+        - Resolve Remote User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveReqData'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolveRspData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npanf-userid: Access to the Npanf_ResolveRemoteUserId API
+
+  schemas:
+#
+#  Structured Data Types
+#
+    ResolveReqData:
+      description: Representation of the Resolve Request Data.
+      type: object
+      properties:
+        cpPrukId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5GPrukId'
+      required:
+        - cpPrukId
+
+    ResolveRspData:
+      description: Representation of the Resolve Response Data.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      required:
+        - supi
+
+#
+#  Simple Data Types
+#
+
+
+#
+#  Enumeration Data Types
+#

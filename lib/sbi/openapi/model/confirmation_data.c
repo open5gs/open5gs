@@ -5,7 +5,6 @@
 #include "confirmation_data.h"
 
 OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_create(
-    bool is_res_star_null,
     char *res_star,
     char *supported_features
 )
@@ -13,7 +12,6 @@ OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_create(
     OpenAPI_confirmation_data_t *confirmation_data_local_var = ogs_malloc(sizeof(OpenAPI_confirmation_data_t));
     ogs_assert(confirmation_data_local_var);
 
-    confirmation_data_local_var->is_res_star_null = is_res_star_null;
     confirmation_data_local_var->res_star = res_star;
     confirmation_data_local_var->supported_features = supported_features;
 
@@ -94,7 +92,6 @@ OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_parseFromJSON(cJSON *conf
     }
 
     confirmation_data_local_var = OpenAPI_confirmation_data_create (
-        res_star && cJSON_IsNull(res_star) ? true : false,
         ogs_strdup(res_star->valuestring),
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );

@@ -12,10 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_hsmf_update_data_s OpenAPI_hsmf_update_data_t;
 #include "access_type.h"
+#include "avail_bit_rate_mon_supported.h"
 #include "cause.h"
+#include "ecn_marking_congestion_info_status.h"
+#include "ecs_addr_config_info.h"
 #include "eps_interworking_indication.h"
 #include "guami.h"
+#include "hrsbo_info_from_vplmn.h"
+#include "local_offloading_mgt_info_from_ismf.h"
 #include "ma_release_indication.h"
 #include "max_integrity_protected_data_rate.h"
 #include "mo_exp_data_counter.h"
@@ -28,6 +34,9 @@
 #include "psa_information.h"
 #include "qos_flow_item.h"
 #include "qos_flow_notify_item.h"
+#include "qos_monitoring_congestion_supported.h"
+#include "qos_monitoring_pd_method.h"
+#include "qos_monitoring_pd_supported.h"
 #include "rat_type.h"
 #include "ref_to_binary_data.h"
 #include "request_indication.h"
@@ -36,6 +45,7 @@
 #include "secondary_rat_usage_info.h"
 #include "secondary_rat_usage_report.h"
 #include "security_result.h"
+#include "snssai.h"
 #include "tunnel_info.h"
 #include "ulcl_bp_information.h"
 #include "unavailable_access_indication.h"
@@ -48,13 +58,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_hsmf_update_data_s OpenAPI_hsmf_update_data_t;
-typedef enum { OpenAPI_hsmf_update_data_SMPOLICYNOTIFYIND_NULL = 0, OpenAPI_hsmf_update_data_SMPOLICYNOTIFYIND__true } OpenAPI_hsmf_update_data_sm_policy_notify_ind_e;
-
-char* OpenAPI_hsmf_update_data_sm_policy_notify_ind_ToString(OpenAPI_hsmf_update_data_sm_policy_notify_ind_e sm_policy_notify_ind);
-
-OpenAPI_hsmf_update_data_sm_policy_notify_ind_e OpenAPI_hsmf_update_data_sm_policy_notify_ind_FromString(char* sm_policy_notify_ind);
-typedef struct OpenAPI_hsmf_update_data_s {
+struct OpenAPI_hsmf_update_data_s {
     OpenAPI_request_indication_e request_indication;
     char *pei;
     struct OpenAPI_tunnel_info_s *vcn_tunnel_info;
@@ -74,6 +78,7 @@ typedef struct OpenAPI_hsmf_update_data_s {
     struct OpenAPI_ref_to_binary_data_s *n1_sm_info_from_ue;
     struct OpenAPI_ref_to_binary_data_s *unknown_n1_sm_info;
     OpenAPI_list_t *qos_flows_rel_notify_list;
+    OpenAPI_list_t *qos_flows_vsmf_rejected_list;
     OpenAPI_list_t *qos_flows_notify_list;
     OpenAPI_list_t *notify_list;
     OpenAPI_list_t *eps_bearer_id;
@@ -108,6 +113,7 @@ typedef struct OpenAPI_hsmf_update_data_s {
     char *v_smf_service_instance_id;
     char *ismf_pdu_session_uri;
     char *ismf_id;
+    char *iupf_id;
     char *i_smf_service_instance_id;
     bool is_dl_serving_plmn_rate_ctl_null;
     bool is_dl_serving_plmn_rate_ctl;
@@ -122,14 +128,33 @@ typedef struct OpenAPI_hsmf_update_data_s {
     char *amf_nf_id;
     struct OpenAPI_guami_s *guami;
     OpenAPI_list_t *secondary_rat_usage_data_report_container;
-    OpenAPI_hsmf_update_data_sm_policy_notify_ind_e sm_policy_notify_ind;
+    bool is_sm_policy_notify_ind;
+    int sm_policy_notify_ind;
     bool is_pcf_ue_callback_info_null;
     struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_callback_info;
     OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul;
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl;
     OpenAPI_up_cnx_state_e up_cnx_state;
-} OpenAPI_hsmf_update_data_t;
+    OpenAPI_list_t *ecs_addr_config_infos;
+    struct OpenAPI_hrsbo_info_from_vplmn_s *hrsbo_info;
+    struct OpenAPI_local_offloading_mgt_info_from_ismf_s *local_offload_mgt_info;
+    struct OpenAPI_snssai_s *alt_snssai;
+    bool is_ns_repl_termin_ind;
+    int ns_repl_termin_ind;
+    bool is_disaster_roaming_ind;
+    int disaster_roaming_ind;
+    bool is_pdu_set_support_ind;
+    int pdu_set_support_ind;
+    OpenAPI_list_t *ecn_marking_congestion_info_status;
+    OpenAPI_qos_monitoring_pd_supported_e qos_monitoring_pd_supported;
+    OpenAPI_list_t *qos_monitoring_pd_methods;
+    OpenAPI_qos_monitoring_congestion_supported_e qos_monitoring_congestion_supported;
+    OpenAPI_avail_bit_rate_mon_supported_e avail_bit_rate_mon_supported;
+    char *udm_group_id;
+    bool is_amf_resynched_ind;
+    int amf_resynched_ind;
+};
 
 OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_request_indication_e request_indication,
@@ -151,6 +176,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_ref_to_binary_data_t *n1_sm_info_from_ue,
     OpenAPI_ref_to_binary_data_t *unknown_n1_sm_info,
     OpenAPI_list_t *qos_flows_rel_notify_list,
+    OpenAPI_list_t *qos_flows_vsmf_rejected_list,
     OpenAPI_list_t *qos_flows_notify_list,
     OpenAPI_list_t *notify_list,
     OpenAPI_list_t *eps_bearer_id,
@@ -185,6 +211,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     char *v_smf_service_instance_id,
     char *ismf_pdu_session_uri,
     char *ismf_id,
+    char *iupf_id,
     char *i_smf_service_instance_id,
     bool is_dl_serving_plmn_rate_ctl_null,
     bool is_dl_serving_plmn_rate_ctl,
@@ -199,13 +226,32 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     char *amf_nf_id,
     OpenAPI_guami_t *guami,
     OpenAPI_list_t *secondary_rat_usage_data_report_container,
-    OpenAPI_hsmf_update_data_sm_policy_notify_ind_e sm_policy_notify_ind,
+    bool is_sm_policy_notify_ind,
+    int sm_policy_notify_ind,
     bool is_pcf_ue_callback_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_callback_info,
     OpenAPI_satellite_backhaul_category_e satellite_backhaul_cat,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
-    OpenAPI_up_cnx_state_e up_cnx_state
+    OpenAPI_up_cnx_state_e up_cnx_state,
+    OpenAPI_list_t *ecs_addr_config_infos,
+    OpenAPI_hrsbo_info_from_vplmn_t *hrsbo_info,
+    OpenAPI_local_offloading_mgt_info_from_ismf_t *local_offload_mgt_info,
+    OpenAPI_snssai_t *alt_snssai,
+    bool is_ns_repl_termin_ind,
+    int ns_repl_termin_ind,
+    bool is_disaster_roaming_ind,
+    int disaster_roaming_ind,
+    bool is_pdu_set_support_ind,
+    int pdu_set_support_ind,
+    OpenAPI_list_t *ecn_marking_congestion_info_status,
+    OpenAPI_qos_monitoring_pd_supported_e qos_monitoring_pd_supported,
+    OpenAPI_list_t *qos_monitoring_pd_methods,
+    OpenAPI_qos_monitoring_congestion_supported_e qos_monitoring_congestion_supported,
+    OpenAPI_avail_bit_rate_mon_supported_e avail_bit_rate_mon_supported,
+    char *udm_group_id,
+    bool is_amf_resynched_ind,
+    int amf_resynched_ind
 );
 void OpenAPI_hsmf_update_data_free(OpenAPI_hsmf_update_data_t *hsmf_update_data);
 OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_update_dataJSON);

@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_congestion_info_s OpenAPI_congestion_info_t;
 #include "congestion_type.h"
 #include "threshold_level.h"
 #include "time_window.h"
@@ -21,19 +22,18 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_congestion_info_s OpenAPI_congestion_info_t;
-typedef struct OpenAPI_congestion_info_s {
-    struct OpenAPI_congestion_type_s *cong_type;
+struct OpenAPI_congestion_info_s {
+    OpenAPI_congestion_type_e cong_type;
     struct OpenAPI_time_window_s *time_intev;
     struct OpenAPI_threshold_level_s *nsi;
     bool is_confidence;
     int confidence;
     OpenAPI_list_t *top_app_list_ul;
     OpenAPI_list_t *top_app_list_dl;
-} OpenAPI_congestion_info_t;
+};
 
 OpenAPI_congestion_info_t *OpenAPI_congestion_info_create(
-    OpenAPI_congestion_type_t *cong_type,
+    OpenAPI_congestion_type_e cong_type,
     OpenAPI_time_window_t *time_intev,
     OpenAPI_threshold_level_t *nsi,
     bool is_confidence,

@@ -112,7 +112,7 @@ OpenAPI_uc_subscription_data_t *OpenAPI_uc_subscription_data_parseFromJSON(cJSON
 end:
     if (user_consent_per_purpose_listList) {
         OpenAPI_list_for_each(user_consent_per_purpose_listList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_map_free(localKeyValue);
         }

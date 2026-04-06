@@ -1,7 +1,7 @@
 /*
  * af_requested_data.h
  *
- * 
+ * Represents the information that the AF requested to be exposed.
  */
 
 #ifndef _OpenAPI_af_requested_data_H_

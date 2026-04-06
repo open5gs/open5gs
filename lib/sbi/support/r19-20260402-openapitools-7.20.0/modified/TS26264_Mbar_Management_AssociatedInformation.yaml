@@ -1,0 +1,90 @@
+openapi: 3.0.0
+info:
+  title: Mbar_Management_AssociatedInformation
+  version: 1.0.0
+  description: |
+    Base Avatar Repository Management API - Associated Information
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: AssociatedInformation
+    description: 'Associated Information for Base Avatars'
+
+externalDocs:
+  description: 'TS 26.264 V19.1.0; IMS-based AR Real-Time Communication'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.264/'
+
+servers:
+  - url: '{apiRoot}/3gpp-mbar-management/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in 3GPP TS 29.501
+
+security:
+  - {}
+  - OAuth2: []
+
+paths:
+  /avatars/{avatarId}/associatedInfo:
+    parameters:
+      - name: avatarId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The unique identifier of the Avatar resource'
+    get:
+      tags:
+        - AssociatedInformation
+      operationId: getAssociatedInformation
+      summary: 'Retrieve associated information corresponding to a Base Avatar'
+      security:
+        - OAuth2:
+          - associated_info_retrieve
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssociatedInformation'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            associated_info_retrieve: Retrieve Associated Information
+
+  schemas:
+    AssociatedInformation:
+      type: object
+      description: 'A representation of Associated Information resource'
+      required:
+        - associatedInfo
+      properties:
+        associatedInfo:
+          $ref: 'TS26264_CommonData.yaml#/components/schemas/AssociatedInfo'

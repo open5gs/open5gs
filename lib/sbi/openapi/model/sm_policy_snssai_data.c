@@ -191,7 +191,7 @@ end:
     }
     if (sm_policy_dnn_dataList) {
         OpenAPI_list_for_each(sm_policy_dnn_dataList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_sm_policy_dnn_data_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

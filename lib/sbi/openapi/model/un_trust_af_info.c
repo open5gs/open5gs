@@ -8,7 +8,8 @@ OpenAPI_un_trust_af_info_t *OpenAPI_un_trust_af_info_create(
     char *af_id,
     OpenAPI_list_t *s_nssai_info_list,
     bool is_mapping_ind,
-    int mapping_ind
+    int mapping_ind,
+    OpenAPI_list_t *vfl_info
 )
 {
     OpenAPI_un_trust_af_info_t *un_trust_af_info_local_var = ogs_malloc(sizeof(OpenAPI_un_trust_af_info_t));
@@ -18,6 +19,7 @@ OpenAPI_un_trust_af_info_t *OpenAPI_un_trust_af_info_create(
     un_trust_af_info_local_var->s_nssai_info_list = s_nssai_info_list;
     un_trust_af_info_local_var->is_mapping_ind = is_mapping_ind;
     un_trust_af_info_local_var->mapping_ind = mapping_ind;
+    un_trust_af_info_local_var->vfl_info = vfl_info;
 
     return un_trust_af_info_local_var;
 }
@@ -39,6 +41,13 @@ void OpenAPI_un_trust_af_info_free(OpenAPI_un_trust_af_info_t *un_trust_af_info)
         }
         OpenAPI_list_free(un_trust_af_info->s_nssai_info_list);
         un_trust_af_info->s_nssai_info_list = NULL;
+    }
+    if (un_trust_af_info->vfl_info) {
+        OpenAPI_list_for_each(un_trust_af_info->vfl_info, node) {
+            OpenAPI_vfl_info_free(node->data);
+        }
+        OpenAPI_list_free(un_trust_af_info->vfl_info);
+        un_trust_af_info->vfl_info = NULL;
     }
     ogs_free(un_trust_af_info);
 }
@@ -86,6 +95,22 @@ cJSON *OpenAPI_un_trust_af_info_convertToJSON(OpenAPI_un_trust_af_info_t *un_tru
     }
     }
 
+    if (un_trust_af_info->vfl_info) {
+    cJSON *vfl_infoList = cJSON_AddArrayToObject(item, "vflInfo");
+    if (vfl_infoList == NULL) {
+        ogs_error("OpenAPI_un_trust_af_info_convertToJSON() failed [vfl_info]");
+        goto end;
+    }
+    OpenAPI_list_for_each(un_trust_af_info->vfl_info, node) {
+        cJSON *itemLocal = OpenAPI_vfl_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_un_trust_af_info_convertToJSON() failed [vfl_info]");
+            goto end;
+        }
+        cJSON_AddItemToArray(vfl_infoList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -98,6 +123,8 @@ OpenAPI_un_trust_af_info_t *OpenAPI_un_trust_af_info_parseFromJSON(cJSON *un_tru
     cJSON *s_nssai_info_list = NULL;
     OpenAPI_list_t *s_nssai_info_listList = NULL;
     cJSON *mapping_ind = NULL;
+    cJSON *vfl_info = NULL;
+    OpenAPI_list_t *vfl_infoList = NULL;
     af_id = cJSON_GetObjectItemCaseSensitive(un_trust_af_infoJSON, "afId");
     if (!af_id) {
         ogs_error("OpenAPI_un_trust_af_info_parseFromJSON() failed [af_id]");
@@ -140,11 +167,36 @@ OpenAPI_un_trust_af_info_t *OpenAPI_un_trust_af_info_parseFromJSON(cJSON *un_tru
     }
     }
 
+    vfl_info = cJSON_GetObjectItemCaseSensitive(un_trust_af_infoJSON, "vflInfo");
+    if (vfl_info) {
+        cJSON *vfl_info_local = NULL;
+        if (!cJSON_IsArray(vfl_info)) {
+            ogs_error("OpenAPI_un_trust_af_info_parseFromJSON() failed [vfl_info]");
+            goto end;
+        }
+
+        vfl_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(vfl_info_local, vfl_info) {
+            if (!cJSON_IsObject(vfl_info_local)) {
+                ogs_error("OpenAPI_un_trust_af_info_parseFromJSON() failed [vfl_info]");
+                goto end;
+            }
+            OpenAPI_vfl_info_t *vfl_infoItem = OpenAPI_vfl_info_parseFromJSON(vfl_info_local);
+            if (!vfl_infoItem) {
+                ogs_error("No vfl_infoItem");
+                goto end;
+            }
+            OpenAPI_list_add(vfl_infoList, vfl_infoItem);
+        }
+    }
+
     un_trust_af_info_local_var = OpenAPI_un_trust_af_info_create (
         ogs_strdup(af_id->valuestring),
         s_nssai_info_list ? s_nssai_info_listList : NULL,
         mapping_ind ? true : false,
-        mapping_ind ? mapping_ind->valueint : 0
+        mapping_ind ? mapping_ind->valueint : 0,
+        vfl_info ? vfl_infoList : NULL
     );
 
     return un_trust_af_info_local_var;
@@ -155,6 +207,13 @@ end:
         }
         OpenAPI_list_free(s_nssai_info_listList);
         s_nssai_info_listList = NULL;
+    }
+    if (vfl_infoList) {
+        OpenAPI_list_for_each(vfl_infoList, node) {
+            OpenAPI_vfl_info_free(node->data);
+        }
+        OpenAPI_list_free(vfl_infoList);
+        vfl_infoList = NULL;
     }
     return NULL;
 }

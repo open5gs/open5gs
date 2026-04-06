@@ -12,13 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_policy_context_data_s OpenAPI_sm_policy_context_data_t;
 #include "acc_net_ch_id.h"
 #include "acc_net_charging_address.h"
 #include "access_type.h"
 #include "additional_access_info.h"
 #include "ambr.h"
+#include "atsss_capability_ext.h"
+#include "ddd_traffic_descriptor.h"
 #include "dnn_selection_mode.h"
 #include "ma_pdu_indication.h"
+#include "n1_n2_message_transfer_cause.h"
 #include "npcf_atsss_capability.h"
 #include "nwdaf_data.h"
 #include "pcf_ue_callback_info.h"
@@ -30,6 +34,7 @@
 #include "server_addressing_info.h"
 #include "serving_nf_identity.h"
 #include "snssai.h"
+#include "ssc_mode.h"
 #include "subscribed_default_qos.h"
 #include "trace_data.h"
 #include "user_location.h"
@@ -39,9 +44,9 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_policy_context_data_s OpenAPI_sm_policy_context_data_t;
-typedef struct OpenAPI_sm_policy_context_data_s {
+struct OpenAPI_sm_policy_context_data_s {
     struct OpenAPI_acc_net_ch_id_s *acc_net_ch_id;
+    bool is_charg_entity_addr_null;
     struct OpenAPI_acc_net_charging_address_s *charg_entity_addr;
     char *gpsi;
     char *supi;
@@ -81,6 +86,7 @@ typedef struct OpenAPI_sm_policy_context_data_s {
     bool is_trace_req_null;
     struct OpenAPI_trace_data_s *trace_req;
     struct OpenAPI_snssai_s *slice_info;
+    struct OpenAPI_snssai_s *alt_slice_info;
     OpenAPI_qos_flow_usage_e qos_flow_usage;
     struct OpenAPI_serving_nf_identity_s *serv_nf_id;
     char *supp_feat;
@@ -88,6 +94,7 @@ typedef struct OpenAPI_sm_policy_context_data_s {
     char *recovery_time;
     OpenAPI_ma_pdu_indication_e ma_pdu_ind;
     OpenAPI_npcf_atsss_capability_e atsss_capab;
+    OpenAPI_list_t *atsss_capabs;
     OpenAPI_list_t *ipv4_frame_route_list;
     OpenAPI_list_t *ipv6_frame_route_list;
     OpenAPI_satellite_backhaul_category_e sat_backhaul_category;
@@ -97,10 +104,25 @@ typedef struct OpenAPI_sm_policy_context_data_s {
     bool is_onboard_ind;
     int onboard_ind;
     OpenAPI_list_t *nwdaf_datas;
-} OpenAPI_sm_policy_context_data_t;
+    char *ursp_enf_info;
+    OpenAPI_ssc_mode_e ssc_mode;
+    char *ue_req_dnn;
+    OpenAPI_pdu_session_type_e ue_req_pdu_session_type;
+    bool is_hrsbo_ind;
+    int hrsbo_ind;
+    bool is_loc_offload_ind;
+    int loc_offload_ind;
+    OpenAPI_n1_n2_message_transfer_cause_e ue_pol_fail_report;
+    bool is_ursp_prov_supp_ind;
+    int ursp_prov_supp_ind;
+    bool is_mpx_media_ind;
+    int mpx_media_ind;
+    OpenAPI_list_t *traffic_descriptors;
+};
 
 OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     OpenAPI_acc_net_ch_id_t *acc_net_ch_id,
+    bool is_charg_entity_addr_null,
     OpenAPI_acc_net_charging_address_t *charg_entity_addr,
     char *gpsi,
     char *supi,
@@ -140,6 +162,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     bool is_trace_req_null,
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_snssai_t *slice_info,
+    OpenAPI_snssai_t *alt_slice_info,
     OpenAPI_qos_flow_usage_e qos_flow_usage,
     OpenAPI_serving_nf_identity_t *serv_nf_id,
     char *supp_feat,
@@ -147,6 +170,7 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     char *recovery_time,
     OpenAPI_ma_pdu_indication_e ma_pdu_ind,
     OpenAPI_npcf_atsss_capability_e atsss_capab,
+    OpenAPI_list_t *atsss_capabs,
     OpenAPI_list_t *ipv4_frame_route_list,
     OpenAPI_list_t *ipv6_frame_route_list,
     OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
@@ -155,7 +179,21 @@ OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_create(
     OpenAPI_list_t *pvs_info,
     bool is_onboard_ind,
     int onboard_ind,
-    OpenAPI_list_t *nwdaf_datas
+    OpenAPI_list_t *nwdaf_datas,
+    char *ursp_enf_info,
+    OpenAPI_ssc_mode_e ssc_mode,
+    char *ue_req_dnn,
+    OpenAPI_pdu_session_type_e ue_req_pdu_session_type,
+    bool is_hrsbo_ind,
+    int hrsbo_ind,
+    bool is_loc_offload_ind,
+    int loc_offload_ind,
+    OpenAPI_n1_n2_message_transfer_cause_e ue_pol_fail_report,
+    bool is_ursp_prov_supp_ind,
+    int ursp_prov_supp_ind,
+    bool is_mpx_media_ind,
+    int mpx_media_ind,
+    OpenAPI_list_t *traffic_descriptors
 );
 void OpenAPI_sm_policy_context_data_free(OpenAPI_sm_policy_context_data_t *sm_policy_context_data);
 OpenAPI_sm_policy_context_data_t *OpenAPI_sm_policy_context_data_parseFromJSON(cJSON *sm_policy_context_dataJSON);

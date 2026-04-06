@@ -7,7 +7,7 @@
 OpenAPI_analytics_metadata_indication_t *OpenAPI_analytics_metadata_indication_create(
     OpenAPI_time_window_t *data_window,
     OpenAPI_list_t *data_stat_props,
-    OpenAPI_output_strategy_t *strategy,
+    OpenAPI_output_strategy_e strategy,
     OpenAPI_list_t *aggr_nwdaf_ids
 )
 {
@@ -34,15 +34,8 @@ void OpenAPI_analytics_metadata_indication_free(OpenAPI_analytics_metadata_indic
         analytics_metadata_indication->data_window = NULL;
     }
     if (analytics_metadata_indication->data_stat_props) {
-        OpenAPI_list_for_each(analytics_metadata_indication->data_stat_props, node) {
-            OpenAPI_dataset_statistical_property_free(node->data);
-        }
         OpenAPI_list_free(analytics_metadata_indication->data_stat_props);
         analytics_metadata_indication->data_stat_props = NULL;
-    }
-    if (analytics_metadata_indication->strategy) {
-        OpenAPI_output_strategy_free(analytics_metadata_indication->strategy);
-        analytics_metadata_indication->strategy = NULL;
     }
     if (analytics_metadata_indication->aggr_nwdaf_ids) {
         OpenAPI_list_for_each(analytics_metadata_indication->aggr_nwdaf_ids, node) {
@@ -78,30 +71,22 @@ cJSON *OpenAPI_analytics_metadata_indication_convertToJSON(OpenAPI_analytics_met
     }
     }
 
-    if (analytics_metadata_indication->data_stat_props) {
+    if (analytics_metadata_indication->data_stat_props != OpenAPI_dataset_statistical_property_NULL) {
     cJSON *data_stat_propsList = cJSON_AddArrayToObject(item, "dataStatProps");
     if (data_stat_propsList == NULL) {
         ogs_error("OpenAPI_analytics_metadata_indication_convertToJSON() failed [data_stat_props]");
         goto end;
     }
     OpenAPI_list_for_each(analytics_metadata_indication->data_stat_props, node) {
-        cJSON *itemLocal = OpenAPI_dataset_statistical_property_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        if (cJSON_AddStringToObject(data_stat_propsList, "", OpenAPI_dataset_statistical_property_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_analytics_metadata_indication_convertToJSON() failed [data_stat_props]");
             goto end;
         }
-        cJSON_AddItemToArray(data_stat_propsList, itemLocal);
     }
     }
 
-    if (analytics_metadata_indication->strategy) {
-    cJSON *strategy_local_JSON = OpenAPI_output_strategy_convertToJSON(analytics_metadata_indication->strategy);
-    if (strategy_local_JSON == NULL) {
-        ogs_error("OpenAPI_analytics_metadata_indication_convertToJSON() failed [strategy]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "strategy", strategy_local_JSON);
-    if (item->child == NULL) {
+    if (analytics_metadata_indication->strategy != OpenAPI_output_strategy_NULL) {
+    if (cJSON_AddStringToObject(item, "strategy", OpenAPI_output_strategy_ToString(analytics_metadata_indication->strategy)) == NULL) {
         ogs_error("OpenAPI_analytics_metadata_indication_convertToJSON() failed [strategy]");
         goto end;
     }
@@ -134,7 +119,7 @@ OpenAPI_analytics_metadata_indication_t *OpenAPI_analytics_metadata_indication_p
     cJSON *data_stat_props = NULL;
     OpenAPI_list_t *data_stat_propsList = NULL;
     cJSON *strategy = NULL;
-    OpenAPI_output_strategy_t *strategy_local_nonprim = NULL;
+    OpenAPI_output_strategy_e strategyVariable = 0;
     cJSON *aggr_nwdaf_ids = NULL;
     OpenAPI_list_t *aggr_nwdaf_idsList = NULL;
     data_window = cJSON_GetObjectItemCaseSensitive(analytics_metadata_indicationJSON, "dataWindow");
@@ -157,26 +142,32 @@ OpenAPI_analytics_metadata_indication_t *OpenAPI_analytics_metadata_indication_p
         data_stat_propsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(data_stat_props_local, data_stat_props) {
-            if (!cJSON_IsObject(data_stat_props_local)) {
+            OpenAPI_dataset_statistical_property_e localEnum = OpenAPI_dataset_statistical_property_NULL;
+            if (!cJSON_IsString(data_stat_props_local)) {
                 ogs_error("OpenAPI_analytics_metadata_indication_parseFromJSON() failed [data_stat_props]");
                 goto end;
             }
-            OpenAPI_dataset_statistical_property_t *data_stat_propsItem = OpenAPI_dataset_statistical_property_parseFromJSON(data_stat_props_local);
-            if (!data_stat_propsItem) {
-                ogs_error("No data_stat_propsItem");
-                goto end;
+            localEnum = OpenAPI_dataset_statistical_property_FromString(data_stat_props_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"data_stat_props\" is not supported. Ignoring it ...",
+                         data_stat_props_local->valuestring);
+            } else {
+                OpenAPI_list_add(data_stat_propsList, (void *)localEnum);
             }
-            OpenAPI_list_add(data_stat_propsList, data_stat_propsItem);
+        }
+        if (data_stat_propsList->count == 0) {
+            ogs_error("OpenAPI_analytics_metadata_indication_parseFromJSON() failed: Expected data_stat_propsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
     strategy = cJSON_GetObjectItemCaseSensitive(analytics_metadata_indicationJSON, "strategy");
     if (strategy) {
-    strategy_local_nonprim = OpenAPI_output_strategy_parseFromJSON(strategy);
-    if (!strategy_local_nonprim) {
-        ogs_error("OpenAPI_output_strategy_parseFromJSON failed [strategy]");
+    if (!cJSON_IsString(strategy)) {
+        ogs_error("OpenAPI_analytics_metadata_indication_parseFromJSON() failed [strategy]");
         goto end;
     }
+    strategyVariable = OpenAPI_output_strategy_FromString(strategy->valuestring);
     }
 
     aggr_nwdaf_ids = cJSON_GetObjectItemCaseSensitive(analytics_metadata_indicationJSON, "aggrNwdafIds");
@@ -203,7 +194,7 @@ OpenAPI_analytics_metadata_indication_t *OpenAPI_analytics_metadata_indication_p
     analytics_metadata_indication_local_var = OpenAPI_analytics_metadata_indication_create (
         data_window ? data_window_local_nonprim : NULL,
         data_stat_props ? data_stat_propsList : NULL,
-        strategy ? strategy_local_nonprim : NULL,
+        strategy ? strategyVariable : 0,
         aggr_nwdaf_ids ? aggr_nwdaf_idsList : NULL
     );
 
@@ -214,15 +205,8 @@ end:
         data_window_local_nonprim = NULL;
     }
     if (data_stat_propsList) {
-        OpenAPI_list_for_each(data_stat_propsList, node) {
-            OpenAPI_dataset_statistical_property_free(node->data);
-        }
         OpenAPI_list_free(data_stat_propsList);
         data_stat_propsList = NULL;
-    }
-    if (strategy_local_nonprim) {
-        OpenAPI_output_strategy_free(strategy_local_nonprim);
-        strategy_local_nonprim = NULL;
     }
     if (aggr_nwdaf_idsList) {
         OpenAPI_list_for_each(aggr_nwdaf_idsList, node) {

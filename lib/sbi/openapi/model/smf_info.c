@@ -8,6 +8,8 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_create(
     OpenAPI_list_t *s_nssai_smf_info_list,
     OpenAPI_list_t *tai_list,
     OpenAPI_list_t *tai_range_list,
+    OpenAPI_list_t *lom_tai_list,
+    OpenAPI_list_t *lom_tai_range_list,
     char *pgw_fqdn,
     OpenAPI_list_t *pgw_ip_addr_list,
     OpenAPI_list_t *access_type,
@@ -30,6 +32,8 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_create(
     smf_info_local_var->s_nssai_smf_info_list = s_nssai_smf_info_list;
     smf_info_local_var->tai_list = tai_list;
     smf_info_local_var->tai_range_list = tai_range_list;
+    smf_info_local_var->lom_tai_list = lom_tai_list;
+    smf_info_local_var->lom_tai_range_list = lom_tai_range_list;
     smf_info_local_var->pgw_fqdn = pgw_fqdn;
     smf_info_local_var->pgw_ip_addr_list = pgw_ip_addr_list;
     smf_info_local_var->access_type = access_type;
@@ -75,6 +79,20 @@ void OpenAPI_smf_info_free(OpenAPI_smf_info_t *smf_info)
         }
         OpenAPI_list_free(smf_info->tai_range_list);
         smf_info->tai_range_list = NULL;
+    }
+    if (smf_info->lom_tai_list) {
+        OpenAPI_list_for_each(smf_info->lom_tai_list, node) {
+            OpenAPI_tai_free(node->data);
+        }
+        OpenAPI_list_free(smf_info->lom_tai_list);
+        smf_info->lom_tai_list = NULL;
+    }
+    if (smf_info->lom_tai_range_list) {
+        OpenAPI_list_for_each(smf_info->lom_tai_range_list, node) {
+            OpenAPI_tai_range_free(node->data);
+        }
+        OpenAPI_list_free(smf_info->lom_tai_range_list);
+        smf_info->lom_tai_range_list = NULL;
     }
     if (smf_info->pgw_fqdn) {
         ogs_free(smf_info->pgw_fqdn);
@@ -159,6 +177,38 @@ cJSON *OpenAPI_smf_info_convertToJSON(OpenAPI_smf_info_t *smf_info)
             goto end;
         }
         cJSON_AddItemToArray(tai_range_listList, itemLocal);
+    }
+    }
+
+    if (smf_info->lom_tai_list) {
+    cJSON *lom_tai_listList = cJSON_AddArrayToObject(item, "lomTaiList");
+    if (lom_tai_listList == NULL) {
+        ogs_error("OpenAPI_smf_info_convertToJSON() failed [lom_tai_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(smf_info->lom_tai_list, node) {
+        cJSON *itemLocal = OpenAPI_tai_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_smf_info_convertToJSON() failed [lom_tai_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(lom_tai_listList, itemLocal);
+    }
+    }
+
+    if (smf_info->lom_tai_range_list) {
+    cJSON *lom_tai_range_listList = cJSON_AddArrayToObject(item, "lomTaiRangeList");
+    if (lom_tai_range_listList == NULL) {
+        ogs_error("OpenAPI_smf_info_convertToJSON() failed [lom_tai_range_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(smf_info->lom_tai_range_list, node) {
+        cJSON *itemLocal = OpenAPI_tai_range_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_smf_info_convertToJSON() failed [lom_tai_range_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(lom_tai_range_listList, itemLocal);
     }
     }
 
@@ -262,6 +312,10 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_parseFromJSON(cJSON *smf_infoJSON)
     OpenAPI_list_t *tai_listList = NULL;
     cJSON *tai_range_list = NULL;
     OpenAPI_list_t *tai_range_listList = NULL;
+    cJSON *lom_tai_list = NULL;
+    OpenAPI_list_t *lom_tai_listList = NULL;
+    cJSON *lom_tai_range_list = NULL;
+    OpenAPI_list_t *lom_tai_range_listList = NULL;
     cJSON *pgw_fqdn = NULL;
     cJSON *pgw_ip_addr_list = NULL;
     OpenAPI_list_t *pgw_ip_addr_listList = NULL;
@@ -345,6 +399,54 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_parseFromJSON(cJSON *smf_infoJSON)
                 goto end;
             }
             OpenAPI_list_add(tai_range_listList, tai_range_listItem);
+        }
+    }
+
+    lom_tai_list = cJSON_GetObjectItemCaseSensitive(smf_infoJSON, "lomTaiList");
+    if (lom_tai_list) {
+        cJSON *lom_tai_list_local = NULL;
+        if (!cJSON_IsArray(lom_tai_list)) {
+            ogs_error("OpenAPI_smf_info_parseFromJSON() failed [lom_tai_list]");
+            goto end;
+        }
+
+        lom_tai_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(lom_tai_list_local, lom_tai_list) {
+            if (!cJSON_IsObject(lom_tai_list_local)) {
+                ogs_error("OpenAPI_smf_info_parseFromJSON() failed [lom_tai_list]");
+                goto end;
+            }
+            OpenAPI_tai_t *lom_tai_listItem = OpenAPI_tai_parseFromJSON(lom_tai_list_local);
+            if (!lom_tai_listItem) {
+                ogs_error("No lom_tai_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(lom_tai_listList, lom_tai_listItem);
+        }
+    }
+
+    lom_tai_range_list = cJSON_GetObjectItemCaseSensitive(smf_infoJSON, "lomTaiRangeList");
+    if (lom_tai_range_list) {
+        cJSON *lom_tai_range_list_local = NULL;
+        if (!cJSON_IsArray(lom_tai_range_list)) {
+            ogs_error("OpenAPI_smf_info_parseFromJSON() failed [lom_tai_range_list]");
+            goto end;
+        }
+
+        lom_tai_range_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(lom_tai_range_list_local, lom_tai_range_list) {
+            if (!cJSON_IsObject(lom_tai_range_list_local)) {
+                ogs_error("OpenAPI_smf_info_parseFromJSON() failed [lom_tai_range_list]");
+                goto end;
+            }
+            OpenAPI_tai_range_t *lom_tai_range_listItem = OpenAPI_tai_range_parseFromJSON(lom_tai_range_list_local);
+            if (!lom_tai_range_listItem) {
+                ogs_error("No lom_tai_range_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(lom_tai_range_listList, lom_tai_range_listItem);
         }
     }
 
@@ -475,6 +577,8 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_parseFromJSON(cJSON *smf_infoJSON)
         s_nssai_smf_info_listList,
         tai_list ? tai_listList : NULL,
         tai_range_list ? tai_range_listList : NULL,
+        lom_tai_list ? lom_tai_listList : NULL,
+        lom_tai_range_list ? lom_tai_range_listList : NULL,
         pgw_fqdn && !cJSON_IsNull(pgw_fqdn) ? ogs_strdup(pgw_fqdn->valuestring) : NULL,
         pgw_ip_addr_list ? pgw_ip_addr_listList : NULL,
         access_type ? access_typeList : NULL,
@@ -513,6 +617,20 @@ end:
         }
         OpenAPI_list_free(tai_range_listList);
         tai_range_listList = NULL;
+    }
+    if (lom_tai_listList) {
+        OpenAPI_list_for_each(lom_tai_listList, node) {
+            OpenAPI_tai_free(node->data);
+        }
+        OpenAPI_list_free(lom_tai_listList);
+        lom_tai_listList = NULL;
+    }
+    if (lom_tai_range_listList) {
+        OpenAPI_list_for_each(lom_tai_range_listList, node) {
+            OpenAPI_tai_range_free(node->data);
+        }
+        OpenAPI_list_free(lom_tai_range_listList);
+        lom_tai_range_listList = NULL;
     }
     if (pgw_ip_addr_listList) {
         OpenAPI_list_for_each(pgw_ip_addr_listList, node) {

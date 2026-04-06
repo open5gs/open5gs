@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_n2_info_notification_rsp_data_s OpenAPI_n2_info_notification_rsp_data_t;
 #include "n2_sm_information.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n2_info_notification_rsp_data_s OpenAPI_n2_info_notification_rsp_data_t;
-typedef struct OpenAPI_n2_info_notification_rsp_data_s {
+struct OpenAPI_n2_info_notification_rsp_data_s {
     OpenAPI_list_t *sec_rat_data_usage_list;
-} OpenAPI_n2_info_notification_rsp_data_t;
+};
 
 OpenAPI_n2_info_notification_rsp_data_t *OpenAPI_n2_info_notification_rsp_data_create(
     OpenAPI_list_t *sec_rat_data_usage_list

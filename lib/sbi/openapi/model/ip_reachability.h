@@ -1,7 +1,7 @@
 /*
  * ip_reachability.h
  *
- * 
+ * Indicates the type(s) of IP addresses reachable via an SCP
  */
 
 #ifndef _OpenAPI_ip_reachability_H_

@@ -14,7 +14,18 @@ OpenAPI_qos_flow_profile_t *OpenAPI_qos_flow_profile_create(
     OpenAPI_additional_qos_flow_info_e additional_qos_flow_info,
     OpenAPI_qos_monitoring_req_e qos_monitoring_req,
     bool is_qos_rep_period,
-    int qos_rep_period
+    int qos_rep_period,
+    bool is_pdu_set_qos_dl_null,
+    OpenAPI_pdu_set_qos_para_t *pdu_set_qos_dl,
+    bool is_pdu_set_qos_ul_null,
+    OpenAPI_pdu_set_qos_para_t *pdu_set_qos_ul,
+    bool is_dl_pdu_set_mark_sup_ind,
+    int dl_pdu_set_mark_sup_ind,
+    char *multi_modal_id,
+    bool is_ul_bitrate_adapt_ind,
+    int ul_bitrate_adapt_ind,
+    bool is_no_qos_mon_pd_wo_n3_dl_teid,
+    int no_qos_mon_pd_wo_n3_dl_teid
 )
 {
     OpenAPI_qos_flow_profile_t *qos_flow_profile_local_var = ogs_malloc(sizeof(OpenAPI_qos_flow_profile_t));
@@ -30,6 +41,17 @@ OpenAPI_qos_flow_profile_t *OpenAPI_qos_flow_profile_create(
     qos_flow_profile_local_var->qos_monitoring_req = qos_monitoring_req;
     qos_flow_profile_local_var->is_qos_rep_period = is_qos_rep_period;
     qos_flow_profile_local_var->qos_rep_period = qos_rep_period;
+    qos_flow_profile_local_var->is_pdu_set_qos_dl_null = is_pdu_set_qos_dl_null;
+    qos_flow_profile_local_var->pdu_set_qos_dl = pdu_set_qos_dl;
+    qos_flow_profile_local_var->is_pdu_set_qos_ul_null = is_pdu_set_qos_ul_null;
+    qos_flow_profile_local_var->pdu_set_qos_ul = pdu_set_qos_ul;
+    qos_flow_profile_local_var->is_dl_pdu_set_mark_sup_ind = is_dl_pdu_set_mark_sup_ind;
+    qos_flow_profile_local_var->dl_pdu_set_mark_sup_ind = dl_pdu_set_mark_sup_ind;
+    qos_flow_profile_local_var->multi_modal_id = multi_modal_id;
+    qos_flow_profile_local_var->is_ul_bitrate_adapt_ind = is_ul_bitrate_adapt_ind;
+    qos_flow_profile_local_var->ul_bitrate_adapt_ind = ul_bitrate_adapt_ind;
+    qos_flow_profile_local_var->is_no_qos_mon_pd_wo_n3_dl_teid = is_no_qos_mon_pd_wo_n3_dl_teid;
+    qos_flow_profile_local_var->no_qos_mon_pd_wo_n3_dl_teid = no_qos_mon_pd_wo_n3_dl_teid;
 
     return qos_flow_profile_local_var;
 }
@@ -56,6 +78,18 @@ void OpenAPI_qos_flow_profile_free(OpenAPI_qos_flow_profile_t *qos_flow_profile)
     if (qos_flow_profile->gbr_qos_flow_info) {
         OpenAPI_gbr_qos_flow_information_free(qos_flow_profile->gbr_qos_flow_info);
         qos_flow_profile->gbr_qos_flow_info = NULL;
+    }
+    if (qos_flow_profile->pdu_set_qos_dl) {
+        OpenAPI_pdu_set_qos_para_free(qos_flow_profile->pdu_set_qos_dl);
+        qos_flow_profile->pdu_set_qos_dl = NULL;
+    }
+    if (qos_flow_profile->pdu_set_qos_ul) {
+        OpenAPI_pdu_set_qos_para_free(qos_flow_profile->pdu_set_qos_ul);
+        qos_flow_profile->pdu_set_qos_ul = NULL;
+    }
+    if (qos_flow_profile->multi_modal_id) {
+        ogs_free(qos_flow_profile->multi_modal_id);
+        qos_flow_profile->multi_modal_id = NULL;
     }
     ogs_free(qos_flow_profile);
 }
@@ -156,6 +190,70 @@ cJSON *OpenAPI_qos_flow_profile_convertToJSON(OpenAPI_qos_flow_profile_t *qos_fl
     }
     }
 
+    if (qos_flow_profile->pdu_set_qos_dl) {
+    cJSON *pdu_set_qos_dl_local_JSON = OpenAPI_pdu_set_qos_para_convertToJSON(qos_flow_profile->pdu_set_qos_dl);
+    if (pdu_set_qos_dl_local_JSON == NULL) {
+        ogs_error("OpenAPI_qos_flow_profile_convertToJSON() failed [pdu_set_qos_dl]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pduSetQosDl", pdu_set_qos_dl_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_qos_flow_profile_convertToJSON() failed [pdu_set_qos_dl]");
+        goto end;
+    }
+    } else if (qos_flow_profile->is_pdu_set_qos_dl_null) {
+        if (cJSON_AddNullToObject(item, "pduSetQosDl") == NULL) {
+            ogs_error("OpenAPI_qos_flow_profile_convertToJSON() failed [pdu_set_qos_dl]");
+            goto end;
+        }
+    }
+
+    if (qos_flow_profile->pdu_set_qos_ul) {
+    cJSON *pdu_set_qos_ul_local_JSON = OpenAPI_pdu_set_qos_para_convertToJSON(qos_flow_profile->pdu_set_qos_ul);
+    if (pdu_set_qos_ul_local_JSON == NULL) {
+        ogs_error("OpenAPI_qos_flow_profile_convertToJSON() failed [pdu_set_qos_ul]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pduSetQosUl", pdu_set_qos_ul_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_qos_flow_profile_convertToJSON() failed [pdu_set_qos_ul]");
+        goto end;
+    }
+    } else if (qos_flow_profile->is_pdu_set_qos_ul_null) {
+        if (cJSON_AddNullToObject(item, "pduSetQosUl") == NULL) {
+            ogs_error("OpenAPI_qos_flow_profile_convertToJSON() failed [pdu_set_qos_ul]");
+            goto end;
+        }
+    }
+
+    if (qos_flow_profile->is_dl_pdu_set_mark_sup_ind) {
+    if (cJSON_AddBoolToObject(item, "dlPduSetMarkSupInd", qos_flow_profile->dl_pdu_set_mark_sup_ind) == NULL) {
+        ogs_error("OpenAPI_qos_flow_profile_convertToJSON() failed [dl_pdu_set_mark_sup_ind]");
+        goto end;
+    }
+    }
+
+    if (qos_flow_profile->multi_modal_id) {
+    if (cJSON_AddStringToObject(item, "multiModalId", qos_flow_profile->multi_modal_id) == NULL) {
+        ogs_error("OpenAPI_qos_flow_profile_convertToJSON() failed [multi_modal_id]");
+        goto end;
+    }
+    }
+
+    if (qos_flow_profile->is_ul_bitrate_adapt_ind) {
+    if (cJSON_AddBoolToObject(item, "ulBitrateAdaptInd", qos_flow_profile->ul_bitrate_adapt_ind) == NULL) {
+        ogs_error("OpenAPI_qos_flow_profile_convertToJSON() failed [ul_bitrate_adapt_ind]");
+        goto end;
+    }
+    }
+
+    if (qos_flow_profile->is_no_qos_mon_pd_wo_n3_dl_teid) {
+    if (cJSON_AddBoolToObject(item, "noQosMonPdWoN3DlTeid", qos_flow_profile->no_qos_mon_pd_wo_n3_dl_teid) == NULL) {
+        ogs_error("OpenAPI_qos_flow_profile_convertToJSON() failed [no_qos_mon_pd_wo_n3_dl_teid]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -180,6 +278,14 @@ OpenAPI_qos_flow_profile_t *OpenAPI_qos_flow_profile_parseFromJSON(cJSON *qos_fl
     cJSON *qos_monitoring_req = NULL;
     OpenAPI_qos_monitoring_req_e qos_monitoring_reqVariable = 0;
     cJSON *qos_rep_period = NULL;
+    cJSON *pdu_set_qos_dl = NULL;
+    OpenAPI_pdu_set_qos_para_t *pdu_set_qos_dl_local_nonprim = NULL;
+    cJSON *pdu_set_qos_ul = NULL;
+    OpenAPI_pdu_set_qos_para_t *pdu_set_qos_ul_local_nonprim = NULL;
+    cJSON *dl_pdu_set_mark_sup_ind = NULL;
+    cJSON *multi_modal_id = NULL;
+    cJSON *ul_bitrate_adapt_ind = NULL;
+    cJSON *no_qos_mon_pd_wo_n3_dl_teid = NULL;
     _5qi = cJSON_GetObjectItemCaseSensitive(qos_flow_profileJSON, "5qi");
     if (!_5qi) {
         ogs_error("OpenAPI_qos_flow_profile_parseFromJSON() failed [_5qi]");
@@ -261,6 +367,60 @@ OpenAPI_qos_flow_profile_t *OpenAPI_qos_flow_profile_parseFromJSON(cJSON *qos_fl
     }
     }
 
+    pdu_set_qos_dl = cJSON_GetObjectItemCaseSensitive(qos_flow_profileJSON, "pduSetQosDl");
+    if (pdu_set_qos_dl) {
+    if (!cJSON_IsNull(pdu_set_qos_dl)) {
+    pdu_set_qos_dl_local_nonprim = OpenAPI_pdu_set_qos_para_parseFromJSON(pdu_set_qos_dl);
+    if (!pdu_set_qos_dl_local_nonprim) {
+        ogs_error("OpenAPI_pdu_set_qos_para_parseFromJSON failed [pdu_set_qos_dl]");
+        goto end;
+    }
+    }
+    }
+
+    pdu_set_qos_ul = cJSON_GetObjectItemCaseSensitive(qos_flow_profileJSON, "pduSetQosUl");
+    if (pdu_set_qos_ul) {
+    if (!cJSON_IsNull(pdu_set_qos_ul)) {
+    pdu_set_qos_ul_local_nonprim = OpenAPI_pdu_set_qos_para_parseFromJSON(pdu_set_qos_ul);
+    if (!pdu_set_qos_ul_local_nonprim) {
+        ogs_error("OpenAPI_pdu_set_qos_para_parseFromJSON failed [pdu_set_qos_ul]");
+        goto end;
+    }
+    }
+    }
+
+    dl_pdu_set_mark_sup_ind = cJSON_GetObjectItemCaseSensitive(qos_flow_profileJSON, "dlPduSetMarkSupInd");
+    if (dl_pdu_set_mark_sup_ind) {
+    if (!cJSON_IsBool(dl_pdu_set_mark_sup_ind)) {
+        ogs_error("OpenAPI_qos_flow_profile_parseFromJSON() failed [dl_pdu_set_mark_sup_ind]");
+        goto end;
+    }
+    }
+
+    multi_modal_id = cJSON_GetObjectItemCaseSensitive(qos_flow_profileJSON, "multiModalId");
+    if (multi_modal_id) {
+    if (!cJSON_IsString(multi_modal_id) && !cJSON_IsNull(multi_modal_id)) {
+        ogs_error("OpenAPI_qos_flow_profile_parseFromJSON() failed [multi_modal_id]");
+        goto end;
+    }
+    }
+
+    ul_bitrate_adapt_ind = cJSON_GetObjectItemCaseSensitive(qos_flow_profileJSON, "ulBitrateAdaptInd");
+    if (ul_bitrate_adapt_ind) {
+    if (!cJSON_IsBool(ul_bitrate_adapt_ind)) {
+        ogs_error("OpenAPI_qos_flow_profile_parseFromJSON() failed [ul_bitrate_adapt_ind]");
+        goto end;
+    }
+    }
+
+    no_qos_mon_pd_wo_n3_dl_teid = cJSON_GetObjectItemCaseSensitive(qos_flow_profileJSON, "noQosMonPdWoN3DlTeid");
+    if (no_qos_mon_pd_wo_n3_dl_teid) {
+    if (!cJSON_IsBool(no_qos_mon_pd_wo_n3_dl_teid)) {
+        ogs_error("OpenAPI_qos_flow_profile_parseFromJSON() failed [no_qos_mon_pd_wo_n3_dl_teid]");
+        goto end;
+    }
+    }
+
     qos_flow_profile_local_var = OpenAPI_qos_flow_profile_create (
         
         _5qi->valuedouble,
@@ -272,7 +432,18 @@ OpenAPI_qos_flow_profile_t *OpenAPI_qos_flow_profile_parseFromJSON(cJSON *qos_fl
         additional_qos_flow_info ? additional_qos_flow_infoVariable : 0,
         qos_monitoring_req ? qos_monitoring_reqVariable : 0,
         qos_rep_period ? true : false,
-        qos_rep_period ? qos_rep_period->valuedouble : 0
+        qos_rep_period ? qos_rep_period->valuedouble : 0,
+        pdu_set_qos_dl && cJSON_IsNull(pdu_set_qos_dl) ? true : false,
+        pdu_set_qos_dl ? pdu_set_qos_dl_local_nonprim : NULL,
+        pdu_set_qos_ul && cJSON_IsNull(pdu_set_qos_ul) ? true : false,
+        pdu_set_qos_ul ? pdu_set_qos_ul_local_nonprim : NULL,
+        dl_pdu_set_mark_sup_ind ? true : false,
+        dl_pdu_set_mark_sup_ind ? dl_pdu_set_mark_sup_ind->valueint : 0,
+        multi_modal_id && !cJSON_IsNull(multi_modal_id) ? ogs_strdup(multi_modal_id->valuestring) : NULL,
+        ul_bitrate_adapt_ind ? true : false,
+        ul_bitrate_adapt_ind ? ul_bitrate_adapt_ind->valueint : 0,
+        no_qos_mon_pd_wo_n3_dl_teid ? true : false,
+        no_qos_mon_pd_wo_n3_dl_teid ? no_qos_mon_pd_wo_n3_dl_teid->valueint : 0
     );
 
     return qos_flow_profile_local_var;
@@ -292,6 +463,14 @@ end:
     if (gbr_qos_flow_info_local_nonprim) {
         OpenAPI_gbr_qos_flow_information_free(gbr_qos_flow_info_local_nonprim);
         gbr_qos_flow_info_local_nonprim = NULL;
+    }
+    if (pdu_set_qos_dl_local_nonprim) {
+        OpenAPI_pdu_set_qos_para_free(pdu_set_qos_dl_local_nonprim);
+        pdu_set_qos_dl_local_nonprim = NULL;
+    }
+    if (pdu_set_qos_ul_local_nonprim) {
+        OpenAPI_pdu_set_qos_para_free(pdu_set_qos_ul_local_nonprim);
+        pdu_set_qos_ul_local_nonprim = NULL;
     }
     return NULL;
 }

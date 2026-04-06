@@ -8,8 +8,8 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
     int current_location,
     bool is_one_time,
     int one_time,
-    OpenAPI_location_accuracy_t *accuracy,
-    OpenAPI_location_accuracy_t *n3gpp_accuracy
+    OpenAPI_location_accuracy_e accuracy,
+    OpenAPI_location_accuracy_e n3gpp_accuracy
 )
 {
     OpenAPI_location_reporting_configuration_t *location_reporting_configuration_local_var = ogs_malloc(sizeof(OpenAPI_location_reporting_configuration_t));
@@ -30,14 +30,6 @@ void OpenAPI_location_reporting_configuration_free(OpenAPI_location_reporting_co
 
     if (NULL == location_reporting_configuration) {
         return;
-    }
-    if (location_reporting_configuration->accuracy) {
-        OpenAPI_location_accuracy_free(location_reporting_configuration->accuracy);
-        location_reporting_configuration->accuracy = NULL;
-    }
-    if (location_reporting_configuration->n3gpp_accuracy) {
-        OpenAPI_location_accuracy_free(location_reporting_configuration->n3gpp_accuracy);
-        location_reporting_configuration->n3gpp_accuracy = NULL;
     }
     ogs_free(location_reporting_configuration);
 }
@@ -65,27 +57,15 @@ cJSON *OpenAPI_location_reporting_configuration_convertToJSON(OpenAPI_location_r
     }
     }
 
-    if (location_reporting_configuration->accuracy) {
-    cJSON *accuracy_local_JSON = OpenAPI_location_accuracy_convertToJSON(location_reporting_configuration->accuracy);
-    if (accuracy_local_JSON == NULL) {
-        ogs_error("OpenAPI_location_reporting_configuration_convertToJSON() failed [accuracy]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "accuracy", accuracy_local_JSON);
-    if (item->child == NULL) {
+    if (location_reporting_configuration->accuracy != OpenAPI_location_accuracy_NULL) {
+    if (cJSON_AddStringToObject(item, "accuracy", OpenAPI_location_accuracy_ToString(location_reporting_configuration->accuracy)) == NULL) {
         ogs_error("OpenAPI_location_reporting_configuration_convertToJSON() failed [accuracy]");
         goto end;
     }
     }
 
-    if (location_reporting_configuration->n3gpp_accuracy) {
-    cJSON *n3gpp_accuracy_local_JSON = OpenAPI_location_accuracy_convertToJSON(location_reporting_configuration->n3gpp_accuracy);
-    if (n3gpp_accuracy_local_JSON == NULL) {
-        ogs_error("OpenAPI_location_reporting_configuration_convertToJSON() failed [n3gpp_accuracy]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "n3gppAccuracy", n3gpp_accuracy_local_JSON);
-    if (item->child == NULL) {
+    if (location_reporting_configuration->n3gpp_accuracy != OpenAPI_location_accuracy_NULL) {
+    if (cJSON_AddStringToObject(item, "n3gppAccuracy", OpenAPI_location_accuracy_ToString(location_reporting_configuration->n3gpp_accuracy)) == NULL) {
         ogs_error("OpenAPI_location_reporting_configuration_convertToJSON() failed [n3gpp_accuracy]");
         goto end;
     }
@@ -102,9 +82,9 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
     cJSON *current_location = NULL;
     cJSON *one_time = NULL;
     cJSON *accuracy = NULL;
-    OpenAPI_location_accuracy_t *accuracy_local_nonprim = NULL;
+    OpenAPI_location_accuracy_e accuracyVariable = 0;
     cJSON *n3gpp_accuracy = NULL;
-    OpenAPI_location_accuracy_t *n3gpp_accuracy_local_nonprim = NULL;
+    OpenAPI_location_accuracy_e n3gpp_accuracyVariable = 0;
     current_location = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "currentLocation");
     if (!current_location) {
         ogs_error("OpenAPI_location_reporting_configuration_parseFromJSON() failed [current_location]");
@@ -125,20 +105,20 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
 
     accuracy = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "accuracy");
     if (accuracy) {
-    accuracy_local_nonprim = OpenAPI_location_accuracy_parseFromJSON(accuracy);
-    if (!accuracy_local_nonprim) {
-        ogs_error("OpenAPI_location_accuracy_parseFromJSON failed [accuracy]");
+    if (!cJSON_IsString(accuracy)) {
+        ogs_error("OpenAPI_location_reporting_configuration_parseFromJSON() failed [accuracy]");
         goto end;
     }
+    accuracyVariable = OpenAPI_location_accuracy_FromString(accuracy->valuestring);
     }
 
     n3gpp_accuracy = cJSON_GetObjectItemCaseSensitive(location_reporting_configurationJSON, "n3gppAccuracy");
     if (n3gpp_accuracy) {
-    n3gpp_accuracy_local_nonprim = OpenAPI_location_accuracy_parseFromJSON(n3gpp_accuracy);
-    if (!n3gpp_accuracy_local_nonprim) {
-        ogs_error("OpenAPI_location_accuracy_parseFromJSON failed [n3gpp_accuracy]");
+    if (!cJSON_IsString(n3gpp_accuracy)) {
+        ogs_error("OpenAPI_location_reporting_configuration_parseFromJSON() failed [n3gpp_accuracy]");
         goto end;
     }
+    n3gpp_accuracyVariable = OpenAPI_location_accuracy_FromString(n3gpp_accuracy->valuestring);
     }
 
     location_reporting_configuration_local_var = OpenAPI_location_reporting_configuration_create (
@@ -146,20 +126,12 @@ OpenAPI_location_reporting_configuration_t *OpenAPI_location_reporting_configura
         current_location->valueint,
         one_time ? true : false,
         one_time ? one_time->valueint : 0,
-        accuracy ? accuracy_local_nonprim : NULL,
-        n3gpp_accuracy ? n3gpp_accuracy_local_nonprim : NULL
+        accuracy ? accuracyVariable : 0,
+        n3gpp_accuracy ? n3gpp_accuracyVariable : 0
     );
 
     return location_reporting_configuration_local_var;
 end:
-    if (accuracy_local_nonprim) {
-        OpenAPI_location_accuracy_free(accuracy_local_nonprim);
-        accuracy_local_nonprim = NULL;
-    }
-    if (n3gpp_accuracy_local_nonprim) {
-        OpenAPI_location_accuracy_free(n3gpp_accuracy_local_nonprim);
-        n3gpp_accuracy_local_nonprim = NULL;
-    }
     return NULL;
 }
 

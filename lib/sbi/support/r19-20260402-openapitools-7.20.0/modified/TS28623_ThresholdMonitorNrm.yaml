@@ -1,0 +1,93 @@
+openapi: 3.0.1
+info:
+  title: Threshold Monitor NRM 
+  version: 19.2.0
+  description: >-
+    OAS 3.0.1 definition of the Threshold Monitor NRM fragment
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.623; Generic NRM,Threshold Monitor NRM 
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.623/
+paths: {}
+components:
+  schemas:
+  #-------- Definition of types for name-containments ------
+    SubNetwork-ncO-ThresholdMonitorNrm:
+      type: object
+      properties:
+        ThresholdMonitor:
+          $ref: '#/components/schemas/ThresholdMonitor-Multiple'
+    ManagedElement-ncO-ThresholdMonitorNrm:
+      type: object
+      properties:
+        ThresholdMonitor:
+          $ref: '#/components/schemas/ThresholdMonitor-Multiple' 
+   #-------Definition of generic IOCs ----------#   
+
+#-------- Definition of types-----------------------------------------------------
+    ThresholdInfo:
+      type: object
+      properties:
+        performanceMetrics:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+          minItems: 1
+        thresholdDirection:
+          type: string
+          enum:
+            - UP
+            - DOWN
+            - UP_AND_DOWN
+        thresholdValue:
+          oneOf:
+            - type: integer
+            - $ref: 'TS28623_ComDefs.yaml#/components/schemas/Float'
+        hysteresis:
+          oneOf:
+            - type: integer
+              minimum: 0
+            - type: number
+              format: float
+
+
+#-------- Definition of concrete IOCs --------------------------------------------
+    ThresholdMonitor-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                administrativeState:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/AdministrativeState'
+                operationalState:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/OperationalState'
+                thresholdInfoList:
+                  type: array
+                  uniqueItems: true
+                  items:
+                    $ref: '#/components/schemas/ThresholdInfo'
+                  minItems: 1
+                monitorGranularityPeriod:
+                  type: integer
+                  minimum: 1
+                objectInstances:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+                rootObjectInstances:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+
+
+#-------- Definition of YAML arrays for name-contained IOCs ----------------------
+    ThresholdMonitor-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ThresholdMonitor-Single'
+
+#-------- Definitions in TS 28.623 for TS 28.532 ---------------------------------
+    resources-thresholdMonitorNrm:
+      oneOf:
+       - $ref: '#/components/schemas/ThresholdMonitor-Single'

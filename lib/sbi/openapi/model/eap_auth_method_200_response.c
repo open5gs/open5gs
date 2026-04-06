@@ -5,7 +5,6 @@
 #include "eap_auth_method_200_response.h"
 
 OpenAPI_eap_auth_method_200_response_t *OpenAPI_eap_auth_method_200_response_create(
-    bool is_eap_payload_null,
     char *eap_payload,
     OpenAPI_list_t* _links
 )
@@ -13,7 +12,6 @@ OpenAPI_eap_auth_method_200_response_t *OpenAPI_eap_auth_method_200_response_cre
     OpenAPI_eap_auth_method_200_response_t *eap_auth_method_200_response_local_var = ogs_malloc(sizeof(OpenAPI_eap_auth_method_200_response_t));
     ogs_assert(eap_auth_method_200_response_local_var);
 
-    eap_auth_method_200_response_local_var->is_eap_payload_null = is_eap_payload_null;
     eap_auth_method_200_response_local_var->eap_payload = eap_payload;
     eap_auth_method_200_response_local_var->_links = _links;
 
@@ -146,7 +144,6 @@ OpenAPI_eap_auth_method_200_response_t *OpenAPI_eap_auth_method_200_response_par
         }
 
     eap_auth_method_200_response_local_var = OpenAPI_eap_auth_method_200_response_create (
-        eap_payload && cJSON_IsNull(eap_payload) ? true : false,
         ogs_strdup(eap_payload->valuestring),
         _linksList
     );
@@ -155,7 +152,7 @@ OpenAPI_eap_auth_method_200_response_t *OpenAPI_eap_auth_method_200_response_par
 end:
     if (_linksList) {
         OpenAPI_list_for_each(_linksList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_links_value_schema_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

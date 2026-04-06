@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_assigned_ebi_data_s OpenAPI_assigned_ebi_data_t;
 #include "arp.h"
 #include "ebi_arp_mapping.h"
 
@@ -19,14 +20,13 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_assigned_ebi_data_s OpenAPI_assigned_ebi_data_t;
-typedef struct OpenAPI_assigned_ebi_data_s {
+struct OpenAPI_assigned_ebi_data_s {
     int pdu_session_id;
     OpenAPI_list_t *assigned_ebi_list;
     OpenAPI_list_t *failed_arp_list;
     OpenAPI_list_t *released_ebi_list;
     OpenAPI_list_t *modified_ebi_list;
-} OpenAPI_assigned_ebi_data_t;
+};
 
 OpenAPI_assigned_ebi_data_t *OpenAPI_assigned_ebi_data_create(
     int pdu_session_id,

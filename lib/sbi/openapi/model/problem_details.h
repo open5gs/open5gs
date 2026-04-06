@@ -12,16 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_problem_details_s OpenAPI_problem_details_t;
 #include "access_token_err.h"
 #include "access_token_req.h"
 #include "invalid_param.h"
+#include "no_profile_match_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_problem_details_s OpenAPI_problem_details_t;
-typedef struct OpenAPI_problem_details_s {
+struct OpenAPI_problem_details_s {
     char *type;
     char *title;
     bool is_status;
@@ -34,7 +35,9 @@ typedef struct OpenAPI_problem_details_s {
     struct OpenAPI_access_token_err_s *access_token_error;
     struct OpenAPI_access_token_req_s *access_token_request;
     char *nrf_id;
-} OpenAPI_problem_details_t;
+    OpenAPI_list_t *supported_api_versions;
+    struct OpenAPI_no_profile_match_info_s *no_profile_match_info;
+};
 
 OpenAPI_problem_details_t *OpenAPI_problem_details_create(
     char *type,
@@ -48,7 +51,9 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_create(
     char *supported_features,
     OpenAPI_access_token_err_t *access_token_error,
     OpenAPI_access_token_req_t *access_token_request,
-    char *nrf_id
+    char *nrf_id,
+    OpenAPI_list_t *supported_api_versions,
+    OpenAPI_no_profile_match_info_t *no_profile_match_info
 );
 void OpenAPI_problem_details_free(OpenAPI_problem_details_t *problem_details);
 OpenAPI_problem_details_t *OpenAPI_problem_details_parseFromJSON(cJSON *problem_detailsJSON);

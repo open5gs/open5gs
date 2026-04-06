@@ -15,20 +15,33 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
     char *ue_mac,
     bool is_any_ue_ind,
     int any_ue_ind,
+    OpenAPI_list_t *roam_ue_net_descs,
     char *param_over_pc5,
     char *param_over_uu,
+    char *a2x_params_pc5,
+    char *a2x_params_uu,
     char *param_for_pro_se_dd,
     char *param_for_pro_se_dc,
     char *param_for_pro_se_u2_n_rel_ue,
     char *param_for_pro_se_rem_ue,
+    char *param_for_pro_se_u2_u_rel_ue,
+    char *param_for_pro_se_end_ue,
+    char *multi_hop_u2_u_rel_ue,
+    char *multi_hop_u2_u_end_ue,
+    char *multi_hop_u2_n_rel_ue,
+    char *multi_hop_u2_n_rem_ue,
+    char *multi_hop_u2_n_interm_ue,
     OpenAPI_list_t *ursp_guidance,
+    OpenAPI_list_t *vps_ursp_guidance,
+    OpenAPI_list_t *tnaps,
     OpenAPI_list_t *delivery_events,
     char *polic_deliv_notif_corre_id,
     char *polic_deliv_notif_uri,
     char *supp_feat,
     char *res_uri,
     OpenAPI_list_t *headers,
-    OpenAPI_list_t *reset_ids
+    OpenAPI_list_t *reset_ids,
+    char *param_for_ranging_sl_pos
 )
 {
     OpenAPI_service_parameter_data_t *service_parameter_data_local_var = ogs_malloc(sizeof(OpenAPI_service_parameter_data_t));
@@ -44,13 +57,25 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
     service_parameter_data_local_var->ue_mac = ue_mac;
     service_parameter_data_local_var->is_any_ue_ind = is_any_ue_ind;
     service_parameter_data_local_var->any_ue_ind = any_ue_ind;
+    service_parameter_data_local_var->roam_ue_net_descs = roam_ue_net_descs;
     service_parameter_data_local_var->param_over_pc5 = param_over_pc5;
     service_parameter_data_local_var->param_over_uu = param_over_uu;
+    service_parameter_data_local_var->a2x_params_pc5 = a2x_params_pc5;
+    service_parameter_data_local_var->a2x_params_uu = a2x_params_uu;
     service_parameter_data_local_var->param_for_pro_se_dd = param_for_pro_se_dd;
     service_parameter_data_local_var->param_for_pro_se_dc = param_for_pro_se_dc;
     service_parameter_data_local_var->param_for_pro_se_u2_n_rel_ue = param_for_pro_se_u2_n_rel_ue;
     service_parameter_data_local_var->param_for_pro_se_rem_ue = param_for_pro_se_rem_ue;
+    service_parameter_data_local_var->param_for_pro_se_u2_u_rel_ue = param_for_pro_se_u2_u_rel_ue;
+    service_parameter_data_local_var->param_for_pro_se_end_ue = param_for_pro_se_end_ue;
+    service_parameter_data_local_var->multi_hop_u2_u_rel_ue = multi_hop_u2_u_rel_ue;
+    service_parameter_data_local_var->multi_hop_u2_u_end_ue = multi_hop_u2_u_end_ue;
+    service_parameter_data_local_var->multi_hop_u2_n_rel_ue = multi_hop_u2_n_rel_ue;
+    service_parameter_data_local_var->multi_hop_u2_n_rem_ue = multi_hop_u2_n_rem_ue;
+    service_parameter_data_local_var->multi_hop_u2_n_interm_ue = multi_hop_u2_n_interm_ue;
     service_parameter_data_local_var->ursp_guidance = ursp_guidance;
+    service_parameter_data_local_var->vps_ursp_guidance = vps_ursp_guidance;
+    service_parameter_data_local_var->tnaps = tnaps;
     service_parameter_data_local_var->delivery_events = delivery_events;
     service_parameter_data_local_var->polic_deliv_notif_corre_id = polic_deliv_notif_corre_id;
     service_parameter_data_local_var->polic_deliv_notif_uri = polic_deliv_notif_uri;
@@ -58,6 +83,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
     service_parameter_data_local_var->res_uri = res_uri;
     service_parameter_data_local_var->headers = headers;
     service_parameter_data_local_var->reset_ids = reset_ids;
+    service_parameter_data_local_var->param_for_ranging_sl_pos = param_for_ranging_sl_pos;
 
     return service_parameter_data_local_var;
 }
@@ -101,6 +127,13 @@ void OpenAPI_service_parameter_data_free(OpenAPI_service_parameter_data_t *servi
         ogs_free(service_parameter_data->ue_mac);
         service_parameter_data->ue_mac = NULL;
     }
+    if (service_parameter_data->roam_ue_net_descs) {
+        OpenAPI_list_for_each(service_parameter_data->roam_ue_net_descs, node) {
+            OpenAPI_network_description_1_free(node->data);
+        }
+        OpenAPI_list_free(service_parameter_data->roam_ue_net_descs);
+        service_parameter_data->roam_ue_net_descs = NULL;
+    }
     if (service_parameter_data->param_over_pc5) {
         ogs_free(service_parameter_data->param_over_pc5);
         service_parameter_data->param_over_pc5 = NULL;
@@ -108,6 +141,14 @@ void OpenAPI_service_parameter_data_free(OpenAPI_service_parameter_data_t *servi
     if (service_parameter_data->param_over_uu) {
         ogs_free(service_parameter_data->param_over_uu);
         service_parameter_data->param_over_uu = NULL;
+    }
+    if (service_parameter_data->a2x_params_pc5) {
+        ogs_free(service_parameter_data->a2x_params_pc5);
+        service_parameter_data->a2x_params_pc5 = NULL;
+    }
+    if (service_parameter_data->a2x_params_uu) {
+        ogs_free(service_parameter_data->a2x_params_uu);
+        service_parameter_data->a2x_params_uu = NULL;
     }
     if (service_parameter_data->param_for_pro_se_dd) {
         ogs_free(service_parameter_data->param_for_pro_se_dd);
@@ -125,6 +166,34 @@ void OpenAPI_service_parameter_data_free(OpenAPI_service_parameter_data_t *servi
         ogs_free(service_parameter_data->param_for_pro_se_rem_ue);
         service_parameter_data->param_for_pro_se_rem_ue = NULL;
     }
+    if (service_parameter_data->param_for_pro_se_u2_u_rel_ue) {
+        ogs_free(service_parameter_data->param_for_pro_se_u2_u_rel_ue);
+        service_parameter_data->param_for_pro_se_u2_u_rel_ue = NULL;
+    }
+    if (service_parameter_data->param_for_pro_se_end_ue) {
+        ogs_free(service_parameter_data->param_for_pro_se_end_ue);
+        service_parameter_data->param_for_pro_se_end_ue = NULL;
+    }
+    if (service_parameter_data->multi_hop_u2_u_rel_ue) {
+        ogs_free(service_parameter_data->multi_hop_u2_u_rel_ue);
+        service_parameter_data->multi_hop_u2_u_rel_ue = NULL;
+    }
+    if (service_parameter_data->multi_hop_u2_u_end_ue) {
+        ogs_free(service_parameter_data->multi_hop_u2_u_end_ue);
+        service_parameter_data->multi_hop_u2_u_end_ue = NULL;
+    }
+    if (service_parameter_data->multi_hop_u2_n_rel_ue) {
+        ogs_free(service_parameter_data->multi_hop_u2_n_rel_ue);
+        service_parameter_data->multi_hop_u2_n_rel_ue = NULL;
+    }
+    if (service_parameter_data->multi_hop_u2_n_rem_ue) {
+        ogs_free(service_parameter_data->multi_hop_u2_n_rem_ue);
+        service_parameter_data->multi_hop_u2_n_rem_ue = NULL;
+    }
+    if (service_parameter_data->multi_hop_u2_n_interm_ue) {
+        ogs_free(service_parameter_data->multi_hop_u2_n_interm_ue);
+        service_parameter_data->multi_hop_u2_n_interm_ue = NULL;
+    }
     if (service_parameter_data->ursp_guidance) {
         OpenAPI_list_for_each(service_parameter_data->ursp_guidance, node) {
             OpenAPI_ursp_rule_request_free(node->data);
@@ -132,10 +201,21 @@ void OpenAPI_service_parameter_data_free(OpenAPI_service_parameter_data_t *servi
         OpenAPI_list_free(service_parameter_data->ursp_guidance);
         service_parameter_data->ursp_guidance = NULL;
     }
-    if (service_parameter_data->delivery_events) {
-        OpenAPI_list_for_each(service_parameter_data->delivery_events, node) {
-            OpenAPI_event_free(node->data);
+    if (service_parameter_data->vps_ursp_guidance) {
+        OpenAPI_list_for_each(service_parameter_data->vps_ursp_guidance, node) {
+            OpenAPI_ursp_rule_request_free(node->data);
         }
+        OpenAPI_list_free(service_parameter_data->vps_ursp_guidance);
+        service_parameter_data->vps_ursp_guidance = NULL;
+    }
+    if (service_parameter_data->tnaps) {
+        OpenAPI_list_for_each(service_parameter_data->tnaps, node) {
+            OpenAPI_tnap_id_free(node->data);
+        }
+        OpenAPI_list_free(service_parameter_data->tnaps);
+        service_parameter_data->tnaps = NULL;
+    }
+    if (service_parameter_data->delivery_events) {
         OpenAPI_list_free(service_parameter_data->delivery_events);
         service_parameter_data->delivery_events = NULL;
     }
@@ -168,6 +248,10 @@ void OpenAPI_service_parameter_data_free(OpenAPI_service_parameter_data_t *servi
         }
         OpenAPI_list_free(service_parameter_data->reset_ids);
         service_parameter_data->reset_ids = NULL;
+    }
+    if (service_parameter_data->param_for_ranging_sl_pos) {
+        ogs_free(service_parameter_data->param_for_ranging_sl_pos);
+        service_parameter_data->param_for_ranging_sl_pos = NULL;
     }
     ogs_free(service_parameter_data);
 }
@@ -252,6 +336,22 @@ cJSON *OpenAPI_service_parameter_data_convertToJSON(OpenAPI_service_parameter_da
     }
     }
 
+    if (service_parameter_data->roam_ue_net_descs) {
+    cJSON *roam_ue_net_descsList = cJSON_AddArrayToObject(item, "roamUeNetDescs");
+    if (roam_ue_net_descsList == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [roam_ue_net_descs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(service_parameter_data->roam_ue_net_descs, node) {
+        cJSON *itemLocal = OpenAPI_network_description_1_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [roam_ue_net_descs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(roam_ue_net_descsList, itemLocal);
+    }
+    }
+
     if (service_parameter_data->param_over_pc5) {
     if (cJSON_AddStringToObject(item, "paramOverPc5", service_parameter_data->param_over_pc5) == NULL) {
         ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [param_over_pc5]");
@@ -262,6 +362,20 @@ cJSON *OpenAPI_service_parameter_data_convertToJSON(OpenAPI_service_parameter_da
     if (service_parameter_data->param_over_uu) {
     if (cJSON_AddStringToObject(item, "paramOverUu", service_parameter_data->param_over_uu) == NULL) {
         ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [param_over_uu]");
+        goto end;
+    }
+    }
+
+    if (service_parameter_data->a2x_params_pc5) {
+    if (cJSON_AddStringToObject(item, "a2xParamsPc5", service_parameter_data->a2x_params_pc5) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [a2x_params_pc5]");
+        goto end;
+    }
+    }
+
+    if (service_parameter_data->a2x_params_uu) {
+    if (cJSON_AddStringToObject(item, "a2xParamsUu", service_parameter_data->a2x_params_uu) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [a2x_params_uu]");
         goto end;
     }
     }
@@ -294,6 +408,55 @@ cJSON *OpenAPI_service_parameter_data_convertToJSON(OpenAPI_service_parameter_da
     }
     }
 
+    if (service_parameter_data->param_for_pro_se_u2_u_rel_ue) {
+    if (cJSON_AddStringToObject(item, "paramForProSeU2URelUe", service_parameter_data->param_for_pro_se_u2_u_rel_ue) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [param_for_pro_se_u2_u_rel_ue]");
+        goto end;
+    }
+    }
+
+    if (service_parameter_data->param_for_pro_se_end_ue) {
+    if (cJSON_AddStringToObject(item, "paramForProSeEndUe", service_parameter_data->param_for_pro_se_end_ue) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [param_for_pro_se_end_ue]");
+        goto end;
+    }
+    }
+
+    if (service_parameter_data->multi_hop_u2_u_rel_ue) {
+    if (cJSON_AddStringToObject(item, "multiHopU2URelUe", service_parameter_data->multi_hop_u2_u_rel_ue) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [multi_hop_u2_u_rel_ue]");
+        goto end;
+    }
+    }
+
+    if (service_parameter_data->multi_hop_u2_u_end_ue) {
+    if (cJSON_AddStringToObject(item, "multiHopU2UEndUe", service_parameter_data->multi_hop_u2_u_end_ue) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [multi_hop_u2_u_end_ue]");
+        goto end;
+    }
+    }
+
+    if (service_parameter_data->multi_hop_u2_n_rel_ue) {
+    if (cJSON_AddStringToObject(item, "multiHopU2NRelUe", service_parameter_data->multi_hop_u2_n_rel_ue) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [multi_hop_u2_n_rel_ue]");
+        goto end;
+    }
+    }
+
+    if (service_parameter_data->multi_hop_u2_n_rem_ue) {
+    if (cJSON_AddStringToObject(item, "multiHopU2NRemUe", service_parameter_data->multi_hop_u2_n_rem_ue) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [multi_hop_u2_n_rem_ue]");
+        goto end;
+    }
+    }
+
+    if (service_parameter_data->multi_hop_u2_n_interm_ue) {
+    if (cJSON_AddStringToObject(item, "multiHopU2NIntermUe", service_parameter_data->multi_hop_u2_n_interm_ue) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [multi_hop_u2_n_interm_ue]");
+        goto end;
+    }
+    }
+
     if (service_parameter_data->ursp_guidance) {
     cJSON *ursp_guidanceList = cJSON_AddArrayToObject(item, "urspGuidance");
     if (ursp_guidanceList == NULL) {
@@ -310,19 +473,49 @@ cJSON *OpenAPI_service_parameter_data_convertToJSON(OpenAPI_service_parameter_da
     }
     }
 
-    if (service_parameter_data->delivery_events) {
+    if (service_parameter_data->vps_ursp_guidance) {
+    cJSON *vps_ursp_guidanceList = cJSON_AddArrayToObject(item, "vpsUrspGuidance");
+    if (vps_ursp_guidanceList == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [vps_ursp_guidance]");
+        goto end;
+    }
+    OpenAPI_list_for_each(service_parameter_data->vps_ursp_guidance, node) {
+        cJSON *itemLocal = OpenAPI_ursp_rule_request_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [vps_ursp_guidance]");
+            goto end;
+        }
+        cJSON_AddItemToArray(vps_ursp_guidanceList, itemLocal);
+    }
+    }
+
+    if (service_parameter_data->tnaps) {
+    cJSON *tnapsList = cJSON_AddArrayToObject(item, "tnaps");
+    if (tnapsList == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [tnaps]");
+        goto end;
+    }
+    OpenAPI_list_for_each(service_parameter_data->tnaps, node) {
+        cJSON *itemLocal = OpenAPI_tnap_id_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [tnaps]");
+            goto end;
+        }
+        cJSON_AddItemToArray(tnapsList, itemLocal);
+    }
+    }
+
+    if (service_parameter_data->delivery_events != OpenAPI_event_NULL) {
     cJSON *delivery_eventsList = cJSON_AddArrayToObject(item, "deliveryEvents");
     if (delivery_eventsList == NULL) {
         ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [delivery_events]");
         goto end;
     }
     OpenAPI_list_for_each(service_parameter_data->delivery_events, node) {
-        cJSON *itemLocal = OpenAPI_event_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        if (cJSON_AddStringToObject(delivery_eventsList, "", OpenAPI_event_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [delivery_events]");
             goto end;
         }
-        cJSON_AddItemToArray(delivery_eventsList, itemLocal);
     }
     }
 
@@ -382,6 +575,13 @@ cJSON *OpenAPI_service_parameter_data_convertToJSON(OpenAPI_service_parameter_da
     }
     }
 
+    if (service_parameter_data->param_for_ranging_sl_pos) {
+    if (cJSON_AddStringToObject(item, "paramForRangingSlPos", service_parameter_data->param_for_ranging_sl_pos) == NULL) {
+        ogs_error("OpenAPI_service_parameter_data_convertToJSON() failed [param_for_ranging_sl_pos]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -400,14 +600,29 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
     cJSON *ue_ipv6 = NULL;
     cJSON *ue_mac = NULL;
     cJSON *any_ue_ind = NULL;
+    cJSON *roam_ue_net_descs = NULL;
+    OpenAPI_list_t *roam_ue_net_descsList = NULL;
     cJSON *param_over_pc5 = NULL;
     cJSON *param_over_uu = NULL;
+    cJSON *a2x_params_pc5 = NULL;
+    cJSON *a2x_params_uu = NULL;
     cJSON *param_for_pro_se_dd = NULL;
     cJSON *param_for_pro_se_dc = NULL;
     cJSON *param_for_pro_se_u2_n_rel_ue = NULL;
     cJSON *param_for_pro_se_rem_ue = NULL;
+    cJSON *param_for_pro_se_u2_u_rel_ue = NULL;
+    cJSON *param_for_pro_se_end_ue = NULL;
+    cJSON *multi_hop_u2_u_rel_ue = NULL;
+    cJSON *multi_hop_u2_u_end_ue = NULL;
+    cJSON *multi_hop_u2_n_rel_ue = NULL;
+    cJSON *multi_hop_u2_n_rem_ue = NULL;
+    cJSON *multi_hop_u2_n_interm_ue = NULL;
     cJSON *ursp_guidance = NULL;
     OpenAPI_list_t *ursp_guidanceList = NULL;
+    cJSON *vps_ursp_guidance = NULL;
+    OpenAPI_list_t *vps_ursp_guidanceList = NULL;
+    cJSON *tnaps = NULL;
+    OpenAPI_list_t *tnapsList = NULL;
     cJSON *delivery_events = NULL;
     OpenAPI_list_t *delivery_eventsList = NULL;
     cJSON *polic_deliv_notif_corre_id = NULL;
@@ -418,6 +633,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
     OpenAPI_list_t *headersList = NULL;
     cJSON *reset_ids = NULL;
     OpenAPI_list_t *reset_idsList = NULL;
+    cJSON *param_for_ranging_sl_pos = NULL;
     app_id = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "appId");
     if (app_id) {
     if (!cJSON_IsString(app_id) && !cJSON_IsNull(app_id)) {
@@ -491,6 +707,30 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
     }
     }
 
+    roam_ue_net_descs = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "roamUeNetDescs");
+    if (roam_ue_net_descs) {
+        cJSON *roam_ue_net_descs_local = NULL;
+        if (!cJSON_IsArray(roam_ue_net_descs)) {
+            ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [roam_ue_net_descs]");
+            goto end;
+        }
+
+        roam_ue_net_descsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(roam_ue_net_descs_local, roam_ue_net_descs) {
+            if (!cJSON_IsObject(roam_ue_net_descs_local)) {
+                ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [roam_ue_net_descs]");
+                goto end;
+            }
+            OpenAPI_network_description_1_t *roam_ue_net_descsItem = OpenAPI_network_description_1_parseFromJSON(roam_ue_net_descs_local);
+            if (!roam_ue_net_descsItem) {
+                ogs_error("No roam_ue_net_descsItem");
+                goto end;
+            }
+            OpenAPI_list_add(roam_ue_net_descsList, roam_ue_net_descsItem);
+        }
+    }
+
     param_over_pc5 = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "paramOverPc5");
     if (param_over_pc5) {
     if (!cJSON_IsString(param_over_pc5) && !cJSON_IsNull(param_over_pc5)) {
@@ -503,6 +743,22 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
     if (param_over_uu) {
     if (!cJSON_IsString(param_over_uu) && !cJSON_IsNull(param_over_uu)) {
         ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [param_over_uu]");
+        goto end;
+    }
+    }
+
+    a2x_params_pc5 = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "a2xParamsPc5");
+    if (a2x_params_pc5) {
+    if (!cJSON_IsString(a2x_params_pc5) && !cJSON_IsNull(a2x_params_pc5)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [a2x_params_pc5]");
+        goto end;
+    }
+    }
+
+    a2x_params_uu = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "a2xParamsUu");
+    if (a2x_params_uu) {
+    if (!cJSON_IsString(a2x_params_uu) && !cJSON_IsNull(a2x_params_uu)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [a2x_params_uu]");
         goto end;
     }
     }
@@ -539,6 +795,62 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
     }
     }
 
+    param_for_pro_se_u2_u_rel_ue = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "paramForProSeU2URelUe");
+    if (param_for_pro_se_u2_u_rel_ue) {
+    if (!cJSON_IsString(param_for_pro_se_u2_u_rel_ue) && !cJSON_IsNull(param_for_pro_se_u2_u_rel_ue)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [param_for_pro_se_u2_u_rel_ue]");
+        goto end;
+    }
+    }
+
+    param_for_pro_se_end_ue = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "paramForProSeEndUe");
+    if (param_for_pro_se_end_ue) {
+    if (!cJSON_IsString(param_for_pro_se_end_ue) && !cJSON_IsNull(param_for_pro_se_end_ue)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [param_for_pro_se_end_ue]");
+        goto end;
+    }
+    }
+
+    multi_hop_u2_u_rel_ue = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "multiHopU2URelUe");
+    if (multi_hop_u2_u_rel_ue) {
+    if (!cJSON_IsString(multi_hop_u2_u_rel_ue) && !cJSON_IsNull(multi_hop_u2_u_rel_ue)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [multi_hop_u2_u_rel_ue]");
+        goto end;
+    }
+    }
+
+    multi_hop_u2_u_end_ue = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "multiHopU2UEndUe");
+    if (multi_hop_u2_u_end_ue) {
+    if (!cJSON_IsString(multi_hop_u2_u_end_ue) && !cJSON_IsNull(multi_hop_u2_u_end_ue)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [multi_hop_u2_u_end_ue]");
+        goto end;
+    }
+    }
+
+    multi_hop_u2_n_rel_ue = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "multiHopU2NRelUe");
+    if (multi_hop_u2_n_rel_ue) {
+    if (!cJSON_IsString(multi_hop_u2_n_rel_ue) && !cJSON_IsNull(multi_hop_u2_n_rel_ue)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [multi_hop_u2_n_rel_ue]");
+        goto end;
+    }
+    }
+
+    multi_hop_u2_n_rem_ue = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "multiHopU2NRemUe");
+    if (multi_hop_u2_n_rem_ue) {
+    if (!cJSON_IsString(multi_hop_u2_n_rem_ue) && !cJSON_IsNull(multi_hop_u2_n_rem_ue)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [multi_hop_u2_n_rem_ue]");
+        goto end;
+    }
+    }
+
+    multi_hop_u2_n_interm_ue = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "multiHopU2NIntermUe");
+    if (multi_hop_u2_n_interm_ue) {
+    if (!cJSON_IsString(multi_hop_u2_n_interm_ue) && !cJSON_IsNull(multi_hop_u2_n_interm_ue)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [multi_hop_u2_n_interm_ue]");
+        goto end;
+    }
+    }
+
     ursp_guidance = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "urspGuidance");
     if (ursp_guidance) {
         cJSON *ursp_guidance_local = NULL;
@@ -563,6 +875,54 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         }
     }
 
+    vps_ursp_guidance = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "vpsUrspGuidance");
+    if (vps_ursp_guidance) {
+        cJSON *vps_ursp_guidance_local = NULL;
+        if (!cJSON_IsArray(vps_ursp_guidance)) {
+            ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [vps_ursp_guidance]");
+            goto end;
+        }
+
+        vps_ursp_guidanceList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(vps_ursp_guidance_local, vps_ursp_guidance) {
+            if (!cJSON_IsObject(vps_ursp_guidance_local)) {
+                ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [vps_ursp_guidance]");
+                goto end;
+            }
+            OpenAPI_ursp_rule_request_t *vps_ursp_guidanceItem = OpenAPI_ursp_rule_request_parseFromJSON(vps_ursp_guidance_local);
+            if (!vps_ursp_guidanceItem) {
+                ogs_error("No vps_ursp_guidanceItem");
+                goto end;
+            }
+            OpenAPI_list_add(vps_ursp_guidanceList, vps_ursp_guidanceItem);
+        }
+    }
+
+    tnaps = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "tnaps");
+    if (tnaps) {
+        cJSON *tnaps_local = NULL;
+        if (!cJSON_IsArray(tnaps)) {
+            ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [tnaps]");
+            goto end;
+        }
+
+        tnapsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(tnaps_local, tnaps) {
+            if (!cJSON_IsObject(tnaps_local)) {
+                ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [tnaps]");
+                goto end;
+            }
+            OpenAPI_tnap_id_t *tnapsItem = OpenAPI_tnap_id_parseFromJSON(tnaps_local);
+            if (!tnapsItem) {
+                ogs_error("No tnapsItem");
+                goto end;
+            }
+            OpenAPI_list_add(tnapsList, tnapsItem);
+        }
+    }
+
     delivery_events = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "deliveryEvents");
     if (delivery_events) {
         cJSON *delivery_events_local = NULL;
@@ -574,16 +934,22 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         delivery_eventsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(delivery_events_local, delivery_events) {
-            if (!cJSON_IsObject(delivery_events_local)) {
+            OpenAPI_event_e localEnum = OpenAPI_event_NULL;
+            if (!cJSON_IsString(delivery_events_local)) {
                 ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [delivery_events]");
                 goto end;
             }
-            OpenAPI_event_t *delivery_eventsItem = OpenAPI_event_parseFromJSON(delivery_events_local);
-            if (!delivery_eventsItem) {
-                ogs_error("No delivery_eventsItem");
-                goto end;
+            localEnum = OpenAPI_event_FromString(delivery_events_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"delivery_events\" is not supported. Ignoring it ...",
+                         delivery_events_local->valuestring);
+            } else {
+                OpenAPI_list_add(delivery_eventsList, (void *)localEnum);
             }
-            OpenAPI_list_add(delivery_eventsList, delivery_eventsItem);
+        }
+        if (delivery_eventsList->count == 0) {
+            ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed: Expected delivery_eventsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -661,6 +1027,14 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         }
     }
 
+    param_for_ranging_sl_pos = cJSON_GetObjectItemCaseSensitive(service_parameter_dataJSON, "paramForRangingSlPos");
+    if (param_for_ranging_sl_pos) {
+    if (!cJSON_IsString(param_for_ranging_sl_pos) && !cJSON_IsNull(param_for_ranging_sl_pos)) {
+        ogs_error("OpenAPI_service_parameter_data_parseFromJSON() failed [param_for_ranging_sl_pos]");
+        goto end;
+    }
+    }
+
     service_parameter_data_local_var = OpenAPI_service_parameter_data_create (
         app_id && !cJSON_IsNull(app_id) ? ogs_strdup(app_id->valuestring) : NULL,
         dnn && !cJSON_IsNull(dnn) ? ogs_strdup(dnn->valuestring) : NULL,
@@ -672,20 +1046,33 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(c
         ue_mac && !cJSON_IsNull(ue_mac) ? ogs_strdup(ue_mac->valuestring) : NULL,
         any_ue_ind ? true : false,
         any_ue_ind ? any_ue_ind->valueint : 0,
+        roam_ue_net_descs ? roam_ue_net_descsList : NULL,
         param_over_pc5 && !cJSON_IsNull(param_over_pc5) ? ogs_strdup(param_over_pc5->valuestring) : NULL,
         param_over_uu && !cJSON_IsNull(param_over_uu) ? ogs_strdup(param_over_uu->valuestring) : NULL,
+        a2x_params_pc5 && !cJSON_IsNull(a2x_params_pc5) ? ogs_strdup(a2x_params_pc5->valuestring) : NULL,
+        a2x_params_uu && !cJSON_IsNull(a2x_params_uu) ? ogs_strdup(a2x_params_uu->valuestring) : NULL,
         param_for_pro_se_dd && !cJSON_IsNull(param_for_pro_se_dd) ? ogs_strdup(param_for_pro_se_dd->valuestring) : NULL,
         param_for_pro_se_dc && !cJSON_IsNull(param_for_pro_se_dc) ? ogs_strdup(param_for_pro_se_dc->valuestring) : NULL,
         param_for_pro_se_u2_n_rel_ue && !cJSON_IsNull(param_for_pro_se_u2_n_rel_ue) ? ogs_strdup(param_for_pro_se_u2_n_rel_ue->valuestring) : NULL,
         param_for_pro_se_rem_ue && !cJSON_IsNull(param_for_pro_se_rem_ue) ? ogs_strdup(param_for_pro_se_rem_ue->valuestring) : NULL,
+        param_for_pro_se_u2_u_rel_ue && !cJSON_IsNull(param_for_pro_se_u2_u_rel_ue) ? ogs_strdup(param_for_pro_se_u2_u_rel_ue->valuestring) : NULL,
+        param_for_pro_se_end_ue && !cJSON_IsNull(param_for_pro_se_end_ue) ? ogs_strdup(param_for_pro_se_end_ue->valuestring) : NULL,
+        multi_hop_u2_u_rel_ue && !cJSON_IsNull(multi_hop_u2_u_rel_ue) ? ogs_strdup(multi_hop_u2_u_rel_ue->valuestring) : NULL,
+        multi_hop_u2_u_end_ue && !cJSON_IsNull(multi_hop_u2_u_end_ue) ? ogs_strdup(multi_hop_u2_u_end_ue->valuestring) : NULL,
+        multi_hop_u2_n_rel_ue && !cJSON_IsNull(multi_hop_u2_n_rel_ue) ? ogs_strdup(multi_hop_u2_n_rel_ue->valuestring) : NULL,
+        multi_hop_u2_n_rem_ue && !cJSON_IsNull(multi_hop_u2_n_rem_ue) ? ogs_strdup(multi_hop_u2_n_rem_ue->valuestring) : NULL,
+        multi_hop_u2_n_interm_ue && !cJSON_IsNull(multi_hop_u2_n_interm_ue) ? ogs_strdup(multi_hop_u2_n_interm_ue->valuestring) : NULL,
         ursp_guidance ? ursp_guidanceList : NULL,
+        vps_ursp_guidance ? vps_ursp_guidanceList : NULL,
+        tnaps ? tnapsList : NULL,
         delivery_events ? delivery_eventsList : NULL,
         polic_deliv_notif_corre_id && !cJSON_IsNull(polic_deliv_notif_corre_id) ? ogs_strdup(polic_deliv_notif_corre_id->valuestring) : NULL,
         polic_deliv_notif_uri && !cJSON_IsNull(polic_deliv_notif_uri) ? ogs_strdup(polic_deliv_notif_uri->valuestring) : NULL,
         supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL,
         res_uri && !cJSON_IsNull(res_uri) ? ogs_strdup(res_uri->valuestring) : NULL,
         headers ? headersList : NULL,
-        reset_ids ? reset_idsList : NULL
+        reset_ids ? reset_idsList : NULL,
+        param_for_ranging_sl_pos && !cJSON_IsNull(param_for_ranging_sl_pos) ? ogs_strdup(param_for_ranging_sl_pos->valuestring) : NULL
     );
 
     return service_parameter_data_local_var;
@@ -694,6 +1081,13 @@ end:
         OpenAPI_snssai_free(snssai_local_nonprim);
         snssai_local_nonprim = NULL;
     }
+    if (roam_ue_net_descsList) {
+        OpenAPI_list_for_each(roam_ue_net_descsList, node) {
+            OpenAPI_network_description_1_free(node->data);
+        }
+        OpenAPI_list_free(roam_ue_net_descsList);
+        roam_ue_net_descsList = NULL;
+    }
     if (ursp_guidanceList) {
         OpenAPI_list_for_each(ursp_guidanceList, node) {
             OpenAPI_ursp_rule_request_free(node->data);
@@ -701,10 +1095,21 @@ end:
         OpenAPI_list_free(ursp_guidanceList);
         ursp_guidanceList = NULL;
     }
-    if (delivery_eventsList) {
-        OpenAPI_list_for_each(delivery_eventsList, node) {
-            OpenAPI_event_free(node->data);
+    if (vps_ursp_guidanceList) {
+        OpenAPI_list_for_each(vps_ursp_guidanceList, node) {
+            OpenAPI_ursp_rule_request_free(node->data);
         }
+        OpenAPI_list_free(vps_ursp_guidanceList);
+        vps_ursp_guidanceList = NULL;
+    }
+    if (tnapsList) {
+        OpenAPI_list_for_each(tnapsList, node) {
+            OpenAPI_tnap_id_free(node->data);
+        }
+        OpenAPI_list_free(tnapsList);
+        tnapsList = NULL;
+    }
+    if (delivery_eventsList) {
         OpenAPI_list_free(delivery_eventsList);
         delivery_eventsList = NULL;
     }

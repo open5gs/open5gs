@@ -5,7 +5,7 @@
 #include "local2d_point_uncertainty_ellipse.h"
 
 OpenAPI_local2d_point_uncertainty_ellipse_t *OpenAPI_local2d_point_uncertainty_ellipse_create(
-    OpenAPI_supported_gad_shapes_t *shape,
+    OpenAPI_supported_gad_shapes_e shape,
     OpenAPI_local_origin_t *local_origin,
     OpenAPI_relative_cartesian_location_t *point,
     OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse,
@@ -30,10 +30,6 @@ void OpenAPI_local2d_point_uncertainty_ellipse_free(OpenAPI_local2d_point_uncert
 
     if (NULL == local2d_point_uncertainty_ellipse) {
         return;
-    }
-    if (local2d_point_uncertainty_ellipse->shape) {
-        OpenAPI_supported_gad_shapes_free(local2d_point_uncertainty_ellipse->shape);
-        local2d_point_uncertainty_ellipse->shape = NULL;
     }
     if (local2d_point_uncertainty_ellipse->local_origin) {
         OpenAPI_local_origin_free(local2d_point_uncertainty_ellipse->local_origin);
@@ -61,17 +57,11 @@ cJSON *OpenAPI_local2d_point_uncertainty_ellipse_convertToJSON(OpenAPI_local2d_p
     }
 
     item = cJSON_CreateObject();
-    if (!local2d_point_uncertainty_ellipse->shape) {
+    if (local2d_point_uncertainty_ellipse->shape == OpenAPI_supported_gad_shapes_NULL) {
         ogs_error("OpenAPI_local2d_point_uncertainty_ellipse_convertToJSON() failed [shape]");
         return NULL;
     }
-    cJSON *shape_local_JSON = OpenAPI_supported_gad_shapes_convertToJSON(local2d_point_uncertainty_ellipse->shape);
-    if (shape_local_JSON == NULL) {
-        ogs_error("OpenAPI_local2d_point_uncertainty_ellipse_convertToJSON() failed [shape]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "shape", shape_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "shape", OpenAPI_supported_gad_shapes_ToString(local2d_point_uncertainty_ellipse->shape)) == NULL) {
         ogs_error("OpenAPI_local2d_point_uncertainty_ellipse_convertToJSON() failed [shape]");
         goto end;
     }
@@ -135,7 +125,7 @@ OpenAPI_local2d_point_uncertainty_ellipse_t *OpenAPI_local2d_point_uncertainty_e
     OpenAPI_local2d_point_uncertainty_ellipse_t *local2d_point_uncertainty_ellipse_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *shape = NULL;
-    OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
+    OpenAPI_supported_gad_shapes_e shapeVariable = 0;
     cJSON *local_origin = NULL;
     OpenAPI_local_origin_t *local_origin_local_nonprim = NULL;
     cJSON *point = NULL;
@@ -148,11 +138,11 @@ OpenAPI_local2d_point_uncertainty_ellipse_t *OpenAPI_local2d_point_uncertainty_e
         ogs_error("OpenAPI_local2d_point_uncertainty_ellipse_parseFromJSON() failed [shape]");
         goto end;
     }
-    shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
-    if (!shape_local_nonprim) {
-        ogs_error("OpenAPI_supported_gad_shapes_parseFromJSON failed [shape]");
+    if (!cJSON_IsString(shape)) {
+        ogs_error("OpenAPI_local2d_point_uncertainty_ellipse_parseFromJSON() failed [shape]");
         goto end;
     }
+    shapeVariable = OpenAPI_supported_gad_shapes_FromString(shape->valuestring);
 
     local_origin = cJSON_GetObjectItemCaseSensitive(local2d_point_uncertainty_ellipseJSON, "localOrigin");
     if (!local_origin) {
@@ -198,7 +188,7 @@ OpenAPI_local2d_point_uncertainty_ellipse_t *OpenAPI_local2d_point_uncertainty_e
     }
 
     local2d_point_uncertainty_ellipse_local_var = OpenAPI_local2d_point_uncertainty_ellipse_create (
-        shape_local_nonprim,
+        shapeVariable,
         local_origin_local_nonprim,
         point_local_nonprim,
         uncertainty_ellipse_local_nonprim,
@@ -208,10 +198,6 @@ OpenAPI_local2d_point_uncertainty_ellipse_t *OpenAPI_local2d_point_uncertainty_e
 
     return local2d_point_uncertainty_ellipse_local_var;
 end:
-    if (shape_local_nonprim) {
-        OpenAPI_supported_gad_shapes_free(shape_local_nonprim);
-        shape_local_nonprim = NULL;
-    }
     if (local_origin_local_nonprim) {
         OpenAPI_local_origin_free(local_origin_local_nonprim);
         local_origin_local_nonprim = NULL;

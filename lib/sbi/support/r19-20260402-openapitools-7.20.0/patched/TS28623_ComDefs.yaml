@@ -1,0 +1,605 @@
+openapi: 3.0.1
+info:
+  title: Common Type Definitions
+  version: 19.6.0
+  description: >-
+    OAS 3.0.1 specification of common type definitions in the Generic NRM
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.623; Generic NRM; Common type definitions
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.623/
+paths: {}
+components:
+  schemas:
+  
+    Float:
+      description: This datatype is used for writable attribute
+      type: number
+      format: float
+    FloatRo:
+      description: This datatype is used for readOnly attribute
+      type: number
+      format: float
+      readOnly: true      
+    DateTime:
+      description: This datatype is used for writable attribute
+      type: string
+      format: date-time
+    DateTimeRo: 
+      description: This datatype is used for readOnly attribute
+      type: string
+      format: date-time
+      readOnly: true      
+    FullTime:
+      type: string
+      description: format (e.g., full-time) is from RFC 3339
+      format: full-time
+    DateMonth:
+      type: string
+      format: date-month
+    DateMonthDay:
+      type: string
+      format: date-mday
+    DayInYear:
+      type: object
+      properties:
+        month:
+          $ref: '#/components/schemas/DateMonth'
+        monthDay:
+          $ref: '#/components/schemas/DateMonthDay'
+    Latitude:
+      type: number
+      format: float
+      minimum: -90
+      maximum: 90
+    Longitude:
+      type: number
+      format: float
+      minimum: -180
+      maximum: 180
+    GeoCircle:
+      description: This datatype is specifies the geographical area for NTN
+      type: object
+      properties:
+        referenceLocation:
+          $ref: '#/components/schemas/GeoCoordinate'
+        distanceRadius:
+          type: integer
+          minimum: 1
+          maximum: 65535
+    Dn:
+      description: This datatype is used for writable attribute
+      type: string
+    DnRo:
+      description: This datatype is used for readOnly attribute
+      type: string
+      readOnly: true      
+    DnList:
+      description: This datatype is used for writable attribute    
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/Dn'
+    DnListRo:
+      description: This datatype is used for readOnly attribute    
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/DnRo'
+
+    Mcc:
+      description: This datatype is used for writable attribut
+      type: string
+      pattern: '^[0-9]{3}$'
+    MccRo:
+      description: This datatype is used for readOnly attribute
+      type: string
+      pattern: '^[0-9]{3}$'
+      readOnly: true     
+    Mnc:
+      description: This datatype is used for writable attribut
+      type: string
+      pattern: '^[0-9]{2,3}$'
+    MncRo:
+      description: This datatype is used for readOnly attribute
+      type: string
+      pattern: '^[0-9]{2,3}$'
+      readOnly: true      
+    Nid:
+      type: string
+      pattern: '^[A-Fa-f0-9]{11}$'
+
+    CagId:
+      type: string
+      pattern: '^[A-Fa-f0-9]{8}$'
+
+    PlmnId:
+      description: This datatype is used for writable attribute
+      type: object
+      properties:
+        mcc:
+          $ref: '#/components/schemas/Mcc'
+        mnc:
+          $ref: '#/components/schemas/Mnc'
+    PlmnIdRo:
+      description: This datatype is used for readOnly attribute
+      type: object
+      properties:
+        mcc:
+          $ref: '#/components/schemas/MccRo'
+        mnc:
+          $ref: '#/components/schemas/MncRo'          
+    Tac:
+      type: string
+      pattern: '(^[A-Fa-f0-9]{4}$)|(^[A-Fa-f0-9]{6}$)'
+    UtraCellId:
+      type: integer
+    EutraCellId:
+      type: string
+      pattern: '^[A-Fa-f0-9]{7}$'
+    NrCellId:
+      type: string
+      pattern: '^[A-Fa-f0-9]{9}$'   
+    TimeWindow:
+      description: This datatype is used for writable attribute 
+      type: object
+      properties:
+        startTime:
+          $ref: '#/components/schemas/DateTime'
+        endTime:
+          $ref: '#/components/schemas/DateTime'
+    TimeWindowRo:
+      description: This datatype is used for readOnly attribute
+      type: object
+      properties:
+        startTime:
+          $ref: '#/components/schemas/DateTimeRo'
+        endTime:
+          $ref: '#/components/schemas/DateTimeRo'
+    EventTriggerConfig:
+      description: This defines the configuration parameters of trigger event used for M10 measurement in NR. For details, please refer to TS 32.422 subclause 5.10.X.
+      type: object
+      properties:
+        eventType:
+          type: string
+          enum:
+            - eventA1
+            - eventA2
+        thresholdRAN:
+          type: integer
+          minimum: 0
+          maximum: 127
+        measurementQuantityRAN:
+          type: string
+          enum:
+            - RSRP
+        hysteresisRAN:
+          type: integer
+          minimum: 0
+          maximum: 30
+        timeToTriggerRAN:
+          type: string
+          enum:
+            - 0ms
+            - 40ms
+            - 64ms
+            - 80ms
+            - 100ms
+            - 128ms
+            - 160ms
+            - 256ms
+            - 320ms
+            - 480ms
+            - 512ms
+            - 640ms
+            - 1024ms
+            - 1280ms
+            - 2560ms
+            - 5120ms
+    GeoCoordinate:
+      type: object
+      properties:
+        latitude:
+          $ref: '#/components/schemas/Latitude'
+        longitude:
+          $ref: '#/components/schemas/Longitude'
+        altitude:
+          $ref: '#/components/schemas/Float'
+    GeoArea:
+      oneOf:
+        - type: object
+          properties:
+            geoPolygon:
+              type: array
+              items:
+                $ref: '#/components/schemas/GeoCoordinate'
+              minItems: 1
+        - type: object
+          properties:
+            geoCircle:
+              $ref: '#/components/schemas/GeoCircle'
+    GeoAreaToCellMapping:
+      type: object
+      properties:
+        geoArea:
+          $ref: '#/components/schemas/GeoArea'
+        associationThreshold:
+          type: integer
+    AreaOfInterest:
+      oneOf:
+        - type: array
+          items:
+            $ref: '#/components/schemas/GeoAreaToCellMapping'
+        - type: array
+          items:
+            $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Tai'
+          minItems: 1
+          maxItems: 8
+        - type: array
+          items:
+            $ref: '#/components/schemas/NrCellId'
+          minItems: 1
+          maxItems: 32
+        - type: array
+          items:
+            $ref: '#/components/schemas/EutraCellId'
+          minItems: 1
+          maxItems: 32
+        - type: array
+          items:
+            $ref: '#/components/schemas/UtraCellId'
+          minItems: 1
+          maxItems: 32
+    Fqdn:
+      type: string
+      description: This datatype is used for writable attribute
+      pattern: '^([0-9A-Za-z]([-0-9A-Za-z]{0,61}[0-9A-Za-z])?\.)+[A-Za-z]{2,63}\.?$'
+      minLength: 4
+      maxLength: 253
+    FqdnRo:
+      type: string
+      description: This datatype is used for readOnly attribute
+      pattern: '^([0-9A-Za-z]([-0-9A-Za-z]{0,61}[0-9A-Za-z])?\.)+[A-Za-z]{2,63}\.?$'
+      minLength: 4
+      maxLength: 253
+      readOnly: true
+
+    Ipv4Addr:
+      description: This datatype is used for writable attribute
+      type: string
+      pattern: '^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
+      example: '198.51.100.1'
+    Ipv4AddrRo:
+      description: This datatype is used for readOnly attribute
+      type: string
+      pattern: '^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
+      example: '198.51.100.1' 
+      readOnly: true     
+    Ipv6Addr:
+      description: This datatype is used for writable attribute
+      type: string
+      allOf:
+        - pattern: '^((:|(0?|([1-9a-f][0-9a-f]{0,3}))):)((0?|([1-9a-f][0-9a-f]{0,3})):){0,6}(:|(0?|([1-9a-f][0-9a-f]{0,3})))$'
+        - pattern: '^((([^:]+:){7}([^:]+))|((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?))$'
+      example: '2001:db8:85a3::8a2e:370:7334'
+    Ipv6AddrRo:
+      description: This datatype is used for readOnly attribute
+      type: string
+      allOf:
+        - pattern: '^((:|(0?|([1-9a-f][0-9a-f]{0,3}))):)((0?|([1-9a-f][0-9a-f]{0,3})):){0,6}(:|(0?|([1-9a-f][0-9a-f]{0,3})))$'
+        - pattern: '^((([^:]+:){7}([^:]+))|((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?))$'
+      example: '2001:db8:85a3::8a2e:370:7334'
+      readOnly: true      
+    Ipv6Prefix:
+      description: This datatype is used for writable attribute
+      type: string
+      allOf:
+        - pattern: '^((:|(0?|([1-9a-f][0-9a-f]{0,3}))):)((0?|([1-9a-f][0-9a-f]{0,3})):){0,6}(:|(0?|([1-9a-f][0-9a-f]{0,3})))(\/(([0-9])|([0-9]{2})|(1[0-1][0-9])|(12[0-8])))$'
+        - pattern: '^((([^:]+:){7}([^:]+))|((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?))(\/.+)$'
+      example: '2001:db8:abcd:12::0/64'
+    Ipv6PrefixRo:
+      description: This datatype is used for readOnly attribute
+      type: string
+      allOf:
+        - pattern: '^((:|(0?|([1-9a-f][0-9a-f]{0,3}))):)((0?|([1-9a-f][0-9a-f]{0,3})):){0,6}(:|(0?|([1-9a-f][0-9a-f]{0,3})))(\/(([0-9])|([0-9]{2})|(1[0-1][0-9])|(12[0-8])))$'
+        - pattern: '^((([^:]+:){7}([^:]+))|((([^:]+:)*[^:]+)?::(([^:]+:)*[^:]+)?))(\/.+)$'
+      example: '2001:db8:abcd:12::0/64'
+      readOnly: true      
+    IpAddr:
+      description: This datatype is used for writable attribute
+      oneOf:
+        - $ref: '#/components/schemas/Ipv4Addr'
+        - $ref: '#/components/schemas/Ipv6Addr'
+        - $ref: '#/components/schemas/Ipv6Prefix'
+    IpAddrRo:
+      description: This datatype is used for readOnly attribute
+      oneOf:
+        - $ref: '#/components/schemas/Ipv4AddrRo'
+        - $ref: '#/components/schemas/Ipv6AddrRo'
+        - $ref: '#/components/schemas/Ipv6PrefixRo'        
+    HostAddr:
+      #  This definition will be deprecated, when all occurances of HostAddr
+      #  are replaced by Host.
+      oneOf:
+        - $ref: '#/components/schemas/Ipv4Addr'
+        - $ref: '#/components/schemas/Ipv6Addr'
+        - $ref: '#/components/schemas/Fqdn'
+    Host:
+      oneOf:
+        - $ref: '#/components/schemas/IpAddr'
+        - $ref: '#/components/schemas/Fqdn'
+    HostRo:
+      oneOf:
+        - $ref: '#/components/schemas/IpAddrRo'
+        - $ref: '#/components/schemas/FqdnRo'
+    Uri:
+      description: This datatype is used for writable attribute
+      type: string
+    UriRo:
+      type: string
+      description: This datatype is used for readOnly attribute
+      readOnly: true      
+
+    TimeInterval:
+      type: object
+      properties:
+        intervalStart:
+          $ref: '#/components/schemas/FullTime'
+        intervalEnd:
+          $ref: '#/components/schemas/FullTime'
+
+    AdministrativeState:
+      type: string
+      enum:
+        - LOCKED
+        - UNLOCKED
+      default: LOCKED  
+    BasicAdministrativeState:
+      type: string
+      enum:
+        - LOCKED
+        - UNLOCKED
+    OperationalState:
+      type: string
+      enum:
+        - ENABLED
+        - DISABLED
+      default: DISABLED
+      readOnly: true  
+    UsageState:
+      type: string
+      readOnly: true
+      enum:
+        - IDLE
+        - ACTIVE
+        - BUSY
+    AvailabilityStatus:
+      type: string
+      enum:
+        - IN_TEST
+        - FAILED
+        - POWER_OFF
+        - OFF_LINE
+        - OFF_DUTY
+        - DEPENDENCY
+        - DEGRADED
+        - NOT_INSTALLED
+        - LOG_FULL
+      readOnly: true  
+
+    AttributeNameValuePairSet:
+      description: >-
+        The key of this map is the attribute name, and the value the attribute value.
+      type: object
+      minProperties: 1
+      additionalProperties:
+        nullable: true
+    AttributeValueChangeSet:
+      description: >-
+        The first array item contains the attribute name value pairs with the new values,
+        and the second array item the attribute name value pairs with the optional old values.
+      type: array
+      items:
+        $ref: '#/components/schemas/AttributeNameValuePairSet'
+      minItems: 1
+      maxItems: 2
+
+    Filter:
+      description: >-
+        The filter format shall be compliant to Jex (TS 32.161).
+      type: string
+    JexConditions:
+      type: string
+      description: >-
+        The value of the string shall be a Jex expression that is compliant to the 
+        Jex conditions profile specified in clause 7.6 of TS 32.161.
+    JexNodeSelectionBasic:
+      type: string
+      description: >-
+        The value of the string shall be a Jex expression that is compliant to the 
+        Jex basic profile specified in clause 7.4 of TS 32.161.
+    JexNodeSelectionAdvanced:
+      type: string
+      description: >-
+        The value of the string shall be a Jex expression that is compliant to the 
+        Jex advanced profile specified in clause 7.5 of TS 32.161.
+    SystemDN:
+      type: string
+    NotificationId:
+      type: integer
+      readOnly: true    
+    NotificationType:
+      oneOf:
+        - $ref: 'TS28111_FaultNrm.yaml#/components/schemas/AlarmNotificationTypes'
+        - $ref: 'TS28532_ProvMnS.yaml#/components/schemas/CmNotificationTypes'
+        - $ref: 'TS28532_PerfMnS.yaml#/components/schemas/PerfNotificationTypes'
+        - $ref: 'TS28532_HeartbeatNtf.yaml#/components/schemas/HeartbeatNotificationTypes'
+        - $ref: 'TS28532_FileDataReportingMnS.yaml#/components/schemas/FileNotificationTypes'
+    NotificationHeader:
+      type: object
+      properties:
+        href:
+          $ref: '#/components/schemas/Uri'
+        notificationId:
+          $ref: '#/components/schemas/NotificationId'
+        notificationType:
+          $ref: '#/components/schemas/NotificationType'
+        eventTime:
+          $ref: '#/components/schemas/DateTime'
+        systemDN:
+          $ref: '#/components/schemas/SystemDN'
+        sequenceNo:
+          type: integer
+        subscriptionId:
+          type: string
+      required:
+        - href
+        - notificationId
+        - notificationType
+        - eventTime
+        - systemDN
+
+    ErrorResponse:
+      description: >-
+        Default schema for the response message body in case the request
+        is not successful.
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            errorInfo:
+              type: string
+    Subscription:
+      type: object
+      properties:
+        consumerReference:
+          $ref: '#/components/schemas/Uri'
+        timeTick:
+          type: integer
+        filter:
+          $ref: '#/components/schemas/JexConditions'
+
+    ErrorResponseGet:
+      description: >-
+        Default schema for the response message body in case the Get
+        is not successful.
+      type: object
+      properties:
+        status:
+          type: string
+        type:
+          type: string
+        reason:
+          type: string
+        title:
+          type: string
+        badQueryParams:
+          type: array
+          items:
+            type: string
+        otherProblems:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              type:
+                type: string
+              reason:
+                type: string
+              title:
+                type: string
+              badQueryParams:
+                type: array
+                items:
+                  type: string
+            required:
+              - type
+      required:
+        - type
+
+    ErrorResponseDefault:
+      type: object
+      properties:
+        status:
+          type: string
+        type:
+          type: string
+        reason:
+          type: string
+        title:
+          type: string
+        badAttributes:
+          type: array
+          items:
+            type: string
+        badObjects:
+          type: array
+          items:
+            type: string
+        otherProblems:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              type:
+                type: string
+              reason:
+                type: string
+              title:
+                type: string
+              badAttributes:
+                type: array
+                items:
+                  type: string
+              badObjects:
+                type: array
+                items:
+                  type: string
+            required:
+              - type
+      required:
+        - type
+
+    ErrorResponsePatch:
+      description: >-
+        Default schema for the response message body in case the patch
+        is not successful.
+      type: object
+      properties:
+        status:
+          type: string
+        type:
+          type: string
+        reason:
+          type: string
+        title:
+          type: string
+        badOp:
+          type: string
+        otherProblems:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              type:
+                type: string
+              reason:
+                type: string
+              title:
+                type: string
+              badOp:
+                type: string
+            required:
+              - type
+              - badOp
+      required:
+        - type
+        - badOp

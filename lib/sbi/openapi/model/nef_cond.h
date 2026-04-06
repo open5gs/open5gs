@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nef_cond_s OpenAPI_nef_cond_t;
 #include "af_event.h"
 #include "identity_range.h"
 #include "pfd_data.h"
@@ -21,13 +22,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nef_cond_s OpenAPI_nef_cond_t;
 typedef enum { OpenAPI_nef_cond_CONDITIONTYPE_NULL = 0, OpenAPI_nef_cond_CONDITIONTYPE_NEF_COND } OpenAPI_nef_cond_condition_type_e;
 
 char* OpenAPI_nef_cond_condition_type_ToString(OpenAPI_nef_cond_condition_type_e condition_type);
 
 OpenAPI_nef_cond_condition_type_e OpenAPI_nef_cond_condition_type_FromString(char* condition_type);
-typedef struct OpenAPI_nef_cond_s {
+struct OpenAPI_nef_cond_s {
     OpenAPI_nef_cond_condition_type_e condition_type;
     OpenAPI_list_t *af_events;
     OpenAPI_list_t *snssai_list;
@@ -35,7 +35,7 @@ typedef struct OpenAPI_nef_cond_s {
     OpenAPI_list_t *gpsi_ranges;
     OpenAPI_list_t *external_group_identifiers_ranges;
     OpenAPI_list_t *served_fqdn_list;
-} OpenAPI_nef_cond_t;
+};
 
 OpenAPI_nef_cond_t *OpenAPI_nef_cond_create(
     OpenAPI_nef_cond_condition_type_e condition_type,

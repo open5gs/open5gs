@@ -1,7 +1,7 @@
 /*
  * ue_camping_rep.h
  *
- * Contains the current applicable values corresponding to the policy control request triggers.
+ * Contains the current applicable values corresponding to the policy control request triggers. 
  */
 
 #ifndef _OpenAPI_ue_camping_rep_H_
@@ -12,20 +12,23 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_camping_rep_s OpenAPI_ue_camping_rep_t;
 #include "access_type.h"
 #include "net_loc_access_support.h"
+#include "pc_session_recovery_status.h"
+#include "pdu_session_type.h"
 #include "plmn_id_nid.h"
 #include "rat_type.h"
 #include "satellite_backhaul_category.h"
 #include "serving_nf_identity.h"
+#include "ssc_mode.h"
 #include "user_location.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_camping_rep_s OpenAPI_ue_camping_rep_t;
-typedef struct OpenAPI_ue_camping_rep_s {
+struct OpenAPI_ue_camping_rep_s {
     OpenAPI_access_type_e access_type;
     OpenAPI_rat_type_e rat_type;
     struct OpenAPI_serving_nf_identity_s *serv_nf_id;
@@ -34,7 +37,12 @@ typedef struct OpenAPI_ue_camping_rep_s {
     char *ue_time_zone;
     OpenAPI_net_loc_access_support_e net_loc_acc_supp;
     OpenAPI_satellite_backhaul_category_e sat_backhaul_category;
-} OpenAPI_ue_camping_rep_t;
+    char *ursp_enf_info;
+    OpenAPI_ssc_mode_e ssc_mode;
+    char *ue_req_dnn;
+    OpenAPI_pdu_session_type_e ue_req_pdu_session_type;
+    OpenAPI_pc_session_recovery_status_e session_recov_status;
+};
 
 OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_create(
     OpenAPI_access_type_e access_type,
@@ -44,7 +52,12 @@ OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_create(
     OpenAPI_user_location_t *user_location_info,
     char *ue_time_zone,
     OpenAPI_net_loc_access_support_e net_loc_acc_supp,
-    OpenAPI_satellite_backhaul_category_e sat_backhaul_category
+    OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
+    char *ursp_enf_info,
+    OpenAPI_ssc_mode_e ssc_mode,
+    char *ue_req_dnn,
+    OpenAPI_pdu_session_type_e ue_req_pdu_session_type,
+    OpenAPI_pc_session_recovery_status_e session_recov_status
 );
 void OpenAPI_ue_camping_rep_free(OpenAPI_ue_camping_rep_t *ue_camping_rep);
 OpenAPI_ue_camping_rep_t *OpenAPI_ue_camping_rep_parseFromJSON(cJSON *ue_camping_repJSON);

@@ -1,0 +1,317 @@
+openapi: 3.0.0
+info:
+  title: Mbar_Management_Avatars
+  version: 1.0.0
+  description: |
+    Base Avatar Repository Management API - Avatars
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Avatars
+    description: 'Base Avatar Management'
+
+externalDocs:
+  description: 'TS 26.264 V19.1.0; IMS-based AR Real-Time Communication'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.264/'
+
+servers:
+  - url: '{apiRoot}/3gpp-mbar-management/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in 3GPP TS 29.501
+
+security:
+  - {}
+  - OAuth2: []
+
+paths:
+  /avatars:
+    post:
+      tags:
+        - Avatars
+      operationId: createAvatar
+      summary: 'Create a new Base Avatar resource in the BAR'
+      security:
+        - OAuth2:
+          - avatar_create
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  $ref: '#/components/schemas/Avatar'
+                  description: 'A JSON representation of an Avatar'
+                avatarContainer:
+                  type: string
+                  format: binary
+                  description: 'Binary ARF container file for the base avatar.'
+              required:
+                - avatar
+            encoding:
+              avatar:
+                contentType: application/json
+              avatarContainer:
+                contentType: model/vnd.mpeg.arf+zip
+      responses:
+        '201':
+          description: 'Avatar Created'
+          headers:
+            Location:
+              description: 'URL of the newly created Avatar resource'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/Url'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Avatar'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /avatars/{avatarId}:
+    parameters:
+      - name: avatarId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The unique identifier of the Avatar resource'
+    get:
+      tags:
+        - Avatars
+      operationId: getAvatar
+      summary: 'Retrieve a Base Avatar'
+      description: 'Retrieves a previously created or uploaded base avatar in the BAR.'
+      security:
+        - OAuth2:
+          - avatar_retrieve
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Avatar'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      tags:
+        - Avatars
+      operationId: updateAvatar
+      summary: 'Upload or update Base Avatar data'
+      description: 'Updates the Base Avatar data for the specified Avatar ID.'
+      security:
+        - OAuth2:
+          - avatar_update
+      requestBody:
+        description: 'A JSON representation of an Avatar'
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatarContainer:
+                  type: string
+                  format: binary
+                  description: 'Binary avatar container.'
+            encoding:
+              avatarContainer:
+                contentType: model/vnd.mpeg.arf+zip
+      responses:
+        '200':
+          description: 'Avatar Updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Avatar'
+        '204':
+          description: 'Avatar Unchanged'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      tags:
+        - Avatars
+      operationId: patchAvatar
+      summary: 'Patch Base Avatar data'
+      security:
+        - OAuth2:
+          - avatar_update
+      requestBody:
+        description: 'A JSON representation of an Avatar'
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/Avatar'
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/Avatar'
+      responses:
+        '200':
+          description: 'Patched Avatar'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Avatar'
+        '204':
+          description: 'Avatar Unchanged'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      tags:
+        - Avatars
+      operationId: deleteAvatar
+      summary: 'Remove and delete a Base Avatar.'
+      description: 'Removes an Avatar resource, including its associated container, as well as its related assets and associated information'
+      security:
+        - OAuth2:
+          - avatar_delete
+      responses:
+        '204':
+          description: 'Avatar Deleted'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            avatar_create: Create Avatar resource
+            avatar_retrieve: Retrieve Avatar resource
+            avatar_update: Update Avatar resource
+            avatar_delete: Delete Avatar resource
+
+  schemas:
+    Avatar:
+      type: object
+      description: 'Avatar resource as defined in Table B.1-5 of TS 26.264'
+      required:
+        - ownerId
+      properties:
+        avatarId:
+          allOf:
+            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+            - readOnly: true
+              description: 'A unique identifier assigned to a Base Avatar by the BAR on creation'
+        ownerId:
+          type: string
+          description: 'A unique identifier identifying the subscriber (owner) associated with the base avatar'
+        assetIds:
+          type: array
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          readOnly: true
+          description: 'A list of asset IDs for the assets associated with the Base Avatar'
+        avatarContainer:
+          allOf:
+            - $ref: 'TS26510_CommonData.yaml#/components/schemas/Url'
+            - description: 'Payload containing the Base Avatar data and associated assets. For creation and update operations, the URL shall point to a multipart MIME part with MIME type "model/vnd.mpeg.arf+zip"'
+        associatedInfo:
+          allOf:
+            - $ref: 'TS26264_CommonData.yaml#/components/schemas/AssociatedInfo'
+            - readOnly: true
+              description: 'Associated information related to the Base Avatar'

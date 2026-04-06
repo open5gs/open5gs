@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_mb_upf_info_s OpenAPI_mb_upf_info_t;
 #include "interface_upf_info_item.h"
 #include "snssai_upf_info_item.h"
 #include "tai.h"
@@ -21,8 +22,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_mb_upf_info_s OpenAPI_mb_upf_info_t;
-typedef struct OpenAPI_mb_upf_info_s {
+struct OpenAPI_mb_upf_info_s {
     OpenAPI_list_t *s_nssai_mb_upf_info_list;
     OpenAPI_list_t *mb_smf_serving_area;
     OpenAPI_list_t *interface_mb_upf_info_list;
@@ -31,7 +31,7 @@ typedef struct OpenAPI_mb_upf_info_s {
     bool is_priority;
     int priority;
     char *supported_pfcp_features;
-} OpenAPI_mb_upf_info_t;
+};
 
 OpenAPI_mb_upf_info_t *OpenAPI_mb_upf_info_create(
     OpenAPI_list_t *s_nssai_mb_upf_info_list,

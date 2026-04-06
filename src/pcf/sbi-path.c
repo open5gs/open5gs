@@ -41,9 +41,9 @@ int pcf_sbi_open(void)
 
     /* Build NF service information. It will be transmitted to NRF. */
     if (ogs_sbi_nf_service_is_available(
-                OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)) {
+                OpenAPI_service_name_npcf_am_policy_control)) {
         service = ogs_sbi_nf_service_build_default(
-                    nf_instance, OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL);
+                    nf_instance, OpenAPI_service_name_npcf_am_policy_control);
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
@@ -51,9 +51,9 @@ int pcf_sbi_open(void)
     }
 
     if (ogs_sbi_nf_service_is_available(
-                OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)) {
+                OpenAPI_service_name_npcf_smpolicycontrol)) {
         service = ogs_sbi_nf_service_build_default(
-                    nf_instance, OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL);
+                    nf_instance, OpenAPI_service_name_npcf_smpolicycontrol);
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
@@ -63,9 +63,9 @@ int pcf_sbi_open(void)
     }
 
     if (ogs_sbi_nf_service_is_available(
-                OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION)) {
+                OpenAPI_service_name_npcf_policyauthorization)) {
         service = ogs_sbi_nf_service_build_default(
-                    nf_instance, OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION);
+                    nf_instance, OpenAPI_service_name_npcf_policyauthorization);
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
@@ -81,14 +81,18 @@ int pcf_sbi_open(void)
             policyauthorization_enabled == true)) {
         ogs_fatal("CHECK CONFIGURATION:");
         ogs_fatal("   %s - %s",
-            OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL,
+            OpenAPI_service_name_ToString(
+                OpenAPI_service_name_npcf_smpolicycontrol),
             smpolicycontrol_enabled ? "enabled" : "disabled");
         ogs_fatal("   %s - %s",
-            OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION,
+            OpenAPI_service_name_ToString(
+                OpenAPI_service_name_npcf_policyauthorization),
             policyauthorization_enabled ? "enabled" : "disabled");
         ogs_fatal("Only one of %s and %s cannot be enabled.",
-            OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL,
-            OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION);
+            OpenAPI_service_name_ToString(
+                OpenAPI_service_name_npcf_smpolicycontrol),
+            OpenAPI_service_name_ToString(
+                OpenAPI_service_name_npcf_policyauthorization));
         ogs_fatal("They can be enabled or disabled together.");
 
         return OGS_ERROR;
@@ -100,11 +104,12 @@ int pcf_sbi_open(void)
         ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Setup Subscription-Data */
-    ogs_sbi_subscription_spec_add(OpenAPI_nf_type_SEPP, NULL);
     ogs_sbi_subscription_spec_add(
-            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT);
+            OpenAPI_nf_type_SEPP, OpenAPI_service_name_NULL);
     ogs_sbi_subscription_spec_add(
-            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NUDR_DR);
+            OpenAPI_nf_type_NULL, OpenAPI_service_name_nbsf_management);
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_NULL, OpenAPI_service_name_nudr_dr);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
@@ -129,7 +134,7 @@ bool pcf_sbi_send_request(
 static int pcf_sbi_discover_and_send(
         ogs_pool_id_t sbi_object_id,
         ogs_sbi_object_t *sbi_object,
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_build_f build,
         void *context, ogs_sbi_stream_t *stream, void *data)
@@ -137,7 +142,7 @@ static int pcf_sbi_discover_and_send(
     ogs_sbi_xact_t *xact = NULL;
     int r;
 
-    ogs_assert(service_type);
+    ogs_assert(service_name);
     ogs_assert(sbi_object);
     ogs_assert(stream);
     ogs_assert(build);
@@ -146,7 +151,7 @@ static int pcf_sbi_discover_and_send(
             sbi_object_id <= OGS_MAX_POOL_ID);
 
     xact = ogs_sbi_xact_add(
-            sbi_object_id, sbi_object, service_type, discovery_option,
+            sbi_object_id, sbi_object, service_name, discovery_option,
             build, context, data);
     if (!xact) {
         ogs_error("ogs_sbi_xact_add() failed");
@@ -170,7 +175,7 @@ static int pcf_sbi_discover_and_send(
 }
 
 int pcf_ue_am_sbi_discover_and_send(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(pcf_ue_am_t *pcf_ue_am, void *data),
         pcf_ue_am_t *pcf_ue_am, ogs_sbi_stream_t *stream, void *data)
@@ -178,7 +183,7 @@ int pcf_ue_am_sbi_discover_and_send(
     int r;
 
     r = pcf_sbi_discover_and_send(
-            pcf_ue_am->id, &pcf_ue_am->sbi, service_type, discovery_option,
+            pcf_ue_am->id, &pcf_ue_am->sbi, service_name, discovery_option,
             (ogs_sbi_build_f)build, pcf_ue_am, stream, data);
     if (r != OGS_OK) {
         ogs_error("pcf_ue_am_sbi_discover_and_send() failed");
@@ -193,7 +198,7 @@ int pcf_ue_am_sbi_discover_and_send(
 }
 
 int pcf_sess_sbi_discover_and_send(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(pcf_sess_t *sess, void *data),
         pcf_sess_t *sess, ogs_sbi_stream_t *stream, void *data)
@@ -201,7 +206,7 @@ int pcf_sess_sbi_discover_and_send(
     int r;
 
     r = pcf_sbi_discover_and_send(
-            sess->id, &sess->sbi, service_type, discovery_option,
+            sess->id, &sess->sbi, service_name, discovery_option,
             (ogs_sbi_build_f)build, sess, stream, data);
     if (r != OGS_OK) {
         ogs_error("pcf_sess_sbi_discover_and_send() failed");
@@ -534,7 +539,8 @@ bool pcf_sbi_send_smpolicycontrol_create_response(
     }
 
     memset(&header, 0, sizeof(header));
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL;
+    header.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_npcf_smpolicycontrol);
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_SM_POLICIES;
     header.resource.component[1] = sess->sm_policy_id;

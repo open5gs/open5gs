@@ -1,0 +1,125 @@
+openapi: 3.0.0
+
+info:
+  title: Aimlec_ClientDataProcessing
+  version: 1.0.2
+  description: |
+    API for Transfer Learning (TL) Enablement Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.560 V19.1.0; Artificial Intelligence / Machine Learning (AIML) Services – Service
+    Enabler Architecture Layer for Verticals (SEAL); Protocol Specification; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/24_series/24.560/'
+
+servers:
+  - url: '{apiRoot}/aimlec-data-proc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /trigger:
+    post:
+      summary: >
+        Used by AIMLE server to trigger AIMLE client to request client data processing procedure.
+      operationId: ClientDataProcessing
+      tags:
+        - Client data processing procedure request
+      requestBody:
+        description: Contains information to trigger client data processing procedure.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CltDataProcReq'
+      responses:
+        '200':
+          description: Contains the outcome of the successful client data processing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CltDataProcResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+# Structured data types
+
+    CltDataProcReq:
+      description: >
+        Contains information to trigger client data processing procedure. At least one of
+        dataPrepReqs and dataAnalysisReqs shall be present, although they are not specified as a
+        conditional due to backward compatibility reasons.
+      type: object
+      required:
+      - requesterId
+      - dataProc
+      properties:
+        requesterId:
+          description: Represents the requester identity.
+          type: string
+        dataProc:
+          $ref: 'TS29482_AIMLES_DataManagement.yaml#/components/schemas/DataMgmtOp'
+        dataPrepReqs:
+          $ref: 'TS29482_AIMLES_DataManagement.yaml#/components/schemas/DataProcessReqs'
+        dataAnalysisReqs:
+          $ref: 'TS29482_AIMLES_DataManagement.yaml#/components/schemas/DataProcessReqs'
+        dataProcSched:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ScheduledCommunicationTime'
+
+    CltDataProcResp:
+      description: Contains the outcome of the successful client data processing.
+      type: object
+      properties:
+        dataPrepOutputs:
+          $ref: 'TS29482_AIMLES_DataManagement.yaml#/components/schemas/AggregatedDataPrepOutputs'
+        dataAnalysisOutputs:
+          $ref: 'TS29482_AIMLES_DataManagement.yaml#/components/schemas/AggregatedDataAnaOutputs'
+        timestamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      anyOf:
+        - required: [dataPrepOutputs]
+        - required: [dataAnalysisOutputs]

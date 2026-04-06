@@ -1,7 +1,7 @@
 /*
  * ssc_modes_1.h
  *
- * 
+ * Contains a list of SSC Modes
  */
 
 #ifndef _OpenAPI_ssc_modes_1_H_
@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ssc_modes_1_s OpenAPI_ssc_modes_1_t;
 #include "ssc_mode.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ssc_modes_1_s OpenAPI_ssc_modes_1_t;
-typedef struct OpenAPI_ssc_modes_1_s {
+struct OpenAPI_ssc_modes_1_s {
     OpenAPI_ssc_mode_e default_ssc_mode;
     OpenAPI_list_t *allowed_ssc_modes;
-} OpenAPI_ssc_modes_1_t;
+};
 
 OpenAPI_ssc_modes_1_t *OpenAPI_ssc_modes_1_create(
     OpenAPI_ssc_mode_e default_ssc_mode,

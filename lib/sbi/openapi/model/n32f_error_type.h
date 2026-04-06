@@ -1,7 +1,7 @@
 /*
  * n32f_error_type.h
  *
- * 
+ * Type of error while processing N32-f message
  */
 
 #ifndef _OpenAPI_n32f_error_type_H_
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_n32f_error_type_NULL = 0, OpenAPI_n32f_error_type_INTEGRITY_CHECK_FAILED, OpenAPI_n32f_error_type_INTEGRITY_CHECK_ON_MODIFICATIONS_FAILED, OpenAPI_n32f_error_type_MODIFICATIONS_INSTRUCTIONS_FAILED, OpenAPI_n32f_error_type_DECIPHERING_FAILED, OpenAPI_n32f_error_type_MESSAGE_RECONSTRUCTION_FAILED, OpenAPI_n32f_error_type_CONTEXT_NOT_FOUND, OpenAPI_n32f_error_type_INTEGRITY_KEY_EXPIRED, OpenAPI_n32f_error_type_ENCRYPTION_KEY_EXPIRED, OpenAPI_n32f_error_type_POLICY_MISMATCH } OpenAPI_n32f_error_type_e;
+typedef enum { OpenAPI_n32f_error_type_NULL = 0, OpenAPI_n32f_error_type_INTEGRITY_CHECK_FAILED, OpenAPI_n32f_error_type_INTEGRITY_CHECK_ON_MODIFICATIONS_FAILED, OpenAPI_n32f_error_type_MODIFICATIONS_INSTRUCTIONS_FAILED, OpenAPI_n32f_error_type_DECIPHERING_FAILED, OpenAPI_n32f_error_type_MESSAGE_RECONSTRUCTION_FAILED, OpenAPI_n32f_error_type_CONTEXT_NOT_FOUND, OpenAPI_n32f_error_type_INTEGRITY_KEY_EXPIRED, OpenAPI_n32f_error_type_ENCRYPTION_KEY_EXPIRED, OpenAPI_n32f_error_type_POLICY_MISMATCH, OpenAPI_n32f_error_type_NETWORK_MAINTENANCE, OpenAPI_n32f_error_type_INSUFFICIENT_RESOURCES, OpenAPI_n32f_error_type_NO_CONNECTION_DUE_TO_CONTRACT, OpenAPI_n32f_error_type_IDLE_N32F_CONNECTION, OpenAPI_n32f_error_type_SWITCHING_TO_ANOTHER_RI, OpenAPI_n32f_error_type_NO_CONNECTION_DUE_TO_CONNECTIVITY } OpenAPI_n32f_error_type_e;
 
 char* OpenAPI_n32f_error_type_ToString(OpenAPI_n32f_error_type_e n32f_error_type);
 

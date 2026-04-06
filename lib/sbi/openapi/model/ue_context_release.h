@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_context_release_s OpenAPI_ue_context_release_t;
 #include "ng_ap_cause.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_context_release_s OpenAPI_ue_context_release_t;
-typedef struct OpenAPI_ue_context_release_s {
+struct OpenAPI_ue_context_release_s {
     char *supi;
     bool is_unauthenticated_supi;
     int unauthenticated_supi;
     struct OpenAPI_ng_ap_cause_s *ngap_cause;
-} OpenAPI_ue_context_release_t;
+};
 
 OpenAPI_ue_context_release_t *OpenAPI_ue_context_release_create(
     char *supi,

@@ -1,0 +1,578 @@
+openapi: 3.0.0
+
+info:
+  title: SS_LocationReporting
+  description: |
+    API for SEAL Location Reporting Configuration.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.3.0"
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-lr/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /trigger-configurations:
+    post:
+      description: Creates a new location reporting configuration.
+      operationId: CreateLocReportingConfig
+      tags:
+        - SEAL Location Reporting Configurations (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationReportConfiguration'
+      responses:
+        '201':
+          description: Location reporting configuration resource is created sucessfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationReportConfiguration'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        NotifyLocationTriggerEvent:
+          '{$request.body#/notifUri}':
+            post:
+              summary: Notify on location event.
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/LocationReport'
+              responses:
+                '204':
+                  description: The notification is successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+        AdaptiveLocationConfig:
+          '{$request.body#/notifUri}/configure':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AdaptConfigNotif'
+              responses:
+                '200':
+                  description: >
+                    OK. The Adaptive Location Configuration
+                    Notification is successfully received and Adaptive Location
+                    Configuration related information is returned in the response body.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/AdaptConfigNotifResp'
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /trigger-configurations/{configurationId}:
+    get:
+      description: Retrieves an individual SEAL location reporting configuration information.
+      operationId: RetrieveLocReportingConfig
+      tags:
+        - Individual SEAL Location Reporting Configuration (Document)
+      parameters:
+        - name: configurationId
+          in: path
+          description: String identifying an individual configuration resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The location reporting configuration information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationReportConfiguration'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      description: Updates an individual SEAL location reporting configuration.
+      operationId: UpdateLocReportingConfig
+      tags:
+        - Individual SEAL Location Reporting Configuration (Document)
+      parameters:
+        - name: configurationId
+          in: path
+          description: String identifying an individual configuration resource.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Configuration information to be updated in location management server.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationReportConfiguration'
+      responses:
+        '200':
+          description: The configuration is updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationReportConfiguration'
+        '204':
+          description: No Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      description: Deletes an individual SEAL location reporting configuration.
+      operationId: DeleteLocReportingConfig
+      tags:
+        - Individual SEAL Location Reporting Configuration (Document)
+      parameters:
+        - name: configurationId
+          in: path
+          description: String identifying an individual configuration resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The individual configuration matching configurationId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      description: Modify an existing SEAL Location Reporting Configuration.
+      operationId: ModifyLocReportingConfig
+      tags:
+        - Individual SEAL Location Reporting Configuration (Document)
+      parameters:
+        - name: configurationId
+          in: path
+          description: Identifier of an individual SEAL location reporting configuration.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/LocationReportConfigurationPatch'
+      responses:
+        '200':
+          description: >
+            The individual SEAL location reporting configuration is modified successfully and
+            a representation of the updated SEAL location reporting configuration is returned
+            in the request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationReportConfiguration'
+        '204':
+          description: >
+            No Content. The individual SEAL location reporting configuration is
+            modified successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    LocationReportConfiguration:
+      description: Represents the location reporting configuration information.
+      type: object
+      properties:
+        valServerId:
+          type: string
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        immRep:
+          type: boolean
+        monDur:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        repPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        accuracy:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/Accuracy'
+        valSvcAreaIds:
+          type: array
+          minItems: 1
+          items:
+            $ref: 'TS29549_SS_VALServiceAreaConfiguration.yaml#/components/schemas/ValSvcAreaId'
+          description: >
+            Represents the VAL service area ID(s).
+        triggCriteria:
+          $ref: '#/components/schemas/TriggeringCriteria'
+        adaptRep:
+          $ref: '#/components/schemas/AdaptiveReporting'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        report:
+          $ref: '#/components/schemas/LocationReport'
+      required:
+        - valServerId
+        - valTgtUe
+
+    LocationReportConfigurationPatch:
+      description: Represents the location reporting configuration information patch.
+      type: object
+      properties:
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        monDur:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        repPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        accuracy:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/Accuracy'
+        valSvcAreaIds:
+          type: array
+          minItems: 1
+          items:
+            $ref: 'TS29549_SS_VALServiceAreaConfiguration.yaml#/components/schemas/ValSvcAreaId'
+          description: >
+            Represents the VAL service area ID(s).
+        triggCriteria:
+          $ref: '#/components/schemas/TriggeringCriteria'
+
+    TriggeringCriteria:
+      description: Represents the location reporting triggering criteria.
+      type: object
+      properties:
+        reportingMode:
+          $ref: 'TS29508_Nsmf_EventExposure.yaml#/components/schemas/NotificationMethod'
+        repPer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        locChgCond:
+          $ref: '#/components/schemas/LocChangeCond'
+        ioInd:
+          $ref: '#/components/schemas/InsideOutsideInd'
+        repSchedules:
+          type: array
+          minItems: 1
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ScheduledCommunicationTime'
+          description: >
+            Indicates the requested reporting schedule, e.g., day(s) of the week
+            and/or time period(s) for the location reporting.
+      required:
+        - reportingMode
+
+    LocationReport:
+      description: Represents the location trigger report.
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+          description: >
+            Represents the identifier of the subscription to which the location
+            reporting notification is related.
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        locInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        timeStamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - subscriptionId
+        - valTgtUe
+        - locInfo
+
+    AdaptConfigNotif:
+      description: Represents the adaptive reporting notification.
+      type: object
+      properties:
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        suggConfig:
+          $ref: '#/components/schemas/TriggeringCriteria'
+      required:
+        - valTgtUe
+        - suggConfig
+
+    AdaptConfigNotifResp:
+      description: Represents the adaptive reporting notification response.
+      type: object
+      properties:
+        confirmation:
+          $ref: '#/components/schemas/Confirmation'
+      required:
+        - confirmation
+
+# Simple data types and Enumerations
+    InsideOutsideInd:
+      anyOf:
+      - type: string
+        enum:
+           - INSIDE
+           - OUTSIDE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration and is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents a desired condition of the location reporting,
+        e.g., inside or outside the given area.  
+        Possible values are:
+        - INSIDE: Indicates that the reporting shall occur when the UE is inside the given location.
+        - OUTSIDE: Indicates that the reporting shall occur when the UE is outside the given
+            location.
+
+    LocChangeCond:
+      anyOf:
+      - type: string
+        enum:
+           - CELL
+           - NODEB
+           - TA_RA
+           - WLAN_AN
+           - CIVIC_ADDR
+           - GPS
+           - SAI
+           - ECGI
+           - RAT
+           - VAL_SERVICE_AREA
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration and is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents a desired condition of the requested location change.  
+        Possible values are:
+        - CELL: The condition is cell change.
+        - NODEB: The condition is eNodeB or gNodeB change.
+        - TA_RA: The condition is TA or RA change.
+        - WLAN_AN: The condition is WLAN access network change (e.g., SSID or BSSID change).
+        - CIVIC_ADDR: The condition is civic address change.
+        - GPS: The condition is GPS coordinate change.
+        - SAI: The condition is SAI change.
+        - ECGI: The condition is ECGI change.
+        - RAT: The condition is RAT change.
+        - VAL_SERVICE_AREA: The condition is VAL service area change.
+
+    AdaptiveReporting:
+      anyOf:
+      - type: string
+        enum:
+           - DIRECT_UPDATE
+           - SUGGESTIVE_UPDATE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration and is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents a desired adaptive reporting configuration mode.  
+        Possible values are:
+        - DIRECT_UPDATE: Indicates that the adaptive location configuration mode is to
+          directly update the LM Client once configuration is adjusted without prior validation.
+        - SUGGESTIVE_UPDATE: Indicates that the adaptive location configuration mode is to
+          suggest and validate the planned updates with the service consumer prior to applying
+          them to the LM Client.
+
+    Confirmation:
+      anyOf:
+      - type: string
+        enum:
+           - ACCEPT
+           - REJECT
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration and is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents a confirmation response.  
+        Possible values are:
+        - ACCEPT: Indicates the acceptance of the proposed action.
+        - REJECT: Indicates the rejection of the proposed action.

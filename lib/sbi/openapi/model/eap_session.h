@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_eap_session_s OpenAPI_eap_session_t;
 #include "auth_result.h"
 #include "links_value_schema.h"
 #include "server_addressing_info.h"
@@ -20,9 +21,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_eap_session_s OpenAPI_eap_session_t;
-typedef struct OpenAPI_eap_session_s {
-    bool is_eap_payload_null;
+struct OpenAPI_eap_session_s {
     char *eap_payload;
     char *k_seaf;
     OpenAPI_list_t* _links;
@@ -31,10 +30,9 @@ typedef struct OpenAPI_eap_session_s {
     char *supported_features;
     OpenAPI_list_t *pvs_info;
     char *msk;
-} OpenAPI_eap_session_t;
+};
 
 OpenAPI_eap_session_t *OpenAPI_eap_session_create(
-    bool is_eap_payload_null,
     char *eap_payload,
     char *k_seaf,
     OpenAPI_list_t* _links,

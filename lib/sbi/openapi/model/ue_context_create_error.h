@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_context_create_error_s OpenAPI_ue_context_create_error_t;
 #include "n2_info_content.h"
 #include "ng_ap_cause.h"
 #include "problem_details.h"
@@ -20,12 +21,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_context_create_error_s OpenAPI_ue_context_create_error_t;
-typedef struct OpenAPI_ue_context_create_error_s {
+struct OpenAPI_ue_context_create_error_s {
     struct OpenAPI_problem_details_s *error;
     struct OpenAPI_ng_ap_cause_s *ngap_cause;
     struct OpenAPI_n2_info_content_s *target_to_source_failure_data;
-} OpenAPI_ue_context_create_error_t;
+};
 
 OpenAPI_ue_context_create_error_t *OpenAPI_ue_context_create_error_create(
     OpenAPI_problem_details_t *error,

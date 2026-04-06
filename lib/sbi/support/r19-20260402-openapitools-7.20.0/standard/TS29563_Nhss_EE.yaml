@@ -1,0 +1,564 @@
+openapi: 3.0.0
+
+info:
+  version: '1.3.0'
+  title: 'Nhss_EE'
+  description: |
+    HSS Event Exposure.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.563 HSS Services for Interworking With UDM, version 19.3.0
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.563/'
+
+servers:
+  - url: '{apiRoot}/nhss-ee/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nhss-ee
+
+paths:
+  /{ueId}/ee-subscriptions:
+    post:
+      summary: Subscribe
+      operationId: CreateEeSubscription
+      tags:
+        - EE Subscription (Collection)
+      parameters:
+        - name: ueId
+          in: path
+          description: IMSI of the subscriber or the identity of a group of UEs
+          required: true
+          schema:
+            $ref: '#/components/schemas/UeIdOrGroupId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EeSubscription'
+        required: true
+      responses:
+        '201':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedEeSubscription'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/nhss-ee/v1/{ueId}/ee-subscriptions/{subscriptionId}
+              required: true
+              schema:
+                type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/EeSubscriptionError'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          description: Not Implemented
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/EeSubscriptionError'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+      callbacks:
+        eventOccurrenceNotification:
+          '{$request.body#/callbackReference}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/MonitoringReport'
+                      minItems: 1
+              responses:
+                '204':
+                  description: Successful Notification response
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  description: Unexpected error
+
+  /{ueId}/ee-subscriptions/{subscriptionId}:
+    delete:
+      summary: Unsubscribe
+      operationId: DeleteEeSubscription
+      tags:
+        - Delete EE Subscription
+      parameters:
+        - name: ueId
+          in: path
+          description: IMSI of the subscriber or the identity of a group of UEs
+          required: true
+          schema:
+            $ref: '#/components/schemas/UeIdOrGroupId'
+        - name: subscriptionId
+          in: path
+          description: Id of the EE Subscription
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successful response
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+    patch:
+      summary: Patch
+      operationId: UpdateEeSubscription
+      tags:
+        - Update EE Subscription
+      parameters:
+        - name: ueId
+          in: path
+          description: IMSI of the subscriber or the identity of a group of UEs
+          required: true
+          schema:
+            $ref: '#/components/schemas/UeIdOrGroupId'
+        - name: subscriptionId
+          in: path
+          description: Id of the EE Subscription
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '204':
+          description: Successful response
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nhss-ee: Access to the nhss-ee API
+
+  schemas:
+
+# STRUCTURED TYPES:
+
+    EeSubscription:
+      description: >
+        It represents the request body of the subscription request sent to HSS, containing data
+        related to the subscription to be created, such as the SCEF, Monitoring Configurations and
+        reporting options
+      type: object
+      required:
+        - callbackReference
+      properties:
+        callbackReference:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        scefId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DiameterIdentity'
+        scefDiamRealm:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DiameterIdentity'
+        monitoringConfigurations:
+          description: >
+            A map (list of key-value pairs where ReferenceId serves as key) of
+            MonitoringConfigurations
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MonitoringConfiguration'
+          minProperties: 1
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        reportingOptions:
+          $ref: '#/components/schemas/ReportingOptions'
+        mtcProviderInformation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+        externalIdentifier:
+          type: string
+
+    CreatedEeSubscription:
+      description: >
+        It represents the response body of the subscription request, containing data of the created
+        subscription in the HSS
+      type: object
+      required:
+        - eeSubscription
+      properties:
+        eeSubscription:
+            $ref: '#/components/schemas/EeSubscription'
+        eventReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitoringReport'
+          minItems: 1
+        failedMonitoringConfigs:
+          description: >
+            A map (list of key-value pairs where referenceId converted from integer to string serves
+            as key; see clause 6.4.6.3.2) of FailedMonitoringConfiguration
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FailedMonitoringConfiguration'
+          minProperties: 1
+        currentStatusNotAvailableList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventType'
+          minItems: 1
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    FailedMonitoringConfiguration:
+      description: >
+        Contains the event type and failed cause of the failed Monitoring Configuration
+        in the EE subscription
+      type: object
+      required:
+        - eventType
+        - failedCause
+      properties:
+        eventType:
+          $ref: '#/components/schemas/EventType'
+        failedCause:
+          $ref: '#/components/schemas/FailedCause'
+
+    MonitoringConfiguration:
+      description: >
+        Contains data for each Monitoring Configuration (such as event type, etc.) and
+        the configuration data needed depending on each event type
+      type: object
+      required:
+        - eventType
+      properties:
+        eventType:
+          $ref: '#/components/schemas/EventType'
+        immediateFlag:
+          type: boolean
+        locationReportingConfiguration:
+          $ref: '#/components/schemas/LocationReportingConfiguration'
+        lossConnectivityConfiguration:
+          $ref: '#/components/schemas/LossConnectivityConfiguration'
+        reachabilityForDataConfiguration:
+          $ref: '#/components/schemas/ReachabilityForDataConfiguration'
+        pduSessionStatusCfg:
+          $ref: '#/components/schemas/PduSessionStatusCfg'
+        idleStatusInd:
+          type: boolean
+          default: false
+
+    MonitoringReport:
+      description: Contains data for each Monitoring Event Report sent by the HSS
+      type: object
+      required:
+        - referenceId
+        - eventType
+        - timeStamp
+      properties:
+        referenceId:
+          $ref: 'TS29503_Nudm_EE.yaml#/components/schemas/ReferenceId'
+        eventType:
+          $ref: '#/components/schemas/EventType'
+        timeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        report:
+          $ref: '#/components/schemas/Report'
+
+    ReportingOptions:
+      description: >
+        Contains the different reporting options associated to a given subscription created in HSS
+      type: object
+      properties:
+        maxNumOfReports:
+          $ref: '#/components/schemas/MaxNumOfReports'
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        reportPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+
+    Report:
+      description: Contains data for a given Monitoring Event Report
+      type: object
+      properties:
+        reachabilityForSmsReport:
+          $ref: '#/components/schemas/ReachabilityForSmsReport'
+        reachabilityForDataReport:
+          $ref: '#/components/schemas/ReachabilityForDataReport'
+        lossConnectivityReport:
+          $ref: 'TS29503_Nudm_EE.yaml#/components/schemas/LossConnectivityReport'
+        locationReport:
+          $ref: 'TS29503_Nudm_EE.yaml#/components/schemas/LocationReport'
+        pdnConnectivityStatReport:
+          $ref: 'TS29503_Nudm_EE.yaml#/components/schemas/PdnConnectivityStatReport'
+
+    ReachabilityForSmsReport:
+      description: >
+        Contains data for a Monitoring Event Report, specific to the 'Reachability For SMS'
+        event type
+      type: object
+      required:
+        - reachabilitySmsStatus
+      properties:
+        reachabilitySmsStatus:
+          type: boolean
+        maxAvailabilityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+
+    ReachabilityForDataReport:
+      description: >
+        Contains data for a Monitoring Event Report, specific to the 'Reachability For Data'
+        event type
+      type: object
+      required:
+        - reachabilityDataStatus
+      properties:
+        reachabilityDataStatus:
+          type: boolean
+        maxAvailabilityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        idleStatusIndication:
+          $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/IdleStatusIndication'
+
+    LossConnectivityConfiguration:
+      description: >
+        Contains data needed for a Monitoring Configuration, specific to the 'Loss of Connectivity'
+        event type
+      type: object
+      properties:
+        maxDetectionTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+
+    LocationReportingConfiguration:
+      description: >
+        Contains data needed for a Monitoring Configuration, specific to the 'Location Reporting'
+        event type
+      type: object
+      required:
+        - currentLocation
+      properties:
+        currentLocation:
+          type: boolean
+        accuracy:
+          $ref: '#/components/schemas/LocationAccuracy'
+
+    ReachabilityForDataConfiguration:
+      description: >
+        Contains data needed for a Monitoring Configuration, specific to the 'Reachability for Data'
+        event type
+      type: object
+      anyOf:
+        - required: [ maximumLatency ]
+        - required: [ maximumResponseTime ]
+        - required: [ suggestedPacketNumDl ]
+      properties:
+        maximumLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        maximumResponseTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        suggestedPacketNumDl:
+          type: integer
+          minimum: 1
+
+    PduSessionStatusCfg:
+      description: >
+        Contains data needed for a Monitoring Configuration, specific to the 'PDN Connectivity
+        Status' event type
+      type: object
+      properties:
+        apn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+
+    EeSubscriptionErrorAddInfo:
+      description: Additional Information for EE Subscription Error.
+      type: object
+      properties:
+        failedMonitoringConfigs:
+          description: >
+            A map (list of key-value pairs where referenceId converted from integer to string serves
+            as key; see clause 6.4.6.3.2) of FailedMonitoringConfiguration
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/FailedMonitoringConfiguration'
+          minProperties: 1
+
+    EeSubscriptionError:
+      description: EE Subscription Error.
+      allOf:
+        - $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        - $ref: '#/components/schemas/EeSubscriptionErrorAddInfo'
+
+# SIMPLE TYPES:
+
+    Imsi:
+      description: IMSI of the UE
+      type: string
+      pattern: '^(imsi-[0-9]{5,15})$'
+
+    UeIdOrGroupId:
+      description: Contains the UE identifier or the Group Identifier of the UE
+      type: string
+      pattern: '^(imsi-[0-9]{5,15}|extgroupid-[^@]+@[^@]+|.+$)'
+
+    MaxNumOfReports:
+      description: Maximum number of events to be reported for events in a given subscription
+      type: integer
+      minimum: 1
+
+# ENUMS:
+
+    EventType:
+      description: Type of Monitoring Event
+      anyOf:
+        - type: string
+          enum:
+          - LOSS_OF_CONNECTIVITY
+          - UE_REACHABILITY_FOR_DATA
+          - UE_REACHABILITY_FOR_SMS
+          - LOCATION_REPORTING
+          - COMMUNICATION_FAILURE
+          - AVAILABILITY_AFTER_DDN_FAILURE
+          - PDN_CONNECTIVITY_STATUS
+        - type: string
+
+    LocationAccuracy:
+      description: Location accuracy used in the 'Location Reporting' event type
+      anyOf:
+        - type: string
+          enum:
+          - CELL_LEVEL
+          - RAN_NODE_LEVEL
+          - TA_LEVEL
+        - type: string
+
+    FailedCause:
+      description: >
+        Indicates the Failed cause of the failed Monitoring Configuration in the EE subscription
+      anyOf:
+        - type: string
+          enum:
+          - MTC_PROVIDER_NOT_ALLOWED
+          - MONITORING_NOT_ALLOWED
+          - UNSUPPORTED_MONITORING_EVENT_TYPE
+          - UNSUPPORTED_MONITORING_REPORT_OPTIONS
+          - UNSPECIFIED
+        - type: string

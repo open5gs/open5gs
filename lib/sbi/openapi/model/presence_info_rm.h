@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_presence_info_rm_s OpenAPI_presence_info_rm_t;
 #include "ecgi.h"
 #include "global_ran_node_id.h"
 #include "ncgi.h"
@@ -22,8 +23,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_presence_info_rm_s OpenAPI_presence_info_rm_t;
-typedef struct OpenAPI_presence_info_rm_s {
+struct OpenAPI_presence_info_rm_s {
     char *pra_id;
     char *additional_pra_id;
     OpenAPI_presence_state_e presence_state;
@@ -32,7 +32,7 @@ typedef struct OpenAPI_presence_info_rm_s {
     OpenAPI_list_t *ncgi_list;
     OpenAPI_list_t *global_ran_node_id_list;
     OpenAPI_list_t *globale_nb_id_list;
-} OpenAPI_presence_info_rm_t;
+};
 
 OpenAPI_presence_info_rm_t *OpenAPI_presence_info_rm_create(
     char *pra_id,

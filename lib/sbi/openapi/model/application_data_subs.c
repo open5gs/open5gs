@@ -6,19 +6,22 @@
 
 OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_create(
     char *notification_uri,
+    char *notif_id,
     OpenAPI_list_t *data_filters,
     char *expiry,
     bool is_imm_rep,
     int imm_rep,
     OpenAPI_list_t *am_influ_entries,
     char *supported_features,
-    OpenAPI_list_t *reset_ids
+    OpenAPI_list_t *reset_ids,
+    OpenAPI_list_t *imm_reports
 )
 {
     OpenAPI_application_data_subs_t *application_data_subs_local_var = ogs_malloc(sizeof(OpenAPI_application_data_subs_t));
     ogs_assert(application_data_subs_local_var);
 
     application_data_subs_local_var->notification_uri = notification_uri;
+    application_data_subs_local_var->notif_id = notif_id;
     application_data_subs_local_var->data_filters = data_filters;
     application_data_subs_local_var->expiry = expiry;
     application_data_subs_local_var->is_imm_rep = is_imm_rep;
@@ -26,6 +29,7 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_create(
     application_data_subs_local_var->am_influ_entries = am_influ_entries;
     application_data_subs_local_var->supported_features = supported_features;
     application_data_subs_local_var->reset_ids = reset_ids;
+    application_data_subs_local_var->imm_reports = imm_reports;
 
     return application_data_subs_local_var;
 }
@@ -40,6 +44,10 @@ void OpenAPI_application_data_subs_free(OpenAPI_application_data_subs_t *applica
     if (application_data_subs->notification_uri) {
         ogs_free(application_data_subs->notification_uri);
         application_data_subs->notification_uri = NULL;
+    }
+    if (application_data_subs->notif_id) {
+        ogs_free(application_data_subs->notif_id);
+        application_data_subs->notif_id = NULL;
     }
     if (application_data_subs->data_filters) {
         OpenAPI_list_for_each(application_data_subs->data_filters, node) {
@@ -70,6 +78,13 @@ void OpenAPI_application_data_subs_free(OpenAPI_application_data_subs_t *applica
         OpenAPI_list_free(application_data_subs->reset_ids);
         application_data_subs->reset_ids = NULL;
     }
+    if (application_data_subs->imm_reports) {
+        OpenAPI_list_for_each(application_data_subs->imm_reports, node) {
+            OpenAPI_application_data_change_notif_free(node->data);
+        }
+        OpenAPI_list_free(application_data_subs->imm_reports);
+        application_data_subs->imm_reports = NULL;
+    }
     ogs_free(application_data_subs);
 }
 
@@ -91,6 +106,13 @@ cJSON *OpenAPI_application_data_subs_convertToJSON(OpenAPI_application_data_subs
     if (cJSON_AddStringToObject(item, "notificationUri", application_data_subs->notification_uri) == NULL) {
         ogs_error("OpenAPI_application_data_subs_convertToJSON() failed [notification_uri]");
         goto end;
+    }
+
+    if (application_data_subs->notif_id) {
+    if (cJSON_AddStringToObject(item, "notifId", application_data_subs->notif_id) == NULL) {
+        ogs_error("OpenAPI_application_data_subs_convertToJSON() failed [notif_id]");
+        goto end;
+    }
     }
 
     if (application_data_subs->data_filters) {
@@ -160,6 +182,22 @@ cJSON *OpenAPI_application_data_subs_convertToJSON(OpenAPI_application_data_subs
     }
     }
 
+    if (application_data_subs->imm_reports) {
+    cJSON *imm_reportsList = cJSON_AddArrayToObject(item, "immReports");
+    if (imm_reportsList == NULL) {
+        ogs_error("OpenAPI_application_data_subs_convertToJSON() failed [imm_reports]");
+        goto end;
+    }
+    OpenAPI_list_for_each(application_data_subs->imm_reports, node) {
+        cJSON *itemLocal = OpenAPI_application_data_change_notif_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_application_data_subs_convertToJSON() failed [imm_reports]");
+            goto end;
+        }
+        cJSON_AddItemToArray(imm_reportsList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -169,6 +207,7 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
     OpenAPI_application_data_subs_t *application_data_subs_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *notification_uri = NULL;
+    cJSON *notif_id = NULL;
     cJSON *data_filters = NULL;
     OpenAPI_list_t *data_filtersList = NULL;
     cJSON *expiry = NULL;
@@ -178,6 +217,8 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
     cJSON *supported_features = NULL;
     cJSON *reset_ids = NULL;
     OpenAPI_list_t *reset_idsList = NULL;
+    cJSON *imm_reports = NULL;
+    OpenAPI_list_t *imm_reportsList = NULL;
     notification_uri = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "notificationUri");
     if (!notification_uri) {
         ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [notification_uri]");
@@ -186,6 +227,14 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
     if (!cJSON_IsString(notification_uri)) {
         ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [notification_uri]");
         goto end;
+    }
+
+    notif_id = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "notifId");
+    if (notif_id) {
+    if (!cJSON_IsString(notif_id) && !cJSON_IsNull(notif_id)) {
+        ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [notif_id]");
+        goto end;
+    }
     }
 
     data_filters = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "dataFilters");
@@ -281,15 +330,41 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJS
         }
     }
 
+    imm_reports = cJSON_GetObjectItemCaseSensitive(application_data_subsJSON, "immReports");
+    if (imm_reports) {
+        cJSON *imm_reports_local = NULL;
+        if (!cJSON_IsArray(imm_reports)) {
+            ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [imm_reports]");
+            goto end;
+        }
+
+        imm_reportsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(imm_reports_local, imm_reports) {
+            if (!cJSON_IsObject(imm_reports_local)) {
+                ogs_error("OpenAPI_application_data_subs_parseFromJSON() failed [imm_reports]");
+                goto end;
+            }
+            OpenAPI_application_data_change_notif_t *imm_reportsItem = OpenAPI_application_data_change_notif_parseFromJSON(imm_reports_local);
+            if (!imm_reportsItem) {
+                ogs_error("No imm_reportsItem");
+                goto end;
+            }
+            OpenAPI_list_add(imm_reportsList, imm_reportsItem);
+        }
+    }
+
     application_data_subs_local_var = OpenAPI_application_data_subs_create (
         ogs_strdup(notification_uri->valuestring),
+        notif_id && !cJSON_IsNull(notif_id) ? ogs_strdup(notif_id->valuestring) : NULL,
         data_filters ? data_filtersList : NULL,
         expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
         imm_rep ? true : false,
         imm_rep ? imm_rep->valueint : 0,
         am_influ_entries ? am_influ_entriesList : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
-        reset_ids ? reset_idsList : NULL
+        reset_ids ? reset_idsList : NULL,
+        imm_reports ? imm_reportsList : NULL
     );
 
     return application_data_subs_local_var;
@@ -314,6 +389,13 @@ end:
         }
         OpenAPI_list_free(reset_idsList);
         reset_idsList = NULL;
+    }
+    if (imm_reportsList) {
+        OpenAPI_list_for_each(imm_reportsList, node) {
+            OpenAPI_application_data_change_notif_free(node->data);
+        }
+        OpenAPI_list_free(imm_reportsList);
+        imm_reportsList = NULL;
     }
     return NULL;
 }

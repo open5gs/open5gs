@@ -63,7 +63,8 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.service.name =
-        (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION;
+        OpenAPI_service_name_ToString(
+                OpenAPI_service_name_npcf_policyauthorization);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
@@ -79,7 +80,9 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
     ogs_assert(server);
 
     memset(&header, 0, sizeof(header));
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION;
+    header.service.name =
+        OpenAPI_service_name_ToString(
+                OpenAPI_service_name_npcf_policyauthorization);
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
     header.resource.component[1] = (char *)sess->app_session.af.id;
@@ -655,7 +658,8 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.service.name =
-        (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION;
+        OpenAPI_service_name_ToString(
+                OpenAPI_service_name_npcf_policyauthorization);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
@@ -671,7 +675,9 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_create_video(
     ogs_assert(server);
 
     memset(&header, 0, sizeof(header));
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION;
+    header.service.name =
+        OpenAPI_service_name_ToString(
+                OpenAPI_service_name_npcf_policyauthorization);
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_APP_SESSIONS;
     header.resource.component[1] = (char *)sess->app_session.af.id;

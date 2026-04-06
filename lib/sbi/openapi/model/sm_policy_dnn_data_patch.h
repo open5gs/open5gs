@@ -12,22 +12,30 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_policy_dnn_data_patch_s OpenAPI_sm_policy_dnn_data_patch_t;
+#include "policy_counter_info_rm.h"
+#include "restricted_status.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_policy_dnn_data_patch_s OpenAPI_sm_policy_dnn_data_patch_t;
-typedef struct OpenAPI_sm_policy_dnn_data_patch_s {
+struct OpenAPI_sm_policy_dnn_data_patch_s {
     char *dnn;
     bool is_bdt_ref_ids_null;
     OpenAPI_list_t* bdt_ref_ids;
-} OpenAPI_sm_policy_dnn_data_patch_t;
+    OpenAPI_list_t *restri_status;
+    bool is_spend_lim_info_null;
+    OpenAPI_list_t* spend_lim_info;
+};
 
 OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_create(
     char *dnn,
     bool is_bdt_ref_ids_null,
-    OpenAPI_list_t* bdt_ref_ids
+    OpenAPI_list_t* bdt_ref_ids,
+    OpenAPI_list_t *restri_status,
+    bool is_spend_lim_info_null,
+    OpenAPI_list_t* spend_lim_info
 );
 void OpenAPI_sm_policy_dnn_data_patch_free(OpenAPI_sm_policy_dnn_data_patch_t *sm_policy_dnn_data_patch);
 OpenAPI_sm_policy_dnn_data_patch_t *OpenAPI_sm_policy_dnn_data_patch_parseFromJSON(cJSON *sm_policy_dnn_data_patchJSON);

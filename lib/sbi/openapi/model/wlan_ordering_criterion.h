@@ -1,7 +1,7 @@
 /*
  * wlan_ordering_criterion.h
  *
- * Possible values are: - TIME_SLOT_START: Indicates the order of time slot start. - NUMBER_OF_UES: Indicates the order of number of UEs. - RSSI: Indicates the order of RSSI. - RTT: Indicates the order of RTT. - TRAFFIC_INFO: Indicates the order of Traffic information. 
+ * 
  */
 
 #ifndef _OpenAPI_wlan_ordering_criterion_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "wlan_ordering_criterion_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_wlan_ordering_criterion_s OpenAPI_wlan_ordering_criterion_t;
-typedef struct OpenAPI_wlan_ordering_criterion_s {
-} OpenAPI_wlan_ordering_criterion_t;
+typedef enum { OpenAPI_wlan_ordering_criterion_NULL = 0, OpenAPI_wlan_ordering_criterion_TIME_SLOT_START, OpenAPI_wlan_ordering_criterion_NUMBER_OF_UES, OpenAPI_wlan_ordering_criterion_RSSI, OpenAPI_wlan_ordering_criterion_RTT, OpenAPI_wlan_ordering_criterion_TRAFFIC_INFO } OpenAPI_wlan_ordering_criterion_e;
 
-OpenAPI_wlan_ordering_criterion_t *OpenAPI_wlan_ordering_criterion_create(
-);
-void OpenAPI_wlan_ordering_criterion_free(OpenAPI_wlan_ordering_criterion_t *wlan_ordering_criterion);
-OpenAPI_wlan_ordering_criterion_t *OpenAPI_wlan_ordering_criterion_parseFromJSON(cJSON *wlan_ordering_criterionJSON);
-cJSON *OpenAPI_wlan_ordering_criterion_convertToJSON(OpenAPI_wlan_ordering_criterion_t *wlan_ordering_criterion);
-OpenAPI_wlan_ordering_criterion_t *OpenAPI_wlan_ordering_criterion_copy(OpenAPI_wlan_ordering_criterion_t *dst, OpenAPI_wlan_ordering_criterion_t *src);
+char* OpenAPI_wlan_ordering_criterion_ToString(OpenAPI_wlan_ordering_criterion_e wlan_ordering_criterion);
+
+OpenAPI_wlan_ordering_criterion_e OpenAPI_wlan_ordering_criterion_FromString(char* wlan_ordering_criterion);
 
 #ifdef __cplusplus
 }

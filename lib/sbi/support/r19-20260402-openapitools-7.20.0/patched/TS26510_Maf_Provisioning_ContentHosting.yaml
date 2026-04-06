@@ -1,0 +1,486 @@
+openapi: 3.0.0
+info:
+  title: Maf_Provisioning_ContentHosting
+  version: 1.2.0
+  description: |
+    Media Delivery: Content Hosting Provisioning API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Maf_Provisioning_ContentHosting
+    description: 'Media Delivery: Content Hosting Provisioning API'
+
+externalDocs:
+  description: 'TS 26.510 V19.1.0; Media Delivery; Interactions and APIs for media session handling'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.510/'
+
+servers:
+  - url: '{apiRoot}/3gpp-maf-provisioning/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 26.510 clause 7.1.3.
+
+security:
+  - {}
+  - OAuth2: [] 
+
+paths:
+  /provisioning-sessions/{provisioningSessionId}/content-hosting-configuration:
+    parameters:
+      - name: provisioningSessionId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The resource identifier of an existing Provisioning Session.'
+    post:
+      operationId: createContentHostingConfiguration
+      summary: 'Create and upload the Content Hosting Configuration for the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - content-hosting-configuration_create
+      requestBody:
+        description: 'A JSON representation of a Content Hosting Configuration'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentHostingConfiguration'
+      responses:
+        '201': # Created
+          description: 'Content Hosting Configuration Created'
+          headers:
+            Location:
+              description: 'URL of the newly created Content Hosting Configuration (same as request URL).'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentHostingConfiguration'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    get:
+      operationId: retrieveContentHostingConfiguration
+      summary: 'Retrieve the Content Hosting Configuration of the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - content-hosting-configuration_retrieve
+      responses:
+        '200': # OK
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentHostingConfiguration'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      operationId: replaceContentHostingConfiguration
+      summary: 'Replace the Content Hosting Configuration for the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - content-hosting-configuration_replace
+      requestBody:
+        description: 'A JSON representation of a Content Hosting Configuration'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentHostingConfiguration'
+      responses:
+        '200': # OK
+          description: 'Content Hosting Configuration Replaced'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentHostingConfiguration'
+        '204': # No Content
+          description: 'Content Hosting Configuration Unchanged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      operationId: patchContentHostingConfiguration
+      summary: 'Patch the Content Hosting Configuration for the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - content-hosting-configuration_patch
+      requestBody:
+        description: 'A JSON representation of a Content Hosting Configuration'
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/ContentHostingConfiguration'
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/ContentHostingConfiguration'
+      responses:
+        '200': # OK
+          description: 'Patched Content Hosting Configuration'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentHostingConfiguration'
+        '204': # No Content
+          description: 'Content Hosting Configuration Unchanged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      operationId: destroyContentHostingConfiguration
+      summary: 'Destroy the current Content Hosting Configuration of the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - content-hosting-configuration_destroy
+      responses:
+        '204': # No Content
+          description: 'Destroyed Content Hosting Configuration'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+          
+  /provisioning-sessions/{provisioningSessionId}/content-hosting-configuration/purge:
+    parameters:
+        - name: provisioningSessionId
+          in: path
+          required: true
+          schema:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          description: A unique identifier of the Provisioning
+    post:
+      operationId: purgeContentHostingCache
+      summary: 'Purge the content of the cache for the Content Hosting Configuration of the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - content-hosting-configuration_purge-cache
+      requestBody:
+        description: 'The regular expression pattern for resources to purge from the cache'
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              properties:
+                pattern: 
+                  description: 'The regular expression'
+                  type: string
+      responses:
+        '200': # OK
+          description: 'Content Purged'
+          content:
+            application/json:
+              schema:
+                description: 'The aggregate number of cache entries purged in all 5GMSd AS instances distributing content for the requested Provisioning Session.'
+                type: integer
+                minimum: 1
+        '204': # No Content
+          description: 'No Content Purged'
+        '400': # Bad Request (e.g. syntactically invalid regular expression in request body)
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            content-hosting-configuration-create: Create the Content Hosting Configuration resource
+            content-hosting-configuration_retrieve: Retrieve the Content Hosting Configuration resource
+            content-hosting-configuration_replace: Replace the Content Hosting Configuration resource
+            content-hosting-configuration_patch: Patch the Content Hosting Configuration resource
+            content-hosting-configuration_destroy: Destroy the Content Hosting Configuration resource
+            content-hosting-configuration_purge-cache: Purge the cache associated with the Content Hosting Configuration resource
+
+  schemas:
+    IngestConfiguration:
+      type: object
+      description: 'A configuration for content ingest.'
+      required:
+        - mode
+        - protocol
+      properties:
+        mode:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ContentTransferMode'
+        protocol:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        baseURL:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+
+    PathRewriteRule:
+      type: object
+      description: 'A rule to manipulate URL paths.'
+      required:
+        - requestPathPattern
+        - mappedPath
+      properties:
+        requestPathPattern:
+          type: string
+        mappedPath:
+          type: string
+
+    BaseDistributionConfiguration:
+      type: object
+      description: 'Base data type for content distribution configurations.'
+      required:
+        - distributionId
+        - baseURL
+      properties:
+        distributionId:
+          type: string
+          description: 'A label that can be referenced by other resources in the Provisioning Session.'
+        mode:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ContentTransferMode'
+        affinityGroup:
+          type: string
+          description: >
+            A label used to indicate how physical endpoint(s) of 
+            the M4 service location exposed by this and other 
+            distribution configurations are deployed across 
+            resilience zones.
+        supplementaryDistributionNetworks:
+          type: array
+          items:
+            type: object
+            description: "A duple tying a type of supplementary distribution network to its distribution mode."
+            required:
+              - distributionNetworkType
+              - distributionMode
+            properties:
+              distributionNetworkType:
+                $ref: '#/components/schemas/DistributionNetworkType'
+              distributionMode:
+                $ref: '#/components/schemas/DistributionMode'
+        edgeResourcesConfigurationId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        contentPreparationTemplateId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        certificateId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        domainNameAlias:
+          type: string
+        baseURL:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+        entryPoint:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/RelativeMediaEntryPoint'
+        pathRewriteRules:
+          type: array
+          items:
+            $ref: '#/components/schemas/PathRewriteRule'
+          minItems: 1
+        cachingConfigurations:
+          type: array
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/CachingConfiguration'
+          minItems: 1
+        geoFencing:
+          type: object
+          required:
+            - locatorType
+            - locators
+          properties:
+            locatorType:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+            locators:
+              type: array
+              items: 
+                type: string
+                description: 'Format of individual locators depends on the locatorType.'
+              minItems: 1
+        urlSignature:
+          type: object
+          required:
+            - urlPattern
+            - tokenName
+            - passphraseName
+            - passphrase
+            - tokenExpiryName
+            - useIPAddress
+          properties:
+            urlPattern:
+              type: string
+            tokenName:
+              type: string
+            passphraseName:
+              type: string
+            passphrase:
+              type: string
+              minLength: 6
+              maxLength: 50
+            tokenExpiryName:
+              type: string
+            useIPAddress:
+              type: boolean
+            ipAddressName:
+              type: string
+
+    DistributionConfiguration:
+      description: 'A content distribution configuration.'
+      allOf:
+        - $ref: '#/components/schemas/BaseDistributionConfiguration'
+        - type: object
+          properties:
+            canonicalDomainName:
+              readOnly: true
+              type: string
+              description: 'Default Fully-Qualified Domain Name assigned by the Media AF for use at reference point M4 and M10.'
+
+    # Schema for the resource itself
+    ContentHostingConfiguration:
+      type: object
+      description: "A representation of a Content Hosting Configuration resource."
+      required:
+        - name
+        - ingestConfiguration
+        - distributionConfigurations
+      properties:
+        name:
+          type: string
+        ingestConfiguration:
+          $ref: '#/components/schemas/IngestConfiguration'
+        distributionConfigurations:
+          type: array
+          items:
+            $ref: '#/components/schemas/DistributionConfiguration'
+          minItems: 1
+
+    DistributionNetworkType:
+      description: "Type of distribution network."
+      anyOf:
+        - type: string
+          enum:
+            - DISTRIBUTION_NETWORK_EMBMS
+            - DISTRIBUTION_NETWORK_MBS
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+
+    DistributionMode:
+      description: "Mode of content distribution."
+      anyOf:
+        - type: string
+          enum:
+            - MODE_EXCLUSIVE
+            - MODE_HYBRID
+            - MODE_DYNAMIC
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.

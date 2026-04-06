@@ -1,0 +1,218 @@
+openapi: 3.0.0
+
+info:
+  title: Aimlec_MLModTngCapEva
+  version: 1.0.2
+  description: |
+    API for ML Model Training Capability Evaluation Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.560 V19.1.0; Artificial Intelligence / Machine Learning (AIML) Services – Service
+    Enabler Architecture Layer for Verticals (SEAL); Protocol Specification; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/24_series/24.560/'
+
+servers:
+  - url: '{apiRoot}/aimlec-ml-mtce/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /request:
+    post:
+      summary: >
+        Enables the AIMLE server to request the AIMLE client to perform ML model training
+        capability evaluation service operation.
+      operationId: MlModTrainCapEvaReq
+      tags:
+        - ML model training capability evaluation request
+      requestBody:
+        description: Contains the ML model training capability evaluation request information.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MlModTngCapEvalReq'
+      responses:
+        '200':
+          description: Contains the ML model training capability evaluation response information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MlModTngCapEvalResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+# Structured data types
+
+    MlModTngCapEvalReq:
+      description: Contains the ML model training capability evaluation request information.
+      type: object
+      required:
+      - aimleServerId
+      properties:
+        aimleServerId:
+          description: Represents the AIMLE server identifier.
+          type: string
+        availTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        testTask:
+          description: Represents the task for test ML model training capability.
+          type: string
+        modelInfo:
+          $ref: '#/components/schemas/AimlModelData'
+        dataSetReq:
+          $ref: '#/components/schemas/DataSetRequirements'
+
+    MlModTngCapEvalResp:
+      description: Contains the ML model training capability evaluation response information.
+      type: object
+      required:
+      - capEvalOut
+      properties:
+        capEvalOut:
+          $ref: '#/components/schemas/CapEvalOutcome'
+        testResult:
+          description: Represents the test result of the ML model training capability evaluation.
+          type: string
+        evalFailInd:
+          description: Represents the reason for inability to join the FL training process.
+          type: string
+
+    AimlModelData:
+      description: Contains the AI/ML model information and model parameters for use in FL training.
+      type: object
+      properties:
+        aimlModels:
+          description: Contains information about the AI/ML model.
+          type: array
+          items:
+            $ref: '#/components/schemas/AimlModelInfo'
+          minItems: 1
+        mlModelParams:
+          description: Contains model parameters for use in FL training.
+          type: array
+          items:
+            type: string
+          minItems: 1
+
+    DataSetRequirements:
+      description: Contains requirements on data set for FL training.
+      type: object
+      properties:
+        commonFtIds:
+          description: >
+            Contains a list of the features identifiers of the required features common to
+            the dataset of the different data domains.
+          type: array
+          items:
+            type: string
+          minItems: 1
+        domainFts:
+          description: >
+            Contains a list of features for each data domain(s) of the datasets at the UE.
+          type: array
+          items:
+            $ref: '#/components/schemas/DomainFeatures'
+          minItems: 1
+        dataSource:
+          description: >
+            Represents the identifier of a data source for the FL training (e.g. SEAL server,
+            SEAL client, other NF entity, etc.).
+          type: string
+
+    DomainFeatures:
+      description: Contains a list of features for each data domain(s) of the datasets at the UE.
+      type: object
+      required:
+      - domain
+      - featureIds
+      properties:
+        domain:
+          description: >
+            Represents a data domain i.e. a specific category of data or logical groupings of
+            data that all relate together (e.g. customer data, product data, etc.).
+          type: string
+        featureIds:
+          description: >
+            Represents a list of the features identifiers for the data domain of the datasets
+            at the UE.
+          type: array
+          items:
+            type: string
+          minItems: 1
+
+    AimlModelInfo:
+      description: Contains information about the AI/ML model.
+      type: object
+      properties:
+        aimlModelType:
+          $ref: 'TS24560_Aimles_AIMLEClientRegistration.yaml#/components/schemas/AimlModelType'
+        mlModelProf:
+          $ref: 'TS29482_MLR_MLModelManagement.yaml#/components/schemas/MLModelProfile'
+
+# Simple data types
+
+
+# Enumerations
+
+    CapEvalOutcome:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - ABILITY_TO_JOIN
+        - FIRST_MATCH
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          but is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the outcome of the ML model training capability evaluation.
+#        Possible values are:
+#        - ABILITY_TO_JOIN: Indicates ability to join the training process.
+#        - FIRST_MATCH: Indicates inability to join the training process.

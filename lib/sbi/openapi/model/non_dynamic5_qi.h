@@ -12,13 +12,13 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_non_dynamic5_qi_s OpenAPI_non_dynamic5_qi_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_non_dynamic5_qi_s OpenAPI_non_dynamic5_qi_t;
-typedef struct OpenAPI_non_dynamic5_qi_s {
+struct OpenAPI_non_dynamic5_qi_s {
     bool is_priority_level;
     int priority_level;
     bool is_aver_window;
@@ -31,7 +31,7 @@ typedef struct OpenAPI_non_dynamic5_qi_s {
     int cn_packet_delay_budget_dl;
     bool is_cn_packet_delay_budget_ul;
     int cn_packet_delay_budget_ul;
-} OpenAPI_non_dynamic5_qi_t;
+};
 
 OpenAPI_non_dynamic5_qi_t *OpenAPI_non_dynamic5_qi_create(
     bool is_priority_level,

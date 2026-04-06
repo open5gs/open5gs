@@ -1,0 +1,657 @@
+openapi: 3.0.0
+
+info:
+  title: Nnwdaf_MLModelProvision
+  version: 1.2.0
+  description: |
+    Nnwdaf_MLModelProvision API Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.520 V19.5.0; 5G System; Network Data Analytics Services.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.520/
+
+servers:
+  - url: '{apiRoot}/nnwdaf-mlmodelprovision/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nnwdaf-mlmodelprovision
+
+paths:
+  /subscriptions:
+    post:
+      summary: Create a new Individual NWDAF ML Model Provision Subscription resource.
+      operationId: CreateNWDAFMLModelProvisionSubcription
+      tags:
+        - Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NwdafMLModelProvSubsc'
+      responses:
+        '201':
+          description: Create a new Individual NWDAF ML Model Provision Subscription resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NwdafMLModelProvSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nnwdaf-mlmodelprovision/v1/subscriptions/{subscriptionId}.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        myNotification:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/NwdafMLModelProvNotif'
+                      minItems: 1
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /subscriptions/{subscriptionId}:
+    put:
+      summary: update an existing Individual NWDAF ML Model Provision Subscription
+      operationId: UpdateNWDAFMLModelProvisionSubcription
+      tags:
+        - Individual NWDAF ML Model Provision Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NwdafMLModelProvSubsc'
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: String identifying a subscription to the Nnwdaf_MLModelProvision Service.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >
+            The Individual NWDAF ML Model Provision Subscription resource was modified successfully
+            and a representation of that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NwdafMLModelProvSubsc'
+        '204':
+          description: >
+            The Individual NWDAF ML Model Provision Subscription resource was modified successfully.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete an existing Individual NWDAF ML Model Provision Subscription.
+      operationId: DeleteNWDAFMLModelProvisionSubcription
+      tags:
+        - Individual NWDAF ML Model Provision Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: String identifying a subscription to the Nnwdaf_MLModelProvision Service.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            No Content. The Individual NWDAF ML Model Provision Subscription matching the
+            subscriptionId was deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nnwdaf-mlmodelprovision: Access to the Nnwdaf_MLModelProvision API
+
+  schemas:
+    NwdafMLModelProvSubsc:
+      description: Represents NWDAF Event Subscription resources.
+      type: object
+      properties:
+        mLEventSubscs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MLEventSubscription'
+          minItems: 1
+          description: Subscribed events
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        mLEventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MLEventNotif'
+          minItems: 1
+          description: >
+            Notifications about Individual Events.Shall only be present if the immediate reporting
+            indication in the "immRep" attribute within the "eventReq" attribute sets to true in the
+            event subscription, and the reports are available.
+        suppFeats:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        notifCorreId:
+          type: string
+        eventReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        failEventReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/FailureEventInfoForMLModel'
+          minItems: 1
+          description: >
+            Supplied by the NWDAF containing MTLF when available, shall contain the event(s) that
+            the subscription is not successful including the failure reason(s).
+      required:
+        - mLEventSubscs
+        - notifUri
+
+    ModelProvisionParamsExt:
+      description: >
+        Extended parameters for ML model provisioning which can optionally be set by a service
+        consuumer NF.
+      type: object
+      properties:
+        modelInterInfo:
+          type: string
+          description: String representing the ML Model Interoperability Information.
+        reqRepRatio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        inferInpDataInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/InputDataInfo'
+          minItems: 1
+          description: >
+            Inference information that is used by NWDAF containing AnLF during inference.
+        multModelsInd:
+          type: boolean
+          description: Indicates if the NF service consumer supports multiple models.
+        numModels:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        accuLevels:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/Accuracy'
+          minItems: 1
+          description: Provided accuracy levels of interest for ML models.
+        posCases:
+          type: array
+          items:
+            $ref: '#/components/schemas/PositioningCase'
+          minItems: 1
+        networkArea:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/NetworkAreaInfo'
+
+    InputDataInfo:
+      description: Contains information about inference that is used by NWDAF containing AnLF.
+      type: object
+      properties:
+        ratio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxNumSamples:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxTimeInterval:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        inpEvent:
+          $ref: 'TS29574_Ndccf_DataManagement.yaml#/components/schemas/DccfEvent'
+        nfInstanceIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+          minItems: 1
+        nfSetIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+          minItems: 1
+      required:
+        - inpEvent
+
+
+    MLEventSubscription:
+      description: Represents a subscription to a single event.
+      type: object
+      properties:
+        mLEvent:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NwdafEvent'
+        mLEventFilter:
+          $ref: 'TS29520_Nnwdaf_AnalyticsInfo.yaml#/components/schemas/EventFilter'
+        posModelReqInd:
+          type: boolean
+          description: >
+            Indicates that the NF service consumer requests a ML models for positioning if provided
+            and set to "true". The default value is "false" if omitted.
+        tgtUe:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/TargetUeInformation'
+        mLTargetPeriod:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        expiryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        timeModelNeeded:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        mlEvRepCon:
+          $ref: '#/components/schemas/MLRepEventCondition'
+        modelInterInfo:
+          type: string
+          description: String representing the ML Model Interoperability Information.
+        nfConsumerInfo:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/VendorId'
+        modelProvExt:
+          $ref: '#/components/schemas/ModelProvisionParamsExt'
+        useCaseCxt:
+          type: string
+          description: >
+            Indicates the context of usage of the analytics. The value and format of this parameter 
+            are not standardized.
+        inferDataForModel:
+          $ref: '#/components/schemas/InferenceDataForModelTrain'
+        modelId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        vflInfo:
+          $ref: '#/components/schemas/VflInfo'
+      oneOf:
+        - required: [mLEvent, mLEventFilter]
+        - required: [posModelReqInd]
+
+    NwdafMLModelProvNotif:
+      description: Represents notifications on events that occurred.
+      type: object
+      properties:
+        eventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MLEventNotif'
+          minItems: 1
+          description: Notifications about Individual Events.
+        subscriptionId:
+          type: string
+          description: String identifying a subscription to the Nnwdaf_MLModelProvision Service.
+      required:
+        - eventNotifs
+        - subscriptionId
+
+    MLEventNotif:
+      description: Represents a notification related to a single event that occurred.
+      type: object
+      properties:
+        event:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NwdafEvent'
+        notifCorreId:
+          type: string
+          description: >
+            Contains notification correlation ID used to identify the subscription to which the
+            notification relates. It shall be set to the same value as the "notifCorreId" attribute
+            of NwdafMLModelProvSubsc data type.
+        mlFile:
+          type: string
+          description: Contains the ML model file.
+        mLFileAddr:
+          $ref: '#/components/schemas/MLModelAddr'
+        mLModelAdrf:
+          $ref: '#/components/schemas/MLModelAdrf'
+        validityPeriod:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        spatialValidity:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/NetworkAreaInfo'
+        addModelInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdditionalMLModelInformation'
+          minItems: 1
+          description: Contains the additional ML Model Information besides the ML Model Address
+        modelUniqueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        modelProviderId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        useCaseCxt:
+          type: string
+          description: >
+            String identifying the context of use of ML model. The value and format of this
+            parameter are not standardized.
+        mLEventFilter:
+          $ref: 'TS29520_Nnwdaf_AnalyticsInfo.yaml#/components/schemas/EventFilter'
+        tgtUe:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/TargetUeInformation'
+        modelUpdateInd:
+          type: boolean
+          description: >
+            Set to "true" to indicate that the ML model is updated. Set to "false" to indicate the
+            ML model is not updated. Default value is "false" if omitted.
+        vflTrainStatus:
+          $ref: '#/components/schemas/VflTrainingStatus'
+      oneOf:
+        - required: [mLFileAddr]
+        - required: [mLModelAdrf]
+
+    FailureEventInfoForMLModel:
+      description: >
+        Represents the event(s) that the subscription is not successful including the failure
+        reason(s).
+      type: object
+      properties:
+        event:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NwdafEvent'
+        failureCode:
+          $ref: '#/components/schemas/FailureCode'
+        vflInfo:
+          $ref: '#/components/schemas/VflInfo'
+      required:
+        - event
+        - failureCode
+
+    MLModelAddr:
+      description: Addresses of ML model files.
+      type: object
+      properties:
+        mLModelUrl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        mlFileFqdn:
+          type: string
+          description: The FQDN of the ML Model file.
+      oneOf:
+        - required: [mLModelUrl]
+        - required: [mlFileFqdn]
+
+    MLRepEventCondition:
+      description: Indicates the ML event reporting condition.
+      type: object
+      properties:
+        mlTrainRound:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        mlTrainRepTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        mlAccuracyThreshold:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        modelMetric:
+          $ref: '#/components/schemas/MLModelMetric'
+
+    AdditionalMLModelInformation:
+      description: Represents the additional ML Model Information.
+      type: object
+      properties:
+        mLFileAddr:
+          $ref: '#/components/schemas/MLModelAddr'
+        mLModelAdrf:
+          $ref: '#/components/schemas/MLModelAdrf'
+        validityPeriod:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        spatialValidity:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/NetworkAreaInfo'
+        modelUniqueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        modelRepRatio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        mlDegradInd:
+          type: boolean
+          description: >
+            Set to "true" to indicate support degration of an ML model. Set to "false" to indicate
+            not support degration of an ML model. Default value is "false" if omitted.
+        trainInpInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainInputDataInfo'
+          minItems: 1
+          description: >
+            Training information that is used by NWDAF containing MTLF during training.
+        modelMetric:
+          $ref: '#/components/schemas/MLModelMetric'
+        accMLModel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        modelUpdateInd:
+          type: boolean
+          description: >
+            Set to "true" to indicate that the ML model is updated. Set to "false" to indicate the
+            ML model is not updated. Default value is "false" if omitted.
+        modelProviderId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+      oneOf:
+        - required: [mLFileAddr]
+        - required: [mLModelAdrf]
+      required:
+        - modelUniqueId
+
+    MLModelAdrf:
+      description: ADRF (Set) information of the ML Model.
+      type: object
+      properties:
+        adrfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        adrfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        storTransId:
+          type: string
+          description: String identifying a Storage Transaction ID.
+      oneOf:
+        - required: [adrfId]
+        - required: [adrfSetId]
+
+    TrainInputDataInfo:
+      description: Contains Training input data information that is used by NWDAF containing MTLF.
+      type: object
+      properties:
+        dataInfo:
+          $ref: '#/components/schemas/InputDataInfo'
+        time:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        dataStatisticsInfos:
+          type: string
+
+    InferenceDataForModelTrain:
+      description: >
+        Indicates the inference data stored in ADRF which can be used by MTLF to retrain or
+        reprovision of the ML model.
+      type: object
+      properties:
+        adrfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        adrfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        dataSetTag:
+          $ref: 'TS29575_Nadrf_DataManagement.yaml#/components/schemas/DataSetTag'
+        modelId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      oneOf:
+        - required: [adrfId]
+        - required: [adrfSetId]
+
+    VflInfo:
+      description: >
+        Represents the VFL training information.
+      type: object
+      properties:
+        vflServer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        vflTrainStatus:
+          $ref: '#/components/schemas/VflTrainingStatus'
+        expCompTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+
+#
+# ENUMERATIONS DATA TYPES
+#
+    FailureCode:
+      anyOf:
+      - type: string
+        enum:
+          - UNAVAILABLE_ML_MODEL
+          - VFL_MODEL_TO_BE_USED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration but
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the failure code.  
+        Possible values are:
+        - UNAVAILABLE_ML_MODEL: Indicates the requested ML model for the event is unavailable.
+        - VFL_MODEL_TO_BE_USED: Indicates the requested ML model for the event is not going to 
+          be made available due to VFL model to be used.
+
+    MLModelMetric:
+      anyOf:
+      - type: string
+        enum:
+          - ACCURACY
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration but
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the metric of the ML model.  
+        Possible values are:
+        - ACCURACY: ML Model Accuracy metric.
+
+    VflTrainingStatus:
+      anyOf:
+      - type: string
+        enum:
+          - ONGOING
+          - TERMINATED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration but
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents VFL training status.  
+        Possible values are:
+        - ONGOING: Indicates that the NWDAF cannot be a VFL server and VFL training is ongoing.
+        - TERMINATED: Indicates that the NWDAF cannot be a VFL server and VFL training is
+          terminated.
+
+    PositioningCase:
+      anyOf:
+      - type: string
+        enum:
+          - NG_RAN_ASSISTED_POSITIONING
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration but
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents positioning case information.  
+        Possible values are:
+        - NG_RAN_ASSISTED_POSITIONING: Indicates the NG RAN node assisted LMF-based AI/ML
+          Positioning case.

@@ -9,7 +9,8 @@ OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_create(
     OpenAPI_access_type_e access_type,
     bool is_pdu_session_id,
     int pdu_session_id,
-    char *new_smf_instance_id
+    char *new_smf_instance_id,
+    OpenAPI_guami_t *old_guami
 )
 {
     OpenAPI_deregistration_data_t *deregistration_data_local_var = ogs_malloc(sizeof(OpenAPI_deregistration_data_t));
@@ -20,6 +21,7 @@ OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_create(
     deregistration_data_local_var->is_pdu_session_id = is_pdu_session_id;
     deregistration_data_local_var->pdu_session_id = pdu_session_id;
     deregistration_data_local_var->new_smf_instance_id = new_smf_instance_id;
+    deregistration_data_local_var->old_guami = old_guami;
 
     return deregistration_data_local_var;
 }
@@ -34,6 +36,10 @@ void OpenAPI_deregistration_data_free(OpenAPI_deregistration_data_t *deregistrat
     if (deregistration_data->new_smf_instance_id) {
         ogs_free(deregistration_data->new_smf_instance_id);
         deregistration_data->new_smf_instance_id = NULL;
+    }
+    if (deregistration_data->old_guami) {
+        OpenAPI_guami_free(deregistration_data->old_guami);
+        deregistration_data->old_guami = NULL;
     }
     ogs_free(deregistration_data);
 }
@@ -79,6 +85,19 @@ cJSON *OpenAPI_deregistration_data_convertToJSON(OpenAPI_deregistration_data_t *
     }
     }
 
+    if (deregistration_data->old_guami) {
+    cJSON *old_guami_local_JSON = OpenAPI_guami_convertToJSON(deregistration_data->old_guami);
+    if (old_guami_local_JSON == NULL) {
+        ogs_error("OpenAPI_deregistration_data_convertToJSON() failed [old_guami]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "oldGuami", old_guami_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_deregistration_data_convertToJSON() failed [old_guami]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -93,6 +112,8 @@ OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_parseFromJSON(cJSON *
     OpenAPI_access_type_e access_typeVariable = 0;
     cJSON *pdu_session_id = NULL;
     cJSON *new_smf_instance_id = NULL;
+    cJSON *old_guami = NULL;
+    OpenAPI_guami_t *old_guami_local_nonprim = NULL;
     dereg_reason = cJSON_GetObjectItemCaseSensitive(deregistration_dataJSON, "deregReason");
     if (!dereg_reason) {
         ogs_error("OpenAPI_deregistration_data_parseFromJSON() failed [dereg_reason]");
@@ -129,16 +150,30 @@ OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_parseFromJSON(cJSON *
     }
     }
 
+    old_guami = cJSON_GetObjectItemCaseSensitive(deregistration_dataJSON, "oldGuami");
+    if (old_guami) {
+    old_guami_local_nonprim = OpenAPI_guami_parseFromJSON(old_guami);
+    if (!old_guami_local_nonprim) {
+        ogs_error("OpenAPI_guami_parseFromJSON failed [old_guami]");
+        goto end;
+    }
+    }
+
     deregistration_data_local_var = OpenAPI_deregistration_data_create (
         dereg_reasonVariable,
         access_type ? access_typeVariable : 0,
         pdu_session_id ? true : false,
         pdu_session_id ? pdu_session_id->valuedouble : 0,
-        new_smf_instance_id && !cJSON_IsNull(new_smf_instance_id) ? ogs_strdup(new_smf_instance_id->valuestring) : NULL
+        new_smf_instance_id && !cJSON_IsNull(new_smf_instance_id) ? ogs_strdup(new_smf_instance_id->valuestring) : NULL,
+        old_guami ? old_guami_local_nonprim : NULL
     );
 
     return deregistration_data_local_var;
 end:
+    if (old_guami_local_nonprim) {
+        OpenAPI_guami_free(old_guami_local_nonprim);
+        old_guami_local_nonprim = NULL;
+    }
     return NULL;
 }
 

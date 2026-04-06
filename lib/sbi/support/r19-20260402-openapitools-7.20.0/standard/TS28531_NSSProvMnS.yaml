@@ -1,0 +1,82 @@
+openapi: 3.0.1
+info:
+  title: Network Slice Subnet Provisioning MnS
+  version: 18.6.0
+  description: >-
+    OAS 3.0.1 definition of the Network Slice Suubnet Provisioning MnS
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.531; Provisioning
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.531/
+servers:
+  - url: '{MnSRoot}/NSSProvMnS/{MnSVersion}'
+    variables:
+      MnSRoot:
+        description: See clause 4.4.2 of TS 32.158
+        default: http://example.com/3GPPManagement
+      MnSVersion:
+        description: Version number of the OpenAPI definition
+        default: XXX
+paths:
+  /SliceProfiles:
+   post:
+    summary: Create a SliceProfile
+    description: To create a SliceeProfile resource to represent network slice subnet related requirements.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+              $ref: '#/components/schemas/ServiceProfileId-Type'
+    responses:
+        '201':
+          description: Success case ("201 Created"). The representation of the newly created SliceProfile resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceProfileId-Type'
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponseDefault'
+
+  /SliceProfiles/{SliceProfileId}:
+   delete:
+    summary: Delete a SliceProfile
+    description: To delete a SliceProfile resource to represent network slice suubnet related requirements.
+    parameters:
+      - name: SliceProfileId
+        in: path
+        description: Identifies an individual SliceProfille.
+        required: true
+        schema:
+          $ref: '#/components/schemas/SliceProfileId-Type'
+      - name: networkSliceSubnetDN
+        in: query
+        description: Identifies the DN of NetworkSliceSubnet MOI uniquely identifying the network slice subnet instance
+        required: true
+        schema:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'            
+    responses:
+      '204':
+        description: >-
+          Success case ("204 No Content").
+          The ServiceProfile resource has been deleted. The response message body is absent.
+      default:
+        description: Error case.
+        content:
+          application/json:
+            schema:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponseDefault'
+components:
+  schemas:
+    uri-Type:
+      description: Resource URI
+      type: string
+    SliceProfileId-Type:
+       $ref: '#/components/schemas/uri-Type'
+    ServiceProfileId-Type:
+       $ref: 'TS28541_SliceNrm.yaml#/components/schemas/SliceProfile'       

@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_network_slice_cond_s OpenAPI_network_slice_cond_t;
 #include "snssai.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_network_slice_cond_s OpenAPI_network_slice_cond_t;
-typedef struct OpenAPI_network_slice_cond_s {
+struct OpenAPI_network_slice_cond_s {
     OpenAPI_list_t *snssai_list;
     OpenAPI_list_t *nsi_list;
-} OpenAPI_network_slice_cond_t;
+};
 
 OpenAPI_network_slice_cond_t *OpenAPI_network_slice_cond_create(
     OpenAPI_list_t *snssai_list,

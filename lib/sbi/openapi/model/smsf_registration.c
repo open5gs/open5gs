@@ -19,7 +19,9 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
     int smsf_sbi_sup_ind,
     bool is_udr_restart_ind,
     int udr_restart_ind,
-    char *last_synchronization_time
+    char *last_synchronization_time,
+    bool is_ue_memory_available_ind,
+    int ue_memory_available_ind
 )
 {
     OpenAPI_smsf_registration_t *smsf_registration_local_var = ogs_malloc(sizeof(OpenAPI_smsf_registration_t));
@@ -40,6 +42,8 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
     smsf_registration_local_var->is_udr_restart_ind = is_udr_restart_ind;
     smsf_registration_local_var->udr_restart_ind = udr_restart_ind;
     smsf_registration_local_var->last_synchronization_time = last_synchronization_time;
+    smsf_registration_local_var->is_ue_memory_available_ind = is_ue_memory_available_ind;
+    smsf_registration_local_var->ue_memory_available_ind = ue_memory_available_ind;
 
     return smsf_registration_local_var;
 }
@@ -232,6 +236,13 @@ cJSON *OpenAPI_smsf_registration_convertToJSON(OpenAPI_smsf_registration_t *smsf
     }
     }
 
+    if (smsf_registration->is_ue_memory_available_ind) {
+    if (cJSON_AddBoolToObject(item, "ueMemoryAvailableInd", smsf_registration->ue_memory_available_ind) == NULL) {
+        ogs_error("OpenAPI_smsf_registration_convertToJSON() failed [ue_memory_available_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -257,6 +268,7 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
     cJSON *smsf_sbi_sup_ind = NULL;
     cJSON *udr_restart_ind = NULL;
     cJSON *last_synchronization_time = NULL;
+    cJSON *ue_memory_available_ind = NULL;
     smsf_instance_id = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "smsfInstanceId");
     if (!smsf_instance_id) {
         ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [smsf_instance_id]");
@@ -381,6 +393,14 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
     }
     }
 
+    ue_memory_available_ind = cJSON_GetObjectItemCaseSensitive(smsf_registrationJSON, "ueMemoryAvailableInd");
+    if (ue_memory_available_ind) {
+    if (!cJSON_IsBool(ue_memory_available_ind)) {
+        ogs_error("OpenAPI_smsf_registration_parseFromJSON() failed [ue_memory_available_ind]");
+        goto end;
+    }
+    }
+
     smsf_registration_local_var = OpenAPI_smsf_registration_create (
         ogs_strdup(smsf_instance_id->valuestring),
         smsf_set_id && !cJSON_IsNull(smsf_set_id) ? ogs_strdup(smsf_set_id->valuestring) : NULL,
@@ -396,7 +416,9 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf
         smsf_sbi_sup_ind ? smsf_sbi_sup_ind->valueint : 0,
         udr_restart_ind ? true : false,
         udr_restart_ind ? udr_restart_ind->valueint : 0,
-        last_synchronization_time && !cJSON_IsNull(last_synchronization_time) ? ogs_strdup(last_synchronization_time->valuestring) : NULL
+        last_synchronization_time && !cJSON_IsNull(last_synchronization_time) ? ogs_strdup(last_synchronization_time->valuestring) : NULL,
+        ue_memory_available_ind ? true : false,
+        ue_memory_available_ind ? ue_memory_available_ind->valueint : 0
     );
 
     return smsf_registration_local_var;

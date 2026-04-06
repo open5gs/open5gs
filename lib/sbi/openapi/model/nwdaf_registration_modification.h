@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nwdaf_registration_modification_s OpenAPI_nwdaf_registration_modification_t;
 #include "event_id.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nwdaf_registration_modification_s OpenAPI_nwdaf_registration_modification_t;
-typedef struct OpenAPI_nwdaf_registration_modification_s {
+struct OpenAPI_nwdaf_registration_modification_s {
     char *nwdaf_instance_id;
     char *nwdaf_set_id;
     OpenAPI_list_t *analytics_ids;
     char *supported_features;
-} OpenAPI_nwdaf_registration_modification_t;
+};
 
 OpenAPI_nwdaf_registration_modification_t *OpenAPI_nwdaf_registration_modification_create(
     char *nwdaf_instance_id,

@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_context_updated_data_s OpenAPI_sm_context_updated_data_t;
 #include "anchor_smf_features.h"
 #include "cause.h"
 #include "ebi_arp_mapping.h"
@@ -26,8 +27,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_context_updated_data_s OpenAPI_sm_context_updated_data_t;
-typedef struct OpenAPI_sm_context_updated_data_s {
+struct OpenAPI_sm_context_updated_data_s {
     OpenAPI_up_cnx_state_e up_cnx_state;
     OpenAPI_ho_state_e ho_state;
     OpenAPI_list_t *release_ebi_list;
@@ -52,7 +52,9 @@ typedef struct OpenAPI_sm_context_updated_data_s {
     char *selected_old_smf_id;
     char *inter_plmn_api_root;
     struct OpenAPI_anchor_smf_features_s *anchor_smf_features;
-} OpenAPI_sm_context_updated_data_t;
+    bool is_pdu_session_prio;
+    int pdu_session_prio;
+};
 
 OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
     OpenAPI_up_cnx_state_e up_cnx_state,
@@ -78,7 +80,9 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
     char *selected_smf_id,
     char *selected_old_smf_id,
     char *inter_plmn_api_root,
-    OpenAPI_anchor_smf_features_t *anchor_smf_features
+    OpenAPI_anchor_smf_features_t *anchor_smf_features,
+    bool is_pdu_session_prio,
+    int pdu_session_prio
 );
 void OpenAPI_sm_context_updated_data_free(OpenAPI_sm_context_updated_data_t *sm_context_updated_data);
 OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON(cJSON *sm_context_updated_dataJSON);

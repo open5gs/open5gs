@@ -1,7 +1,7 @@
 /*
  * service_type.h
  *
- * Possible values are - AF_GUIDANCE_FOR_URSP 
+ * 
  */
 
 #ifndef _OpenAPI_service_type_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "service_type_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_service_type_s OpenAPI_service_type_t;
-typedef struct OpenAPI_service_type_s {
-} OpenAPI_service_type_t;
+typedef enum { OpenAPI_service_type_NULL = 0, OpenAPI_service_type_AF_GUIDANCE_FOR_URSP, OpenAPI_service_type_AF_REQUESTED_QOS, OpenAPI_service_type_AF_PROVISION_N3GPP_DEV_ID_INFO } OpenAPI_service_type_e;
 
-OpenAPI_service_type_t *OpenAPI_service_type_create(
-);
-void OpenAPI_service_type_free(OpenAPI_service_type_t *service_type);
-OpenAPI_service_type_t *OpenAPI_service_type_parseFromJSON(cJSON *service_typeJSON);
-cJSON *OpenAPI_service_type_convertToJSON(OpenAPI_service_type_t *service_type);
-OpenAPI_service_type_t *OpenAPI_service_type_copy(OpenAPI_service_type_t *dst, OpenAPI_service_type_t *src);
+char* OpenAPI_service_type_ToString(OpenAPI_service_type_e service_type);
+
+OpenAPI_service_type_e OpenAPI_service_type_FromString(char* service_type);
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,7 @@
 /*
  * ciphering_algorithm.h
  *
- * 
+ * Indicates the supported Ciphering Algorithm
  */
 
 #ifndef _OpenAPI_ciphering_algorithm_H_

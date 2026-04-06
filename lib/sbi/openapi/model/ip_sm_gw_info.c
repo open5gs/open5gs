@@ -5,6 +5,7 @@
 #include "ip_sm_gw_info.h"
 
 OpenAPI_ip_sm_gw_info_t *OpenAPI_ip_sm_gw_info_create(
+    bool is_ip_sm_gw_registration_null,
     OpenAPI_ip_sm_gw_registration_t *ip_sm_gw_registration,
     OpenAPI_ip_sm_gw_guidance_t *ip_sm_gw_guidance
 )
@@ -12,6 +13,7 @@ OpenAPI_ip_sm_gw_info_t *OpenAPI_ip_sm_gw_info_create(
     OpenAPI_ip_sm_gw_info_t *ip_sm_gw_info_local_var = ogs_malloc(sizeof(OpenAPI_ip_sm_gw_info_t));
     ogs_assert(ip_sm_gw_info_local_var);
 
+    ip_sm_gw_info_local_var->is_ip_sm_gw_registration_null = is_ip_sm_gw_registration_null;
     ip_sm_gw_info_local_var->ip_sm_gw_registration = ip_sm_gw_registration;
     ip_sm_gw_info_local_var->ip_sm_gw_guidance = ip_sm_gw_guidance;
 
@@ -58,6 +60,11 @@ cJSON *OpenAPI_ip_sm_gw_info_convertToJSON(OpenAPI_ip_sm_gw_info_t *ip_sm_gw_inf
         ogs_error("OpenAPI_ip_sm_gw_info_convertToJSON() failed [ip_sm_gw_registration]");
         goto end;
     }
+    } else if (ip_sm_gw_info->is_ip_sm_gw_registration_null) {
+        if (cJSON_AddNullToObject(item, "ipSmGwRegistration") == NULL) {
+            ogs_error("OpenAPI_ip_sm_gw_info_convertToJSON() failed [ip_sm_gw_registration]");
+            goto end;
+        }
     }
 
     if (ip_sm_gw_info->ip_sm_gw_guidance) {
@@ -87,10 +94,12 @@ OpenAPI_ip_sm_gw_info_t *OpenAPI_ip_sm_gw_info_parseFromJSON(cJSON *ip_sm_gw_inf
     OpenAPI_ip_sm_gw_guidance_t *ip_sm_gw_guidance_local_nonprim = NULL;
     ip_sm_gw_registration = cJSON_GetObjectItemCaseSensitive(ip_sm_gw_infoJSON, "ipSmGwRegistration");
     if (ip_sm_gw_registration) {
+    if (!cJSON_IsNull(ip_sm_gw_registration)) {
     ip_sm_gw_registration_local_nonprim = OpenAPI_ip_sm_gw_registration_parseFromJSON(ip_sm_gw_registration);
     if (!ip_sm_gw_registration_local_nonprim) {
         ogs_error("OpenAPI_ip_sm_gw_registration_parseFromJSON failed [ip_sm_gw_registration]");
         goto end;
+    }
     }
     }
 
@@ -104,6 +113,7 @@ OpenAPI_ip_sm_gw_info_t *OpenAPI_ip_sm_gw_info_parseFromJSON(cJSON *ip_sm_gw_inf
     }
 
     ip_sm_gw_info_local_var = OpenAPI_ip_sm_gw_info_create (
+        ip_sm_gw_registration && cJSON_IsNull(ip_sm_gw_registration) ? true : false,
         ip_sm_gw_registration ? ip_sm_gw_registration_local_nonprim : NULL,
         ip_sm_gw_guidance ? ip_sm_gw_guidance_local_nonprim : NULL
     );

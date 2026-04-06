@@ -1,0 +1,178 @@
+openapi: 3.0.0
+
+info:
+  title: 'IMS AS ImsParameterProvision Service'
+  version: 1.0.0
+  description: |
+    Nimsas_ImsParameterProvision Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.175 V19.4.0; IP Multimedia Subsystem; IP Multimedia Subsystem (IMS) Application
+    Server (AS) Services; Stage 3
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.175'
+
+servers:
+  - url: '{apiRoot}/nimsas-ipp/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - nimsas-ipp
+
+paths:
+
+  /{imsUeId}/ims-pp-data-store/{afInstanceId}:
+    put:
+      summary: Creates or updates the parameter provisioning data entry.
+      operationId: CreateUpdatePpDataEntry
+      tags:
+        - ImsParameterProvisioningDataEntry
+      parameters:
+        - name: imsUeId
+          in: path
+          description: Contains the IMS public identity.
+          required: true
+          schema:
+            type: string
+            pattern: '^(impu-sip\:([a-zA-Z0-9_\-.!~*()&=+$,;?\/]+)\@([A-Za-z0-9]+([-A-Za-z0-9]+)\.)+[a-z]{2,}|impu-tel\:\+[0-9]{5,15})$'
+        - name: afInstanceId
+          in: path
+          description: Contains the AF instance identity.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImsPpDataEntry'
+        required: true
+      responses:
+        '201':
+          description: >
+            Created, a representation of the created ImsParameterProvisioningDataEntry resource
+            is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImsPpDataEntry'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/nhss-ims-uecm/v1/{imsUeId}/imsas-registration
+              required: true
+              schema:
+                type: string
+        '200':
+          description: >
+            OK, a representation of the updated ImsParameterProvisioningDataEntry resource
+            is returned..
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImsPpDataEntry'
+        '204':
+          description: No content, the ImsParameterProvisioningDataEntry resource is updated.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete the parameter provisioning data entry.
+      operationId: DeletePpDataEntry
+      tags:
+        - ImsParameterProvisioningDataEntry
+      parameters:
+        - name: imsUeId
+          in: path
+          description: Contains the IMS public identity.
+          required: true
+          schema:
+            type: string
+            pattern: '^(impu-sip\:([a-zA-Z0-9_\-.!~*()&=+$,;?\/]+)\@([A-Za-z0-9]+([-A-Za-z0-9]+)\.)+[a-z]{2,}|impu-tel\:\+[0-9]{5,15})$'
+        - name: afInstanceId
+          in: path
+          description: Contains the AF instance identity.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No content, the ImsParameterProvisioningDataEntry resource is deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nimsas-ipp: Access to the Nimsas_ImsParameterProvision API
+
+  schemas:
+
+# Structured data types
+
+    ImsPpDataEntry:
+      description: Contains the IMS parameter provision data i.e. the RCD properties.
+      type: object
+      properties:
+        rcdProp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RcdProperties'

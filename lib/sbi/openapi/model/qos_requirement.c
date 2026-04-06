@@ -12,7 +12,9 @@ OpenAPI_qos_requirement_t *OpenAPI_qos_requirement_create(
     OpenAPI_qos_resource_type_e res_type,
     bool is_pdb,
     int pdb,
-    char *per
+    char *per,
+    OpenAPI_velocity_estimate_t *device_speed,
+    OpenAPI_device_type_e device_type
 )
 {
     OpenAPI_qos_requirement_t *qos_requirement_local_var = ogs_malloc(sizeof(OpenAPI_qos_requirement_t));
@@ -26,6 +28,8 @@ OpenAPI_qos_requirement_t *OpenAPI_qos_requirement_create(
     qos_requirement_local_var->is_pdb = is_pdb;
     qos_requirement_local_var->pdb = pdb;
     qos_requirement_local_var->per = per;
+    qos_requirement_local_var->device_speed = device_speed;
+    qos_requirement_local_var->device_type = device_type;
 
     return qos_requirement_local_var;
 }
@@ -48,6 +52,10 @@ void OpenAPI_qos_requirement_free(OpenAPI_qos_requirement_t *qos_requirement)
     if (qos_requirement->per) {
         ogs_free(qos_requirement->per);
         qos_requirement->per = NULL;
+    }
+    if (qos_requirement->device_speed) {
+        OpenAPI_velocity_estimate_free(qos_requirement->device_speed);
+        qos_requirement->device_speed = NULL;
     }
     ogs_free(qos_requirement);
 }
@@ -105,6 +113,26 @@ cJSON *OpenAPI_qos_requirement_convertToJSON(OpenAPI_qos_requirement_t *qos_requ
     }
     }
 
+    if (qos_requirement->device_speed) {
+    cJSON *device_speed_local_JSON = OpenAPI_velocity_estimate_convertToJSON(qos_requirement->device_speed);
+    if (device_speed_local_JSON == NULL) {
+        ogs_error("OpenAPI_qos_requirement_convertToJSON() failed [device_speed]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "deviceSpeed", device_speed_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_qos_requirement_convertToJSON() failed [device_speed]");
+        goto end;
+    }
+    }
+
+    if (qos_requirement->device_type != OpenAPI_device_type_NULL) {
+    if (cJSON_AddStringToObject(item, "deviceType", OpenAPI_device_type_ToString(qos_requirement->device_type)) == NULL) {
+        ogs_error("OpenAPI_qos_requirement_convertToJSON() failed [device_type]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -120,6 +148,10 @@ OpenAPI_qos_requirement_t *OpenAPI_qos_requirement_parseFromJSON(cJSON *qos_requ
     OpenAPI_qos_resource_type_e res_typeVariable = 0;
     cJSON *pdb = NULL;
     cJSON *per = NULL;
+    cJSON *device_speed = NULL;
+    OpenAPI_velocity_estimate_t *device_speed_local_nonprim = NULL;
+    cJSON *device_type = NULL;
+    OpenAPI_device_type_e device_typeVariable = 0;
     _5qi = cJSON_GetObjectItemCaseSensitive(qos_requirementJSON, "5qi");
     if (_5qi) {
     if (!cJSON_IsNumber(_5qi)) {
@@ -169,6 +201,24 @@ OpenAPI_qos_requirement_t *OpenAPI_qos_requirement_parseFromJSON(cJSON *qos_requ
     }
     }
 
+    device_speed = cJSON_GetObjectItemCaseSensitive(qos_requirementJSON, "deviceSpeed");
+    if (device_speed) {
+    device_speed_local_nonprim = OpenAPI_velocity_estimate_parseFromJSON(device_speed);
+    if (!device_speed_local_nonprim) {
+        ogs_error("OpenAPI_velocity_estimate_parseFromJSON failed [device_speed]");
+        goto end;
+    }
+    }
+
+    device_type = cJSON_GetObjectItemCaseSensitive(qos_requirementJSON, "deviceType");
+    if (device_type) {
+    if (!cJSON_IsString(device_type)) {
+        ogs_error("OpenAPI_qos_requirement_parseFromJSON() failed [device_type]");
+        goto end;
+    }
+    device_typeVariable = OpenAPI_device_type_FromString(device_type->valuestring);
+    }
+
     qos_requirement_local_var = OpenAPI_qos_requirement_create (
         _5qi ? true : false,
         _5qi ? _5qi->valuedouble : 0,
@@ -177,11 +227,17 @@ OpenAPI_qos_requirement_t *OpenAPI_qos_requirement_parseFromJSON(cJSON *qos_requ
         res_type ? res_typeVariable : 0,
         pdb ? true : false,
         pdb ? pdb->valuedouble : 0,
-        per && !cJSON_IsNull(per) ? ogs_strdup(per->valuestring) : NULL
+        per && !cJSON_IsNull(per) ? ogs_strdup(per->valuestring) : NULL,
+        device_speed ? device_speed_local_nonprim : NULL,
+        device_type ? device_typeVariable : 0
     );
 
     return qos_requirement_local_var;
 end:
+    if (device_speed_local_nonprim) {
+        OpenAPI_velocity_estimate_free(device_speed_local_nonprim);
+        device_speed_local_nonprim = NULL;
+    }
     return NULL;
 }
 

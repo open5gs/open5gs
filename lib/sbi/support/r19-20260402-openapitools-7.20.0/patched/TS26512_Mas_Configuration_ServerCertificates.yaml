@@ -1,0 +1,198 @@
+openapi: 3.0.0
+info:
+  title: Mas_Configuration_ServerCertificates
+  version: 1.0.1
+  description: |
+    5GMS AS Configuration API: Server Certificates
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Mas_Configuration_ServerCertificates
+    description: '5G Media Streaming: Application Server Configuration (M3) APIs: Server Certificates'
+
+externalDocs:
+  description: 'TS 26.512 V18.6.0; 5G Media Streaming (5GMS); Protocols'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.512/'
+
+servers:
+  - url: '{apiRoot}/3gpp-mas-configuration/v3'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 29.512 clause 6.1.2.
+
+security:
+  - {}
+  - OAuth2: [] 
+
+paths:
+  /certificates:
+    summary: "Server Certificates collection"
+    get:
+      operationId: enumerateServerCertificates
+      summary: "Retrieve a list of Server Certificate composite resource identifiers currently registered with the 5GMS AS"
+      security:
+        - OAuth2:
+          - server-certificate_enumerate
+      responses:
+        '200':
+          # OK
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /certificates/{afResourceId}:
+    summary: "Operations to manipulate a single Server Certificate resource"
+    description: "Individual resources in the collection are addressed using an afResourceId nominated by the 5GMS AF which is unique in this collection at a given 5GMS AS instance."
+    parameters:
+     - name: afResourceId
+       in: path
+       required: true
+       schema:
+         $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+       description: 'The unique identifier, assigned by the 5GMS AF, for a certificate. This is unique across all certificates for all provisioning sessions.'
+    post:
+      operationId: createServerCertificate
+      summary: "Create a new Server Certificate resource and upload an X.509 certificate bundle to be associated with it"
+      security:
+        - OAuth2:
+          - server-certificate_create
+      requestBody:
+        description: "As well as the public certificate itself, the PEM bundle is required to include the private key of the certificate and any intermediate CA certificates."
+        required: true
+        content:
+          application/x-pem-file:
+            schema:
+              type: string
+      responses:
+        '201':
+          # Created
+          description: "Server Certificate Created"
+          headers:
+            Location:
+              description: 'URL of the newly created Content Hosting Configuration (which may be redirected from the request URL).'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/Url'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '409': # Conflict: Resource already exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/409'
+        '410': # Gone: This resource has previously been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload too large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'    
+    # get (Retrieval of individual Server Certificate resources is not permitted at reference point M3.)
+    put:
+      operationId: replaceServerCertificate
+      summary: "Replace an existing Server Certificate resource with a new X.509 certificate bundle"
+      security:
+        - OAuth2:
+          - server-certificate_replace
+      requestBody:
+        description: "As well as the public certificate itself, the PEM bundle is required to include the private key of the certificate and any intermediate CA certificates."
+        required: true
+        content:
+          application/x-pem-file:
+            schema:
+              type: string
+      responses:
+        '200': # OK
+          description: "Server Certificate Replaced"
+        '204': # No Content
+          description: 'Server Certificate Unchanged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: This resource has previously been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload too large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    delete:
+      operationId: destroyServerCertificate
+      summary: 'Destroy an existing Server Certificate resource'
+      security:
+        - OAuth2:
+          - server-certificate_destroy
+      responses:
+        '204': # No Content
+          description: 'Server Certificate Destroyed'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '409': # Conflict: This resource is still referenced by a Content Hosting Configuration or Content Publishing Configuration
+          $ref: 'TS29571_CommonData.yaml#/components/responses/409'
+        '410': # Gone: This resource has previously been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            server-certificate_enumerate: Enumerate the current set of Server Certificates resources
+            server-certificate_create: Create a Server Certificates resource
+            server-certificate_replace: Replace a Server Certificates resource
+            server-certificate_destroy: Destroy a Server Certificates resource

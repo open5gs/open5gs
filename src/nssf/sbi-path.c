@@ -37,9 +37,9 @@ int nssf_sbi_open(void)
 
     /* Build NF service information. It will be transmitted to NRF. */
     if (ogs_sbi_nf_service_is_available(
-                OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION)) {
+                OpenAPI_service_name_nnssf_nsselection)) {
         service = ogs_sbi_nf_service_build_default(
-                    nf_instance, OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION);
+                    nf_instance, OpenAPI_service_name_nnssf_nsselection);
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V2, OGS_SBI_API_V2_0_0, NULL);
@@ -53,7 +53,8 @@ int nssf_sbi_open(void)
         ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Setup Subscription-Data */
-    ogs_sbi_subscription_spec_add(OpenAPI_nf_type_SEPP, NULL);
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_SEPP, OpenAPI_service_name_NULL);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
@@ -76,7 +77,7 @@ bool nssf_sbi_send_request(
 }
 
 int nssf_sbi_discover_and_send(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(nssf_home_t *home, void *data),
         nssf_home_t *home, ogs_sbi_stream_t *stream, void *data)
@@ -84,7 +85,7 @@ int nssf_sbi_discover_and_send(
     ogs_sbi_xact_t *xact = NULL;
     int r;
 
-    ogs_assert(service_type);
+    ogs_assert(service_name);
     ogs_assert(home);
     ogs_assert(stream);
     ogs_assert(build);
@@ -92,7 +93,7 @@ int nssf_sbi_discover_and_send(
     ogs_assert(home->id >= OGS_MIN_POOL_ID && home->id <= OGS_MAX_POOL_ID);
 
     xact = ogs_sbi_xact_add(
-            home->id, &home->sbi, service_type, discovery_option,
+            home->id, &home->sbi, service_name, discovery_option,
             (ogs_sbi_build_f)build, home, data);
     if (!xact) {
         ogs_error("nssf_sbi_discover_and_send() failed");

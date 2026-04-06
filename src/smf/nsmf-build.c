@@ -132,7 +132,8 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_data(
             OpenAPI_request_type_EXISTING_EMERGENCY_PDU_SESSION)
         PduSessionCreateData.request_type = sess->request_type;
 
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION;
+    header.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nsmf_pdusession);
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS;

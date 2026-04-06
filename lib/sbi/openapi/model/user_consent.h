@@ -1,7 +1,7 @@
 /*
  * user_consent.h
  *
- * 
+ * Indicates user’s consent.
  */
 
 #ifndef _OpenAPI_user_consent_H_

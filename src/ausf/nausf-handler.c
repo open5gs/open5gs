@@ -56,7 +56,7 @@ bool ausf_nausf_auth_handle_authenticate(ausf_ue_t *ausf_ue,
     ogs_assert(ausf_ue->serving_network_name);
 
     r = ausf_sbi_discover_and_send(
-            OGS_SBI_SERVICE_TYPE_NUDM_UEAU, NULL,
+            OpenAPI_service_name_nudm_ueau, NULL,
             ausf_nudm_ueau_build_get,
             ausf_ue, stream, AuthenticationInfo->resynchronization_info);
     ogs_expect(r == OGS_OK);
@@ -108,7 +108,7 @@ bool ausf_nausf_auth_handle_authenticate_confirmation(ausf_ue_t *ausf_ue,
     }
 
     r = ausf_sbi_discover_and_send(
-            OGS_SBI_SERVICE_TYPE_NUDM_UEAU, NULL,
+            OpenAPI_service_name_nudm_ueau, NULL,
             ausf_nudm_ueau_build_result_confirmation_inform,
             ausf_ue, stream, NULL);
     ogs_expect(r == OGS_OK);
@@ -127,7 +127,7 @@ bool ausf_nausf_auth_handle_authenticate_delete(ausf_ue_t *ausf_ue,
     ogs_assert(recvmsg);
 
     r = ausf_sbi_discover_and_send(
-            OGS_SBI_SERVICE_TYPE_NUDM_UEAU, NULL,
+            OpenAPI_service_name_nudm_ueau, NULL,
             ausf_nudm_ueau_build_auth_removal_ind,
             ausf_ue, stream, NULL);
     ogs_expect(r == OGS_OK);

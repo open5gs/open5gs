@@ -1,0 +1,135 @@
+openapi: 3.0.0
+
+info:
+  title: NSCE Server Network Slice Allocation Service
+  version: 1.1.0
+  description: |
+    NSCE Server Network Slice Allocation Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.435 V19.3.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Network Slice Capability Enablement (NSCE) Server Service(s); Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.435/
+
+servers:
+  - url: '{apiRoot}/nsce-nsa/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /request:
+    post:
+      summary: Request network slice allocation.
+      operationId: RequestNSAllocation
+      tags:
+        - Network Slice Allocation Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NwSliceAllocReq'
+      responses:
+        '200':
+          description: >
+            The network slice allocation request is successful received and processed
+            and the requested network slice allocation information shall be returned in the
+            response body.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NwSliceAllocResp'
+                minItems: 1
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    NwSliceAllocReq:
+      description: >
+        Represents the network slice allocation request.
+      type: object
+      properties:
+        valServiceId:
+          type: string
+          description: Represents the VAL service identifier.
+        valUeIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Represents the list of VAL UEs ID.
+        locArea:
+          $ref: 'TS29435_NSCE_NSInfoDelivery.yaml#/components/schemas/ServArea'
+        sliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        nwSliceServProf:
+          $ref: 'TS28541_SliceNrm.yaml#/components/schemas/ServiceProfile'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - valServiceId
+        - locArea
+
+    NwSliceAllocResp:
+      description: >
+        Represents the network slice allocation information.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        nwSliceServProf:
+          $ref: 'TS28541_SliceNrm.yaml#/components/schemas/ServiceProfile'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - snssai
+        - nwSliceServProf

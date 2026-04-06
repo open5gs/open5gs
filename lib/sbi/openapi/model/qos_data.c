@@ -45,7 +45,11 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_create(
     int ext_max_data_burst_vol,
     bool is_packet_delay_budget,
     int packet_delay_budget,
-    char *packet_error_rate
+    char *packet_error_rate,
+    bool is_pdu_set_qos_dl_null,
+    OpenAPI_pdu_set_qos_para_rm_t *pdu_set_qos_dl,
+    bool is_pdu_set_qos_ul_null,
+    OpenAPI_pdu_set_qos_para_rm_t *pdu_set_qos_ul
 )
 {
     OpenAPI_qos_data_t *qos_data_local_var = ogs_malloc(sizeof(OpenAPI_qos_data_t));
@@ -92,6 +96,10 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_create(
     qos_data_local_var->is_packet_delay_budget = is_packet_delay_budget;
     qos_data_local_var->packet_delay_budget = packet_delay_budget;
     qos_data_local_var->packet_error_rate = packet_error_rate;
+    qos_data_local_var->is_pdu_set_qos_dl_null = is_pdu_set_qos_dl_null;
+    qos_data_local_var->pdu_set_qos_dl = pdu_set_qos_dl;
+    qos_data_local_var->is_pdu_set_qos_ul_null = is_pdu_set_qos_ul_null;
+    qos_data_local_var->pdu_set_qos_ul = pdu_set_qos_ul;
 
     return qos_data_local_var;
 }
@@ -138,6 +146,14 @@ void OpenAPI_qos_data_free(OpenAPI_qos_data_t *qos_data)
     if (qos_data->packet_error_rate) {
         ogs_free(qos_data->packet_error_rate);
         qos_data->packet_error_rate = NULL;
+    }
+    if (qos_data->pdu_set_qos_dl) {
+        OpenAPI_pdu_set_qos_para_rm_free(qos_data->pdu_set_qos_dl);
+        qos_data->pdu_set_qos_dl = NULL;
+    }
+    if (qos_data->pdu_set_qos_ul) {
+        OpenAPI_pdu_set_qos_para_rm_free(qos_data->pdu_set_qos_ul);
+        qos_data->pdu_set_qos_ul = NULL;
     }
     ogs_free(qos_data);
 }
@@ -351,6 +367,42 @@ cJSON *OpenAPI_qos_data_convertToJSON(OpenAPI_qos_data_t *qos_data)
     }
     }
 
+    if (qos_data->pdu_set_qos_dl) {
+    cJSON *pdu_set_qos_dl_local_JSON = OpenAPI_pdu_set_qos_para_rm_convertToJSON(qos_data->pdu_set_qos_dl);
+    if (pdu_set_qos_dl_local_JSON == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [pdu_set_qos_dl]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pduSetQosDl", pdu_set_qos_dl_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [pdu_set_qos_dl]");
+        goto end;
+    }
+    } else if (qos_data->is_pdu_set_qos_dl_null) {
+        if (cJSON_AddNullToObject(item, "pduSetQosDl") == NULL) {
+            ogs_error("OpenAPI_qos_data_convertToJSON() failed [pdu_set_qos_dl]");
+            goto end;
+        }
+    }
+
+    if (qos_data->pdu_set_qos_ul) {
+    cJSON *pdu_set_qos_ul_local_JSON = OpenAPI_pdu_set_qos_para_rm_convertToJSON(qos_data->pdu_set_qos_ul);
+    if (pdu_set_qos_ul_local_JSON == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [pdu_set_qos_ul]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pduSetQosUl", pdu_set_qos_ul_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_qos_data_convertToJSON() failed [pdu_set_qos_ul]");
+        goto end;
+    }
+    } else if (qos_data->is_pdu_set_qos_ul_null) {
+        if (cJSON_AddNullToObject(item, "pduSetQosUl") == NULL) {
+            ogs_error("OpenAPI_qos_data_convertToJSON() failed [pdu_set_qos_ul]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -380,6 +432,10 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_parseFromJSON(cJSON *qos_dataJSON)
     cJSON *ext_max_data_burst_vol = NULL;
     cJSON *packet_delay_budget = NULL;
     cJSON *packet_error_rate = NULL;
+    cJSON *pdu_set_qos_dl = NULL;
+    OpenAPI_pdu_set_qos_para_rm_t *pdu_set_qos_dl_local_nonprim = NULL;
+    cJSON *pdu_set_qos_ul = NULL;
+    OpenAPI_pdu_set_qos_para_rm_t *pdu_set_qos_ul_local_nonprim = NULL;
     qos_id = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "qosId");
     if (!qos_id) {
         ogs_error("OpenAPI_qos_data_parseFromJSON() failed [qos_id]");
@@ -563,6 +619,28 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_parseFromJSON(cJSON *qos_dataJSON)
     }
     }
 
+    pdu_set_qos_dl = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "pduSetQosDl");
+    if (pdu_set_qos_dl) {
+    if (!cJSON_IsNull(pdu_set_qos_dl)) {
+    pdu_set_qos_dl_local_nonprim = OpenAPI_pdu_set_qos_para_rm_parseFromJSON(pdu_set_qos_dl);
+    if (!pdu_set_qos_dl_local_nonprim) {
+        ogs_error("OpenAPI_pdu_set_qos_para_rm_parseFromJSON failed [pdu_set_qos_dl]");
+        goto end;
+    }
+    }
+    }
+
+    pdu_set_qos_ul = cJSON_GetObjectItemCaseSensitive(qos_dataJSON, "pduSetQosUl");
+    if (pdu_set_qos_ul) {
+    if (!cJSON_IsNull(pdu_set_qos_ul)) {
+    pdu_set_qos_ul_local_nonprim = OpenAPI_pdu_set_qos_para_rm_parseFromJSON(pdu_set_qos_ul);
+    if (!pdu_set_qos_ul_local_nonprim) {
+        ogs_error("OpenAPI_pdu_set_qos_para_rm_parseFromJSON failed [pdu_set_qos_ul]");
+        goto end;
+    }
+    }
+    }
+
     qos_data_local_var = OpenAPI_qos_data_create (
         ogs_strdup(qos_id->valuestring),
         _5qi ? true : false,
@@ -604,7 +682,11 @@ OpenAPI_qos_data_t *OpenAPI_qos_data_parseFromJSON(cJSON *qos_dataJSON)
         ext_max_data_burst_vol ? ext_max_data_burst_vol->valuedouble : 0,
         packet_delay_budget ? true : false,
         packet_delay_budget ? packet_delay_budget->valuedouble : 0,
-        packet_error_rate && !cJSON_IsNull(packet_error_rate) ? ogs_strdup(packet_error_rate->valuestring) : NULL
+        packet_error_rate && !cJSON_IsNull(packet_error_rate) ? ogs_strdup(packet_error_rate->valuestring) : NULL,
+        pdu_set_qos_dl && cJSON_IsNull(pdu_set_qos_dl) ? true : false,
+        pdu_set_qos_dl ? pdu_set_qos_dl_local_nonprim : NULL,
+        pdu_set_qos_ul && cJSON_IsNull(pdu_set_qos_ul) ? true : false,
+        pdu_set_qos_ul ? pdu_set_qos_ul_local_nonprim : NULL
     );
 
     return qos_data_local_var;
@@ -612,6 +694,14 @@ end:
     if (arp_local_nonprim) {
         OpenAPI_arp_free(arp_local_nonprim);
         arp_local_nonprim = NULL;
+    }
+    if (pdu_set_qos_dl_local_nonprim) {
+        OpenAPI_pdu_set_qos_para_rm_free(pdu_set_qos_dl_local_nonprim);
+        pdu_set_qos_dl_local_nonprim = NULL;
+    }
+    if (pdu_set_qos_ul_local_nonprim) {
+        OpenAPI_pdu_set_qos_para_rm_free(pdu_set_qos_ul_local_nonprim);
+        pdu_set_qos_ul_local_nonprim = NULL;
     }
     return NULL;
 }

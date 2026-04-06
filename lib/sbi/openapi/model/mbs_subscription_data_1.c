@@ -7,7 +7,8 @@
 OpenAPI_mbs_subscription_data_1_t *OpenAPI_mbs_subscription_data_1_create(
     bool is_mbs_allowed,
     int mbs_allowed,
-    OpenAPI_list_t *mbs_session_id_list
+    OpenAPI_list_t *mbs_session_id_list,
+    OpenAPI_list_t *ue_mbs_assistance_info
 )
 {
     OpenAPI_mbs_subscription_data_1_t *mbs_subscription_data_1_local_var = ogs_malloc(sizeof(OpenAPI_mbs_subscription_data_1_t));
@@ -16,6 +17,7 @@ OpenAPI_mbs_subscription_data_1_t *OpenAPI_mbs_subscription_data_1_create(
     mbs_subscription_data_1_local_var->is_mbs_allowed = is_mbs_allowed;
     mbs_subscription_data_1_local_var->mbs_allowed = mbs_allowed;
     mbs_subscription_data_1_local_var->mbs_session_id_list = mbs_session_id_list;
+    mbs_subscription_data_1_local_var->ue_mbs_assistance_info = ue_mbs_assistance_info;
 
     return mbs_subscription_data_1_local_var;
 }
@@ -33,6 +35,13 @@ void OpenAPI_mbs_subscription_data_1_free(OpenAPI_mbs_subscription_data_1_t *mbs
         }
         OpenAPI_list_free(mbs_subscription_data_1->mbs_session_id_list);
         mbs_subscription_data_1->mbs_session_id_list = NULL;
+    }
+    if (mbs_subscription_data_1->ue_mbs_assistance_info) {
+        OpenAPI_list_for_each(mbs_subscription_data_1->ue_mbs_assistance_info, node) {
+            OpenAPI_mbs_session_id_1_free(node->data);
+        }
+        OpenAPI_list_free(mbs_subscription_data_1->ue_mbs_assistance_info);
+        mbs_subscription_data_1->ue_mbs_assistance_info = NULL;
     }
     ogs_free(mbs_subscription_data_1);
 }
@@ -71,6 +80,22 @@ cJSON *OpenAPI_mbs_subscription_data_1_convertToJSON(OpenAPI_mbs_subscription_da
     }
     }
 
+    if (mbs_subscription_data_1->ue_mbs_assistance_info) {
+    cJSON *ue_mbs_assistance_infoList = cJSON_AddArrayToObject(item, "ueMbsAssistanceInfo");
+    if (ue_mbs_assistance_infoList == NULL) {
+        ogs_error("OpenAPI_mbs_subscription_data_1_convertToJSON() failed [ue_mbs_assistance_info]");
+        goto end;
+    }
+    OpenAPI_list_for_each(mbs_subscription_data_1->ue_mbs_assistance_info, node) {
+        cJSON *itemLocal = OpenAPI_mbs_session_id_1_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_mbs_subscription_data_1_convertToJSON() failed [ue_mbs_assistance_info]");
+            goto end;
+        }
+        cJSON_AddItemToArray(ue_mbs_assistance_infoList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -82,6 +107,8 @@ OpenAPI_mbs_subscription_data_1_t *OpenAPI_mbs_subscription_data_1_parseFromJSON
     cJSON *mbs_allowed = NULL;
     cJSON *mbs_session_id_list = NULL;
     OpenAPI_list_t *mbs_session_id_listList = NULL;
+    cJSON *ue_mbs_assistance_info = NULL;
+    OpenAPI_list_t *ue_mbs_assistance_infoList = NULL;
     mbs_allowed = cJSON_GetObjectItemCaseSensitive(mbs_subscription_data_1JSON, "mbsAllowed");
     if (mbs_allowed) {
     if (!cJSON_IsBool(mbs_allowed)) {
@@ -114,10 +141,35 @@ OpenAPI_mbs_subscription_data_1_t *OpenAPI_mbs_subscription_data_1_parseFromJSON
         }
     }
 
+    ue_mbs_assistance_info = cJSON_GetObjectItemCaseSensitive(mbs_subscription_data_1JSON, "ueMbsAssistanceInfo");
+    if (ue_mbs_assistance_info) {
+        cJSON *ue_mbs_assistance_info_local = NULL;
+        if (!cJSON_IsArray(ue_mbs_assistance_info)) {
+            ogs_error("OpenAPI_mbs_subscription_data_1_parseFromJSON() failed [ue_mbs_assistance_info]");
+            goto end;
+        }
+
+        ue_mbs_assistance_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(ue_mbs_assistance_info_local, ue_mbs_assistance_info) {
+            if (!cJSON_IsObject(ue_mbs_assistance_info_local)) {
+                ogs_error("OpenAPI_mbs_subscription_data_1_parseFromJSON() failed [ue_mbs_assistance_info]");
+                goto end;
+            }
+            OpenAPI_mbs_session_id_1_t *ue_mbs_assistance_infoItem = OpenAPI_mbs_session_id_1_parseFromJSON(ue_mbs_assistance_info_local);
+            if (!ue_mbs_assistance_infoItem) {
+                ogs_error("No ue_mbs_assistance_infoItem");
+                goto end;
+            }
+            OpenAPI_list_add(ue_mbs_assistance_infoList, ue_mbs_assistance_infoItem);
+        }
+    }
+
     mbs_subscription_data_1_local_var = OpenAPI_mbs_subscription_data_1_create (
         mbs_allowed ? true : false,
         mbs_allowed ? mbs_allowed->valueint : 0,
-        mbs_session_id_list ? mbs_session_id_listList : NULL
+        mbs_session_id_list ? mbs_session_id_listList : NULL,
+        ue_mbs_assistance_info ? ue_mbs_assistance_infoList : NULL
     );
 
     return mbs_subscription_data_1_local_var;
@@ -128,6 +180,13 @@ end:
         }
         OpenAPI_list_free(mbs_session_id_listList);
         mbs_session_id_listList = NULL;
+    }
+    if (ue_mbs_assistance_infoList) {
+        OpenAPI_list_for_each(ue_mbs_assistance_infoList, node) {
+            OpenAPI_mbs_session_id_1_free(node->data);
+        }
+        OpenAPI_list_free(ue_mbs_assistance_infoList);
+        ue_mbs_assistance_infoList = NULL;
     }
     return NULL;
 }

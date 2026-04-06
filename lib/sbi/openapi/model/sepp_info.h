@@ -12,6 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sepp_info_s OpenAPI_sepp_info_t;
+#include "n32_purpose.h"
 #include "plmn_id.h"
 #include "plmn_id_nid.h"
 
@@ -19,19 +21,20 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sepp_info_s OpenAPI_sepp_info_t;
-typedef struct OpenAPI_sepp_info_s {
+struct OpenAPI_sepp_info_s {
     char *sepp_prefix;
     OpenAPI_list_t* sepp_ports;
     OpenAPI_list_t *remote_plmn_list;
     OpenAPI_list_t *remote_snpn_list;
-} OpenAPI_sepp_info_t;
+    OpenAPI_list_t *n32_purposes;
+};
 
 OpenAPI_sepp_info_t *OpenAPI_sepp_info_create(
     char *sepp_prefix,
     OpenAPI_list_t* sepp_ports,
     OpenAPI_list_t *remote_plmn_list,
-    OpenAPI_list_t *remote_snpn_list
+    OpenAPI_list_t *remote_snpn_list,
+    OpenAPI_list_t *n32_purposes
 );
 void OpenAPI_sepp_info_free(OpenAPI_sepp_info_t *sepp_info);
 OpenAPI_sepp_info_t *OpenAPI_sepp_info_parseFromJSON(cJSON *sepp_infoJSON);

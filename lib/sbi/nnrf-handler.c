@@ -1232,6 +1232,8 @@ void ogs_nnrf_disc_handle_nf_discover_search_result(
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
     ogs_assert(SearchResult);
+    ogs_assert(SearchResult->validity_period);
+    ogs_assert(SearchResult->nf_instances);
 
     OpenAPI_list_for_each(SearchResult->nf_instances, node) {
         OpenAPI_nf_profile_t *NFProfile = NULL;
@@ -1296,22 +1298,11 @@ void ogs_nnrf_disc_handle_nf_discover_search_result(
             }
 
             /* TIME : Update validity from NRF */
-            if (SearchResult->is_validity_period &&
-                SearchResult->validity_period) {
-                nf_instance->time.validity_duration =
-                        SearchResult->validity_period;
+            nf_instance->time.validity_duration = SearchResult->validity_period;
 
-                ogs_assert(nf_instance->t_validity);
-                ogs_timer_start(nf_instance->t_validity,
-                    ogs_time_from_sec(nf_instance->time.validity_duration));
-
-            } else
-                ogs_warn("[%s] NF Instance validity-time should not 0 "
-                        "[type:%s]",
-                    nf_instance->id,
-                    nf_instance->nf_type ?
-                        OpenAPI_nf_type_ToString(nf_instance->nf_type) :
-                        "NULL");
+            ogs_assert(nf_instance->t_validity);
+            ogs_timer_start(nf_instance->t_validity,
+                ogs_time_from_sec(nf_instance->time.validity_duration));
 
             ogs_info("[%s] (NF-discover) NF Profile updated "
                     "[type:%s validity:%ds]",

@@ -1,0 +1,141 @@
+openapi: 3.0.0
+info:
+  title: '5G Media Streaming: Client data syntax for QoE metrics reporting'
+  version: 1.0.0
+  description: |
+    5GMS client data syntax for QoE metrics reporting
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: '5GMS client data syntax for QoE metrics reporting'
+    description: '5G Media Streaming: Client data syntax for use in QoE metrics reporting envelope'
+
+externalDocs:
+  description: 'TS 26.512 V19.0.0; 5G Media Streaming (5GMS); Protocols'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.512/'
+
+paths: {}
+
+components:
+  schemas:
+    MediaStreamingClientData:
+      description: 'Envelope for client data pertaining to the 5G Media Streaming System.'
+      type: object
+      required:
+        - requestUrl
+      anyOf:
+        - required: [cmcdSessionInfo]
+        - required: [cmcdObjectInfo]
+        - required: [cmcdRequestInfo]
+        - required: [cmcdStatusInfo]
+      properties:
+        requestUrl:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+        cmcdSessionInfo:
+          $ref: '#/components/schemas/CmcdSessionInfo'
+        cmcdObjectInfo:
+          $ref: '#/components/schemas/CmcdObjectInfo'
+        cmcdRequestInfo:
+          $ref: '#/components/schemas/CmcdRequestInfo'
+        cmcdStatusInfo:
+          $ref: '#/components/schemas/CmcdStatusInfo'
+
+    ##########################################
+    # Common Media Client Data per CTA-5004 V1
+    ##########################################
+    CmcdSessionInfo:
+      description: 'An object containing session-scope CMCD keys'
+      type: object
+      required:
+        - sid
+      properties:
+        v:
+          description: 'CMCD version'
+          type: integer
+          minimum: 1
+        sid:
+          description: 'Session identifier'
+          type: string
+        cid:
+          description: 'Content identifier'
+          type: string
+        st:
+          allOf:
+            - description: 'Stream type'
+            - $ref: '#/components/schemas/CmcdStreamType'
+        sf:
+          allOf:
+            - description: 'Streaming format'
+            - $ref: '#/components/schemas/CmcdStreamingFormat'
+        pr:
+          description: 'Playback rate'
+          type: number
+
+    CmcdObjectInfo:
+      description: 'An object containing object-scope CMCD keys'
+      type: object
+      properties:
+        ot:
+          allOf:
+            - description: 'Object type'
+            - $ref: '#/components/schemas/CmcdObjectType'
+        d:
+          description: 'Object duration (milliseconds)'
+          type: integer
+        br:
+          description: 'Encoded bit rate (kilobits per second)'
+          type: integer
+        tb:
+          description: 'Top bit rate (kilobits per second)'
+          type: integer
+
+    CmcdRequestInfo:
+      description: 'An object containing request-scope CMCD keys'
+      type: object
+      properties:
+        su:
+          description: 'Start-up'
+          type: boolean
+        mtp:
+          description: 'Measured throughput (kilobits per second)'
+          type: integer
+        dl:
+          description: 'Deadline (milliseconds)'
+          type: integer
+        bl:
+          description: 'Buffer length (milliseconds)'
+          type: integer
+        nor:
+          allOf:
+            - description: 'Next object request'
+            - $ref: 'TS26510_CommonData.yaml#/components/schemas/RelativeUrl'
+        nrr:
+          description: 'Next range request'
+          type: string
+        
+    CmcdStatusInfo:
+      description: 'An object containing status-scope CMCD keys'
+      type: object
+      properties:
+        rtp:
+          description: 'Requested maximum throughput (kilobits per second)'
+          type: integer
+        bs:
+          description: 'Buffer starvation'
+          type: boolean
+
+    CmcdStreamType:
+      description: 'Stream type'
+      type: string
+      enum: [v, l]
+
+    CmcdStreamingFormat:
+      description: 'Streaming format'
+      type: string
+      enum: [d, h, s, o]
+
+    CmcdObjectType:
+      description: 'Media type of object'
+      type: string
+      enum: [m, a, v, av, i, c, tt, k, o]

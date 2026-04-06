@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_null_value_NULL = 0, OpenAPI_null_value_null } OpenAPI_null_value_e;
+typedef enum { OpenAPI_null_value_NULL = 0 } OpenAPI_null_value_e;
 
 char* OpenAPI_null_value_ToString(OpenAPI_null_value_e null_value);
 

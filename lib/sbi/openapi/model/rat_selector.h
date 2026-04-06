@@ -1,7 +1,7 @@
 /*
  * rat_selector.h
  *
- * 
+ * Indicates the RAT type for the transfer of N2 information
  */
 
 #ifndef _OpenAPI_rat_selector_H_

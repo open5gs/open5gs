@@ -51,7 +51,8 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
     ogs_sbi_xact_t *sbi_xact = NULL;
     ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
 
-    ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+    int service_name_id = OpenAPI_service_name_NULL;
+    OpenAPI_service_name_e service_name = OpenAPI_service_name_NULL;
 
     pcf_ue_am_t *pcf_ue_am = NULL;
     ogs_pool_id_t pcf_ue_am_id = OGS_INVALID_POOL_ID;
@@ -106,8 +107,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             break;
         }
 
-        SWITCH(message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message.h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nnrf_nfm:
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY)
@@ -136,7 +139,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             END
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL)
+        case OpenAPI_service_name_npcf_am_policy_control:
             SWITCH(message.h.method)
             CASE(OGS_SBI_HTTP_METHOD_POST)
                 if (message.PolicyAssociationRequest &&
@@ -184,7 +187,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             }
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL)
+        case OpenAPI_service_name_npcf_smpolicycontrol:
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_SM_POLICIES)
                 if (!message.h.resource.component[1]) {
@@ -289,7 +292,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             }
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION)
+        case OpenAPI_service_name_npcf_policyauthorization:
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_APP_SESSIONS)
                 if (!message.h.resource.component[1]) {
@@ -342,13 +345,13 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             }
             break;
 
-        DEFAULT
+        default:
             ogs_error("Invalid API name [%s]", message.h.service.name);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                     "Invalid API name", message.h.service.name, NULL));
-        END
+        }
 
         /* In lib/sbi/server.c, notify_completed() releases 'request' buffer. */
         ogs_sbi_message_free(&message);
@@ -374,8 +377,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             break;
         }
 
-        SWITCH(message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message.h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nnrf_nfm:
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
@@ -467,7 +472,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             END
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
+        case OpenAPI_service_name_nnrf_disc:
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
                 sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
@@ -505,7 +510,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             END
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NUDR_DR)
+        case OpenAPI_service_name_nudr_dr:
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_POLICY_DATA)
                 SWITCH(message.h.resource.component[3])
@@ -613,7 +618,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             END
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT)
+        case OpenAPI_service_name_nbsf_management:
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_PCF_BINDINGS)
@@ -672,10 +677,10 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("Invalid API name [%s]", message.h.service.name);
             ogs_assert_if_reached();
-        END
+        }
 
         ogs_sbi_message_free(&message);
         ogs_sbi_response_free(response);
@@ -775,7 +780,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     sbi_xact->assoc_stream_id <= OGS_MAX_POOL_ID);
             stream = ogs_sbi_stream_find_by_id(sbi_xact->assoc_stream_id);
 
-            service_type = sbi_xact->service_type;
+            service_name = sbi_xact->service_name;
 
             ogs_sbi_xact_remove(sbi_xact);
 
@@ -811,7 +816,7 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
 
             default:
                 ogs_fatal("Not implemented [%s:%d]",
-                    ogs_sbi_service_type_to_name(service_type),
+                    OpenAPI_service_name_ToString(service_name),
                     sbi_object->type);
                 ogs_assert_if_reached();
             }

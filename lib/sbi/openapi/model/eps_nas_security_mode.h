@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_eps_nas_security_mode_s OpenAPI_eps_nas_security_mode_t;
 #include "eps_nas_ciphering_algorithm.h"
 #include "eps_nas_integrity_algorithm.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_eps_nas_security_mode_s OpenAPI_eps_nas_security_mode_t;
-typedef struct OpenAPI_eps_nas_security_mode_s {
+struct OpenAPI_eps_nas_security_mode_s {
     OpenAPI_eps_nas_integrity_algorithm_e integrity_algorithm;
     OpenAPI_eps_nas_ciphering_algorithm_e ciphering_algorithm;
-} OpenAPI_eps_nas_security_mode_t;
+};
 
 OpenAPI_eps_nas_security_mode_t *OpenAPI_eps_nas_security_mode_create(
     OpenAPI_eps_nas_integrity_algorithm_e integrity_algorithm,

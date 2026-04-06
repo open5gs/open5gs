@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_lte_v2x_auth_s OpenAPI_lte_v2x_auth_t;
 #include "ue_auth.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_lte_v2x_auth_s OpenAPI_lte_v2x_auth_t;
-typedef struct OpenAPI_lte_v2x_auth_s {
+struct OpenAPI_lte_v2x_auth_s {
     OpenAPI_ue_auth_e vehicle_ue_auth;
     OpenAPI_ue_auth_e pedestrian_ue_auth;
-} OpenAPI_lte_v2x_auth_t;
+};
 
 OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_create(
     OpenAPI_ue_auth_e vehicle_ue_auth,

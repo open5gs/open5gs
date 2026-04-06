@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_service_specific_authorization_info_s OpenAPI_service_specific_authorization_info_t;
 #include "authorization_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_service_specific_authorization_info_s OpenAPI_service_specific_authorization_info_t;
-typedef struct OpenAPI_service_specific_authorization_info_s {
-    OpenAPI_list_t *service_specific_authorization_list;
-} OpenAPI_service_specific_authorization_info_t;
+struct OpenAPI_service_specific_authorization_info_s {
+    OpenAPI_list_t* service_specific_authorization_list;
+};
 
 OpenAPI_service_specific_authorization_info_t *OpenAPI_service_specific_authorization_info_create(
-    OpenAPI_list_t *service_specific_authorization_list
+    OpenAPI_list_t* service_specific_authorization_list
 );
 void OpenAPI_service_specific_authorization_info_free(OpenAPI_service_specific_authorization_info_t *service_specific_authorization_info);
 OpenAPI_service_specific_authorization_info_t *OpenAPI_service_specific_authorization_info_parseFromJSON(cJSON *service_specific_authorization_infoJSON);

@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_update_sm_context_400_response_s OpenAPI_update_sm_context_400_response_t;
 #include "sm_context_update_error.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_update_sm_context_400_response_s OpenAPI_update_sm_context_400_response_t;
-typedef struct OpenAPI_update_sm_context_400_response_s {
+struct OpenAPI_update_sm_context_400_response_s {
     struct OpenAPI_sm_context_update_error_s *json_data;
     OpenAPI_binary_t* binary_data_n1_sm_message;
     OpenAPI_binary_t* binary_data_n2_sm_information;
-} OpenAPI_update_sm_context_400_response_t;
+};
 
 OpenAPI_update_sm_context_400_response_t *OpenAPI_update_sm_context_400_response_create(
     OpenAPI_sm_context_update_error_t *json_data,

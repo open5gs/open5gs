@@ -1,0 +1,192 @@
+openapi: 3.0.0
+info:
+  title: MSGS_ASRegistration
+  version: 1.2.0
+  description: |
+    API for MSGS AS Registration Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.538 V19.4.0; Enabling MSGin5G Service; Application Programming Interfaces (API)
+    specification; Stage 3
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.538/
+
+servers:
+  - url: '{apiRoot}/msgs-asregistration/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /registrations:
+    post:
+      summary: Registers a new AS at a MSGin5G Server
+      tags:
+        - AS registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ASRegistration'
+      responses:
+        '201':
+          description: AS information is registered successfully at MSGin5G Server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ASRegistrationAck'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /registrations/{registrationId}:
+    delete:
+      summary: Delete an existing AS registration at MSGin5G Server
+      tags:
+        - AS DeRegistration
+      parameters:
+        - name: registrationId
+          in: path
+          description: AS registration Id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The individual AS registration is deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ASRegistrationAck'
+        '204':
+          description: >
+            No Content. The individual AS registration resource is deleted successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+
+  schemas:
+#
+# STRUCTURED DATA TYPES
+#
+    ASRegistration:
+      description: AS registration data
+      type: object
+      required:
+        - asSvcId
+      properties:
+        asSvcId:
+          type: string
+        appId:
+          type: string
+        targetUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        reqExprTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        exGroupList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: The group list which the AS will control.
+        asProf:
+          $ref: '#/components/schemas/ASProfile'
+
+    ASRegistrationAck:
+      description: AS registration response data
+      type: object
+      required:
+        - asSvcId
+        - result
+      properties:
+        asSvcId:
+          type: string
+        result:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        regExprTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+
+
+    ASProfile:
+      description: AS profile information
+      type: object
+      properties:
+        appName:
+          type: string
+        appProviders:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: The provider of the AS.
+        appSenarios:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: The application scenario.
+        appCategory:
+          type: string
+        asStatus:
+          type: string

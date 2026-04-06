@@ -1,0 +1,1041 @@
+openapi: 3.0.0
+
+info:
+  title: SS_Events
+  description: |
+    API for SEAL Events management.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.3.0"
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-events/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /subscriptions:
+    post:
+      description: Creates a new individual SEAL Event Subscription.
+      operationId: CreateSealEventSubsc
+      tags:
+        - SEAL Events Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SEALEventSubscription'
+      callbacks:
+        notificationDestination:
+          '{$request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SEALEventNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: SEAL Events subscription resource created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SEALEventSubscription'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    delete:
+      description: Deletes an individual SEAL Event Subscription.
+      operationId: DeleteIndSealEventSubsc
+      tags:
+        - Individual SEAL Events Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifier of an individual Events Subscription
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            The individual SEAL Events Subscription matching the subscriptionId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      description: Modify an existing SEAL Event Subscription.
+      operationId: ModifyIndSealEventSubsc
+      tags:
+        - Individual SEAL Events Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifier of an individual Events Subscription
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/SEALEventSubscriptionPatch'
+      responses:
+        '200':
+          description: >
+            The definition SEAL event subscription is modified successfully and
+            a representation of the updated service API is returned in the request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SEALEventSubscription'
+        '204':
+          description: No Content. The SEAL Event Subscription is modified successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      description: Replace an existing SEAl event subscription.
+      operationId: UpdateIndSealEventSubsc
+      tags:
+        - Individual SEAL Events Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifier of an individual Events Subscription
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Individual SEAL events subscription to be replaced.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SEALEventSubscription'
+      responses:
+        '200':
+          description: SEAL Event subscription updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SEALEventSubscription'
+        '204':
+          description: No Content. Individual SEAL event subscription was updated successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    SEALEventSubscription:
+      description: Represents an individual SEAL Event Subscription resource.
+      type: object
+      properties:
+        subscriberId:
+          type: string
+          description: String identifying the subscriber of the event.
+        eventSubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventSubscription'
+          minItems: 1
+          description: Subscribed events.
+        eventReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        requestTestNotification:
+          type: boolean
+          description: >
+            Set to true by Subscriber to request the SEAL server to send a test notification.
+            Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        eventDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/SEALEventDetail'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - subscriberId
+        - eventSubs
+        - eventReq
+        - notificationDestination
+
+    SEALEventSubscriptionPatch:
+      description: Represents the partial update of individual SEAL Event Subscription resource.
+      type: object
+      properties:
+        eventSubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventSubscription'
+          minItems: 1
+          description: Subscribed events.
+        eventReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    SEALEventNotification:
+      description: Represents notification information of a SEAL Event.
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+          description: Identifier of the subscription resource.
+        eventDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/SEALEventDetail'
+          minItems: 1
+          description: Detailed notifications of individual events.
+      required:
+        - subscriptionId
+        - eventDetails
+
+    EventSubscription:
+      description: Represents the subscription to a single SEAL event.
+      type: object
+      properties:
+        eventId:
+          $ref: '#/components/schemas/SEALEvent'
+        valGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/VALGroupFilter'
+          minItems: 1
+          description: >
+            Each element of the array represents the VAL group identifier(s) of a VAL service
+            that the subscriber wants to know in the interested event.
+        identities:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentityFilter'
+          minItems: 1
+          description: >
+            Each element of the array represents the VAL User / UE IDs of a VAL service
+            that the event subscriber wants to know in the interested event.
+        monFltr:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorFilter'
+          minItems: 1
+          description: >
+            List of event monitoring details that the subscriber wishes to mmonitor the VAL UEs,
+            VAL group and/or VAL service.
+        areaInt:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorLocationInterestFilter'
+          minItems: 1
+          description: >
+            Represents the list of VAL User / UE IDs and the area of interest information
+            which the subscriber wishes to monitor the location deviation of VAL User / UEs.
+        locAreaMon:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonLocAreaInterestFltr'
+          minItems: 1
+          description: >
+            Each element represents the location area monitoring details to monitor the
+            VA UEs moving in and out of the provided location area.
+        partialFailRep:
+          $ref: '#/components/schemas/PartialEventSubscFailRep'
+        satSfTrigger:
+          type: array
+          items:
+            $ref: '#/components/schemas/SatSfTrigger'
+          minItems: 1
+      required:
+        - eventId
+
+    SEALEventDetail:
+      description: Represents the SEAL event details.
+      type: object
+      properties:
+        eventId:
+          $ref: '#/components/schemas/SEALEvent'
+        lmInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/LMInformation'
+          minItems: 1      
+        valGroupDocuments:
+          type: array
+          items:
+            $ref: 'TS29549_SS_GroupManagement.yaml#/components/schemas/VALGroupDocument'
+          minItems: 1
+          description: >
+            The VAL groups documents with modified membership and configuration information.
+        profileDocs:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ProfileDoc'
+          minItems: 1
+          description: Updated profile information associated with VAL Users or VAL UEs.
+        msgFltrs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageFilter'
+          minItems: 1
+          description: >
+            The message filter information for various member VAL User or UEs of the VAL group.
+        monRep:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorEventsReport'
+          minItems: 1
+          description: The events reports with details of the events related to the VAL UE(s).
+        locAdhr:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationDevMonReport'
+          minItems: 1
+          description: >
+            The location deviation information for the interested VAL User ID or UE IDs
+            in a given location.
+        tempGroupInfo:
+          $ref: '#/components/schemas/TempGroupInfo'
+        locAreaMonRep:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationAreaMonReport'
+          minItems: 1
+          description: The location area monitoring of the given area of interest.
+        valGroupIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Contains the identifier(s) of the deleted VAL Group(s).
+        satSfInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/SatSfInfo'
+          minItems: 1
+      required:
+        - eventId
+
+    VALGroupFilter:
+      description: Represents a filter of VAL group identifiers belonging to a VAL service.
+      type: object
+      properties:
+        valSvcId:
+          type: string
+          description: Identity of the VAL service
+        valGrpIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: >
+            VAL group identifiers that event subscriber wants to know in the interested event.
+      required:
+        - valGrpIds
+
+    IdentityFilter:
+      description: Represents a filter of VAL User / UE identities belonging to a VAL service.
+      type: object
+      properties:
+        valSvcId:
+          type: string
+          description: Identity of the VAL service
+        valTgtUes:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: >
+            VAL User IDs or VAL UE IDs that the event subscriber wants to know
+            in the interested event.
+        suppLoc:
+          type: boolean
+          description: Set to true by Subscriber to request the supplementary location information.
+        locQoS:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocationQoS'
+        velocityReq:
+          type: boolean
+          description: Indicates whether velocity of the location information is requested.
+        locDataStatsReq:
+          type: boolean
+          description: Indicates whether the location data statistics is requested.
+        dataStatisticsReq:
+          $ref: '#/components/schemas/DataStatisticsReq'
+
+    LMInformation:
+      description: Represents the location information for a VAL User ID or a VAL UE ID.
+      type: object
+      properties:
+        valTgtUe:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        locInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        timeStamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        valSvcId:
+          type: string
+          description: Identity of the VAL service
+      required:
+        - locInfo
+        - valTgtUe
+
+    MessageFilter:
+      description: Represents the message filters applicable to a VAL User ID or VAL UE ID.
+      type: object
+      properties:
+        reqUe:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        tgtUe:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: List of VAL User or UE IDs whose message to be sent.
+        maxMsgs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        scheds:
+          type: array
+          items:
+            $ref: 'TS29122_CpProvisioning.yaml#/components/schemas/ScheduledCommunicationTime'
+          minItems: 1
+          description: Time frame associated with total number of messages.
+        msgTypes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: List of message types to be sent to VAL UE.
+      required:
+        - reqUe
+
+    MonitorFilter:
+      description: Represents the event monitoring filters applicable to a VAL User ID or VAL UE ID.
+      type: object
+      properties:
+        idnts:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: List of VAL User or UE IDs whose events monitoring is requested.
+        valSvcId:
+          type: string
+          description: Identity of the VAL service.
+        valGrpId:
+          type: string
+          description: Identity of the group of the target UEs.
+        profId:
+          type: string
+          description: The monitoring profile ID identifying a list of monitoring, analytics events.
+        valCnds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidityConditions'
+          minItems: 1
+          description: The temporal,spatial conditions for the events to be considered valid.
+        evntDets:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorEvents'
+          minItems: 1
+          description: List of monitoring, analytics events to be monitored.
+
+    MonitorEvents:
+      description: List of event types to be monitored in the context of events monitoring service.
+      type: object
+      properties:
+        cnEvnts:
+          type: array
+          items:
+            $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/MonitoringType'
+          minItems: 1
+          description: List of monitoring events related to VAL UE.
+        anlEvnts:
+          type: array
+          items:
+            $ref: 'TS29522_AnalyticsExposure.yaml#/components/schemas/AnalyticsEvent'
+          minItems: 1
+          description: List of analytics events related to VAL UE.
+
+    MonitorEventsReport:
+      description: List of monitoring and/or analytics events related to VAL UE.
+      type: object
+      properties:
+        tgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        evnts:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitorEvents'
+          minItems: 1
+          description: List of monitoring and analytics events related to VAL UE.
+      required:
+        - tgtUe
+        - evnts
+
+    ValidityConditions:
+      description: List of monitoring and/or analytics events related to VAL UE.
+      type: object
+      properties:
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        tmWdws:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+          minItems: 1
+          description: Time window validity conditions.
+
+    MonitorLocationInterestFilter:
+      description: Represents the location monitoring filter information.
+      type: object
+      properties:
+        tgtUes:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: List of VAL Users or UE IDs for which location monitoring is requested.
+        locInt:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        valSvcId:
+          $ref: 'TS29549_SS_VALServiceAreaConfiguration.yaml#/components/schemas/ValSvcAreaId'
+        notInt:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        dynamicLoc:
+          $ref: '#/components/schemas/ReferenceUEDetail'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocDevNotification'
+          minItems: 1
+        geofCond:
+          $ref: '#/components/schemas/GeofencingConditions'
+      required:
+        - tgtUes
+        - notInt
+      oneOf:
+        - required: [locInt]
+        - required: [valSvcId]
+        - required: [dynamicLoc]
+
+    LocationDevMonReport:
+      description: Location deviation monitoring report.
+      type: object
+      properties:
+        tgtUes:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: List of VAL Users or UE IDs for which report is related to.
+        locInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        notifType:
+          $ref: '#/components/schemas/LocDevNotification'
+      required:
+        - tgtUes
+        - locInfo
+        - notifType
+
+    TempGroupInfo:
+      description: Represents the created temporary VAL group information.
+      type: object
+      properties:
+        valGrpIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        tempValGrpId:
+          type: string
+        valServIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - valGrpIds
+        - tempValGrpId
+
+    MonLocAreaInterestFltr:
+      description: >
+        Filter information indicate the area of interest and triggering/geofencing events.
+      type: object
+      properties:
+        locInfoCri:
+          $ref: '#/components/schemas/LocationInfoCriteria'
+        trigEvnts:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonLocTriggerEvent'
+          minItems: 1
+        valServiceId:
+          type: string
+      required:
+        - locInfoCri
+
+
+    LocationInfoCriteria:
+      description: >
+        Geographic location and reference UE details, where the UEs moving in and out
+        to be monitored.
+      type: object
+      properties:
+        geoArea:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        refUe:
+          $ref: '#/components/schemas/ReferenceUEDetail'
+        valSvcAreaId:
+          $ref: 'TS29549_SS_VALServiceAreaConfiguration.yaml#/components/schemas/ValSvcAreaId'
+      oneOf:
+        - required: [geoArea]
+        - required: [refUe]
+
+    ReferenceUEDetail:
+      description: Reference UE details, where the UEs moving in and out to be monitored.
+      type: object
+      properties:
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        proxRange:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        proxRangeFrac:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+      required:
+        - valTgtUe
+        - proxRange
+
+    LocationAreaMonReport:
+      description: Event report to notify the VAL UEs moving in or out from a given location.
+      type: object
+      properties:
+        curPreUEs:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: List of identities of all VAL UEs present in the given location area.
+        moveInOutUEs:
+          $ref: '#/components/schemas/MoveInOutUEDetails'
+        trigEvnt:
+          $ref: '#/components/schemas/MonLocTriggerEvent'
+
+    MoveInOutUEDetails:
+      description: List of UEs moved in and out.
+      type: object
+      properties:
+        moveInUEs:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: >
+            List of identities of VAL UEs who moved in to given location area
+            since previous notification.
+        numUEsMovedIn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        timingUEsMovedIn:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MovTimingInfo'
+          minProperties: 1
+          description: >
+            Contains the timing information of the VAL UE(s) that moved into the geofencing area
+            since the previous notification.
+            The key of the map shall be set to the value of the identifier of the VAL UE (among the
+            ones provided within the moveInUEs attribute) to which the timing information provided
+            within the map value is related.
+        moveOutUEs:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: >
+            List of identities of VAL UEs who moved out of the given location area
+            since previous notification.
+        numUEsMovedOut:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        timingUEsMovedOut:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MovTimingInfo'
+          minProperties: 1
+          description: >
+            Contains the timing information of the VAL UE(s) that moved out of the geofencing area
+            since the previous notification.
+            The key of the map shall be set to the value of the identifier of the VAL UE (among the
+            ones provided within the "moveOutUEs" attribute) to which the timing information
+            provided within the map value is related.
+
+    PartialEventSubscFailRep:
+      description: Represents the partial failure report during the subscription creation or update.
+      type: object
+      properties:
+        valTgtUes:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: >
+            List of VAL user(s) / VAL UE(s) whose identifier(s) is not found.
+        valGrpIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: >
+            List of VAL group(s) whose identifier(s) is not found.
+      oneOf:
+        - required: [valTgtUes]
+        - required: [valGrpIds]
+
+    DataStatisticsReq:
+      description: >
+        Represents the required information when the target UE's location data is calculated.
+      type: object
+      properties:
+        timeReqs:
+          $ref: '#/components/schemas/TimeReqs'
+        locReqs:
+          type: array
+          items:
+            $ref: 'TS29549_SS_NetworkResourceAdaptation.yaml#/components/schemas/GeoArea'
+          minItems: 1
+      anyOf:
+        - required: [timeReqs]
+        - required: [locReqs]
+
+    TimeReqs:
+      description: >
+        Represents the time information when the target UE's location data is calculated.
+      type: object
+      properties:
+        timeWindows:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+          minItems: 1
+        timeSchedule:
+          type: array
+          items:
+            $ref: 'TS29122_CpProvisioning.yaml#/components/schemas/ScheduledCommunicationTime'
+          minItems: 1
+      oneOf:
+        - required: [timeWindows]
+        - required: [timeSchedule]
+
+    GeofencingConditions:
+      description: Represents the geofencing conditions.
+      type: object
+      properties:
+        plmn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        roamingInd:
+          type: boolean
+          description: Represents the roaming status.
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        locInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        schedules:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ScheduledCommunicationTime'
+          minItems: 1
+        refUECap:
+          $ref: '#/components/schemas/RefUeCap'
+
+    MovTimingInfo:
+      description: Represents the timing information of a VAL UE's movements.
+      type: object
+      properties:
+        timestamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+      anyOf:
+        - required: [timestamp]
+        - required: [duration]
+
+    SatSfInfo:
+      description: Represents the event report of satellite SF information.
+      type: object
+      properties:
+        satSfTrigger:
+          $ref: '#/components/schemas/SatSfTrigger'
+        tgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        ueSfMode:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/UeStrAndFwdStatus'
+        estTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        fLinkAvail:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        timeStamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - satSfTrigger
+        - tgtUe
+
+    RefUeCap:
+      description: >
+        Represents the capabilities of the reference UE.
+      type: object
+      properties:
+        refUECap:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+      required:
+        - refUECap
+
+# Simple data types and Enumerations
+
+    SEALEvent:
+      anyOf:
+      - type: string
+        enum:
+          - LM_LOCATION_INFO_CHANGE
+          - GM_GROUP_INFO_CHANGE
+          - CM_USER_PROFILE_CHANGE
+          - GM_GROUP_CREATE
+          - NRM_MONITOR_UE_USER_EVENTS
+          - LM_LOCATION_DEVIATION_MONITOR
+          - GM_TEMP_GROUP_FORMATION
+          - LM_LOCATION_AREA_MONITOR
+          - GM_GROUP_DELETION
+          - NRM_SAT_SF_INFO
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents the type of SEAL events that can be subscribed.  
+        Possible values are:
+        - LM_LOCATION_INFO_CHANGE: Events related to the location information of VAL Users or
+          VAL UEs from the Location Management Server.
+        - GM_GROUP_INFO_CHANGE: Events related to the modification of VAL group membership
+          and configuration information from the Group Management Server.
+        - CM_USER_PROFILE_CHANGE: Events related to update of user profile information from
+          the Configuration Management Server.
+        - GM_GROUP_CREATE: Events related to creation of new VAL groups from the Group
+          Mananagement Server.
+        - NRM_MONITOR_UE_USER_EVENTS: Monitoring and analytic events related to VAL UEs, 
+          users or VAL group, from the Network Resource Management Server.
+        - LM_LOCATION_DEVIATION_MONITOR: Events from Location Management server,
+          related to the deviation of the VAL User(s) / UE(s) location from an area of interest.
+        - GM_TEMP_GROUP_FORMATION: Events related to the formation of new temporary VAL groups
+          from the Group Management Server.
+        - LM_LOCATION_AREA_MONITOR: Events from Location Management server, related to the list
+          of UEs moving in or moving out of the specific location.
+        - GM_GROUP_DELETION: Events related to deletion of existing VAL Group(s) from the GM Server.
+        - NRM_SAT_SF_INFO: Events related to satellite S&F information.
+
+    LocDevNotification:
+      anyOf:
+      - type: string
+        enum:
+          - NOTIFY_MISMATCH_LOCATION
+          - NOTIFY_ABSENCE
+          - NOTIFY_PRESENCE
+          - NOTIFY_UNKNOWN
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Possible values are: 
+        Enumeration of location deviation notification reports.  
+        - NOTIFY_MISMATCH_LOCATION: This value indicates that the location information of
+          the VAL UE(s) from the SEAL LM client and the core network are not matching.
+        - NOTIFY_ABSENCE: This value indicates that the current location information of
+          the VAL UE(s)is deviating from the VAL server's area of interest.
+        - NOTIFY_PRESENCE: This value indicates that the current location information of
+          the VAL UE(s) is within the VAL server's area of interest.
+        - NOTIFY_UNKNOWN: This value indicates that the LM server cannot determine
+          whether the target VAL UE current location is within the VAL server's
+          dynamic area of interest information or not.
+
+    MonLocTriggerEvent:
+      anyOf:
+      - type: string
+        enum:
+          - DISTANCE_TRAVELLED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Identifies the triggering event in the location area monitor filtering.  
+        Possible values are:
+        - DISTANCE_TRAVELLED: This value indicates the trigger event for the location area
+          monitoring based on the distance travelled by the reference UE.
+
+    SatSfTrigger:
+      anyOf:
+      - type: string
+        enum:
+          - UE_SF_MODE
+          - EST_DELIVERY_TIME
+          - FLINK_AVAIL_PERIOD
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Identifies the triggering event in the location area monitor filtering.  
+        Possible values are:
+        - UE_SF_MODE: Indicates that the triggering condition is the UE status in S&F mode.
+        - EST_DELIVERY_TIME: Indicates that the triggering condition is the estimated S&F DL 
+          delivery time.
+        - FLINK_AVAIL_PERIOD: Indicates that the triggering condition is the feeder link 
+          availability period.

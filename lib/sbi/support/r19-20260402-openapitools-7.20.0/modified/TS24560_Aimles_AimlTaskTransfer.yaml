@@ -1,0 +1,260 @@
+openapi: 3.0.0
+
+info:
+  title: Aimles_AimlTaskTransfer
+  version: 1.0.2
+  description: |
+    API for AIMLE Server AI/ML Task Transfer Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.560 V19.1.0; Artificial Intelligence / Machine Learning (AIML) Services – Service
+    Enabler Architecture Layer for Verticals (SEAL); Protocol Specification; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/24_series/24.560/'
+
+servers:
+  - url: '{apiRoot}/aimles-task-transfer/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /assist-tt:
+    post:
+      summary: >
+        Enables the AIMLE client to request the AIMLE server to perform task transfer assist.
+      operationId: AimlTtAssist
+      tags:
+        - AI/ML task transfer assist
+      requestBody:
+        description: Contains the AIMLE server task transfer assist request information.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AimlesTaskTransferAssistReq'
+      responses:
+        '200':
+          description: Contains the AIMLE server task transfer assist response information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AimlesTaskTransferAssistResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /request-ctld:
+    post:
+      summary: >
+        Enables the AIMLE client to request the AIMLE server to perform AIMLE server controlled
+        task transfer.
+      operationId: CtldAimlTt
+      tags:
+        - Controlled AI/ML task transfer
+      requestBody:
+        description: Contains the AIMLE server controlled task transfer request information.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AimlesControlledTaskTransferReq'
+      responses:
+        '200':
+          description: Contains the AIMLE server controlled task transfer response information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AimlesControlledTaskTransferResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+# Structured data types
+
+    AimlesTaskTransferAssistReq:
+      description: Contains the AIMLE server task transfer assist request information.
+      type: object
+      required:
+      - requestorId
+      - aimlTaskType
+      - aimlInfoType
+      properties:
+        requestorId:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        valServiceId:
+          description: >
+            Represents identifier of the VAL service for which the assistance information
+            is requested.
+          type: string
+        aimlTaskType:
+          $ref: 'TS24560_Aimles_AIMLEClientRegistration.yaml#/components/schemas/AimlOperation'
+        aimlInfoType:
+          $ref: 'TS24560_Aimlec_AimlTaskTransfer.yaml#/components/schemas/AimlInfoType'
+        aimlRmngTrainReq:
+          $ref: '#/components/schemas/AimlRmngTrainingReq'
+        aimlImdInfo:
+          $ref: '#/components/schemas/AimlIntermediateInfo'
+        timeValidity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+
+    AimlesTaskTransferAssistResp:
+      description: Contains the AIMLE server task transfer assist response information.
+      type: object
+      required:
+      - assistanceTime
+      - targetAimlIds
+      properties:
+        assistanceTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        targetAimlIds:
+          description: List of the target AIMLE clients.
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+        transferMode:
+          $ref: '#/components/schemas/TransferMode'
+
+    AimlesControlledTaskTransferReq:
+      description: Contains the AIMLE server controlled task transfer request information.
+      type: object
+      required:
+      - requestorId
+      - aimlTaskType
+      - aimlInfoType
+      - aimlTaskTransferTime
+      properties:
+        requestorId:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        aimlTaskType:
+          $ref: 'TS24560_Aimles_AIMLEClientRegistration.yaml#/components/schemas/AimlOperation'
+        aimlInfoType:
+          $ref: 'TS24560_Aimlec_AimlTaskTransfer.yaml#/components/schemas/AimlInfoType'
+        aimlTaskTransferTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        timeValidity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+
+    AimlesControlledTaskTransferResp:
+      description: Contains the AIMLE server controlled task transfer response information.
+      type: object
+      required:
+      - assistanceTime
+      properties:
+        assistanceTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+
+    AimlRmngTrainingReq:
+      description: Contains requirements for AI/ML model training.
+      type: object
+      properties:
+        reqRmngTrainResorce:
+          description: Indicates required remaining training resource.
+          type: string
+        reqRmngTrainIterNum:
+          description: Indicates required remaining training number of iterations.
+          type: integer
+
+    AimlIntermediateInfo:
+      description: Contains the AI/ML intermediate information for intermediate AI/ML operation.
+      type: object
+      properties:
+        aimlImdModel:
+          $ref: '#/components/schemas/AimlRmngTrainingReq'
+        aimlUsedTrainTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        usedTrainResource:
+          description: Indicates used training resource.
+          type: string
+        usedTrainIterNum:
+          description: Indicates used training number of iterations.
+          type: integer
+
+
+# Simple data types
+
+
+# Enumerations
+
+    TransferMode:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - DIRECT
+        - SERVER_CONTROLLED
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          But is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the mode of transfer.  
+#        Possible values are:
+#        - DIRECT: Directly from the source AI/ML member to the target AI/ML member.
+#        - SERVER_CONTROLLED: Transfer with AIMLE server controlled.

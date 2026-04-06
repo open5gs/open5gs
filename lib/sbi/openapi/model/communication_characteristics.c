@@ -17,7 +17,9 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_c
     bool is_pp_maximum_response_time_null,
     OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time,
     bool is_pp_maximum_latency_null,
-    OpenAPI_pp_maximum_latency_t *pp_maximum_latency
+    OpenAPI_pp_maximum_latency_t *pp_maximum_latency,
+    bool is_pp_mps_msg_indication,
+    int pp_mps_msg_indication
 )
 {
     OpenAPI_communication_characteristics_t *communication_characteristics_local_var = ogs_malloc(sizeof(OpenAPI_communication_characteristics_t));
@@ -36,6 +38,8 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_c
     communication_characteristics_local_var->pp_maximum_response_time = pp_maximum_response_time;
     communication_characteristics_local_var->is_pp_maximum_latency_null = is_pp_maximum_latency_null;
     communication_characteristics_local_var->pp_maximum_latency = pp_maximum_latency;
+    communication_characteristics_local_var->is_pp_mps_msg_indication = is_pp_mps_msg_indication;
+    communication_characteristics_local_var->pp_mps_msg_indication = pp_mps_msg_indication;
 
     return communication_characteristics_local_var;
 }
@@ -183,6 +187,13 @@ cJSON *OpenAPI_communication_characteristics_convertToJSON(OpenAPI_communication
         }
     }
 
+    if (communication_characteristics->is_pp_mps_msg_indication) {
+    if (cJSON_AddBoolToObject(item, "ppMpsMsgIndication", communication_characteristics->pp_mps_msg_indication) == NULL) {
+        ogs_error("OpenAPI_communication_characteristics_convertToJSON() failed [pp_mps_msg_indication]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -202,6 +213,7 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_p
     OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time_local_nonprim = NULL;
     cJSON *pp_maximum_latency = NULL;
     OpenAPI_pp_maximum_latency_t *pp_maximum_latency_local_nonprim = NULL;
+    cJSON *pp_mps_msg_indication = NULL;
     pp_subs_reg_timer = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppSubsRegTimer");
     if (pp_subs_reg_timer) {
     if (!cJSON_IsNull(pp_subs_reg_timer)) {
@@ -267,6 +279,14 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_p
     }
     }
 
+    pp_mps_msg_indication = cJSON_GetObjectItemCaseSensitive(communication_characteristicsJSON, "ppMpsMsgIndication");
+    if (pp_mps_msg_indication) {
+    if (!cJSON_IsBool(pp_mps_msg_indication)) {
+        ogs_error("OpenAPI_communication_characteristics_parseFromJSON() failed [pp_mps_msg_indication]");
+        goto end;
+    }
+    }
+
     communication_characteristics_local_var = OpenAPI_communication_characteristics_create (
         pp_subs_reg_timer && cJSON_IsNull(pp_subs_reg_timer) ? true : false,
         pp_subs_reg_timer ? pp_subs_reg_timer_local_nonprim : NULL,
@@ -280,7 +300,9 @@ OpenAPI_communication_characteristics_t *OpenAPI_communication_characteristics_p
         pp_maximum_response_time && cJSON_IsNull(pp_maximum_response_time) ? true : false,
         pp_maximum_response_time ? pp_maximum_response_time_local_nonprim : NULL,
         pp_maximum_latency && cJSON_IsNull(pp_maximum_latency) ? true : false,
-        pp_maximum_latency ? pp_maximum_latency_local_nonprim : NULL
+        pp_maximum_latency ? pp_maximum_latency_local_nonprim : NULL,
+        pp_mps_msg_indication ? true : false,
+        pp_mps_msg_indication ? pp_mps_msg_indication->valueint : 0
     );
 
     return communication_characteristics_local_var;

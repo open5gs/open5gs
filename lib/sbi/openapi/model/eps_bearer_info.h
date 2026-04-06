@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_eps_bearer_info_s OpenAPI_eps_bearer_info_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_eps_bearer_info_s OpenAPI_eps_bearer_info_t;
-typedef struct OpenAPI_eps_bearer_info_s {
+struct OpenAPI_eps_bearer_info_s {
     int ebi;
     char *pgw_s8u_fteid;
     char *bearer_level_qo_s;
-} OpenAPI_eps_bearer_info_t;
+};
 
 OpenAPI_eps_bearer_info_t *OpenAPI_eps_bearer_info_create(
     int ebi,

@@ -1,7 +1,7 @@
 /*
  * out_of_credit_information.h
  *
- * Indicates the SDFs without available credit and the corresponding termination action.
+ * Indicates the SDFs without available credit and the corresponding termination action. 
  */
 
 #ifndef _OpenAPI_out_of_credit_information_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_out_of_credit_information_s OpenAPI_out_of_credit_information_t;
 #include "final_unit_action.h"
 #include "flows.h"
 
@@ -19,14 +20,13 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_out_of_credit_information_s OpenAPI_out_of_credit_information_t;
-typedef struct OpenAPI_out_of_credit_information_s {
-    struct OpenAPI_final_unit_action_s *fin_unit_act;
+struct OpenAPI_out_of_credit_information_s {
+    OpenAPI_final_unit_action_e fin_unit_act;
     OpenAPI_list_t *flows;
-} OpenAPI_out_of_credit_information_t;
+};
 
 OpenAPI_out_of_credit_information_t *OpenAPI_out_of_credit_information_create(
-    OpenAPI_final_unit_action_t *fin_unit_act,
+    OpenAPI_final_unit_action_e fin_unit_act,
     OpenAPI_list_t *flows
 );
 void OpenAPI_out_of_credit_information_free(OpenAPI_out_of_credit_information_t *out_of_credit_information);

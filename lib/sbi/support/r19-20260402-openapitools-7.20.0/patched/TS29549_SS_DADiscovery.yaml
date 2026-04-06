@@ -1,0 +1,212 @@
+openapi: 3.0.0
+
+info:
+  title: DA Server digital asset Discovery Service
+  version: 1.0.0
+  description: |
+    API for Digital Asset Discovery Service.  
+    ©2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+servers:
+  - url: "{apiRoot}/ss-da-d/v1"
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /digitalasset:
+    get:
+      summary: Discover Digital Asset.
+      operationId: DiscDigitalAsset
+      tags:
+        - Digital Asset (Collection)
+      parameters:
+        - name: allowed-users
+          in: query
+          description: Contains the list of allowed users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS29549_SS_DAProfileManagement.yaml#/components/schemas/AllowedUser'
+                minItems: 1
+        - name: da-desc
+          in: query
+          description: Contains the description of the digital asset.
+          schema:
+            type: string
+        - name: da-ids
+          in: query
+          description: Contains the identifier(s) of the targeted digital asset(s).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS29549_SS_DAProfileManagement.yaml#/components/schemas/DaId'
+                minItems: 1
+        - name: da-name
+          in: query
+          description: Contains the Digital asset name.
+          schema:
+            type: string
+        - name: da-owner-id
+          in: query
+          description: Contains the Digital asset owner Identity.
+          schema:
+            $ref: 'TS29549_SS_DAProfileManagement.yaml#/components/schemas/DigitalAssetOwnerId'
+        - name: da-type
+          in: query
+          description: >
+            Contains the digital asset type.
+          content: 
+            application/json:
+              schema:
+                $ref: 'TS29549_SS_DAProfileManagement.yaml#/components/schemas/DigitalAssetType'
+        - name: spatial-condt
+          in: query
+          description: >
+            Contains the Spatial condition including location.
+          content: 
+            application/json:
+              schema:
+                $ref: 'TS29549_SS_DAProfileManagement.yaml#/components/schemas/SpatialCondition'
+        - name: supp-feats
+          in: query
+          description: >
+            Contains the list of supported feature(s) among the ones defined in clause 6.1.2.8.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: val-target-ue
+          in: query
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+      responses:
+        '200':
+          description: >
+            OK. The Digital Asset matching the filter criteria are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaDiscResp'
+        '307':  
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: "{tokenUrl}"
+          scopes: {}
+
+  schemas:
+    # API specific definitions
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    DaDiscResp:
+      description: >
+        Represents the Digital Asset discovery response.
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DaDiscResult'
+          minItems: 0
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - results
+
+    DaDiscResult:
+      description: >
+        Represents the Digital Asset discovery result.
+      type: object
+      properties:
+        daDesc:
+          type: string
+        daId:
+          $ref: 'TS29549_SS_DAProfileManagement.yaml#/components/schemas/DaId'
+        daName:
+          type: string
+        daStatus:
+          $ref: '#/components/schemas/DaStatus'
+        uri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+      required:
+        - daStatus
+      anyOf:
+        - required: [daId]
+        - required: [daName]
+
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+    DaStatus:
+      anyOf:
+      - type: string
+        enum:
+           - IN_USE
+           - ARCHIVED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration and is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents the analytic IDs for location related UE group analytics.  
+        Possible values are:
+        - INUSE: Indicates that the digital asset is in use.
+        - ARCHIVED: Indicates that the digital asset is Archived.
+
+
+# Data types describing alternative data types or combinations of data types:
+#

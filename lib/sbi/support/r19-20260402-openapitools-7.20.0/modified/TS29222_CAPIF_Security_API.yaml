@@ -1,0 +1,614 @@
+openapi: 3.0.0
+
+info:
+  title: CAPIF_Security_API
+  description: |
+    API for CAPIF security management.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.4.0"
+
+externalDocs:
+  description: 3GPP TS 29.222 V19.5.0 Common API Framework for 3GPP Northbound APIs
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.222/
+
+servers:
+  - url: '{apiRoot}/capif-security/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.222.
+
+paths:
+  /trustedInvokers/{apiInvokerId}:
+    get:
+      summary: Retrieve authentication information of an API invoker.
+      operationId: GetSecIndTrustedAPIInv
+      tags:
+        - Individual trusted API invoker (Store)
+      parameters:
+        - name: apiInvokerId
+          in: path
+          description: Identifier of an individual API invoker
+          required: true
+          schema:
+            type: string
+        - name: authenticationInfo
+          in: query
+          description: >
+            When set to 'true', it indicates the CAPIF core function to send the
+            authentication information of the API invoker. Set to false or omitted otherwise.
+          schema:
+            type: boolean
+        - name: authorizationInfo
+          in: query
+          description: >
+            When set to 'true', it indicates the CAPIF core function to send the
+            authorization information of the API invoker. Set to false or omitted otherwise.
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: >
+            The security related information of the API Invoker based on the request
+            from the API exposing function.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSecurity'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Create a security context for individual API invoker.
+      operationId: CreateSecIndTrustedAPIInv
+      tags:
+        - Individual trusted API invoker (Store)
+      parameters:
+        - name: apiInvokerId
+          in: path
+          description: Identifier of an individual API invoker
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: create a security context for an API invoker
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceSecurity'
+      callbacks:
+        notificationDestination:
+          '{$request.body#/notificationDestination}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SecurityNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: Successful created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSecurity'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/capif-security/v1/trustedInvokers/{apiInvokerId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete authorization of the individual trusted API invoker.
+      operationId: DeleteSecIndTrustedAPIInv
+      tags:
+        - Individual trusted API invoker (Store)
+      parameters:
+        - name: apiInvokerId
+          in: path
+          description: Identifier of an individual API invoker
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content (Successful deletion of the existing subscription)
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /trustedInvokers/{apiInvokerId}/update:
+    post:
+      summary: Update security context.
+      operationId: UpdateSecContIndAPIInv
+      tags:
+        - Individual trusted API invoker (Store)
+      parameters:
+        - name: apiInvokerId
+          in: path
+          description: Identifier of an individual API invoker
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update the security context (e.g. re-negotiate the security methods).
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceSecurity'
+      responses:
+        '200':
+          description: Successful updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSecurity'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /trustedInvokers/{apiInvokerId}/delete:
+    post:
+      summary: Delete authorization of API invoker for some APIs.
+      operationId: DeleteAuthIndAPIInvForAPIs
+      tags:
+        - Individual trusted API invoker (Store)
+      parameters:
+        - name: apiInvokerId
+          in: path
+          description: Identifier of an individual API invoker
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Revoke the authorization of the API invoker for APIs.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecurityNotification'
+      responses:
+        '204':
+          description: Successful revoked.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /securities/{securityId}/token:
+    post:
+      summary: Obtain the OAuth 2.0 authorization information.
+      operationId: GetOAuthIndAPIInv
+      tags:
+        - Individual trusted API invoker (Store)
+      parameters:
+        - name: securityId
+          in: path
+          description: Identifier of an individual API invoker
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AccessTokenReq'
+      responses:
+        '200':
+          description: Successful Access Token Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenRsp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          description: Error in the Access Token Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenErr'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenErr'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  schemas:
+    ServiceSecurity:
+      type: object
+      description: >
+        Represents the details of the security method for each service API interface.
+        When included by the API invoker, it indicates the preferred method of security.
+        When included by the CAPIF core function, it indicates the security method to be
+        used for the service API interface.
+      properties:
+        securityInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityInformation'
+          minimum: 1
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        requestTestNotification:
+          type: boolean
+          description: >
+            Set to true by API invoker to request the CAPIF core function to send a
+            test notification as defined in in clause 7.6. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - securityInfo
+        - notificationDestination
+
+    SecurityInformation:
+      type: object
+      description: Represents the interface details and the security method.
+      properties:
+        interfaceDetails:
+          $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/InterfaceDescription'
+        aefId:
+          type: string
+          description: Identifier of the API exposing function
+        apiId:
+          type: string
+          description: API identifier
+        prefSecurityMethods:
+          type: array
+          items:
+            $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/SecurityMethod'
+          minItems: 1
+          description: Security methods preferred by the API invoker for the API interface.
+        selSecurityMethod:
+          $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/SecurityMethod'
+        authenticationInfo:
+          type: string
+          description: Authentication related information
+        authorizationInfo:
+          type: string
+          description: Authorization related information
+        grantType:
+          type: array
+          items:
+            $ref: '#/components/schemas/OAuthGrantType'
+          minItems: 1
+      required:
+        - prefSecurityMethods
+#      oneOf:
+#        - required: [interfaceDetails]
+#        - required: [aefId]
+#
+    SecurityNotification:
+      type: object
+      description: Represents the revoked authorization notification details.
+      properties:
+        apiInvokerId:
+          type: string
+          description: String identifying the API invoker assigned by the CAPIF core function.
+        aefId:
+          type: string
+          description: String identifying the AEF.
+        apiIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Identifier of the service API
+        accessToken:
+          type: string
+          description: >
+            JWS Compact Serialized representation of JWS signed JSON object (AccessTokenClaims).
+        cause:
+          $ref: '#/components/schemas/Cause'
+      required:
+        - apiInvokerId
+        - apiIds
+        - cause
+
+    AccessTokenReq:
+      format: x-www-form-urlencoded
+      description: Represents the access token request information.
+      properties:
+        grant_type:
+          type: string
+          enum:
+            - client_credentials
+            - authorization_code
+        client_id:
+          type: string
+        resOwnerId:
+          $ref: '#/components/schemas/ResOwnerId'
+        client_secret:
+          type: string
+        scope:
+          type: string
+        authCode:
+          type: string
+        redirect_uri:
+          type: string
+      required:
+        - grant_type
+        - client_id
+
+    AccessTokenRsp:
+      type: object
+      description: Represents the access token response information.
+      properties:
+        access_token:
+          type: string
+          description: >
+            JWS Compact Serialized representation of JWS signed JSON object (AccessTokenClaims)
+        token_type:
+          type: string
+          enum:
+            - Bearer
+        expires_in:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        scope:
+          type: string
+      required:
+        - access_token
+        - token_type
+        - expires_in
+
+    AccessTokenClaims:
+      type: object
+      description: Represents the claims data structure for the access token.
+      properties:
+        iss:
+          type: string
+        scope:
+          type: string
+        exp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        resOwnerId:
+          $ref: '#/components/schemas/ResOwnerId'
+      required:
+        - iss
+        - scope
+        - exp
+
+    ResOwnerId:
+      type: object
+      description: >
+        Represents the identifier of the resource owner.
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+      anyOf:
+        - required: [gpsi]
+
+    AccessTokenErr:
+      type: object
+      description: Represents an error in the access token request.
+      properties:
+        error:
+          type: string
+          enum:
+            - invalid_request
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
+            - unsupported_grant_type
+            - invalid_scope
+        error_description:
+          type: string
+        error_uri:
+          type: string
+      required:
+        - error
+
+    Cause:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - OVERLIMIT_USAGE
+        - UNEXPECTED_REASON
+        - AUTHORIZATION_ISSUE
+        - OTHER_REASON
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Indicates the cause for revoking the API invoker's authorization to the service API.  
+#        Possible values are:
+#        - OVERLIMIT_USAGE:
+#             The revocation of the authorization of the API invoker is due to the overlimit
+#             usage of the service API
+#        - UNEXPECTED_REASON:
+#             The revocation of the authorization of the API invoker is due to unexpected reason.
+#        - AUTHORIZATION_ISSUE:
+#             The revocation of the authorization of the API invoker is due to API Invoker
+#             not being authorized anymore by the API Provider.
+#        - OTHER_REASON:
+#             The revocation of the authorization of the API invoker is due to other reason.
+#
+    OAuthGrantType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - CLIENT_CREDENTIALS
+        - AUTHORIZATION_CODE
+        - AUTHORIZATION_CODE_WITH_PKCE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration and
+#          is not used to encode content defined in the present version of this API.
+#      description: |
+#        Indicates the supported authorization flow (e.g. client credentials flow, authorization code
+#        flow, etc.) to the API invoker.  
+#        Possible values are:
+#        - CLIENT_CREDENTIALS: Indicate that the grant type is is client credentials flow.
+#        - AUTHORIZATION_CODE: Indicate that the grant type is authorization code.
+#        - AUTHORIZATION_CODE_WITH_PKCE: Indicate that the grant type is authorization code with PKCE.

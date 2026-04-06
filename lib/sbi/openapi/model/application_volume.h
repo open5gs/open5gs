@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_application_volume_s OpenAPI_application_volume_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_application_volume_s OpenAPI_application_volume_t;
-typedef struct OpenAPI_application_volume_s {
+struct OpenAPI_application_volume_s {
     char *app_id;
     long app_volume;
-} OpenAPI_application_volume_t;
+};
 
 OpenAPI_application_volume_t *OpenAPI_application_volume_create(
     char *app_id,

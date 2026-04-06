@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_snssai_s OpenAPI_snssai_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_snssai_s OpenAPI_snssai_t;
-typedef struct OpenAPI_snssai_s {
+struct OpenAPI_snssai_s {
     int sst;
     char *sd;
-} OpenAPI_snssai_t;
+};
 
 OpenAPI_snssai_t *OpenAPI_snssai_create(
     int sst,

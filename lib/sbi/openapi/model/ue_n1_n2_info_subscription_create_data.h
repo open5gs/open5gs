@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_n1_n2_info_subscription_create_data_s OpenAPI_ue_n1_n2_info_subscription_create_data_t;
 #include "guami.h"
 #include "n1_message_class.h"
 #include "n2_information_class.h"
@@ -20,8 +21,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_n1_n2_info_subscription_create_data_s OpenAPI_ue_n1_n2_info_subscription_create_data_t;
-typedef struct OpenAPI_ue_n1_n2_info_subscription_create_data_s {
+struct OpenAPI_ue_n1_n2_info_subscription_create_data_s {
     OpenAPI_n2_information_class_e n2_information_class;
     char *n2_notify_callback_uri;
     OpenAPI_n1_message_class_e n1_message_class;
@@ -29,7 +29,7 @@ typedef struct OpenAPI_ue_n1_n2_info_subscription_create_data_s {
     char *nf_id;
     char *supported_features;
     struct OpenAPI_guami_s *old_guami;
-} OpenAPI_ue_n1_n2_info_subscription_create_data_t;
+};
 
 OpenAPI_ue_n1_n2_info_subscription_create_data_t *OpenAPI_ue_n1_n2_info_subscription_create_data_create(
     OpenAPI_n2_information_class_e n2_information_class,

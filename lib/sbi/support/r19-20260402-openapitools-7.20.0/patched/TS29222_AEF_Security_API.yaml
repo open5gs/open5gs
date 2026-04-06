@@ -1,0 +1,160 @@
+openapi: 3.0.0
+
+info:
+  title: AEF_Security_API
+  description: |
+    API for AEF security management.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.4.0"
+
+externalDocs:
+  description: 3GPP TS 29.222 V19.5.0 Common API Framework for 3GPP Northbound APIs
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.222/
+
+servers:
+  - url: '{apiRoot}/aef-security/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.222.
+
+paths:
+  /check-authentication:
+    post:
+      summary: Check authentication.
+      operationId: CheckAuthReq
+      tags:
+        - Check Authentication Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckAuthenticationReq'
+      responses:
+        '200':
+          description: The request was successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckAuthenticationRsp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /revoke-authorization:
+    post:
+      summary: Revoke authorization for service APIs.
+      operationId: RevokeAuthServAPIs
+      tags:
+        - Revoke Authorization Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokeAuthorizationReq'
+      responses:
+        '200':
+          description: The request was successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevokeAuthorizationRsp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+         $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  schemas:
+    CheckAuthenticationReq:
+      type: object
+      description: Represents authentication check request data.
+      properties:
+        apiInvokerId:
+          type: string
+          description: >
+            API invoker ID assigned by the CAPIF core function to the API invoker
+            while on-boarding the API invoker.
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - apiInvokerId
+        - supportedFeatures
+
+    CheckAuthenticationRsp:
+      type: object
+      description: Represents authentication check response data.
+      properties:
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - supportedFeatures
+
+    RevokeAuthorizationReq:
+      type: object
+      description: Represents authorization revocation request data.
+      properties:
+        revokeInfo:
+          $ref: 'TS29222_CAPIF_Security_API.yaml#/components/schemas/SecurityNotification'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - revokeInfo
+        - supportedFeatures
+
+    RevokeAuthorizationRsp:
+      type: object
+      description: Represents authorization revocation response data.
+      properties:
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - supportedFeatures

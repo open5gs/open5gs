@@ -17,11 +17,14 @@ OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_create(
     OpenAPI_sms_management_subscription_data_t *sms_mng_data,
     OpenAPI_lcs_privacy_data_t *lcs_privacy_data,
     OpenAPI_lcs_mo_data_t *lcs_mo_data,
+    OpenAPI_lcs_subscription_data_t *lcs_subscription_data,
     OpenAPI_v2x_subscription_data_t *v2x_data,
     OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_broadcast_assistance_types_data,
     OpenAPI_prose_subscription_data_t *prose_data,
     OpenAPI_mbs_subscription_data_t *mbs_data,
-    OpenAPI_uc_subscription_data_t *uc_data
+    OpenAPI_uc_subscription_data_t *uc_data,
+    OpenAPI_a2x_subscription_data_t *a2x_data,
+    OpenAPI_ranging_sl_privacy_data_t *ranging_sl_privacy_data
 )
 {
     OpenAPI_subscription_data_sets_t *subscription_data_sets_local_var = ogs_malloc(sizeof(OpenAPI_subscription_data_sets_t));
@@ -39,11 +42,14 @@ OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_create(
     subscription_data_sets_local_var->sms_mng_data = sms_mng_data;
     subscription_data_sets_local_var->lcs_privacy_data = lcs_privacy_data;
     subscription_data_sets_local_var->lcs_mo_data = lcs_mo_data;
+    subscription_data_sets_local_var->lcs_subscription_data = lcs_subscription_data;
     subscription_data_sets_local_var->v2x_data = v2x_data;
     subscription_data_sets_local_var->lcs_broadcast_assistance_types_data = lcs_broadcast_assistance_types_data;
     subscription_data_sets_local_var->prose_data = prose_data;
     subscription_data_sets_local_var->mbs_data = mbs_data;
     subscription_data_sets_local_var->uc_data = uc_data;
+    subscription_data_sets_local_var->a2x_data = a2x_data;
+    subscription_data_sets_local_var->ranging_sl_privacy_data = ranging_sl_privacy_data;
 
     return subscription_data_sets_local_var;
 }
@@ -99,6 +105,10 @@ void OpenAPI_subscription_data_sets_free(OpenAPI_subscription_data_sets_t *subsc
         OpenAPI_lcs_mo_data_free(subscription_data_sets->lcs_mo_data);
         subscription_data_sets->lcs_mo_data = NULL;
     }
+    if (subscription_data_sets->lcs_subscription_data) {
+        OpenAPI_lcs_subscription_data_free(subscription_data_sets->lcs_subscription_data);
+        subscription_data_sets->lcs_subscription_data = NULL;
+    }
     if (subscription_data_sets->v2x_data) {
         OpenAPI_v2x_subscription_data_free(subscription_data_sets->v2x_data);
         subscription_data_sets->v2x_data = NULL;
@@ -118,6 +128,14 @@ void OpenAPI_subscription_data_sets_free(OpenAPI_subscription_data_sets_t *subsc
     if (subscription_data_sets->uc_data) {
         OpenAPI_uc_subscription_data_free(subscription_data_sets->uc_data);
         subscription_data_sets->uc_data = NULL;
+    }
+    if (subscription_data_sets->a2x_data) {
+        OpenAPI_a2x_subscription_data_free(subscription_data_sets->a2x_data);
+        subscription_data_sets->a2x_data = NULL;
+    }
+    if (subscription_data_sets->ranging_sl_privacy_data) {
+        OpenAPI_ranging_sl_privacy_data_free(subscription_data_sets->ranging_sl_privacy_data);
+        subscription_data_sets->ranging_sl_privacy_data = NULL;
     }
     ogs_free(subscription_data_sets);
 }
@@ -281,6 +299,19 @@ cJSON *OpenAPI_subscription_data_sets_convertToJSON(OpenAPI_subscription_data_se
     }
     }
 
+    if (subscription_data_sets->lcs_subscription_data) {
+    cJSON *lcs_subscription_data_local_JSON = OpenAPI_lcs_subscription_data_convertToJSON(subscription_data_sets->lcs_subscription_data);
+    if (lcs_subscription_data_local_JSON == NULL) {
+        ogs_error("OpenAPI_subscription_data_sets_convertToJSON() failed [lcs_subscription_data]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "lcsSubscriptionData", lcs_subscription_data_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_subscription_data_sets_convertToJSON() failed [lcs_subscription_data]");
+        goto end;
+    }
+    }
+
     if (subscription_data_sets->v2x_data) {
     cJSON *v2x_data_local_JSON = OpenAPI_v2x_subscription_data_convertToJSON(subscription_data_sets->v2x_data);
     if (v2x_data_local_JSON == NULL) {
@@ -346,6 +377,32 @@ cJSON *OpenAPI_subscription_data_sets_convertToJSON(OpenAPI_subscription_data_se
     }
     }
 
+    if (subscription_data_sets->a2x_data) {
+    cJSON *a2x_data_local_JSON = OpenAPI_a2x_subscription_data_convertToJSON(subscription_data_sets->a2x_data);
+    if (a2x_data_local_JSON == NULL) {
+        ogs_error("OpenAPI_subscription_data_sets_convertToJSON() failed [a2x_data]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "a2xData", a2x_data_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_subscription_data_sets_convertToJSON() failed [a2x_data]");
+        goto end;
+    }
+    }
+
+    if (subscription_data_sets->ranging_sl_privacy_data) {
+    cJSON *ranging_sl_privacy_data_local_JSON = OpenAPI_ranging_sl_privacy_data_convertToJSON(subscription_data_sets->ranging_sl_privacy_data);
+    if (ranging_sl_privacy_data_local_JSON == NULL) {
+        ogs_error("OpenAPI_subscription_data_sets_convertToJSON() failed [ranging_sl_privacy_data]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "rangingSlPrivacyData", ranging_sl_privacy_data_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_subscription_data_sets_convertToJSON() failed [ranging_sl_privacy_data]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -376,6 +433,8 @@ OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_parseFromJSON(c
     OpenAPI_lcs_privacy_data_t *lcs_privacy_data_local_nonprim = NULL;
     cJSON *lcs_mo_data = NULL;
     OpenAPI_lcs_mo_data_t *lcs_mo_data_local_nonprim = NULL;
+    cJSON *lcs_subscription_data = NULL;
+    OpenAPI_lcs_subscription_data_t *lcs_subscription_data_local_nonprim = NULL;
     cJSON *v2x_data = NULL;
     OpenAPI_v2x_subscription_data_t *v2x_data_local_nonprim = NULL;
     cJSON *lcs_broadcast_assistance_types_data = NULL;
@@ -386,6 +445,10 @@ OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_parseFromJSON(c
     OpenAPI_mbs_subscription_data_t *mbs_data_local_nonprim = NULL;
     cJSON *uc_data = NULL;
     OpenAPI_uc_subscription_data_t *uc_data_local_nonprim = NULL;
+    cJSON *a2x_data = NULL;
+    OpenAPI_a2x_subscription_data_t *a2x_data_local_nonprim = NULL;
+    cJSON *ranging_sl_privacy_data = NULL;
+    OpenAPI_ranging_sl_privacy_data_t *ranging_sl_privacy_data_local_nonprim = NULL;
     am_data = cJSON_GetObjectItemCaseSensitive(subscription_data_setsJSON, "amData");
     if (am_data) {
     am_data_local_nonprim = OpenAPI_access_and_mobility_subscription_data_parseFromJSON(am_data);
@@ -487,6 +550,15 @@ OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_parseFromJSON(c
     }
     }
 
+    lcs_subscription_data = cJSON_GetObjectItemCaseSensitive(subscription_data_setsJSON, "lcsSubscriptionData");
+    if (lcs_subscription_data) {
+    lcs_subscription_data_local_nonprim = OpenAPI_lcs_subscription_data_parseFromJSON(lcs_subscription_data);
+    if (!lcs_subscription_data_local_nonprim) {
+        ogs_error("OpenAPI_lcs_subscription_data_parseFromJSON failed [lcs_subscription_data]");
+        goto end;
+    }
+    }
+
     v2x_data = cJSON_GetObjectItemCaseSensitive(subscription_data_setsJSON, "v2xData");
     if (v2x_data) {
     v2x_data_local_nonprim = OpenAPI_v2x_subscription_data_parseFromJSON(v2x_data);
@@ -532,6 +604,24 @@ OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_parseFromJSON(c
     }
     }
 
+    a2x_data = cJSON_GetObjectItemCaseSensitive(subscription_data_setsJSON, "a2xData");
+    if (a2x_data) {
+    a2x_data_local_nonprim = OpenAPI_a2x_subscription_data_parseFromJSON(a2x_data);
+    if (!a2x_data_local_nonprim) {
+        ogs_error("OpenAPI_a2x_subscription_data_parseFromJSON failed [a2x_data]");
+        goto end;
+    }
+    }
+
+    ranging_sl_privacy_data = cJSON_GetObjectItemCaseSensitive(subscription_data_setsJSON, "rangingSlPrivacyData");
+    if (ranging_sl_privacy_data) {
+    ranging_sl_privacy_data_local_nonprim = OpenAPI_ranging_sl_privacy_data_parseFromJSON(ranging_sl_privacy_data);
+    if (!ranging_sl_privacy_data_local_nonprim) {
+        ogs_error("OpenAPI_ranging_sl_privacy_data_parseFromJSON failed [ranging_sl_privacy_data]");
+        goto end;
+    }
+    }
+
     subscription_data_sets_local_var = OpenAPI_subscription_data_sets_create (
         am_data ? am_data_local_nonprim : NULL,
         smf_sel_data ? smf_sel_data_local_nonprim : NULL,
@@ -545,11 +635,14 @@ OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_parseFromJSON(c
         sms_mng_data ? sms_mng_data_local_nonprim : NULL,
         lcs_privacy_data ? lcs_privacy_data_local_nonprim : NULL,
         lcs_mo_data ? lcs_mo_data_local_nonprim : NULL,
+        lcs_subscription_data ? lcs_subscription_data_local_nonprim : NULL,
         v2x_data ? v2x_data_local_nonprim : NULL,
         lcs_broadcast_assistance_types_data ? lcs_broadcast_assistance_types_data_local_nonprim : NULL,
         prose_data ? prose_data_local_nonprim : NULL,
         mbs_data ? mbs_data_local_nonprim : NULL,
-        uc_data ? uc_data_local_nonprim : NULL
+        uc_data ? uc_data_local_nonprim : NULL,
+        a2x_data ? a2x_data_local_nonprim : NULL,
+        ranging_sl_privacy_data ? ranging_sl_privacy_data_local_nonprim : NULL
     );
 
     return subscription_data_sets_local_var;
@@ -598,6 +691,10 @@ end:
         OpenAPI_lcs_mo_data_free(lcs_mo_data_local_nonprim);
         lcs_mo_data_local_nonprim = NULL;
     }
+    if (lcs_subscription_data_local_nonprim) {
+        OpenAPI_lcs_subscription_data_free(lcs_subscription_data_local_nonprim);
+        lcs_subscription_data_local_nonprim = NULL;
+    }
     if (v2x_data_local_nonprim) {
         OpenAPI_v2x_subscription_data_free(v2x_data_local_nonprim);
         v2x_data_local_nonprim = NULL;
@@ -617,6 +714,14 @@ end:
     if (uc_data_local_nonprim) {
         OpenAPI_uc_subscription_data_free(uc_data_local_nonprim);
         uc_data_local_nonprim = NULL;
+    }
+    if (a2x_data_local_nonprim) {
+        OpenAPI_a2x_subscription_data_free(a2x_data_local_nonprim);
+        a2x_data_local_nonprim = NULL;
+    }
+    if (ranging_sl_privacy_data_local_nonprim) {
+        OpenAPI_ranging_sl_privacy_data_free(ranging_sl_privacy_data_local_nonprim);
+        ranging_sl_privacy_data_local_nonprim = NULL;
     }
     return NULL;
 }

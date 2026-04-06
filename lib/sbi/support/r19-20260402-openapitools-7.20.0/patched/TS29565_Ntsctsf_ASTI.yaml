@@ -1,0 +1,462 @@
+openapi: 3.0.0
+
+info:
+  title: Ntsctsf_ASTI Service API
+  version: 1.2.0
+  description: |
+    TSCTSF  Access Stratum time distribution configuration Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.565 V19.5.0; 5G System; Time Sensitive Communication and
+    Time Synchronization Function Services; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.565/'
+
+servers:
+  - url: '{apiRoot}/ntsctsf-asti/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - ntsctsf-asti
+
+paths:
+  /configurations:
+    post:
+      summary: Creates a new Individual ASTI Configuration resource.
+      operationId: ASTIConfiguration
+      tags:
+        - ASTI Configurations (Collection)
+      requestBody:
+        description: Contains the information for the creation the resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessTimeDistributionData'
+      responses:
+        '201':
+          description: Successful creation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTimeDistributionData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created individual ASTI Configuration resource,
+                according to the structure
+                {apiRoot}/ntsctsf-asti/<apiVersion>/configurations/{configId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        astiNotification:
+          '{$request.body#/astiNotifUri}':
+            post:
+              requestBody:
+                description: Notification of an ASTI configuration change event.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AstiConfigNotification'
+              responses:
+                '204':
+                  description: The receipt of the notification is acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+  /configurations/retrieve:
+    post:
+      summary: Request the status of the 5G access stratum time distribution for a list of UEs.
+      operationId: RequestStatusof5GAccessStratumTimeDistribution
+      tags:
+        - ASTI Configurations
+      requestBody:
+        description: >
+          Contains the information for the status of the 5G access stratum time distribution.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusRequestData'
+      responses:
+        '200':
+          description: >
+            Successful retrieval of the status of the 5G access stratum time distribution.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponseData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /configurations/{configId}:
+    put:
+      summary: Modifies an existing Individual ASTI Configuration resource.
+      operationId: ModifyIndividualASTIConfiguration
+      tags:
+        - Individual ASTI Configuration (Document)
+      parameters:
+        - name: configId
+          description: String identifying an Individual ASTI Configuration.
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessTimeDistributionData'
+      responses:
+        '200':
+          description: OK. Resource was succesfully modified and representation is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTimeDistributionData'
+        '204':
+          description: No Content. Resource was succesfully modified.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      operationId: DeleteIndividualASTIConfiguration
+      summary: Delete an Individual ASTI Configuration
+      tags:
+        - Individual ASTI Configuration (Document)
+      parameters:
+        - name: configId
+          in: path
+          description: String identifying an Individual ASTI Configuration.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was successfully deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            ntsctsf-asti: Access to the Ntsctsf_ASTI API
+
+  schemas:
+    AccessTimeDistributionData:
+      description: >
+        Contains the parameters for the creation of 5G access stratum time distribution
+        configuration.
+      type: object
+      properties:
+        supis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        gpsis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+        interGrpId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        exterGrpId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExternalGroupId'
+        asTimeDisParam:
+          $ref: '#/components/schemas/AfAsTimeDistributionParam'
+        covReq:
+          type: array
+          description: >
+            Identifies a list of Tracking Areas per serving network where 5GS
+            Access Stratum Time Distribution parameters are allowed.
+          items:
+            $ref: 'TS29534_Npcf_AMPolicyAuthorization.yaml#/components/schemas/ServiceAreaCoverageInfo'
+          minItems: 1
+        astiNotifId:
+          type: string
+          description: Notification Correlation ID assigned by the NF service consumer.
+        astiNotifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - asTimeDisParam
+      oneOf:
+        - required: [supis]
+        - required: [interGrpId]
+        - required: [gpsis]
+        - required: [exterGrpId]
+
+    AfAsTimeDistributionParam:
+      description: Contains the 5G access stratum time distribution parameters requested by the AF.
+      type: object
+      properties:
+        asTimeDisEnabled:
+          type: boolean
+          description: >
+            When this attribute is included and set to true, it indicates that the access stratum
+            time distribution via Uu reference point is activated.
+        timeSyncErrBdgt:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        tempValidity:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/TemporalValidity'
+        clkQltDetLvl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ClockQualityDetailLevel'
+        clkQltAcptCri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ClockQualityAcceptanceCriterion'
+
+    StatusRequestData:
+      description: >
+        Contains the parameters for retrieval of the status of the access stratum time distribution
+        for a list of UEs.
+      type: object
+      properties:
+        supis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        gpsis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+      oneOf:
+        - required: [supis]
+        - required: [gpsis]
+
+    StatusResponseData:
+      description: >
+        Contains the parameters for the status of the access stratum time distribution for a list of
+        UEs.
+      type: object
+      properties:
+        inactiveUes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        inactiveGpsis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+        activeUes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActiveUe'
+          minItems: 1
+
+    ActiveUe:
+      description: >
+        Contains the UE identifier whose status of the access stratum time distribution is active
+        and the optional requested time synchronization error budget.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        timeSyncErrBdgt:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      oneOf:
+        - required: [supi]
+        - required: [gpsi]
+
+    AstiConfigNotification:
+      description: >
+        Contains the report of a change in the 5G Access Stratum Time Distribution
+        parameters applied to the UE(s).
+      type: object
+      properties:
+        astiNotifId:
+          type: string
+        stateConfigs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AstiConfigStateNotification'
+          minItems: 1
+          description: >
+            It contains the the reported event(s) and event information.
+      required:
+        - astiNotifId
+        - stateConfigs
+
+    AstiConfigStateNotification:
+      description: >
+        Contains the report of a change in the 5G Access Stratum Time Distribution
+        parameters applied to a UE.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        event:
+          $ref: '#/components/schemas/AstiEvent'
+      required:
+        - event
+      oneOf:
+        - required: [supi]
+        - required: [gpsi]
+#
+# ENUMERATIONS DATA TYPES
+#
+    AstiEvent:
+      anyOf:
+      - type: string
+        enum:
+          - ASTI_ENABLED
+          - ASTI_DISABLED
+          - CLOCK_QUAL_ACCEPTABLE
+          - CLOCK_QUAL_NON_ACCEPTABLE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents an ASTI event to notify to the AF/NEF.  
+        Possible values are:
+        - ASTI_ENABLED: Access stratum time distribution via Uu reference point is activated.
+        - ASTI_DISABLED: Access stratum time distribution via Uu reference point is deactivated.
+        - CLOCK_QUAL_ACCEPTABLE: The UE meets the clock quality acceptance criteria.
+        - CLOCK_QUAL_NON_ACCEPTABLE: The UE does not meet the clock quality acceptance criteria.

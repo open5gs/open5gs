@@ -1,0 +1,13 @@
+enablePostProcessFile: true
+templateDir: "./openapi-generator/templates"
+reservedWordsMappings:
+  3GPP_ACCESS: "3GPP_ACCESS"
+  5G_EIR: "5G_EIR"
+  5G_AKA: "5G_AKA"
+  5G_HE_AKA: "5G_HE_AKA"
+  5GMM: "5GMM"
+files:
+  any_type.h:
+    folder: model
+  any_type.c:
+    folder: model

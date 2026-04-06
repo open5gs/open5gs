@@ -25,7 +25,7 @@ void nssf_nnrf_handle_nf_discover(
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_object_t *sbi_object = NULL;
-    ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+    OpenAPI_service_name_e service_name = OpenAPI_service_name_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
 
     OpenAPI_nf_type_e target_nf_type = OpenAPI_nf_type_NULL;
@@ -36,9 +36,9 @@ void nssf_nnrf_handle_nf_discover(
     ogs_assert(xact);
     sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
-    service_type = xact->service_type;
-    ogs_assert(service_type);
-    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
+    service_name = xact->service_name;
+    ogs_assert(service_name);
+    target_nf_type = ogs_sbi_service_name_to_nf_type(service_name);
     ogs_assert(target_nf_type);
     requester_nf_type = xact->requester_nf_type;
     ogs_assert(requester_nf_type);
@@ -50,6 +50,14 @@ void nssf_nnrf_handle_nf_discover(
         ogs_error("No SearchResult");
         return;
     }
+    if (!SearchResult->validity_period) {
+        ogs_error("No SearchResult->validity_period");
+        return;
+    }
+    if (!SearchResult->nf_instances) {
+        ogs_error("No SearchResult->nf_instances");
+        return;
+    }
 
     ogs_nnrf_disc_handle_nf_discover_search_result(SearchResult);
 
@@ -57,13 +65,13 @@ void nssf_nnrf_handle_nf_discover(
                     target_nf_type, requester_nf_type, discovery_option);
     if (!nf_instance) {
         ogs_error("(NF discover) No [%s:%s]",
-                    ogs_sbi_service_type_to_name(service_type),
+                    OpenAPI_service_name_ToString(service_name),
                     OpenAPI_nf_type_ToString(requester_nf_type));
         return;
     }
 
     OGS_SBI_SETUP_NF_INSTANCE(
-            sbi_object->service_type_array[service_type], nf_instance);
+            sbi_object->service_name_array[service_name], nf_instance);
 
     ogs_expect(true == nssf_sbi_send_request(nf_instance, xact));
 }

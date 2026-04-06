@@ -1,0 +1,481 @@
+openapi: 3.0.0
+
+info:
+  title: Nnsacf_SliceEventExposure
+  version: 1.2.0
+  description: |
+    Nnsacf_SliceEventExposure Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.536 V19.3.0; 5G System; Network Slice Admission Control Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.536/
+
+servers:
+  - url: '{apiRoot}/nnsacf-slice-ee/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nnsacf-slice-ee
+
+paths:
+  /subscriptions:
+    post:
+      summary: Nnsacf_SliceEventExposure Subscribe service Operation
+      tags:
+        - Subscriptions collection (Collection)
+      operationId: CreateSubscription
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SACEventSubscription'
+        required: true
+      responses:
+        '201':
+          description: Subsription Created
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nnsacf-slice-ee/<apiVersion>/subscriptions/{subscriptionId}'
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedSACEventSubscription'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+      callbacks:
+        eventReport:
+          '{$request.body#/subscription/eventNotifyUri}':
+            post:
+              summary: Event Notificaiton Delivery
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SACEventReport'
+                required: true
+              responses:
+                '204':
+                  description: Successful acknowledgement
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  description: Unexpected error
+
+  /subscriptions/{subscriptionId}:
+    patch:
+      summary: Nnsacf_SliceEventExposure Subscribe partial modify service Operation
+      tags:
+        - Individual subscription (Document)
+      operationId: PartialModifySubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Unique ID of the subscription to be modified
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '200':
+          description: Subsription modified successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedSACEventSubscription'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    put:
+      summary: Nnsacf_SliceEventExposure Subscribe complete modify service Operation
+      tags:
+        - Individual subscription (Document)
+      operationId: CompleteModifySubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Unique ID of the subscription to be modified
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SACEventSubscription'
+        required: true
+      responses:
+        '200':
+          description: Subsription modified successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedSACEventSubscription'
+        '204':
+          description: Events subscription modification is accepted entirely
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+    delete:
+      summary: Nnsacf_SliceEventExposure Unsubscribe service Operation
+      tags:
+        - Individual subscription (Document)
+      operationId: DeleteSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Unique ID of the subscription to be deleted
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Subsription deleted successfully
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nnsacf-slice-ee: Access to the Nnsacf_SliceEventExposure API
+
+  schemas:
+
+    #
+    # STRUCTURED DATA TYPES
+    #
+
+    SACEventSubscription:
+      description: Request data to create the slice event subscription
+      type: object
+      required:
+        - event
+        - eventNotifyUri
+        - nfId
+      properties:
+        event:
+          $ref: '#/components/schemas/SACEvent'
+        eventNotifyUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        nfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        notifyCorrelationId:
+          type: string
+        maxReports:
+          type: integer
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        notifFlag:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NotificationFlag'
+        mutingExcInstructions:
+          writeOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MutingExceptionInstructions'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/MutingExceptionInstructions'
+        mutingNotSettings:
+          readOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MutingNotificationsSettings'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/MutingNotificationsSettings'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    CreatedSACEventSubscription:
+      description: Response data on created slice event subscription
+      type: object
+      required:
+        - subscription
+        - subscriptionId
+      properties:
+        subscription:
+          $ref: '#/components/schemas/SACEventSubscription'
+        subscriptionId:
+          type: string
+        report:
+          $ref: '#/components/schemas/SACEventReportItem'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    SACEventReport:
+      description: Slice event notification
+      type: object
+      required:
+        - report
+      properties:
+        report:
+          $ref: '#/components/schemas/SACEventReportItem'
+        additionReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/SACEventReportItem'
+          minItems: 1
+        notifyCorrelationId:
+          type: string
+
+    SACEvent:
+      description: Describes an slice event to be subscribed
+      type: object
+      required:
+        - eventType
+        - eventFilter
+      properties:
+        eventType:
+          $ref: '#/components/schemas/SACEventType'
+        eventTrigger:
+          $ref: '#/components/schemas/SACEventTrigger'
+        eventFilter:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        notificationPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        notifThreshold:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SACInfo'
+        immediateFlag:
+          type: boolean
+          default: false
+        varRepPeriodInfo:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarRepPeriod'
+          minItems: 1
+        plmnIdNid:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        accessTypeFilter:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+        serviceAreaFilter:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NsacSai'
+          minItems: 1
+
+    SACEventReportItem:
+      description: Represents a report triggered by a subscribed slice event type
+      type: object
+      required:
+        - eventType
+        - eventState
+        - timeStamp
+        - eventFilter
+      properties:
+        eventType:
+          $ref: '#/components/schemas/SACEventType'
+        eventState:
+          $ref: '#/components/schemas/SACEventState'
+        timeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        eventFilter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        sliceStautsInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SACEventStatus'
+        plmnIdNid:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        serviceArea:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NsacSai'
+
+    SACEventState:
+      description: Represents the state of a subscribed slice event
+      type: object
+      required:
+        - active
+      properties:
+        active:
+          type: boolean
+        remainReports:
+          type: integer
+        remainDuration:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+
+    #
+    # SIMPLE DATA TYPES
+    #
+
+
+    #
+    # ENUMERATIONS
+    #
+
+    SACEventType:
+      description: Describes the supported slice event types
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - NUM_OF_REGD_UES
+        - NUM_OF_ESTD_PDU_SESSIONS
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#            content defined in the present version of this API.
+#
+    SACEventTrigger:
+      description: Describes how NSACF should generate the report for the slice event
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - THRESHOLD
+        - PERIODIC
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.

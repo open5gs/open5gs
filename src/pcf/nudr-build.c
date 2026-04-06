@@ -29,7 +29,8 @@ ogs_sbi_request_t *pcf_nudr_dr_build_query_am_data(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDR_DR;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudr_dr);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_POLICY_DATA;
     message.h.resource.component[1] = (char *)OGS_SBI_RESOURCE_NAME_UES;
@@ -56,7 +57,8 @@ ogs_sbi_request_t *pcf_nudr_dr_build_query_sm_data(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDR_DR;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudr_dr);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_POLICY_DATA;
     message.h.resource.component[1] = (char *)OGS_SBI_RESOURCE_NAME_UES;

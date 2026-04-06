@@ -5,7 +5,7 @@
 #include "authorization_data.h"
 
 OpenAPI_authorization_data_t *OpenAPI_authorization_data_create(
-    OpenAPI_set_t *authorization_data,
+    OpenAPI_list_t *authorization_data,
     OpenAPI_list_t *allowed_dnn_list,
     OpenAPI_list_t *allowed_snssai_list,
     OpenAPI_list_t *allowed_mtc_providers,

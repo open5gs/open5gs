@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_def_sub_service_info_s OpenAPI_def_sub_service_info_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_def_sub_service_info_s OpenAPI_def_sub_service_info_t;
-typedef struct OpenAPI_def_sub_service_info_s {
+struct OpenAPI_def_sub_service_info_s {
     OpenAPI_list_t *versions;
     char *supported_features;
-} OpenAPI_def_sub_service_info_t;
+};
 
 OpenAPI_def_sub_service_info_t *OpenAPI_def_sub_service_info_create(
     OpenAPI_list_t *versions,

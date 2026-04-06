@@ -67,7 +67,7 @@ void OpenAPI_pdu_session_management_data_free(OpenAPI_pdu_session_management_dat
     }
     if (pdu_session_management_data->n6_traffic_routing_info) {
         OpenAPI_list_for_each(pdu_session_management_data->n6_traffic_routing_info, node) {
-            OpenAPI_route_to_location_free(node->data);
+            OpenAPI_route_to_location_1_free(node->data);
         }
         OpenAPI_list_free(pdu_session_management_data->n6_traffic_routing_info);
         pdu_session_management_data->n6_traffic_routing_info = NULL;
@@ -162,7 +162,7 @@ cJSON *OpenAPI_pdu_session_management_data_convertToJSON(OpenAPI_pdu_session_man
         goto end;
     }
     OpenAPI_list_for_each(pdu_session_management_data->n6_traffic_routing_info, node) {
-        cJSON *itemLocal = OpenAPI_route_to_location_convertToJSON(node->data);
+        cJSON *itemLocal = OpenAPI_route_to_location_1_convertToJSON(node->data);
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_pdu_session_management_data_convertToJSON() failed [n6_traffic_routing_info]");
             goto end;
@@ -339,7 +339,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
                 ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [n6_traffic_routing_info]");
                 goto end;
             }
-            OpenAPI_route_to_location_t *n6_traffic_routing_infoItem = OpenAPI_route_to_location_parseFromJSON(n6_traffic_routing_info_local);
+            OpenAPI_route_to_location_1_t *n6_traffic_routing_infoItem = OpenAPI_route_to_location_1_parseFromJSON(n6_traffic_routing_info_local);
             if (!n6_traffic_routing_infoItem) {
                 ogs_error("No n6_traffic_routing_infoItem");
                 goto end;
@@ -491,7 +491,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
 end:
     if (n6_traffic_routing_infoList) {
         OpenAPI_list_for_each(n6_traffic_routing_infoList, node) {
-            OpenAPI_route_to_location_free(node->data);
+            OpenAPI_route_to_location_1_free(node->data);
         }
         OpenAPI_list_free(n6_traffic_routing_infoList);
         n6_traffic_routing_infoList = NULL;

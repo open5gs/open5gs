@@ -87,6 +87,7 @@ void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
+    int service_name_id = OpenAPI_service_name_NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -117,8 +118,10 @@ void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
             break;
         }
 
-        SWITCH(message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message->h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nnrf_nfm:
 
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
@@ -157,7 +160,7 @@ void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("[%s] Invalid API name [%s]",
                     nf_instance->id, message->h.service.name);
             ogs_assert(true ==
@@ -166,7 +169,7 @@ void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
                     "Invalid resource name", message->h.service.name,
                     NULL));
             OGS_FSM_TRAN(s, nrf_nf_state_exception);
-        END
+        }
         break;
 
     default:
@@ -190,6 +193,7 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
     ogs_sbi_response_t *response = NULL;
+    int service_name_id = OpenAPI_service_name_NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -241,8 +245,10 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
             break;
         }
 
-        SWITCH(message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message->h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nnrf_nfm:
 
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
@@ -296,7 +302,7 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("[%s] Invalid API name [%s]",
                     nf_instance->id, message->h.service.name);
             ogs_assert(true ==
@@ -305,7 +311,7 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                     "Invalid resource name", message->h.service.name,
                     NULL));
             OGS_FSM_TRAN(s, nrf_nf_state_exception);
-        END
+        }
         break;
 
     default:

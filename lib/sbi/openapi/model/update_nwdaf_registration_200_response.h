@@ -12,18 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_update_nwdaf_registration_200_response_s OpenAPI_update_nwdaf_registration_200_response_t;
 #include "context_info.h"
 #include "event_id.h"
-#include "nwdaf_registration.h"
-#include "patch_result.h"
 #include "report_item.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_update_nwdaf_registration_200_response_s OpenAPI_update_nwdaf_registration_200_response_t;
-typedef struct OpenAPI_update_nwdaf_registration_200_response_s {
+struct OpenAPI_update_nwdaf_registration_200_response_s {
     char *nwdaf_instance_id;
     OpenAPI_list_t *analytics_ids;
     char *nwdaf_set_id;
@@ -32,7 +30,7 @@ typedef struct OpenAPI_update_nwdaf_registration_200_response_s {
     char *supported_features;
     OpenAPI_list_t *reset_ids;
     OpenAPI_list_t *report;
-} OpenAPI_update_nwdaf_registration_200_response_t;
+};
 
 OpenAPI_update_nwdaf_registration_200_response_t *OpenAPI_update_nwdaf_registration_200_response_create(
     char *nwdaf_instance_id,

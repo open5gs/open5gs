@@ -1,0 +1,213 @@
+openapi: 3.0.0
+
+info:
+  title: Aimlec_AimlTaskTransfer
+  version: 1.0.2
+  description: |
+    API for AIMLE Client AI/ML Task Transfer Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.560 V19.1.0; Artificial Intelligence / Machine Learning (AIML) Services – Service
+    Enabler Architecture Layer for Verticals (SEAL); Protocol Specification; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/24_series/24.560/'
+
+servers:
+  - url: '{apiRoot}/aimlec-task-transfer/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /request:
+    post:
+      summary: Enables the AIMLE server to request the AIMLE client to perform AI/ML task transfer.
+      operationId: AimlTaskTransf
+      tags:
+        - AI/ML task transfer
+      requestBody:
+        description: Contains the AIMLE client task transfer request information.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AimleClientTaskTransferReq'
+      responses:
+        '200':
+          description: Contains the AIMLE client task transfer response information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AimleClientTaskTransferRes'
+        '204':
+          description: No Content. The AIMLE client AI/ML task transfer is performed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /request-direct:
+    post:
+      summary: >
+        Enables the AIMLE client to request the target AIMLE client to perform AI/ML task transfer.
+      operationId: DirAimlTaskTransf
+      tags:
+        - Direct AI/ML task transfer
+      requestBody:
+        description: Contains the AIMLE client direct task transfer request information.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AimleClientDirectTransferReq'
+      responses:
+        '204':
+          description: No Content. The AIMLE client direct AI/ML task transfer is performed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+# Structured data types
+
+    AimleClientTaskTransferReq:
+      description: Contains the AIMLE client task transfer request information.
+      type: object
+      required:
+      - requestorId
+      - sourceAimlId
+      - aimlTaskType
+      - aimlInfoType
+      properties:
+        requestorId:
+          description: Represents the identifier of the AIMLE server.
+          type: string
+        sourceAimlId:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        aimlTaskType:
+          $ref: 'TS24560_Aimles_AIMLEClientRegistration.yaml#/components/schemas/AimlOperation'
+        aimlInfoType:
+          $ref: '#/components/schemas/AimlInfoType'
+        aimlTaskTransferTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        timeValidity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+
+    AimleClientTaskTransferRes:
+      description: >
+        Contains the AIMLE client task transfer response information. The aimlTaskTransferTime shall
+        be present, although they are not specified as a mandatory due to backward compatibility
+        reasons.
+      type: object
+      properties:
+        aimlTaskTransferTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+
+    AimleClientDirectTransferReq:
+      description: Contains the AIMLE client direct task transfer request information.
+      type: object
+      required:
+      - requestorId
+      - aimlTaskType
+      - aimlInfoType
+      properties:
+        requestorId:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        aimlTaskType:
+          $ref: 'TS24560_Aimles_AIMLEClientRegistration.yaml#/components/schemas/AimlOperation'
+        aimlInfoType:
+          $ref: '#/components/schemas/AimlInfoType'
+        aimlTaskTransferTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        timeValidity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+
+
+# Simple data types
+
+
+# Enumerations
+
+    AimlInfoType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - INTERMEDIATE_AIML_OP_RESULTS
+        - INTERMEDIATE_AIML_OP_STATUS
+        - FIRST_MATCH
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          but is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the type of the AI/ML Information.  
+#        Possible values are:
+#        - INTERMEDIATE_AIML_OP_RESULTS: Indicates the intermediate AI/ML operation results type
+#          of the AI/ML information.
+#        - INTERMEDIATE_AIML_OP_STATUS: Indicates the intermediate AI/ML operation status type of
+#          the AI/ML information.
+#        - FIRST_MATCH: Indicates other types of the AI/ML information.

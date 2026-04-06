@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_subscribed_snssai_s OpenAPI_subscribed_snssai_t;
 #include "snssai.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_subscribed_snssai_s OpenAPI_subscribed_snssai_t;
-typedef struct OpenAPI_subscribed_snssai_s {
+struct OpenAPI_subscribed_snssai_s {
     struct OpenAPI_snssai_s *subscribed_snssai;
     bool is_default_indication;
     int default_indication;
     OpenAPI_list_t *subscribed_ns_srg_list;
-} OpenAPI_subscribed_snssai_t;
+};
 
 OpenAPI_subscribed_snssai_t *OpenAPI_subscribed_snssai_create(
     OpenAPI_snssai_t *subscribed_snssai,

@@ -1,0 +1,345 @@
+openapi: 3.0.0
+info:
+  title: Maf_Provisioning_MetricsReporting
+  version: 1.0.1
+  description: |
+    Media Delivery: Metrics Reporting Provisioning API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Maf_Provisioning_MetricsReporting
+    description: 'Media Delivery: Metrics Reporting Provisioning API'
+
+externalDocs:
+  description: 'TS 26.510 V18.4.0; Media Delivery; Interactions and APIs for media session handling'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.510/'
+
+servers:
+  - url: '{apiRoot}/3gpp-maf-provisioning/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 26.510 clause 7.1.3.
+
+security:
+  - {}
+  - OAuth2: [] 
+
+paths:
+  /provisioning-sessions/{provisioningSessionId}/metrics-reporting-configurations:
+    parameters:
+      - name: provisioningSessionId
+        in: path
+        required: true
+        schema: 
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The resource identifier of an existing Provisioning Session.'
+    post:
+      operationId: activateMetricsReporting
+      summary: 'Activate the Metrics reporting procedure for the specified Provisioning Session by providing the Metrics Reporting Configuration'
+      security:
+        - OAuth2:
+          - metrics-reporting-configuraton_create
+      requestBody:
+        description: 'A JSON representation of a Metrics Reporting Configuration'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetricsReportingConfiguration'
+      responses:
+        '201': # OK
+          description: 'Metrics Reporting Configuration Created'
+          headers:
+            Location:
+              description: 'URL of the newly created Metrics Reporting Configuration (same as request URL).'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsReportingConfiguration'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'   
+
+  /provisioning-sessions/{provisioningSessionId}/metrics-reporting-configurations/{metricsReportingConfigurationId}:
+    parameters:
+      - name: provisioningSessionId
+        in: path
+        required: true
+        schema: 
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The resource identifier of an existing Provisioning Session.'
+      - name: metricsReportingConfigurationId
+        in: path
+        required: true
+        schema: 
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The resource identifier of a Metrics Reporting Configuration.'
+    get:
+      operationId: retrieveMetricsReportingConfiguration
+      summary: 'Retrieve the specified Metrics Reporting Configuration of the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - metrics-reporting-configuraton_retrieve
+      responses:
+        '200': # OK
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsReportingConfiguration'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    put:
+      operationId: replaceMetricsReportingConfiguration
+      summary: 'Replace the specified Metrics Reporting Configuration for the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - metrics-reporting-configuraton_replace
+      requestBody:
+        description: 'A JSON representation of a Metrics Reporting Configuration'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetricsReportingConfiguration'
+      responses:
+        '200': # OK
+          description: 'Metrics Reporting Configuration Replaced'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsReportingConfiguration'
+        '204': # No Content
+          description: 'Metrics Reporting Configuration Unchanged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    patch:
+      operationId: patchMetricsReportingConfiguration
+      summary: 'Patch the specified Metrics Reporting Configuration for the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - metrics-reporting-configuraton_patch
+      requestBody:
+        description: 'A JSON representation of a Metrics Reporting Configuration'
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/MetricsReportingConfiguration'
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/MetricsReportingConfiguration'
+      responses:
+        '200': # OK
+          description: 'Metrics Reporting Configuration Patched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsReportingConfiguration'
+        '204': # No Content
+          description: 'Metrics Reporting Configuration Unchanged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    delete:
+      operationId: destroyMetricsReportingConfiguration
+      summary: 'Destroy the specified Metrics Reporting Configuration of the specified Provisioning Session'
+      security:
+        - OAuth2:
+          - metrics-reporting-configuraton_destroy
+      responses:
+        '204': # No Content
+          description: 'Metrics Reporting Configuration Destroyed'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            metrics-reporting-configuraton_create: Create a Metrics Reporting Configuration resource
+            metrics-reporting-configuraton_retrieve: Retrieve a Metrics Reporting Configuration resource
+            metrics-reporting-configuraton_replace: Replace a Metrics Reporting Configuration resource
+            metrics-reporting-configuraton_patch: Patch a Metrics Reporting Configuration resource
+            metrics-reporting-configuraton_destroy: Destroy a Metrics Reporting Configuration resource
+  schemas:
+    MetricsReportingConfiguration:
+      type: object
+      description: "A representation of a Metrics Reporting Configuration resource."
+      required:
+        - metricsReportingConfigurationId
+        - samplingPeriod
+      properties:
+        metricsReportingConfigurationId:
+          readOnly: true
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+#          allOf:
+#            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        sliceScope:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        scheme:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        dataNetworkName:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        reportingStartOffset:
+          minimum: 0
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        reportingDuration:
+          minimum: 0
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        reportingInterval:
+          minimum: 0
+          exclusiveMinimum: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        samplePercentage:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/Percentage'
+#          allOf:
+#            - $ref: 'TS26510_CommonData.yaml#/components/schemas/Percentage'
+          default: 100.0
+        urlFilters:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        samplingPeriod:
+          minimum: 0
+          exclusiveMinimum: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        positiveCrossingThresholds:
+          description: "A map (list of key-value pairs) for a metric and its positive crossing threshold values. The key of the map shall be a metric URI."
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+            minItems: 1
+          minProperties: 1
+        negativeCrossingThresholds:
+          description: "A map (list of key-value pairs) for a metric and its negative crossing threshold values. The key of the map shall be a metric URI."
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+            minItems: 1
+          minProperties: 1
+        locationFilter:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+          minItems: 1
+        metrics:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1

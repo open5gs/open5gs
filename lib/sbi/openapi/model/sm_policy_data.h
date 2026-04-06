@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_policy_data_s OpenAPI_sm_policy_data_t;
 #include "sm_policy_snssai_data.h"
 #include "usage_mon_data.h"
 #include "usage_mon_data_limit.h"
@@ -20,21 +21,18 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_policy_data_s OpenAPI_sm_policy_data_t;
-typedef struct OpenAPI_sm_policy_data_s {
+struct OpenAPI_sm_policy_data_s {
     OpenAPI_list_t* sm_policy_snssai_data;
     OpenAPI_list_t* um_data_limits;
     OpenAPI_list_t* um_data;
     char *supp_feat;
-    OpenAPI_list_t *reset_ids;
-} OpenAPI_sm_policy_data_t;
+};
 
 OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_create(
     OpenAPI_list_t* sm_policy_snssai_data,
     OpenAPI_list_t* um_data_limits,
     OpenAPI_list_t* um_data,
-    char *supp_feat,
-    OpenAPI_list_t *reset_ids
+    char *supp_feat
 );
 void OpenAPI_sm_policy_data_free(OpenAPI_sm_policy_data_t *sm_policy_data);
 OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_dataJSON);

@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "ue_reachability.h"
 
-OpenAPI_ue_reachability_t *OpenAPI_ue_reachability_create(
-)
+char* OpenAPI_ue_reachability_ToString(OpenAPI_ue_reachability_e ue_reachability)
 {
-    OpenAPI_ue_reachability_t *ue_reachability_local_var = ogs_malloc(sizeof(OpenAPI_ue_reachability_t));
-    ogs_assert(ue_reachability_local_var);
-
-
-    return ue_reachability_local_var;
+    const char *ue_reachabilityArray[] =  { "NULL", "UNREACHABLE", "REACHABLE", "REGULATORY_ONLY" };
+    size_t sizeofArray = sizeof(ue_reachabilityArray) / sizeof(ue_reachabilityArray[0]);
+    if (ue_reachability < sizeofArray)
+        return (char *)ue_reachabilityArray[ue_reachability];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_ue_reachability_free(OpenAPI_ue_reachability_t *ue_reachability)
+OpenAPI_ue_reachability_e OpenAPI_ue_reachability_FromString(char* ue_reachability)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == ue_reachability) {
-        return;
+    int stringToReturn = 0;
+    const char *ue_reachabilityArray[] =  { "NULL", "UNREACHABLE", "REACHABLE", "REGULATORY_ONLY" };
+    size_t sizeofArray = sizeof(ue_reachabilityArray) / sizeof(ue_reachabilityArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(ue_reachability, ue_reachabilityArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(ue_reachability);
-}
-
-cJSON *OpenAPI_ue_reachability_convertToJSON(OpenAPI_ue_reachability_t *ue_reachability)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (ue_reachability == NULL) {
-        ogs_error("OpenAPI_ue_reachability_convertToJSON() failed [UeReachability]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_ue_reachability_t *OpenAPI_ue_reachability_parseFromJSON(cJSON *ue_reachabilityJSON)
-{
-    OpenAPI_ue_reachability_t *ue_reachability_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    ue_reachability_local_var = OpenAPI_ue_reachability_create (
-    );
-
-    return ue_reachability_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_ue_reachability_t *OpenAPI_ue_reachability_copy(OpenAPI_ue_reachability_t *dst, OpenAPI_ue_reachability_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_ue_reachability_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_ue_reachability_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_ue_reachability_free(dst);
-    dst = OpenAPI_ue_reachability_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

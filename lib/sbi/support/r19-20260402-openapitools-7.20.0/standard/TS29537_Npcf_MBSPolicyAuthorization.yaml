@@ -1,0 +1,303 @@
+openapi: 3.0.0
+
+info:
+  title: Npcf_MBSPolicyAuthorization API
+  version: 1.2.0
+  description: |
+    MBS Policy Authorization Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.537 V19.2.0; 5G System; Multicast/Broadcast Policy Control Services.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.537/'
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - npcf-mbspolicyauth
+
+servers:
+  - url: '{apiRoot}/npcf-mbspolicyauth/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 4.4 of 3GPP TS 29.501.
+
+paths:
+  /contexts:
+    post:
+      summary: Request the creation of a new Individual MBS Application Session Context resource.
+      operationId: CreateMBSAppSessionCtxt
+      tags:
+        - MBS Application Session Contexts (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MbsAppSessionCtxt'
+      responses:
+        '201':
+          description: >
+            Created. An Individual MBS Application Session Context resource is successfully created
+            and a representation of the created resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MbsAppSessionCtxt'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created Individual MBS Application Session Context
+                resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          description: Forbidden.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/MbsExtProblemDetails'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /contexts/{contextId}:
+    parameters:
+      - name: contextId
+        in: path
+        description: >
+          Contains the identifier of the Individual MBS Application Session Context resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Read an existing Individual MBS Application Session Context resource.
+      operationId: GetMBSAppSessionCtxt
+      tags:
+        - Individual MBS Application Session Context (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual MBS Application Session Context resource is successfully
+            returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MbsAppSessionCtxt'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual MBS Application Session Context resource.
+      operationId: ModifyMBSAppSessionCtxt
+      tags:
+        - Individual MBS Application Session Context (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/MbsAppSessionCtxtPatch'
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual MBS Application Session Context resource is successfully
+            modified and a representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MbsAppSessionCtxt'
+        '204':
+          description: >
+            No Content. The corresponding Individual MBS Application Session Context resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          description: Forbidden.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/MbsExtProblemDetails'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual MBS Application Session Context resource.
+      operationId: DeleteMBSAppSessionCtxt
+      tags:
+        - Individual MBS Application Session Context (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The corresponding Individual MBS Application Session Context resource is
+            successfully deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows: 
+        clientCredentials: 
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npcf-mbspolicyauth: Access to the Npcf_MBSPolicyAuthorization API
+
+  schemas:
+    MbsAppSessionCtxt:
+      description: >
+        Represents the parameter of an MBS Application Session Context.
+      type: object
+      properties:
+        mbsSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
+        mbsServInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsServiceInfo'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        areaSessPolId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AreaSessionPolicyId'
+        reqForLocDepMbs:
+          type: boolean
+          default: false
+          description: >
+            Indicates whether the request corresponds to a location-dependent MBS service.
+            true means that the request corresponds to a location-dependent MBS service.
+            false means that the request does not correspond to a location-dependent MBS service.
+            When this attribute is not present, the default value is "false".
+        contactPcfInd:
+          type: boolean
+          default: false
+          description: >
+            Indicates whether the PCF shall be contacted or not.
+            true means that the PCF shall be contacted.
+            false means that the PCF shall not be contacted.
+            When this attribute is not present, the default value is "false".
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - mbsSessionId
+
+    MbsAppSessionCtxtPatch:
+      description: >
+        Represents the modifications to an existing MBS Application Session Context resource.
+      type: object
+      properties:
+        mbsServInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsServiceInfo'
+
+    AcceptableMbsServInfo:
+      description: >
+        Contains the MBS Service Information that can be accepted by the PCF.
+      type: object
+      properties:
+        accMbsServInfo:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsMediaComp'
+          minProperties: 1
+        accMaxMbsBw:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+      oneOf:
+        - required: [accMbsServInfo]
+        - required: [accMaxMbsBw]
+
+# Data types describing alternative data types or combinations of data types:
+
+    MbsExtProblemDetails:
+      description: Identifies the MBS related extensions to the ProblemDetails data structure.
+      allOf:
+        - $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        - $ref: '#/components/schemas/AcceptableMbsServInfo'

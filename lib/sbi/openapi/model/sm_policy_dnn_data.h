@@ -12,16 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_policy_dnn_data_s OpenAPI_sm_policy_dnn_data_t;
 #include "charging_information.h"
 #include "limit_id_to_monitoring_key.h"
+#include "policy_counter_info.h"
 #include "presence_info.h"
+#include "restricted_status.h"
+#include "tnap_id.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_policy_dnn_data_s OpenAPI_sm_policy_dnn_data_t;
-typedef struct OpenAPI_sm_policy_dnn_data_s {
+struct OpenAPI_sm_policy_dnn_data_s {
     char *dnn;
     OpenAPI_list_t *allowed_services;
     OpenAPI_list_t *subsc_cats;
@@ -31,6 +34,7 @@ typedef struct OpenAPI_sm_policy_dnn_data_s {
     int adc_support;
     bool is_subsc_spending_limits;
     int subsc_spending_limits;
+    OpenAPI_list_t* spend_lim_info;
     bool is_ipv4_index;
     int ipv4_index;
     bool is_ipv6_index;
@@ -40,6 +44,7 @@ typedef struct OpenAPI_sm_policy_dnn_data_s {
     bool is_online;
     int online;
     struct OpenAPI_charging_information_s *chf_info;
+    char *chf_group_id;
     OpenAPI_list_t* ref_um_data_limit_ids;
     bool is_mps_priority;
     int mps_priority;
@@ -56,7 +61,13 @@ typedef struct OpenAPI_sm_policy_dnn_data_s {
     OpenAPI_list_t* bdt_ref_ids;
     bool is_loc_rout_not_allowed;
     int loc_rout_not_allowed;
-} OpenAPI_sm_policy_dnn_data_t;
+    bool is_sfc_not_allowed;
+    int sfc_not_allowed;
+    OpenAPI_list_t *tnaps;
+    OpenAPI_list_t *restri_status;
+    bool is_header_not_allowed;
+    int header_not_allowed;
+};
 
 OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_create(
     char *dnn,
@@ -68,6 +79,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_create(
     int adc_support,
     bool is_subsc_spending_limits,
     int subsc_spending_limits,
+    OpenAPI_list_t* spend_lim_info,
     bool is_ipv4_index,
     int ipv4_index,
     bool is_ipv6_index,
@@ -77,6 +89,7 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_create(
     bool is_online,
     int online,
     OpenAPI_charging_information_t *chf_info,
+    char *chf_group_id,
     OpenAPI_list_t* ref_um_data_limit_ids,
     bool is_mps_priority,
     int mps_priority,
@@ -92,7 +105,13 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_create(
     bool is_bdt_ref_ids_null,
     OpenAPI_list_t* bdt_ref_ids,
     bool is_loc_rout_not_allowed,
-    int loc_rout_not_allowed
+    int loc_rout_not_allowed,
+    bool is_sfc_not_allowed,
+    int sfc_not_allowed,
+    OpenAPI_list_t *tnaps,
+    OpenAPI_list_t *restri_status,
+    bool is_header_not_allowed,
+    int header_not_allowed
 );
 void OpenAPI_sm_policy_dnn_data_free(OpenAPI_sm_policy_dnn_data_t *sm_policy_dnn_data);
 OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm_policy_dnn_dataJSON);

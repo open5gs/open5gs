@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "dispersion_type.h"
 
-OpenAPI_dispersion_type_t *OpenAPI_dispersion_type_create(
-)
+char* OpenAPI_dispersion_type_ToString(OpenAPI_dispersion_type_e dispersion_type)
 {
-    OpenAPI_dispersion_type_t *dispersion_type_local_var = ogs_malloc(sizeof(OpenAPI_dispersion_type_t));
-    ogs_assert(dispersion_type_local_var);
-
-
-    return dispersion_type_local_var;
+    const char *dispersion_typeArray[] =  { "NULL", "DVDA", "TDA", "DVDA_AND_TDA" };
+    size_t sizeofArray = sizeof(dispersion_typeArray) / sizeof(dispersion_typeArray[0]);
+    if (dispersion_type < sizeofArray)
+        return (char *)dispersion_typeArray[dispersion_type];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_dispersion_type_free(OpenAPI_dispersion_type_t *dispersion_type)
+OpenAPI_dispersion_type_e OpenAPI_dispersion_type_FromString(char* dispersion_type)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == dispersion_type) {
-        return;
+    int stringToReturn = 0;
+    const char *dispersion_typeArray[] =  { "NULL", "DVDA", "TDA", "DVDA_AND_TDA" };
+    size_t sizeofArray = sizeof(dispersion_typeArray) / sizeof(dispersion_typeArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(dispersion_type, dispersion_typeArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(dispersion_type);
-}
-
-cJSON *OpenAPI_dispersion_type_convertToJSON(OpenAPI_dispersion_type_t *dispersion_type)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (dispersion_type == NULL) {
-        ogs_error("OpenAPI_dispersion_type_convertToJSON() failed [DispersionType]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_dispersion_type_t *OpenAPI_dispersion_type_parseFromJSON(cJSON *dispersion_typeJSON)
-{
-    OpenAPI_dispersion_type_t *dispersion_type_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    dispersion_type_local_var = OpenAPI_dispersion_type_create (
-    );
-
-    return dispersion_type_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_dispersion_type_t *OpenAPI_dispersion_type_copy(OpenAPI_dispersion_type_t *dst, OpenAPI_dispersion_type_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_dispersion_type_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_dispersion_type_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_dispersion_type_free(dst);
-    dst = OpenAPI_dispersion_type_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

@@ -5,7 +5,6 @@
 #include "arp_1.h"
 
 OpenAPI_arp_1_t *OpenAPI_arp_1_create(
-    bool is_priority_level_null,
     int priority_level,
     OpenAPI_preemption_capability_e preempt_cap,
     OpenAPI_preemption_vulnerability_e preempt_vuln
@@ -14,7 +13,6 @@ OpenAPI_arp_1_t *OpenAPI_arp_1_create(
     OpenAPI_arp_1_t *arp_1_local_var = ogs_malloc(sizeof(OpenAPI_arp_1_t));
     ogs_assert(arp_1_local_var);
 
-    arp_1_local_var->is_priority_level_null = is_priority_level_null;
     arp_1_local_var->priority_level = priority_level;
     arp_1_local_var->preempt_cap = preempt_cap;
     arp_1_local_var->preempt_vuln = preempt_vuln;
@@ -112,7 +110,6 @@ OpenAPI_arp_1_t *OpenAPI_arp_1_parseFromJSON(cJSON *arp_1JSON)
     preempt_vulnVariable = OpenAPI_preemption_vulnerability_FromString(preempt_vuln->valuestring);
 
     arp_1_local_var = OpenAPI_arp_1_create (
-        priority_level && cJSON_IsNull(priority_level) ? true : false,
         
         priority_level->valuedouble,
         preempt_capVariable,

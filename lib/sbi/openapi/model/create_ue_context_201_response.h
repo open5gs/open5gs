@@ -12,14 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_create_ue_context_201_response_s OpenAPI_create_ue_context_201_response_t;
 #include "ue_context_created_data.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_create_ue_context_201_response_s OpenAPI_create_ue_context_201_response_t;
-typedef struct OpenAPI_create_ue_context_201_response_s {
+struct OpenAPI_create_ue_context_201_response_s {
     struct OpenAPI_ue_context_created_data_s *json_data;
     OpenAPI_binary_t* binary_data_n2_information;
     OpenAPI_binary_t* binary_data_n2_information_ext1;
@@ -37,7 +37,7 @@ typedef struct OpenAPI_create_ue_context_201_response_s {
     OpenAPI_binary_t* binary_data_n2_information_ext13;
     OpenAPI_binary_t* binary_data_n2_information_ext14;
     OpenAPI_binary_t* binary_data_n2_information_ext15;
-} OpenAPI_create_ue_context_201_response_t;
+};
 
 OpenAPI_create_ue_context_201_response_t *OpenAPI_create_ue_context_201_response_create(
     OpenAPI_ue_context_created_data_t *json_data,

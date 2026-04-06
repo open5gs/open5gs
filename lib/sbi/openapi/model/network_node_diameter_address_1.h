@@ -1,7 +1,7 @@
 /*
  * network_node_diameter_address_1.h
  *
- * 
+ * This data type is a part of smsfDiameterAddress and it should be present whenever smsf supports Diameter protocol. 
  */
 
 #ifndef _OpenAPI_network_node_diameter_address_1_H_
@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_network_node_diameter_address_1_s OpenAPI_network_node_diameter_address_1_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_network_node_diameter_address_1_s OpenAPI_network_node_diameter_address_1_t;
-typedef struct OpenAPI_network_node_diameter_address_1_s {
+struct OpenAPI_network_node_diameter_address_1_s {
     char *name;
     char *realm;
-} OpenAPI_network_node_diameter_address_1_t;
+};
 
 OpenAPI_network_node_diameter_address_1_t *OpenAPI_network_node_diameter_address_1_create(
     char *name,

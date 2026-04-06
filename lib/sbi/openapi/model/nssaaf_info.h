@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nssaaf_info_s OpenAPI_nssaaf_info_t;
 #include "internal_group_id_range.h"
 #include "supi_range.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nssaaf_info_s OpenAPI_nssaaf_info_t;
-typedef struct OpenAPI_nssaaf_info_s {
+struct OpenAPI_nssaaf_info_s {
     OpenAPI_list_t *supi_ranges;
     OpenAPI_list_t *internal_group_identifiers_ranges;
-} OpenAPI_nssaaf_info_t;
+};
 
 OpenAPI_nssaaf_info_t *OpenAPI_nssaaf_info_create(
     OpenAPI_list_t *supi_ranges,

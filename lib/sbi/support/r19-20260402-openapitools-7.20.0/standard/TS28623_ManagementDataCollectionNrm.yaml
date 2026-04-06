@@ -1,0 +1,108 @@
+openapi: 3.0.1
+info:
+  title: Management Data Collection NRM
+  version: 19.5.0
+  description: >-
+    OAS 3.0.1 definition of the Management Data Collection NRM fragment
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.623; Generic NRM, Management Data Collection NRM
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.623/
+paths: {}
+components:
+  schemas:
+  #-------- Definition of types for name-containments ------
+    SubNetwork-ncO-ManagementDataCollectionNrm:
+      type: object
+      properties:
+        ManagementDataCollection:
+          $ref: '#/components/schemas/ManagementDataCollection-Multiple'
+    
+   #-------Definition of generic IOCs ----------# 
+
+#-------- Definition of types-----------------------------------------------------
+
+    ManagementData:
+      oneOf:
+      - type: array
+        items:
+          type: string
+          enum:
+            - COVERAGE
+            - CAPACITY
+            - ENERGY_EFFICIENCY
+            - MOBILITY
+            - ACCESSIBILITY
+      - type: array
+        items:
+          type: string
+    NodeFilter:
+      type: object
+      properties:
+        areaOfInterest:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/AreaOfInterest'
+        networkDomain:
+          type: string
+          enum:
+            - CN
+            - RAN
+        cpUpType:
+          type: string
+          enum:
+            - CP
+            - UP
+        sst:
+          type: integer
+        objectInstances:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+
+
+#-------- Definition of concrete IOCs --------------------------------------------
+
+    ManagementDataCollection-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                managementData:
+                  $ref: '#/components/schemas/ManagementData'
+                targetNodeFilter:
+                  $ref: '#/components/schemas/NodeFilter'
+                collectionTimeWindow:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow'
+                reportingCtrl:
+                  $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ReportingCtrl'
+                dataScope:
+                  type: string
+                  enum:
+                    - SNSSAI
+                    - 5QI
+                    - PLMN
+                condition:
+                  type: string
+                processMonitor:
+                  $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ProcessMonitor'
+                consolidateOutput:
+                  type: boolean
+                jobId:
+                  type: string
+
+#-------- Definition of YAML arrays for name-contained IOCs ----------------------
+    ManagementDataCollection-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ManagementDataCollection-Single'
+      
+#-------- Definitions in TS 28.623 for TS 28.532 ---------------------------------
+    resources-mgmtDataCollectionNrm:
+      oneOf:
+       - $ref: '#/components/schemas/ManagementDataCollection-Single'
+     
+       

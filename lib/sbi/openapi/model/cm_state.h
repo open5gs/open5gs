@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "cm_state_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_cm_state_s OpenAPI_cm_state_t;
-typedef struct OpenAPI_cm_state_s {
-} OpenAPI_cm_state_t;
+typedef enum { OpenAPI_cm_state_NULL = 0, OpenAPI_cm_state_IDLE, OpenAPI_cm_state_CONNECTED } OpenAPI_cm_state_e;
 
-OpenAPI_cm_state_t *OpenAPI_cm_state_create(
-);
-void OpenAPI_cm_state_free(OpenAPI_cm_state_t *cm_state);
-OpenAPI_cm_state_t *OpenAPI_cm_state_parseFromJSON(cJSON *cm_stateJSON);
-cJSON *OpenAPI_cm_state_convertToJSON(OpenAPI_cm_state_t *cm_state);
-OpenAPI_cm_state_t *OpenAPI_cm_state_copy(OpenAPI_cm_state_t *dst, OpenAPI_cm_state_t *src);
+char* OpenAPI_cm_state_ToString(OpenAPI_cm_state_e cm_state);
+
+OpenAPI_cm_state_e OpenAPI_cm_state_FromString(char* cm_state);
 
 #ifdef __cplusplus
 }

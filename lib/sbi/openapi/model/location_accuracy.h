@@ -1,7 +1,7 @@
 /*
  * location_accuracy.h
  *
- * 
+ * Indicates the location accuracy level.
  */
 
 #ifndef _OpenAPI_location_accuracy_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "location_accuracy_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_location_accuracy_s OpenAPI_location_accuracy_t;
-typedef struct OpenAPI_location_accuracy_s {
-} OpenAPI_location_accuracy_t;
+typedef enum { OpenAPI_location_accuracy_NULL = 0, OpenAPI_location_accuracy_CELL_LEVEL, OpenAPI_location_accuracy_RAN_NODE_LEVEL, OpenAPI_location_accuracy_TA_LEVEL, OpenAPI_location_accuracy_PLMN_LEVEL, OpenAPI_location_accuracy_N3IWF_LEVEL, OpenAPI_location_accuracy_UE_IP, OpenAPI_location_accuracy_UE_PORT } OpenAPI_location_accuracy_e;
 
-OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_create(
-);
-void OpenAPI_location_accuracy_free(OpenAPI_location_accuracy_t *location_accuracy);
-OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_parseFromJSON(cJSON *location_accuracyJSON);
-cJSON *OpenAPI_location_accuracy_convertToJSON(OpenAPI_location_accuracy_t *location_accuracy);
-OpenAPI_location_accuracy_t *OpenAPI_location_accuracy_copy(OpenAPI_location_accuracy_t *dst, OpenAPI_location_accuracy_t *src);
+char* OpenAPI_location_accuracy_ToString(OpenAPI_location_accuracy_e location_accuracy);
+
+OpenAPI_location_accuracy_e OpenAPI_location_accuracy_FromString(char* location_accuracy);
 
 #ifdef __cplusplus
 }

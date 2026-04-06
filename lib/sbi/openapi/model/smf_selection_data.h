@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_smf_selection_data_s OpenAPI_smf_selection_data_t;
 #include "candidate_for_replacement.h"
 #include "snssai.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_smf_selection_data_s OpenAPI_smf_selection_data_t;
-typedef struct OpenAPI_smf_selection_data_s {
+struct OpenAPI_smf_selection_data_s {
     bool is_unsupp_dnn;
     int unsupp_dnn;
     bool is_candidates_null;
@@ -28,7 +28,7 @@ typedef struct OpenAPI_smf_selection_data_s {
     struct OpenAPI_snssai_s *snssai;
     struct OpenAPI_snssai_s *mapping_snssai;
     char *dnn;
-} OpenAPI_smf_selection_data_t;
+};
 
 OpenAPI_smf_selection_data_t *OpenAPI_smf_selection_data_create(
     bool is_unsupp_dnn,

@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_udm_info_s OpenAPI_udm_info_t;
 #include "identity_range.h"
 #include "internal_group_id_range.h"
 #include "suci_info.h"
@@ -21,8 +22,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_udm_info_s OpenAPI_udm_info_t;
-typedef struct OpenAPI_udm_info_s {
+struct OpenAPI_udm_info_s {
     char *group_id;
     OpenAPI_list_t *supi_ranges;
     OpenAPI_list_t *gpsi_ranges;
@@ -30,7 +30,9 @@ typedef struct OpenAPI_udm_info_s {
     OpenAPI_list_t *routing_indicators;
     OpenAPI_list_t *internal_group_identifiers_ranges;
     OpenAPI_list_t *suci_infos;
-} OpenAPI_udm_info_t;
+    bool is_any_ue_udm_single_instance;
+    int any_ue_udm_single_instance;
+};
 
 OpenAPI_udm_info_t *OpenAPI_udm_info_create(
     char *group_id,
@@ -39,7 +41,9 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_create(
     OpenAPI_list_t *external_group_identifiers_ranges,
     OpenAPI_list_t *routing_indicators,
     OpenAPI_list_t *internal_group_identifiers_ranges,
-    OpenAPI_list_t *suci_infos
+    OpenAPI_list_t *suci_infos,
+    bool is_any_ue_udm_single_instance,
+    int any_ue_udm_single_instance
 );
 void OpenAPI_udm_info_free(OpenAPI_udm_info_t *udm_info);
 OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON);

@@ -1,7 +1,7 @@
 /*
  * collocated_nf_type.h
  *
- * 
+ * NF types for a collocated NF
  */
 
 #ifndef _OpenAPI_collocated_nf_type_H_

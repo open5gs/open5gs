@@ -1,7 +1,7 @@
 /*
  * smf_change_indication.h
  *
- * 
+ * Indicates the I-SMF or V-SMF change or removal
  */
 
 #ifndef _OpenAPI_smf_change_indication_H_

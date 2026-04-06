@@ -34,7 +34,8 @@ ogs_sbi_request_t *udm_nudr_dr_build_authentication_subscription(
     ogs_assert(udm_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDR_DR;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudr_dr);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA;
@@ -93,7 +94,8 @@ ogs_sbi_request_t *udm_nudr_dr_build_update_authentication_status(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDR_DR;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudr_dr);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA;
@@ -129,7 +131,8 @@ ogs_sbi_request_t *udm_nudr_dr_build_update_amf_context(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDR_DR;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudr_dr);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA;
@@ -170,7 +173,8 @@ ogs_sbi_request_t *udm_nudr_dr_build_patch_amf_context(
     memset(&message, 0, sizeof(message));
     message.http.content_type = (char *)OGS_SBI_CONTENT_PATCH_TYPE;
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PATCH;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDR_DR;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudr_dr);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA;
@@ -212,7 +216,8 @@ ogs_sbi_request_t *udm_nudr_dr_build_query_subscription_provisioned(
 
     memset(&sendmsg, 0, sizeof(sendmsg));
     sendmsg.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
-    sendmsg.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDR_DR;
+    sendmsg.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudr_dr);
     sendmsg.h.api.version = (char *)OGS_SBI_API_V1;
     sendmsg.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA;
@@ -275,7 +280,8 @@ ogs_sbi_request_t *udm_nudr_dr_build_update_smf_context(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDR_DR;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudr_dr);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA;
@@ -320,7 +326,8 @@ ogs_sbi_request_t *udm_nudr_dr_build_delete_smf_context(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDR_DR;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nudr_dr);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA;

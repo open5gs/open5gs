@@ -1,0 +1,1079 @@
+openapi: 3.0.0
+
+info:
+  title: SAn Server Spatial Anchors Management Service
+  version: 1.0.1
+  description: |
+    API for Spatial Anchor Management Service.
+    ©2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.437 V19.1.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Metaverse Enablement Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.437/
+
+servers:
+  - url: "{apiRoot}/ssan-sanm/v1"
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /anchors-lists:
+    post:
+      summary: Create a new Spatial Anchors List.
+      operationId: CreateSpatialAnchorsList
+      tags:
+        - Spatial Anchors List (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpatialAnchorsList'
+      responses:
+        '201':
+          description: >
+            Created. The Spatial Anchors List is successfully created and a representation of the
+            created Individual Spatial Anchors List resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialAnchorsList'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /anchors-lists/{anchorsListId}:
+    parameters:
+      - name: anchorsListId
+        in: path
+        description: Represents the identifier of the Individual Spatial Anchors List resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Spatial Anchors List.
+      operationId: GetIndSpatialAnchorsList
+      tags:
+        - Individual Spatial Anchors List (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Spatial Anchors List resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialAnchorsList'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update an existing Individual Spatial Anchors list.
+      operationId: UpdateIndSpatialAnchorsList
+      tags:
+        - Individual Spatial Anchors List (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpatialAnchorsList'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Spatial Anchors List resource is successfully updated and
+            a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialAnchorsList'
+        '204':
+          description: >
+            No Content. The Individual Spatial Anchors List resource is successfully updated and no
+            content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify an existing Individual Spatial Anchors List.
+      operationId: ModifyIndSpatialAnchorsList
+      tags:
+        - Individual Spatial Anchors List (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpatialAnchorsListPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Spatial Anchors List resource is successfully modified and
+            a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialAnchorsList'
+        '204':
+          description: >
+            No Content. The Individual Spatial Anchors List resource is successfully modified and no
+            content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an existing Individual Spatial Anchors List.
+      operationId: DeleteIndSpatialAnchorsList
+      tags:
+        - Individual Spatial Anchors List
+      responses:
+        '204':
+          description: >
+            No Content. The 'Individual Spatial Anchors List' resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions:
+    post:
+      summary: Create a new Spatial Anchors Subscription.
+      operationId: CreateSpatialAnchorsSubsc
+      tags:
+        - Spatial Anchors Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpatialAnchorsSub'
+      responses:
+        '201':
+          description: >
+            Created. The Spatial Anchors Subscription is successfully created and a
+            representation of the created Individual Spatial Anchors Subscription
+            resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialAnchorsSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        SpatialAnchorsNotif:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SpatialAnchorsNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Spatial Anchors Notification is successfully
+                    received and acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of the Spatial Anchors Subscription.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Spatial Anchors Subscription resource.
+      operationId: GetIndSpatialAnchorsSubsc
+      tags:
+        - Individual Spatial Anchors Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Spatial Anchors Subscription
+            resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialAnchorsSub'
+        '307':  
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Spatial Anchors Subscription resource.
+      operationId: UpdateIndSpatialAnchorsSubsc
+      tags:
+        - Individual Spatial Anchors Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpatialAnchorsSub'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Spatial Anchors Subscription resource is successfully
+            updated and a representation of the updated resource shall be returned in the response
+            body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialAnchorsSub'
+        '204':
+          description: >
+            No Content. The Individual Spatial Anchors Subscription resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Spatial Anchors Subscription resource.
+      operationId: ModifyIndSpatialAnchorsSubsc
+      tags:
+        - Individual Spatial Anchors Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/SpatialAnchorsSubPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Spatial Anchors Subscription resource is successfully
+            modified and a representation of the updated resource shall be returned in the response
+            body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialAnchorsSub'
+        '204':
+          description: >
+            No Content. The Individual Spatial Anchors Subscription resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Spatial Anchors Subscription resource.
+      operationId: RemoveIndSpatialAnchorsSubsc
+      tags:
+        - Individual Spatial Anchors Subscription (Document)
+      responses:
+        '204':
+          description: >
+            The Individual Spatial Anchors Subscription resource
+            is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: "{tokenUrl}"
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    SpatialAnchorsList:
+      description: >
+        Represents the Spatial Anchors List.
+      type: object
+      properties:
+        valServInfo:
+          $ref: '#/components/schemas/VALServiceInfo'
+        anchors:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SpatialAnchor'
+          minProperties: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - valServInfo
+        - anchors
+
+    SpatialAnchorsListPatch:
+      description: >
+        Represents the patch of Spatial Anchors List.
+      type: object
+      properties:
+        valServInfo:
+          $ref: '#/components/schemas/VALServiceInfo'
+        anchors:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SpatialAnchorRm'
+          minProperties: 1
+
+    VALServiceInfo:
+      description: >
+        Represents the VAL service information.
+      type: object
+      properties:
+        serviceId:
+          type: string
+        endPt:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ConnInfo'
+        servConInfo:
+          $ref: "#/components/schemas/ServConnectInfo"
+      required:
+        - serviceId
+        - endPt
+
+    ServConnectInfo:
+      description: >
+        Represents the connectivity information related to the application service.
+      type: object
+      properties:
+        dnais:
+           type: array
+           items:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+           minItems: 1
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+      anyOf:
+        - required: [dnais]
+        - required: [dnn]
+
+    SpatialAnchor:
+      description: >
+        Represents the Spatial Anchor profile information.
+      type: object
+      properties:
+        anchorId:
+          $ref: '#/components/schemas/SpatialAnchorId'
+        posInfo:
+          $ref: '#/components/schemas/PositionInfo'
+        specInfo:
+           $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+        svcArea:
+           $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+        rules:
+          $ref: '#/components/schemas/AllowedRules'
+      required:
+        - posInfo
+
+    SpatialAnchorRm:
+      description: >
+        Represents the Spatial Anchor profile information.
+      type: object
+      properties:
+        anchorId:
+          $ref: '#/components/schemas/SpatialAnchorId'
+        posInfo:
+          $ref: '#/components/schemas/PositionInfo'
+        specInfo:
+           $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+        svcArea:
+           $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+        rules:
+          $ref: '#/components/schemas/AllowedRules'
+      required:
+        - posInfo
+      nullable: true
+
+    AllowedRules:
+      description: >
+        Represents the access control rules.
+      type: object
+      properties:
+        allowedEntities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowedEntity'
+          minItems: 1
+        valServiceList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      anyOf:
+        - required: [allowedEntities]
+        - required: [valServiceList]
+
+    AllowedEntity:
+      description: >
+        Represents the allowed application entity.
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/EntityType'
+        identifier:
+          type: string
+      anyOf:
+        - required: [type]
+        - required: [identifier]
+
+    PositionInfo:
+      description: >
+        Represents the positioning information of the Spatial Anchor and the related Spatial Map.
+      type: object
+      properties:
+        pos:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/Local3dPointUncertaintyEllipsoid'
+        spaMapPos:
+          $ref: '#/components/schemas/SpatialAnchorMapPosition'
+      anyOf:
+        - required: [pos]
+        - required: [spaMapPos]
+
+    SpatialAnchorMapPosition:
+      description: >
+        Represents the Spatial map positioning of the Spatial Anchor.
+      type: object
+      properties:
+        spaMapId:
+          type: string
+          description: Contains the Spatial Map Identifier.
+        spaMapLayerId:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Contains the identifier(s) of Spatial Map layer(s).
+        localInfo:
+          $ref: '#/components/schemas/LocalizationInfo'
+      required:
+        - spaMapId
+
+    LocalizationInfo:
+      description: >
+        Represents the localization information of the Spatial Anchor.
+      type: object
+      properties:
+        localInfo:
+          type: string
+          description: Contains the localization information.
+
+    SpatialAnchorsSub:
+      description: >
+        Represents the Spatial Anchors subscription.
+      type: object
+      properties:
+        eventSubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnchorsEventsSub'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        report:
+          $ref: '#/components/schemas/SpatialAnchorsNotif'
+        reportReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - eventSubs
+        - notifUri
+
+    SpatialAnchorsSubPatch:
+      description: >
+        Represents the partial Spatial Anchors subscription.
+      type: object
+      properties:
+        eventSubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnchorsEventsSub'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        reportReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+
+    SpatialAnchorsNotif:
+      description: >
+        Represents the Spatial Anchors Notification.
+      type: object
+      properties:
+        subId:
+          type: string
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnchorsReport'
+          minItems: 1
+      required:
+        - subId
+        - reports
+
+    AnchorsReport:
+      description: >
+        Represents the Spatial Anchors report.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/AnchorEvent' 
+        detEvent:
+          $ref: '#/components/schemas/DetectedEvent'
+        achrList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpatialAnchorProfile'
+          minItems: 1
+        ueAnchrInt:
+          type: array
+          items:
+            $ref: '#/components/schemas/UEAnchorInterest'
+          minItems: 1
+      required:
+        - event
+
+    UEAnchorInterest:
+      description: >
+        Represents the UE with Spatial Anchors interest.
+      type: object
+      properties:
+        ueId:
+          type: string
+        anchrId:
+          $ref: '#/components/schemas/SpatialAnchorId'
+        anchrRng:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+      anyOf:
+        - required: [ueId]
+        - required: [anchrId]
+        - required: [anchrRng]
+
+    AnchorsEventsSub:
+      description: >
+        Represents the Spatial Anchors subscription event and filters.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/AnchorEvent'
+        evntFltr:
+          $ref: '#/components/schemas/EventFilter'
+      required:
+        - event
+        - evntFltr
+
+    EventFilter:
+      description: >
+        Represents the Spatial Anchors Event filters.
+      type: object
+      properties:
+        discFltr:
+          $ref: '#/components/schemas/DiscoveryFilter'
+        ueFltr:
+          $ref: '#/components/schemas/UeFilter'
+        rngFltr:
+          $ref: '#/components/schemas/RangeFilter'
+        anchrFltr:
+          $ref: '#/components/schemas/AnchorFilter'
+
+    DiscoveryFilter:
+      description: >
+        Represents the Spatial Anchors discovery event filters.
+      type: object
+      properties:
+        mgntEvts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnchorManagementEvent'
+          minItems: 1
+      required:
+        - mgntEvts
+
+    UeFilter:
+      description: >
+        Represents the UE with spatial anchors event filters.
+      type: object
+      properties:
+        rngVal:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        disc:
+          type: boolean
+          description: >
+            Indicates whether the UEs that have discovered spatial anchors are to be
+            included in the report. When present, it shall be set as follows:
+            true: include UEs that discovered the spatial anchors.
+            false: not include UEs that discovered the spatial anchors.
+            Default value when omitted is "false".
+      required:
+        - rngVal
+
+    RangeFilter:
+      description: >
+        Represents the Spatial Anchors in range event filters.
+      type: object
+      properties:
+        perSrch:
+          type: boolean
+          description: >
+            Contains the persistent search preference. When present, it shall be set as follows:
+            true: enable persistent search.
+            false: not enable persistent search.
+            Default value when omitted is "false".
+        usrLoc:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        pose:
+          $ref: '#/components/schemas/Pose'
+        appRng:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+      required:
+        - appRng
+
+    AnchorFilter:
+      description: >
+        Represents the applicable spatial anchors filters.
+      type: object
+      properties:
+        anchIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpatialAnchorId'
+          minItems: 1
+        svcIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        areaInt:
+          $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+      anyOf:
+        - required: [anchIds]
+        - required: [svcIds]
+        - required: [areaInt]
+
+    SpatialAnchorProfile:
+      description: >
+        Represents the spatial anchor profile.
+      type: object
+      properties:
+        anchInfo:
+          $ref: '#/components/schemas/SpatialAnchor'
+        valSvcInf:
+          $ref: '#/components/schemas/VALServiceInfo'
+      required:
+        - anchInfo
+        - valSvcInf
+
+    Pose:
+      description: >
+        Represents the Pose.
+      type: object
+      properties:
+        orientation:
+          $ref: '#/components/schemas/Orientation'
+        position:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/Local3dPointUncertaintyEllipsoid'
+        fov:
+          $ref: '#/components/schemas/Fov'
+      required:
+        - orientation
+
+    Orientation:
+      description: >
+        Represents the Orientation.
+      type: object
+      properties:
+        x:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        y:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        z:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        w:
+          $ref: '#/components/schemas/Angle'
+      required:
+        - x
+        - y
+        - z
+        - w
+
+    Fov:
+      description: >
+        Represents the field of view.
+      type: object
+      properties:
+        angleLeft:
+          $ref: '#/components/schemas/Angle'
+        angleRight:
+          $ref: '#/components/schemas/Angle'
+        angleUp:
+          $ref: '#/components/schemas/Angle'
+        angleDown:
+          $ref: '#/components/schemas/Angle'
+      required:
+        - angleLeft
+        - angleRight
+        - angleUp
+        - angleDown
+
+# SIMPLE DATA TYPES
+#
+
+    SpatialAnchorId:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+    Angle:
+      description: Indicates value of angle.
+      type: integer
+      minimum: 0
+      maximum: 360
+
+#
+# ENUMERATIONS
+#
+
+    EntityType:
+      anyOf:
+      - type: string
+        enum:
+        - VAL_SERVER
+        - VAL_CLIENT
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the
+          enumeration but is not used to encode content defined in the present version of
+          this API.
+      description: |
+        Represents the type of entity.  
+        Possible values are:  
+          - VAL_SERVER: Indicates that the entity type is a VAL Server
+          - VAL_CLIENT: Indicates that the entity type is VAL Client.
+
+    AnchorEvent:
+      anyOf:
+      - type: string
+        enum:
+        - ANCHOR_DISCOVERY
+        - UE_SPATIAL_ANCHOR_INTEREST
+        - SPATIAL_ANCHOR_IN_RANGE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the
+          enumeration but is not used to encode content defined in the present version of
+          this API.
+      description: |
+        Represents the type of entity.  
+        Possible values are:
+          - ANCHOR_DISCOVERY: Indicates that the Spatial Anchors event is spatial anchors dicovery.
+          - UE_SPATIAL_ANCHOR_INTEREST: Indicates that the Spatial Anchors event is the UE 
+            with spatial anchors interest.
+          - SPATIAL_ANCHOR_IN_RANGE: Indicates that the Spatial Anchors event is the 
+            spatial anchors in range.
+
+    AnchorManagementEvent:
+      anyOf:
+      - type: string
+        enum:
+        - ANCHOR_CREATION
+        - ANCHOR_UPDATE
+        - ANCHOR_DELETION
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the
+          enumeration but is not used to encode content defined in the present version of
+          this API.
+      description: |
+        Represents the type of entity.  
+        Possible values are:
+          - ANCHOR_CREATION: Indicates that the spatial anchor management event is
+            spatial anchor creation.
+          - ANCHOR_UPDATE: Indicates that the spatial anchor management event is
+            spatial anchor updation.
+          - ANCHOR_DELETION: Indicates that the spatial anchor management event is
+            spatial anchor deletion.
+
+    DetectedEvent:
+      anyOf:
+      - type: string
+        enum:
+        - ANCHOR_IN_RANGE_OF_UE
+        - ANCHOR_OUT_RANGE_OF_UE
+        - UE_IN_RANGE_OF_ANCHOR
+        - UE_OUT_RANGE_OF_ANCHOR
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the
+          enumeration but is not used to encode content defined in the present version of
+          this API.
+      description: |
+        Represents the type of entity.  
+        Possible values are:
+          - ANCHOR_IN_RANGE_OF_UE: Indicates that the triggered event is spatial anchor
+            in range of the UE.
+          - ANCHOR_OUT_RANGE_OF_UE: Indicates that the triggered event is spatial anchor
+            out of range of the UE.
+          - UE_IN_RANGE_OF_ANCHOR: Indicates that the triggered event is UE entering
+            in range of spatial anchor.
+          - UE_OUT_RANGE_OF_ANCHOR: Indicates that the triggered event is UE leaving
+            the range of spatial anchor.
+
+# Data types describing alternative data types or combinations of data types:
+#

@@ -13,7 +13,17 @@ OpenAPI_data_restoration_notification_t *OpenAPI_data_restoration_notification_c
     OpenAPI_list_t *reset_ids,
     OpenAPI_list_t *s_nssai_list,
     OpenAPI_list_t *dnn_list,
-    char *udm_group_id
+    char *udm_group_id,
+    bool is_rediscovery_ind,
+    int rediscovery_ind,
+    bool is_no_resynchronization_required,
+    int no_resynchronization_required,
+    char *resynchronization_time,
+    OpenAPI_list_t *data_to_resync,
+    bool is_any_ue_ind,
+    int any_ue_ind,
+    bool is_ausf_rediscovery_ind,
+    int ausf_rediscovery_ind
 )
 {
     OpenAPI_data_restoration_notification_t *data_restoration_notification_local_var = ogs_malloc(sizeof(OpenAPI_data_restoration_notification_t));
@@ -28,6 +38,16 @@ OpenAPI_data_restoration_notification_t *OpenAPI_data_restoration_notification_c
     data_restoration_notification_local_var->s_nssai_list = s_nssai_list;
     data_restoration_notification_local_var->dnn_list = dnn_list;
     data_restoration_notification_local_var->udm_group_id = udm_group_id;
+    data_restoration_notification_local_var->is_rediscovery_ind = is_rediscovery_ind;
+    data_restoration_notification_local_var->rediscovery_ind = rediscovery_ind;
+    data_restoration_notification_local_var->is_no_resynchronization_required = is_no_resynchronization_required;
+    data_restoration_notification_local_var->no_resynchronization_required = no_resynchronization_required;
+    data_restoration_notification_local_var->resynchronization_time = resynchronization_time;
+    data_restoration_notification_local_var->data_to_resync = data_to_resync;
+    data_restoration_notification_local_var->is_any_ue_ind = is_any_ue_ind;
+    data_restoration_notification_local_var->any_ue_ind = any_ue_ind;
+    data_restoration_notification_local_var->is_ausf_rediscovery_ind = is_ausf_rediscovery_ind;
+    data_restoration_notification_local_var->ausf_rediscovery_ind = ausf_rediscovery_ind;
 
     return data_restoration_notification_local_var;
 }
@@ -89,6 +109,14 @@ void OpenAPI_data_restoration_notification_free(OpenAPI_data_restoration_notific
     if (data_restoration_notification->udm_group_id) {
         ogs_free(data_restoration_notification->udm_group_id);
         data_restoration_notification->udm_group_id = NULL;
+    }
+    if (data_restoration_notification->resynchronization_time) {
+        ogs_free(data_restoration_notification->resynchronization_time);
+        data_restoration_notification->resynchronization_time = NULL;
+    }
+    if (data_restoration_notification->data_to_resync) {
+        OpenAPI_list_free(data_restoration_notification->data_to_resync);
+        data_restoration_notification->data_to_resync = NULL;
     }
     ogs_free(data_restoration_notification);
 }
@@ -214,6 +242,55 @@ cJSON *OpenAPI_data_restoration_notification_convertToJSON(OpenAPI_data_restorat
     }
     }
 
+    if (data_restoration_notification->is_rediscovery_ind) {
+    if (cJSON_AddBoolToObject(item, "rediscoveryInd", data_restoration_notification->rediscovery_ind) == NULL) {
+        ogs_error("OpenAPI_data_restoration_notification_convertToJSON() failed [rediscovery_ind]");
+        goto end;
+    }
+    }
+
+    if (data_restoration_notification->is_no_resynchronization_required) {
+    if (cJSON_AddBoolToObject(item, "noResynchronizationRequired", data_restoration_notification->no_resynchronization_required) == NULL) {
+        ogs_error("OpenAPI_data_restoration_notification_convertToJSON() failed [no_resynchronization_required]");
+        goto end;
+    }
+    }
+
+    if (data_restoration_notification->resynchronization_time) {
+    if (cJSON_AddStringToObject(item, "resynchronizationTime", data_restoration_notification->resynchronization_time) == NULL) {
+        ogs_error("OpenAPI_data_restoration_notification_convertToJSON() failed [resynchronization_time]");
+        goto end;
+    }
+    }
+
+    if (data_restoration_notification->data_to_resync != OpenAPI_udm_data_to_resynchronize_NULL) {
+    cJSON *data_to_resyncList = cJSON_AddArrayToObject(item, "dataToResync");
+    if (data_to_resyncList == NULL) {
+        ogs_error("OpenAPI_data_restoration_notification_convertToJSON() failed [data_to_resync]");
+        goto end;
+    }
+    OpenAPI_list_for_each(data_restoration_notification->data_to_resync, node) {
+        if (cJSON_AddStringToObject(data_to_resyncList, "", OpenAPI_udm_data_to_resynchronize_ToString((intptr_t)node->data)) == NULL) {
+            ogs_error("OpenAPI_data_restoration_notification_convertToJSON() failed [data_to_resync]");
+            goto end;
+        }
+    }
+    }
+
+    if (data_restoration_notification->is_any_ue_ind) {
+    if (cJSON_AddBoolToObject(item, "anyUeInd", data_restoration_notification->any_ue_ind) == NULL) {
+        ogs_error("OpenAPI_data_restoration_notification_convertToJSON() failed [any_ue_ind]");
+        goto end;
+    }
+    }
+
+    if (data_restoration_notification->is_ausf_rediscovery_ind) {
+    if (cJSON_AddBoolToObject(item, "ausfRediscoveryInd", data_restoration_notification->ausf_rediscovery_ind) == NULL) {
+        ogs_error("OpenAPI_data_restoration_notification_convertToJSON() failed [ausf_rediscovery_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -237,6 +314,13 @@ OpenAPI_data_restoration_notification_t *OpenAPI_data_restoration_notification_p
     cJSON *dnn_list = NULL;
     OpenAPI_list_t *dnn_listList = NULL;
     cJSON *udm_group_id = NULL;
+    cJSON *rediscovery_ind = NULL;
+    cJSON *no_resynchronization_required = NULL;
+    cJSON *resynchronization_time = NULL;
+    cJSON *data_to_resync = NULL;
+    OpenAPI_list_t *data_to_resyncList = NULL;
+    cJSON *any_ue_ind = NULL;
+    cJSON *ausf_rediscovery_ind = NULL;
     last_replication_time = cJSON_GetObjectItemCaseSensitive(data_restoration_notificationJSON, "lastReplicationTime");
     if (last_replication_time) {
     if (!cJSON_IsString(last_replication_time) && !cJSON_IsNull(last_replication_time)) {
@@ -384,6 +468,76 @@ OpenAPI_data_restoration_notification_t *OpenAPI_data_restoration_notification_p
     }
     }
 
+    rediscovery_ind = cJSON_GetObjectItemCaseSensitive(data_restoration_notificationJSON, "rediscoveryInd");
+    if (rediscovery_ind) {
+    if (!cJSON_IsBool(rediscovery_ind)) {
+        ogs_error("OpenAPI_data_restoration_notification_parseFromJSON() failed [rediscovery_ind]");
+        goto end;
+    }
+    }
+
+    no_resynchronization_required = cJSON_GetObjectItemCaseSensitive(data_restoration_notificationJSON, "noResynchronizationRequired");
+    if (no_resynchronization_required) {
+    if (!cJSON_IsBool(no_resynchronization_required)) {
+        ogs_error("OpenAPI_data_restoration_notification_parseFromJSON() failed [no_resynchronization_required]");
+        goto end;
+    }
+    }
+
+    resynchronization_time = cJSON_GetObjectItemCaseSensitive(data_restoration_notificationJSON, "resynchronizationTime");
+    if (resynchronization_time) {
+    if (!cJSON_IsString(resynchronization_time) && !cJSON_IsNull(resynchronization_time)) {
+        ogs_error("OpenAPI_data_restoration_notification_parseFromJSON() failed [resynchronization_time]");
+        goto end;
+    }
+    }
+
+    data_to_resync = cJSON_GetObjectItemCaseSensitive(data_restoration_notificationJSON, "dataToResync");
+    if (data_to_resync) {
+        cJSON *data_to_resync_local = NULL;
+        if (!cJSON_IsArray(data_to_resync)) {
+            ogs_error("OpenAPI_data_restoration_notification_parseFromJSON() failed [data_to_resync]");
+            goto end;
+        }
+
+        data_to_resyncList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(data_to_resync_local, data_to_resync) {
+            OpenAPI_udm_data_to_resynchronize_e localEnum = OpenAPI_udm_data_to_resynchronize_NULL;
+            if (!cJSON_IsString(data_to_resync_local)) {
+                ogs_error("OpenAPI_data_restoration_notification_parseFromJSON() failed [data_to_resync]");
+                goto end;
+            }
+            localEnum = OpenAPI_udm_data_to_resynchronize_FromString(data_to_resync_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"data_to_resync\" is not supported. Ignoring it ...",
+                         data_to_resync_local->valuestring);
+            } else {
+                OpenAPI_list_add(data_to_resyncList, (void *)localEnum);
+            }
+        }
+        if (data_to_resyncList->count == 0) {
+            ogs_error("OpenAPI_data_restoration_notification_parseFromJSON() failed: Expected data_to_resyncList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+    }
+
+    any_ue_ind = cJSON_GetObjectItemCaseSensitive(data_restoration_notificationJSON, "anyUeInd");
+    if (any_ue_ind) {
+    if (!cJSON_IsBool(any_ue_ind)) {
+        ogs_error("OpenAPI_data_restoration_notification_parseFromJSON() failed [any_ue_ind]");
+        goto end;
+    }
+    }
+
+    ausf_rediscovery_ind = cJSON_GetObjectItemCaseSensitive(data_restoration_notificationJSON, "ausfRediscoveryInd");
+    if (ausf_rediscovery_ind) {
+    if (!cJSON_IsBool(ausf_rediscovery_ind)) {
+        ogs_error("OpenAPI_data_restoration_notification_parseFromJSON() failed [ausf_rediscovery_ind]");
+        goto end;
+    }
+    }
+
     data_restoration_notification_local_var = OpenAPI_data_restoration_notification_create (
         last_replication_time && !cJSON_IsNull(last_replication_time) ? ogs_strdup(last_replication_time->valuestring) : NULL,
         recovery_time && !cJSON_IsNull(recovery_time) ? ogs_strdup(recovery_time->valuestring) : NULL,
@@ -393,7 +547,17 @@ OpenAPI_data_restoration_notification_t *OpenAPI_data_restoration_notification_p
         reset_ids ? reset_idsList : NULL,
         s_nssai_list ? s_nssai_listList : NULL,
         dnn_list ? dnn_listList : NULL,
-        udm_group_id && !cJSON_IsNull(udm_group_id) ? ogs_strdup(udm_group_id->valuestring) : NULL
+        udm_group_id && !cJSON_IsNull(udm_group_id) ? ogs_strdup(udm_group_id->valuestring) : NULL,
+        rediscovery_ind ? true : false,
+        rediscovery_ind ? rediscovery_ind->valueint : 0,
+        no_resynchronization_required ? true : false,
+        no_resynchronization_required ? no_resynchronization_required->valueint : 0,
+        resynchronization_time && !cJSON_IsNull(resynchronization_time) ? ogs_strdup(resynchronization_time->valuestring) : NULL,
+        data_to_resync ? data_to_resyncList : NULL,
+        any_ue_ind ? true : false,
+        any_ue_ind ? any_ue_ind->valueint : 0,
+        ausf_rediscovery_ind ? true : false,
+        ausf_rediscovery_ind ? ausf_rediscovery_ind->valueint : 0
     );
 
     return data_restoration_notification_local_var;
@@ -436,6 +600,10 @@ end:
         }
         OpenAPI_list_free(dnn_listList);
         dnn_listList = NULL;
+    }
+    if (data_to_resyncList) {
+        OpenAPI_list_free(data_to_resyncList);
+        data_to_resyncList = NULL;
     }
     return NULL;
 }

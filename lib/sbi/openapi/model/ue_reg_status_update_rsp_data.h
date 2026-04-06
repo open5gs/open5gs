@@ -12,15 +12,15 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_reg_status_update_rsp_data_s OpenAPI_ue_reg_status_update_rsp_data_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_reg_status_update_rsp_data_s OpenAPI_ue_reg_status_update_rsp_data_t;
-typedef struct OpenAPI_ue_reg_status_update_rsp_data_s {
+struct OpenAPI_ue_reg_status_update_rsp_data_s {
     int reg_status_transfer_complete;
-} OpenAPI_ue_reg_status_update_rsp_data_t;
+};
 
 OpenAPI_ue_reg_status_update_rsp_data_t *OpenAPI_ue_reg_status_update_rsp_data_create(
     int reg_status_transfer_complete

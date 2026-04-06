@@ -6,7 +6,8 @@
 
 OpenAPI_mbs_service_area_t *OpenAPI_mbs_service_area_create(
     OpenAPI_list_t *ncgi_list,
-    OpenAPI_list_t *tai_list
+    OpenAPI_list_t *tai_list,
+    OpenAPI_list_t *intended_serv_area_list
 )
 {
     OpenAPI_mbs_service_area_t *mbs_service_area_local_var = ogs_malloc(sizeof(OpenAPI_mbs_service_area_t));
@@ -14,6 +15,7 @@ OpenAPI_mbs_service_area_t *OpenAPI_mbs_service_area_create(
 
     mbs_service_area_local_var->ncgi_list = ncgi_list;
     mbs_service_area_local_var->tai_list = tai_list;
+    mbs_service_area_local_var->intended_serv_area_list = intended_serv_area_list;
 
     return mbs_service_area_local_var;
 }
@@ -38,6 +40,13 @@ void OpenAPI_mbs_service_area_free(OpenAPI_mbs_service_area_t *mbs_service_area)
         }
         OpenAPI_list_free(mbs_service_area->tai_list);
         mbs_service_area->tai_list = NULL;
+    }
+    if (mbs_service_area->intended_serv_area_list) {
+        OpenAPI_list_for_each(mbs_service_area->intended_serv_area_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(mbs_service_area->intended_serv_area_list);
+        mbs_service_area->intended_serv_area_list = NULL;
     }
     ogs_free(mbs_service_area);
 }
@@ -85,6 +94,20 @@ cJSON *OpenAPI_mbs_service_area_convertToJSON(OpenAPI_mbs_service_area_t *mbs_se
     }
     }
 
+    if (mbs_service_area->intended_serv_area_list) {
+    cJSON *intended_serv_area_listList = cJSON_AddArrayToObject(item, "intendedServAreaList");
+    if (intended_serv_area_listList == NULL) {
+        ogs_error("OpenAPI_mbs_service_area_convertToJSON() failed [intended_serv_area_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(mbs_service_area->intended_serv_area_list, node) {
+        if (cJSON_AddStringToObject(intended_serv_area_listList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_mbs_service_area_convertToJSON() failed [intended_serv_area_list]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -97,6 +120,8 @@ OpenAPI_mbs_service_area_t *OpenAPI_mbs_service_area_parseFromJSON(cJSON *mbs_se
     OpenAPI_list_t *ncgi_listList = NULL;
     cJSON *tai_list = NULL;
     OpenAPI_list_t *tai_listList = NULL;
+    cJSON *intended_serv_area_list = NULL;
+    OpenAPI_list_t *intended_serv_area_listList = NULL;
     ncgi_list = cJSON_GetObjectItemCaseSensitive(mbs_service_areaJSON, "ncgiList");
     if (ncgi_list) {
         cJSON *ncgi_list_local = NULL;
@@ -145,9 +170,31 @@ OpenAPI_mbs_service_area_t *OpenAPI_mbs_service_area_parseFromJSON(cJSON *mbs_se
         }
     }
 
+    intended_serv_area_list = cJSON_GetObjectItemCaseSensitive(mbs_service_areaJSON, "intendedServAreaList");
+    if (intended_serv_area_list) {
+        cJSON *intended_serv_area_list_local = NULL;
+        if (!cJSON_IsArray(intended_serv_area_list)) {
+            ogs_error("OpenAPI_mbs_service_area_parseFromJSON() failed [intended_serv_area_list]");
+            goto end;
+        }
+
+        intended_serv_area_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(intended_serv_area_list_local, intended_serv_area_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(intended_serv_area_list_local)) {
+                ogs_error("OpenAPI_mbs_service_area_parseFromJSON() failed [intended_serv_area_list]");
+                goto end;
+            }
+            OpenAPI_list_add(intended_serv_area_listList, ogs_strdup(intended_serv_area_list_local->valuestring));
+        }
+    }
+
     mbs_service_area_local_var = OpenAPI_mbs_service_area_create (
         ncgi_list ? ncgi_listList : NULL,
-        tai_list ? tai_listList : NULL
+        tai_list ? tai_listList : NULL,
+        intended_serv_area_list ? intended_serv_area_listList : NULL
     );
 
     return mbs_service_area_local_var;
@@ -165,6 +212,13 @@ end:
         }
         OpenAPI_list_free(tai_listList);
         tai_listList = NULL;
+    }
+    if (intended_serv_area_listList) {
+        OpenAPI_list_for_each(intended_serv_area_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(intended_serv_area_listList);
+        intended_serv_area_listList = NULL;
     }
     return NULL;
 }

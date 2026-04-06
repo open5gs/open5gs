@@ -7,8 +7,8 @@
 OpenAPI_wlan_performance_req_t *OpenAPI_wlan_performance_req_create(
     OpenAPI_list_t *ss_ids,
     OpenAPI_list_t *bss_ids,
-    OpenAPI_wlan_ordering_criterion_t *wlan_order_criter,
-    OpenAPI_matching_direction_t *order
+    OpenAPI_wlan_ordering_criterion_e wlan_order_criter,
+    OpenAPI_matching_direction_e order
 )
 {
     OpenAPI_wlan_performance_req_t *wlan_performance_req_local_var = ogs_malloc(sizeof(OpenAPI_wlan_performance_req_t));
@@ -42,14 +42,6 @@ void OpenAPI_wlan_performance_req_free(OpenAPI_wlan_performance_req_t *wlan_perf
         }
         OpenAPI_list_free(wlan_performance_req->bss_ids);
         wlan_performance_req->bss_ids = NULL;
-    }
-    if (wlan_performance_req->wlan_order_criter) {
-        OpenAPI_wlan_ordering_criterion_free(wlan_performance_req->wlan_order_criter);
-        wlan_performance_req->wlan_order_criter = NULL;
-    }
-    if (wlan_performance_req->order) {
-        OpenAPI_matching_direction_free(wlan_performance_req->order);
-        wlan_performance_req->order = NULL;
     }
     ogs_free(wlan_performance_req);
 }
@@ -93,27 +85,15 @@ cJSON *OpenAPI_wlan_performance_req_convertToJSON(OpenAPI_wlan_performance_req_t
     }
     }
 
-    if (wlan_performance_req->wlan_order_criter) {
-    cJSON *wlan_order_criter_local_JSON = OpenAPI_wlan_ordering_criterion_convertToJSON(wlan_performance_req->wlan_order_criter);
-    if (wlan_order_criter_local_JSON == NULL) {
-        ogs_error("OpenAPI_wlan_performance_req_convertToJSON() failed [wlan_order_criter]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "wlanOrderCriter", wlan_order_criter_local_JSON);
-    if (item->child == NULL) {
+    if (wlan_performance_req->wlan_order_criter != OpenAPI_wlan_ordering_criterion_NULL) {
+    if (cJSON_AddStringToObject(item, "wlanOrderCriter", OpenAPI_wlan_ordering_criterion_ToString(wlan_performance_req->wlan_order_criter)) == NULL) {
         ogs_error("OpenAPI_wlan_performance_req_convertToJSON() failed [wlan_order_criter]");
         goto end;
     }
     }
 
-    if (wlan_performance_req->order) {
-    cJSON *order_local_JSON = OpenAPI_matching_direction_convertToJSON(wlan_performance_req->order);
-    if (order_local_JSON == NULL) {
-        ogs_error("OpenAPI_wlan_performance_req_convertToJSON() failed [order]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "order", order_local_JSON);
-    if (item->child == NULL) {
+    if (wlan_performance_req->order != OpenAPI_matching_direction_NULL) {
+    if (cJSON_AddStringToObject(item, "order", OpenAPI_matching_direction_ToString(wlan_performance_req->order)) == NULL) {
         ogs_error("OpenAPI_wlan_performance_req_convertToJSON() failed [order]");
         goto end;
     }
@@ -132,9 +112,9 @@ OpenAPI_wlan_performance_req_t *OpenAPI_wlan_performance_req_parseFromJSON(cJSON
     cJSON *bss_ids = NULL;
     OpenAPI_list_t *bss_idsList = NULL;
     cJSON *wlan_order_criter = NULL;
-    OpenAPI_wlan_ordering_criterion_t *wlan_order_criter_local_nonprim = NULL;
+    OpenAPI_wlan_ordering_criterion_e wlan_order_criterVariable = 0;
     cJSON *order = NULL;
-    OpenAPI_matching_direction_t *order_local_nonprim = NULL;
+    OpenAPI_matching_direction_e orderVariable = 0;
     ss_ids = cJSON_GetObjectItemCaseSensitive(wlan_performance_reqJSON, "ssIds");
     if (ss_ids) {
         cJSON *ss_ids_local = NULL;
@@ -179,27 +159,27 @@ OpenAPI_wlan_performance_req_t *OpenAPI_wlan_performance_req_parseFromJSON(cJSON
 
     wlan_order_criter = cJSON_GetObjectItemCaseSensitive(wlan_performance_reqJSON, "wlanOrderCriter");
     if (wlan_order_criter) {
-    wlan_order_criter_local_nonprim = OpenAPI_wlan_ordering_criterion_parseFromJSON(wlan_order_criter);
-    if (!wlan_order_criter_local_nonprim) {
-        ogs_error("OpenAPI_wlan_ordering_criterion_parseFromJSON failed [wlan_order_criter]");
+    if (!cJSON_IsString(wlan_order_criter)) {
+        ogs_error("OpenAPI_wlan_performance_req_parseFromJSON() failed [wlan_order_criter]");
         goto end;
     }
+    wlan_order_criterVariable = OpenAPI_wlan_ordering_criterion_FromString(wlan_order_criter->valuestring);
     }
 
     order = cJSON_GetObjectItemCaseSensitive(wlan_performance_reqJSON, "order");
     if (order) {
-    order_local_nonprim = OpenAPI_matching_direction_parseFromJSON(order);
-    if (!order_local_nonprim) {
-        ogs_error("OpenAPI_matching_direction_parseFromJSON failed [order]");
+    if (!cJSON_IsString(order)) {
+        ogs_error("OpenAPI_wlan_performance_req_parseFromJSON() failed [order]");
         goto end;
     }
+    orderVariable = OpenAPI_matching_direction_FromString(order->valuestring);
     }
 
     wlan_performance_req_local_var = OpenAPI_wlan_performance_req_create (
         ss_ids ? ss_idsList : NULL,
         bss_ids ? bss_idsList : NULL,
-        wlan_order_criter ? wlan_order_criter_local_nonprim : NULL,
-        order ? order_local_nonprim : NULL
+        wlan_order_criter ? wlan_order_criterVariable : 0,
+        order ? orderVariable : 0
     );
 
     return wlan_performance_req_local_var;
@@ -217,14 +197,6 @@ end:
         }
         OpenAPI_list_free(bss_idsList);
         bss_idsList = NULL;
-    }
-    if (wlan_order_criter_local_nonprim) {
-        OpenAPI_wlan_ordering_criterion_free(wlan_order_criter_local_nonprim);
-        wlan_order_criter_local_nonprim = NULL;
-    }
-    if (order_local_nonprim) {
-        OpenAPI_matching_direction_free(order_local_nonprim);
-        order_local_nonprim = NULL;
     }
     return NULL;
 }

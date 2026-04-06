@@ -29,7 +29,7 @@ void OpenAPI_pp5g_vn_group_profile_data_free(OpenAPI_pp5g_vn_group_profile_data_
         OpenAPI_list_for_each(pp5g_vn_group_profile_data->allowed_mtc_providers, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
-            ogs_free(localKeyValue->value);
+            OpenAPI_allowed_mtc_provider_info_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(pp5g_vn_group_profile_data->allowed_mtc_providers);
@@ -113,8 +113,6 @@ OpenAPI_pp5g_vn_group_profile_data_t *OpenAPI_pp5g_vn_group_profile_data_parseFr
             OpenAPI_map_t *localMapKeyPair = NULL;
             cJSON_ArrayForEach(allowed_mtc_providers_local_map, allowed_mtc_providers) {
                 cJSON *localMapObject = allowed_mtc_providers_local_map;
-                double *localDouble = NULL;
-                int *localInt = NULL;
                 if (cJSON_IsObject(localMapObject)) {
                     localMapKeyPair = OpenAPI_map_create(
                         ogs_strdup(localMapObject->string), OpenAPI_allowed_mtc_provider_info_parseFromJSON(localMapObject));
@@ -146,9 +144,9 @@ OpenAPI_pp5g_vn_group_profile_data_t *OpenAPI_pp5g_vn_group_profile_data_parseFr
 end:
     if (allowed_mtc_providersList) {
         OpenAPI_list_for_each(allowed_mtc_providersList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
-            ogs_free(localKeyValue->value);
+            OpenAPI_allowed_mtc_provider_info_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(allowed_mtc_providersList);

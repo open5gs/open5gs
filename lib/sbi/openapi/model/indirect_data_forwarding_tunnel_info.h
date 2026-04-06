@@ -12,13 +12,13 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_indirect_data_forwarding_tunnel_info_s OpenAPI_indirect_data_forwarding_tunnel_info_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_indirect_data_forwarding_tunnel_info_s OpenAPI_indirect_data_forwarding_tunnel_info_t;
-typedef struct OpenAPI_indirect_data_forwarding_tunnel_info_s {
+struct OpenAPI_indirect_data_forwarding_tunnel_info_s {
     char *ipv4_addr;
     char *ipv6_addr;
     char *gtp_teid;
@@ -26,7 +26,7 @@ typedef struct OpenAPI_indirect_data_forwarding_tunnel_info_s {
     int drb_id;
     bool is_additional_tnl_nb;
     int additional_tnl_nb;
-} OpenAPI_indirect_data_forwarding_tunnel_info_t;
+};
 
 OpenAPI_indirect_data_forwarding_tunnel_info_t *OpenAPI_indirect_data_forwarding_tunnel_info_create(
     char *ipv4_addr,

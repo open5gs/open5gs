@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_redirect_information_s OpenAPI_redirect_information_t;
 #include "redirect_address_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_redirect_information_s OpenAPI_redirect_information_t;
-typedef struct OpenAPI_redirect_information_s {
+struct OpenAPI_redirect_information_s {
     bool is_redirect_enabled;
     int redirect_enabled;
     OpenAPI_redirect_address_type_e redirect_address_type;
     char *redirect_server_address;
-} OpenAPI_redirect_information_t;
+};
 
 OpenAPI_redirect_information_t *OpenAPI_redirect_information_create(
     bool is_redirect_enabled,

@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pro_se_authentication_info_request_s OpenAPI_pro_se_authentication_info_request_t;
 #include "resynchronization_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pro_se_authentication_info_request_s OpenAPI_pro_se_authentication_info_request_t;
-typedef struct OpenAPI_pro_se_authentication_info_request_s {
+struct OpenAPI_pro_se_authentication_info_request_s {
     char *serving_network_name;
     int relay_service_code;
     struct OpenAPI_resynchronization_info_s *resynchronization_info;
     char *supported_features;
-} OpenAPI_pro_se_authentication_info_request_t;
+};
 
 OpenAPI_pro_se_authentication_info_request_t *OpenAPI_pro_se_authentication_info_request_create(
     char *serving_network_name,

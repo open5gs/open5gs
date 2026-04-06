@@ -1,0 +1,56 @@
+openapi: 3.0.1
+info:
+  title: Fault Management Notifications
+  version: 19.3.0
+  description: >-
+    OAS 3.0.1 definition of the Fault Supervision MnS
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.111; Fault Management
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.111/
+servers:
+  - url: '{notificationRecipientAddress}'
+    variables:
+      notificationRecipientAddress:
+        description: Address on the MnS consumer side defined by NtfSubscriptionControl.notificationRecipientAddress. See 3GPP TS 28.622 clause 4.3.22
+        default: http://exampleConsumer.com/notificationReceiver
+      MnSversion:
+        description: Version number of the OpenAPI definition
+        default: XXX
+paths:
+  /:
+    post:
+      summary: Receive one of a set of alarm related notifications
+      description: >-
+        The MnS producer sends an alarm to the consumer. 
+        This interface shall be implemented by the notification-receiver and 
+        used by the notification-sender.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: 'TS28111_FaultNrm.yaml#/components/schemas/NotifyNewAlarm'
+                - $ref: 'TS28111_FaultNrm.yaml#/components/schemas/NotifyNewSecAlarm'
+                - $ref: 'TS28111_FaultNrm.yaml#/components/schemas/NotifyClearedAlarm'
+                - $ref: 'TS28111_FaultNrm.yaml#/components/schemas/NotifyChangedAlarmGeneral'
+                - $ref: 'TS28111_FaultNrm.yaml#/components/schemas/NotifyChangedSecAlarmGeneral'
+                - $ref: 'TS28111_FaultNrm.yaml#/components/schemas/NotifyCorrelatedNotificationChanged'                      
+                - $ref: 'TS28111_FaultNrm.yaml#/components/schemas/NotifyAckStateChanged'
+                - $ref: 'TS28111_FaultNrm.yaml#/components/schemas/NotifyComments'
+                - $ref: 'TS28111_FaultNrm.yaml#/components/schemas/NotifyPotentialFaultyAlarmList'
+                - $ref: 'TS28111_FaultNrm.yaml#/components/schemas/NotifyAlarmListRebuilt'
+      responses:
+        '204':
+          description: >-
+            Success case ("204 No Content").
+            The notification is successfully delivered. The response message
+            body is absent.
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'

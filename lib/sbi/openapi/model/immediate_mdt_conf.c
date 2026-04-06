@@ -27,7 +27,14 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_create(
     OpenAPI_positioning_method_mdt_e positioning_method,
     OpenAPI_list_t *add_positioning_method_list,
     OpenAPI_list_t *mdt_allowed_plmn_id_list,
-    OpenAPI_list_t *sensor_measurement_list
+    OpenAPI_list_t *sensor_measurement_list,
+    OpenAPI_list_t *sensor_measurement_lte_list,
+    bool is_event_threshold_sinr_nr,
+    int event_threshold_sinr_nr,
+    OpenAPI_bluetooth_measurement_t *bluetooth_measurement_nr,
+    OpenAPI_bluetooth_measurement_t *bluetooth_measurement_lte,
+    OpenAPI_wlan_measurement_t *wlan_measurement_nr,
+    OpenAPI_wlan_measurement_t *wlan_measurement_lte
 )
 {
     OpenAPI_immediate_mdt_conf_t *immediate_mdt_conf_local_var = ogs_malloc(sizeof(OpenAPI_immediate_mdt_conf_t));
@@ -56,6 +63,13 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_create(
     immediate_mdt_conf_local_var->add_positioning_method_list = add_positioning_method_list;
     immediate_mdt_conf_local_var->mdt_allowed_plmn_id_list = mdt_allowed_plmn_id_list;
     immediate_mdt_conf_local_var->sensor_measurement_list = sensor_measurement_list;
+    immediate_mdt_conf_local_var->sensor_measurement_lte_list = sensor_measurement_lte_list;
+    immediate_mdt_conf_local_var->is_event_threshold_sinr_nr = is_event_threshold_sinr_nr;
+    immediate_mdt_conf_local_var->event_threshold_sinr_nr = event_threshold_sinr_nr;
+    immediate_mdt_conf_local_var->bluetooth_measurement_nr = bluetooth_measurement_nr;
+    immediate_mdt_conf_local_var->bluetooth_measurement_lte = bluetooth_measurement_lte;
+    immediate_mdt_conf_local_var->wlan_measurement_nr = wlan_measurement_nr;
+    immediate_mdt_conf_local_var->wlan_measurement_lte = wlan_measurement_lte;
 
     return immediate_mdt_conf_local_var;
 }
@@ -97,6 +111,26 @@ void OpenAPI_immediate_mdt_conf_free(OpenAPI_immediate_mdt_conf_t *immediate_mdt
     if (immediate_mdt_conf->sensor_measurement_list) {
         OpenAPI_list_free(immediate_mdt_conf->sensor_measurement_list);
         immediate_mdt_conf->sensor_measurement_list = NULL;
+    }
+    if (immediate_mdt_conf->sensor_measurement_lte_list) {
+        OpenAPI_list_free(immediate_mdt_conf->sensor_measurement_lte_list);
+        immediate_mdt_conf->sensor_measurement_lte_list = NULL;
+    }
+    if (immediate_mdt_conf->bluetooth_measurement_nr) {
+        OpenAPI_bluetooth_measurement_free(immediate_mdt_conf->bluetooth_measurement_nr);
+        immediate_mdt_conf->bluetooth_measurement_nr = NULL;
+    }
+    if (immediate_mdt_conf->bluetooth_measurement_lte) {
+        OpenAPI_bluetooth_measurement_free(immediate_mdt_conf->bluetooth_measurement_lte);
+        immediate_mdt_conf->bluetooth_measurement_lte = NULL;
+    }
+    if (immediate_mdt_conf->wlan_measurement_nr) {
+        OpenAPI_wlan_measurement_free(immediate_mdt_conf->wlan_measurement_nr);
+        immediate_mdt_conf->wlan_measurement_nr = NULL;
+    }
+    if (immediate_mdt_conf->wlan_measurement_lte) {
+        OpenAPI_wlan_measurement_free(immediate_mdt_conf->wlan_measurement_lte);
+        immediate_mdt_conf->wlan_measurement_lte = NULL;
     }
     ogs_free(immediate_mdt_conf);
 }
@@ -297,6 +331,79 @@ cJSON *OpenAPI_immediate_mdt_conf_convertToJSON(OpenAPI_immediate_mdt_conf_t *im
     }
     }
 
+    if (immediate_mdt_conf->sensor_measurement_lte_list != OpenAPI_sensor_measurement_NULL) {
+    cJSON *sensor_measurement_lte_listList = cJSON_AddArrayToObject(item, "sensorMeasurementLteList");
+    if (sensor_measurement_lte_listList == NULL) {
+        ogs_error("OpenAPI_immediate_mdt_conf_convertToJSON() failed [sensor_measurement_lte_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(immediate_mdt_conf->sensor_measurement_lte_list, node) {
+        if (cJSON_AddStringToObject(sensor_measurement_lte_listList, "", OpenAPI_sensor_measurement_ToString((intptr_t)node->data)) == NULL) {
+            ogs_error("OpenAPI_immediate_mdt_conf_convertToJSON() failed [sensor_measurement_lte_list]");
+            goto end;
+        }
+    }
+    }
+
+    if (immediate_mdt_conf->is_event_threshold_sinr_nr) {
+    if (cJSON_AddNumberToObject(item, "eventThresholdSinrNr", immediate_mdt_conf->event_threshold_sinr_nr) == NULL) {
+        ogs_error("OpenAPI_immediate_mdt_conf_convertToJSON() failed [event_threshold_sinr_nr]");
+        goto end;
+    }
+    }
+
+    if (immediate_mdt_conf->bluetooth_measurement_nr) {
+    cJSON *bluetooth_measurement_nr_local_JSON = OpenAPI_bluetooth_measurement_convertToJSON(immediate_mdt_conf->bluetooth_measurement_nr);
+    if (bluetooth_measurement_nr_local_JSON == NULL) {
+        ogs_error("OpenAPI_immediate_mdt_conf_convertToJSON() failed [bluetooth_measurement_nr]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "bluetoothMeasurementNr", bluetooth_measurement_nr_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_immediate_mdt_conf_convertToJSON() failed [bluetooth_measurement_nr]");
+        goto end;
+    }
+    }
+
+    if (immediate_mdt_conf->bluetooth_measurement_lte) {
+    cJSON *bluetooth_measurement_lte_local_JSON = OpenAPI_bluetooth_measurement_convertToJSON(immediate_mdt_conf->bluetooth_measurement_lte);
+    if (bluetooth_measurement_lte_local_JSON == NULL) {
+        ogs_error("OpenAPI_immediate_mdt_conf_convertToJSON() failed [bluetooth_measurement_lte]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "bluetoothMeasurementLte", bluetooth_measurement_lte_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_immediate_mdt_conf_convertToJSON() failed [bluetooth_measurement_lte]");
+        goto end;
+    }
+    }
+
+    if (immediate_mdt_conf->wlan_measurement_nr) {
+    cJSON *wlan_measurement_nr_local_JSON = OpenAPI_wlan_measurement_convertToJSON(immediate_mdt_conf->wlan_measurement_nr);
+    if (wlan_measurement_nr_local_JSON == NULL) {
+        ogs_error("OpenAPI_immediate_mdt_conf_convertToJSON() failed [wlan_measurement_nr]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "wlanMeasurementNr", wlan_measurement_nr_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_immediate_mdt_conf_convertToJSON() failed [wlan_measurement_nr]");
+        goto end;
+    }
+    }
+
+    if (immediate_mdt_conf->wlan_measurement_lte) {
+    cJSON *wlan_measurement_lte_local_JSON = OpenAPI_wlan_measurement_convertToJSON(immediate_mdt_conf->wlan_measurement_lte);
+    if (wlan_measurement_lte_local_JSON == NULL) {
+        ogs_error("OpenAPI_immediate_mdt_conf_convertToJSON() failed [wlan_measurement_lte]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "wlanMeasurementLte", wlan_measurement_lte_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_immediate_mdt_conf_convertToJSON() failed [wlan_measurement_lte]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -339,6 +446,17 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
     OpenAPI_list_t *mdt_allowed_plmn_id_listList = NULL;
     cJSON *sensor_measurement_list = NULL;
     OpenAPI_list_t *sensor_measurement_listList = NULL;
+    cJSON *sensor_measurement_lte_list = NULL;
+    OpenAPI_list_t *sensor_measurement_lte_listList = NULL;
+    cJSON *event_threshold_sinr_nr = NULL;
+    cJSON *bluetooth_measurement_nr = NULL;
+    OpenAPI_bluetooth_measurement_t *bluetooth_measurement_nr_local_nonprim = NULL;
+    cJSON *bluetooth_measurement_lte = NULL;
+    OpenAPI_bluetooth_measurement_t *bluetooth_measurement_lte_local_nonprim = NULL;
+    cJSON *wlan_measurement_nr = NULL;
+    OpenAPI_wlan_measurement_t *wlan_measurement_nr_local_nonprim = NULL;
+    cJSON *wlan_measurement_lte = NULL;
+    OpenAPI_wlan_measurement_t *wlan_measurement_lte_local_nonprim = NULL;
     job_type = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "jobType");
     if (!job_type) {
         ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed [job_type]");
@@ -628,6 +746,80 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         }
     }
 
+    sensor_measurement_lte_list = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "sensorMeasurementLteList");
+    if (sensor_measurement_lte_list) {
+        cJSON *sensor_measurement_lte_list_local = NULL;
+        if (!cJSON_IsArray(sensor_measurement_lte_list)) {
+            ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed [sensor_measurement_lte_list]");
+            goto end;
+        }
+
+        sensor_measurement_lte_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(sensor_measurement_lte_list_local, sensor_measurement_lte_list) {
+            OpenAPI_sensor_measurement_e localEnum = OpenAPI_sensor_measurement_NULL;
+            if (!cJSON_IsString(sensor_measurement_lte_list_local)) {
+                ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed [sensor_measurement_lte_list]");
+                goto end;
+            }
+            localEnum = OpenAPI_sensor_measurement_FromString(sensor_measurement_lte_list_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"sensor_measurement_lte_list\" is not supported. Ignoring it ...",
+                         sensor_measurement_lte_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(sensor_measurement_lte_listList, (void *)localEnum);
+            }
+        }
+        if (sensor_measurement_lte_listList->count == 0) {
+            ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed: Expected sensor_measurement_lte_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+    }
+
+    event_threshold_sinr_nr = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "eventThresholdSinrNr");
+    if (event_threshold_sinr_nr) {
+    if (!cJSON_IsNumber(event_threshold_sinr_nr)) {
+        ogs_error("OpenAPI_immediate_mdt_conf_parseFromJSON() failed [event_threshold_sinr_nr]");
+        goto end;
+    }
+    }
+
+    bluetooth_measurement_nr = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "bluetoothMeasurementNr");
+    if (bluetooth_measurement_nr) {
+    bluetooth_measurement_nr_local_nonprim = OpenAPI_bluetooth_measurement_parseFromJSON(bluetooth_measurement_nr);
+    if (!bluetooth_measurement_nr_local_nonprim) {
+        ogs_error("OpenAPI_bluetooth_measurement_parseFromJSON failed [bluetooth_measurement_nr]");
+        goto end;
+    }
+    }
+
+    bluetooth_measurement_lte = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "bluetoothMeasurementLte");
+    if (bluetooth_measurement_lte) {
+    bluetooth_measurement_lte_local_nonprim = OpenAPI_bluetooth_measurement_parseFromJSON(bluetooth_measurement_lte);
+    if (!bluetooth_measurement_lte_local_nonprim) {
+        ogs_error("OpenAPI_bluetooth_measurement_parseFromJSON failed [bluetooth_measurement_lte]");
+        goto end;
+    }
+    }
+
+    wlan_measurement_nr = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "wlanMeasurementNr");
+    if (wlan_measurement_nr) {
+    wlan_measurement_nr_local_nonprim = OpenAPI_wlan_measurement_parseFromJSON(wlan_measurement_nr);
+    if (!wlan_measurement_nr_local_nonprim) {
+        ogs_error("OpenAPI_wlan_measurement_parseFromJSON failed [wlan_measurement_nr]");
+        goto end;
+    }
+    }
+
+    wlan_measurement_lte = cJSON_GetObjectItemCaseSensitive(immediate_mdt_confJSON, "wlanMeasurementLte");
+    if (wlan_measurement_lte) {
+    wlan_measurement_lte_local_nonprim = OpenAPI_wlan_measurement_parseFromJSON(wlan_measurement_lte);
+    if (!wlan_measurement_lte_local_nonprim) {
+        ogs_error("OpenAPI_wlan_measurement_parseFromJSON failed [wlan_measurement_lte]");
+        goto end;
+    }
+    }
+
     immediate_mdt_conf_local_var = OpenAPI_immediate_mdt_conf_create (
         job_typeVariable,
         measurement_lte_list ? measurement_lte_listList : NULL,
@@ -651,7 +843,14 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *im
         positioning_method ? positioning_methodVariable : 0,
         add_positioning_method_list ? add_positioning_method_listList : NULL,
         mdt_allowed_plmn_id_list ? mdt_allowed_plmn_id_listList : NULL,
-        sensor_measurement_list ? sensor_measurement_listList : NULL
+        sensor_measurement_list ? sensor_measurement_listList : NULL,
+        sensor_measurement_lte_list ? sensor_measurement_lte_listList : NULL,
+        event_threshold_sinr_nr ? true : false,
+        event_threshold_sinr_nr ? event_threshold_sinr_nr->valuedouble : 0,
+        bluetooth_measurement_nr ? bluetooth_measurement_nr_local_nonprim : NULL,
+        bluetooth_measurement_lte ? bluetooth_measurement_lte_local_nonprim : NULL,
+        wlan_measurement_nr ? wlan_measurement_nr_local_nonprim : NULL,
+        wlan_measurement_lte ? wlan_measurement_lte_local_nonprim : NULL
     );
 
     return immediate_mdt_conf_local_var;
@@ -686,6 +885,26 @@ end:
     if (sensor_measurement_listList) {
         OpenAPI_list_free(sensor_measurement_listList);
         sensor_measurement_listList = NULL;
+    }
+    if (sensor_measurement_lte_listList) {
+        OpenAPI_list_free(sensor_measurement_lte_listList);
+        sensor_measurement_lte_listList = NULL;
+    }
+    if (bluetooth_measurement_nr_local_nonprim) {
+        OpenAPI_bluetooth_measurement_free(bluetooth_measurement_nr_local_nonprim);
+        bluetooth_measurement_nr_local_nonprim = NULL;
+    }
+    if (bluetooth_measurement_lte_local_nonprim) {
+        OpenAPI_bluetooth_measurement_free(bluetooth_measurement_lte_local_nonprim);
+        bluetooth_measurement_lte_local_nonprim = NULL;
+    }
+    if (wlan_measurement_nr_local_nonprim) {
+        OpenAPI_wlan_measurement_free(wlan_measurement_nr_local_nonprim);
+        wlan_measurement_nr_local_nonprim = NULL;
+    }
+    if (wlan_measurement_lte_local_nonprim) {
+        OpenAPI_wlan_measurement_free(wlan_measurement_lte_local_nonprim);
+        wlan_measurement_lte_local_nonprim = NULL;
     }
     return NULL;
 }

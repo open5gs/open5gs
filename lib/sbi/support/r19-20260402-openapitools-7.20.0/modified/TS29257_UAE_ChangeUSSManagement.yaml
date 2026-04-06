@@ -1,0 +1,692 @@
+openapi: 3.0.0
+
+info:
+  title: UAE Server USS Change Management Service
+  version: 1.1.0
+  description: |
+    UAE Server USS Change Management Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.257 V19.5.0; Application layer support for Uncrewed Aerial System (UAS);
+    UAS Application Enabler (UAE) Server Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.257/
+
+servers:
+  - url: '{apiRoot}/uae-ucm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /policies:
+    get:
+      summary: Retrieve all the active USS Change Policies managed by the UAE Server.
+      operationId: GetUSSChangePolicies
+      tags:
+        - USS Change Policies (Collection)
+      responses:
+        '200':
+          description: >
+            OK. All the active USS Change Policies managed by the UAE Server shall be returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/USSChangePolicy'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request the creation of a USS Change Policy.
+      operationId: CreateUSSChangePolicy
+      tags:
+        - USS Change Policies (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/USSChangePolReq'
+      responses:
+        '200':
+          description: >
+            OK. The USS Change Policy is successfully created and a representation of the created
+            Individual USS Change Policy resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USSChangePolResp'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual USS Change Policy resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        USSChangeNotif:
+          '{$request.body#/ussChangePol/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/USSChangeNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The USS Change Notification is successfully received and
+                    acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /policies/{policyId}:
+    parameters:
+      - name: policyId
+        in: path
+        description: Represents the identifier of the Individual USS Change Policy resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual USS Change Policy resource.
+      operationId: GetUSSChangePolicy
+      tags:
+        - Individual USS Change Policy (Document)
+      responses:
+        '200':
+          description: OK. The requested Individual USS Change Policy resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USSChangePolicy'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual USS Change Policy resource.
+      operationId: UpdateUSSChangePolicy
+      tags:
+        - Individual USS Change Policy (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/USSChangePolicy'
+      responses:
+        '200':
+          description: >
+            OK. The Individual USS Change Policy resource is successfully updated and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USSChangePolicy'
+        '204':
+          description: >
+            No Content. The Individual USS Change Policy resource is successfully updated and no
+            content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual USS Change Policy resource.
+      operationId: ModifyUSSChangePolicy
+      tags:
+        - Individual USS Change Policy (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/USSChangePolicyPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual USS Change Policy resource is successfully modified and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USSChangePolicy'
+        '204':
+          description: >
+            No Content. The Individual USS Change Policy resource is successfully modified and no
+            content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual USS Change Policy resource.
+      operationId: DeleteUSSChangePolicy
+      tags:
+        - Individual USS Change Policy (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual USS Change Policy resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /request-usschange:
+    post:
+      summary: Enables to request USS change.
+      operationId: RequestUSSChange
+      tags:
+        - USS Change Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/USSChangeReq'
+      responses:
+        '204':
+          description: >
+            No Content. The USS change request is successfully received and processed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    USSChangePolReq:
+      description: >
+        Represents the parameters to request the creation/Update of a USS Change Policy.
+      type: object
+      properties:
+        requestorId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        ussChangePol:
+          $ref: '#/components/schemas/USSChangePolicy'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - requestorId
+        - ussChangePol
+
+    USSChangePolResp:
+      description: Represents the response to a USS Change Policy create/update request.
+      type: object
+      properties:
+        ussChangePol:
+          $ref: '#/components/schemas/USSChangePolicy'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ussChangePol
+
+    USSChangePolicy:
+      description: Represents a USS Change Policy.
+      type: object
+      properties:
+        uasId:
+          $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/UasId'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        uasRegArea:
+          $ref: '#/components/schemas/ServArea'
+        uasAllowedRoute:
+          type: array
+          items:
+            $ref: '#/components/schemas/UasRoute'
+          minItems: 1
+        multiUssPol:
+          $ref: '#/components/schemas/MultiUssPol'
+      required:
+        - uasId
+        - notifUri
+
+    USSChangePolicyPatch:
+      description: >
+        Represents the parameters to request the modification of a USS Change Policy.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        uasRegArea:
+          $ref: '#/components/schemas/ServArea'
+        uasAllowedRoute:
+          type: array
+          items:
+            $ref: '#/components/schemas/UasRoute'
+          minItems: 1
+        multiUssPol:
+          $ref: '#/components/schemas/MultiUssPol'
+
+    MultiUssPol:
+      description: Represents a Multi-USS policy.
+      type: object
+      properties:
+        servingUssId:
+          $ref: '#/components/schemas/UssId'
+        servingUssInfo:
+          type: string
+        ussChangeArea:
+          $ref: '#/components/schemas/ServArea'
+        allowedTgtUsss:
+          type: array
+          items:
+            $ref: '#/components/schemas/UssInfo'
+          minItems: 1
+      required:
+        - servingUssId
+        - servingUssInfo
+        - ussChangeArea
+
+    ServArea:
+      description: Represents a service area.
+      type: object
+      properties:
+        ncgiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NcgiTai'
+          minItems: 1
+          description: List of NR cell Ids
+        taiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+          minItems: 1
+          description: List of tracking area Ids
+        geographicAreaList:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+      oneOf:
+        - anyOf:
+          - required: [ncgiList]
+          - required: [taiList]
+        - required: [geographicAreaList]
+
+    UasRoute:
+      description: Represents the UAS route.
+      type: object
+      properties:
+        route:
+          type: object
+          additionalProperties:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minProperties: 2
+          description: >
+            Contains a list of two or more ordered geographic area(s) that constitute the UAS route.
+            The key of the map shall be an unsigned integer (with the minimum value being 1)
+            indicating the order of the geographic area, provided within the corresponding map
+            entry, in the derivation of the route, with the first map entry being the start of the
+            route and the last entry of the map being the end of the route.
+      required:
+        - route
+
+    UssInfo:
+      description: Represents USS information.
+      type: object
+      properties:
+        ussId:
+          $ref: '#/components/schemas/UssId'
+        ussServArea:
+          $ref: '#/components/schemas/ServArea'
+        ussServReqs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServReq'
+          minItems: 1
+        dnais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          minItems: 1
+        lunId:
+          type: string
+      required:
+        - ussId
+        - ussServArea
+        - ussServReqs
+        - dnais
+        - lunId
+
+    ServReq:
+      description: >
+        Represents a service requirement.
+        metric.
+      type: object
+      properties:
+        reqName:
+          type: string
+        reqValue:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+      required:
+        - reqName
+        - reqValue
+
+    USSChangeReq:
+      description: Represents the parameters to request for USS change.
+      type: object
+      properties:
+        requestorId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        uasId:
+          $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/UasId'
+        targetUssId:
+          $ref: '#/components/schemas/UssId'
+        targetUssInfo:
+          $ref: '#/components/schemas/TgtUssInfo'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - requestorId
+        - uasId
+        - targetUssId
+
+    TgtUssInfo:
+      description: Represents the target USS related information.
+      type: object
+      properties:
+        ussEdpt:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        ussServReqs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServReq'
+          minItems: 1
+        dnais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          minItems: 1
+        lunId:
+          type: string
+      required:
+        - ussEdpt
+
+    USSChangeNotif:
+      description: Represents the USS Change Notification.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/UssChangeEvent'
+        polConfigStatus:
+          type: boolean
+          default: false
+          description: >
+            Indicates the status of the USS change policy configuration.
+            true indicates that the USS change policy configuration was successful.
+            false indicates that the USS change policy configuration failed.
+        tgtUssId:
+          $ref: '#/components/schemas/UssId'
+        ussChgInfo:
+          $ref: '#/components/schemas/UssChgInfo'
+      required:
+        - event
+
+    UssChgInfo:
+      description: Represents the target USS related information.
+      type: object
+      properties:
+        servingUssId:
+          $ref: '#/components/schemas/UssId'
+        targetUssId:
+          $ref: '#/components/schemas/UssId'
+        lunId:
+          type: string
+        mobilityEvent:
+          $ref: '#/components/schemas/MobilityEvent'
+      required:
+        - servingUssId
+
+
+# SIMPLE DATA TYPES
+#
+
+
+    UssId:
+      description: >
+        Represents the identifier of a USS, encoded in the form of e.g., an FQDN, a URI, etc.
+      type: string
+
+
+#
+# ENUMERATIONS
+#
+
+    UssChangeEvent:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - USS_CHG_POL_CONFIG_STATUS
+         - UAE_CLIENT_ASSIST_USS_CHG
+         - UAE_SERVER_TRIGG_USS_CHG
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents a USS Change Event.  
+#        Possible values are:
+#        - USS_CHG_POL_CONFIG_STATUS: Indicates that the USS Change Event is USS Change Policy
+#          Configuration Status.
+#        - UAE_CLIENT_ASSIST_USS_CHG: Indicates that the USS Change Event is UAE Client Assisted USS
+#          Change.
+#        - UAE_SERVER_TRIGG_USS_CHG: Indicates that the USS Change Event is UAE Server initiated
+#          USS Change Trigger.
+#
+    MobilityEvent:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - OUT_OF_USS_SERV_AREA
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents a mobility event.  
+#        Possible values are:
+#        - OUT_OF_USS_SERV_AREA: Indicates that the mobility event is the expected UAV mobility to a
+#          service area that is outside the current serving USS's service area.

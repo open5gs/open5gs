@@ -12,11 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_policy_data_change_notification_s OpenAPI_policy_data_change_notification_t;
 #include "am_policy_data.h"
 #include "bdt_data.h"
+#include "group_policy_data.h"
 #include "notification_item.h"
 #include "operator_specific_data_container.h"
-#include "plmn_id_1.h"
+#include "pdtq_data.h"
+#include "plmn_id.h"
 #include "slice_policy_data.h"
 #include "sm_policy_data.h"
 #include "snssai.h"
@@ -28,8 +31,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_policy_data_change_notification_s OpenAPI_policy_data_change_notification_t;
-typedef struct OpenAPI_policy_data_change_notification_s {
+struct OpenAPI_policy_data_change_notification_s {
     struct OpenAPI_am_policy_data_s *am_policy_data;
     struct OpenAPI_ue_policy_set_s *ue_policy_set;
     struct OpenAPI_ue_policy_set_s *plmn_ue_policy_set;
@@ -43,13 +45,17 @@ typedef struct OpenAPI_policy_data_change_notification_s {
     char *sponsor_id;
     char *bdt_ref_id;
     char *usage_mon_id;
-    struct OpenAPI_plmn_id_1_s *plmn_id;
+    struct OpenAPI_plmn_id_s *plmn_id;
     OpenAPI_list_t *del_resources;
     char *notif_id;
     OpenAPI_list_t *reported_fragments;
     struct OpenAPI_slice_policy_data_s *slice_policy_data;
     struct OpenAPI_snssai_s *snssai;
-} OpenAPI_policy_data_change_notification_t;
+    struct OpenAPI_pdtq_data_s *pdtq_data;
+    char *pdtq_ref_id;
+    struct OpenAPI_group_policy_data_s *group_policy_data;
+    char *int_group_id;
+};
 
 OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notification_create(
     OpenAPI_am_policy_data_t *am_policy_data,
@@ -65,12 +71,16 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
     char *sponsor_id,
     char *bdt_ref_id,
     char *usage_mon_id,
-    OpenAPI_plmn_id_1_t *plmn_id,
+    OpenAPI_plmn_id_t *plmn_id,
     OpenAPI_list_t *del_resources,
     char *notif_id,
     OpenAPI_list_t *reported_fragments,
     OpenAPI_slice_policy_data_t *slice_policy_data,
-    OpenAPI_snssai_t *snssai
+    OpenAPI_snssai_t *snssai,
+    OpenAPI_pdtq_data_t *pdtq_data,
+    char *pdtq_ref_id,
+    OpenAPI_group_policy_data_t *group_policy_data,
+    char *int_group_id
 );
 void OpenAPI_policy_data_change_notification_free(OpenAPI_policy_data_change_notification_t *policy_data_change_notification);
 OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notification_parseFromJSON(cJSON *policy_data_change_notificationJSON);

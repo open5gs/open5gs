@@ -38,9 +38,6 @@ void OpenAPI_nwdaf_registration_modification_free(OpenAPI_nwdaf_registration_mod
         nwdaf_registration_modification->nwdaf_set_id = NULL;
     }
     if (nwdaf_registration_modification->analytics_ids) {
-        OpenAPI_list_for_each(nwdaf_registration_modification->analytics_ids, node) {
-            OpenAPI_event_id_free(node->data);
-        }
         OpenAPI_list_free(nwdaf_registration_modification->analytics_ids);
         nwdaf_registration_modification->analytics_ids = NULL;
     }
@@ -78,19 +75,17 @@ cJSON *OpenAPI_nwdaf_registration_modification_convertToJSON(OpenAPI_nwdaf_regis
     }
     }
 
-    if (nwdaf_registration_modification->analytics_ids) {
+    if (nwdaf_registration_modification->analytics_ids != OpenAPI_event_id_NULL) {
     cJSON *analytics_idsList = cJSON_AddArrayToObject(item, "analyticsIds");
     if (analytics_idsList == NULL) {
         ogs_error("OpenAPI_nwdaf_registration_modification_convertToJSON() failed [analytics_ids]");
         goto end;
     }
     OpenAPI_list_for_each(nwdaf_registration_modification->analytics_ids, node) {
-        cJSON *itemLocal = OpenAPI_event_id_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        if (cJSON_AddStringToObject(analytics_idsList, "", OpenAPI_event_id_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_nwdaf_registration_modification_convertToJSON() failed [analytics_ids]");
             goto end;
         }
-        cJSON_AddItemToArray(analytics_idsList, itemLocal);
     }
     }
 
@@ -143,16 +138,22 @@ OpenAPI_nwdaf_registration_modification_t *OpenAPI_nwdaf_registration_modificati
         analytics_idsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(analytics_ids_local, analytics_ids) {
-            if (!cJSON_IsObject(analytics_ids_local)) {
+            OpenAPI_event_id_e localEnum = OpenAPI_event_id_NULL;
+            if (!cJSON_IsString(analytics_ids_local)) {
                 ogs_error("OpenAPI_nwdaf_registration_modification_parseFromJSON() failed [analytics_ids]");
                 goto end;
             }
-            OpenAPI_event_id_t *analytics_idsItem = OpenAPI_event_id_parseFromJSON(analytics_ids_local);
-            if (!analytics_idsItem) {
-                ogs_error("No analytics_idsItem");
-                goto end;
+            localEnum = OpenAPI_event_id_FromString(analytics_ids_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"analytics_ids\" is not supported. Ignoring it ...",
+                         analytics_ids_local->valuestring);
+            } else {
+                OpenAPI_list_add(analytics_idsList, (void *)localEnum);
             }
-            OpenAPI_list_add(analytics_idsList, analytics_idsItem);
+        }
+        if (analytics_idsList->count == 0) {
+            ogs_error("OpenAPI_nwdaf_registration_modification_parseFromJSON() failed: Expected analytics_idsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -174,9 +175,6 @@ OpenAPI_nwdaf_registration_modification_t *OpenAPI_nwdaf_registration_modificati
     return nwdaf_registration_modification_local_var;
 end:
     if (analytics_idsList) {
-        OpenAPI_list_for_each(analytics_idsList, node) {
-            OpenAPI_event_id_free(node->data);
-        }
         OpenAPI_list_free(analytics_idsList);
         analytics_idsList = NULL;
     }

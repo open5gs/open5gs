@@ -12,20 +12,20 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_av_eps_aka_s OpenAPI_av_eps_aka_t;
 #include "hss_av_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_av_eps_aka_s OpenAPI_av_eps_aka_t;
-typedef struct OpenAPI_av_eps_aka_s {
+struct OpenAPI_av_eps_aka_s {
     OpenAPI_hss_av_type_e av_type;
     char *rand;
     char *xres;
     char *autn;
     char *kasme;
-} OpenAPI_av_eps_aka_t;
+};
 
 OpenAPI_av_eps_aka_t *OpenAPI_av_eps_aka_create(
     OpenAPI_hss_av_type_e av_type,

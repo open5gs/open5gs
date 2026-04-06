@@ -1,0 +1,403 @@
+openapi: 3.0.0
+
+info:
+  title: 3gpp-ue-address
+  version: 1.1.0
+  description: |
+    API for UE Address service.
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.522 V19.5.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/3gpp-ue-address/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+paths:
+  /retrieve:
+    post:
+      summary: Request to retrieve UE Address information.
+      operationId: RetrieveUEAddress
+      tags:
+        - UE Address(es) Information Retrieval
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UeAddressReq'
+      responses:
+        '200':
+          description: >
+            OK. The UE Address information request is successfully processed, and UE address
+            information is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeAddressInfo'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions:
+    get:
+      summary: Request to retrieve all the active UE Address Subscriptions.
+      operationId: GetUEAddrSubscs
+      tags:
+        - UE Address Subscriptions (Collection)
+      parameters:
+        - name: supp-feat
+          in: query
+          description: >
+            Contains the list of supported features among the ones defined in clause 5.35.6.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            OK. All the Individual UE Address Subscription resources managed by the NEF are
+            returned.
+            If there are no existing Individual UE Address Subscription resources managed at the
+            NEF, an empty array is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UeAddrSubsc'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request the creation of a new UE Address Subscription at the NEF.
+      operationId: CreateUEAddrSubsc
+      tags:
+        - UE Address Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UeAddrSubsc'
+      responses:
+        '201':
+          description: >
+            Created. A representation of the created Individual UE Address Subscription resource is
+            returned in the response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeAddrSubsc'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        notification:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/UeAddrNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The UE Address Notification is successfully received and
+                    processed.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: Represents the identifier of the Individual UE Address Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Request to retrieve an existing Individual UE Address Subscription resource.
+      operationId: GetIndUEAddrSubsc
+      tags:
+        - Individual UE Address Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual UE Address Subscription resource is returned in the
+            response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeAddrSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual UE Address Subscription resource.
+      operationId: DeleteIndUEAddrSubsc
+      tags:
+        - Individual UE Address Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. . The Individual UE Address Subscription resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    UeAddressReq:
+      description: Represents the parameters to request the retrieval of UE Address information.
+      type: object
+      properties:
+        afId:
+          type: string
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - afId
+        - gpsi
+
+    UeAddressInfo:
+      description: Represents UE Address information.
+      type: object
+      properties:
+        ueIpAddrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ueIpAddrs
+
+    UeAddrSubsc:
+      description: Represents the UE Address Subscription.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        notifId:
+          type: string
+        afId:
+          type: string
+        ueAddrInfo:
+          $ref: '#/components/schemas/UeAddrInfo'
+        immRepInd:
+          type: boolean
+          description: >
+            Indicates whether immediate reporting shall be included in the corresponding response
+            if Available.
+        immReport:
+          $ref: 'TS29564_Nupf_EventExposure.yaml#/components/schemas/UeNatMappingInfo'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - notifUri
+        - notifId
+        - afId
+
+    UeAddrInfo:
+      description: Represents the UE Public Address information.
+      type: object
+      properties:
+        uePrivateIpAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        ipDomain:
+          type: string
+        remoteIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        remoteIpv6Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        remotePortNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint16'
+      required:
+        - uePrivateIpAddr
+#      oneOf:
+#        - required: [remoteIpv4Addr]
+#        - required: [remoteIpv6Addr]
+#
+    UeAddrNotif:
+      description: Represents the UE Address Notification.
+      type: object
+      properties:
+        notifId:
+          type: string
+        uePubAddrInfo:
+          $ref: 'TS29564_Nupf_EventExposure.yaml#/components/schemas/UeNatMappingInfo'
+      required:
+        - notifId
+        - uePubAddrInfo
+
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+# Data types describing alternative data types or combinations of data types:
+#

@@ -10,7 +10,10 @@ OpenAPI_trust_af_info_t *OpenAPI_trust_af_info_create(
     OpenAPI_list_t *app_ids,
     OpenAPI_list_t *internal_group_id,
     bool is_mapping_ind,
-    int mapping_ind
+    int mapping_ind,
+    OpenAPI_list_t *tai_list,
+    OpenAPI_list_t *tai_range_list,
+    OpenAPI_list_t *vfl_info
 )
 {
     OpenAPI_trust_af_info_t *trust_af_info_local_var = ogs_malloc(sizeof(OpenAPI_trust_af_info_t));
@@ -22,6 +25,9 @@ OpenAPI_trust_af_info_t *OpenAPI_trust_af_info_create(
     trust_af_info_local_var->internal_group_id = internal_group_id;
     trust_af_info_local_var->is_mapping_ind = is_mapping_ind;
     trust_af_info_local_var->mapping_ind = mapping_ind;
+    trust_af_info_local_var->tai_list = tai_list;
+    trust_af_info_local_var->tai_range_list = tai_range_list;
+    trust_af_info_local_var->vfl_info = vfl_info;
 
     return trust_af_info_local_var;
 }
@@ -57,6 +63,27 @@ void OpenAPI_trust_af_info_free(OpenAPI_trust_af_info_t *trust_af_info)
         }
         OpenAPI_list_free(trust_af_info->internal_group_id);
         trust_af_info->internal_group_id = NULL;
+    }
+    if (trust_af_info->tai_list) {
+        OpenAPI_list_for_each(trust_af_info->tai_list, node) {
+            OpenAPI_tai_free(node->data);
+        }
+        OpenAPI_list_free(trust_af_info->tai_list);
+        trust_af_info->tai_list = NULL;
+    }
+    if (trust_af_info->tai_range_list) {
+        OpenAPI_list_for_each(trust_af_info->tai_range_list, node) {
+            OpenAPI_tai_range_free(node->data);
+        }
+        OpenAPI_list_free(trust_af_info->tai_range_list);
+        trust_af_info->tai_range_list = NULL;
+    }
+    if (trust_af_info->vfl_info) {
+        OpenAPI_list_for_each(trust_af_info->vfl_info, node) {
+            OpenAPI_vfl_info_free(node->data);
+        }
+        OpenAPI_list_free(trust_af_info->vfl_info);
+        trust_af_info->vfl_info = NULL;
     }
     ogs_free(trust_af_info);
 }
@@ -137,6 +164,54 @@ cJSON *OpenAPI_trust_af_info_convertToJSON(OpenAPI_trust_af_info_t *trust_af_inf
     }
     }
 
+    if (trust_af_info->tai_list) {
+    cJSON *tai_listList = cJSON_AddArrayToObject(item, "taiList");
+    if (tai_listList == NULL) {
+        ogs_error("OpenAPI_trust_af_info_convertToJSON() failed [tai_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(trust_af_info->tai_list, node) {
+        cJSON *itemLocal = OpenAPI_tai_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_trust_af_info_convertToJSON() failed [tai_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(tai_listList, itemLocal);
+    }
+    }
+
+    if (trust_af_info->tai_range_list) {
+    cJSON *tai_range_listList = cJSON_AddArrayToObject(item, "taiRangeList");
+    if (tai_range_listList == NULL) {
+        ogs_error("OpenAPI_trust_af_info_convertToJSON() failed [tai_range_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(trust_af_info->tai_range_list, node) {
+        cJSON *itemLocal = OpenAPI_tai_range_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_trust_af_info_convertToJSON() failed [tai_range_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(tai_range_listList, itemLocal);
+    }
+    }
+
+    if (trust_af_info->vfl_info) {
+    cJSON *vfl_infoList = cJSON_AddArrayToObject(item, "vflInfo");
+    if (vfl_infoList == NULL) {
+        ogs_error("OpenAPI_trust_af_info_convertToJSON() failed [vfl_info]");
+        goto end;
+    }
+    OpenAPI_list_for_each(trust_af_info->vfl_info, node) {
+        cJSON *itemLocal = OpenAPI_vfl_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_trust_af_info_convertToJSON() failed [vfl_info]");
+            goto end;
+        }
+        cJSON_AddItemToArray(vfl_infoList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -154,6 +229,12 @@ OpenAPI_trust_af_info_t *OpenAPI_trust_af_info_parseFromJSON(cJSON *trust_af_inf
     cJSON *internal_group_id = NULL;
     OpenAPI_list_t *internal_group_idList = NULL;
     cJSON *mapping_ind = NULL;
+    cJSON *tai_list = NULL;
+    OpenAPI_list_t *tai_listList = NULL;
+    cJSON *tai_range_list = NULL;
+    OpenAPI_list_t *tai_range_listList = NULL;
+    cJSON *vfl_info = NULL;
+    OpenAPI_list_t *vfl_infoList = NULL;
     s_nssai_info_list = cJSON_GetObjectItemCaseSensitive(trust_af_infoJSON, "sNssaiInfoList");
     if (s_nssai_info_list) {
         cJSON *s_nssai_info_list_local = NULL;
@@ -258,13 +339,88 @@ OpenAPI_trust_af_info_t *OpenAPI_trust_af_info_parseFromJSON(cJSON *trust_af_inf
     }
     }
 
+    tai_list = cJSON_GetObjectItemCaseSensitive(trust_af_infoJSON, "taiList");
+    if (tai_list) {
+        cJSON *tai_list_local = NULL;
+        if (!cJSON_IsArray(tai_list)) {
+            ogs_error("OpenAPI_trust_af_info_parseFromJSON() failed [tai_list]");
+            goto end;
+        }
+
+        tai_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(tai_list_local, tai_list) {
+            if (!cJSON_IsObject(tai_list_local)) {
+                ogs_error("OpenAPI_trust_af_info_parseFromJSON() failed [tai_list]");
+                goto end;
+            }
+            OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local);
+            if (!tai_listItem) {
+                ogs_error("No tai_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(tai_listList, tai_listItem);
+        }
+    }
+
+    tai_range_list = cJSON_GetObjectItemCaseSensitive(trust_af_infoJSON, "taiRangeList");
+    if (tai_range_list) {
+        cJSON *tai_range_list_local = NULL;
+        if (!cJSON_IsArray(tai_range_list)) {
+            ogs_error("OpenAPI_trust_af_info_parseFromJSON() failed [tai_range_list]");
+            goto end;
+        }
+
+        tai_range_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(tai_range_list_local, tai_range_list) {
+            if (!cJSON_IsObject(tai_range_list_local)) {
+                ogs_error("OpenAPI_trust_af_info_parseFromJSON() failed [tai_range_list]");
+                goto end;
+            }
+            OpenAPI_tai_range_t *tai_range_listItem = OpenAPI_tai_range_parseFromJSON(tai_range_list_local);
+            if (!tai_range_listItem) {
+                ogs_error("No tai_range_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(tai_range_listList, tai_range_listItem);
+        }
+    }
+
+    vfl_info = cJSON_GetObjectItemCaseSensitive(trust_af_infoJSON, "vflInfo");
+    if (vfl_info) {
+        cJSON *vfl_info_local = NULL;
+        if (!cJSON_IsArray(vfl_info)) {
+            ogs_error("OpenAPI_trust_af_info_parseFromJSON() failed [vfl_info]");
+            goto end;
+        }
+
+        vfl_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(vfl_info_local, vfl_info) {
+            if (!cJSON_IsObject(vfl_info_local)) {
+                ogs_error("OpenAPI_trust_af_info_parseFromJSON() failed [vfl_info]");
+                goto end;
+            }
+            OpenAPI_vfl_info_t *vfl_infoItem = OpenAPI_vfl_info_parseFromJSON(vfl_info_local);
+            if (!vfl_infoItem) {
+                ogs_error("No vfl_infoItem");
+                goto end;
+            }
+            OpenAPI_list_add(vfl_infoList, vfl_infoItem);
+        }
+    }
+
     trust_af_info_local_var = OpenAPI_trust_af_info_create (
         s_nssai_info_list ? s_nssai_info_listList : NULL,
         af_events ? af_eventsList : NULL,
         app_ids ? app_idsList : NULL,
         internal_group_id ? internal_group_idList : NULL,
         mapping_ind ? true : false,
-        mapping_ind ? mapping_ind->valueint : 0
+        mapping_ind ? mapping_ind->valueint : 0,
+        tai_list ? tai_listList : NULL,
+        tai_range_list ? tai_range_listList : NULL,
+        vfl_info ? vfl_infoList : NULL
     );
 
     return trust_af_info_local_var;
@@ -293,6 +449,27 @@ end:
         }
         OpenAPI_list_free(internal_group_idList);
         internal_group_idList = NULL;
+    }
+    if (tai_listList) {
+        OpenAPI_list_for_each(tai_listList, node) {
+            OpenAPI_tai_free(node->data);
+        }
+        OpenAPI_list_free(tai_listList);
+        tai_listList = NULL;
+    }
+    if (tai_range_listList) {
+        OpenAPI_list_for_each(tai_range_listList, node) {
+            OpenAPI_tai_range_free(node->data);
+        }
+        OpenAPI_list_free(tai_range_listList);
+        tai_range_listList = NULL;
+    }
+    if (vfl_infoList) {
+        OpenAPI_list_for_each(vfl_infoList, node) {
+            OpenAPI_vfl_info_free(node->data);
+        }
+        OpenAPI_list_free(vfl_infoList);
+        vfl_infoList = NULL;
     }
     return NULL;
 }

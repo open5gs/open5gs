@@ -1,0 +1,433 @@
+openapi: 3.0.0
+info:
+  title: 'Media Delivery: Common Data Types'
+  version: 1.1.0
+  description: |
+    Media Delivery: Common Data Types
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: 'Media Delivery: Common Data Types'
+    description: 'Media Delivery: Common Data Types'
+
+externalDocs:
+  description: 'TS 26.510 V19.0.0; Media Delivery; Interactions and APIs for media session handling'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.510/'
+
+paths: {}
+
+components:
+  schemas:
+    #################################
+    # Clause 6.4.2: Simple data types
+    #################################
+    Uint6:
+      type: integer
+      minimum: 0
+      maximum: 32
+      description: Integer where the allowed values correspond to the value range of an unsigned 8-bit integer.
+    Uint8:
+      type: integer
+      minimum: 0
+      maximum: 256
+      description: Integer where the allowed values correspond to the value range of an unsigned 8-bit integer.
+    Uint20:
+      type: integer
+      minimum: 0
+      maximum: 1048575
+      description: Integer where the allowed values correspond to the value range of an unsigned 20-bit integer.
+    ResourceId:
+      type: string
+      description: String chosen by the 5GMS AF to serve as an identifier in a resource URI.
+    Percentage:
+      type: number
+      minimum: 0.0
+      maximum: 100.0
+    #DurationSec is defined in TS29571_CommonData
+    Duration:
+      type: string
+      format: duration
+      description: 'String with format "duration" as defined by JSON Schema (referencing IETF RFC 3339, appendix A and, ultimately, ISO 8601).'
+    #Date is defined in TS29571_CommonData
+    #DateTime is defined in TS29571_CommonData
+    #Uri is defined in TS29571_CommonData
+    Url:
+      type: string
+      format: uri-reference
+      description: 'Uniform Resource Locator, conforming with the "URI-reference" production specified in IETF RFC 3986, section 4.1.'
+    RelativeUrl:
+      type: string
+      format: uri-reference
+      description: 'Relative Uniform Resource Locator, conforming with the "relative-ref" production specified in IETF RFC 3986, section 4.2. Note that both "query" and "fragment" suffixes are permitted by this production.'
+    AbsoluteUrl:
+      type: string
+      format: uri
+      description: 'Absolute Uniform Resource Locator, conforming with the "absolute-URI" production specified in IETF RFC 3986, section 4.3 in which the scheme part is "http" or "https". Note that the "query" suffix is permitted by this production but the "fragment" suffix is not.'
+    MediaDeliverySessionId:
+      type: string
+      description: 'A unique identifier for a media delivery session.'
+
+    #####################################
+    # Clause 6.4.3: Structured data types
+    #####################################
+    IpPacketFilterSet:
+      type: object
+      required:
+        - direction
+      properties:
+        direction:
+          type: string
+        sourceAddress:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        destinationAddress:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        protocolNumber:
+          $ref: '#/components/schemas/Uint8'
+        sourcePort:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint16'
+        destinationPort:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint16'
+        differentiatedServicesCodePoint:
+          $ref: '#/components/schemas/Uint6'
+        flowLabel:
+          $ref: '#/components/schemas/Uint20'
+        securityParametersIndex:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+
+    ApplicationFlowDescription:
+      type: object
+      required:
+        - filterMethod
+      oneOf:
+        - required: [packetFilter]
+        - required: [domainName]
+      properties:
+        filterMethod:
+          $ref: '#/components/schemas/SdfMethod'
+        packetFilter:
+          $ref: '#/components/schemas/IpPacketFilterSet'
+        domainName:
+          type: string
+        mediaType:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/MediaType'
+        mediaTransportParameters:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProtocolDescription'
+        uplinkMultiplexedMediaInfos:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/MpxMediaInfo'
+          minItems: 1
+          description: Multiplexed media identification information for the uplink IP flow.
+        downlinkMultiplexedMediaInfos:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/MpxMediaInfo'
+          minItems: 1
+          description: Multiplexed media identification information for the downlink IP flow.
+
+    UnidirectionalQoSSpecification:
+      type: object
+      required:
+        - maximumBitRate
+      properties:
+        maximumBitRate:
+          readOnly: true
+          allOf:
+            - $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maximumAuthorisedBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        minimumPacketLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        pduSetQosLimits:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSetQosPara'
+
+    PolicyConstraints:
+      type: object
+      required:
+        - componentReference
+      anyOf:
+        - required: [qosReference]
+        - required: [downlink]
+        - required: [uplink]
+      properties:
+        componentReference:
+          type: string
+          minLength: 1
+        qosReference:
+          type: string
+        downlinkQoSSpecification:
+          $ref: '#/components/schemas/UnidirectionalQosSpecification'
+        uplinkQoSSpecification:
+          $ref: '#/components/schemas/UnidirectionalQosSpecification'
+        pduSetMarking:
+          type: boolean
+          default: false
+        downlinkDataBurstSizeMarkingRequired:
+          type: boolean
+          default: false
+        downlinkTimeToNextBurstMarkingRequired:
+          type: boolean
+          default: false
+        downlinkExpeditedTransferIndicationMarkingRequired:
+          type: boolean
+          default: false
+
+    UnidirectionalBitRateSpecification:
+      type: object
+      required:
+        - maximumRequestedBitRate
+        - minimumDesiredBitRate
+        - minimumRequestedBitRate
+      properties:
+        maximumRequestedBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        minimumDesiredBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        minimumRequestedBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+
+    ClientPolicySpecification:
+      type: object
+      required:
+        - downlinkBitRates
+        - uplinkBitRates
+      properties:
+        downlinkBitRates:
+          $ref: '#/components/schemas/UnidirectionalBitRateSpecification'
+        uplinkBitRates:
+          $ref: '#/components/schemas/UnidirectionalBitRateSpecification'
+        desiredPacketLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        desiredPacketLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        desiredDownlinkPduSetQosParameters:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSetQosPara'
+        desiredUplinkPduSetQosParameters:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSetQosPara'
+        downlinkExpeditedTransferIndication:
+          type: boolean
+          default: false
+        l4SRequired:
+          type: boolean
+        qoSMonitoringRequired:
+          type: boolean
+
+    ChargingSpecification:
+      type: object
+      properties:
+        sponsorId:
+          type: string
+        sponsoringStatus:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/SponsoringStatus'
+        permittedUes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+
+    TypedLocation:
+      type: object
+      required:
+        - locationIdentifierType
+        - location
+      properties:
+        locationIdentifierType:
+          $ref: '#/components/schemas/CellIdentifierType'
+        location:
+          type: string
+
+    OperationSuccessResponse:
+      type: object
+      required:
+        - success
+      properties:
+        success:
+          type: boolean
+        reason:
+          type: string
+
+    EdgeProcessingEligibilityCriteria:
+      type: object
+      required:
+        - applicationFlowDescriptions
+        - ueLocations
+        - timeWindows
+        - appRequest
+      properties:
+        applicationFlowDescriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationFlowDescription'
+        ueLocations:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        timeWindows:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        appRequest:
+          type: boolean
+
+    EndpointAddress:
+      type: object
+      required:
+        - domainName
+        - portNumber
+      properties:
+        domainName:
+          type: string
+          minLength: 1
+        portNumbers:
+          type: array
+          minItems: 1
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint16'
+
+    UnidirectionalQosSpecification:
+      type: object
+      description: A specification for network Quality of Service in either the downlink or uplink direction.
+      required:
+        - maximumRequestedBitRate
+        - minimumRequestedBitRate
+      properties:
+        maximumRequestedBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        minimumDesiredBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        minimumRequestedBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        desiredPacketLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        desiredPacketLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+
+    RelativeMediaEntryPoint:
+      description: "A typed entry point for downlink or uplink media streaming expressed relative to some base URL signalled elsewhere."
+      type: object
+      required:
+        - relativePath
+      oneOf:
+        - required: [contentType]
+        - required: [protocol]
+      properties:
+        relativePath:
+          $ref: '#/components/schemas/RelativeUrl'
+        contentType:
+          type: string
+          description: "A MIME media content type."
+        protocol:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        profiles:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+
+    CachingConfiguration:
+      type: object
+      description: 'A configuration that affects the caching of media resources in the Media AS and the signalling of cache control metadata in HTTP responses generated by the Media AS.'
+      required:
+        - urlPatternFilter
+        - cachingDirectives
+      properties:
+        urlPatternFilter:
+          type: string
+        cachingDirectives:
+          type: object
+          properties:
+            statusCodeFilters:
+              type: array
+              items:
+                type: integer
+                minimum: 100
+                maximum: 599
+              minItems: 1
+            noCache:
+              type: boolean
+              default: false
+            maxAge:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+
+    BdtWindow:
+      type: object
+      description: 'A window in time during which Background Data Transfer is possible with a particular bit rate in the downlink and/or uplink direction.'
+      required:
+        - timeWindow
+      properties:
+        timeWindow:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        maximumDownlinkBitRate:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maximumUplinkBitRate:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+
+    #####################################
+    # Clause 6.4.4: Enumerated data types
+    #####################################
+    CellIdentifierType:
+      anyOf:
+        - type: string
+          enum:
+            - CGI
+            - ECGI
+            - NCGI
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+
+    SdfMethod:
+      anyOf:
+        - type: string
+          enum:
+            - 5_TUPLE
+            - 2_TUPLE
+            - TYPE_OF_SERVICE_MARKING
+            - FLOW_LABEL
+            - DOMAIN_NAME
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+
+    ProvisioningSessionType:
+      anyOf:
+        - type: string
+          enum:
+            - MS_DOWNLINK
+            - MS_UPLINK
+            - RTC
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+
+    EASRelocationTolerance:
+      anyOf:
+        - type: string
+          enum:
+            - RELOCATION_UNAWARE
+            - RELOCATION_TOLERANT
+            - RELOCATION_INTOLERANT
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+
+    ContentTransferMode:
+      anyOf:
+        - type: string
+          enum:
+            - PULL
+            - PUSH
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.

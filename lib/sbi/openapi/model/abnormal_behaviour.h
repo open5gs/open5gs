@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_abnormal_behaviour_s OpenAPI_abnormal_behaviour_t;
 #include "additional_measurement.h"
 #include "exception.h"
 #include "snssai.h"
@@ -20,8 +21,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_abnormal_behaviour_s OpenAPI_abnormal_behaviour_t;
-typedef struct OpenAPI_abnormal_behaviour_s {
+struct OpenAPI_abnormal_behaviour_s {
     OpenAPI_list_t *supis;
     struct OpenAPI_exception_s *excep;
     char *dnn;
@@ -31,7 +31,7 @@ typedef struct OpenAPI_abnormal_behaviour_s {
     bool is_confidence;
     int confidence;
     struct OpenAPI_additional_measurement_s *addt_meas_info;
-} OpenAPI_abnormal_behaviour_t;
+};
 
 OpenAPI_abnormal_behaviour_t *OpenAPI_abnormal_behaviour_create(
     OpenAPI_list_t *supis,

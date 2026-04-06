@@ -1,0 +1,279 @@
+openapi: 3.0.1
+info:
+  title: TS 28.550 Performance Measurement Job Control Service
+  version: 19.0.0
+  description: >-
+    OAS 3.0.1 specification of the Performance Measurement Job Control Service
+    @ 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.550 Performance assurance
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.550/
+servers:
+  - url: '{MnSRoot}/PerfMeasJobCtrlMnS/{MnSVersion}'
+    variables:
+      MnSRoot:
+        description: See clause 4.4.2 of TS 32.158
+        default: http://example.com/3GPPManagement
+      MnSVersion:
+        description: Version number of the OpenAPI definition
+        default: XXX
+paths:
+  /measJobs:
+    post:
+      summary: Create a measurement job
+      description: To create a measurement job the representation of the measurement job is POSTed on the /measJobs collection resource.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/measJobCreation-RequestType'
+      responses:
+        '201':
+          description: Success case ("201 Created"). The representation of the newly created measurement job resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/measJobCreation-ResponseType'
+        '202':
+          description: Partial success case ("202 Partically created"). The representation of the newly created measurement job resource with unsupported list shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/measJobCreation-ResponseType'
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error-ResponseType'
+    get:
+      summary: Read resources of measurement jobs
+      description: 'With HTTP GET, resources of measurement jobs are read. The resources to be read are identified with the path component (base resource) and the query component (jobIdList) of the URI. The fields query component allows to select the resource properties to be returned.'
+      parameters:
+        - name: jobIdList
+          in: query
+          description: This parameter identifies the list of jobId to select the resources from the collection resources identified with the path component of the URI.
+          required: true
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: 'Success case ("200 OK"). The resources identified in the request for retrieval are returned in the response message body. In case the fields query parameter is used, the selected resources are returned.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/measJobsRetrieval-ResponseType'
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error-ResponseType'
+  '/measJobs/{jobId}':
+    get:
+      summary: Read resource of a single measurement job
+      description: 'With HTTP GET, resource of a measurement job is read. The resource to be read is identified with the path component of the URI.'
+      parameters:
+        - name: jobId
+          in: path
+          description: Identifies the measurement job to be read.
+          required: true
+          schema:
+            $ref: '#/components/schemas/uri-Type'
+      responses:
+        '200':
+          description: 'Success case ("200 OK"). The resource identified in the path for retrieval is returned in the response message body. '
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/measJobsRetrieval-ResponseType'
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error-ResponseType'
+    delete:
+      summary: Delete a single measurement job
+      description: The measurement job is deleted by deleting the corresponding measurement job resource. The resource to be deleted is identified with the path component of the URI.
+      parameters:
+        - name: jobId
+          in: path
+          description: Identifies the measurement job to be deleted.
+          required: true
+          schema:
+            $ref: '#/components/schemas/uri-Type'
+      responses:
+        '204':
+          description: Success case ("204 No Content"). The measurement job resource has been deleted. The response message body is absent.
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error-ResponseType'
+components:
+  schemas:
+    dateTime-Type:
+      type: string
+      format: date-Time
+    uri-Type:
+      type: string
+    measJobCreation-RequestType:
+      type: object
+      properties:
+        iOCName:
+          type: string
+        iOCInstanceList:
+          type: array
+          items:
+            $ref: '#/components/schemas/uri-Type'
+        measurementCategoryList:
+          type: array
+          items:
+            type: string
+        reportingMethod:
+          $ref: '#/components/schemas/reportingMethod-Type'
+        granularityPeriod:
+          type: integer
+        reportingPeriod:
+          type: integer
+        startTime:
+          $ref: '#/components/schemas/dateTime-Type'
+        stopTime:
+          $ref: '#/components/schemas/dateTime-Type'
+        schedule:
+          $ref: '#/components/schemas/schedule-Type'
+        streamTarget:
+          type: string
+        priority:
+          $ref: '#/components/schemas/priority-Type'
+        reliability:
+          type: string
+    measJobCreation-ResponseType:
+      type: object
+      properties:
+        unsupportedList:
+          type: array
+          items:
+            $ref: '#/components/schemas/unsupportedMeas-Type'
+    measJobsRetrieval-ResponseType:
+      type: object
+      properties:
+        jobInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/measJobInfo-ResourceType'
+    error-ResponseType:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            errorInfo:
+              type: string
+    measJobInfo-ResourceType:
+      type: object
+      properties:
+        href:
+          $ref: '#/components/schemas/uri-Type'
+        iOCName:
+          type: string
+        iOCInstanceList:
+          type: array
+          items:
+            $ref: '#/components/schemas/uri-Type'
+        measurementCategoryList:
+          type: array
+          items:
+            type: string
+        reportingMethod:
+          $ref: '#/components/schemas/reportingMethod-Type'
+        granularityPeriod:
+          type: integer
+        reportingPeriod:
+          type: integer
+        startTime:
+          $ref: '#/components/schemas/dateTime-Type'
+        stopTime:
+          $ref: '#/components/schemas/dateTime-Type'
+        schedule:
+          $ref: '#/components/schemas/schedule-Type'
+        streamTarget:
+          type: string
+        priority:
+          $ref: '#/components/schemas/priority-Type'
+        reliability:
+          type: string
+    schedule-Type:
+      type: object
+      properties:
+        scheduleOption:
+          $ref: '#/components/schemas/scheduleOption-Type'
+        dailySchedule:
+          type: array
+          items:
+            $ref: '#/components/schemas/timeInterval-Type'
+        weeklySchedule:
+          type: array
+          items:
+            $ref: '#/components/schemas/scheduleOfDay-Type'
+    timeInterval-Type:
+      type: object
+      properties:
+        intervalStart:
+          type: string
+          format: Time
+        intervalEnd:
+          type: string
+          format: Time
+    scheduleOfDay-Type:
+      type: object
+      properties:
+        dayOfWeek:
+          $ref: '#/components/schemas/dayOfWeek-Type'
+        intervalsOfDay:
+          type: array
+          items:
+            $ref: '#/components/schemas/timeInterval-Type'
+    unsupportedMeas-Type:
+      type: object
+      properties:
+        iOCInstance:
+          $ref: '#/components/schemas/uri-Type'
+        measurementTypeName:
+          type: string
+        reason:
+          type: string
+    reportingMethod-Type:
+      type: string
+      enum:
+        - file
+        - streaming
+    priority-Type:
+      type: string
+      enum:
+        - low
+        - medium
+        - high
+    scheduleOption-Type:
+      type: string
+      enum:
+        - daily
+        - weekly
+    dayOfWeek-Type:
+      type: string
+      enum:
+        - Monday
+        - Tuesday
+        - Wednesday
+        - Thursday
+        - Friday
+        - Saturday
+        - Sunday

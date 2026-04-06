@@ -1,0 +1,53 @@
+openapi: 3.0.0
+info:
+  title: Maf_SessionHandling (Real-Time media Communication)
+  version: 1.1.0
+  description: |
+    RTC AF Provisioning API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Maf_SessionHandling
+    description: 'Real-Time media Communication: Media Session Handling APIs'
+
+externalDocs:
+  description: 'TS 26.113 V19.0.0; Real-Time Media Communication; Protocols and APIs'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.113/'
+
+servers:
+  - url: '{apiRoot}/3gpp-maf-session-handling/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 29.510 clause 9.
+
+
+paths:
+  # Service Access Information API
+  /service-access-information/%7bexternalServiceId%7d:
+    $ref: 'TS26510_Maf_SessionHandling_ServiceAccessInformation.yaml#/paths/~1service-access-information~1%7bexternalServiceId%7d'
+
+  # Dynamic Policy API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/dynamic-policies:
+    $ref: 'TS26510_Maf_SessionHandling_DynamicPolicy.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1dynamic-policies'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/dynamic-policies/%7bdynamicPolicyId%7d:
+    $ref: 'TS26510_Maf_SessionHandling_DynamicPolicy.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1dynamic-policies~1%7bdynamicPolicyId%7d'
+
+  # Network Assistance API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/network-assistance-sessions/:
+    $ref: 'TS26510_Maf_SessionHandling_NetworkAssistance.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1network-assistance-sessions~1'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/network-assistance-sessions/%7bnaSessionId%7d:
+    $ref: 'TS26510_Maf_SessionHandling_NetworkAssistance.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1network-assistance-sessions~1%7bnaSessionId%7d'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/network-assistance-sessions/%7bnaSessionId%7d/recommendation:
+    $ref: 'TS26510_Maf_SessionHandling_NetworkAssistance.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1network-assistance-sessions~1%7bnaSessionId%7d~1recommendation'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/network-assistance-sessions/%7bnaSessionId%7d/boost:
+    $ref: 'TS26510_Maf_SessionHandling_NetworkAssistance.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1network-assistance-sessions~1%7bnaSessionId%7d~1boost'
+
+  # Metrics Reporting API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/metrics-reporting/%7bmetricsReportingConfigurationId%7d:
+    $ref: 'TS26510_Maf_SessionHandling_MetricsReporting.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1metrics-reporting~1%7bmetricsReportingConfigurationId%7d'
+
+  # Consumption Reporting API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/consumption-reporting:
+    $ref: 'TS26510_Maf_SessionHandling_ConsumptionReporting.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1consumption-reporting'

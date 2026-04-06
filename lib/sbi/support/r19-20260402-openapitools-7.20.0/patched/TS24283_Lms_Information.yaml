@@ -1,0 +1,490 @@
+openapi: 3.0.0
+
+info:
+  title: LMS_Information
+  version: 1.0.0
+  description: |
+    API for Requesting and subscribing on Location Information from LMS Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 24.283 V19.1.0; Mission Critical Location Management (MCLoc).
+  url: http://www.3gpp.org/ftp/Specs/archive/24_series/24.283/
+
+servers:
+  - url: '{apiRoot}/lms-information/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 8.2.44D1 of 3GPP TS 24.483
+
+security:
+  - BearerAuth: []
+
+paths:
+  /requests:
+    post:
+      description: Creates a new indiviual client location request in the LMS.
+      security: 
+        - BearerAuth: []
+      operationId: requestLMC
+      tags:
+        - LMS Location Request (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientOriginatingLocationRequest'
+      responses:
+        '201':
+          description: Successful location request submitted from LMC.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientOriginatingLocationRequest'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        locationRequestResponse:
+          '{request.body#/locationNotificationUri}':
+            post:
+              requestBody: 
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/LocationNotification'
+              responses:
+                '204':
+                  description: No Content (The receipt of the Configuration is acknowledged).
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions:
+    post:
+      description: Creates a new location subscription in the LMS.
+      security: 
+        - BearerAuth: []
+      operationId: LMSsubscriptions
+      tags:
+        - Location Subscription Request (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationSubscriptionRequest'
+      responses:
+        '201':
+          description: Successful location subscription request submitted to LMS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationSubscriptionRequest'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        subscriptionNotification:
+          '{request.body#/subscriptionResponseUri}':
+            post:
+              requestBody: 
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/LocationNotification'
+              responses:
+                '204':
+                  description: No Content (The receipt of the subscription notification
+                    is acknowledged).
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+  /subscriptions/{subscriptionId}:
+    put:
+      description: >
+        Updates an existing location subscription identified by the subscriptionId.
+      operationId: UpdateLocationSub
+      tags:
+        - Update Location subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifies an individual location subscription resource.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to replace the existing subscription.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationSubscriptionRequest'
+      responses:
+        '200':
+          description: >
+            OK. The location subcsription resource was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationSubscriptionRequest'
+        '204':
+          description: No Content (updated successfully).
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      description: >
+        Deletes an location subscription identified by the subscriptionId.
+      operationId: DeleteLocationSub
+      tags:
+        - Delete location Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifies an individual location subscription resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            A location subscription resource deleted successfully.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /configrequest:
+    post:
+      description: Requests server to update location reporting configuraton for a target user
+      security: 
+        - BearerAuth: []
+      operationId: configrequestLMC
+      tags:
+        - LMS Location Info Config Request (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS24283_Lms_Reporting.yaml#/components/schemas/LocationConfiguration'
+      responses:
+        '201':
+          description: Successful configuration update request submitted to LMS
+          content:
+            application/json:
+              schema:
+                $ref: 'TS24283_Lms_Reporting.yaml#/components/schemas/LocationConfiguration'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+# API specific definitions
+  schemas:
+
+    ClientOriginatingLocationRequest:
+      description: Represents an location request object used to request
+        location infromation from the LMS.
+      type: object
+      properties:
+        functionalAliasIds:
+          type: array
+          items:
+            type: string
+            format: uri
+            description: A list of activated Functional Alias Id of requested MC Users.
+        locationNotificationUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        mclocClientID:
+          type: string
+          description: Identifies the LMC of the MC UE.
+        mcServiceIds:
+          type: array
+          items:
+            type: string
+            format: uri
+            description: A list of MC service IDs of the MC users for which 
+              location information is requested MC Users.
+        mcServiceGroupIds:
+          type: array
+          items:
+            type: string
+            format: uri
+            description: A list of MC service Group IDs for which 
+              location information is requested for the affiliated MC Users.
+        refresh:
+          type: boolean
+          nullable: true
+          description: The presence of this attribute indicates that the 
+            location report shall be refreshed immediately.
+        requestLocationHistory:
+          $ref: 'TS24283_Lms_Reporting.yaml#/components/schemas/RequestedLocationHistory'
+        requestHistoryStatus:
+          type: boolean
+          description: This attributes indicates that a location history status report is requested.
+      required:
+        - mclocClientID
+        - locationNotificationUri
+      anyOf:
+        - required: [functionalAliasIds]
+        - required: [mcServiceIds]
+        - required: [mcServiceGroupIds]
+
+
+    LocationSubscriptionRequest:
+      description: Represents a location subscription request.
+      type: object
+      properties:
+        expTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        functionalAliasIds:
+          type: array
+          items:
+            type: string
+            format: uri
+            description: A list of Functional Alias Id which are actived for the MC Users
+              for which location is subscribed.
+        locationNotificationUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        mclocClientID:
+          type: string
+          description: Identifies the LMC of the MC UE.
+        mcServiceIds:
+          type: array
+          items:
+            type: string
+            format: uri
+            description: A list of MC service IDs of the MC users for which 
+              location information is subscribed MC Users.
+        mcServiceGroupIds:
+          type: array
+          items:
+            type: string
+            format: uri
+            description: A list of MC service Group IDs for which 
+              location information is subscribed for the affiliated MC Users.
+      required: 
+        - expTime
+        - mclocClientID
+        - locationNotificationUri
+      anyOf:
+        - required: [functionalAliasIds]
+        - required: [mcServiceIds]
+        - required: [mcServiceGroupIds]
+
+    MCUserLocation:
+      description: Represents one MC User's device location information.
+      type: object
+      properties:
+        mcServiceIds:
+          type: array
+          items:
+            type: string
+            format: uri
+            description: A list of MC service IDs of the MC user for which 
+              location information is reported.
+        functionalAliasIds:
+          type: array
+          items:
+            type: string
+            format: uri
+            description: A list of activated Functional Alias Id of the MC user
+              for which location information is reported.
+        mcServiceUELabel:
+          type: string
+          description: Used to identify the reporting MC UE for the end user, this may be used
+            when multiple MC UEs are reporting by the same MC service user.
+        locationInfo:
+          $ref: 'TS24283_Lms_Reporting.yaml#/components/schemas/LocationInfo'
+
+
+
+    LocationNotification:
+      description: Represents an location notification response.
+      type: object
+      properties:
+        mcUEResponseList:
+          type: array
+          items:
+            $ref: '#/components/schemas/MCUserLocation'
+        requestingMcServiceId:
+          type: string
+          format: uri
+          description: The MC service ID of the LMC that requested the location report.
+        requestingfunctionalAliasId:
+          type: string
+          format: uri
+          description: The activated Functional Alias Id of the LMC that requested
+            the location report.
+        subscriptionID:
+          type: string
+          description: Attribute including the subscriptionID when the location notification
+            is related to an existing subscription.

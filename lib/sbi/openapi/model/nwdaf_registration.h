@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nwdaf_registration_s OpenAPI_nwdaf_registration_t;
 #include "context_info.h"
 #include "event_id.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nwdaf_registration_s OpenAPI_nwdaf_registration_t;
-typedef struct OpenAPI_nwdaf_registration_s {
+struct OpenAPI_nwdaf_registration_s {
     char *nwdaf_instance_id;
     OpenAPI_list_t *analytics_ids;
     char *nwdaf_set_id;
@@ -28,7 +28,7 @@ typedef struct OpenAPI_nwdaf_registration_s {
     struct OpenAPI_context_info_s *context_info;
     char *supported_features;
     OpenAPI_list_t *reset_ids;
-} OpenAPI_nwdaf_registration_t;
+};
 
 OpenAPI_nwdaf_registration_t *OpenAPI_nwdaf_registration_create(
     char *nwdaf_instance_id,

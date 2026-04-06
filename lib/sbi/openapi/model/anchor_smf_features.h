@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_anchor_smf_features_s OpenAPI_anchor_smf_features_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_anchor_smf_features_s OpenAPI_anchor_smf_features_t;
-typedef struct OpenAPI_anchor_smf_features_s {
+struct OpenAPI_anchor_smf_features_s {
     bool is_psetr_support_ind;
     int psetr_support_ind;
-} OpenAPI_anchor_smf_features_t;
+};
 
 OpenAPI_anchor_smf_features_t *OpenAPI_anchor_smf_features_create(
     bool is_psetr_support_ind,

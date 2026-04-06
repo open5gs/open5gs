@@ -12,13 +12,13 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_accumulated_usage_s OpenAPI_accumulated_usage_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_accumulated_usage_s OpenAPI_accumulated_usage_t;
-typedef struct OpenAPI_accumulated_usage_s {
+struct OpenAPI_accumulated_usage_s {
     bool is_duration;
     int duration;
     bool is_total_volume;
@@ -27,7 +27,7 @@ typedef struct OpenAPI_accumulated_usage_s {
     long downlink_volume;
     bool is_uplink_volume;
     long uplink_volume;
-} OpenAPI_accumulated_usage_t;
+};
 
 OpenAPI_accumulated_usage_t *OpenAPI_accumulated_usage_create(
     bool is_duration,

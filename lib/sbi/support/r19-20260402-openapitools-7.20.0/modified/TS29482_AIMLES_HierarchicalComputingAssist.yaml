@@ -1,0 +1,227 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLES_HierarchicalComputingAssist Service
+  version: 1.0.0
+  description: |
+    AIMLES Hierarchical Computing Assist Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.0.0; Artificial Intelligence Machine Learning Enablement
+    (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/aimles-hca/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+
+paths:
+  /request:
+    post:
+      summary: Request AIMLE hierarchical computing assist.
+      operationId: Request
+      tags:
+        - AIMLE Hierarchical Computing Assist Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AimlHierAssitReq'
+      responses:
+        '200':
+          description: >
+            The AIMLE hierarchical computing assist request is successfully
+            received and processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AimlHierAssitResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    AimlHierAssitReq:
+      description: >
+        Represents the AIMLE hierarchical computing assist request.
+      type: object
+      properties:
+        origReqId:
+          $ref: '#/components/schemas/RequestorId'
+        role:
+          $ref: '#/components/schemas/Role'
+        task:
+          $ref: '#/components/schemas/TaskType'
+        assistTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssistInfoType'
+          minItems: 1
+        exeNodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExecutionNode'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - role
+        - task
+        - assistTypes
+
+    AimlHierAssitResp:
+      description: >
+        Represents the AIMLE hierarchical computing assist response.
+      type: object
+      properties:
+        assistSets:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssistInfo'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - assistSets
+
+    RequestorId:
+      description: >
+        Represents the requestor identifier.
+      type: object
+      properties:
+        valServId:
+          type: string
+        easId:
+          type: string
+        casId:
+          type: string
+#      oneOf:
+#        - required: [valServId]
+#        - required: [easId]
+#        - required: [casId]
+#
+    AssistInfo:
+      description: >
+        Represents the assistance information.
+      type: object
+      properties:
+        easId:
+          type: string
+        status:
+          $ref: 'TS29549_SS_ADAE_EdgeLoadAnalytics.yaml#/components/schemas/EasAnalytics'
+      required:
+        - easId
+        - status
+
+    ExecutionNode:
+      description: >
+        Represent the execution node information.
+      type: object
+      properties:
+        easId:
+          type: string
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    Role:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - ROOT_NODE
+        - SUB_ROOT_NODE
+        - LEAF_NODE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the role of the node.  
+#        Possible values are:
+#        - ROOT_NODE: Indicates the role is root node.
+#        - SUB_ROOT_NODE: Indicates the role is sub root node.
+#        - LEAF_NODE: Indicates the role is leaf node.
+#
+    TaskType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - VFL
+        - HFL
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the type of task.  
+#        Possible values are:
+#        - VFL: Indicates the task is VFL.
+#        - HFL: Indicates the task is HFL.
+#
+    AssistInfoType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - EXECUTION_NODE_LIST
+        - COMPUTING_PREPARATION_STATUS
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the assistance information type.  
+#        Possible values are:
+#        - EXECUTION_NODE_LIST: Indicates the execution node list is required.
+#        - COMPUTING_PREPARATION_STATUS: Indicates the computing preparation status is required.

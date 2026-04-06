@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_transfer_mo_data_req_data_s OpenAPI_transfer_mo_data_req_data_t;
 #include "mo_exp_data_counter.h"
 #include "ref_to_binary_data.h"
 #include "user_location.h"
@@ -20,12 +21,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_transfer_mo_data_req_data_s OpenAPI_transfer_mo_data_req_data_t;
-typedef struct OpenAPI_transfer_mo_data_req_data_s {
+struct OpenAPI_transfer_mo_data_req_data_s {
     struct OpenAPI_ref_to_binary_data_s *mo_data;
     struct OpenAPI_mo_exp_data_counter_s *mo_exp_data_counter;
     struct OpenAPI_user_location_s *ue_location;
-} OpenAPI_transfer_mo_data_req_data_t;
+};
 
 OpenAPI_transfer_mo_data_req_data_t *OpenAPI_transfer_mo_data_req_data_create(
     OpenAPI_ref_to_binary_data_t *mo_data,

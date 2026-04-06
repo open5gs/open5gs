@@ -1,7 +1,7 @@
 /*
  * eps_nas_integrity_algorithm.h
  *
- * 
+ * Indicates the supported EPS NAS Integrity Algorithm
  */
 
 #ifndef _OpenAPI_eps_nas_integrity_algorithm_H_

@@ -29,7 +29,8 @@ ogs_sbi_request_t *af_nbsf_management_build_discover(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nbsf_management);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_PCF_BINDINGS;

@@ -1,0 +1,172 @@
+openapi: 3.0.1
+info:
+  title: RANSC NRM
+  version: 19.0.0
+  description: >-
+    OAS 3.0.1 definition of the RANSC NRM
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.317; Self-configuration of Radio Access Network Entities (RAN NEs)
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.317/
+paths: {}
+components:
+  schemas:
+       
+#-------- Definition of types for name-containments ------
+    SubNetwork-ncO-RanScNrm:
+      type: object
+      properties:
+        ScMgmtProfile:
+          $ref: '#/components/schemas/ScMgmtProfile-Multiple'
+        Sc_Process:
+          $ref: '#/components/schemas/Sc_Process-Multiple'
+
+#-------Definition of IOCs ----------# 
+
+    ScMgmtProfile-Single:
+      description: >-
+        The ScMgmtProfile represents MnS Consumer's requirements for self-configuration management 
+        for a set of RAN NEs or RAN NE types.
+      allOf:
+      - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+      - type: object
+        properties:
+          nEInformation:
+            type: array
+            uniqueItems: true
+            items:
+              $ref: '#/components/schemas/NEInfomration'
+            description: >-
+              This attribute defines the NE Type(s) or the NE instance(s) for which this 
+              ScMgmtProfile instance is valid.
+          configDataFileLocation:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/Uri'
+
+    Sc_Process-Single:
+      description: >-
+        This IOC represents the self-configuration process for a RAN NE, which allows the MnS 
+        Consumer to be informed about the current situation of the Self Configuration process.
+        When the automated management process for an RAN NE starts, an instance of the Sc_Process 
+        is created automatically by the MnS Producer and informed to MnS consumer.
+      allOf:
+      - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+      - type: object
+        properties:
+          nEIdentification:
+            $ref: '#/components/schemas/NEIdentification'
+          scProcessMonitor:
+            $ref: '#/components/schemas/ScProcessMonitor'
+          cancelScProcess:
+            type: string
+            enum:
+              - TRUE
+              - FALSE
+            description: >-
+              Setting this attribute to "TRUE" cancels the self configuration process. 
+          scMgmtProfileRef:
+             $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+#-------Definition of IOCs ----------# 
+
+
+#-------Definition of Data types ----------#  
+    NEType:
+      type: string
+      description: It defines the type of RAN NE 
+    GnbId:
+      type: integer
+      minimum: 0
+      maximum: 4294967295
+      description: It is the identity of gNB      
+    EnbId:
+      type: string
+      minimum: 0
+      maximum: 268435455
+      description: It is the identity of ng-eNB        
+    NEIdentification:
+      oneOf:
+        - $ref: '#/components/schemas/EnbId'
+        - $ref: '#/components/schemas/GnbId' 
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+    NEInfomration:
+      description: >-
+        It defines the NE Type or the NE instance for which this
+        ScMgmtProfile instance is valid.
+      anyOf:
+        - $ref: '#/components/schemas/NEType'
+        - $ref: '#/components/schemas/NEIdentification'          
+    ScProcessMonitor:
+      description: >-
+        This data type is the "ProcessMonitor" data type with specialisations
+        for usage in the RANSC management for monitoring for the self configuration process.
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        status:
+          type: string
+          enum:
+            - NOT_STARTED
+            - RUNNING
+            - FINSHED
+            - FAILED
+            - CANCELLING
+            - CANCELLED
+          readOnly: true  
+        progressPercentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+          readOnly: true  
+        progressStateInfo:
+          type: string
+          enum:
+            - NE_HEALTH_CHECK
+            - SW_DOWNLOAD
+            - SW_INSTALLATION
+            - SW_ACTIVATION
+            - PREPARE_BASIC_CONFIGURATION_AND_OAMLINK
+            - RETRIEVE_CONFIGURATION_DATA
+            - SETUP_PRECONFIGURED_SIGNALLING_LINKS
+            - SET_FINAL_STATE_OF_NE
+          readOnly: true  
+        resultStateInfo:
+          oneOf:
+            - type: string
+              readOnly: true
+              enum:
+                - UNKNOWN
+                - INCORRECT_CONFIGURATION
+                - NE_HARDWARE_ERROR_DELECTED
+                - DISCONNECTION_BETWEEN_NE_AND_OAM
+                - OTHER
+            - type: string
+              readOnly: true
+        startTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+        endTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+
+#-------Definition of Data types ----------#  
+
+#------Definition of JSON arrays for name-contained IOCs ---------------#
+    ScMgmtProfile-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ScMgmtProfile-Single'
+    Sc_Process-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/Sc_Process-Single'
+#------Definition of JSON arrays for name-contained IOCs ---------------#
+
+
+#----- Definitions in TS 28.317 for TS 28.532 --------------------------#
+    resources-RanScNrm:
+      oneOf:
+       - $ref: '#/components/schemas/ScMgmtProfile-Single'
+       - $ref: '#/components/schemas/Sc_Process-Single'       
+
+#----- Definitions in TS 28.317 for TS 28.532 --------------------------#
+

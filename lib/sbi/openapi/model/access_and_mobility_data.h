@@ -12,9 +12,10 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_access_and_mobility_data_s OpenAPI_access_and_mobility_data_t;
 #include "access_type.h"
 #include "cm_info.h"
-#include "plmn_id_1.h"
+#include "plmn_id.h"
 #include "rat_type.h"
 #include "rm_info.h"
 #include "sms_support.h"
@@ -25,31 +26,31 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_access_and_mobility_data_s OpenAPI_access_and_mobility_data_t;
-typedef struct OpenAPI_access_and_mobility_data_s {
+struct OpenAPI_access_and_mobility_data_s {
     struct OpenAPI_user_location_s *location;
     char *location_ts;
     char *time_zone;
     char *time_zone_ts;
     OpenAPI_access_type_e access_type;
+    char *access_type_ts;
     OpenAPI_list_t *reg_states;
     char *reg_states_ts;
     OpenAPI_list_t *conn_states;
     char *conn_states_ts;
-    struct OpenAPI_ue_reachability_s *reachability_status;
+    OpenAPI_ue_reachability_e reachability_status;
     char *reachability_status_ts;
     OpenAPI_sms_support_e sms_over_nas_status;
     char *sms_over_nas_status_ts;
     bool is_roaming_status;
     int roaming_status;
     char *roaming_status_ts;
-    struct OpenAPI_plmn_id_1_s *current_plmn;
+    struct OpenAPI_plmn_id_s *current_plmn;
     char *current_plmn_ts;
     OpenAPI_list_t *rat_type;
     char *rat_types_ts;
     char *supp_feat;
     OpenAPI_list_t *reset_ids;
-} OpenAPI_access_and_mobility_data_t;
+};
 
 OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
     OpenAPI_user_location_t *location,
@@ -57,18 +58,19 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
     char *time_zone,
     char *time_zone_ts,
     OpenAPI_access_type_e access_type,
+    char *access_type_ts,
     OpenAPI_list_t *reg_states,
     char *reg_states_ts,
     OpenAPI_list_t *conn_states,
     char *conn_states_ts,
-    OpenAPI_ue_reachability_t *reachability_status,
+    OpenAPI_ue_reachability_e reachability_status,
     char *reachability_status_ts,
     OpenAPI_sms_support_e sms_over_nas_status,
     char *sms_over_nas_status_ts,
     bool is_roaming_status,
     int roaming_status,
     char *roaming_status_ts,
-    OpenAPI_plmn_id_1_t *current_plmn,
+    OpenAPI_plmn_id_t *current_plmn,
     char *current_plmn_ts,
     OpenAPI_list_t *rat_type,
     char *rat_types_ts,

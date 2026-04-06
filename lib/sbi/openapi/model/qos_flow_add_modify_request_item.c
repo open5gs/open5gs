@@ -9,9 +9,15 @@ OpenAPI_qos_flow_add_modify_request_item_t *OpenAPI_qos_flow_add_modify_request_
     bool is_ebi,
     int ebi,
     char *qos_rules,
+    char *protoc_desc,
     char *qos_flow_description,
     OpenAPI_qos_flow_profile_t *qos_flow_profile,
-    OpenAPI_qos_flow_access_type_e associated_an_type
+    OpenAPI_qos_flow_access_type_e associated_an_type,
+    OpenAPI_ecn_marking_congestion_info_req_t *ecn_marking_congest_info_req,
+    OpenAPI_tsc_assistance_information_t *tscai_ul,
+    OpenAPI_tsc_assistance_information_t *tscai_dl,
+    bool is_transp_level_mark_ind,
+    int transp_level_mark_ind
 )
 {
     OpenAPI_qos_flow_add_modify_request_item_t *qos_flow_add_modify_request_item_local_var = ogs_malloc(sizeof(OpenAPI_qos_flow_add_modify_request_item_t));
@@ -21,9 +27,15 @@ OpenAPI_qos_flow_add_modify_request_item_t *OpenAPI_qos_flow_add_modify_request_
     qos_flow_add_modify_request_item_local_var->is_ebi = is_ebi;
     qos_flow_add_modify_request_item_local_var->ebi = ebi;
     qos_flow_add_modify_request_item_local_var->qos_rules = qos_rules;
+    qos_flow_add_modify_request_item_local_var->protoc_desc = protoc_desc;
     qos_flow_add_modify_request_item_local_var->qos_flow_description = qos_flow_description;
     qos_flow_add_modify_request_item_local_var->qos_flow_profile = qos_flow_profile;
     qos_flow_add_modify_request_item_local_var->associated_an_type = associated_an_type;
+    qos_flow_add_modify_request_item_local_var->ecn_marking_congest_info_req = ecn_marking_congest_info_req;
+    qos_flow_add_modify_request_item_local_var->tscai_ul = tscai_ul;
+    qos_flow_add_modify_request_item_local_var->tscai_dl = tscai_dl;
+    qos_flow_add_modify_request_item_local_var->is_transp_level_mark_ind = is_transp_level_mark_ind;
+    qos_flow_add_modify_request_item_local_var->transp_level_mark_ind = transp_level_mark_ind;
 
     return qos_flow_add_modify_request_item_local_var;
 }
@@ -39,6 +51,10 @@ void OpenAPI_qos_flow_add_modify_request_item_free(OpenAPI_qos_flow_add_modify_r
         ogs_free(qos_flow_add_modify_request_item->qos_rules);
         qos_flow_add_modify_request_item->qos_rules = NULL;
     }
+    if (qos_flow_add_modify_request_item->protoc_desc) {
+        ogs_free(qos_flow_add_modify_request_item->protoc_desc);
+        qos_flow_add_modify_request_item->protoc_desc = NULL;
+    }
     if (qos_flow_add_modify_request_item->qos_flow_description) {
         ogs_free(qos_flow_add_modify_request_item->qos_flow_description);
         qos_flow_add_modify_request_item->qos_flow_description = NULL;
@@ -46,6 +62,18 @@ void OpenAPI_qos_flow_add_modify_request_item_free(OpenAPI_qos_flow_add_modify_r
     if (qos_flow_add_modify_request_item->qos_flow_profile) {
         OpenAPI_qos_flow_profile_free(qos_flow_add_modify_request_item->qos_flow_profile);
         qos_flow_add_modify_request_item->qos_flow_profile = NULL;
+    }
+    if (qos_flow_add_modify_request_item->ecn_marking_congest_info_req) {
+        OpenAPI_ecn_marking_congestion_info_req_free(qos_flow_add_modify_request_item->ecn_marking_congest_info_req);
+        qos_flow_add_modify_request_item->ecn_marking_congest_info_req = NULL;
+    }
+    if (qos_flow_add_modify_request_item->tscai_ul) {
+        OpenAPI_tsc_assistance_information_free(qos_flow_add_modify_request_item->tscai_ul);
+        qos_flow_add_modify_request_item->tscai_ul = NULL;
+    }
+    if (qos_flow_add_modify_request_item->tscai_dl) {
+        OpenAPI_tsc_assistance_information_free(qos_flow_add_modify_request_item->tscai_dl);
+        qos_flow_add_modify_request_item->tscai_dl = NULL;
     }
     ogs_free(qos_flow_add_modify_request_item);
 }
@@ -80,6 +108,13 @@ cJSON *OpenAPI_qos_flow_add_modify_request_item_convertToJSON(OpenAPI_qos_flow_a
     }
     }
 
+    if (qos_flow_add_modify_request_item->protoc_desc) {
+    if (cJSON_AddStringToObject(item, "protocDesc", qos_flow_add_modify_request_item->protoc_desc) == NULL) {
+        ogs_error("OpenAPI_qos_flow_add_modify_request_item_convertToJSON() failed [protoc_desc]");
+        goto end;
+    }
+    }
+
     if (qos_flow_add_modify_request_item->qos_flow_description) {
     if (cJSON_AddStringToObject(item, "qosFlowDescription", qos_flow_add_modify_request_item->qos_flow_description) == NULL) {
         ogs_error("OpenAPI_qos_flow_add_modify_request_item_convertToJSON() failed [qos_flow_description]");
@@ -107,6 +142,52 @@ cJSON *OpenAPI_qos_flow_add_modify_request_item_convertToJSON(OpenAPI_qos_flow_a
     }
     }
 
+    if (qos_flow_add_modify_request_item->ecn_marking_congest_info_req) {
+    cJSON *ecn_marking_congest_info_req_local_JSON = OpenAPI_ecn_marking_congestion_info_req_convertToJSON(qos_flow_add_modify_request_item->ecn_marking_congest_info_req);
+    if (ecn_marking_congest_info_req_local_JSON == NULL) {
+        ogs_error("OpenAPI_qos_flow_add_modify_request_item_convertToJSON() failed [ecn_marking_congest_info_req]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ecnMarkingCongestInfoReq", ecn_marking_congest_info_req_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_qos_flow_add_modify_request_item_convertToJSON() failed [ecn_marking_congest_info_req]");
+        goto end;
+    }
+    }
+
+    if (qos_flow_add_modify_request_item->tscai_ul) {
+    cJSON *tscai_ul_local_JSON = OpenAPI_tsc_assistance_information_convertToJSON(qos_flow_add_modify_request_item->tscai_ul);
+    if (tscai_ul_local_JSON == NULL) {
+        ogs_error("OpenAPI_qos_flow_add_modify_request_item_convertToJSON() failed [tscai_ul]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "tscaiUl", tscai_ul_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_qos_flow_add_modify_request_item_convertToJSON() failed [tscai_ul]");
+        goto end;
+    }
+    }
+
+    if (qos_flow_add_modify_request_item->tscai_dl) {
+    cJSON *tscai_dl_local_JSON = OpenAPI_tsc_assistance_information_convertToJSON(qos_flow_add_modify_request_item->tscai_dl);
+    if (tscai_dl_local_JSON == NULL) {
+        ogs_error("OpenAPI_qos_flow_add_modify_request_item_convertToJSON() failed [tscai_dl]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "tscaiDl", tscai_dl_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_qos_flow_add_modify_request_item_convertToJSON() failed [tscai_dl]");
+        goto end;
+    }
+    }
+
+    if (qos_flow_add_modify_request_item->is_transp_level_mark_ind) {
+    if (cJSON_AddBoolToObject(item, "transpLevelMarkInd", qos_flow_add_modify_request_item->transp_level_mark_ind) == NULL) {
+        ogs_error("OpenAPI_qos_flow_add_modify_request_item_convertToJSON() failed [transp_level_mark_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -118,11 +199,19 @@ OpenAPI_qos_flow_add_modify_request_item_t *OpenAPI_qos_flow_add_modify_request_
     cJSON *qfi = NULL;
     cJSON *ebi = NULL;
     cJSON *qos_rules = NULL;
+    cJSON *protoc_desc = NULL;
     cJSON *qos_flow_description = NULL;
     cJSON *qos_flow_profile = NULL;
     OpenAPI_qos_flow_profile_t *qos_flow_profile_local_nonprim = NULL;
     cJSON *associated_an_type = NULL;
     OpenAPI_qos_flow_access_type_e associated_an_typeVariable = 0;
+    cJSON *ecn_marking_congest_info_req = NULL;
+    OpenAPI_ecn_marking_congestion_info_req_t *ecn_marking_congest_info_req_local_nonprim = NULL;
+    cJSON *tscai_ul = NULL;
+    OpenAPI_tsc_assistance_information_t *tscai_ul_local_nonprim = NULL;
+    cJSON *tscai_dl = NULL;
+    OpenAPI_tsc_assistance_information_t *tscai_dl_local_nonprim = NULL;
+    cJSON *transp_level_mark_ind = NULL;
     qfi = cJSON_GetObjectItemCaseSensitive(qos_flow_add_modify_request_itemJSON, "qfi");
     if (!qfi) {
         ogs_error("OpenAPI_qos_flow_add_modify_request_item_parseFromJSON() failed [qfi]");
@@ -145,6 +234,14 @@ OpenAPI_qos_flow_add_modify_request_item_t *OpenAPI_qos_flow_add_modify_request_
     if (qos_rules) {
     if (!cJSON_IsString(qos_rules) && !cJSON_IsNull(qos_rules)) {
         ogs_error("OpenAPI_qos_flow_add_modify_request_item_parseFromJSON() failed [qos_rules]");
+        goto end;
+    }
+    }
+
+    protoc_desc = cJSON_GetObjectItemCaseSensitive(qos_flow_add_modify_request_itemJSON, "protocDesc");
+    if (protoc_desc) {
+    if (!cJSON_IsString(protoc_desc) && !cJSON_IsNull(protoc_desc)) {
+        ogs_error("OpenAPI_qos_flow_add_modify_request_item_parseFromJSON() failed [protoc_desc]");
         goto end;
     }
     }
@@ -175,15 +272,56 @@ OpenAPI_qos_flow_add_modify_request_item_t *OpenAPI_qos_flow_add_modify_request_
     associated_an_typeVariable = OpenAPI_qos_flow_access_type_FromString(associated_an_type->valuestring);
     }
 
+    ecn_marking_congest_info_req = cJSON_GetObjectItemCaseSensitive(qos_flow_add_modify_request_itemJSON, "ecnMarkingCongestInfoReq");
+    if (ecn_marking_congest_info_req) {
+    ecn_marking_congest_info_req_local_nonprim = OpenAPI_ecn_marking_congestion_info_req_parseFromJSON(ecn_marking_congest_info_req);
+    if (!ecn_marking_congest_info_req_local_nonprim) {
+        ogs_error("OpenAPI_ecn_marking_congestion_info_req_parseFromJSON failed [ecn_marking_congest_info_req]");
+        goto end;
+    }
+    }
+
+    tscai_ul = cJSON_GetObjectItemCaseSensitive(qos_flow_add_modify_request_itemJSON, "tscaiUl");
+    if (tscai_ul) {
+    tscai_ul_local_nonprim = OpenAPI_tsc_assistance_information_parseFromJSON(tscai_ul);
+    if (!tscai_ul_local_nonprim) {
+        ogs_error("OpenAPI_tsc_assistance_information_parseFromJSON failed [tscai_ul]");
+        goto end;
+    }
+    }
+
+    tscai_dl = cJSON_GetObjectItemCaseSensitive(qos_flow_add_modify_request_itemJSON, "tscaiDl");
+    if (tscai_dl) {
+    tscai_dl_local_nonprim = OpenAPI_tsc_assistance_information_parseFromJSON(tscai_dl);
+    if (!tscai_dl_local_nonprim) {
+        ogs_error("OpenAPI_tsc_assistance_information_parseFromJSON failed [tscai_dl]");
+        goto end;
+    }
+    }
+
+    transp_level_mark_ind = cJSON_GetObjectItemCaseSensitive(qos_flow_add_modify_request_itemJSON, "transpLevelMarkInd");
+    if (transp_level_mark_ind) {
+    if (!cJSON_IsBool(transp_level_mark_ind)) {
+        ogs_error("OpenAPI_qos_flow_add_modify_request_item_parseFromJSON() failed [transp_level_mark_ind]");
+        goto end;
+    }
+    }
+
     qos_flow_add_modify_request_item_local_var = OpenAPI_qos_flow_add_modify_request_item_create (
         
         qfi->valuedouble,
         ebi ? true : false,
         ebi ? ebi->valuedouble : 0,
         qos_rules && !cJSON_IsNull(qos_rules) ? ogs_strdup(qos_rules->valuestring) : NULL,
+        protoc_desc && !cJSON_IsNull(protoc_desc) ? ogs_strdup(protoc_desc->valuestring) : NULL,
         qos_flow_description && !cJSON_IsNull(qos_flow_description) ? ogs_strdup(qos_flow_description->valuestring) : NULL,
         qos_flow_profile ? qos_flow_profile_local_nonprim : NULL,
-        associated_an_type ? associated_an_typeVariable : 0
+        associated_an_type ? associated_an_typeVariable : 0,
+        ecn_marking_congest_info_req ? ecn_marking_congest_info_req_local_nonprim : NULL,
+        tscai_ul ? tscai_ul_local_nonprim : NULL,
+        tscai_dl ? tscai_dl_local_nonprim : NULL,
+        transp_level_mark_ind ? true : false,
+        transp_level_mark_ind ? transp_level_mark_ind->valueint : 0
     );
 
     return qos_flow_add_modify_request_item_local_var;
@@ -191,6 +329,18 @@ end:
     if (qos_flow_profile_local_nonprim) {
         OpenAPI_qos_flow_profile_free(qos_flow_profile_local_nonprim);
         qos_flow_profile_local_nonprim = NULL;
+    }
+    if (ecn_marking_congest_info_req_local_nonprim) {
+        OpenAPI_ecn_marking_congestion_info_req_free(ecn_marking_congest_info_req_local_nonprim);
+        ecn_marking_congest_info_req_local_nonprim = NULL;
+    }
+    if (tscai_ul_local_nonprim) {
+        OpenAPI_tsc_assistance_information_free(tscai_ul_local_nonprim);
+        tscai_ul_local_nonprim = NULL;
+    }
+    if (tscai_dl_local_nonprim) {
+        OpenAPI_tsc_assistance_information_free(tscai_dl_local_nonprim);
+        tscai_dl_local_nonprim = NULL;
     }
     return NULL;
 }

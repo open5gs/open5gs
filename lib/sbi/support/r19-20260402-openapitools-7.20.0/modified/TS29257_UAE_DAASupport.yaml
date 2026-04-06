@@ -1,0 +1,643 @@
+openapi: 3.0.0
+
+info:
+  title: UAE Server DAA Support Service
+  version: 1.1.0
+  description: |
+    UAE Server DAA Support Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.257 V19.5.0; Application layer support for Uncrewed Aerial System (UAS);
+    UAS Application Enabler (UAE) Server Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.257/
+
+servers:
+  - url: '{apiRoot}/uae-daa/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /policies:
+    get:
+      summary: Retrieve all the active DAA Policies managed by the UAE Server.
+      operationId: GetDAAPolicies
+      tags:
+        - DAA Policies (Collection)
+      responses:
+        '200':
+          description: >
+            OK. All the active DAA Policies managed by the UAE Server shall be returned.
+            When there are no active DAA Policies at the UAE Server, an empty array shall be
+            returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DAAPolicy'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request the creation of a DAA Policy.
+      operationId: CreateDAAPolicy
+      tags:
+        - DAA Policies (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DAAPolReq'
+      responses:
+        '200':
+          description: >
+            OK. The DAA Policy is successfully created and a representation of the created
+            Individual DAA Policy resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DAAPolResp'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual DAA Policy resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        DAAPolCompStatusNotif:
+          '{$request.body#/daaPol/notifUri}/daa-policy':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/DAAPolConfigNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The DAA Policy Configuration Status notification is successfully
+                    received and acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+        DAAEventsNotif:
+          '{$request.body#/daaPol/notifUri}/daa-events':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/DAAEventsInfo'
+              responses:
+                '200':
+                  description: >
+                    OK. The DAA Events Notification is successfully received and acknowledged, and
+                    updated/additional DAA related event information is returned in the response
+                    body.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/DAAEventsInfo'
+                '204':
+                  description: >
+                    No Content. The DAA Events Notification is successfully received and
+                    acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /policies/{policyId}:
+    parameters:
+      - name: policyId
+        in: path
+        description: Represents the identifier of the Individual DAA Policy resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual DAA Policy resource.
+      operationId: GetIndDAAPolicy
+      tags:
+        - Individual DAA Policy (Document)
+      responses:
+        '200':
+          description: OK. The requested Individual DAA Policy resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DAAPolicy'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual DAA Policy resource.
+      operationId: UpdateIndDAAPolicy
+      tags:
+        - Individual DAA Policy (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DAAPolicy'
+      responses:
+        '200':
+          description: >
+            OK. The Individual DAA Policy resource is successfully updated and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DAAPolicy'
+        '204':
+          description: >
+            No Content. The Individual DAA Policy resource is successfully updated and no
+            content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual DAA Policy resource.
+      operationId: ModifyIndDAAPolicy
+      tags:
+        - Individual DAA Policy (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/DAAPolicyPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual DAA Policy resource is successfully modified and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DAAPolicy'
+        '204':
+          description: >
+            No Content. The Individual DAA Policy resource is successfully modified and no
+            content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual DAA Policy resource.
+      operationId: DeleteIndDAAPolicy
+      tags:
+        - Individual DAA Policy (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual DAA Policy resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /inform-events:
+    post:
+      summary: Inform about and request the management of possible DAA related events.
+      operationId: InformDAAEvents
+      tags:
+        - InformDAAEvents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InformDAAEventsReq'
+      responses:
+        '204':
+          description: >
+            No Content. The request is successfully received.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    DAAPolReq:
+      description: >
+        Represents the parameters to request the creation of a DAA Policy.
+      type: object
+      properties:
+        requestorId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        daaPol:
+          $ref: '#/components/schemas/DAAPolicy'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - requestorId
+        - daaPol
+
+    DAAPolResp:
+      description: Represents the response to a DAA Policy creation request.
+      type: object
+      properties:
+        daaPol:
+          $ref: '#/components/schemas/DAAPolicy'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - daaPol
+
+    DAAPolicy:
+      description: Represents the content of a DAA Policy.
+      type: object
+      properties:
+        uasId:
+          $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/UasId'
+        targetUasIds:
+          type: array
+          items:
+            $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/UasId'
+          minItems: 1
+        ldgsArea:
+          $ref: 'TS29257_UAE_ChangeUSSManagement.yaml#/components/schemas/ServArea'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        daaAppPol:
+          $ref: '#/components/schemas/DAAAppPolicy'
+      required:
+        - uasId
+        - notifUri
+        - daaAppPol
+
+    DAAPolicyPatch:
+      description: >
+        Represents the parameters to request the modification of a DAA Policy.
+      type: object
+      properties:
+        targetUasIds:
+          type: array
+          items:
+            $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/UasId'
+          minItems: 1
+        ldgsArea:
+          $ref: 'TS29257_UAE_ChangeUSSManagement.yaml#/components/schemas/ServArea'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        daaAppPol:
+          $ref: '#/components/schemas/DAAAppPolicy'
+
+    DAAAppPolicy:
+      description: Represents a DAA Application Policy.
+      type: object
+      properties:
+        polContainer:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+        daaTriggThresholds:
+          $ref: '#/components/schemas/DAATriggThresholds'
+        validity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        repReqs:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+      anyOf:
+        - required: [polContainer]
+        - required: [daaTriggThresholds]
+        - required: [validity]
+        - required: [repReqs]
+
+    InformDAAEventsReq:
+      description: Represents the parameters to report DAA related event(s).
+      type: object
+      properties:
+        requestorId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        uasId:
+          $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/UasId'
+        daaEventsInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/DAAEvent'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - requestorId
+        - uasId
+        - daaEventsInfo
+
+    DAAPolConfigNotif:
+      description: Represents a DAA Policy Configuration Status Notification.
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/DAAPolConfigStatus'
+      required:
+        - status
+
+    DAAEventsInfo:
+      description: Represents a DAA Events Notification.
+      type: object
+      properties:
+        uasId:
+          $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/UasId'
+        daaEventsInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/DAAEvent'
+          minItems: 1
+      required:
+        - uasId
+        - daaEventsInfo
+
+    DAAEvent:
+      description: Represents a DAA event related information.
+      type: object
+      properties:
+        uasId:
+          $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/UasId'
+        uasLocInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        alert:
+          $ref: '#/components/schemas/Alert'
+        entryTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        exitTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - uasId
+        - uasLocInfo
+
+    DAATriggThresholds:
+      description: Represents the threshold(s) used to trigger LDGS-based DAA.
+      type: object
+      properties:
+        upperDistThresh:
+          $ref: 'TS29257_UAE_UAVDynamicInfo.yaml#/components/schemas/UavDistance'
+        lowerDistThresh:
+          $ref: 'TS29257_UAE_UAVDynamicInfo.yaml#/components/schemas/UavDistance'
+      anyOf:
+        - required: [upperDistThresh]
+        - required: [lowerDistThresh]
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    DAAPolConfigStatus:
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - SUCCESSFUL
+      - NOT_SUCCESSFUL
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the DAA Policy configuration completion status.  
+#        Possible values are:
+#        - SUCCESSFUL: Indicates that the DAA Policy configuration was successful.
+#        - NOT_SUCCESSFUL: Indicates that the DAA Policy configuration was not successful.
+#
+    Alert:
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - RISK_OF_COLLISION
+      - COLLISION_DETECTED
+      - COLLISION_RESOLVED
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the LDGS-based DAA related alert.  
+#        Possible values are:
+#        - RISK_OF_COLLISION: Indicates that the LDGS-based DAA related alert is risk of collision.
+#        - COLLISION_DETECTED: Indicates that the LDGS-based DAA related alert is collision detected.
+#        - COLLISION_RESOLVED: Indicates that the LDGS-based DAA related alert is collision (or risk
+#          of collision) resolved.

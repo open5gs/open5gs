@@ -1,7 +1,7 @@
 /*
  * af_sig_protocol.h
  *
- * 
+ * Indicates the protocol used for signalling between the UE and the AF.   Possible values are - NO_INFORMATION: Indicate that no information about the AF signalling protocol is being provided. - SIP: Indicate that the signalling protocol is Session Initiation Protocol. 
  */
 
 #ifndef _OpenAPI_af_sig_protocol_H_

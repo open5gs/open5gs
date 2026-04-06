@@ -89,6 +89,7 @@ void sepp_handshake_state_will_establish(ogs_fsm_t *s, sepp_event_t *e)
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
+    int service_name_id = OpenAPI_service_name_NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -130,8 +131,10 @@ void sepp_handshake_state_will_establish(ogs_fsm_t *s, sepp_event_t *e)
             break;
         }
 
-        SWITCH(message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_N32C_HANDSHAKE)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message->h.service.name);
+        switch (service_name_id) {
+        case OGS_SBI_SERVICE_NAME_ID_N32C_HANDSHAKE:
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_EXCHANGE_CAPABILITY)
                 SWITCH(message->h.method)
@@ -186,18 +189,20 @@ void sepp_handshake_state_will_establish(ogs_fsm_t *s, sepp_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("[%s] Invalid API name [%s]",
                     sepp_node->receiver, message->h.service.name);
-        END
+        }
         break;
 
     case OGS_EVENT_SBI_CLIENT:
         message = e->h.sbi.message;
         ogs_assert(message);
 
-        SWITCH(message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_N32C_HANDSHAKE)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message->h.service.name);
+        switch (service_name_id) {
+        case OGS_SBI_SERVICE_NAME_ID_N32C_HANDSHAKE:
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_EXCHANGE_CAPABILITY)
                 SWITCH(message->h.method)
@@ -251,11 +256,11 @@ void sepp_handshake_state_will_establish(ogs_fsm_t *s, sepp_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("[%s] Invalid API name [%s]",
                     sepp_node->receiver, message->h.service.name);
             ogs_assert_if_reached();
-        END
+        }
         break;
 
     case OGS_EVENT_SBI_TIMER:
@@ -293,6 +298,7 @@ void sepp_handshake_state_established(ogs_fsm_t *s, sepp_event_t *e)
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
+    int service_name_id = OpenAPI_service_name_NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -325,8 +331,10 @@ void sepp_handshake_state_established(ogs_fsm_t *s, sepp_event_t *e)
             break;
         }
 
-        SWITCH(message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_N32C_HANDSHAKE)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message->h.service.name);
+        switch (service_name_id) {
+        case OGS_SBI_SERVICE_NAME_ID_N32C_HANDSHAKE:
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_EXCHANGE_CAPABILITY)
                 SWITCH(message->h.method)
@@ -381,18 +389,20 @@ void sepp_handshake_state_established(ogs_fsm_t *s, sepp_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("[%s] Invalid API name [%s]",
                     sepp_node->receiver, message->h.service.name);
-        END
+        }
         break;
 
     case OGS_EVENT_SBI_CLIENT:
         message = e->h.sbi.message;
         ogs_assert(message);
 
-        SWITCH(message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_N32C_HANDSHAKE)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message->h.service.name);
+        switch (service_name_id) {
+        case OGS_SBI_SERVICE_NAME_ID_N32C_HANDSHAKE:
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_EXCHANGE_CAPABILITY)
                 SWITCH(message->h.method)
@@ -419,11 +429,11 @@ void sepp_handshake_state_established(ogs_fsm_t *s, sepp_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("[%s] Invalid API name [%s]",
                     sepp_node->receiver, message->h.service.name);
             ogs_assert_if_reached();
-        END
+        }
         break;
 
     default:
@@ -440,6 +450,7 @@ void sepp_handshake_state_terminated(ogs_fsm_t *s, sepp_event_t *e)
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
+    int service_name_id = OpenAPI_service_name_NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -477,8 +488,10 @@ void sepp_handshake_state_terminated(ogs_fsm_t *s, sepp_event_t *e)
             break;
         }
 
-        SWITCH(message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_N32C_HANDSHAKE)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message->h.service.name);
+        switch (service_name_id) {
+        case OGS_SBI_SERVICE_NAME_ID_N32C_HANDSHAKE:
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_EXCHANGE_CAPABILITY)
                 SWITCH(message->h.method)
@@ -533,18 +546,20 @@ void sepp_handshake_state_terminated(ogs_fsm_t *s, sepp_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("[%s] Invalid API name [%s]",
                     sepp_node->receiver, message->h.service.name);
-        END
+        }
         break;
 
     case OGS_EVENT_SBI_CLIENT:
         message = e->h.sbi.message;
         ogs_assert(message);
 
-        SWITCH(message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_N32C_HANDSHAKE)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message->h.service.name);
+        switch (service_name_id) {
+        case OGS_SBI_SERVICE_NAME_ID_N32C_HANDSHAKE:
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_EXCHANGE_CAPABILITY)
                 SWITCH(message->h.method)
@@ -570,11 +585,11 @@ void sepp_handshake_state_terminated(ogs_fsm_t *s, sepp_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("[%s] Invalid API name [%s]",
                     sepp_node->receiver, message->h.service.name);
             ogs_assert_if_reached();
-        END
+        }
         break;
 
     case OGS_EVENT_SBI_TIMER:
@@ -603,6 +618,7 @@ void sepp_handshake_state_exception(ogs_fsm_t *s, sepp_event_t *e)
     sepp_node_t *sepp_node = NULL;
 
     ogs_sbi_message_t *message = NULL;
+    int service_name_id = OpenAPI_service_name_NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -647,8 +663,10 @@ void sepp_handshake_state_exception(ogs_fsm_t *s, sepp_event_t *e)
         message = e->h.sbi.message;
         ogs_assert(message);
 
-        SWITCH(message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_N32C_HANDSHAKE)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message->h.service.name);
+        switch (service_name_id) {
+        case OGS_SBI_SERVICE_NAME_ID_N32C_HANDSHAKE:
 
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_EXCHANGE_CAPABILITY)
@@ -659,9 +677,9 @@ void sepp_handshake_state_exception(ogs_fsm_t *s, sepp_event_t *e)
                         message->h.resource.component[0]);
             END
             break;
-        DEFAULT
+        default:
             ogs_error("Invalid API name [%s]", message->h.service.name);
-        END
+        }
         break;
 
     default:

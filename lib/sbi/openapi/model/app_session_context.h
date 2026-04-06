@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_app_session_context_s OpenAPI_app_session_context_t;
 #include "app_session_context_req_data.h"
 #include "app_session_context_resp_data.h"
 #include "events_notification.h"
@@ -20,12 +21,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_app_session_context_s OpenAPI_app_session_context_t;
-typedef struct OpenAPI_app_session_context_s {
+struct OpenAPI_app_session_context_s {
     struct OpenAPI_app_session_context_req_data_s *asc_req_data;
     struct OpenAPI_app_session_context_resp_data_s *asc_resp_data;
     struct OpenAPI_events_notification_s *evs_notif;
-} OpenAPI_app_session_context_t;
+};
 
 OpenAPI_app_session_context_t *OpenAPI_app_session_context_create(
     OpenAPI_app_session_context_req_data_t *asc_req_data,

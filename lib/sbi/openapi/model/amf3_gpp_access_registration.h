@@ -1,7 +1,7 @@
 /*
  * amf3_gpp_access_registration.h
  *
- * 
+ * This datatype contains the set of information relevant to the AMF where the UE has registered via 3GPP access. 
  */
 
 #ifndef _OpenAPI_amf3_gpp_access_registration_H_
@@ -12,12 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_amf3_gpp_access_registration_s OpenAPI_amf3_gpp_access_registration_t;
 #include "backup_amf_info.h"
 #include "context_info.h"
 #include "eps_interworking_info.h"
 #include "guami.h"
 #include "ims_vo_ps.h"
 #include "rat_type.h"
+#include "service_name.h"
 #include "ue_reachable_ind.h"
 #include "vgmlc_address.h"
 
@@ -25,8 +27,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_amf3_gpp_access_registration_s OpenAPI_amf3_gpp_access_registration_t;
-typedef struct OpenAPI_amf3_gpp_access_registration_s {
+struct OpenAPI_amf3_gpp_access_registration_s {
     char *amf_instance_id;
     char *supported_features;
     bool is_purge_flag;
@@ -34,9 +35,9 @@ typedef struct OpenAPI_amf3_gpp_access_registration_s {
     char *pei;
     OpenAPI_ims_vo_ps_e ims_vo_ps;
     char *dereg_callback_uri;
-    char *amf_service_name_dereg;
+    OpenAPI_service_name_e amf_service_name_dereg;
     char *pcscf_restoration_callback_uri;
-    char *amf_service_name_pcscf_rest;
+    OpenAPI_service_name_e amf_service_name_pcscf_rest;
     bool is_initial_registration_ind;
     int initial_registration_ind;
     bool is_emergency_registration_ind;
@@ -45,6 +46,8 @@ typedef struct OpenAPI_amf3_gpp_access_registration_s {
     OpenAPI_list_t *backup_amf_info;
     bool is_dr_flag;
     int dr_flag;
+    bool is_eps5_gs_mobility_wo_n26;
+    int eps5_gs_mobility_wo_n26;
     OpenAPI_rat_type_e rat_type;
     bool is_urrp_indicator;
     int urrp_indicator;
@@ -69,12 +72,16 @@ typedef struct OpenAPI_amf3_gpp_access_registration_s {
     int disaster_roaming_ind;
     bool is_ue_mint_capability;
     int ue_mint_capability;
+    bool is_ue_mint_eps_capability;
+    int ue_mint_eps_capability;
     bool is_sor_snpn_si_supported;
     int sor_snpn_si_supported;
     bool is_udr_restart_ind;
     int udr_restart_ind;
     char *last_synchronization_time;
-} OpenAPI_amf3_gpp_access_registration_t;
+    bool is_ue_snpn_subscription_ind;
+    int ue_snpn_subscription_ind;
+};
 
 OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_create(
     char *amf_instance_id,
@@ -84,9 +91,9 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     char *pei,
     OpenAPI_ims_vo_ps_e ims_vo_ps,
     char *dereg_callback_uri,
-    char *amf_service_name_dereg,
+    OpenAPI_service_name_e amf_service_name_dereg,
     char *pcscf_restoration_callback_uri,
-    char *amf_service_name_pcscf_rest,
+    OpenAPI_service_name_e amf_service_name_pcscf_rest,
     bool is_initial_registration_ind,
     int initial_registration_ind,
     bool is_emergency_registration_ind,
@@ -95,6 +102,8 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     OpenAPI_list_t *backup_amf_info,
     bool is_dr_flag,
     int dr_flag,
+    bool is_eps5_gs_mobility_wo_n26,
+    int eps5_gs_mobility_wo_n26,
     OpenAPI_rat_type_e rat_type,
     bool is_urrp_indicator,
     int urrp_indicator,
@@ -119,11 +128,15 @@ OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_cre
     int disaster_roaming_ind,
     bool is_ue_mint_capability,
     int ue_mint_capability,
+    bool is_ue_mint_eps_capability,
+    int ue_mint_eps_capability,
     bool is_sor_snpn_si_supported,
     int sor_snpn_si_supported,
     bool is_udr_restart_ind,
     int udr_restart_ind,
-    char *last_synchronization_time
+    char *last_synchronization_time,
+    bool is_ue_snpn_subscription_ind,
+    int ue_snpn_subscription_ind
 );
 void OpenAPI_amf3_gpp_access_registration_free(OpenAPI_amf3_gpp_access_registration_t *amf3_gpp_access_registration);
 OpenAPI_amf3_gpp_access_registration_t *OpenAPI_amf3_gpp_access_registration_parseFromJSON(cJSON *amf3_gpp_access_registrationJSON);

@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_dnn_snssai_information_s OpenAPI_dnn_snssai_information_t;
 #include "snssai.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dnn_snssai_information_s OpenAPI_dnn_snssai_information_t;
-typedef struct OpenAPI_dnn_snssai_information_s {
+struct OpenAPI_dnn_snssai_information_s {
     char *dnn;
     struct OpenAPI_snssai_s *snssai;
-} OpenAPI_dnn_snssai_information_t;
+};
 
 OpenAPI_dnn_snssai_information_t *OpenAPI_dnn_snssai_information_create(
     char *dnn,

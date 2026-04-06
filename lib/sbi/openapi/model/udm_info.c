@@ -11,7 +11,9 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_create(
     OpenAPI_list_t *external_group_identifiers_ranges,
     OpenAPI_list_t *routing_indicators,
     OpenAPI_list_t *internal_group_identifiers_ranges,
-    OpenAPI_list_t *suci_infos
+    OpenAPI_list_t *suci_infos,
+    bool is_any_ue_udm_single_instance,
+    int any_ue_udm_single_instance
 )
 {
     OpenAPI_udm_info_t *udm_info_local_var = ogs_malloc(sizeof(OpenAPI_udm_info_t));
@@ -24,6 +26,8 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_create(
     udm_info_local_var->routing_indicators = routing_indicators;
     udm_info_local_var->internal_group_identifiers_ranges = internal_group_identifiers_ranges;
     udm_info_local_var->suci_infos = suci_infos;
+    udm_info_local_var->is_any_ue_udm_single_instance = is_any_ue_udm_single_instance;
+    udm_info_local_var->any_ue_udm_single_instance = any_ue_udm_single_instance;
 
     return udm_info_local_var;
 }
@@ -196,6 +200,13 @@ cJSON *OpenAPI_udm_info_convertToJSON(OpenAPI_udm_info_t *udm_info)
     }
     }
 
+    if (udm_info->is_any_ue_udm_single_instance) {
+    if (cJSON_AddBoolToObject(item, "anyUeUdmSingleInstance", udm_info->any_ue_udm_single_instance) == NULL) {
+        ogs_error("OpenAPI_udm_info_convertToJSON() failed [any_ue_udm_single_instance]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -217,6 +228,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
     OpenAPI_list_t *internal_group_identifiers_rangesList = NULL;
     cJSON *suci_infos = NULL;
     OpenAPI_list_t *suci_infosList = NULL;
+    cJSON *any_ue_udm_single_instance = NULL;
     group_id = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "groupId");
     if (group_id) {
     if (!cJSON_IsString(group_id) && !cJSON_IsNull(group_id)) {
@@ -366,6 +378,14 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
         }
     }
 
+    any_ue_udm_single_instance = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "anyUeUdmSingleInstance");
+    if (any_ue_udm_single_instance) {
+    if (!cJSON_IsBool(any_ue_udm_single_instance)) {
+        ogs_error("OpenAPI_udm_info_parseFromJSON() failed [any_ue_udm_single_instance]");
+        goto end;
+    }
+    }
+
     udm_info_local_var = OpenAPI_udm_info_create (
         group_id && !cJSON_IsNull(group_id) ? ogs_strdup(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
@@ -373,7 +393,9 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
         external_group_identifiers_ranges ? external_group_identifiers_rangesList : NULL,
         routing_indicators ? routing_indicatorsList : NULL,
         internal_group_identifiers_ranges ? internal_group_identifiers_rangesList : NULL,
-        suci_infos ? suci_infosList : NULL
+        suci_infos ? suci_infosList : NULL,
+        any_ue_udm_single_instance ? true : false,
+        any_ue_udm_single_instance ? any_ue_udm_single_instance->valueint : 0
     );
 
     return udm_info_local_var;

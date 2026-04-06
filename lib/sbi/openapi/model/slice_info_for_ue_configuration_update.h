@@ -1,7 +1,7 @@
 /*
  * slice_info_for_ue_configuration_update.h
  *
- * Contains the slice information requested during UE configuration update procedure
+ * Contains the slice information requested during UE configuration update procedure 
  */
 
 #ifndef _OpenAPI_slice_info_for_ue_configuration_update_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_slice_info_for_ue_configuration_update_s OpenAPI_slice_info_for_ue_configuration_update_t;
 #include "allowed_nssai.h"
 #include "mapping_of_snssai.h"
 #include "snssai.h"
@@ -21,8 +22,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_slice_info_for_ue_configuration_update_s OpenAPI_slice_info_for_ue_configuration_update_t;
-typedef struct OpenAPI_slice_info_for_ue_configuration_update_s {
+struct OpenAPI_slice_info_for_ue_configuration_update_s {
     OpenAPI_list_t *subscribed_nssai;
     struct OpenAPI_allowed_nssai_s *allowed_nssai_current_access;
     struct OpenAPI_allowed_nssai_s *allowed_nssai_other_access;
@@ -37,7 +37,7 @@ typedef struct OpenAPI_slice_info_for_ue_configuration_update_s {
     OpenAPI_list_t *rejected_nssai_ra;
     bool is_nsag_supported;
     int nsag_supported;
-} OpenAPI_slice_info_for_ue_configuration_update_t;
+};
 
 OpenAPI_slice_info_for_ue_configuration_update_t *OpenAPI_slice_info_for_ue_configuration_update_create(
     OpenAPI_list_t *subscribed_nssai,

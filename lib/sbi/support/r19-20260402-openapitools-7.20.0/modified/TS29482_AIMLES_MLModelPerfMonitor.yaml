@@ -1,0 +1,506 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLE Machine Learning Model Performance Monitor Service
+  version: 1.0.0
+  description: |
+    AIMLE Server provides a service consumer to create/update/delete an AIMLES ML Model Performance
+    Monitor Subscription and receive AIMLES ML Model Performance Monitor Notifications.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.0.0; Service Enabler Architecture Layer for Verticals (SEAL); Artificial
+    Intelligence Machine Learning Enablement (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/aimles-mlmpm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Request the creation of an AIMLE ML Model Performance Monitor Subscription resource.
+      operationId: SubMLModelPerformanceMonitor
+      tags:
+        - ML Model Performance Monitor (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MlMdlPerfMonitSub'
+      responses:
+        '201':
+          description: >
+            ML Model Performance Monitor Subscription is Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MlMdlPerfMonitSub'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        MlMdlPerfMonitNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/MlMdlPerfMonitNotif'
+              responses:
+                '204':
+                  description: >
+                    The AIMLE ML Model Performance Monitor Event Notification is
+                    successfully received and acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: String identifying an individual ML Model Performance Monitor resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual AIMLE ML Model Performance Monitor Subscription resource.
+      operationId: RetrieveMLModelPerformanceMonitor
+      tags:
+        - Individual ML Model Performance Monitor (Document)
+      responses:
+        '200':
+          description: The requested "Individual ML Model Performance Monitor” is retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MlMdlPerfMonitSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update completely an existing Individual ML Model Performance Monitor resource.
+      operationId: UpdateMLModelPerformanceMonitor
+      tags:
+        - Individual ML Model Performance Monitor (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MlMdlPerfMonitSub'
+      responses:
+        '200':
+          description: OK. The configuration is updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MlMdlPerfMonitSub'
+        '204':
+          description: successful case but without any Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify partially an existing Individual ML Model Performance Monitor resource.
+      operationId: ModifyPartiallyMLModelPerformanceMonitor
+      tags:
+        - Individual ML Model Performance Monitor (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MlMdlPerfMonitSubPatch'
+      responses:
+        '200':
+          description: OK. The individual ML Model Performance Monitor is partially modified.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MlMdlPerfMonitSub'
+        '204':
+          description: Successful case but without any content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      description: Deletes an individual ML Model Performance Monitor.
+      operationId: DeleteMLModelPerformanceMonitor
+      tags:
+        - Individual ML Model Performance Monitor (Document)
+      responses:
+        '204':
+          description: The individual subscription matching subscription Id is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    MlMdlPerfMonitSub:
+      description: Represents the AIMLE ML Model Performance Monitor subscription information.
+      type: object
+      properties:
+        mlMdlId:
+          description: Identifies the ML model, for which the request applies.
+          type: string
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        montReportConfig:
+          $ref: '#/components/schemas/MontReportConfig'
+        aimlOperInfo:
+          $ref: '#/components/schemas/AimlOperInfo'
+        trigActReq:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrigActReqType'
+          minItems: 1
+        areaValidity:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        timeValidity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - mlMdlId
+        - notifUri
+        - montReportConfig
+
+    MlMdlPerfMonitSubPatch:
+      description: Represents the AIMLE ML Model Performance Monitor subscription information.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        montReportConfig:
+          $ref: '#/components/schemas/MontReportConfig'
+        aimlOperInfo:
+          $ref: '#/components/schemas/AimlOperInfo'
+        trigActReq:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrigActReqType'
+          minItems: 1
+        areaValidity:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        timeValidity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+
+    MlMdlPerfMonitNotif:
+      description: Represents the metrics of the degraded ML model.
+      type: object
+      properties:
+        mlMdlDegraded:
+          $ref: '#/components/schemas/MlMdlDegraded'
+        trigActReq:
+          $ref: '#/components/schemas/TrigActReqType'
+      required:
+        - mlMdlDegraded
+
+    MontReportConfig:
+      description: Represents the configuration of the monitoring report.
+      type: object
+      properties:
+        reportType:
+          $ref: '#/components/schemas/ReportType'
+        delay:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minAccuracy:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        period:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - reportType
+
+    AimlOperInfo:
+      description: Represents the information on the AIML operation.
+      type: object
+      properties:
+        aimlOper:
+          $ref: '#/components/schemas/AimlOperType'
+        servId:
+          description: Identifies the AIMLE service using the ML model.
+          type: string
+        clientList:
+          type: array
+          items:
+            $ref: 'TS29482_AIMLES_ContextTransfer.yaml#/components/schemas/AimleClientId'
+          minItems: 1
+        servPerfKpi:
+          $ref: '#/components/schemas/ServPerfKpi'
+      required:
+        - aimlOper
+        - servId
+        - servPerfKpi
+        - clientList
+
+    MlMdlDegraded:
+      description: Represents the metrics of the degraded ML model.
+      type: object
+      properties:
+        mlMdlDegradeInd:
+          description: Identifies whether the ML model has degraded (TRUE) or not (FALSE).
+          type: boolean
+        mlMdlDegradedParam:
+          type: array
+          items:
+            $ref: '#/components/schemas/MlMdlDegradedParam'
+          minItems: 1
+        mlMdlDegradedCause:
+          description: Identifies the cause for the ML model degradation.
+          type: string
+      required:
+        - mlMdlDegradeInd
+
+    ServPerfKpi:
+      description: Represents the key performance indicators for the AIMLE service performance.
+      type: object
+      properties:
+        latency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        accuracy:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        qos:
+          $ref: 'TS29122_AsSessionWithQoS.yaml#/components/schemas/QosMonitoringInformation'
+      required:
+        - latency
+        - accuracy
+        - qos
+
+    MlMdlDegradedParam:
+      description: Represents the parameters of the degraded ML model.
+      type: object
+      properties:
+        recall:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        precision:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        accuracy:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - recall
+        - precision
+        - accuracy
+
+# Simple data types
+#
+
+# Enumerations
+#
+
+    AimlOperType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - ML_MODEL
+         - HFL
+         - VFL
+         - TL
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the AIML operation type.  
+#        Possible values are:
+#        - ML_MODEL: Identifies that AIML operation is ML model training.
+#        - HFL: Identifies that AIML operation is Horizontal Federated Learning (HFL) training.
+#        - VFL: Identifies that AIML operation is Vertical Federated Learning (VFL) training.
+#        - TL: Identifies that AIML operation is Transfer Learning (TL) training.
+#
+    ReportType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - ONE_TIME
+         - PERIODIC
+         - EVENT_TRIGGERED
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the type of the monitoring report.  
+#        Possible values are:
+#        - ONE_TIME: Identifies the report is of one time type.
+#        - PERIODIC: Identifies the report is of periodic type.
+#        - EVENT_TRIGGERED: Identifies the report is of event triggered type.
+#
+    TrigActReqType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - ADAPTATION
+         - RETRAINING
+         - TERMINATION
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the types of the trigger action requirements on the monitoring event.  
+#        Possible values are:
+#        - ADAPTATION: Identifies the trigger action requirement is training of a new ML model for
+#          the AIMLE service by the same or a new AIMLE client.
+#        - RETRAINING: Identifies the trigger action requirement is retraining of the existing ML
+#          model for the AIMLE service by the same or a new AIMLE client.
+#        - TERMINATION: Identifies the trigger action requirement is terminating of the existing ML
+#          model for AIMLE service and initiating to train a new ML model by the same or a new AIMLE
+#          client.

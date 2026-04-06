@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sequence_number_s OpenAPI_sequence_number_t;
 #include "sign.h"
 #include "sqn_scheme.h"
 
@@ -19,15 +20,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sequence_number_s OpenAPI_sequence_number_t;
-typedef struct OpenAPI_sequence_number_s {
+struct OpenAPI_sequence_number_s {
     OpenAPI_sqn_scheme_e sqn_scheme;
     char *sqn;
     OpenAPI_list_t* last_indexes;
     bool is_ind_length;
     int ind_length;
     OpenAPI_sign_e dif_sign;
-} OpenAPI_sequence_number_t;
+};
 
 OpenAPI_sequence_number_t *OpenAPI_sequence_number_create(
     OpenAPI_sqn_scheme_e sqn_scheme,

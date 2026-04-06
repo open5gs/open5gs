@@ -1,0 +1,324 @@
+openapi: 3.0.0
+
+info:
+  version: 1.1.0
+  title: VAE Server V2P Application Requirement Service
+  description: |
+    API for VAE Server V2P Application Requirement Service  
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.486 V18.3.0 V2X Application Enabler (VAE) Services
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.486/'
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/vae-v2P-app-req/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+paths:
+  /provisionings:
+    post:
+      summary: Request the creation of a V2P Application Requirements Provisioning.
+      tags:
+        - V2P Application Requirements Provisionings (Collection)
+      operationId: CreateV2PAppReqsProv
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V2pAppReqData'
+        required: true
+      responses:
+        '201':
+          description: >
+            Created. The V2P Application Requirements Provisioning is successfully created and a
+            representation of the created Individual V2P Application Requirements Provisioning
+            resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V2pAppReqData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual V2P Application Requirements
+                Provisioning resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /provisionings/{provId}:
+    parameters:
+      - name: provId
+        in: path
+        description: >
+          Represents the identifier of the Individual V2P Application Requirements Provisioning
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual V2P Application Requirement Provisioning resource.
+      operationId: GetIndV2pAppReqsProv
+      tags:
+        - Individual V2P Application Requirements Provisioning (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual V2P Application Requirements Provisioning resource
+            shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V2pAppReqData'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual V2P Application Requirements Provisioning resource.
+      operationId: UpdateIndV2pAppReqsProv
+      tags:
+        - Individual V2P Application Requirements Provisioning (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V2pAppReqData'
+      responses:
+        '200':
+          description: >
+            OK. The Individual V2P Application Requirements Provisioning resource is successfully
+            updated and a representation of the updated resource shall be returned in the response
+            body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V2pAppReqData'
+        '204':
+          description: >
+            No Content. The Individual V2P Application Requirements Provisioning resource is
+            successfully updated and no content is returned in the response body
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual V2P Application Requirements Provisioning resource.
+      operationId: ModifyIndV2pAppReqsProv
+      tags:
+        - Individual V2P Application Requirements Provisioning (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/V2pAppReqDataPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual V2P Application Requirements Provisioning resource is successfully
+            modified and a representation of the updated resource shall be returned in the response
+            body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V2pAppReqData'
+        '204':
+          description: >
+            No Content. The Individual V2P Application Requirements Provisioning resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual V2P Application Requirements Provisioning resource.
+      operationId: DeleteIndV2pAppReqsProv
+      tags:
+        - Individual V2P Application Requirements Provisioning (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual V2P Application Requirements Provisioning resource is
+            successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows: 
+        clientCredentials: 
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    V2pAppReqData:
+      description: Represents the V2P Application Requirements Provisioning.
+      type: object
+      properties:
+        requestorId:
+          type: string
+        serviceId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xServiceId'
+        groupId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xGroupId'
+        v2pQosReqs:
+          $ref: 'TS29486_VAE_SessionOrientedService.yaml#/components/schemas/AppplicationQosRequirement'
+        trafficPattern:
+          $ref: '#/components/schemas/AppTrafficPattern'
+        paramOverPc5:
+          $ref: 'TS29522_ServiceParameter.yaml#/components/schemas/ParameterOverPc5'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      oneOf:
+        - required: [serviceId]
+        - required: [groupId]
+      required:
+        - requestorId
+        - v2pQosReqs
+        - trafficPattern
+
+    V2pAppReqDataPatch:
+      description: >
+        Represents the requested modifications to a V2P Application Requirements Provisioning.
+      type: object
+      properties:
+        v2pQosReqs:
+          $ref: 'TS29486_VAE_SessionOrientedService.yaml#/components/schemas/AppplicationQosRequirement'
+        trafficPattern:
+          $ref: '#/components/schemas/AppTrafficPattern'
+        paramOverPc5:
+          $ref: 'TS29522_ServiceParameter.yaml#/components/schemas/ParameterOverPc5Rm'
+
+    AppTrafficPattern:
+      description: >
+        Represents an application traffic pattern for V2P services.
+      type: object
+      properties:
+        timeWindows:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+          minItems: 1
+        periodicity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+      required:
+        - timeWindows

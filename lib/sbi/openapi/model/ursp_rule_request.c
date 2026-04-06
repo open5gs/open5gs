@@ -5,18 +5,24 @@
 #include "ursp_rule_request.h"
 
 OpenAPI_ursp_rule_request_t *OpenAPI_ursp_rule_request_create(
+    char *af_req_ursp_id,
+    bool is_traffic_desc_null,
     OpenAPI_traffic_descriptor_components_t *traffic_desc,
     bool is_relat_precedence,
     int relat_precedence,
+    OpenAPI_list_t *visited_net_descs,
     OpenAPI_list_t *route_sel_param_sets
 )
 {
     OpenAPI_ursp_rule_request_t *ursp_rule_request_local_var = ogs_malloc(sizeof(OpenAPI_ursp_rule_request_t));
     ogs_assert(ursp_rule_request_local_var);
 
+    ursp_rule_request_local_var->af_req_ursp_id = af_req_ursp_id;
+    ursp_rule_request_local_var->is_traffic_desc_null = is_traffic_desc_null;
     ursp_rule_request_local_var->traffic_desc = traffic_desc;
     ursp_rule_request_local_var->is_relat_precedence = is_relat_precedence;
     ursp_rule_request_local_var->relat_precedence = relat_precedence;
+    ursp_rule_request_local_var->visited_net_descs = visited_net_descs;
     ursp_rule_request_local_var->route_sel_param_sets = route_sel_param_sets;
 
     return ursp_rule_request_local_var;
@@ -29,9 +35,20 @@ void OpenAPI_ursp_rule_request_free(OpenAPI_ursp_rule_request_t *ursp_rule_reque
     if (NULL == ursp_rule_request) {
         return;
     }
+    if (ursp_rule_request->af_req_ursp_id) {
+        ogs_free(ursp_rule_request->af_req_ursp_id);
+        ursp_rule_request->af_req_ursp_id = NULL;
+    }
     if (ursp_rule_request->traffic_desc) {
         OpenAPI_traffic_descriptor_components_free(ursp_rule_request->traffic_desc);
         ursp_rule_request->traffic_desc = NULL;
+    }
+    if (ursp_rule_request->visited_net_descs) {
+        OpenAPI_list_for_each(ursp_rule_request->visited_net_descs, node) {
+            OpenAPI_network_description_1_free(node->data);
+        }
+        OpenAPI_list_free(ursp_rule_request->visited_net_descs);
+        ursp_rule_request->visited_net_descs = NULL;
     }
     if (ursp_rule_request->route_sel_param_sets) {
         OpenAPI_list_for_each(ursp_rule_request->route_sel_param_sets, node) {
@@ -54,6 +71,13 @@ cJSON *OpenAPI_ursp_rule_request_convertToJSON(OpenAPI_ursp_rule_request_t *ursp
     }
 
     item = cJSON_CreateObject();
+    if (ursp_rule_request->af_req_ursp_id) {
+    if (cJSON_AddStringToObject(item, "afReqUrspId", ursp_rule_request->af_req_ursp_id) == NULL) {
+        ogs_error("OpenAPI_ursp_rule_request_convertToJSON() failed [af_req_ursp_id]");
+        goto end;
+    }
+    }
+
     if (ursp_rule_request->traffic_desc) {
     cJSON *traffic_desc_local_JSON = OpenAPI_traffic_descriptor_components_convertToJSON(ursp_rule_request->traffic_desc);
     if (traffic_desc_local_JSON == NULL) {
@@ -65,12 +89,33 @@ cJSON *OpenAPI_ursp_rule_request_convertToJSON(OpenAPI_ursp_rule_request_t *ursp
         ogs_error("OpenAPI_ursp_rule_request_convertToJSON() failed [traffic_desc]");
         goto end;
     }
+    } else if (ursp_rule_request->is_traffic_desc_null) {
+        if (cJSON_AddNullToObject(item, "trafficDesc") == NULL) {
+            ogs_error("OpenAPI_ursp_rule_request_convertToJSON() failed [traffic_desc]");
+            goto end;
+        }
     }
 
     if (ursp_rule_request->is_relat_precedence) {
     if (cJSON_AddNumberToObject(item, "relatPrecedence", ursp_rule_request->relat_precedence) == NULL) {
         ogs_error("OpenAPI_ursp_rule_request_convertToJSON() failed [relat_precedence]");
         goto end;
+    }
+    }
+
+    if (ursp_rule_request->visited_net_descs) {
+    cJSON *visited_net_descsList = cJSON_AddArrayToObject(item, "visitedNetDescs");
+    if (visited_net_descsList == NULL) {
+        ogs_error("OpenAPI_ursp_rule_request_convertToJSON() failed [visited_net_descs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(ursp_rule_request->visited_net_descs, node) {
+        cJSON *itemLocal = OpenAPI_network_description_1_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_ursp_rule_request_convertToJSON() failed [visited_net_descs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(visited_net_descsList, itemLocal);
     }
     }
 
@@ -98,17 +143,30 @@ OpenAPI_ursp_rule_request_t *OpenAPI_ursp_rule_request_parseFromJSON(cJSON *ursp
 {
     OpenAPI_ursp_rule_request_t *ursp_rule_request_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
+    cJSON *af_req_ursp_id = NULL;
     cJSON *traffic_desc = NULL;
     OpenAPI_traffic_descriptor_components_t *traffic_desc_local_nonprim = NULL;
     cJSON *relat_precedence = NULL;
+    cJSON *visited_net_descs = NULL;
+    OpenAPI_list_t *visited_net_descsList = NULL;
     cJSON *route_sel_param_sets = NULL;
     OpenAPI_list_t *route_sel_param_setsList = NULL;
+    af_req_ursp_id = cJSON_GetObjectItemCaseSensitive(ursp_rule_requestJSON, "afReqUrspId");
+    if (af_req_ursp_id) {
+    if (!cJSON_IsString(af_req_ursp_id) && !cJSON_IsNull(af_req_ursp_id)) {
+        ogs_error("OpenAPI_ursp_rule_request_parseFromJSON() failed [af_req_ursp_id]");
+        goto end;
+    }
+    }
+
     traffic_desc = cJSON_GetObjectItemCaseSensitive(ursp_rule_requestJSON, "trafficDesc");
     if (traffic_desc) {
+    if (!cJSON_IsNull(traffic_desc)) {
     traffic_desc_local_nonprim = OpenAPI_traffic_descriptor_components_parseFromJSON(traffic_desc);
     if (!traffic_desc_local_nonprim) {
         ogs_error("OpenAPI_traffic_descriptor_components_parseFromJSON failed [traffic_desc]");
         goto end;
+    }
     }
     }
 
@@ -118,6 +176,30 @@ OpenAPI_ursp_rule_request_t *OpenAPI_ursp_rule_request_parseFromJSON(cJSON *ursp
         ogs_error("OpenAPI_ursp_rule_request_parseFromJSON() failed [relat_precedence]");
         goto end;
     }
+    }
+
+    visited_net_descs = cJSON_GetObjectItemCaseSensitive(ursp_rule_requestJSON, "visitedNetDescs");
+    if (visited_net_descs) {
+        cJSON *visited_net_descs_local = NULL;
+        if (!cJSON_IsArray(visited_net_descs)) {
+            ogs_error("OpenAPI_ursp_rule_request_parseFromJSON() failed [visited_net_descs]");
+            goto end;
+        }
+
+        visited_net_descsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(visited_net_descs_local, visited_net_descs) {
+            if (!cJSON_IsObject(visited_net_descs_local)) {
+                ogs_error("OpenAPI_ursp_rule_request_parseFromJSON() failed [visited_net_descs]");
+                goto end;
+            }
+            OpenAPI_network_description_1_t *visited_net_descsItem = OpenAPI_network_description_1_parseFromJSON(visited_net_descs_local);
+            if (!visited_net_descsItem) {
+                ogs_error("No visited_net_descsItem");
+                goto end;
+            }
+            OpenAPI_list_add(visited_net_descsList, visited_net_descsItem);
+        }
     }
 
     route_sel_param_sets = cJSON_GetObjectItemCaseSensitive(ursp_rule_requestJSON, "routeSelParamSets");
@@ -145,9 +227,12 @@ OpenAPI_ursp_rule_request_t *OpenAPI_ursp_rule_request_parseFromJSON(cJSON *ursp
     }
 
     ursp_rule_request_local_var = OpenAPI_ursp_rule_request_create (
+        af_req_ursp_id && !cJSON_IsNull(af_req_ursp_id) ? ogs_strdup(af_req_ursp_id->valuestring) : NULL,
+        traffic_desc && cJSON_IsNull(traffic_desc) ? true : false,
         traffic_desc ? traffic_desc_local_nonprim : NULL,
         relat_precedence ? true : false,
         relat_precedence ? relat_precedence->valuedouble : 0,
+        visited_net_descs ? visited_net_descsList : NULL,
         route_sel_param_sets ? route_sel_param_setsList : NULL
     );
 
@@ -156,6 +241,13 @@ end:
     if (traffic_desc_local_nonprim) {
         OpenAPI_traffic_descriptor_components_free(traffic_desc_local_nonprim);
         traffic_desc_local_nonprim = NULL;
+    }
+    if (visited_net_descsList) {
+        OpenAPI_list_for_each(visited_net_descsList, node) {
+            OpenAPI_network_description_1_free(node->data);
+        }
+        OpenAPI_list_free(visited_net_descsList);
+        visited_net_descsList = NULL;
     }
     if (route_sel_param_setsList) {
         OpenAPI_list_for_each(route_sel_param_setsList, node) {

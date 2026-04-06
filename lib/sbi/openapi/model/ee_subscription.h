@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ee_subscription_s OpenAPI_ee_subscription_t;
 #include "context_info.h"
 #include "monitoring_configuration.h"
 #include "reporting_options.h"
@@ -20,8 +21,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ee_subscription_s OpenAPI_ee_subscription_t;
-typedef struct OpenAPI_ee_subscription_s {
+struct OpenAPI_ee_subscription_s {
     char *callback_reference;
     OpenAPI_list_t* monitoring_configurations;
     struct OpenAPI_reporting_options_s *reporting_options;
@@ -38,7 +38,11 @@ typedef struct OpenAPI_ee_subscription_s {
     OpenAPI_list_t *exclude_gpsi_list;
     OpenAPI_list_t *include_gpsi_list;
     char *data_restoration_callback_uri;
-} OpenAPI_ee_subscription_t;
+    bool is_udr_restart_ind;
+    int udr_restart_ind;
+    char *last_synchronization_time;
+    char *subscription_update_callback_uri;
+};
 
 OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_create(
     char *callback_reference,
@@ -56,7 +60,11 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_create(
     char *gpsi,
     OpenAPI_list_t *exclude_gpsi_list,
     OpenAPI_list_t *include_gpsi_list,
-    char *data_restoration_callback_uri
+    char *data_restoration_callback_uri,
+    bool is_udr_restart_ind,
+    int udr_restart_ind,
+    char *last_synchronization_time,
+    char *subscription_update_callback_uri
 );
 void OpenAPI_ee_subscription_free(OpenAPI_ee_subscription_t *ee_subscription);
 OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subscriptionJSON);

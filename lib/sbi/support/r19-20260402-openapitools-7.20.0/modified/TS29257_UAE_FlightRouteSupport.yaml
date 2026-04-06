@@ -1,0 +1,159 @@
+openapi: 3.0.0
+
+info:
+  title: UAE Server Flight Route Support Service
+  version: 1.0.0
+  description: |
+    UAE Server Flight Route Support Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.257 V19.5.0; Application layer support for Uncrewed Aerial System (UAS);
+    UAS Application Enabler (UAE) Server Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.257/
+
+servers:
+  - url: '{apiRoot}/uae-frs/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /fr-request:
+    post:
+      summary: Request the flight route plan.
+      operationId: FlightRouteRequest
+      tags:
+        - FlightRouteRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlightRouteReq'
+      responses:
+        '200':
+          description: >
+            OK. The flight route request is successfully received and processed, and the requested
+            flight route plan and the related information are returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlightRouteResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    FlightRouteReq:
+      description: >
+        Represents a flight route request.
+      type: object
+      properties:
+        requestorId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        uavId:
+          $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/UavId'
+        flightChars:
+          $ref: '#/components/schemas/FlightChars'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - requestorId
+        - uavId
+        - flightChars
+
+    FlightRouteResp:
+      description: >
+        Represents a flight route response.
+      type: object
+      properties:
+        frWaypointsList:
+          type: array
+          items:
+            $ref: 'TS29257_UAE_FlightPathMonitoring.yaml#/components/schemas/Waypoint'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      anyOf:
+        - required: [frWaypointsList]
+
+    FlightChars:
+      description: Represents the flight characteristics.
+      type: object
+      properties:
+        flightStart:
+          $ref: 'TS29257_UAE_FlightPathMonitoring.yaml#/components/schemas/Waypoint'
+        flightEnd:
+          $ref: 'TS29257_UAE_FlightPathMonitoring.yaml#/components/schemas/Waypoint'
+        reqMinQos:
+          $ref: 'TS29257_UAE_C2OperationModeManagement.yaml#/components/schemas/C2LinkQualityThrlds'
+        servAvail:
+          type: integer
+          minimum: 0
+          maximum: 100
+        shortestRouteInd:
+          type: boolean
+          default: false
+          description: >
+            Indicates whether the shortest route is needed for the flight.
+            true indicates that the shortest route is needed for the flight.
+            false indicates that the shortest route is not needed for the flight.
+            The default value is false if this attribute is omitted.
+      required:
+        - flightStart
+        - flightEnd
+        - reqMinQos
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#

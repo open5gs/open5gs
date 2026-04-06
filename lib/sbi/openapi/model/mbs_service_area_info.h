@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_mbs_service_area_info_s OpenAPI_mbs_service_area_info_t;
 #include "mbs_service_area.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_mbs_service_area_info_s OpenAPI_mbs_service_area_info_t;
-typedef struct OpenAPI_mbs_service_area_info_s {
+struct OpenAPI_mbs_service_area_info_s {
     int area_session_id;
     struct OpenAPI_mbs_service_area_s *mbs_service_area;
-} OpenAPI_mbs_service_area_info_t;
+};
 
 OpenAPI_mbs_service_area_info_t *OpenAPI_mbs_service_area_info_create(
     int area_session_id,

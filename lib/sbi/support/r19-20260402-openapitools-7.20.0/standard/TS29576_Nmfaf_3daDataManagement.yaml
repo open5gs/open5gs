@@ -1,0 +1,308 @@
+openapi: 3.0.0
+
+info:
+  version: 1.2.0
+  title: Nmfaf_3daDataManagement
+  description: |
+    MFAF 3GPP DCCF Adaptor (3DA) Data Management Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.576 V19.5.0; 5G System; Messaging Framework Adaptor Services; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.576/'
+
+servers:
+  - url: '{apiRoot}/nmfaf-3dadatamanagement/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - oAuth2ClientCredentials:
+    - nmfaf-3dadatamanagement
+  - {}
+
+paths:
+
+  /configurations:
+    post:
+      summary: Creates a new Individual MFAF Configuration resource.
+      operationId: CreateMFAFConfiguration
+      tags:
+        - MFAF Configuration(Collection)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MfafConfiguration'
+        required: true
+        description: >
+          Contains the information for the creation of a new Individual MFAF
+          Configuration resource.
+      responses:
+        '201':
+          description: Successful creation of new Individual MFAF Configuration resource.
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nmfaf-3dadatamanagement/<apiVersion>/configurations/{transRefId}
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfafConfiguration'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /configurations/{transRefId}:
+    put:
+      summary: Updates an existing Individual MFAF Configuration resource.
+      operationId: UpdateMFAFConfiguration
+      tags:
+        - Individual MFAF Configuration (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MfafConfiguration'
+      parameters:
+        - name: transRefId
+          in: path
+          description: Unique identifier of the Individual MFAF Configuration resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The updated Individual MFAF Configuration resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MfafConfiguration'
+        '204':
+          description: The Individual MFAF Configuration resource was modified successfully.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Deletes an existing Individual MFAF Configuration resource.
+      operationId: DeleteMFAFConfiguration
+      tags:
+        - Individual MFAF Configuration (Document)
+      parameters:
+        - name: transRefId
+          in: path
+          description: Unique identifier of the Individual MFAF Configuration resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            No Content. The Individual MFAF Configuration resource matching
+            the transRefId was deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nmfaf-3dadatamanagement: Access to the nmfaf-3dadatamanagement API
+
+  schemas:
+
+    MfafConfiguration:
+      description: Represents an Individual MFAF Configuration.
+      type: object
+      oneOf:
+        - required: [messageConfigurations]
+        - required: [mfafTransferInfo]
+      properties:
+        messageConfigurations:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageConfiguration'
+          minItems: 1
+          description: The configuration of the MFAF for mapping data or analytics.
+        mfafTransferInfo:
+          $ref: '#/components/schemas/MfafTransferInfo'
+
+    MessageConfiguration:
+      description: Represents the message configuration.
+      type: object
+      required:
+        - notificationURI
+        - correId
+      properties:
+        correId:
+          type: string
+          description: >
+            If the configuration is used for mapping analytics or data collection,
+            representing the Analytics Consumer Notification Correlation ID or
+            Data Consumer Notification Correlation ID.
+        formatInstruct:
+          $ref: 'TS29574_Ndccf_DataManagement.yaml#/components/schemas/FormattingInstruction'
+        mfafNotiInfo:
+          $ref: '#/components/schemas/MfafNotiInfo'
+        notificationURI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifEndpoints:
+          type: array
+          items:
+            $ref: 'TS29574_Ndccf_DataManagement.yaml#/components/schemas/NotifyEndpoint'
+          minItems: 1
+          description: The information of notification endpoints.
+        procInstruct:
+          $ref: 'TS29574_Ndccf_DataManagement.yaml#/components/schemas/ProcessingInstruction'
+        multiProcInstructs:
+          type: array
+          items:
+            $ref: 'TS29574_Ndccf_DataManagement.yaml#/components/schemas/ProcessingInstruction'
+          minItems: 1
+          description: Processing instructions to be used for sending event notifications.
+        adrfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    MfafNotiInfo:
+      description: >
+        The MFAF notification information. It shall be provided in a response message
+        if it had not been provided in the respective request message.
+      type: object
+      required:
+        - mfafNotifUri
+        - mfafCorreId
+      properties:
+        mfafNotifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        mfafCorreId:
+          type: string
+
+    MfafTransferInfo:
+      description: MFAF transfer information.
+      type: object
+      properties:
+        mfafId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        mfafSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        refIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+          description: The resource URIs of the MFAF configurations to be transfered.
+        newRefIds:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minProperties: 1
+          description: >
+            A map of the pre-transfer resource URis to the post-transfer resource
+            URIs of the configurations that were requested to be transferred.
+        tgtMfafNotiInfos:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/TargetMfafNotiInfo'
+          minProperties: 1
+          description: The target MFAF notification information.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - refIds
+      oneOf:
+        - required: [mfafId]
+        - required: [mfafSetId]
+
+    TargetMfafNotiInfo:
+      description: A list of target MFAF notification information.
+      type: object
+      required:
+        - mfafNotiInfos
+      properties:
+        mfafNotiInfos:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MfafNotiInfo'
+          minProperties: 1
+          description: The MFAF notification information.

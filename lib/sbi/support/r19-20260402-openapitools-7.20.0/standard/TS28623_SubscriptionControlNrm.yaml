@@ -1,0 +1,98 @@
+openapi: 3.0.1
+info:
+  title: Subscription Control NRM
+  version: 19.4.0
+  description: >-
+    OAS 3.0.1 definition of the Subscription Control NRM fragment
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.623; Generic NRM, Subscription Control NRM
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.623/
+paths: {}
+components:
+  schemas:
+  #-------- Definition of types for name-containments ------
+    SubNetwork-ncO-SubscriptionControlNrm:
+      type: object
+      properties:
+        NtfSubscriptionControl:
+          $ref: '#/components/schemas/NtfSubscriptionControl-Multiple'
+    ManagedElement-ncO-SubscriptionControlNrm:
+      type: object
+      properties:
+        NtfSubscriptionControl:
+          $ref: '#/components/schemas/NtfSubscriptionControl-Multiple'  
+   #-------Definition of generic IOCs ----------#   
+
+#-------- Definition of types-----------------------------------------------------
+    Scope:
+      oneOf:
+        - type: object
+          properties:
+            scopeType:
+              type: string
+              enum:
+                - BASE_ONLY
+                - BASE_ALL
+                - BASE_NTH_LEVEL
+                - BASE_SUBTREE
+            scopeLevel:
+              type: integer
+        - type: object
+          properties:
+            dataNodeSelector:
+              oneOf:
+                - $ref: 'TS28623_ComDefs.yaml#/components/schemas/JexNodeSelectionBasic'
+                - $ref: 'TS28623_ComDefs.yaml#/components/schemas/JexNodeSelectionAdvanced'
+
+#-------- Definition of concrete IOCs --------------------------------------------         
+    NtfSubscriptionControl-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                notificationRecipientAddress:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/Uri'
+                notificationTypes:
+                  type: array
+                  uniqueItems: true
+                  items:
+                    $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationType'
+                scope:
+                  $ref: '#/components/schemas/Scope'
+                notificationFilter:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/JexConditions'                
+            HeartbeatControl:
+              $ref: '#/components/schemas/HeartbeatControl-Single'
+    HeartbeatControl-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                heartbeatNtfPeriod:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                triggerHeartbeatNtf:
+                  type: boolean
+                  default: FALSE
+                  writeOnly: true
+#-------- Definition of YAML arrays for name-contained IOCs ----------------------
+    NtfSubscriptionControl-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/NtfSubscriptionControl-Single'
+
+
+#-------- Definitions in TS 28.623 for TS 28.532 ---------------------------------
+    resources-subscriptionControlNrm:
+      oneOf:
+       - $ref: '#/components/schemas/NtfSubscriptionControl-Single'
+       - $ref: '#/components/schemas/HeartbeatControl-Single'       

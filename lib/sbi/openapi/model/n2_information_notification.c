@@ -17,7 +17,9 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_creat
     char *an_n2_ipv6_addr,
     OpenAPI_guami_t *guami,
     bool is_notify_source_ng_ran,
-    int notify_source_ng_ran
+    int notify_source_ng_ran,
+    char *notif_correlation_id,
+    OpenAPI_list_t *to_release_session_info
 )
 {
     OpenAPI_n2_information_notification_t *n2_information_notification_local_var = ogs_malloc(sizeof(OpenAPI_n2_information_notification_t));
@@ -36,6 +38,8 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_creat
     n2_information_notification_local_var->guami = guami;
     n2_information_notification_local_var->is_notify_source_ng_ran = is_notify_source_ng_ran;
     n2_information_notification_local_var->notify_source_ng_ran = notify_source_ng_ran;
+    n2_information_notification_local_var->notif_correlation_id = notif_correlation_id;
+    n2_information_notification_local_var->to_release_session_info = to_release_session_info;
 
     return n2_information_notification_local_var;
 }
@@ -92,6 +96,17 @@ void OpenAPI_n2_information_notification_free(OpenAPI_n2_information_notificatio
     if (n2_information_notification->guami) {
         OpenAPI_guami_free(n2_information_notification->guami);
         n2_information_notification->guami = NULL;
+    }
+    if (n2_information_notification->notif_correlation_id) {
+        ogs_free(n2_information_notification->notif_correlation_id);
+        n2_information_notification->notif_correlation_id = NULL;
+    }
+    if (n2_information_notification->to_release_session_info) {
+        OpenAPI_list_for_each(n2_information_notification->to_release_session_info, node) {
+            OpenAPI_release_session_info_free(node->data);
+        }
+        OpenAPI_list_free(n2_information_notification->to_release_session_info);
+        n2_information_notification->to_release_session_info = NULL;
     }
     ogs_free(n2_information_notification);
 }
@@ -231,6 +246,29 @@ cJSON *OpenAPI_n2_information_notification_convertToJSON(OpenAPI_n2_information_
     }
     }
 
+    if (n2_information_notification->notif_correlation_id) {
+    if (cJSON_AddStringToObject(item, "notifCorrelationId", n2_information_notification->notif_correlation_id) == NULL) {
+        ogs_error("OpenAPI_n2_information_notification_convertToJSON() failed [notif_correlation_id]");
+        goto end;
+    }
+    }
+
+    if (n2_information_notification->to_release_session_info) {
+    cJSON *to_release_session_infoList = cJSON_AddArrayToObject(item, "toReleaseSessionInfo");
+    if (to_release_session_infoList == NULL) {
+        ogs_error("OpenAPI_n2_information_notification_convertToJSON() failed [to_release_session_info]");
+        goto end;
+    }
+    OpenAPI_list_for_each(n2_information_notification->to_release_session_info, node) {
+        cJSON *itemLocal = OpenAPI_release_session_info_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_n2_information_notification_convertToJSON() failed [to_release_session_info]");
+            goto end;
+        }
+        cJSON_AddItemToArray(to_release_session_infoList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -257,6 +295,9 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     cJSON *guami = NULL;
     OpenAPI_guami_t *guami_local_nonprim = NULL;
     cJSON *notify_source_ng_ran = NULL;
+    cJSON *notif_correlation_id = NULL;
+    cJSON *to_release_session_info = NULL;
+    OpenAPI_list_t *to_release_session_infoList = NULL;
     n2_notify_subscription_id = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "n2NotifySubscriptionId");
     if (!n2_notify_subscription_id) {
         ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [n2_notify_subscription_id]");
@@ -394,6 +435,38 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
     }
     }
 
+    notif_correlation_id = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "notifCorrelationId");
+    if (notif_correlation_id) {
+    if (!cJSON_IsString(notif_correlation_id) && !cJSON_IsNull(notif_correlation_id)) {
+        ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [notif_correlation_id]");
+        goto end;
+    }
+    }
+
+    to_release_session_info = cJSON_GetObjectItemCaseSensitive(n2_information_notificationJSON, "toReleaseSessionInfo");
+    if (to_release_session_info) {
+        cJSON *to_release_session_info_local = NULL;
+        if (!cJSON_IsArray(to_release_session_info)) {
+            ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [to_release_session_info]");
+            goto end;
+        }
+
+        to_release_session_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(to_release_session_info_local, to_release_session_info) {
+            if (!cJSON_IsObject(to_release_session_info_local)) {
+                ogs_error("OpenAPI_n2_information_notification_parseFromJSON() failed [to_release_session_info]");
+                goto end;
+            }
+            OpenAPI_release_session_info_t *to_release_session_infoItem = OpenAPI_release_session_info_parseFromJSON(to_release_session_info_local);
+            if (!to_release_session_infoItem) {
+                ogs_error("No to_release_session_infoItem");
+                goto end;
+            }
+            OpenAPI_list_add(to_release_session_infoList, to_release_session_infoItem);
+        }
+    }
+
     n2_information_notification_local_var = OpenAPI_n2_information_notification_create (
         ogs_strdup(n2_notify_subscription_id->valuestring),
         n2_info_container ? n2_info_container_local_nonprim : NULL,
@@ -407,7 +480,9 @@ OpenAPI_n2_information_notification_t *OpenAPI_n2_information_notification_parse
         an_n2_ipv6_addr && !cJSON_IsNull(an_n2_ipv6_addr) ? ogs_strdup(an_n2_ipv6_addr->valuestring) : NULL,
         guami ? guami_local_nonprim : NULL,
         notify_source_ng_ran ? true : false,
-        notify_source_ng_ran ? notify_source_ng_ran->valueint : 0
+        notify_source_ng_ran ? notify_source_ng_ran->valueint : 0,
+        notif_correlation_id && !cJSON_IsNull(notif_correlation_id) ? ogs_strdup(notif_correlation_id->valuestring) : NULL,
+        to_release_session_info ? to_release_session_infoList : NULL
     );
 
     return n2_information_notification_local_var;
@@ -437,6 +512,13 @@ end:
     if (guami_local_nonprim) {
         OpenAPI_guami_free(guami_local_nonprim);
         guami_local_nonprim = NULL;
+    }
+    if (to_release_session_infoList) {
+        OpenAPI_list_for_each(to_release_session_infoList, node) {
+            OpenAPI_release_session_info_free(node->data);
+        }
+        OpenAPI_list_free(to_release_session_infoList);
+        to_release_session_infoList = NULL;
     }
     return NULL;
 }

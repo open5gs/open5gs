@@ -1,0 +1,473 @@
+openapi: 3.0.0
+info:
+  title: AMInfluence
+  version: 1.0.1
+  description: |
+    AMInfluence API Service.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+externalDocs:
+  description: >
+    3GPP TS 29.522 V17.7.0; 5G System; Network Exposure Function Northbound APIs.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/
+servers:
+  - url: '{apiRoot}/3gpp-am-influence/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+paths:
+  /{afId}/subscriptions:
+    parameters:
+      - name: afId
+        in: path
+        description: Identifier of the AF
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Read all of the active subscriptions for the AF.
+      tags:
+        - AM Influence Subscription
+      responses:
+        '200':
+          description: OK (Successful get all of the active subscriptions for the AF). 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AmInfluSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    post:
+      summary: Create a new subscription to AM influence.
+      operationId: CreateAMInfluenceSubcription
+      tags:
+        - AM Influence Subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AmInfluSub'
+      responses:
+        '201':
+          description: Create a new Individual AM Influence Subscription resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmInfluSub'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure 
+                {apiRoot}/3gpp-am-influence/v1/{afId}/subscriptions/{subscriptionId}.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        notificationDestination:
+          '{$request.body#/notificationDestination}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/AmInfluEventNotif'
+                      minItems: 1
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /{afId}/subscriptions/{subscriptionId}:
+    parameters:
+      - name: afId
+        in: path
+        description: Identifier of the AF.
+        required: true
+        schema:
+          type: string
+      - name: subscriptionId
+        in: path
+        description: Identifier of the subscription resource.
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Read an active subscription identified by the subscriptionId.
+      tags:
+        - Individual AM Influence Subscription
+      responses:
+        '200':
+          description: OK (Successful get the active subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmInfluSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Update/Replace an existing subscription resource.
+      tags:
+        - Individual AM Influence Subscription
+      requestBody:
+        description: Parameters to update/replace the existing subscription.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AmInfluSub'
+      responses:
+        '200':
+          description: OK (Successful update of the subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmInfluSub'
+        '204':
+          description: No Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Update/Replace an existing subscription resource.
+      tags:
+        - Individual AM Influence Subscription
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/AmInfluSubPatch'
+      responses:
+        '200':
+          description: OK. The subscription was modified successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmInfluSub'
+        '204':
+          description: No Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete an existing subscription.
+      tags:
+        - Individual AM Influence Subscription
+      responses:
+        '204':
+          description: No Content (Successful deletion of the existing subscription)
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes: {}
+  schemas:
+    AmInfluSub:
+      description: Represents an AM influence subscription.
+      type: object
+      properties:
+        afTransId:
+          type: string
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        externalGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        anyUeInd:
+          type: boolean
+          description: >
+            Identifies whether the AF request applies to any UE. This attribute shall
+            set to "true" if applicable for any UE, otherwise, set to "false".
+        dnnSnssaiInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnnSnssaiInformation'
+          minItems: 1
+          description: Each of the element identifies a (DNN, S-NSSAI) combination.
+        afAppIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Each of the element identifies an application.
+        highThruInd:
+          type: boolean
+        geoAreas:
+          type: array
+          items:
+            $ref: 'TS29522_AMPolicyAuthorization.yaml#/components/schemas/GeographicalArea'
+          minItems: 1
+          description: Identifies geographic areas of the user where the request is applicable.
+        policyDuration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        subscribedEvents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmInfluEvent'
+          minItems: 1
+          description: Indicates one or more AM influence related events.
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        requestTestNotification:
+          type: boolean
+          description: >
+            Set to true by the AF to request the NEF to send a test notification
+            as defined in clause 5.2.5.3 of 3GPP TS 29.122. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - afTransId
+      anyOf:
+        - required: [highThruInd]
+        - required: [geoAreas]
+      oneOf:
+        - required: [gpsi]
+        - required: [externalGroupId]
+        - required: [anyUeInd]
+    AmInfluSubPatch:
+      description: >
+        Represents parameters to request the modification of an AM influence subscription resource.
+      type: object
+      properties:
+        highThruInd:
+          type: boolean
+          nullable: true
+        geoAreas:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+          description: Identifies geographic areas of the user where the request is applicable.
+          nullable: true
+        policyDuration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSecRm'
+        dnnSnssaiInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnnSnssaiInformation'
+          minItems: 1
+          nullable: true
+          description: Each of the element identifies a (DNN, S-NSSAI) combination.
+        afAppIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          nullable: true
+          description: Each of the element identifies an application.
+        subscribedEvents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmInfluEvent'
+          minItems: 1
+          nullable: true
+          description: Indicates one or more AM influence related events.
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LinkRm'
+    AmInfluEventNotif:
+      description: Represents an AM influence event notification.
+      type: object
+      properties:
+        afTransId:
+          type: string
+        event:
+            $ref: '#/components/schemas/AmInfluEvent'
+        geoAreas:
+          type: array
+          items:
+            $ref: 'TS29522_AMPolicyAuthorization.yaml#/components/schemas/GeographicalArea'
+          minItems: 1
+          description: Identifies geographic areas of the user where the request is applicable.
+      required:
+        - event
+        - afTransId
+    DnnSnssaiInformation:
+      description: Represents a (DNN, SNSSAI) combination.
+      type: object
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+
+# ENUMERATIONS DATA TYPES
+#
+    AmInfluEvent:
+      description: Represents the service area coverage outcome event.
+      anyOf:
+        - type: string
+          enum:
+            - SERVICE_AREA_COVRG_OUTCOME
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration but
+            is not used to encode content defined in the present version of this API.
+

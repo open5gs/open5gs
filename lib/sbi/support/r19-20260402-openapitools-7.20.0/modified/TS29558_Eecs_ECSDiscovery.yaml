@@ -1,0 +1,250 @@
+openapi: 3.0.0
+
+info:
+  title: ECS ECS Discovery Service
+  version: 1.1.0
+  description: |
+    API for ECS Discovery  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.558 V19.5.0 Enabling Edge Applications;
+    Application Programming Interface (API) specification; Stage 3
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.558/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/eecs-ecsdiscovery/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.558.
+
+paths:
+  /ecs-info/discover:
+    post:
+      description: >
+        Provides ECS information requested by the service consumer.
+      operationId: GetECSDiscInfo
+      tags:
+        - ECS Information (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EcsInfoDiscoveryReq'
+      responses:
+        '200':
+          description: The requested ECS discovery information was returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcsInfoDiscoveryResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        ECSDiscNotif:
+          '{request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EcsInfoDiscNotif'
+              responses:
+                '204':
+                  description: No Content (successful notification).
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+    EcsInfoDiscoveryReq:
+      type: object
+      description: Represents the ECS Discovery request information.
+      properties:
+        ecsAddr:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        acProfs:
+          type: array
+          items:
+            $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACProfile'
+          minItems: 1
+        connInf:
+          type: array
+          items:
+            $ref: 'TS24558_Eecs_ServiceProvisioning.yaml#/components/schemas/ConnectivityInfo'
+          minItems: 1
+        ueLoc:
+          type: array
+          items:
+            $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        appGrpId:
+          type: string
+      required:
+        - ecsAddr
+
+    EcsInfoDiscoveryResp:
+      type: object
+      description: Represents the ECS Discovrey response.
+      properties:
+        ecsInfo:
+          type: array
+          items: 
+            $ref: '#/components/schemas/EcsInfo'
+          minItems: 1
+      required:
+        - ecsInfo
+
+    EcsInfo:
+      type: object
+      description: Represents the discovered ECS information.
+      properties:
+        ecs:
+          $ref: '#/components/schemas/ECSProfile'
+        lifeTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - ecs
+
+    ECSProfile:
+      type: object
+      description: Represents the ECS profile information.
+      properties:
+        endPt:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        ecspId:
+          type: string
+        splVal:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SpatialValidityCond'
+        suppPlmns:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupportedPlmn'
+          minItems: 1
+      required:
+        - endPt
+
+    SupportedPlmn:
+      type: object
+      description: Represents supported PLMN and the related ECSPs information.
+      properties:
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        suppEcsps:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupportedEcsp'
+          minItems: 1
+        pduConf:
+           $ref: '#/components/schemas/PduConfiguration'
+
+    SupportedEcsp:
+      type: object
+      description: Represents the ECSPs information.
+      properties:
+        ecspId:
+          type: string
+        easIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - ecspId
+        - easIds
+
+    PduConfiguration:
+      type: object
+      description: Represents the PDU configuration information of the ECS.
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+      required:
+        - snssai
+        - dnn
+
+    EcsInfoDiscNotif:
+      type: object
+      description: Represents the ECS Discovery notification information.
+      properties:
+        ecsInfo:
+          type: array
+          items: 
+            $ref: '#/components/schemas/EcsInfo'
+          minItems: 1
+      required:
+        - ecsInfo

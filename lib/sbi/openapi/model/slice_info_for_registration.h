@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_slice_info_for_registration_s OpenAPI_slice_info_for_registration_t;
 #include "allowed_nssai.h"
 #include "mapping_of_snssai.h"
 #include "snssai.h"
@@ -21,8 +22,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_slice_info_for_registration_s OpenAPI_slice_info_for_registration_t;
-typedef struct OpenAPI_slice_info_for_registration_s {
+struct OpenAPI_slice_info_for_registration_s {
     OpenAPI_list_t *subscribed_nssai;
     struct OpenAPI_allowed_nssai_s *allowed_nssai_current_access;
     struct OpenAPI_allowed_nssai_s *allowed_nssai_other_access;
@@ -39,7 +39,7 @@ typedef struct OpenAPI_slice_info_for_registration_s {
     int suppress_nssrg_ind;
     bool is_nsag_supported;
     int nsag_supported;
-} OpenAPI_slice_info_for_registration_t;
+};
 
 OpenAPI_slice_info_for_registration_t *OpenAPI_slice_info_for_registration_create(
     OpenAPI_list_t *subscribed_nssai,

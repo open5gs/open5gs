@@ -11,7 +11,11 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_create(
     bool is_dstt_port_num,
     int dstt_port_num,
     bool is_dstt_resid_time,
-    int dstt_resid_time
+    int dstt_resid_time,
+    bool is_mtu_ipv4,
+    int mtu_ipv4,
+    bool is_mtu_ipv6,
+    int mtu_ipv6
 )
 {
     OpenAPI_tsn_bridge_info_t *tsn_bridge_info_local_var = ogs_malloc(sizeof(OpenAPI_tsn_bridge_info_t));
@@ -24,6 +28,10 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_create(
     tsn_bridge_info_local_var->dstt_port_num = dstt_port_num;
     tsn_bridge_info_local_var->is_dstt_resid_time = is_dstt_resid_time;
     tsn_bridge_info_local_var->dstt_resid_time = dstt_resid_time;
+    tsn_bridge_info_local_var->is_mtu_ipv4 = is_mtu_ipv4;
+    tsn_bridge_info_local_var->mtu_ipv4 = mtu_ipv4;
+    tsn_bridge_info_local_var->is_mtu_ipv6 = is_mtu_ipv6;
+    tsn_bridge_info_local_var->mtu_ipv6 = mtu_ipv6;
 
     return tsn_bridge_info_local_var;
 }
@@ -81,6 +89,20 @@ cJSON *OpenAPI_tsn_bridge_info_convertToJSON(OpenAPI_tsn_bridge_info_t *tsn_brid
     }
     }
 
+    if (tsn_bridge_info->is_mtu_ipv4) {
+    if (cJSON_AddNumberToObject(item, "mtuIpv4", tsn_bridge_info->mtu_ipv4) == NULL) {
+        ogs_error("OpenAPI_tsn_bridge_info_convertToJSON() failed [mtu_ipv4]");
+        goto end;
+    }
+    }
+
+    if (tsn_bridge_info->is_mtu_ipv6) {
+    if (cJSON_AddNumberToObject(item, "mtuIpv6", tsn_bridge_info->mtu_ipv6) == NULL) {
+        ogs_error("OpenAPI_tsn_bridge_info_convertToJSON() failed [mtu_ipv6]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -93,6 +115,8 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_parseFromJSON(cJSON *tsn_brid
     cJSON *dstt_addr = NULL;
     cJSON *dstt_port_num = NULL;
     cJSON *dstt_resid_time = NULL;
+    cJSON *mtu_ipv4 = NULL;
+    cJSON *mtu_ipv6 = NULL;
     bridge_id = cJSON_GetObjectItemCaseSensitive(tsn_bridge_infoJSON, "bridgeId");
     if (bridge_id) {
     if (!cJSON_IsNumber(bridge_id)) {
@@ -125,6 +149,22 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_parseFromJSON(cJSON *tsn_brid
     }
     }
 
+    mtu_ipv4 = cJSON_GetObjectItemCaseSensitive(tsn_bridge_infoJSON, "mtuIpv4");
+    if (mtu_ipv4) {
+    if (!cJSON_IsNumber(mtu_ipv4)) {
+        ogs_error("OpenAPI_tsn_bridge_info_parseFromJSON() failed [mtu_ipv4]");
+        goto end;
+    }
+    }
+
+    mtu_ipv6 = cJSON_GetObjectItemCaseSensitive(tsn_bridge_infoJSON, "mtuIpv6");
+    if (mtu_ipv6) {
+    if (!cJSON_IsNumber(mtu_ipv6)) {
+        ogs_error("OpenAPI_tsn_bridge_info_parseFromJSON() failed [mtu_ipv6]");
+        goto end;
+    }
+    }
+
     tsn_bridge_info_local_var = OpenAPI_tsn_bridge_info_create (
         bridge_id ? true : false,
         bridge_id ? bridge_id->valuedouble : 0,
@@ -132,7 +172,11 @@ OpenAPI_tsn_bridge_info_t *OpenAPI_tsn_bridge_info_parseFromJSON(cJSON *tsn_brid
         dstt_port_num ? true : false,
         dstt_port_num ? dstt_port_num->valuedouble : 0,
         dstt_resid_time ? true : false,
-        dstt_resid_time ? dstt_resid_time->valuedouble : 0
+        dstt_resid_time ? dstt_resid_time->valuedouble : 0,
+        mtu_ipv4 ? true : false,
+        mtu_ipv4 ? mtu_ipv4->valuedouble : 0,
+        mtu_ipv6 ? true : false,
+        mtu_ipv6 ? mtu_ipv6->valuedouble : 0
     );
 
     return tsn_bridge_info_local_var;

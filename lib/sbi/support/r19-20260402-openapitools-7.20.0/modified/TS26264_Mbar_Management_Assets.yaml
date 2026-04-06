@@ -1,0 +1,273 @@
+openapi: 3.0.0
+info:
+  title: Mbar_Management_Assets
+  version: 1.0.0
+  description: |
+    Base Avatar Repository Management API - Assets
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Assets
+    description: 'Avatar Asset Management'
+
+externalDocs:
+  description: 'TS 26.264 V19.1.0; IMS-based AR Real-Time Communication'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.264/'
+
+servers:
+  - url: '{apiRoot}/3gpp-mbar-management/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in 3GPP TS 29.501
+
+security:
+  - {}
+  - OAuth2: []
+
+paths:
+  /avatars/{avatarId}/assets:
+    parameters:
+      - name: avatarId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The unique identifier of the parent Avatar resource'
+    post:
+      tags:
+        - Assets
+      operationId: createAsset
+      summary: 'Create a new asset resource in the BAR'
+      description: 'Create a new Asset resource in the BAR under the parent Base Avatar.'
+      security:
+        - OAuth2:
+          - asset_create
+      requestBody:
+        description: 'A JSON representation of an Asset'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+      responses:
+        '201':
+          description: 'Asset Created'
+          headers:
+            Location:
+              description: 'URL of the newly created Asset resource'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/Url'
+          content:
+            multipart/form-data:
+              schema:
+                type: object
+                properties:
+                  asset:
+                    $ref: '#/components/schemas/Asset'
+                    description: 'A JSON representation of an Asset'
+                  assetData:
+                    type: array
+                    items: 
+                      type: string
+                      format: binary
+                    description: 'Array of binary files for the asset components.'
+                required:
+                  - asset
+              encoding:
+                asset:
+                  contentType: application/json
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /avatars/{avatarId}/assets/{assetId}:
+    parameters:
+      - name: avatarId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The unique identifier of the Avatar resource'
+      - name: assetId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The unique identifier of the Asset resource'
+    get:
+      tags:
+        - Assets
+      operationId: getAsset
+      summary: 'Retrieve a previously created or uploaded asset'
+      security:
+        - OAuth2:
+          - asset_retrieve
+      responses:
+        '200':
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      tags:
+        - Assets
+      operationId: updateAsset
+      summary: 'Upload or update asset data'
+      security:
+        - OAuth2:
+          - asset_update
+      requestBody:
+        description: 'A JSON representation of an Asset'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+      responses:
+        '200':
+          description: 'Asset Updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        '204':
+          description: 'Asset Unchanged'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      tags:
+        - Assets
+      operationId: deleteAsset
+      summary: 'Remove and delete an asset'
+      security:
+        - OAuth2:
+          - asset_delete
+      responses:
+        '204':
+          description: 'Asset Deleted'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            asset_create: Create Asset resource
+            asset_retrieve: Retrieve Asset resource
+            asset_update: Update Asset resource
+            asset_delete: Delete Asset resource
+
+  schemas:
+    Asset:
+      type: object
+      description: 'Asset resource as defined in Table B.1-7 of TS 26.264.'
+      required:
+        - namespace
+      properties:
+        assetId:
+          allOf:
+            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+            - readOnly: true
+              description: 'A unique identifier assigned to an asset by the BAR on creation. The assetId is scoped by the avatarId'
+        namespace:
+          type: string
+          description: 'A namespace defining the intended usage of the asset, as exemplified by names such as "human/head" or "accessory/hat"'
+          example: 'human/head'
+        LoD:
+          type: array
+          items:
+            type: string
+          description: 'A list of available LoDs for the corresponding asset'
+        assetData:
+          type: array
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/Url'
+          description: |
+            List of URLs that point to the asset data. For creation/update of an asset, all components shall be provided as part of a multi-part mime body.
+            The primary URL shall reference an ARF document describing all components.
+        associatedInfo:
+          allOf:
+            - $ref: 'TS26264_CommonData.yaml#/components/schemas/AssociatedInfo'
+            - readOnly: true
+              description: 'Associated information related to the Asset'

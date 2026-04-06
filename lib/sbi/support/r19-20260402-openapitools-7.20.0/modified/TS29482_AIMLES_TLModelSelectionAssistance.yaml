@@ -1,0 +1,90 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLE Transfer Learning Model Selection Assistance Service
+  version: 1.0.0
+  description: |
+    API for AIMLES Transfer Learning Model Selection Assistance Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.0.0; Service Enabler Architecture Layer for Verticals (SEAL); Artificial
+    Intelligence Machine Learning Enablement (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/aimles-tlmsa/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /pre-trained-models:
+    get:
+      summary: Obtain AIMLE TL Model Selection Assistance.
+      operationId: GetTlModelSelectionAssistance
+      tags:
+        - AIMLE TL Model Selection Assistance (Collection)
+      parameters:
+        - name: filt-criteria
+          in: query
+          description: >
+             Represents the AIMLE Model Selection Assistance filtering criteria.
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: 'TS24560_Aimles_UeTLModelSelectionAssistance.yaml#/components/schemas/TlModelSelectAssistReq'
+        - name: supported-features
+          in: query
+          description: >
+            Contains supported features information, used to negotiate the applicability
+            of optional features.
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            The response body contains the selected pre-trained ML models for TL enablement service.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS24560_Aimles_UeTLModelSelectionAssistance.yaml#/components/schemas/TlModelSelectAssistResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}

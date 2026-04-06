@@ -36,7 +36,8 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NAUSF_AUTH;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nausf_auth);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS;

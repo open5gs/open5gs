@@ -1,0 +1,3439 @@
+openapi: 3.0.0
+
+info:
+  version: '-'
+  title: Unified Data Repository Service API file for policy data
+  description: |
+    The API version is defined in 3GPP TS 29.504  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.519 V19.5.0; 5G System; Usage of the Unified Data Repository Service for Policy Data,
+    Application Data and Structured Data for Exposure.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.519/'
+
+paths:
+  /policy-data/ues/{ueId}:
+    parameters:
+     - name: ueId
+       in: path
+       required: true
+       schema:
+         $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+    get:
+      summary: Retrieve the policy data for a subscriber
+      operationId: ReadPolicyData
+      tags:
+        - PolicyDataForIndividualUe (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:read
+      parameters:
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: data-subset-names
+          in: query
+          style: form
+          explode: false
+          description: List of policy data subset names
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/PolicyDataSubset'
+            minItems: 2
+      responses:
+        '200':
+          description: Upon success, a response body containing policy data shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDataForIndividualUe'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/ues/{ueId}/am-data:
+    parameters:
+     - name: ueId
+       in: path
+       required: true
+       schema:
+         $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+    get:
+      summary: Retrieves the access and mobility policy data for a subscriber
+      operationId: ReadAccessAndMobilityPolicyData
+      tags:
+        - AccessAndMobilityPolicyData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:am-data:read
+      parameters:
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            Upon success, a response body containing access and mobility policies shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmPolicyData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Modify the access and mobility policy data for a subscriber.
+      operationId: UpdateAccessAndMobilityPolicyData
+      tags:
+        - AccessAndMobilityPolicyData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:am-data:modify
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/AmPolicyDataPatch'
+      responses:
+        '200':
+          description: >
+            Upon success, a response body containing access and mobility policies is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmPolicyData'
+        '204':
+          description: >
+            Successful case. The resource has been successfully updated and no additional content is
+            to be sent in the response message.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/ues/{ueId}/ue-policy-set:
+    parameters:
+     - name: ueId
+       in: path
+       required: true
+       schema:
+         $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+    get:
+      summary: Retrieves the UE policy set data for a subscriber
+      operationId: ReadUEPolicySet
+      tags:
+        - UEPolicySet (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:ue-policy-set:read
+      parameters:
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Upon success, a response body containing UE policies shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UePolicySet'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Create or modify the UE policy set data for a subscriber
+      operationId: CreateOrReplaceUEPolicySet
+      tags:
+        - UEPolicySet (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:ue-policy-set:create
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UePolicySet'
+      responses:
+        '201':
+          description: >
+            Successful case. The resource has been successfully created and a response body
+            containing a representation of the created UEPolicySet resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UePolicySet'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '200':
+          description: >
+            Successful case. The resource has been successfully created and a response body
+            containing UE policies shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UePolicySet'
+        '204':
+          description: >
+            Successful case. The resource has been successfully updated and no additional content
+            is to be sent in the response message.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Modify the UE policy set data for a subscriber
+      operationId: UpdateUEPolicySet
+      tags:
+        - UEPolicySet (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:ue-policy-set:modify
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/UePolicySetPatch'
+      responses:
+        '204':
+          description: >
+            Successful case. The resource has been successfully updated and no additional content is
+            to be sent in the response message.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/ues/{ueId}/sm-data:
+    get:
+      summary: Retrieves the session management policy data for a subscriber
+      operationId: ReadSessionManagementPolicyData
+      tags:
+        - SessionManagementPolicyData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:sm-data:read
+      parameters:
+       - name: ueId
+         in: path
+         required: true
+         schema:
+           $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+       - name: snssai
+         in: query
+         required: false
+         content:
+           application/json:
+             schema:
+               $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+       - name: multi-pdu-sess-info
+         in: query
+         required: false
+         content:
+           application/json:
+             schema:
+               type: array
+               items:
+                 $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionInfo'
+               minItems: 2
+       - name: dnn
+         in: query
+         required: false
+         schema:
+           $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+       - name: fields
+         in: query
+         description: attributes to be retrieved
+         required: false
+         style: form
+         explode: false
+         schema:
+           type: array
+           items:
+             type: string
+           minItems: 1
+       - name: supp-feat
+         in: query
+         description: Supported Features
+         required: false
+         schema:
+           $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Upon success, a response body containing SmPolicyData shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmPolicyData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414' 
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Modify the session management policy data for a subscriber
+      operationId: UpdateSessionManagementPolicyData
+      tags:
+        - SessionManagementPolicyData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:sm-data:modify
+      parameters:
+       - name: ueId
+         in: path
+         required: true
+         schema:
+           $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      requestBody: 
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/SmPolicyDataPatch'
+      responses:
+        '204':
+          description: >
+            Successful case. The resource has been successfully updated and no
+            additional content is to be sent in the response message.
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmPolicyData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/ues/{ueId}/sm-data/{usageMonId}:
+    get:
+      summary: Retrieve a usage monitoring resource
+      operationId: ReadUsageMonitoringInformation
+      tags:
+        - UsageMonitoringInformation (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:sm-data:read
+      parameters:
+        - name: ueId
+          in: path
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: usageMonId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Successful case. The usage monitoring data is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageMonData'
+        '204':
+          description: The resource was found but no usage monitoring data is available.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Create a usage monitoring resource
+      operationId: CreateUsageMonitoringResource
+      tags:
+        - UsageMonitoringInformation (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:sm-data:create
+      parameters:
+       - name: ueId
+         in: path
+         required: true
+         schema:
+           $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+       - name: usageMonId
+         in: path
+         required: true
+         schema:
+           type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsageMonData'
+      responses:
+        '201':
+          description: >
+            Successful case. The resource has been successfully created and a response body is
+            returned containing a representation of the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageMonData'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete a usage monitoring resource
+      operationId: DeleteUsageMonitoringInformation
+      tags:
+        - UsageMonitoringInformation (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:sm-data:modify
+      parameters:
+       - name: ueId
+         in: path
+         required: true
+         schema:
+           $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+       - name: usageMonId
+         in: path
+         required: true
+         schema:
+           type: string
+      responses:
+        '204':
+          description: Successful case. The resource has been successfully deleted.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/sponsor-connectivity-data/{sponsorId}:
+    parameters:
+     - name: sponsorId
+       in: path
+       required: true
+       schema:
+         type: string
+    get:
+      summary: Retrieves the sponsored connectivity information for a given sponsorId
+      operationId: ReadSponsorConnectivityData
+      tags:
+        - SponsorConnectivityData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:sponsor-connectivity-data:read
+      parameters:
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            Upon success, a response body containing Sponsor Connectivity Data shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SponsorConnectivityData'
+        '204':
+          description: The resource was found but no Sponsor Connectivity Data is available.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/bdt-data:
+    get:
+      summary: Retrieves the BDT data collection
+      operationId: ReadBdtData
+      tags:
+        - BdtData (Store)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:bdt-data:read
+      parameters:
+        - name: bdt-ref-ids
+          in: query
+          description: List of the BDT reference identifiers.
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: 'TS29122_CommonData.yaml#/components/schemas/BdtReferenceId'
+            minItems: 1
+          style: form
+          explode: false
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Upon success, a response body containing the BDT data shall be returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BdtData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/bdt-data/{bdtReferenceId}:
+    parameters:
+     - name: bdtReferenceId
+       in: path
+       required: true
+       schema:
+         $ref: 'TS29122_CommonData.yaml#/components/schemas/BdtReferenceId'
+    get:
+      summary: Retrieves the BDT data information associated with a BDT reference Id
+      operationId: ReadIndividualBdtData
+      tags:
+        - IndividualBdtData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:bdt-data:read
+      parameters:
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Upon success, a response body containing the BDT data shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BdtData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Creates an BDT data resource associated with an BDT reference Id
+      operationId: CreateIndividualBdtData
+      tags:
+        - IndividualBdtData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:bdt-data:create
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BdtData'
+      responses:
+        '201':
+          description: Successful case. The resource has been successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BdtData'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Modifies an BDT data resource associated with an BDT reference Id
+      operationId: UpdateIndividualBdtData
+      tags:
+        - IndividualBdtData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:bdt-data:modify
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/BdtDataPatch'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BdtData'
+        '204':
+          description: >
+            Successful case. The resource has been successfully updated and no additional content
+            is to be sent in the response message.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Deletes an BDT data resource associated with an BDT reference Id
+      operationId: DeleteIndividualBdtData
+      tags:
+        - IndividualBdtData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:bdt-data:modify
+      responses:
+        '204':
+          description: Successful case. The resource has been successfully deleted.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/subs-to-notify:
+    get:
+      summary: Retrieves the list of Individual Policy Data Subscription resources
+      operationId: ReadPolicyDataSubscriptions
+      tags:
+        - PolicyDataSubscriptions (Collection)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:subs-to-notify:read
+      parameters:
+        - name: mon-resources
+          in: query
+          style: form
+          explode: false
+          description: List of monitored resources whose subscriptions are requested.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              description: Contains the apiSpecificResourceUriPart of the resource URI.
+            minItems: 1
+        - name: ue-id
+          in: query
+          description: Represents the Subscription Identifier SUPI or GPSI.
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            Upon success, a response body containing a list of Individual Policy Data
+            Subscription resources shall be returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDataSubscription'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    post:
+      summary: Create a subscription to receive notification of policy data changes
+      operationId: CreateIndividualPolicyDataSubscription
+      tags:
+        - PolicyDataSubscriptions (Collection)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:subs-to-notify:create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyDataSubscription'
+      responses:
+        '201':
+          description: >
+            Upon success, a response body containing a representation of each Individual
+            subscription resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDataSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        policyDataChangeNotification:
+          '{$request.body#/notificationUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/PolicyDataChangeNotification'
+                      minItems: 1
+              responses:
+                '204':
+                  description: No Content, Notification was successful
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/subs-to-notify/{subsId}:
+    parameters:
+     - name: subsId
+       in: path
+       required: true
+       schema:
+         type: string
+    get:
+      summary: Retrieves Individual Policy Subscription data
+      operationId: ReadIndividualPolicySubscriptionData
+      tags:
+        - IndividualPolicySubscriptionData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:subs-to-notify:read
+      responses:
+        '200':
+          description: >
+            Upon success, a response body containing Policy Data Subscription shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDataSubscription'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414' 
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Modify a subscription to receive notification of policy data changes
+      operationId: ReplaceIndividualPolicyDataSubscription
+      tags:
+        - IndividualPolicyDataSubscription (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:subs-to-notify:modify
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyDataSubscription'
+      responses:
+        '200':
+          description: The individual subscription resource was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDataSubscription'
+        '204':
+          description: >
+            The individual subscription resource was updated successfully and no
+            additional content is to be sent in the response message.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415' 
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete the individual Policy Data subscription
+      operationId: DeleteIndividualPolicyDataSubscription
+      tags:
+        - IndividualPolicyDataSubscription (Document)
+      responses:
+        '204':
+          description: Upon success, an empty response body shall be returned.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/ues/{ueId}/operator-specific-data:
+    get:
+      summary: Retrieve the operator specific policy data of an UE
+      operationId: ReadOperatorSpecificData
+      tags:
+        - OperatorSpecificData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:operator-specific-data:read
+      parameters:
+        - name: ueId
+          in: path
+          description: UE Id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: fields
+          in: query
+          description: attributes to be retrieved
+          required: false
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: 'TS29505_Subscription_Data.yaml#/components/schemas/OperatorSpecificDataContainer'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify the operator specific policy data of a UE
+      operationId: UpdateOperatorSpecificData
+      tags:
+        - OperatorSpecificData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:operator-specific-data:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: UE Id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+        required: true
+      responses:
+        '204':
+          description: No content. Response to successful modification.
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Create or modify the operator specific policy data of a UE
+      operationId: ReplaceOperatorSpecificData
+      tags:
+        - OperatorSpecificData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:operator-specific-data:create
+      parameters:
+        - name: ueId
+          in: path
+          description: UE Id
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                $ref: 'TS29505_Subscription_Data.yaml#/components/schemas/OperatorSpecificDataContainer'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: 'TS29505_Subscription_Data.yaml#/components/schemas/OperatorSpecificDataContainer'
+        '201':
+          description: >
+            Successful case. When the feature OSDResource_Create_Delete is supported
+            and the resource has been successfully created, a response body containing a
+            representation of the created OperatorSpecificData resource shall be returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: 'TS29505_Subscription_Data.yaml#/components/schemas/OperatorSpecificDataContainer'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '204':
+          description: The resource has been successfully updated.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: When the feature OSDResource_Create_Delete is supported, delete OperatorSpecificData resource
+      operationId: DeleteOperatorSpecificData
+      tags:
+        - OperatorSpecificData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:ues:operator-specific-data:modify
+      parameters:
+       - name: ueId
+         in: path
+         required: true
+         schema:
+           $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+      responses:
+        '204':
+          description: Successful case. The resource has been successfully deleted.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/plmns/{plmnId}/ue-policy-set:
+    parameters:
+     - name: plmnId
+       in: path
+       required: true
+       schema:
+         $ref: 'TS29505_Subscription_Data.yaml#/components/schemas/VarPlmnId'
+    get:
+      summary: Retrieve the UE policy set data for an H-PLMN
+      operationId: ReadPlmnUePolicySet
+      tags:
+        - PlmnUePolicySet (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:plmns:ue-policy-set:read
+      parameters:
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Upon success, a response body containing UE policies shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UePolicySet'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '412':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/412'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/slice-control-data/{snssai}:
+    parameters:
+     - name: snssai
+       in: path
+       required: true
+       schema:
+         $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+    get:
+      summary: Retrieves a network Slice specific policy control data resource
+      operationId: ReadSlicePolicyControlData
+      tags:
+        - SlicePolicyControlData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:slice-control-data:read
+      parameters:
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            Successful case. The network slice specific policy control data shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SlicePolicyData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Modify a network Slice specific policy control data resource
+      operationId: UpdateSlicePolicyControlData
+      tags:
+        - SlicePolicyControlData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:slice-control-data:modify
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/SlicePolicyDataPatch'
+      responses:
+        '200':
+          description: >
+            The resource has been successfully updated and a response body containing network
+            slice specific policy control data shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SlicePolicyData'
+        '204':
+          description: >
+            The resource has been successfully updated and no additional content is
+            to be sent in the response message.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/mbs-session-pol-data/{polSessionId}:
+    parameters:
+       - name: polSessionId
+         description: >
+           Represents the identifier of the MBS Session Policy Control Data.
+         in: path
+         required: true
+         schema:
+           $ref: '#/components/schemas/MbsSessPolDataId'
+
+    get:
+      summary: Retrieve MBS Session Policy Control Data for an MBS Session.
+      operationId: GetMBSSessPolCtrlData
+      tags:
+        - MBSSessionPolicyControlData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:mbs-session-pol-data:read
+      responses:
+        '200':
+          description: >
+            OK. The requested MBS Session Policy Control Data is successfully returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MbsSessPolCtrlData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/pdtq-data:
+    get:
+      summary: Retrieves the PDTQ data collection
+      operationId: ReadPdtqData
+      tags:
+        - PdtqData (Store)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:pdtq-data:read
+      parameters:
+        - name: pdtq-ref-ids
+          in: query
+          description: List of the PDTQ reference identifiers.
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: 'TS29543_Npcf_PDTQPolicyControl.yaml#/components/schemas/PdtqReferenceId'
+            minItems: 1
+          style: form
+          explode: false
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Upon success, a response body containing the PDTQ data shall be returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PdtqData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/pdtq-data/{pdtqReferenceId}:
+    parameters:
+     - name: pdtqReferenceId
+       in: path
+       required: true
+       schema:
+         type: string
+    get:
+      summary: Retrieves the PDTQ data information associated with a PDTQ reference Id
+      operationId: ReadIndividualPdtqData
+      tags:
+        - IndividualPdtqData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:pdtq-data:read
+      parameters:
+        - name: supp-feat
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Upon success, a response body containing the PDTQ data shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdtqData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Creates a PDTQ data resource associated with a PDTQ reference Id
+      operationId: CreateIndividualPdtqData
+      tags:
+        - IndividualPdtqData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:pdtq-data:create
+      requestBody: 
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PdtqData'
+      responses:
+        '201':
+          description: Successful case. The resource has been successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdtqData'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Modifies a PDTQ data resource associated with a PDTQ reference Id
+      operationId: UpdateIndividualPdtqData
+      tags:
+        - IndividualPdtqData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:pdtq-data:modify
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/PdtqDataPatch'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdtqData'
+        '204':
+          description: >
+            Successful case. The resource has been successfully updated and no additional content
+            is to be sent in the response message.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Deletes a PDTQ data resource associated with a PDTQ reference Id
+      operationId: DeleteIndividualPdtqData
+      tags:
+        - IndividualPdtqData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:pdtq-data:modify
+      responses:
+        '204':
+          description: Successful case. The resource has been successfully deleted.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /policy-data/group-control-data/{intGroupId}:
+    parameters:
+     - name: intGroupId
+       in: path
+       required: true
+       description: >
+         Represents the identifier of the internal group of subscriber(s).
+       schema:
+         $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+
+    get:
+      summary: Retrieves group specific policy control data.
+      operationId: ReadGroupPolCtrlData
+      tags:
+        - GroupPolicyControlData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:group-control-data:read
+      parameters:
+        - name: supp-feat
+          in: query
+          description: Represents the supported features.
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            Successful case. The requested group specific policy control data for the
+            targeted 5G VN group shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupPolicyData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify existing group specific policy control data.
+      operationId: ModifyGroupPolCtrlData
+      tags:
+        - GroupPolicyControlData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:policy-data
+          - nudr-dr:policy-data:group-control-data:modify
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/GroupPolicyDataPatch'
+      responses:
+        '200':
+          description: >
+            The resource is successfully modified and a representation of the updated resource
+            (i.e., updated group specific policy control data) is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupPolicyData'
+        '204':
+          description: >
+            The resource is successfully modified and no content is returned in the response body.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  schemas:
+
+    PolicyDataForIndividualUe:
+      description: Contains policy data for a given subscriber.
+      type: object
+      properties:
+        uePolicyDataSet:
+          $ref: '#/components/schemas/UePolicySet'
+        smPolicyDataSet:
+          $ref: '#/components/schemas/SmPolicyData'
+        amPolicyDataSet:
+          $ref: '#/components/schemas/AmPolicyData'
+        umData:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UsageMonData'
+          minProperties: 1
+          description: >
+            Contains UM policies. The value of the limit identifier is used as the key of the map.
+        operatorSpecificDataSet:
+          type: object
+          additionalProperties:
+            $ref: 'TS29505_Subscription_Data.yaml#/components/schemas/OperatorSpecificDataContainer'
+          minProperties: 1
+          description: >
+            Contains Operator Specific Data resource data. The key of the map is operator
+            specific data element name and the value is the operator specific data of the UE.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    AmPolicyData:
+      description: Contains the AM policy data for a given subscriber.
+      type: object
+      properties:
+        praInfos:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 1
+          description: >
+            Contains Presence reporting area information. The praId attribute within the
+            PresenceInfo data type is the key of the map.
+        subscCats:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        chfInfo:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/ChargingInformation'
+        chfGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        subscSpendingLimits:
+          type: boolean
+          description: >
+            Indicates whether the PCF must enforce Access and Mobility management related
+            policies based on subscriber spending limits.
+        spendLimInfo:
+          type: object
+          additionalProperties:
+            $ref: 'TS29594_Nchf_SpendingLimitControl.yaml#/components/schemas/PolicyCounterInfo'
+          minProperties: 1
+          description: >
+            Contains the status of the requested policy counters for UE.
+            The key of the map is the attribute policyCounterId.
+        restriStatus:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestrictedStatus'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    AmPolicyDataPatch:
+      description: Contains the modifiable AM policy data for a given subscriber.
+      type: object
+      properties:
+        restriStatus:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestrictedStatus'
+          minItems: 1
+          description: >
+            List of restricted status that contains the reason for the status and the time
+            stamp of when the status was stored.
+        spendLimInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PolicyCounterInfoRm'
+          minProperties: 1
+          description: >
+            Contains the status of the requested policy counters for UE.
+            The key of the map is the attribute policyCounterId.
+
+    UePolicySet:
+      description: Contains the UE policy data for a given subscriber.
+      type: object
+      properties:
+        praInfos:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 1
+          description: >
+            Contains Presence reporting area information. The praId attribute within the
+            PresenceInfo data type is the key of the map.
+        subscCats:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        uePolicySections:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UePolicySection'
+          minProperties: 1
+          description: >
+            Contains the UE Policy Sections. The UE Policy Section Identifier is used as
+            the key of the map.
+        upsis:
+          type: array
+          items:
+            $ref: '#/components/schemas/Upsi'
+          minItems: 1
+        allowedRouteSelDescs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PlmnRouteSelectionDescriptor'
+          minProperties: 1
+          description: >
+            Contains allowed route selection descriptors per serving PLMN for a UE.
+            The serving PLMN identifier is the key of the map.
+        andspInd:
+          type: boolean
+        epsUrspInd:
+          type: boolean
+          description: Indication of UE supporting URSP provisioning in EPS.
+        vpsUrspInd:
+          type: boolean
+          description: Indication of UE supporting VPLMN-specific URSP.
+        urspEnfInd:
+          type: boolean
+          description: Indication of UE supporting URSP enforcement report.
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        osIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/OsId'
+          minItems: 1
+        chfInfo:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/ChargingInformation'
+        chfGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        subscSpendingLimits:
+          type: boolean
+          description: >
+            Indicates whether the PCF must enforce UE policies based on subscriber spending limits.
+        spendLimInfo:
+          type: object
+          additionalProperties:
+            $ref: 'TS29594_Nchf_SpendingLimitControl.yaml#/components/schemas/PolicyCounterInfo'
+          minProperties: 1
+          description: >
+            Contains the status of the requested policy counters for UE.
+            The key of the map is the attribute policyCounterId.
+        tracingReq:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        resetIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        restriStatus:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestrictedStatus'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    UePolicySetPatch:
+      description: Contains the UE policy set for a given subscriber.
+      type: object
+      properties:
+        uePolicySections:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UePolicySection'
+          minProperties: 1
+          description: >
+            Contains the UE Policy Sections. The UE Policy Section Identifier is used
+            as the key of the map.
+        upsis:
+          type: array
+          items:
+            $ref: '#/components/schemas/Upsi'
+          minItems: 1
+        andspInd:
+          type: boolean
+        epsUrspInd:
+          type: boolean
+          description: Indication of UE supporting URSP provisioning in EPS.
+        vpsUrspInd:
+          type: boolean
+          description: Indication of UE supporting VPLMN-specific URSP.
+        urspEnfInd:
+          type: boolean
+          description: Indication of UE supporting URSP enforcement report.
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        osIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/OsId'
+          minItems: 1
+        restriStatus:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestrictedStatus'
+          minItems: 1
+        spendLimInfo:
+          type: object
+          nullable: true
+          additionalProperties:
+            $ref: '#/components/schemas/PolicyCounterInfoRm'
+          minProperties: 1
+          description: >
+            Contains the updated status of the requested policy counters for UE.
+            The key of the map is the attribute policyCounterId.
+
+    UePolicySection:
+      description: Contains the UE policy section.
+      type: object
+      properties:
+        uePolicySectionInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+        upsi:
+          $ref: '#/components/schemas/Upsi'
+      required:
+        - uePolicySectionInfo
+        - upsi
+
+    SmPolicyData:
+      description: Contains the SM policy data for a given subscriber.
+      type: object
+      properties:
+        smPolicySnssaiData:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SmPolicySnssaiData'
+          minProperties: 1
+          description: >
+            Contains Session Management Policy data per S-NSSAI for all the SNSSAIs
+            of the subscriber. The key of the map is the S-NSSAI.
+        umDataLimits:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UsageMonDataLimit'
+          minProperties: 1
+          description: >
+            Contains a list of usage monitoring profiles associated with the subscriber.
+            The limit identifier is used as the key of the map.
+        umData:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UsageMonData'
+          minProperties: 1
+          description: >
+            Contains the remaining allowed usage data associated with the subscriber.
+            The limit identifier is used as the key of the map.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - smPolicySnssaiData
+
+    SmPolicySnssaiData:
+      description: Contains the SM policy data for a given subscriber and S-NSSAI.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        smPolicyDnnData:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SmPolicyDnnData'
+          minProperties: 1
+          description: >
+            Session Management Policy data per DNN for all the DNNs of the indicated S-NSSAI.
+            The key of the map is the DNN.
+        ueSliceMbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SliceMbr'
+      required:
+        - snssai
+
+    SmPolicyDnnData:
+      description: Contains the SM policy data for a given DNN (and S-NSSAI).
+      type: object
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        allowedServices:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        subscCats:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        gbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        gbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        adcSupport:
+          type: boolean
+        subscSpendingLimits:
+          type: boolean
+          description: >
+            Indicates whether the PCF must enforce session management related policies based
+            on subscriber spending limits.
+        spendLimInfo:
+          type: object
+          additionalProperties:
+            $ref: 'TS29594_Nchf_SpendingLimitControl.yaml#/components/schemas/PolicyCounterInfo'
+          minProperties: 1
+          description: >
+            Contains the status of the requested policy counters for the PDU session.
+            The key of the map is the attribute policyCounterId.
+        ipv4Index:
+          $ref: '#/components/schemas/IpIndex'
+        ipv6Index:
+          $ref: '#/components/schemas/IpIndex'
+        offline:
+          type: boolean
+        online:
+          type: boolean
+        chfInfo:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/ChargingInformation'
+        chfGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        refUmDataLimitIds:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/LimitIdToMonitoringKey'
+          minProperties: 1
+          description: >
+            A reference to the UsageMonDataLimit or UsageMonData instances for this DNN and SNSSAI
+            that may also include the related monitoring key(s).
+            The key of the map is the limit identifier.
+        mpsPriority:
+          type: boolean
+        mcsPriority:
+          type: boolean
+        imsSignallingPrio:
+          type: boolean
+        mpsPriorityLevel:
+          type: integer
+        mcsPriorityLevel:
+          type: integer
+        praInfos:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 1
+          description: >
+            Contains Presence reporting area information. The praId attribute within the
+            PresenceInfo data type is the key of the map.
+        bdtRefIds:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/BdtReferenceIdRm'
+          minProperties: 1
+          description: >
+            Identifies transfer policies of background data transfer. Any string value can
+            be used as a key of the map.
+          nullable: true
+        locRoutNotAllowed:
+          type: boolean
+        sfcNotAllowed:
+          type: boolean
+        tnaps:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/TnapId'
+          minItems: 1
+          description: Contains the TNAP IDs collocated with the 5G-RG(s) of a specific user.
+        restriStatus:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestrictedStatus'
+          minItems: 1
+        headerNotAllowed:
+          type: boolean
+      required:
+        - dnn
+
+    UsageMonDataLimit:
+      description: Contains usage monitoring control data for a subscriber.
+      type: object
+      properties:
+        limitId:
+          type: string
+        scopes:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UsageMonDataScope'
+          minProperties: 1
+          description: >
+            Identifies the SNSSAI and DNN combinations to which the usage monitoring data
+            limit applies. The S-NSSAI is the key of the map.
+        umLevel:
+          $ref: '#/components/schemas/UsageMonLevel'
+        startDate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        endDate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        usageLimit:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThreshold'
+        resetPeriod:
+          $ref: '#/components/schemas/TimePeriod'
+      required:
+        - limitId
+
+    UsageMonData:
+      description: Contains remain allowed usage data for a subscriber.
+      type: object
+      properties:
+        limitId:
+          type: string
+        scopes:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UsageMonDataScope'
+          minProperties: 1
+          description: >
+            Identifies the SNSSAI and DNN combinations for remain allowed usage data
+            for a subscriber. The S-NSSAI is the key of the map.
+        umLevel:
+          $ref: '#/components/schemas/UsageMonLevel'
+        allowedUsage:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThreshold'
+        resetTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        resetIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - limitId
+
+    LimitIdToMonitoringKey:
+      description: >
+        Contains the limit identifier and the corresponding monitoring key for a given
+        S-NSSAI and DNN.
+      type: object
+      properties:
+        limitId:
+          type: string
+        monkey:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - limitId
+      nullable: true
+
+    UsageMonDataScope:
+      description: >
+        Contains a SNSSAI and DNN combinations to which the UsageMonData instance belongs to.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnn:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+      required:
+        - snssai
+
+    TimePeriod:
+      description: Contains the periodicity for the defined usage monitoring data limits.
+      type: object
+      properties:
+        period:
+          $ref: '#/components/schemas/Periodicity'
+        maxNumPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - period
+
+    SponsorConnectivityData:
+      description: >
+        Contains the sponsored data connectivity related information for a sponsor identifier.
+      type: object
+      properties:
+        aspIds:
+          type: array
+          items:
+            type: string
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - aspIds
+
+    BdtData:
+      description: Contains the background data transfer data.
+      type: object
+      properties:
+        aspId:
+          type: string
+        transPolicy:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/TransferPolicy'
+        bdtRefId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/BdtReferenceId'
+        nwAreaInfo:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/NetworkAreaInfo'
+        numOfUes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        volPerUe:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThreshold'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        trafficDes:
+          $ref: 'TS29122_ResourceManagementOfBdt.yaml#/components/schemas/TrafficDescriptor'
+        bdtpStatus:
+          $ref: '#/components/schemas/BdtPolicyStatus'
+        warnNotifEnabled:
+          description: >
+            Indicates whether the BDT warning notification is enabled or not.
+            true indicates that the BDT warning notification is enabled.
+            false (default) indicates that the BDT warning notification is disabled.
+            Default value is false.
+        energyInd:
+          type: boolean
+          default: false
+          description: >
+            Contains the Energy Indicator that indicates whether the AF is interested in
+            transferring data in time windows that consume lower energy.
+            true indicates that the AF is interested in transferring data in time windows that
+            consume lower energy.
+            false (default) indicates the AF is not interested in transferring data in time windows
+            that consume lower energy.
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        resetIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - aspId
+        - transPolicy
+
+    PolicyDataSubscription:
+      description: Identifies a subscription to policy data change notification.
+      type: object
+      properties:
+        notificationUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifId:
+          type: string
+        monitoredResourceUris:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        monResItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceItem'
+          minItems: 1
+        excludedResItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceItem'
+          minItems: 1
+        immRep:
+          type: boolean
+          description: >
+            If provided and set to true, it indicates that existing entries that
+            match this subscription shall be immediately reported in the response.
+        immReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyDataChangeNotification'
+          minItems: 1
+          description: Immediate report with existing UDR entries.
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        resetIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        subsId:
+          type: string
+      required:
+        - notificationUri
+        - monitoredResourceUris
+
+    PolicyDataChangeNotification:
+      description: Contains changed policy data for which notification was requested.
+      type: object
+      properties:
+        amPolicyData:
+          $ref: '#/components/schemas/AmPolicyData'
+        uePolicySet:
+          $ref: '#/components/schemas/UePolicySet' 
+        plmnUePolicySet:
+          $ref: '#/components/schemas/UePolicySet' 
+        smPolicyData:
+          $ref: '#/components/schemas/SmPolicyData'
+        usageMonData:
+          $ref: '#/components/schemas/UsageMonData'
+        SponsorConnectivityData:
+          $ref: '#/components/schemas/SponsorConnectivityData'
+        bdtData:
+          $ref: '#/components/schemas/BdtData'
+        opSpecData:
+          $ref: 'TS29505_Subscription_Data.yaml#/components/schemas/OperatorSpecificDataContainer'
+        opSpecDataMap:
+          type: object
+          additionalProperties:
+            $ref: 'TS29505_Subscription_Data.yaml#/components/schemas/OperatorSpecificDataContainer'
+          minProperties: 1
+          description: >
+            Operator Specific Data resource data, if changed and notification was requested.
+            The key of the map is operator specific data element name and the value is the
+            operator specific data of the UE.
+        ueId:
+         $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        sponsorId:
+          type: string
+        bdtRefId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/BdtReferenceId'
+        usageMonId:
+          type: string
+        plmnId:
+         $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        delResources:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+        notifId:
+          type: string
+        reportedFragments:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationItem'
+          minItems: 1
+        slicePolicyData:
+          $ref: '#/components/schemas/SlicePolicyData'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        pdtqData:
+          $ref: '#/components/schemas/PdtqData'
+        pdtqRefId:
+          $ref: 'TS29543_Npcf_PDTQPolicyControl.yaml#/components/schemas/PdtqReferenceId'
+        groupPolicyData:
+          $ref: '#/components/schemas/GroupPolicyData'
+        intGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+
+    PlmnRouteSelectionDescriptor:
+      description: >
+        Contains the route selection descriptors (combinations of SNSSAI, DNNs, PDU session types,
+        SSC modes and ATSSS information) allowed by subscription to the UE for a serving PLMN
+      type: object
+      properties:
+        servingPlmn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        snssaiRouteSelDescs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SnssaiRouteSelectionDescriptor'
+          minItems: 1
+      required:
+        - servingPlmn
+
+    SnssaiRouteSelectionDescriptor:
+      description: >
+        Contains the route selector parameters (DNNs, PDU session types, SSC modes and ATSSS
+        information) per SNSSAI
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnnRouteSelDescs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnnRouteSelectionDescriptor'
+          minItems: 1
+      required:
+        - snssai
+
+    DnnRouteSelectionDescriptor:
+      description: >
+        Contains the route selector parameters (PDU session types, SSC modes and ATSSS
+        information) per DNN
+      type: object
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        sscModes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SscMode'
+          minItems: 1
+        pduSessTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+          minItems: 1
+        atsssInfo:
+          description: >
+            Indicates whether MA PDU session establishment is allowed for this DNN.
+            When set to value true MA PDU session establishment is allowed for this DNN.
+          type: boolean
+          default: false
+        lboRoamAllowed:
+          type: boolean
+          description: >
+            Indicates whether LBO for the DNN and S-NSSAI is allowed when roaming.
+      required:
+        - dnn
+
+    SmPolicyDataPatch:
+      description: Contains the SM policy data for a given subscriber.
+      type: object
+      properties:
+        umData:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UsageMonData'
+          minProperties: 1
+          description: >
+            Contains the remaining allowed usage data associated with the subscriber.
+            The value of the limit identifier is used as the key of the map.
+          nullable: true
+        smPolicySnssaiData:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SmPolicySnssaiDataPatch'
+          minProperties: 1
+          description: >
+            Modifiable Session Management Policy data per S-NSSAI for all the SNSSAIs
+            of the subscriber. The key of the map is the S-NSSAI.
+
+    SmPolicySnssaiDataPatch:
+      description: Contains the SM policy data for a given subscriber and S-NSSAI.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        smPolicyDnnData:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SmPolicyDnnDataPatch'
+          minProperties: 1
+          description: >
+            Modifiable Session Management Policy data per DNN for all the DNNs of the
+            indicated S-NSSAI. The key of the map is the DNN.
+      required:
+        - snssai
+    SmPolicyDnnDataPatch:
+      description: Contains the SM policy data for a given DNN (and S-NSSAI).
+      type: object
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        bdtRefIds:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/BdtReferenceIdRm'
+          minProperties: 1
+          description: >
+            Contains updated transfer policies of background data transfer.
+            Any string value can be used as a key of the map.
+          nullable: true
+        restriStatus:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestrictedStatus'
+          minItems: 1
+        spendLimInfo:
+          type: object
+          nullable: true
+          additionalProperties:
+            $ref: '#/components/schemas/PolicyCounterInfoRm'
+          minProperties: 1
+          description: >
+            Contains the updated status of the requested policy counters for the PDU session.
+            The key of the map is the attribute policyCounterId.
+      required:
+        - dnn
+
+    ResourceItem:
+      description: >
+        Identifies a subscription to policy data change notification when the change occurs
+        in a fragment (subset of resource data) of a given resource.
+      type: object
+      properties:
+        monResourceUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        items:
+          type: array
+          items: 
+            $ref: '#/components/schemas/ItemPath'
+          minItems: 1
+      required:
+        - monResourceUri
+        - items
+
+    NotificationItem:
+      description: >
+        Identifies a data change notification when the change occurs in a fragment
+        (subset of resource data) of a given resource.
+      type: object
+      properties:
+        resourceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifItems:
+          type: array
+          items: 
+            $ref: '#/components/schemas/UpdatedItem'
+          minItems: 1
+      required:
+        - resourceId
+        - notifItems
+
+    UpdatedItem:
+      description: Identifies a fragment of a resource.
+      type: object
+      properties:
+        item:
+          $ref: '#/components/schemas/ItemPath'
+        value: {}
+      required:
+        - item
+        - value
+
+    BdtDataPatch:
+      description: Contains the modified background data transfer data.
+      type: object
+      properties:
+        transPolicy:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/TransferPolicy'
+        bdtpStatus:
+          $ref: '#/components/schemas/BdtPolicyStatus'
+        warnNotifEnabled:
+          type: boolean
+          description: >
+            Indicates whether the BDT warning notification is enabled or not.
+            true indicates that the BDT warning notification is enabled.
+            false indicates that the BDT warning notification is disabled.
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        energyInd:
+          type: boolean
+          description: >
+            Contains the Energy Indicator that indicates whether the AF is interested in
+            transferring data in time windows that consume lower energy.
+            true indicates that the AF is interested in transferring data in time windows that
+            consume lower energy.
+            false indicates that the AF is not interested in transferring data in time windows
+            that consume lower energy.
+
+    SlicePolicyData:
+      description: Contains the network slice specific policy control information.
+      type: object
+      properties:
+        mbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        mbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        remainMbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        remainMbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    SlicePolicyDataPatch:
+      description: Contains the modified network slice specific policy control information.
+      type: object
+      properties:
+        remainMbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        remainMbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+      oneOf:
+        - required: [remainMbrUl]
+        - required: [remainMbrDl]
+
+    MbsSessPolCtrlData:
+      description: Represents MBS Session Policy Control Data.
+      type: object
+      properties:
+        5qis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/5Qi'
+          minItems: 1
+        maxMbsArpLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ArpPriorityLevel'
+        maxMbsSessionAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxGbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    MbsSessPolDataId:
+      description: Represents the identifier used to access the MBS Session Policy Control Data.
+      type: object
+      properties:
+        mbsSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
+        afAppId:
+          type: string
+      oneOf:
+        - required: [mbsSessionId]
+        - required: [afAppId]
+
+    PdtqData:
+      description: Contains the planned data transfer data with QoS requirements.
+      type: object
+      properties:
+        aspId:
+          type: string
+        pdtqPolicy:
+          $ref: 'TS29543_Npcf_PDTQPolicyControl.yaml#/components/schemas/PdtqPolicy'
+        appId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        pdtqRefId:
+          $ref: 'TS29543_Npcf_PDTQPolicyControl.yaml#/components/schemas/PdtqReferenceId'
+        nwAreaInfo:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/NetworkAreaInfo'
+        numOfUes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        desTimeInts:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+          minItems: 1
+          description: Identifies the time interval(s).
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        altQosParamSets:
+          type: array
+          items:
+            $ref: 'TS29543_Npcf_PDTQPolicyControl.yaml#/components/schemas/AltQosParamSet'
+          minItems: 1
+          description: >
+            Contains the alternative QoS requirements as a list of individual QoS parameter
+            sets in a prioritized order.
+        altQosRefs:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: >
+            Contains the alternative QoS requirements as the list of QoS references in a
+            prioritized order.
+        qosParamSet:
+          $ref: 'TS29543_Npcf_PDTQPolicyControl.yaml#/components/schemas/QosParameterSet'
+        qosReference:
+          type: string
+          description: >
+            Requested QoS requirements expressed as the QoS Reference which represents
+            a pre-defined QoS information.
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        warnNotifEnabled:
+          type: boolean
+          description: >
+            Indicates whether the PDTQ warning notification is enabled (true) or not (false).
+            Default value is false.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        resetIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      oneOf:
+        - required: [qosParamSet]
+        - required: [qosReference]
+      required:
+        - aspId
+        - pdtqPolicy
+
+    PdtqDataPatch:
+      description: Contains the modified planned data transfer data with QoS requirements.
+      type: object
+      properties:
+        pdtqPolicy:
+          $ref: 'TS29543_Npcf_PDTQPolicyControl.yaml#/components/schemas/PdtqPolicy'
+        warnNotifEnabled:
+          type: boolean
+          description: >
+            Indicates whether the PDTQ warning notification is enabled (true) or not (false).
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+
+    GroupPolicyData:
+      description: Contains the group specific policy control data information.
+      type: object
+      properties:
+        maxGroupMbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxGroupMbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        remainGroupMbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        remainGroupMbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    GroupPolicyDataPatch:
+      description: >
+        Contains the requested modifications to the group specific policy control data
+        information.
+      type: object
+      properties:
+        maxGroupMbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxGroupMbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        remainGroupMbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        remainGroupMbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+      anyOf:
+        - required: [maxGroupMbrUl]
+        - required: [maxGroupMbrDl]
+        - required: [remainGroupMbrUl]
+        - required: [remainGroupMbrDl]
+
+    RestrictedStatus:
+      description: >
+        Contains reason for restricted status and the time stamp of when the status was
+        stored.
+      type: object
+      properties:
+        exceptionId:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ExceptionId'
+        timeStamp: 
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - exceptionId
+        - timeStamp
+
+    PolicyCounterInfoRm:
+      description: Represents the data structure presenting the policy counter status.
+      nullable: true
+      type: object
+      properties:
+        currentStatus:
+          type: string
+          nullable: true
+        penPolCounterStatuses:
+          type: array
+          items:
+            $ref: 'TS29594_Nchf_SpendingLimitControl.yaml#/components/schemas/PendingPolicyCounterStatus'
+          minItems: 1
+          description: Provides the pending policy counter status.
+          nullable: true
+
+# SIMPLE TYPES:
+
+    IpIndex:
+      description: >
+        Represents information that identifies which IP pool or external server
+        is used to allocate the IP address.
+      type: integer
+
+    OsId:
+      description: Represents the Operating System of the served UE.
+      type: string
+      format: uuid
+
+    ItemPath:
+      description: Identifies a fragment (subset of resource data) of a given resource.
+      type: string
+
+    BdtReferenceIdRm:
+      type: string
+      description: >
+        This data type is defined in the same way as the BdtReferenceId data type defined in
+        3GPP TS 29.122, but with the nullable property set to true.
+      nullable: true
+
+    Upsi:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+
+# ENUMS:
+
+    UsageMonLevel:
+      description: Represents the usage monitoring level.
+      anyOf:
+      - type: string
+        enum:
+          - SESSION_LEVEL
+          - SERVICE_LEVEL
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    Periodicity:
+      description: Represents the time period.
+      anyOf:
+      - type: string
+        enum:
+          - YEARLY
+          - MONTHLY
+          - WEEKLY
+          - DAILY
+          - HOURLY
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    BdtPolicyStatus:
+      description: Indicates the validation status of a negotiated BDT policy.
+      anyOf:
+      - type: string
+        enum:
+          - INVALID
+          - VALID
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    PolicyDataSubset:
+      description: Indicates a policy data subset.
+      anyOf:
+        - type: string
+          enum:
+          - AM_POLICY_DATA
+          - SM_POLICY_DATA
+          - UE_POLICY_DATA
+          - UM_DATA
+          - OPERATOR_SPECIFIC_DATA
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.

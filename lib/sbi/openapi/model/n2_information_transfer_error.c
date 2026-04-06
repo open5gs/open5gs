@@ -6,7 +6,8 @@
 
 OpenAPI_n2_information_transfer_error_t *OpenAPI_n2_information_transfer_error_create(
     OpenAPI_problem_details_t *error,
-    OpenAPI_pws_error_data_t *pws_error_info
+    OpenAPI_pws_error_data_t *pws_error_info,
+    OpenAPI_list_t *nrppa_error_info
 )
 {
     OpenAPI_n2_information_transfer_error_t *n2_information_transfer_error_local_var = ogs_malloc(sizeof(OpenAPI_n2_information_transfer_error_t));
@@ -14,6 +15,7 @@ OpenAPI_n2_information_transfer_error_t *OpenAPI_n2_information_transfer_error_c
 
     n2_information_transfer_error_local_var->error = error;
     n2_information_transfer_error_local_var->pws_error_info = pws_error_info;
+    n2_information_transfer_error_local_var->nrppa_error_info = nrppa_error_info;
 
     return n2_information_transfer_error_local_var;
 }
@@ -32,6 +34,13 @@ void OpenAPI_n2_information_transfer_error_free(OpenAPI_n2_information_transfer_
     if (n2_information_transfer_error->pws_error_info) {
         OpenAPI_pws_error_data_free(n2_information_transfer_error->pws_error_info);
         n2_information_transfer_error->pws_error_info = NULL;
+    }
+    if (n2_information_transfer_error->nrppa_error_info) {
+        OpenAPI_list_for_each(n2_information_transfer_error->nrppa_error_info, node) {
+            OpenAPI_nrppa_rsp_per_ngran_free(node->data);
+        }
+        OpenAPI_list_free(n2_information_transfer_error->nrppa_error_info);
+        n2_information_transfer_error->nrppa_error_info = NULL;
     }
     ogs_free(n2_information_transfer_error);
 }
@@ -75,6 +84,22 @@ cJSON *OpenAPI_n2_information_transfer_error_convertToJSON(OpenAPI_n2_informatio
     }
     }
 
+    if (n2_information_transfer_error->nrppa_error_info) {
+    cJSON *nrppa_error_infoList = cJSON_AddArrayToObject(item, "nrppaErrorInfo");
+    if (nrppa_error_infoList == NULL) {
+        ogs_error("OpenAPI_n2_information_transfer_error_convertToJSON() failed [nrppa_error_info]");
+        goto end;
+    }
+    OpenAPI_list_for_each(n2_information_transfer_error->nrppa_error_info, node) {
+        cJSON *itemLocal = OpenAPI_nrppa_rsp_per_ngran_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_n2_information_transfer_error_convertToJSON() failed [nrppa_error_info]");
+            goto end;
+        }
+        cJSON_AddItemToArray(nrppa_error_infoList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -87,6 +112,8 @@ OpenAPI_n2_information_transfer_error_t *OpenAPI_n2_information_transfer_error_p
     OpenAPI_problem_details_t *error_local_nonprim = NULL;
     cJSON *pws_error_info = NULL;
     OpenAPI_pws_error_data_t *pws_error_info_local_nonprim = NULL;
+    cJSON *nrppa_error_info = NULL;
+    OpenAPI_list_t *nrppa_error_infoList = NULL;
     error = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_errorJSON, "error");
     if (!error) {
         ogs_error("OpenAPI_n2_information_transfer_error_parseFromJSON() failed [error]");
@@ -107,9 +134,34 @@ OpenAPI_n2_information_transfer_error_t *OpenAPI_n2_information_transfer_error_p
     }
     }
 
+    nrppa_error_info = cJSON_GetObjectItemCaseSensitive(n2_information_transfer_errorJSON, "nrppaErrorInfo");
+    if (nrppa_error_info) {
+        cJSON *nrppa_error_info_local = NULL;
+        if (!cJSON_IsArray(nrppa_error_info)) {
+            ogs_error("OpenAPI_n2_information_transfer_error_parseFromJSON() failed [nrppa_error_info]");
+            goto end;
+        }
+
+        nrppa_error_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(nrppa_error_info_local, nrppa_error_info) {
+            if (!cJSON_IsObject(nrppa_error_info_local)) {
+                ogs_error("OpenAPI_n2_information_transfer_error_parseFromJSON() failed [nrppa_error_info]");
+                goto end;
+            }
+            OpenAPI_nrppa_rsp_per_ngran_t *nrppa_error_infoItem = OpenAPI_nrppa_rsp_per_ngran_parseFromJSON(nrppa_error_info_local);
+            if (!nrppa_error_infoItem) {
+                ogs_error("No nrppa_error_infoItem");
+                goto end;
+            }
+            OpenAPI_list_add(nrppa_error_infoList, nrppa_error_infoItem);
+        }
+    }
+
     n2_information_transfer_error_local_var = OpenAPI_n2_information_transfer_error_create (
         error_local_nonprim,
-        pws_error_info ? pws_error_info_local_nonprim : NULL
+        pws_error_info ? pws_error_info_local_nonprim : NULL,
+        nrppa_error_info ? nrppa_error_infoList : NULL
     );
 
     return n2_information_transfer_error_local_var;
@@ -121,6 +173,13 @@ end:
     if (pws_error_info_local_nonprim) {
         OpenAPI_pws_error_data_free(pws_error_info_local_nonprim);
         pws_error_info_local_nonprim = NULL;
+    }
+    if (nrppa_error_infoList) {
+        OpenAPI_list_for_each(nrppa_error_infoList, node) {
+            OpenAPI_nrppa_rsp_per_ngran_free(node->data);
+        }
+        OpenAPI_list_free(nrppa_error_infoList);
+        nrppa_error_infoList = NULL;
     }
     return NULL;
 }

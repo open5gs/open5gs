@@ -1,0 +1,508 @@
+openapi: 3.0.0
+info:
+  title: EES Application Client Information_API
+  description: |
+    API for EES Application Client Information.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: 1.2.0
+externalDocs:
+  description: >
+    3GPP TS 29.558 V19.5.0 Enabling Edge Applications;
+    Application Programming Interface (API) specification; Stage 3
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.558/
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/eees-appclientinformation/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.558.
+
+paths:
+  /subscriptions:
+    post:
+      summary: Creates a new Individual Application Client Information Subscriptions resource
+      operationId: CreateAppClientInfoSubscription
+      tags:
+        - Application Client Information Subscriptions (Collection)
+      description: Create a Subscription resource for reporting of AC information to the EAS.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ACInfoSubscription'
+      responses:
+        '201':
+          description: >
+            Created (The individual AC information subscription resource is created successfully)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ACInfoSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        ACInformationNotification:
+          '{$request.body#/notificationDestination}':
+            post:
+              requestBody: # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ACInfoNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    get:
+      summary: Read an Individual Application Client Information Subscriptions resource
+      operationId: ReadIndAppClientInfoSubscription
+      tags:
+        - Individual Application Client Information Subscription (Document)
+      description: Retrieve an Individual AC information subscription information.
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription Id.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (Successfully get the AC information subscription).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ACInfoSubscription'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update an Individual Application Client Information Subscriptions resource
+      operationId: UpdateIndAppClientInfoSubscription
+      tags:
+        - Individual Application Client Information Subscription (Document)
+      description: Fully replace an existing Individual AC information Subscription.
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription Id.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ACInfoSubscription'
+      responses:
+        '200':
+          description: OK (The individual AC information subscription was modified successfully).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ACInfoSubscription'
+        '204':
+          description: No Content.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify an Individual Application Client Information Subscriptions resource
+      operationId: ModifyIndAppClientInfoSubscription
+      tags:
+        - Individual Application Client Information Subscription (Document)
+      description: Partially update an existing Individual AC information Subscription.
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription Id.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Partial update an existing Individual AC information Subscription.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/ACInfoSubscriptionPatch'
+      responses:
+        '200':
+          description: >
+            OK (The Individual AC information Subscription is successfully modified
+            and the updated subscription information is returned in the response).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ACInfoSubscription'
+        '204':
+          description: >
+            No Content (The individual AC information subscription was modified successfully).
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an Individual Application Client Information Subscriptions resource
+      operationId: DeleteIndAppClientInfoSubscription
+      tags:
+        - Individual Application Client Information Subscription (Document)
+      description: Delete an existing Individual AC information Subscription.
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription Id.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The individual subscription is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+# Components
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    ACInfoSubscription:
+      type: object
+      description: Represents an Individual AC Information Subscription.
+      properties:
+        easId:
+          type: string
+          description: Identifier of the EAS subscribing for AC information report.
+        acFltrs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ACFilters'
+          minItems: 1
+          description: Filters to retrieve the information about specific ACs.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        eventReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        requestTestNotification:
+          type: boolean
+          description: >
+            Set to true by the EAS to request the EES to send a test notification.
+            Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        trigCondParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrigCondParams'
+          minItems: 1
+          description: >
+            Represents the notification triggering conditions of the AC information subscription.
+      required:
+        - easId
+
+    ACInfoSubscriptionPatch:
+      type: object
+      description: Represents the partial update of Individual AC Information Subscription.
+      properties:
+        acFltrs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ACFilters'
+          minItems: 1
+          description: Filters to retrieve the information about specific ACs.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        eventReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        trigCondParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrigCondParams'
+          minItems: 1
+          description: >
+            Represents the notification triggering conditions of the AC information subscription.
+
+    ACFilters:
+      type: object
+      description: Represents the filters information for AC Information Subscription.
+      properties:
+        acTypesList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        ecspIdsList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        acIdsList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        svcArea:
+          $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+        maxAcKpi:
+          $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACServiceKPIs'
+        minAcKpi:
+          $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACServiceKPIs'
+        opSchds:
+          type: array
+          items:
+            $ref: 'TS29122_CpProvisioning.yaml#/components/schemas/ScheduledCommunicationTime'
+          minItems: 1
+          description: Operation schedule of EAS to be matched with operation schedule of the AC.
+        ueIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+          description: List of UE identifiers hosting the AC.
+        locInfs:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        easBundInd:
+          $ref: '#/components/schemas/EASBdlInd'
+
+    ACInfoNotification:
+      type: object
+      description: AC Information notification.
+      properties:
+        subId:
+          type: string
+          description: >
+            Identifier of the AC information subscription for which this notification is related to.
+        acInfs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ACInformation'
+          minItems: 1
+          description: Notifications that include the ACs information matching filter criteria.
+      required:
+        - subId
+        - acInfs
+
+    ACInformation:
+      type: object
+      description: AC Information matching the filter criteria.
+      properties:
+        acProfs:
+          type: array
+          items:
+            $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACProfile'
+          minItems: 1
+          description: List of profile information of ACs.
+        ueIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+          description: List of UE identifiers hosting the AC.
+        ueLocInfs:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+      required:
+        - acProfs
+
+    EASBdlInd:
+      type: object
+      description: Represents the EAS bundle indication information.
+      properties:
+        bdlType:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/BdlType'
+        bdlId:
+          type: string
+          description: Indicates a bundle ID.
+        easBdlReqs:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASBdlReqs'
+        parBundDet:
+          type: boolean
+          default: false
+          description: >
+            Set to true to indicate that the partial bundle determination is requested.
+            Set to false to indicate that the partial bundle determination is not requested.
+            Set to false or omitted otherwise.
+      anyOf:
+        - required: [bdlType]
+        - required: [bdlId]
+        - required: [easBdlReqs]
+        - required: [parBundDet]
+
+
+    TrigCondParams:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - ANALYTICS_INFO
+        - EEC_REGISTRATION
+        - EAS_DISCOVERY
+        - UNSPECIFIED
+#      - type: string
+#        description: >
+#            This string provides forward-compatibility with future
+#            extensions to the enumeration but is not used to encode
+#            content defined in the present version of this API.
+#      description: |
+#        Represents the trigger condition parameter.  
+#        Possible values are:
+#        - ANALYTICS_INFO: Indicates that the notification triggering condition is the analytics
+#          information.
+#        - EEC_REGISTRATION: Indicates that the notification triggering condition is the EEC
+#          registration.
+#        - EAS_DISCOVERY: Indicates that the notification triggering condition is the EAS 
+#          discovery.
+#        - UNSPECIFIED: Indicates that the triggering conditions are unspecified.

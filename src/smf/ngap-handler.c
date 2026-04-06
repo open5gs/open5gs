@@ -230,7 +230,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
             sess->nsmf_param.rat_type = sess->sbi_rat_type;
 
             r = smf_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                    OpenAPI_service_name_nsmf_pdusession, NULL,
                     smf_nsmf_pdusession_build_hsmf_update_data, sess, stream,
                     sess->up_cnx_state == OpenAPI_up_cnx_state_ACTIVATING ?
                         SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING :
@@ -329,7 +329,7 @@ int ngap_handle_pdu_session_resource_setup_unsuccessful_transfer(
         sess->nsmf_param.ngap_cause.value = (int)Cause->choice.radioNetwork;
 
         r = smf_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                OpenAPI_service_name_nsmf_pdusession, NULL,
                 smf_nsmf_pdusession_build_hsmf_update_data,
                 sess, stream, SMF_UPDATE_STATE_DEACTIVATED, NULL);
         ogs_expect(r == OGS_OK);
@@ -668,7 +668,7 @@ int ngap_handle_path_switch_request_transfer(
             sess->nsmf_param.rat_type = sess->sbi_rat_type;
 
             r = smf_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                    OpenAPI_service_name_nsmf_pdusession, NULL,
                     smf_nsmf_pdusession_build_hsmf_update_data, sess, stream,
                     SMF_UPDATE_STATE_ACTIVATED_FROM_XN_HANDOVER,
                     NULL);

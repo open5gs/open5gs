@@ -1,0 +1,651 @@
+openapi: 3.0.0
+
+info:
+  title: SS_VALServiceAreaConfiguration
+  description: |
+    API for SEAL VAL Service Area Configuration Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.1.1"
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.6.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-vsac/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /areas:
+    get:
+      summary: Obtain the VAL service area(s) according to the provided filtering criteria.
+      operationId: ObtainValServiceAreas
+      tags:
+        - VAL Service Areas (Collection)
+      parameters:
+        - name: val-svc-area-ids
+          in: query
+          description: Represents the requested VAL service areas.
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ValSvcAreaId'
+            minItems: 1
+        - name: supp-feats
+          in: query
+          description: To filter irrelevant responses related to unsupported features.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: The requested VAL service areas information is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValServiceAreaData'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /areas/configure:
+    post:
+      summary: Configure VAL service area(s).
+      operationId: ConfigureValServiceAreas
+      tags:
+        - Configure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValServiceAreaReq'
+      responses:
+        '200':
+          description: >
+            Successful case. The identifier(s) of the configured VAL service area(s) information are
+            Returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValServiceAreaResp'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /areas/update:
+    post:
+      summary: Update existing VAL service area(s).
+      operationId: UpdateValServiceAreas
+      tags:
+        - Update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValServiceAreaReq'
+      responses:
+        '200':
+          description: >
+            Successful case. The identifier(s) of the updated VAL service area(s) information are
+            returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValServiceAreaResp'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /areas/delete:
+    post:
+      summary: Delete existing VAL service area(s).
+      operationId: DeleteValServiceAreas
+      tags:
+        - Delete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValServiceAreaReq'
+      responses:
+        '200':
+          description: >
+            Successful case. The identifier(s) of the deleted VAL service area(s) information are
+            returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValServiceAreaResp'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions:
+    post:
+      summary: Create individual VAL service area change event(s) subscription.
+      operationId: SubscribeChangeEvents
+      tags:
+        - VAL Service Area Change Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValServiceAreaSubsc'
+      responses:
+        '201':
+          description: >
+            The requested individual VAL service area change event(s) subscription
+            resource is successfully created and a representation of the created
+            resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValServiceAreaSubsc'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        NotifyValServiceAreaChange:
+          '{$request.body#/notifUri}': 
+            post:
+              summary: Notify on changes of the VAL service area(s) accodring to the requested reporting settings.
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ValServiceAreaNotif'
+              responses:
+                '204':
+                  description: The notification is successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of an individual VAL service area change event(s)
+          subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Read an existing individual unicast monitoring subscription resource according to the subscriptionId.
+      operationId: ReadValServiceAreaChange
+      tags:
+        - Individual VAL Service Area Change Subscription (Document)
+      responses:
+        '200':
+          description: >
+            The requested individual VAL service area change event(s) subscription is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValServiceAreaSubsc'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update individual VAL service area change event(s) subscription.
+      operationId: UpdateIndValServAreaChangeSubsc
+      tags:
+        - Individual VAL Service Area Change Subscription (Document)
+      requestBody:
+        description: Updated details of the unicast VAL service area change event(s) subscription.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValServiceAreaSubsc'
+      responses:
+        '200':
+          description: >
+            The subscription is updated successfully, and the updated subscription
+            information returned in the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValServiceAreaSubsc'
+        '204':
+          description: No Content. The subscription is updated successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify the individual VAL service area change event(s) subscription.
+      operationId: ModifyIndValServAreaChangeSubsc
+      tags:
+        - Individual VAL Service Area Change Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/ValServiceAreaSubscPatch'
+      responses:
+        '200':
+          description: >
+            The individual VAL service area change event(s) subscription is
+            modified successfully, and the representation of the modified resource
+            is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValServiceAreaSubsc'
+        '204':
+          description: No Content. The subscription is modified successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Remove the existing individual VAL service area change event(s) subscription resource according to the subscriptionId.
+      operationId: UnsubscribeValServiceAreaChange
+      tags:
+        - Individual VAL Service Area Change Subscription (Document)
+      responses:
+        '204':
+          description: >
+            The individual VAL service area change event(s) subscription resource
+            matching the subscriptionId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    ValServiceArea:
+      description: Represents the VAL service area.
+      type: object
+      properties:
+        valSvcAreaId:
+          $ref: '#/components/schemas/ValSvcAreaId'
+        locations:
+          type: array
+          description: Represents the locations associated with the VAL service area.
+          minItems: 1
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+      required:
+        - valSvcAreaId
+        - locations
+
+    ValServiceAreaReq:
+      description: Represents the VAL service area configuration/update/delete request.
+      type: object
+      properties:
+        valSvcAreas:
+          type: array
+          description: Represents the VAL service area(s).
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ValServiceArea'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - valSvcAreas
+
+    ValServiceAreaData:
+      description: Represents the VAL service area retrieval information.
+      type: object
+      properties:
+        valSvcAreas:
+          type: array
+          description: Represents the requested VAL service area(s).
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ValServiceArea'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    ValServiceAreaResp:
+      description: Represents the VAL service area configuration/update/delete response.
+      type: object
+      properties:
+        valSvcAreaIds:
+          type: array
+          description: Represents the identifier(s) of the successfully handled VAL service area(s).
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ValSvcAreaId'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - valSvcAreaIds
+
+    ValServiceAreaSubscPatch:
+      description: Represents the VAL service area change event(s) modification request.
+      type: object
+      properties:
+        events:
+          type: array
+          description: Represents the subscribed VAL service area change event(s).
+          items:
+            $ref: '#/components/schemas/ValServiceAreaEventType'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        subscDur:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+
+    ValSvcAreaId:
+      type: string
+      description: >
+        Represents the VAL Service Area identifier encoded as a string and generated
+        either based on VAL Server ID or using the Universally Unique Identifier (UUID)
+        version 4 as described in IETF RFC 9562.
+
+    ValServiceAreaSubsc:
+      description: Represents the VAL service area change event(s) subscription.
+      type: object
+      properties:
+        events:
+          type: array
+          description: Represents the subscribed VAL service area change event(s).
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ValServiceAreaEventType'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        subscDur:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - events
+        - notifUri
+
+    ValServiceAreaEventType:
+      description: Represents the VAL service area change event type.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/ValServiceAreaEvent'
+        valSvcAreaIds:
+          type: array
+          description: Represents the VAL service area ID(s) associated with the event.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ValSvcAreaId'
+      required:
+        - event
+        - valSvcAreaIds
+
+    ValServiceAreaNotif:
+      description: Represents the VAL service area change event(s) notifcation.
+      type: object
+      properties:
+        valSvcAreaConts:
+          type: array
+          description: Represents the VAL service area change event(s) content.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ValServiceAreaEventInfo'
+      required:
+        - valSvcAreaConts
+
+    ValServiceAreaEventInfo:
+      description: Represents the VAL service area change event(s) content.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/ValServiceAreaEvent'
+        valSvcAreas:
+          type: array
+          description: Represents the VAL service area(s) associated with the event.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ValServiceArea'
+        valSvcAreaIds:
+          type: array
+          description: Represents the VAL service area(s) associated with the event.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ValSvcAreaId'
+      required:
+        - event
+
+# Simple data types and Enumerations
+    ValServiceAreaEvent:
+      anyOf:
+      - type: string
+        enum:
+           - UPDATE
+           - DELETE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration and is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents the VAL service area change event.  
+        Possible values are:
+        - UPDATE: Indicates that the VAL service area change event is VAL service area update.
+        - DELETE: Indicates that the VAL service area change event is VAL service area delete.

@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_subscribed_default_qos_1_s OpenAPI_subscribed_default_qos_1_t;
 #include "arp_1.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_subscribed_default_qos_1_s OpenAPI_subscribed_default_qos_1_t;
-typedef struct OpenAPI_subscribed_default_qos_1_s {
+struct OpenAPI_subscribed_default_qos_1_s {
     int _5qi;
     struct OpenAPI_arp_1_s *arp;
     bool is_priority_level;
     int priority_level;
-} OpenAPI_subscribed_default_qos_1_t;
+};
 
 OpenAPI_subscribed_default_qos_1_t *OpenAPI_subscribed_default_qos_1_create(
     int _5qi,

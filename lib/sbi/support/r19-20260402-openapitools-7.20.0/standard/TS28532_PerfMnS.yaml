@@ -1,0 +1,76 @@
+openapi: 3.0.1
+info:
+  title: TS 28.532 Performance Threshold Monitoring MnS
+  version: 18.1.0
+  description: >-
+    OAS 3.0.1 definition of the Performance Threshold Monitoring MnS
+    © 2023, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.532; Generic management services
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.532/
+servers:
+  - url: '{root}'
+    variables:
+      root:
+        description: >-
+          The open API server of the performance threshold monitoring service is
+          located in the consumer side, see monitoringNotifTarget attribute of
+          the IOC ThresholdMonitor defined in 3GPP TS 28.622 [11]. 
+        default: http://example.com/3GPPManagement
+paths:
+  /notificationSink:
+    post:
+      summary: Send notifications about performance threshold crossing
+      description: To send a notifyThresholdCrossing notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotifyThresholdCrossing'
+      responses:
+        '204':
+          description: >-
+            Success case ("204 No Content"). The notification is successfully
+            delivered. The response message body is absent.
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    PerfNotificationTypes:
+      type: string
+      enum:
+        - notifyThresholdCrossing
+    PerfMetricValue:
+      oneOf:
+        - type: integer
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/Float'
+    PerfMetricDirection:
+      type: string
+      enum:
+        - UP
+        - DOWN
+    NotifyThresholdCrossing:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          properties:
+            observedPerfMetricName:
+              type: string
+            observedPerfMetricValue:
+              $ref: '#/components/schemas/PerfMetricValue'
+            observedPerfMetricDirection:
+              $ref: '#/components/schemas/PerfMetricDirection'
+            thresholdValue:
+              $ref: '#/components/schemas/PerfMetricValue'
+            hysteresis:
+              $ref: '#/components/schemas/PerfMetricValue'
+            monitorGranularityPeriod:
+              type: integer
+            additionalText:
+              type: string

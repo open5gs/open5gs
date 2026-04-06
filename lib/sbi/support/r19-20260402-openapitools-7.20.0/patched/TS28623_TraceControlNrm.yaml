@@ -1,0 +1,1592 @@
+openapi: 3.0.1
+info:
+  title: Trace Control NRM
+  version: 19.6.0
+  description: >-
+    OAS 3.0.1 definition of the Trace Control NRM fragment
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.623; Generic NRM,Trace Control NRM
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.623/
+paths: {}
+components:
+  schemas:
+  #-------- Definition of types for name-containments ------
+    SubNetwork-ncO-TraceControlNrm:
+      type: object
+      properties:
+        TraceJob:
+          $ref: '#/components/schemas/TraceJob-Multiple'
+    ManagedElement-ncO-TraceControlNrm:
+      type: object
+      properties:
+        TraceJob:
+          $ref: '#/components/schemas/TraceJob-Multiple' 
+   #-------Definition of generic IOCs ----------#   
+
+#-------- Definition of types used in Trace control NRM fragment------------------
+                
+    TraceTarget:
+      type: object
+      description: Trace target conveying both the type and value of the target ID. For additional details see 3GPP TS 32.422
+      properties:
+        traceTargetType:
+          type: string
+          enum:
+            - IMSI
+            - IMEI
+            - IMEISV
+            - PUBLIC_ID
+            - UTRAN_CELL
+            - EUTRAN_CELL
+            - NGRAN_CELL
+            - ENB
+            - RNC
+            - GNB
+            - SUPI
+            - N4_SESSION_ID
+        traceTargetValueList:
+          type: array
+          items:
+            type: string
+
+    jobType-Type:
+      type: string
+      description: Specifies whether the TraceJob represents only MDT, Logged MBSFN MDT, Trace or a combined Trace and MDT job, etc. Applicable for Trace, MDT, RCEF, RRC and RLF reporting. See 3GPP TS 32.422 clause 5.9a for additional details.
+      enum:
+        - IMMEDIATE_MDT_ONLY
+        - LOGGED_MDT_ONLY
+        - TRACE_ONLY
+        - IMMEDIATE_MDT_AND_TRACE
+        - RLF_REPORT_ONLY
+        - RCEF_REPORT_ONLY
+        - LOGGED_MBSFN_MDT
+        - 5GC_UE_LEVEL_MEASUREMENTS_ONLY
+        - TRACE_AND_5GC_UE_LEVEL_MEASUREMENTS        
+        - IMMEDIATE_MDT_AND_5GC_UE_LEVEL_MEASUREMENTS
+        - TRACE_AND_IMMEDIATE_MDT_AND_5GC_UE_LEVEL_MEASUREMENTS
+        - RRC_REPORT
+        - IMMEDIATE_MDT_AND_ LOGGED_MDT          
+      default: TRACE_ONLY
+    listOfInterfaces-Type:
+      description: The interfaces to be recorded in the Network Element. See 3GPP TS 32.422 clause 5.5 for additional details.
+      type: object
+      properties:
+        MSCServerInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - A
+              - IU-CS
+              - MC
+              - MAP-G
+              - MAP-B
+              - MAP-E
+              - MAP-F
+              - MAP-D
+              - MAP-C
+              - CAP
+        MGWInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - MC
+              - NB-UP
+              - IU-UP
+        RNCInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - IU-CS
+              - IU-PS
+              - IUR
+              - IUB
+              - UU
+        SGSNInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - GB
+              - IU-PS
+              - GN
+              - MAP-GR
+              - MAP-GD
+              - MAP-GF
+              - GE
+              - GS
+              - S6D
+              - S4
+              - S3
+              - S13
+        GGSNInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - GN
+              - GI
+              - GMB
+        S-CSCFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - MW
+              - MG
+              - MR
+              - MI
+        P-CSCFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - GM
+              - MW
+        I-CSCFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - CX
+              - DX
+              - MG
+              - MW
+        MRFCInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - Mp
+              - Mr
+        MGCFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - MG
+              - MJ
+              - MN
+        IBCFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - IX
+              - MX
+        E-CSCFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - MW
+              - ML
+              - MM
+              - MI/MG
+        BGCFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - MI
+              - MJ
+              - MK
+        ASInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - DH
+              - SH
+              - ISC
+              - UT
+        HSSInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - MAP-C
+              - MAP-D
+              - GC
+              - GR
+              - CX
+              - S6D
+              - S6A
+              - SH
+              - N70
+              - N71
+              - NU1
+        EIRInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - MAP-F
+              - S13
+              - MAP-GF
+        BM-SCInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - GMB
+        MMEInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - S1-MME
+              - S3
+              - S6A
+              - S10
+              - S11
+              - S13
+        SGWInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - S4
+              - S5
+              - S8
+              - S11
+              - GXC
+        PDN_GWInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - S2A
+              - S2B
+              - S2C
+              - S5
+              - S6B
+              - GX
+              - S8
+              - SGI
+        eNBInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - S1-MME
+              - X2
+        en-gNBInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - S1-MME
+              - X2
+              - UU
+              - F1-C
+              - E1
+        AMFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - N1
+              - N2
+              - N8
+              - N11
+              - N12
+              - N14
+              - N15
+              - N20
+              - N22
+              - N26
+              - N41
+              - N42
+        AUSFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - N12
+              - N13
+        NEFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - N29
+              - N30
+              - N33
+        NRFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - N27
+        NSSFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - N22
+              - N31
+        PCFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - N5
+              - N7
+              - N15
+              - N28
+        SMFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - N4
+              - N7
+              - N10
+              - N11
+              - S5-C
+              - N16
+              - N16a
+              - N38
+              - N40
+        SMSFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - N20
+              - N21
+        UDMInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - N8
+              - N10
+              - N13
+              - N21
+              - NU1
+        UPFInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - N4
+        ng-eNBInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - NG-C
+              - XN-C
+              - UU
+        gNB-CU-CPInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - NG-C
+              - XN-C
+              - UU
+              - F1-C
+              - E1
+              - X2-C
+        gNB-CU-UPInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - E1
+        gNB-DUInterfaces:
+          type: array
+          items:
+            type: string
+            enum:
+              - F1-C
+
+    listOfNeTypes-Type:
+      description: The Network Element types where Trace Session activation is needed. See 3GPP TS 32.422 clause 5.4 for additional details.
+      type: array
+      uniqueItems: true
+      items:
+        type: string
+        enum:
+          - MSC_SERVER
+          - SGSN
+          - MGW
+          - GGSN
+          - RNC
+          - BM_SC
+          - MME
+          - SGW
+          - PGW
+          - ENB
+          - EN_GNB
+          - GNB_CU_CP
+          - GNB_CU_UP
+          - GNB_DU
+          - AMF
+          - PCF
+          - SMF
+          - UPF
+          - AUSF
+          - SMSF
+          - HSS
+          - UDM
+
+    plmnTarget-Type:
+      type: object
+      description: The PLMN for which sessions shall be selected in the Trace Session in case of management based activation when several PLMNs are supported in the RAN (this means that shared cells and not shared cells are allowed for the specified PLMN. Note that the PLMN Target might differ from the PLMN specified in the Trace Reference, as that specifies the PLMN that is containing the management system requesting the Trace Session from the NE. See 3GPP TS 32.422 clause 5.9b for additional details.
+      properties:
+        mcc:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mcc'
+        mnc:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mnc'
+
+    listOfTraceMetrics:
+      description: The trace metrics to be reported. See 3GPP TS 32.422 clause 10 for additional details.
+      type: array
+      uniqueItems: true
+      items:
+        type: string 
+
+    traceDepth-Type:
+      description: Specifies how detailed information should be recorded in the Network Element. The Trace Depth is a paremeter for Trace Session level, i.e., the Trace Depth is the same for all of the NEs to be traced in the same Trace Session. See 3GPP TS 32.422 clause 5.3 for additional details.
+      type: string
+      enum:
+        - MINIMUM
+        - MEDIUM
+        - MAXIMUM
+        - VENDORMINIMUM
+        - VENDORMEDIUM
+        - VENDORMAXIMUM
+      default: MAXIMUM   
+
+    traceReference-Type:
+      type: object
+      description: The Trace Reference parameter shall be globally unique, therefore the Trace Reference shall compose as follows - MCC+MNC+Trace ID, where the MCC and MNC are coming with the Trace activation request from the management system to identify one PLMN containing the management system, and Trace ID is a 3 byte Octet String. See 3GPP TS 32.422 clause 5.6 for additional details.
+      properties:
+        mcc:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mcc'
+        mnc:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mnc'
+        traceId:
+          type: string
+
+    traceReportingFormat-Type:
+      type: string
+      description: Specifies whether file-based or streaming reporting shall be used for this Trace Session. See 3GPP TS 32.422 clause 5.11 for additional details.
+      enum:
+        - FILE_BASED
+        - STREAMING
+      default: FILE_BASED
+    
+    triggeringEvents-Type:
+      type: object
+      description: Specifies when to start a Trace Recording Session and which message shall be recorded first, when to stop a Trace Recording Session and which message shall be recorded last respectively. See 3GPP TS 32.422 clause 5.1 for additional details.
+      properties:
+        MSC_SERVER:
+          type: array
+          items:
+            type: string
+            enum:
+              - MO_MT_CALLS
+              - MO_MT_SMS
+              - LU_IMSIATTACH_IMSIDETACH
+              - HANDOVER
+              - SS
+        SGSN:
+          type: array
+          items:
+            type: string
+            enum:
+              - PDPCONTEXT
+              - MO_MT_SMS
+              - RAU_GPRSATTACH_GPRSDETACH
+              - MBMSCONTEXT
+        MGW:
+          type: array
+          items:
+            type: string
+            enum:
+              - CONTEXT
+        GGSN:
+          type: array
+          items:
+            type: string
+            enum:
+              - PDPCONTEXT
+              - MBMSCONTEXT
+        IMS:
+          type: array
+          items:
+            type: string
+            enum:
+              - SIPSESSION_STANDALONETRANSACTION
+        BM_SC:
+          type: array
+          items:
+            type: string
+            enum:
+              - MBMSACTIVATION
+        MME:
+          type: array
+          items:
+            type: string
+            enum:
+              - UE_INITIATEDPDN_CONNECTIVITY_REQUEST
+              - SERVICE_REQUEST
+              - INITIALATTACH_TAU_DETACH
+              - UE_INITIATEDPDN_DISCONNECTION
+              - BEAR_ACTIVIATION_MODIFICATION_DELETION
+              - HANDOVER
+        SGW:
+          type: array
+          items:
+            type: string
+            enum:
+              - PDN_CONNECTION_CREATION
+              - PDN_CONNECTION_TERMINATION
+              - BEAR_ACTIVATION_MODIFICATION_DELETION
+        PGW:
+          type: array
+          items:
+            type: string
+            enum:
+              - PDN_CONNECTION_CREATION
+              - PDN_CONNECTION_TERMINATION
+              - BEAR_ACTIVATION_MODIFICATION_DELETION
+        AMF:
+          type: array
+          items:
+            type: string
+            enum:
+              - REGISTRATION
+              - SERVICE_REQUEST
+              - HANDOVER
+              - UE_DEREGISTRATION
+              - NETWORK_DEREGISTRATION
+              - UE_MOBILITY_FROM_EPC
+              - UE_MOBILITY_TO_EPC
+              - CONVERGED_CHARGING_SERVICE
+        SMF:
+          type: array
+          items:
+            type: string
+            enum:
+              - PDU_SESSION_ESTABLISHMENT
+              - PDU_SESSION_MODIFICATION
+              - PDU_SESSIOON_RELEASE
+              - PDU_SESSION_UP_ACTIVATION_DEACTIVATION
+              - MOBILITY_BTW_3GPP_AND_N3GPP_TO_5GC
+              - MOBILITY_FROM_EPC
+              - MOBILITY_BTW_ISMF_OR_VSMF
+              - CONVERGED_CHARGING_SERVICE
+              - OFFLINE_ONLY_CHARGING
+        PCF:
+          type: array
+          items:
+            type: string
+            enum:
+              - AM_POLICY
+              - SM_POLICY
+              - AUTHORIZATION
+              - BDT_POLICY
+              - SPENDING_LIMIT_CONTROL
+        UPF:
+          type: array
+          items:
+            type: string
+            enum:
+              - N4SESSION
+        AUSF:
+          type: array
+          items:
+            type: string
+            enum:
+              - UE_AUTHENTICATION
+        NEF:
+          type: array
+          items:
+            type: string
+            enum:
+              - EVENT_EXPOSURE
+              - PFD_MANAGEMENT
+              - PARAMETER_PROVISION
+              - TRIGGER
+        NRF:
+          type: array
+          items:
+            type: string
+            enum:
+              - NF_MANAGEMEENT
+              - NF_DISCOVERY
+        NSSF:
+          type: array
+          items:
+            type: string
+            enum:
+              - NS_SELECTION
+              - NSSAI
+        SMSF:
+          type: array
+          items:
+            type: string
+            enum:
+              - SMSERVICE
+        UDM:
+          type: array
+          items:
+            type: string
+            enum:
+              - UE_CONTEXT
+              - SUBSCRIBER_DATA
+              - UE_AUTHENTICATION
+              - EVENT_EXPOSURE
+    
+    anonymizationOfMdtData-Type:
+      description: Specifies level of MDT anonymization. For additional details see 3GPP TS 32.422 clause 5.10.12.
+      type: string
+      enum:
+        - NO_IDENTITY
+        - TAC_OF_IMEI
+      default: NO_IDENTITY  
+    
+    beamLevelMeasurement-Type:
+      description: Determines whether beam level measurements shall be included in case of immediate MDT M1 measurement in NR. For additional details see 3GPP TS 32.422 clause 5.10.40.
+      type: boolean
+    
+    collectionPeriodRRMLTE-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.20.
+      type: string
+      enum:
+        - 100ms
+        - 1000ms
+        - 1024ms
+        - 1280ms
+        - 2048ms
+        - 2560ms
+        - 5120ms
+        - 10000ms
+        - 10240ms
+        - 60000ms
+
+    collectionPeriodM6LTE-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.32.
+      type: string
+      enum:
+        - 1024ms
+        - 2048ms
+        - 5120ms
+        - 10240ms
+
+    collectionPeriodM7LTE-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.33.
+      type: integer
+      minimum: 1
+      maximum: 60
+
+    collectionPeriodRRMUMTS-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.21.
+      type: string
+      enum:
+        - 100ms
+        - 250ms
+        - 500ms
+        - 1000ms
+        - 2000ms
+        - 3000ms
+        - 4000ms
+        - 6000ms
+    
+    collectionPeriodRRMNR-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.30.
+      type: string
+      enum:
+        - 1024ms
+        - 2048ms
+        - 5120ms
+        - 10240ms
+        - 60000ms
+
+    collectionPeriodM6NR-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.34.
+      type: string
+      enum:
+        - 120ms
+        - 240ms
+        - 480ms
+        - 640ms
+        - 1024ms
+        - 2048ms
+        - 5120ms
+        - 10240ms
+        - 20480ms
+        - 40960ms
+        - 1min
+        - 6min
+        - 12min
+        - 30min
+
+    collectionPeriodM7NR-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.35.
+      type: integer
+      minimum: 1
+      maximum: 60
+
+    eventListForEventTriggeredMeasurement-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.28.
+      type: string
+      enum:
+        - OUT_OF_COVERAGE
+        - A2_EVENT
+
+    eventThreshold-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.7 (LTE/NR Event A2 RSRP, RSRQ, SINR), 5.10.13 (UMTS Event 1f) and 5.10.14 (UMTS Event 1i).
+      type: object
+      properties:
+        EventThresholdRSRP:
+          oneOf:
+          - type: integer
+            minimum: 0
+            maximum: 97
+          - type: integer
+            minimum: 0
+            maximum: 127
+        EventThresholdRSRQ:      
+          oneOf:
+          - type: integer
+            minimum: 0
+            maximum: 34
+          - type: integer
+            minimum: 0
+            maximum: 127
+        EventThresholdSINR:
+          type: integer
+          minimum: 0
+          maximum: 127
+        EventThreshold1F:
+          type: object
+          properties:
+            CPICH_RSCP:
+              type: integer
+              minimum: -120
+              maximum: 25
+            CPICH_EcNo:
+              type: integer
+              minimum: -24
+              maximum: 0
+            PathLoss:
+              type: integer
+              minimum: 30
+              maximum: 165
+        EventThreshold1I:
+          type: integer
+          minimum: -120
+          maximum: 25
+
+    listOfMeasurements-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.3 for details.
+      type: object
+      properties:
+        UMTS:
+          type: array
+          items:
+            type: string
+            enum:
+              - M1
+              - M2
+              - M3
+              - M4
+              - M5
+              - M6_DL
+              - M6_UL
+              - M7_DL
+              - M7_UL
+        LTE:
+          type: array
+          items:
+            type: string
+            enum:
+              - M1
+              - M2
+              - M3
+              - M4
+              - M5
+              - M1_EVENT_TRIGGERED
+              - M6
+              - M7
+              - M8
+              - M9
+        NR:
+          type: array
+          items:
+            type: string
+            enum:
+              - M1_DL
+              - M2_DL
+              - M4_DL
+              - M4_UL
+              - M5_DL
+              - M5_UL
+              - M6_DL
+              - M6_UL
+              - M7_DL
+              - M7_UL
+              - M1_EVENT_TRIGGERED
+              - M8
+              - M9
+              - M10
+
+    loggingDuration-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.9.
+      type: string
+      enum:
+        - 600s
+        - 1200s
+        - 2400s
+        - 3600s
+        - 5400s
+        - 7200s
+    
+    loggingInterval-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.8.
+      type: object
+      properties:
+        UMTS:
+          type: array
+          items:
+            type: string
+            enum:
+              - 1.28s
+              - 2.56s
+              - 5.12s
+              - 10.24s
+              - 20.48s
+              - 30.72s
+              - 40.96s
+              - 61.44s
+        LTE:
+          type: array
+          items:
+            type: string
+            enum:
+              - 1.28s
+              - 2.56s
+              - 5.12s
+              - 10.24s
+              - 20.48s
+              - 30.72s
+              - 40.96s
+              - 61.44s
+        NR:
+          type: array
+          items:
+            type: string
+            enum:
+              - 0.32s
+              - 0.64s
+              - 1.28s
+              - 2.56s
+              - 5.12s
+              - 10.24s
+              - 20.48s
+              - 30.72s
+              - 40.96s
+              - 61.44s
+              - INFINITY
+
+    eventThresholdL1-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.36.
+      type: object
+      properties:
+            RSRP:
+              type: integer
+              minimum: 0
+              maximum: 127
+            RSRQ:
+              type: integer
+              minimum: 0
+              maximum: 127
+    
+    hysteresisL1-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.37.
+      type: integer
+      minimum: 0
+      maximum: 30
+    
+    timeToTriggerL1-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.38.
+      type: string
+      enum:
+        - 0ms
+        - 40ms
+        - 64ms
+        - 80ms
+        - 100ms
+        - 128ms
+        - 160ms
+        - 256ms
+        - 320ms
+        - 480ms
+        - 512ms
+        - 640ms
+        - 1024ms
+        - 1280ms
+        - 2560ms
+        - 5120ms
+
+    measurementPeriodLTE-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.23.
+      type: string
+      enum:
+        - 1024ms
+        - 2048ms
+        - 5120ms
+        - 10240ms
+        - 1min
+
+    measurementPeriodUMTS-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.22.
+      type: string
+      enum:
+        - 1000ms
+        - 2000ms
+        - 3000ms
+        - 4000ms
+        - 6000ms
+        - 8000ms
+        - 12000ms
+        - 16000ms
+        - 20000ms
+        - 24000ms
+        - 28000ms
+        - 32000ms
+        - 64000ms
+
+    measurementQuantity-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.15.
+      type: string
+      enum:
+        - CPICH_ECNO
+        - CPICH_RSCP
+        - PATHLOSS
+    eventThresholdUphUMTS-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.39.
+      type: integer
+      minimum: 0
+      maximum: 31
+
+    plmnList-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.24.
+      type: array
+      uniqueItems: true
+      items:
+        type: object
+        properties:
+          mcc:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mcc'
+          mnc:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mnc'
+      maxItems: 16
+
+    positioningMethod-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.19.
+      type: string
+      enum:
+        - GNSS
+        - E-CELL_ID
+
+    reportAmount-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.6.
+      type: string
+      enum:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16
+        - 32
+        - 64
+        - INFINITY
+
+    reportAmountM1LTE-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.6.
+      type: string
+      enum:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16
+        - 32
+        - 64
+        - INFINITY
+
+    reportAmountM4LTE-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.6.
+      type: string
+      enum:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16
+        - 32
+        - 64
+        - INFINITY
+
+    reportAmountM5LTE-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.6.
+      type: string
+      enum:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16
+        - 32
+        - 64
+        - INFINITY
+
+    reportAmountM6LTE-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.6.
+      type: string
+      enum:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16
+        - 32
+        - 64
+        - INFINITY
+
+    reportAmountM7LTE-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.6.
+      type: string
+      enum:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16
+        - 32
+        - 64
+        - INFINITY
+
+    reportAmountM1NR-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.6.
+      type: string
+      enum:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16
+        - 32
+        - 64
+        - INFINITY
+
+    reportAmountM4NR-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.6.
+      type: string
+      enum:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16
+        - 32
+        - 64
+        - INFINITY
+
+    reportAmountM5NR-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.6.
+      type: string
+      enum:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16
+        - 32
+        - 64
+        - INFINITY
+
+    reportAmountM6NR-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.6.
+      type: string
+      enum:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16
+        - 32
+        - 64
+        - INFINITY
+
+    reportAmountM7NR-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.6.
+      type: string
+      enum:
+        - 1
+        - 2
+        - 4
+        - 8
+        - 16
+        - 32
+        - 64
+        - INFINITY
+
+    reportingTrigger-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.4.
+      type: array
+      items:
+        type: string
+        enum:
+          - PERIODICAL
+          - A2_FOR_LTE_NR
+          - 1F_FOR_UMTS
+          - 1I_FOR_UMTS_MCPS_TDD
+          - A2_TRIGGERED_PERIODIC_FOR_LTE_NR
+          - ALL_CONFIGURED_RRM_FOR_LTE_NR
+          - ALL_CONFIGURED_RRM_FOR_UMTS
+
+    reportInterval-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.5.
+      type: object
+      properties:
+        UMTS:
+          type: array
+          items:
+            type: string
+            enum:
+              - 250ms
+              - 500ms
+              - 1000ms
+              - 2000ms
+              - 3000ms
+              - 4000ms
+              - 6000ms
+              - 8000ms
+              - 12000ms
+              - 16000ms
+              - 20000ms
+              - 24000ms
+              - 28000ms
+              - 32000ms
+              - 64000ms
+        LTE:
+          type: array
+          items:
+            type: string
+            enum:
+              - 120ms
+              - 240ms
+              - 480ms
+              - 640ms
+              - 1024ms
+              - 2048ms
+              - 5120ms
+              - 10240ms
+              - 60000ms
+              - 360000ms
+              - 720000ms
+              - 1800000ms
+              - 3600000ms
+        NR:
+          type: array
+          items:
+            type: string
+            enum:
+              - 120ms
+              - 240ms
+              - 480ms
+              - 640ms
+              - 1024ms
+              - 2048ms
+              - 5120ms
+              - 10240ms
+              - 20480ms
+              - 40960ms
+              - 60000ms
+              - 360000ms
+              - 720000ms
+              - 1800000ms
+
+    reportType-Type:
+      description: Report type for logged NR MDT. See details in 3GPP TS 32.422 clause 5.10.27.
+      type: string
+      enum:
+        - PERIODICAL
+        - EVENT_TRIGGERED
+
+    sensorInformation-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.29.
+      type: array
+      uniqueItems: true
+      items:
+        type: string
+        enum:
+          - BAROMETRIC_PRESSURE
+          - UE_SPEED
+          - UE_ORIENTATION
+
+    traceCollectionEntityId-Type:
+      description: See details in 3GPP TS 32.422 clause 5.10.11. Only TCE Id value may be sent over the air to the UE being configured for Logged MDT.
+      type: integer
+
+    excessPacketDelayThreshold-Type:
+      description: Excess Packet Delay Threshold for NR MDT. See details in 3GPP TS 32.422 clause 4.1.1 and 4.1.2.
+      type: object
+      properties:
+        fiveQIValue:
+          type: integer
+        excessPacketDelayThresholdValue:
+          type: string
+          enum:
+            - 0.25MS
+            - 0.5MS
+            - 1MS
+            - 2MS
+            - 4MS
+            - 5MS
+            - 10MS
+            - 20MS
+            - 30MS
+            - 40MS
+            - 50MS
+            - 60MS
+            - 70MS
+            - 80MS
+            - 90MS
+            - 100MS
+            - 150MS
+            - 300MS
+            - 500MS
+
+    excessPacketDelayThresholds-Type:
+      description: Array of type excessPacketDelayThreshold-Type.
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/excessPacketDelayThreshold-Type'
+      minItems: 0
+      maxItems: 255
+
+    layerOneRsrpPeriodicity-Type:
+      description: Periodicity that the UE shall use for the logging of the M10 measurements. See details in 3GPP TS 32.422 clause 5.10.X.
+      type: integer
+      enum:
+        - 2
+        - 3
+        - 4
+        - 5
+
+    traceConfig-Type:
+      description: Trace configuration parameters for NR. See details in 3GPP TS 28.622 clause 4.3.30.
+      type: object
+      properties:
+        listOfInterfaces:
+          $ref: '#/components/schemas/listOfInterfaces-Type'
+        listOfNeTypes:
+          $ref: '#/components/schemas/listOfNeTypes-Type'
+        traceDepth:
+          $ref: '#/components/schemas/traceDepth-Type'
+        triggeringEvents:
+          $ref: '#/components/schemas/triggeringEvents-Type'
+
+    immediateMDTConfig-Type:
+      description: Immediate MDT configuration parameters. See details in 3GPP TS 28.622 clause 4.3.30.
+      type: object
+      properties: 
+        listOfMeasurements:
+          $ref: '#/components/schemas/listOfMeasurements-Type'
+        reportingTrigger:
+          $ref: '#/components/schemas/reportingTrigger-Type'
+        reportAmount:
+          $ref: '#/components/schemas/reportAmount-Type'
+        reportAmountM1LTE:
+          $ref: '#/components/schemas/reportAmountM1LTE-Type'
+        reportAmountM4LTE:
+          $ref: '#/components/schemas/reportAmountM4LTE-Type'
+        reportAmountM5LTE:
+          $ref: '#/components/schemas/reportAmountM5LTE-Type'
+        reportAmountM6LTE:
+          $ref: '#/components/schemas/reportAmountM6LTE-Type'
+        reportAmountM7LTE:
+          $ref: '#/components/schemas/reportAmountM7LTE-Type'
+        reportAmountM1NR:
+          $ref: '#/components/schemas/reportAmountM1NR-Type'
+        reportAmountM4NR:
+          $ref: '#/components/schemas/reportAmountM4NR-Type'
+        reportAmountM5NR:
+          $ref: '#/components/schemas/reportAmountM5NR-Type'
+        reportAmountM6NR:
+          $ref: '#/components/schemas/reportAmountM6NR-Type'
+        reportAmountM7NR:
+          $ref: '#/components/schemas/reportAmountM7NR-Type'
+        reportInterval:
+          $ref: '#/components/schemas/reportInterval-Type'
+        eventThreshold:
+          $ref: '#/components/schemas/eventThreshold-Type'
+        collectionPeriodRRMLTE:
+          $ref: '#/components/schemas/collectionPeriodRRMLTE-Type'
+        collectionPeriodM6LTE:
+          $ref: '#/components/schemas/collectionPeriodM6LTE-Type'
+        collectionPeriodM7LTE:
+          $ref: '#/components/schemas/collectionPeriodM7LTE-Type'
+        collectionPeriodRRMUMTS:
+          $ref: '#/components/schemas/collectionPeriodRRMUMTS-Type'
+        collectionPeriodRRMNR:
+          $ref: '#/components/schemas/collectionPeriodRRMNR-Type'
+        collectionPeriodM6NR:
+          $ref: '#/components/schemas/collectionPeriodM6NR-Type'
+        collectionPeriodM7NR:
+          $ref: '#/components/schemas/collectionPeriodM7NR-Type'
+        eventThresholdUphUMTS:
+          $ref: '#/components/schemas/eventThresholdUphUMTS-Type'
+        measurementPeriodUMTS:
+          $ref: '#/components/schemas/measurementPeriodUMTS-Type'
+        measurementPeriodLTE:
+          $ref: '#/components/schemas/measurementPeriodLTE-Type'
+        measurementQuantity:
+          $ref: '#/components/schemas/measurementQuantity-Type'
+        beamLevelMeasurement:
+          $ref: '#/components/schemas/beamLevelMeasurement-Type'
+        positioningMethod:
+          $ref: '#/components/schemas/positioningMethod-Type'
+        excessPacketDelayThresholds:
+          $ref: '#/components/schemas/excessPacketDelayThresholds-Type'
+        layerOneRsrpPeriodicity:
+          $ref: '#/components/schemas/layerOneRsrpPeriodicity-Type'
+        eventTriggerConfig:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/EventTriggerConfig'
+
+
+    loggedMDTConfig-Type:
+      description: Logged MDT configuration parameters. See details in 3GPP TS 28.622 clause 4.3.30.
+      type: object
+      properties:
+        traceCollectionEntityId:
+          $ref: '#/components/schemas/traceCollectionEntityId-Type'
+        loggingDuration:
+          $ref: '#/components/schemas/loggingDuration-Type'
+        loggingInterval:
+          $ref: '#/components/schemas/loggingInterval-Type'
+        eventThresholdL1:
+          $ref: '#/components/schemas/eventThresholdL1-Type'
+        hysteresisL1:
+          $ref: '#/components/schemas/hysteresisL1-Type'
+        timeToTriggerL1:
+          $ref: '#/components/schemas/timeToTriggerL1-Type'
+        mbsfnAreaList:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/MbsfnArea'
+          maxItems: 8
+        reportType:
+          $ref: '#/components/schemas/reportType-Type'
+        eventListForEventTriggeredMeasurement:
+          $ref: '#/components/schemas/eventListForEventTriggeredMeasurement-Type'
+        areaConfigurationForNeighCell:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/AreaConfig'
+          maxItems: 32
+        nPNIdentityList:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_GenericNrm.yaml#/components/schemas/NpnId-Type'
+
+    mdtConfig-Type:
+      description: MDT config parameters. See details in 3GPP TS 28.622 clause 4.3.30.
+      type: object
+      properties:
+        anonymizationOfMdtData:
+          $ref: '#/components/schemas/anonymizationOfMdtData-Type'
+        areaScope:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_GenericNrm.yaml#/components/schemas/AreaScope'
+        sensorInformation:
+          $ref: '#/components/schemas/sensorInformation-Type'
+        immediateMDTConfig:
+          $ref: '#/components/schemas/immediateMDTConfig-Type'
+        loggedMDTConfig:
+          $ref: '#/components/schemas/loggedMDTConfig-Type'
+        plmnList:
+          $ref: '#/components/schemas/plmnList-Type'
+
+    UECoreMeasConfig-Type:
+      description: UE level measurements configuration parameters for 5G system. See details in 3GPP TS 28.622 clause 4.3.x.
+      type: object
+      properties:
+        ueCoreMeasurements:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        ueCoreMeasGranularityPeriod:
+          type: integer
+        nfTypeToMeasure:
+          type: string          
+        objectInstances:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+        rootObjectInstances:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+
+    AreaScope:
+      oneOf:
+      - type: array
+        uniqueItems: true
+        items:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/EutraCellId'
+      - type: array
+        uniqueItems: true
+        items:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/NrCellId'
+      - type: array
+        uniqueItems: true
+        items:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Tac'
+      - type: array
+        uniqueItems: true
+        items:
+          $ref: '#/components/schemas/Tai'
+      - type: array
+        uniqueItems: true
+        items:
+          $ref: 'TS28623_GenericNrm.yaml#/components/schemas/NpnId-Type'
+      - type: array
+        items:
+          $ref: '#/components/schemas/PLMNInfo'          
+      - type: object
+        properties: 
+          nTNGeoAreaList:
+              type: array
+              items:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+              minItems: 1
+              maxItems: 8
+        
+    Tai:
+      type: object
+      properties:
+        mcc:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mcc'
+        mnc:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mnc'
+        tac:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Tac'
+    PLMNInfo:
+      type: object
+      properties:
+        plmnId:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+        sNSSAI:
+          type: array
+          items:
+            $ref: 'TS28541_NrNrm.yaml#/components/schemas/Snssai'
+    AreaConfig:
+      type: object
+      properties:
+        freqInfo:
+          $ref: '#/components/schemas/FreqInfo'
+        pciList:
+          type: array
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 0
+            maximum: 1007
+          minItems: 1
+          maxItems: 32
+    FreqInfo:
+      description: specifies the carrier frequency and bands used in a cell.
+      type: object
+      properties:
+        arfcn:
+          type: integer
+        freqBands:
+          type: array
+          uniqueItems: true
+          items: 
+            type: integer
+          minItems: 1
+    MbsfnArea:
+      type: object
+      properties:
+        mbsfnAreaId:
+          type: integer
+          minimum: 1
+        earfcn:
+          type: integer
+          minimum: 1
+    TraceJob-Attr:
+      type: object
+      description: abstract class used as a container of all TraceJob attributes
+      properties:
+        jobType:
+          $ref: '#/components/schemas/jobType-Type'
+        plmnTarget:
+          $ref: '#/components/schemas/plmnTarget-Type'
+        nPNTarget:
+          $ref: 'TS28623_GenericNrm.yaml#/components/schemas/NpnId-Type'
+        listOfTraceMetrics:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        traceReportingConsumerUri:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Uri'
+        traceCollectionEntityIpAddress:
+          $ref: 'TS28623_GenericNrm.yaml#/components/schemas/IpAddr'
+        traceReference:
+          $ref: '#/components/schemas/traceReference-Type'
+        jobId:
+          type: string
+        traceReportingFormat:
+          $ref: '#/components/schemas/traceReportingFormat-Type'
+        traceTarget:
+          $ref: '#/components/schemas/TraceTarget'
+        traceConfig:
+          $ref: '#/components/schemas/traceConfig-Type'
+        mdtConfig:
+          $ref: '#/components/schemas/mdtConfig-Type'
+        ueCoreMeasConfig:
+          $ref: '#/components/schemas/UECoreMeasConfig-Type'
+
+#-------- end of Definition of types used in Trace control NRM fragment ----------
+
+#-------- Definition of concrete IOCs --------------------------------------------
+    TraceJob-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              $ref: '#/components/schemas/TraceJob-Attr'
+            Files:
+              $ref: 'TS28623_FileManagementNrm.yaml#/components/schemas/Files-Multiple'
+
+#-------- Definition of YAML arrays for name-contained IOCs ----------------------
+
+    TraceJob-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/TraceJob-Single'
+#-------- Definitions in TS 28.623 for TS 28.532 ---------------------------------
+    resources-traceControlNrm:
+      oneOf:
+       - $ref: '#/components/schemas/TraceJob-Single'

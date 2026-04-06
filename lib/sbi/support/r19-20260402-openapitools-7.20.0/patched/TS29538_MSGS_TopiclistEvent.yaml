@@ -1,0 +1,389 @@
+openapi: 3.0.0
+
+info:
+  title: MSGS_TopiclistEvent
+  version: 1.1.0
+  description: |
+    API for Topic Messaging Event Service.
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.538 V19.4.0; Enabling MSGin5G Service; Application Programming Interfaces (API)
+    specification; Stage 3
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.538/
+
+servers:
+  - url: '{apiRoot}/msgs-topiclistevent/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - msgs-topiclistevent
+
+paths:
+  /topiclist-subscriptions:
+    post:
+      summary: subscribe to Messaging Topic list on a MSGin5G Server
+      tags:
+        - Topic List Subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopicListSubscription'
+      responses:
+        '201':
+          description: Topic list on the MSGin5G Server is successfully subscribed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicListSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        MessagingTopicListNotification:
+          '{$request.body#/notificationURI}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/TopicListNotification'
+              responses: 
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /topiclist-subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of the Individual Topic List Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    delete:
+      summary: Request the deletion of an existing Individual Topic List Subscription resource.
+      operationId: DeleteIndTopicListSubsc
+      tags:
+        - Individual Topic List Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Topic List Subscription resource is successfully
+            deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /request-topic-subscription:
+    post:
+      summary: subscribe to Messaging Topic on a MSGin5G Server
+      tags:
+        - Messaging Topic Subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopicSubscription'
+      responses:
+        '200':
+          description: The Messaging Topic subscription is created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicSubscriptionAck'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /request-topic-unsubscription:
+    post:
+      summary: unsubscribe to Messaging Topic on a MSGin5G Server
+      tags:
+        - Messaging Topic Unsubscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopicUnsubscription'
+      responses:
+        '204':
+          description: >
+            No Content. The Messaging Topic subscription is removed successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+#
+# STRUCTURED DATA TYPES
+#
+    TopicListSubscription:
+      description: Messaging Topic list subscription data
+      type: object
+      required:
+        - oriAddr
+        - destAddr
+        - notificationURI
+      properties:
+        oriAddr:
+          $ref: 'TS29538_MSGG_L3GDelivery.yaml#/components/schemas/Address'
+        destAddr:
+          $ref: 'TS29538_MSGG_L3GDelivery.yaml#/components/schemas/Address'
+        notificationURI:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        exprTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    TopicListUnsubscription:
+      description: Messaging Topic list unsubscription data
+      type: object
+      required:
+        - oriAddr
+        - destAddr
+      properties:
+        oriAddr:
+          $ref: 'TS29538_MSGG_L3GDelivery.yaml#/components/schemas/Address'
+        destAddr:
+          $ref: 'TS29538_MSGG_L3GDelivery.yaml#/components/schemas/Address'
+
+    TopicListUnsubscriptionAck:
+      description: Response of Messaging Topic list unsubscription
+      type: object
+      required:
+        - subStat
+      properties:
+        subStat:
+          type: string
+
+    TopicSubscription:
+      description: Messaging Topic subscription data
+      type: object
+      required:
+        - oriAddr
+        - msgTopics
+      properties:
+        oriAddr:
+          $ref: 'TS29538_MSGG_L3GDelivery.yaml#/components/schemas/Address'
+        msgTopics:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: A list of Messaging Topics to be subscribed.
+        exprTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+
+    TopicSubscriptionAck:
+      description: Response of Messaging Topic subscription
+      type: object
+      required:
+        - subStat
+      properties:
+        subStat:
+          type: string
+        exprTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+
+    TopicUnsubscription:
+      description: Messaging Topic unsubscription data
+      type: object
+      required:
+        - oriAddr
+        - msgTopics
+      properties:
+        oriAddr:
+          $ref: 'TS29538_MSGG_L3GDelivery.yaml#/components/schemas/Address'
+        msgTopics:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: A list of Messaging Topics to be unsubscribed.
+
+    TopicListNotification:
+      description: Messaging Topic list changes notification data
+      type: object
+      required:
+        - msgTopics
+      properties:
+        exprTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        msgTopics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessagingTopic'
+          minItems: 1
+          description: list of Messaging Topics for notification.
+
+    MessagingTopic:
+      description: Represent Messaging Topic information
+      type: object
+      required:
+        - msgTopic
+        - updateStat
+      properties:
+        msgTopic:
+          type: string
+        updateStat:
+          $ref: '#/components/schemas/UpdateStatus'
+
+#
+# ENUMERATIONS DATA TYPES
+#
+
+    UpdateStatus:
+      anyOf:
+      - type: string
+        enum:
+          - CREATED
+          - DELETED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the Messaging Topic Update status.  
+        Possible values are:
+        - CREATED: Indicates Topic newly created.
+        - DELETED: Indicates Topic newly deleted.

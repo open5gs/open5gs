@@ -1,0 +1,529 @@
+openapi: 3.0.0
+
+info:
+  title: Aimles_AIMLEClientRegistration
+  version: 1.0.2
+  description: |
+    API for AIMLE Client Registration Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.560 V19.1.0; Artificial Intelligence / Machine Learning (AIML) Services – Service
+    Enabler Architecture Layer for Verticals (SEAL); Protocol Specification; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/24_series/24.560/'
+
+servers:
+  - url: '{apiRoot}/aimles-client-reg/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /registrations:
+    post:
+      summary: Registers the AIMLE client at the AIMLE server.
+      operationId: RegAimleClient
+      tags:
+        - AIMLE client registrations (Collection)
+      requestBody:
+        description: >
+          Contains information for the creation of a new individual AIMLE client registration
+          resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AimleClientRegInfo'
+      responses:
+        '201':
+          description: Represents an individual AIMLE client registration resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AimleRegistration'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created individual AIMLE client registration
+                resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /registrations/{registrationId}:
+    put:
+      summary: Update an Individual AIMLE client registration resource.
+      operationId: UpdateAimleClientReg
+      tags:
+        - Individual AIMLE client registration (Document)
+      parameters:
+      - name: registrationId
+        description: >
+          String identifying the individual AIMLE client registration resource at the AIMLE server.
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: >
+          Contains information for the update of individual AIMLE client registration resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AimleRegistration'
+      responses:
+        '200':
+          description: >
+            An individual AIMLE client registration resource is updated, and a representation of
+            that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AimleRegistration'
+        '204':
+          description: No Content. An individual AIMLE client registration resource is updated.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Removes an Individual AIMLE client registration resource.
+      operationId: DelAimleClientReg
+      tags:
+        - Individual AIMLE client registration (Document)
+      parameters:
+      - name: registrationId
+        description: >
+          String identifying the individual AIMLE client registration resource at the AIMLE server.
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: An individual AIMLE client registration resource is removed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+# Structured data types
+
+    AimleRegistration:
+      description: Represents an individual AIMLE client registration resource.
+      type: object
+      required:
+      - regData
+      properties:
+        regData:
+          $ref: '#/components/schemas/AimleClientRegInfo'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+
+    AimleClientRegInfo:
+      description: Contains the AIMLE client registration information.
+      type: object
+      required:
+      - aimleClientId
+      - suppProfiles
+      properties:
+        aimleClientId:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        suppProfiles:
+          description: Contains a list of supported service information and AIMLE client profiles.
+          type: array
+          items:
+            $ref: '#/components/schemas/SupportedProfile'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    SupportedProfile:
+      description: Contains AIMLE client profiles and supported service information.
+      type: object
+      properties:
+        clientProfile:
+          $ref: '#/components/schemas/AimleClientProfile'
+        suppServices:
+          description: >
+            Contains the list of VAL services identifiers with corresponding service permissions.
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceData'
+          minItems: 1
+
+    ServiceData:
+      description: Contains VAL service identifier with the corresponding service permission.
+      type: object
+      required:
+      - valServiceId
+      properties:
+        valServiceId:
+          description: Represents the VAL service identifier.
+          type: string
+        servPermLevel:
+          $ref: '#/components/schemas/ServicePermissionLevel'
+
+    AimleClientProfile:
+      description: >
+        Contains the AIMLE client capability information e.g. supported AI/ML model types,
+        AI/ML service operation type.
+      type: object
+      required:
+      - aimleClientUri
+      - aimlOperations
+      - clientCap
+      properties:
+        aimleClientUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        aimlModelTypes:
+          description: Contains AI/ML model types supported by the AIMLE client.
+          type: array
+          items:
+            $ref: '#/components/schemas/AimlModelType'
+          minItems: 1
+        aimlOperations:
+          description: Contains AI/ML operations supported by the AIMLE client.
+          type: array
+          items:
+            $ref: '#/components/schemas/AimlOperation'
+          minItems: 1
+        clientCap:
+          $ref: '#/components/schemas/ClientCapability'
+        availTimeSchedCfgs:
+          description: >
+            Contains the availability schedule of the AIMLE client for the AI/ML service.
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ScheduledCommunicationTime'
+          minItems: 1
+        unavblTimeSchedCfgs:
+          description: >
+            Contains the unavailability schedule of the AIMLE client for the AI/ML service.
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ScheduledCommunicationTime'
+          minItems: 1
+        availLocCfgs:
+          description: >
+            Contains the available location-based configurations of the AIMLE client for the
+            AI/ML service.
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationConfig'
+          minItems: 1
+        unavblLocCfgs:
+          description: >
+            Contains the unavailable location-based configurations of the AIMLE client for the
+            AI/ML service.
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationConfig'
+          minItems: 1
+        dataSetAvail:
+          $ref: '#/components/schemas/DataSetAvailability'
+        dataCap:
+          description: >
+            Contains a list of data capabilities such as the type of data that can be collected,
+            supported data processing capabilities and supported exploratory data analysis (EAD)
+            functions.
+          type: array
+          items:
+            $ref: '#/components/schemas/DataCapability'
+          minItems: 1
+        taskCaps:
+          description: Contains the AI/ML task performing capabilities.
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskCapability'
+          minItems: 1
+
+    ClientCapability:
+      description: Contains the AIMLE client capability information.
+      type: object
+      required:
+      - mlAppType
+      - rsrcUsageLvl
+      properties:
+        mlAppType:
+          $ref: '#/components/schemas/MlApplicationType'
+        rsrcUsageLvl:
+          $ref: '#/components/schemas/ResourceUsageLevel'
+
+    DataSetAvailability:
+      description: Represents a dataset availability.
+      type: object
+      required:
+      - dataSetIds
+      properties:
+        dataSetIds:
+          description: Contains a list of dataset identifiers.
+          type: array
+          items:
+            type: string
+          minItems: 1
+        size:
+          description: Represents the dataset size e.g., number of entries in dataset.
+          type: integer
+        age:
+          description: Represents the dataset age e.g. data set usage in number of days.
+          type: integer
+        features:
+          description: Contains a list of dataset features.
+          type: array
+          items:
+            type: string
+          minItems: 1
+
+    LocationConfig:
+      description: >
+        Indicates the location-based configurations of the AIMLE client for the AI/ML service.
+      type: object
+      properties:
+        clientLoc:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        valSvcAreaId:
+          $ref: 'TS29549_SS_VALServiceAreaConfiguration.yaml#/components/schemas/ValSvcAreaId'
+
+# Simple data types
+
+
+# Enumerations
+
+    ServicePermissionLevel:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - PREMIUM_RESOURCE_USAGE
+        - STANDARD_RESOURCE_USAGE
+        - LIMITED_RESOURCE_USAGE
+        - OTHER_SERVICE_PERMISSION_LEVEL
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          but is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents a service permission level.  
+#        Possible values are:
+#        - PREMIUM_RESOURCE_USAGE: Indicates a premium resource usage level.
+#        - STANDARD_RESOURCE_USAGE: Indicates a standard resource usage level.
+#        - LIMITED_RESOURCE_USAGE: Indicates a limited resource usage level.
+#        - OTHER_SERVICE_PERMISSION_LEVEL: Indicates other service permission level.
+#
+    AimlModelType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - DECISION_TREE
+        - LINEAR_REGRESSION
+        - NEURAL_NETWORK
+        - OTHER_MODEL_TYPE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          but is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the AI/ML model types.  
+#        Possible values are:
+#        - DECISION_TREE: Indicates the decision tree type of the AI/ML model.
+#        - LINEAR_REGRESSION: Indicates the linear regression type of the AI/ML model.
+#        - NEURAL_NETWORK: Indicates the neural network type of the AI/ML model.
+#        - OTHER_MODEL_TYPE: Indicates the other types of the AI/ML model.
+#
+    AimlOperation:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - MODEL_INFERENCE
+        - MODEL_OFFLOAD
+        - MODEL_SPLIT
+        - MODEL_TRANSFER
+        - MODEL_TRAINING
+        - CONTINUE_PERFORM_INTERMEDIATE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          but is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the type of the AI/ML operation.  
+#        Possible values are:
+#        - MODEL_INFERENCE: Indicates the model inference type of the AI/ML operation.
+#        - MODEL_OFFLOAD: Indicates the model offload type of the AI/ML operation.
+#        - MODEL_SPLIT: Indicates the model split type of the AI/ML operation.
+#        - MODEL_TRANSFER: Indicates the model transfer type of the AI/ML operation.
+#        - MODEL_TRAINING: Indicates the model training type of the AI/ML operation.
+#        - CONTINUE_PERFORM_INTERMEDIATE: Indicates the ability to continue performing of
+#          the intermediate AI/ML operation.
+#
+    MlApplicationType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - FEDERATED_LEARNING
+        - TRANSFER_LEARNING
+        - SPLIT_LEARNING
+        - OTHER_ML_APPLICATION_TYPE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          but is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the ML application types.  
+#        Possible values are:
+#        - FEDERATED_LEARNING: Indicates the federated learning ML application type.
+#        - TRANSFER_LEARNING: Indicates the transfer learning ML application type.
+#        - SPLIT_LEARNING: Indicates the split learning ML application type.
+#        - OTHER_ML_APPLICATION_TYPE: Indicates the other ML application types.
+#
+    ResourceUsageLevel:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - PREMIUM_RESOURCE_USAGE
+        - STANDARD_RESOURCE_USAGE
+        - LIMITED_RESOURCE_USAGE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          but is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents a resource usage level.  
+#        Possible values are:
+#        - PREMIUM_RESOURCE_USAGE: Indicates a premium resource usage level.
+#        - STANDARD_RESOURCE_USAGE: Indicates a standard resource usage level.
+#        - LIMITED_RESOURCE_USAGE: Indicates a limited resource usage level.
+#
+    DataCapability:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - RAW_DATA
+        - STRUCURED_DATA
+        - SEMI_STRUCTURED_DATA
+        - UNSTRUCTURED_DATA
+        - PROCESSED_DATA
+        - EXPLOATORY_DATA_ANALYSIS
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          but is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the data capabilities.  
+#        Possible values are:
+#        - RAW_DATA: Indicates the raw data.
+#        - STRUCURED_DATA: Indicates the structured data.
+#        - SEMI_STRUCTURED_DATA: Indicates the semi-structured data.
+#        - UNSTRUCTURED_DATA: Indicates the unstructured data.
+#        - PROCESSED_DATA: Indicates the processed data.
+#        - EXPLOATORY_DATA_ANALYSIS: Indicates the exploratory data analysis function.
+#          match.
+#
+    TaskCapability:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - HIGH_COMPUTE_CAPABILITY
+        - LOW_COMPUTE_CAPABILITY
+        - LOW_COSTS_PERFORMANCE
+        - GREEN_TASK_PERFORMANCE
+        - ENERGY_EFFICIENT_PERFORMANCE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          but is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the AI/ML task performing capabilities.  
+#        Possible values are:
+#        - HIGH_COMPUTE_CAPABILITY: Indicates a high compute capability.
+#        - LOW_COMPUTE_CAPABILITY: Indicates a low compute capability.
+#        - LOW_COSTS_PERFORMANCE: Indicates a low cost performance.
+#        - GREEN_TASK_PERFORMANCE: Indicates a green task performance.
+#        - ENERGY_EFFICIENT_PERFORMANCE: Indicates an energy efficient performance.

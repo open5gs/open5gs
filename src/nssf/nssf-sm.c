@@ -40,6 +40,7 @@ void nssf_state_final(ogs_fsm_t *s, nssf_event_t *e)
 void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
 {
     int rv;
+    int service_name_id = OpenAPI_service_name_NULL;
     const char *api_version = NULL;
 
     ogs_sbi_stream_t *stream = NULL;
@@ -93,13 +94,15 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             break;
         }
 
-        SWITCH(message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message.h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nnssf_nsselection:
             api_version = OGS_SBI_API_V2;
             break;
-        DEFAULT
+        default:
             api_version = OGS_SBI_API_V1;
-        END
+        }
 
         if (strcmp(message.h.api.version, api_version) != 0) {
             ogs_error("Not supported version [%s]", message.h.api.version);
@@ -111,8 +114,8 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             break;
         }
 
-        SWITCH(message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
+        switch (service_name_id) {
+        case OpenAPI_service_name_nnrf_nfm:
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY)
@@ -141,7 +144,7 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             END
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION)
+        case OpenAPI_service_name_nnssf_nsselection:
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NETWORK_SLICE_INFORMATION)
@@ -172,14 +175,14 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("Invalid API name [%s]", message.h.service.name);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
                     "Invalid API name", message.h.resource.component[0],
                     NULL));
-        END
+        }
 
         /* In lib/sbi/server.c, notify_completed() releases 'request' buffer. */
         ogs_sbi_message_free(&message);
@@ -198,13 +201,15 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             break;
         }
 
-        SWITCH(message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message.h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nnssf_nsselection:
             api_version = OGS_SBI_API_V2;
             break;
-        DEFAULT
+        default:
             api_version = OGS_SBI_API_V1;
-        END
+        }
 
         ogs_assert(api_version);
         if (strcmp(message.h.api.version, api_version) != 0) {
@@ -214,8 +219,8 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             break;
         }
 
-        SWITCH(message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
+        switch (service_name_id) {
+        case OpenAPI_service_name_nnrf_nfm:
 
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
@@ -307,7 +312,7 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             END
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
+        case OpenAPI_service_name_nnrf_disc:
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
                 sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
@@ -345,7 +350,7 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             END
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION)
+        case OpenAPI_service_name_nnssf_nsselection:
             sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
             ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
                     sbi_xact_id <= OGS_MAX_POOL_ID);
@@ -381,10 +386,10 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
             break;
 
 
-        DEFAULT
+        default:
             ogs_error("Invalid API name [%s]", message.h.service.name);
             ogs_assert_if_reached();
-        END
+        }
 
         ogs_sbi_message_free(&message);
         ogs_sbi_response_free(response);

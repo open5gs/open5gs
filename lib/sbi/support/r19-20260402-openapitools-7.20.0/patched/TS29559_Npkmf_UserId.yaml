@@ -1,0 +1,118 @@
+openapi: 3.0.0
+
+info:
+  title: Npkmf_ResolveRemoteUserId
+  version: 1.2.0
+  description: |
+    PKMF Resolve Remote User Id Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.559 V19.4.0; 5G System; 5G ProSe Anchor Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.559/
+
+servers:
+  - url: '{apiRoot}/npkmf-userid/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - npkmf-userid
+
+paths:
+  /resolve-id:
+    post:
+      summary: Retrieve the SUPI of the ProSe Remote UE
+      operationId: RetrieveSUPI
+      tags:
+        - SUPI Retrieval
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveRequest'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolveResponse'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npkmf-userid: Access to the Npkmf_ResolveRemoteUserId API
+
+  schemas:
+#
+#  Structured Data Types
+#
+
+    ResolveRequest:
+      description: Request Data
+      type: object
+      properties:
+        upPrukId:
+          $ref: 'TS29559_Npkmf_PKMFKeyRequest.yaml#/components/schemas/PrukId'
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+      required:
+        - upPrukId
+
+    ResolveResponse:
+      description: Response Data
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      required:
+        - supi
+
+#
+#  Simple Data Types
+#
+
+
+#
+#  Enumeration Data Types
+#

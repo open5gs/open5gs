@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_n2_info_content_s OpenAPI_n2_info_content_t;
 #include "ngap_ie_type.h"
 #include "ref_to_binary_data.h"
 
@@ -19,13 +20,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n2_info_content_s OpenAPI_n2_info_content_t;
-typedef struct OpenAPI_n2_info_content_s {
+struct OpenAPI_n2_info_content_s {
     bool is_ngap_message_type;
     int ngap_message_type;
     OpenAPI_ngap_ie_type_e ngap_ie_type;
     struct OpenAPI_ref_to_binary_data_s *ngap_data;
-} OpenAPI_n2_info_content_t;
+};
 
 OpenAPI_n2_info_content_t *OpenAPI_n2_info_content_create(
     bool is_ngap_message_type,

@@ -10,7 +10,7 @@ OpenAPI_pdu_session_event_notification_t *OpenAPI_pdu_session_event_notification
     char *ue_ipv4,
     char *ue_ipv6,
     char *ue_mac,
-    OpenAPI_npcf_pdu_session_status_e status,
+    OpenAPI_pdu_session_status_e status,
     OpenAPI_pcf_addressing_info_t *pcf_info,
     char *dnn,
     OpenAPI_snssai_t *snssai,
@@ -134,8 +134,8 @@ cJSON *OpenAPI_pdu_session_event_notification_convertToJSON(OpenAPI_pdu_session_
     }
     }
 
-    if (pdu_session_event_notification->status != OpenAPI_npcf_pdu_session_status_NULL) {
-    if (cJSON_AddStringToObject(item, "status", OpenAPI_npcf_pdu_session_status_ToString(pdu_session_event_notification->status)) == NULL) {
+    if (pdu_session_event_notification->status != OpenAPI_pdu_session_status_NULL) {
+    if (cJSON_AddStringToObject(item, "status", OpenAPI_pdu_session_status_ToString(pdu_session_event_notification->status)) == NULL) {
         ogs_error("OpenAPI_pdu_session_event_notification_convertToJSON() failed [status]");
         goto end;
     }
@@ -196,7 +196,7 @@ OpenAPI_pdu_session_event_notification_t *OpenAPI_pdu_session_event_notification
     cJSON *ue_ipv6 = NULL;
     cJSON *ue_mac = NULL;
     cJSON *status = NULL;
-    OpenAPI_npcf_pdu_session_status_e statusVariable = 0;
+    OpenAPI_pdu_session_status_e statusVariable = 0;
     cJSON *pcf_info = NULL;
     OpenAPI_pcf_addressing_info_t *pcf_info_local_nonprim = NULL;
     cJSON *dnn = NULL;
@@ -252,7 +252,7 @@ OpenAPI_pdu_session_event_notification_t *OpenAPI_pdu_session_event_notification
         ogs_error("OpenAPI_pdu_session_event_notification_parseFromJSON() failed [status]");
         goto end;
     }
-    statusVariable = OpenAPI_npcf_pdu_session_status_FromString(status->valuestring);
+    statusVariable = OpenAPI_pdu_session_status_FromString(status->valuestring);
     }
 
     pcf_info = cJSON_GetObjectItemCaseSensitive(pdu_session_event_notificationJSON, "pcfInfo");

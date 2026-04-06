@@ -1,7 +1,7 @@
 /*
  * lcs_mo_data.h
  *
- * 
+ * LCS Mobile Originated Subscription Data
  */
 
 #ifndef _OpenAPI_lcs_mo_data_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_lcs_mo_data_s OpenAPI_lcs_mo_data_t;
 #include "lcs_broadcast_assistance_types_data.h"
 #include "lcs_mo_service_class.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_lcs_mo_data_s OpenAPI_lcs_mo_data_t;
-typedef struct OpenAPI_lcs_mo_data_s {
+struct OpenAPI_lcs_mo_data_s {
     OpenAPI_list_t *allowed_service_classes;
     struct OpenAPI_lcs_broadcast_assistance_types_data_s *mo_assistance_data_types;
-} OpenAPI_lcs_mo_data_t;
+};
 
 OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_create(
     OpenAPI_list_t *allowed_service_classes,

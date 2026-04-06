@@ -15,8 +15,10 @@ OpenAPI_problem_details_1_t *OpenAPI_problem_details_1_create(
     OpenAPI_list_t *invalid_params,
     char *supported_features,
     OpenAPI_access_token_err_t *access_token_error,
-    OpenAPI_access_token_req_t *access_token_request,
-    char *nrf_id
+    OpenAPI_access_token_req_1_t *access_token_request,
+    char *nrf_id,
+    OpenAPI_list_t *supported_api_versions,
+    OpenAPI_no_profile_match_info_1_t *no_profile_match_info
 )
 {
     OpenAPI_problem_details_1_t *problem_details_1_local_var = ogs_malloc(sizeof(OpenAPI_problem_details_1_t));
@@ -34,6 +36,8 @@ OpenAPI_problem_details_1_t *OpenAPI_problem_details_1_create(
     problem_details_1_local_var->access_token_error = access_token_error;
     problem_details_1_local_var->access_token_request = access_token_request;
     problem_details_1_local_var->nrf_id = nrf_id;
+    problem_details_1_local_var->supported_api_versions = supported_api_versions;
+    problem_details_1_local_var->no_profile_match_info = no_profile_match_info;
 
     return problem_details_1_local_var;
 }
@@ -81,12 +85,23 @@ void OpenAPI_problem_details_1_free(OpenAPI_problem_details_1_t *problem_details
         problem_details_1->access_token_error = NULL;
     }
     if (problem_details_1->access_token_request) {
-        OpenAPI_access_token_req_free(problem_details_1->access_token_request);
+        OpenAPI_access_token_req_1_free(problem_details_1->access_token_request);
         problem_details_1->access_token_request = NULL;
     }
     if (problem_details_1->nrf_id) {
         ogs_free(problem_details_1->nrf_id);
         problem_details_1->nrf_id = NULL;
+    }
+    if (problem_details_1->supported_api_versions) {
+        OpenAPI_list_for_each(problem_details_1->supported_api_versions, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(problem_details_1->supported_api_versions);
+        problem_details_1->supported_api_versions = NULL;
+    }
+    if (problem_details_1->no_profile_match_info) {
+        OpenAPI_no_profile_match_info_1_free(problem_details_1->no_profile_match_info);
+        problem_details_1->no_profile_match_info = NULL;
     }
     ogs_free(problem_details_1);
 }
@@ -181,7 +196,7 @@ cJSON *OpenAPI_problem_details_1_convertToJSON(OpenAPI_problem_details_1_t *prob
     }
 
     if (problem_details_1->access_token_request) {
-    cJSON *access_token_request_local_JSON = OpenAPI_access_token_req_convertToJSON(problem_details_1->access_token_request);
+    cJSON *access_token_request_local_JSON = OpenAPI_access_token_req_1_convertToJSON(problem_details_1->access_token_request);
     if (access_token_request_local_JSON == NULL) {
         ogs_error("OpenAPI_problem_details_1_convertToJSON() failed [access_token_request]");
         goto end;
@@ -196,6 +211,33 @@ cJSON *OpenAPI_problem_details_1_convertToJSON(OpenAPI_problem_details_1_t *prob
     if (problem_details_1->nrf_id) {
     if (cJSON_AddStringToObject(item, "nrfId", problem_details_1->nrf_id) == NULL) {
         ogs_error("OpenAPI_problem_details_1_convertToJSON() failed [nrf_id]");
+        goto end;
+    }
+    }
+
+    if (problem_details_1->supported_api_versions) {
+    cJSON *supported_api_versionsList = cJSON_AddArrayToObject(item, "supportedApiVersions");
+    if (supported_api_versionsList == NULL) {
+        ogs_error("OpenAPI_problem_details_1_convertToJSON() failed [supported_api_versions]");
+        goto end;
+    }
+    OpenAPI_list_for_each(problem_details_1->supported_api_versions, node) {
+        if (cJSON_AddStringToObject(supported_api_versionsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_problem_details_1_convertToJSON() failed [supported_api_versions]");
+            goto end;
+        }
+    }
+    }
+
+    if (problem_details_1->no_profile_match_info) {
+    cJSON *no_profile_match_info_local_JSON = OpenAPI_no_profile_match_info_1_convertToJSON(problem_details_1->no_profile_match_info);
+    if (no_profile_match_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_problem_details_1_convertToJSON() failed [no_profile_match_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "noProfileMatchInfo", no_profile_match_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_problem_details_1_convertToJSON() failed [no_profile_match_info]");
         goto end;
     }
     }
@@ -220,8 +262,12 @@ OpenAPI_problem_details_1_t *OpenAPI_problem_details_1_parseFromJSON(cJSON *prob
     cJSON *access_token_error = NULL;
     OpenAPI_access_token_err_t *access_token_error_local_nonprim = NULL;
     cJSON *access_token_request = NULL;
-    OpenAPI_access_token_req_t *access_token_request_local_nonprim = NULL;
+    OpenAPI_access_token_req_1_t *access_token_request_local_nonprim = NULL;
     cJSON *nrf_id = NULL;
+    cJSON *supported_api_versions = NULL;
+    OpenAPI_list_t *supported_api_versionsList = NULL;
+    cJSON *no_profile_match_info = NULL;
+    OpenAPI_no_profile_match_info_1_t *no_profile_match_info_local_nonprim = NULL;
     type = cJSON_GetObjectItemCaseSensitive(problem_details_1JSON, "type");
     if (type) {
     if (!cJSON_IsString(type) && !cJSON_IsNull(type)) {
@@ -313,9 +359,9 @@ OpenAPI_problem_details_1_t *OpenAPI_problem_details_1_parseFromJSON(cJSON *prob
 
     access_token_request = cJSON_GetObjectItemCaseSensitive(problem_details_1JSON, "accessTokenRequest");
     if (access_token_request) {
-    access_token_request_local_nonprim = OpenAPI_access_token_req_parseFromJSON(access_token_request);
+    access_token_request_local_nonprim = OpenAPI_access_token_req_1_parseFromJSON(access_token_request);
     if (!access_token_request_local_nonprim) {
-        ogs_error("OpenAPI_access_token_req_parseFromJSON failed [access_token_request]");
+        ogs_error("OpenAPI_access_token_req_1_parseFromJSON failed [access_token_request]");
         goto end;
     }
     }
@@ -324,6 +370,36 @@ OpenAPI_problem_details_1_t *OpenAPI_problem_details_1_parseFromJSON(cJSON *prob
     if (nrf_id) {
     if (!cJSON_IsString(nrf_id) && !cJSON_IsNull(nrf_id)) {
         ogs_error("OpenAPI_problem_details_1_parseFromJSON() failed [nrf_id]");
+        goto end;
+    }
+    }
+
+    supported_api_versions = cJSON_GetObjectItemCaseSensitive(problem_details_1JSON, "supportedApiVersions");
+    if (supported_api_versions) {
+        cJSON *supported_api_versions_local = NULL;
+        if (!cJSON_IsArray(supported_api_versions)) {
+            ogs_error("OpenAPI_problem_details_1_parseFromJSON() failed [supported_api_versions]");
+            goto end;
+        }
+
+        supported_api_versionsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(supported_api_versions_local, supported_api_versions) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(supported_api_versions_local)) {
+                ogs_error("OpenAPI_problem_details_1_parseFromJSON() failed [supported_api_versions]");
+                goto end;
+            }
+            OpenAPI_list_add(supported_api_versionsList, ogs_strdup(supported_api_versions_local->valuestring));
+        }
+    }
+
+    no_profile_match_info = cJSON_GetObjectItemCaseSensitive(problem_details_1JSON, "noProfileMatchInfo");
+    if (no_profile_match_info) {
+    no_profile_match_info_local_nonprim = OpenAPI_no_profile_match_info_1_parseFromJSON(no_profile_match_info);
+    if (!no_profile_match_info_local_nonprim) {
+        ogs_error("OpenAPI_no_profile_match_info_1_parseFromJSON failed [no_profile_match_info]");
         goto end;
     }
     }
@@ -340,7 +416,9 @@ OpenAPI_problem_details_1_t *OpenAPI_problem_details_1_parseFromJSON(cJSON *prob
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         access_token_error ? access_token_error_local_nonprim : NULL,
         access_token_request ? access_token_request_local_nonprim : NULL,
-        nrf_id && !cJSON_IsNull(nrf_id) ? ogs_strdup(nrf_id->valuestring) : NULL
+        nrf_id && !cJSON_IsNull(nrf_id) ? ogs_strdup(nrf_id->valuestring) : NULL,
+        supported_api_versions ? supported_api_versionsList : NULL,
+        no_profile_match_info ? no_profile_match_info_local_nonprim : NULL
     );
 
     return problem_details_1_local_var;
@@ -357,8 +435,19 @@ end:
         access_token_error_local_nonprim = NULL;
     }
     if (access_token_request_local_nonprim) {
-        OpenAPI_access_token_req_free(access_token_request_local_nonprim);
+        OpenAPI_access_token_req_1_free(access_token_request_local_nonprim);
         access_token_request_local_nonprim = NULL;
+    }
+    if (supported_api_versionsList) {
+        OpenAPI_list_for_each(supported_api_versionsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(supported_api_versionsList);
+        supported_api_versionsList = NULL;
+    }
+    if (no_profile_match_info_local_nonprim) {
+        OpenAPI_no_profile_match_info_1_free(no_profile_match_info_local_nonprim);
+        no_profile_match_info_local_nonprim = NULL;
     }
     return NULL;
 }

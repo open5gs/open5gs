@@ -16,7 +16,14 @@ OpenAPI_nrf_info_served_pcf_info_value_t *OpenAPI_nrf_info_served_pcf_info_value
     bool is_prose_support_ind,
     int prose_support_ind,
     OpenAPI_pro_se_capability_t *prose_capability,
-    OpenAPI_v2x_capability_t *v2x_capability
+    OpenAPI_v2x_capability_t *v2x_capability,
+    bool is_a2x_support_ind,
+    int a2x_support_ind,
+    OpenAPI_a2x_capability_t *a2x_capability,
+    bool is_ranging_sl_pos_support_ind,
+    int ranging_sl_pos_support_ind,
+    bool is_ursp_eps_support,
+    int ursp_eps_support
 )
 {
     OpenAPI_nrf_info_served_pcf_info_value_t *nrf_info_served_pcf_info_value_local_var = ogs_malloc(sizeof(OpenAPI_nrf_info_served_pcf_info_value_t));
@@ -34,6 +41,13 @@ OpenAPI_nrf_info_served_pcf_info_value_t *OpenAPI_nrf_info_served_pcf_info_value
     nrf_info_served_pcf_info_value_local_var->prose_support_ind = prose_support_ind;
     nrf_info_served_pcf_info_value_local_var->prose_capability = prose_capability;
     nrf_info_served_pcf_info_value_local_var->v2x_capability = v2x_capability;
+    nrf_info_served_pcf_info_value_local_var->is_a2x_support_ind = is_a2x_support_ind;
+    nrf_info_served_pcf_info_value_local_var->a2x_support_ind = a2x_support_ind;
+    nrf_info_served_pcf_info_value_local_var->a2x_capability = a2x_capability;
+    nrf_info_served_pcf_info_value_local_var->is_ranging_sl_pos_support_ind = is_ranging_sl_pos_support_ind;
+    nrf_info_served_pcf_info_value_local_var->ranging_sl_pos_support_ind = ranging_sl_pos_support_ind;
+    nrf_info_served_pcf_info_value_local_var->is_ursp_eps_support = is_ursp_eps_support;
+    nrf_info_served_pcf_info_value_local_var->ursp_eps_support = ursp_eps_support;
 
     return nrf_info_served_pcf_info_value_local_var;
 }
@@ -85,6 +99,10 @@ void OpenAPI_nrf_info_served_pcf_info_value_free(OpenAPI_nrf_info_served_pcf_inf
     if (nrf_info_served_pcf_info_value->v2x_capability) {
         OpenAPI_v2x_capability_free(nrf_info_served_pcf_info_value->v2x_capability);
         nrf_info_served_pcf_info_value->v2x_capability = NULL;
+    }
+    if (nrf_info_served_pcf_info_value->a2x_capability) {
+        OpenAPI_a2x_capability_free(nrf_info_served_pcf_info_value->a2x_capability);
+        nrf_info_served_pcf_info_value->a2x_capability = NULL;
     }
     ogs_free(nrf_info_served_pcf_info_value);
 }
@@ -207,6 +225,40 @@ cJSON *OpenAPI_nrf_info_served_pcf_info_value_convertToJSON(OpenAPI_nrf_info_ser
     }
     }
 
+    if (nrf_info_served_pcf_info_value->is_a2x_support_ind) {
+    if (cJSON_AddBoolToObject(item, "a2xSupportInd", nrf_info_served_pcf_info_value->a2x_support_ind) == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_pcf_info_value_convertToJSON() failed [a2x_support_ind]");
+        goto end;
+    }
+    }
+
+    if (nrf_info_served_pcf_info_value->a2x_capability) {
+    cJSON *a2x_capability_local_JSON = OpenAPI_a2x_capability_convertToJSON(nrf_info_served_pcf_info_value->a2x_capability);
+    if (a2x_capability_local_JSON == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_pcf_info_value_convertToJSON() failed [a2x_capability]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "a2xCapability", a2x_capability_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_pcf_info_value_convertToJSON() failed [a2x_capability]");
+        goto end;
+    }
+    }
+
+    if (nrf_info_served_pcf_info_value->is_ranging_sl_pos_support_ind) {
+    if (cJSON_AddBoolToObject(item, "rangingSlPosSupportInd", nrf_info_served_pcf_info_value->ranging_sl_pos_support_ind) == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_pcf_info_value_convertToJSON() failed [ranging_sl_pos_support_ind]");
+        goto end;
+    }
+    }
+
+    if (nrf_info_served_pcf_info_value->is_ursp_eps_support) {
+    if (cJSON_AddBoolToObject(item, "urspEpsSupport", nrf_info_served_pcf_info_value->ursp_eps_support) == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_pcf_info_value_convertToJSON() failed [ursp_eps_support]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -230,6 +282,11 @@ OpenAPI_nrf_info_served_pcf_info_value_t *OpenAPI_nrf_info_served_pcf_info_value
     OpenAPI_pro_se_capability_t *prose_capability_local_nonprim = NULL;
     cJSON *v2x_capability = NULL;
     OpenAPI_v2x_capability_t *v2x_capability_local_nonprim = NULL;
+    cJSON *a2x_support_ind = NULL;
+    cJSON *a2x_capability = NULL;
+    OpenAPI_a2x_capability_t *a2x_capability_local_nonprim = NULL;
+    cJSON *ranging_sl_pos_support_ind = NULL;
+    cJSON *ursp_eps_support = NULL;
     group_id = cJSON_GetObjectItemCaseSensitive(nrf_info_served_pcf_info_valueJSON, "groupId");
     if (group_id) {
     if (!cJSON_IsString(group_id) && !cJSON_IsNull(group_id)) {
@@ -357,6 +414,39 @@ OpenAPI_nrf_info_served_pcf_info_value_t *OpenAPI_nrf_info_served_pcf_info_value
     }
     }
 
+    a2x_support_ind = cJSON_GetObjectItemCaseSensitive(nrf_info_served_pcf_info_valueJSON, "a2xSupportInd");
+    if (a2x_support_ind) {
+    if (!cJSON_IsBool(a2x_support_ind)) {
+        ogs_error("OpenAPI_nrf_info_served_pcf_info_value_parseFromJSON() failed [a2x_support_ind]");
+        goto end;
+    }
+    }
+
+    a2x_capability = cJSON_GetObjectItemCaseSensitive(nrf_info_served_pcf_info_valueJSON, "a2xCapability");
+    if (a2x_capability) {
+    a2x_capability_local_nonprim = OpenAPI_a2x_capability_parseFromJSON(a2x_capability);
+    if (!a2x_capability_local_nonprim) {
+        ogs_error("OpenAPI_a2x_capability_parseFromJSON failed [a2x_capability]");
+        goto end;
+    }
+    }
+
+    ranging_sl_pos_support_ind = cJSON_GetObjectItemCaseSensitive(nrf_info_served_pcf_info_valueJSON, "rangingSlPosSupportInd");
+    if (ranging_sl_pos_support_ind) {
+    if (!cJSON_IsBool(ranging_sl_pos_support_ind)) {
+        ogs_error("OpenAPI_nrf_info_served_pcf_info_value_parseFromJSON() failed [ranging_sl_pos_support_ind]");
+        goto end;
+    }
+    }
+
+    ursp_eps_support = cJSON_GetObjectItemCaseSensitive(nrf_info_served_pcf_info_valueJSON, "urspEpsSupport");
+    if (ursp_eps_support) {
+    if (!cJSON_IsBool(ursp_eps_support)) {
+        ogs_error("OpenAPI_nrf_info_served_pcf_info_value_parseFromJSON() failed [ursp_eps_support]");
+        goto end;
+    }
+    }
+
     nrf_info_served_pcf_info_value_local_var = OpenAPI_nrf_info_served_pcf_info_value_create (
         group_id && !cJSON_IsNull(group_id) ? ogs_strdup(group_id->valuestring) : NULL,
         dnn_list ? dnn_listList : NULL,
@@ -369,7 +459,14 @@ OpenAPI_nrf_info_served_pcf_info_value_t *OpenAPI_nrf_info_served_pcf_info_value
         prose_support_ind ? true : false,
         prose_support_ind ? prose_support_ind->valueint : 0,
         prose_capability ? prose_capability_local_nonprim : NULL,
-        v2x_capability ? v2x_capability_local_nonprim : NULL
+        v2x_capability ? v2x_capability_local_nonprim : NULL,
+        a2x_support_ind ? true : false,
+        a2x_support_ind ? a2x_support_ind->valueint : 0,
+        a2x_capability ? a2x_capability_local_nonprim : NULL,
+        ranging_sl_pos_support_ind ? true : false,
+        ranging_sl_pos_support_ind ? ranging_sl_pos_support_ind->valueint : 0,
+        ursp_eps_support ? true : false,
+        ursp_eps_support ? ursp_eps_support->valueint : 0
     );
 
     return nrf_info_served_pcf_info_value_local_var;
@@ -402,6 +499,10 @@ end:
     if (v2x_capability_local_nonprim) {
         OpenAPI_v2x_capability_free(v2x_capability_local_nonprim);
         v2x_capability_local_nonprim = NULL;
+    }
+    if (a2x_capability_local_nonprim) {
+        OpenAPI_a2x_capability_free(a2x_capability_local_nonprim);
+        a2x_capability_local_nonprim = NULL;
     }
     return NULL;
 }

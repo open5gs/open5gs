@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_hsmf_update_error_s OpenAPI_hsmf_update_error_t;
 #include "problem_details.h"
 #include "ref_to_binary_data.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_hsmf_update_error_s OpenAPI_hsmf_update_error_t;
-typedef struct OpenAPI_hsmf_update_error_s {
+struct OpenAPI_hsmf_update_error_s {
     struct OpenAPI_problem_details_s *error;
     bool is_pti;
     int pti;
@@ -29,7 +29,7 @@ typedef struct OpenAPI_hsmf_update_error_s {
     bool is_back_off_timer;
     int back_off_timer;
     char *recovery_time;
-} OpenAPI_hsmf_update_error_t;
+};
 
 OpenAPI_hsmf_update_error_t *OpenAPI_hsmf_update_error_create(
     OpenAPI_problem_details_t *error,

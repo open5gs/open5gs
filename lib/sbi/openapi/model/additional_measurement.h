@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_additional_measurement_s OpenAPI_additional_measurement_t;
 #include "address_list.h"
 #include "circumstance_description.h"
 #include "ip_eth_flow_description.h"
@@ -21,15 +22,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_additional_measurement_s OpenAPI_additional_measurement_t;
-typedef struct OpenAPI_additional_measurement_s {
+struct OpenAPI_additional_measurement_s {
     struct OpenAPI_network_area_info_s *unexp_loc;
     OpenAPI_list_t *unexp_flow_teps;
     OpenAPI_list_t *unexp_wakes;
     struct OpenAPI_address_list_s *ddos_attack;
     struct OpenAPI_address_list_s *wrg_dest;
     OpenAPI_list_t *circums;
-} OpenAPI_additional_measurement_t;
+};
 
 OpenAPI_additional_measurement_t *OpenAPI_additional_measurement_create(
     OpenAPI_network_area_info_t *unexp_loc,

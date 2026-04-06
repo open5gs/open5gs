@@ -1,0 +1,395 @@
+openapi: 3.0.0
+
+info:
+  title: PIN Server Service Switch Information Service
+  version: 1.1.0
+  description: |
+    PIN Server Service Switch Information Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.583 V19.1.0; Application layer support for Personal IoT Network (PINAPP);
+    Personal IoT Network (PIN) Server Services; Stage 3.
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.583/
+
+servers:
+  - url: '{apiRoot}/pin-as-serviceswitch/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.2 of 3GPP TS 29.583.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Creates a new Individual Service Switch Information Subscriptions resource
+      operationId: CreateServiceSwitchInfo
+      tags:
+        - Service Switch Information Subscriptions (Collection)
+      description: Create a Subscription for reporting service switch information to PAS.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceSwitchInfo'
+      responses:
+        '201':
+          description: >
+            Created. The Individual Service Switch Information Subscription resource is created
+            successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSwitchInfo'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Service Switch Information
+                Subscription resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        ServiceSwitchInfoNotification:
+          '{$request.body#/notificationAddr}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ServiceSwitchInfoNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription Id.
+          required: true
+          schema:
+            type: string
+
+    get:
+      summary: Read an Individual Service Switch Information Subscriptions resource
+      operationId: ReadIndServiceSwitchInfo
+      tags:
+        - Individual Service Switch Information Subscription (Document)
+      responses:
+        '200':
+          description: OK (Successfully get the Service Switch information subscription).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSwitchInfo'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the fullyupdate an Individual Service Switch Information Subscriptions resource.
+      operationId: UpdateIndServiceSwitchInfo
+      tags:
+        - Individual Service Switch Information Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceSwitchInfo'
+      responses:
+        '200':
+          description: OK (Successfully modified The individual Service Switch information).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSwitchInfo'
+        '204':
+          description: No Content.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify an Individual Service Switch Information Subscriptions resource
+      operationId: ModifyIndServiceSwitchInfo
+      tags:
+        - Individual Service Switch Information Subscription (Document)
+      requestBody:
+        description: Partial update an existing Individual ServiceSwitch information.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/ServiceSwitchInfoPatch'
+      responses:
+        '200':
+          description: >
+            OK (The Individual ServiceSwitch information Subscription is successfully modified
+            and the updated subscription information is returned in the response).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSwitchInfo'
+        '204':
+          description: >
+            No Content (The individual Service Switch information subscription was modified
+            successfully).
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an Individual Service Switch Information Subscriptions resource.
+      operationId: DeleteIndServiceSwitchInfo
+      tags:
+        - Individual Service Switch Information Subscription (Document)
+      responses:
+        '204':
+          description: The individual subscription is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+# Components
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    ServiceSwitchInfo:
+      type: object
+      description: Represents an Individual Service Switch Information Subscription.
+      properties:
+        subsEvent:
+          $ref: '#/components/schemas/EventType'
+        notificationAddr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        pinId:
+          type: string
+          description: Identifies a PIN.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - subsEvent
+        - notificationAddr
+        - pinId
+
+    ServiceSwitchInfoPatch:
+      type: object
+      description: Represents the partial update of Individual Service Switch Information.
+      properties:
+        subsEvent:
+          $ref: '#/components/schemas/EventType'
+        notificationAddr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        pinId:
+          type: string
+          description: Identifies a PIN.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+
+    ServiceSwitchInfoNotification:
+      type: object
+      description: Represent the service switch information for notification.
+      properties:
+        subsId:
+          type: string
+          description: >
+            Identifies the individual service switch information subscription for which 
+            the service switch information notification is delivered.
+        repInfo:
+          $ref: '#/components/schemas/ServiceSwitchReportInfo'
+      required:
+        - subsId
+        - repInfo
+
+    ServiceSwitchReportInfo:
+      type: object
+      description: List of notifications that include the information of the service switch.
+      properties:
+        acId:
+          type: string
+          description: Identifies an application client identifier.
+        pinId:
+          type: string
+          description: Identifies a PIN.
+        sessionId:
+          type: string
+          description: Identifies an application session.
+        targetPineId:
+          type: string
+          description: Identifies the PINE that the service is switched to.
+        sessionDes:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/FlowInfo'
+      required:
+        - acId
+        - pinId
+        - sessionId
+        - targetPineId
+
+#
+# ENUMERATIONS
+#
+
+    EventType:
+      anyOf:
+      - type: string
+        enum:
+          - SERVICE_SWITCH_INFO
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Indicates service switch type.  
+        Possible values are:
+        - SERVICE_SWITCH_INFO: Indicates service switch type(s).

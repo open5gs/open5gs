@@ -1,7 +1,7 @@
 /*
  * pro_se_eap_session.h
  *
- * Contains information related to the EAP session. If present the 5gPrukId IE shall carry the CP-PRUK ID.
+ * Contains information related to the EAP session. If present the 5gPrukId IE shall carry the CP-PRUK ID. 
  */
 
 #ifndef _OpenAPI_pro_se_eap_session_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pro_se_eap_session_s OpenAPI_pro_se_eap_session_t;
 #include "auth_result.h"
 #include "links_value_schema.h"
 
@@ -19,9 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pro_se_eap_session_s OpenAPI_pro_se_eap_session_t;
-typedef struct OpenAPI_pro_se_eap_session_s {
-    bool is_eap_payload_null;
+struct OpenAPI_pro_se_eap_session_s {
     char *eap_payload;
     char *knr_pro_se;
     OpenAPI_list_t* _links;
@@ -30,10 +29,9 @@ typedef struct OpenAPI_pro_se_eap_session_s {
     bool is_nonce2_null;
     char *nonce2;
     char *_5g_pruk_id;
-} OpenAPI_pro_se_eap_session_t;
+};
 
 OpenAPI_pro_se_eap_session_t *OpenAPI_pro_se_eap_session_create(
-    bool is_eap_payload_null,
     char *eap_payload,
     char *knr_pro_se,
     OpenAPI_list_t* _links,

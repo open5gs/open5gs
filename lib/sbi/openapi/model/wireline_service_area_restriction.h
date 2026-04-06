@@ -1,7 +1,7 @@
 /*
  * wireline_service_area_restriction.h
  *
- * The \&quot;restrictionType\&quot; attribute and the \&quot;areas\&quot; attribute shall be either both present or absent.  The empty array of areas is used when service is allowed/restricted nowhere. 
+ * The \&quot;restrictionType\&quot; attribute and the \&quot;areas\&quot; attribute shall be either both present or absent. The empty array of areas is used when service is allowed/restricted nowhere. 
  */
 
 #ifndef _OpenAPI_wireline_service_area_restriction_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_wireline_service_area_restriction_s OpenAPI_wireline_service_area_restriction_t;
 #include "restriction_type.h"
 #include "wireline_area.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_wireline_service_area_restriction_s OpenAPI_wireline_service_area_restriction_t;
-typedef struct OpenAPI_wireline_service_area_restriction_s {
+struct OpenAPI_wireline_service_area_restriction_s {
     OpenAPI_restriction_type_e restriction_type;
     OpenAPI_list_t *areas;
-} OpenAPI_wireline_service_area_restriction_t;
+};
 
 OpenAPI_wireline_service_area_restriction_t *OpenAPI_wireline_service_area_restriction_create(
     OpenAPI_restriction_type_e restriction_type,

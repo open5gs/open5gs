@@ -1,0 +1,1212 @@
+openapi: 3.0.0
+
+info:
+  version: 1.4.1
+  title: Nsmf_EventExposure
+  description: |
+    Session Management Event Exposure Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.508 V19.6.0; 5G System; Session Management Event Exposure Service.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.508/
+
+servers:
+  - url: '{apiRoot}/nsmf-event-exposure/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nsmf-event-exposure
+
+paths:
+  /subscriptions:
+    post:
+      operationId: CreateIndividualSubcription
+      summary: Create an individual subscription for event notifications from the SMF
+      tags:
+        - Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NsmfEventExposure'
+      responses:
+        '201':
+          description: Created.
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nsmf-event-exposure/v1/subscriptions/{subId}
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NsmfEventExposure'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        myNotification:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NsmfEventExposureNotification'
+              responses:
+                '204':
+                  description: No Content, Notification was successful.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+              callbacks:
+                afAcknowledgement:
+                  '{$request.body#/ackUri}':
+                    post:
+                      requestBody:  # contents of the callback message
+                        required: true
+                        content:
+                          application/json:
+                            schema:
+                              $ref: '#/components/schemas/AckOfNotify'
+                      responses:
+                        '204':
+                          description: No Content (successful acknowledgement)
+                        '307':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                        '308':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                        '400':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                        '401':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                        '403':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                        '404':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                        '411':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                        '413':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                        '415':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                        '429':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                        '500':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                        '502':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                        '503':
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                        default:
+                          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subId}:
+    parameters:
+      - name: subId
+        in: path
+        description: Event Subscription ID
+        required: true
+        schema:
+          $ref: '#/components/schemas/SubId'
+    get:
+      operationId: GetIndividualSubcription
+      summary: Read an individual subscription for event notifications from the SMF
+      tags:
+        - IndividualSubscription (Document)
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NsmfEventExposure'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      operationId: ReplaceIndividualSubcription
+      summary: Replace an individual subscription for event notifications from the SMF
+      tags:
+        - IndividualSubscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NsmfEventExposure'
+      responses:
+        '200':
+          description: OK. Resource was successfully modified and representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NsmfEventExposure'
+        '204':
+          description: No Content. Resource was successfully modified
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      operationId: DeleteIndividualSubcription
+      summary: Delete an individual subscription for event notifications from the SMF
+      tags:
+        - IndividualSubscription (Document)
+      responses:
+        '200':
+          description: OK. Resource was successfully deleted and representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventNotification'
+        '204':
+          description: No Content. Resource was successfully deleted
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nsmf-event-exposure: Access to the Nsmf_EventExposure API
+
+  schemas:
+
+    NsmfEventExposure:
+      description: >
+        Represents an Individual SMF Notification Subscription resource. The serviveName property
+        corresponds to the serviceName in the main body of the specification.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        anyUeInd:
+          type: boolean
+          description: >
+            Any UE indication. This IE shall be present if the event subscription is applicable to 
+            any UE. Default value "false" is used, if not present.
+        groupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        pduSeId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        ssId:
+          type: string
+          description: SSID that the PDU session is related to.
+        bssId:
+          type: string
+          description: BSSID that the PDU session is related to.
+        upfId:
+          type: string
+          description: UPF identity.
+        nfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        subId:
+          $ref: '#/components/schemas/SubId'
+        notifId:
+          type: string
+          description: Notification Correlation ID assigned by the NF service consumer.
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        altNotifIpv4Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          description: Alternate or backup IPv4 address(es) where to send Notifications.
+          minItems: 1
+        altNotifIpv6Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          description: Alternate or backup IPv6 address(es) where to send Notifications.
+          minItems: 1
+        altNotifFqdns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+          minItems: 1
+          description: Alternate or backup FQDN(s) where to send Notifications.
+        eventSubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventSubscription'
+          minItems: 1
+          description: Subscribed events
+        eventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventNotification'
+          minItems: 1
+        ImmeRep:
+          type: boolean
+        notifMethod:
+          $ref: '#/components/schemas/NotificationMethod'
+        maxReportNbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        repPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        guami:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+        serviveName:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/ServiceName'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        sampRatio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SamplingRatio'
+        partitionCriteria:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PartitioningCriteria'
+          minItems: 1
+          description: Criteria for partitioning the UEs before applying the sampling ratio.
+        grpRepTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        notifFlag:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NotificationFlag'
+        notifFlagInstruct:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MutingExceptionInstructions'
+        mutingSetting:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MutingNotificationsSettings'
+        defQosSupp:
+          type: boolean
+          description: >
+            Indicates whether the NF service consumer requests to receive QoS Flow performance
+            information for the QoS Flow associated with the default QoS rule if there are no
+            measurements available for the provided Application Identifier included in the appIds
+            attribute. Set to "true" if NF service consumer requests to receive QoS Flow
+            performance information for the QoS Flow associated with the default QoS rule, otherwise
+            Set to "false" to indicate if NF service consumer does not request to receive QoS Flow
+            Performance information for the QoS Flow associated with the default QoS rule. Default
+            value is "false" if omitted.
+        qosMonPending:
+          type: boolean
+          enum:
+            - true
+          description: >
+            Indicates whether the reporting will be activated when the measurements are 
+            enabled by a PCC rule. Set to "true" indicates that the reporting will be activated.
+            It may only be provided in the response.
+        udrRestartInd:
+          type: boolean
+          default: false
+          description: >
+            Indicates whether the Event Exposure subscription was initiated by the UDM due to a UDR 
+            restart.
+            "true" indicates that the subscription creation request message is sent by the UDM due to 
+            UDR data restoration. Therefore, the Event Exposure Subscription may already exist at the 
+            SMF.
+            "false" indicates that this subscription message is not motivated by a UDR data
+            restoration procedure.
+            The default value is "false" if this attribute is omitted
+      required:
+        - notifId
+        - notifUri
+        - eventSubs
+
+    NsmfEventExposureNotification:
+      description: Represents notifications on events that occurred.
+      type: object
+      properties:
+        notifId:
+          type: string
+          description: Notification correlation ID
+        eventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventNotification'
+          minItems: 1
+          description: Notifications about Individual Events
+        ackUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+      required:
+        - notifId
+        - eventNotifs
+
+    EventSubscription:
+      description: Represents a subscription to a single event.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/SmfEvent'
+        referenceId:
+          $ref: 'TS29503_Nudm_EE.yaml#/components/schemas/ReferenceId'
+        dnaiChgType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DnaiChangeType'
+        dddTraDescriptors: 
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/DddTrafficDescriptor'
+          minItems: 1
+        dddStati:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/DlDataDeliveryStatus'
+          minItems: 1
+        appIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+          minItems: 1
+        networkArea:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/NetworkAreaInfo'
+        targetPeriod:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        tws:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+          minItems: 1
+        transacDispInd:
+          type: boolean
+          description: >
+            Indicates the subscription for UE transaction dispersion collectionon, if it is included
+            and set to "true". Default value is "false".
+        transacMetrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionMetric'
+          description: Indicates Session Management Transaction metrics.
+          minItems: 1
+        ueIpAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        upfEvents:
+          type: array
+          items:
+            $ref: 'TS29564_Nupf_EventExposure.yaml#/components/schemas/UpfEvent'
+          description: Indicates UPF event exposure information.
+          minItems: 1
+        bundlingAllowed:
+          type: boolean
+          enum:
+           - true
+          description: >
+            This attribute may be included for event "UPF_EVENT" and indicates whether it is
+            requested to allow the bundling of event reports in UPF notifications. Possible values:
+            -"true": it is requested to allow the bundling of event reports in UPF notifications.
+            The presence of this attribute with the value "false" shall be prohibited.
+        bundleId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        bundledEventNotifyUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        flowDescs:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/FlowDescription'
+          description: Descriptor(s) of IP traffic.
+          minItems: 1
+      required:
+        - event
+
+    EventNotification:
+      description: Represents a notification related to a single event that occurred.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/SmfEvent'
+        referenceId:
+          $ref: 'TS29503_Nudm_EE.yaml#/components/schemas/ReferenceId'
+        timeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        ueIpAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        transacInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionInfo'
+          description: Transaction Information.
+          minItems: 1
+        sourceDnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        targetDnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        dnaiChgType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DnaiChangeType'
+        traffRouteReqOutcome:
+          $ref: '#/components/schemas/TraffRouteReqOutcome'
+        candidateDnais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          minItems: 1
+          description: The candidate DNAI(s) for the PDU Session.
+        candDnaisPrioInd:
+          type: boolean
+          description: >
+            If provided and set to true, it indicates that the candidate DNAIs provided
+            in the candidateDnais attribute are in descending priority order, i.e.,
+            the lower the array index the higher the priority of the respective DNAI.
+            If omitted, the default value is false.
+        easRediscoverInd:
+          type: boolean
+          description: >
+            Indication of EAS re-discovery. If present and set to "true", it indicates the EAS
+            re-discovery is performed, e.g. due to change of common EAS. Default value is "false" if
+            omitted.
+        trafCorreInfo:
+          $ref: '#/components/schemas/TrafficCorrelationNotification'
+        sourceUeIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        sourceUeIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        targetUeIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        targetUeIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        sourceTraRouting:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteToLocation'
+        targetTraRouting:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteToLocation'
+        ueMac:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        adIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        adIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        reIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        reIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        accType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        pduAccTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+        pduSeId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        dddStatus:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DlDataDeliveryStatus'
+        dddTraDescriptor:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DddTrafficDescriptor'
+        maxWaitTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        commFailure:
+          $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/CommunicationFailure'
+        ipv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv6Prefixes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+          minItems: 1
+        ipv6Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+        pduSessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+        sscMode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SscMode'
+        qfi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Qfi'
+        appId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        ethFlowDescs:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+          minItems: 1
+          description: >
+            Descriptor(s) for non-IP traffic. It allows the encoding of multiple UL and/or DL flows.
+            Each entry of the array describes a single Ethernet flow.
+        ethfDescs:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+          minItems: 1
+          maxItems: 2
+          description: >
+            Contains the UL and/or DL Ethernet flows. Each entry of the array describes a single
+            Ethernet flow.
+        flowDescs:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/FlowDescription'
+          minItems: 1
+          description: >
+            Descriptor(s) for IP traffic. It allows the encoding of multiple UL and/or DL flows.
+            Each entry of the array describes a single IP flow.
+        fDescs:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/FlowDescription'
+          minItems: 1
+          maxItems: 2
+          description: >
+            Contains the UL and/or DL IP flows. Each entry of the array describes a single
+            IP flow.
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        ulDelays:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+          minItems: 1
+        dlDelays:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+          minItems: 1
+        rtDelays:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+          minItems: 1
+        ulCongInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        dlCongInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        ulDataRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        dlDataRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        timeWindow:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        smNasFromUe:
+          $ref: '#/components/schemas/SmNasFromUe'
+        addSmNasFromUes:
+          type: array
+          items:
+            $ref: '#/components/schemas/SmNasFromUe'
+          minItems: 1
+        smNasFromSmf:
+          $ref: '#/components/schemas/SmNasFromSmf'
+        addSmNasFromSmfs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SmNasFromSmf'
+          minItems: 1
+        upRedTrans:
+          type: boolean
+          description: >
+            Indicates whether the redundant transmission is setup or terminated. Set to "true" if 
+            the redundant transmission is setup, otherwise set to "false" if the redundant 
+            transmission is terminated. Default value is "false" if omitted.
+        ssId:
+          type: string
+        bssId:
+          type: string
+        startWlan:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        endWlan:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        pduSessInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/PduSessionInformation'
+          minItems: 1
+        upfInfo:
+          $ref: '#/components/schemas/UpfInformation'
+        pdmf:
+          type: boolean
+          description: >
+            Represents the packet delay measurement failure indicator. Default value is false
+            if omitted.
+        satBackhaulCat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SatelliteBackhaulCategory'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        targetAfId:
+          type: string
+          description: Identifier of the Application Function responsible for the target DNAI.
+        5qi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5Qi'
+        qosPara:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/QosPara'
+        dataVolInfoData:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataVolumeInformation'
+          minItems: 1
+        usageInfo:
+          $ref: '#/components/schemas/IpAddrUsageInfo'
+        loadInfos: 
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NfLoadLevelInformation'
+          minItems: 1
+        numSessRep:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        stateTransitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/StateTransitionInfo'
+          minItems: 1
+        nfSignalInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSignallingInfo'
+        smfTimers:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/TimerInfo'
+          minItems: 1
+        terminationInd:
+          type: boolean
+          enum:
+           - true
+          description: >
+            Indicates that the subscription to the Energy Consumption Information event is 
+            terminated.
+            "true" indicates that the subscription to the Energy Consumption Information event is
+            terminated.
+            The presence of this attribute set to the value false is prohibited.
+        terminationCause:
+            $ref: '#/components/schemas/TerminationCause'
+      required:
+        - event
+        - timeStamp
+      not:
+        required: [ipv6Prefixes,ipv6Addrs]
+
+    StateTransitionInfo:
+      description: Represents session-related state transition information.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        groupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        transType:
+          $ref: '#/components/schemas/SmfEvent'
+        numOfTran:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        pctUes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - transType
+      allOf:
+        - oneOf:
+          - required: [supi]
+          - required: [groupId]
+        - anyOf:
+          - required: [numOfTran]
+          - required: [pctUes]
+
+    SubId:
+      type: string
+      format: SubId
+      description: >
+        Identifies an Individual SMF Notification Subscription. To enable that the value is used as
+        part of a URI, the string shall only contain characters allowed according to the
+        "lower-with-hyphen" naming convention defined in 3GPP TS 29.501. In an OpenAPI schema, the
+        format shall be designated as "SubId".
+
+    AckOfNotify:
+      description: Represents an acknowledgement information of an event notification.
+      type: object
+      properties:
+        notifId:
+          type: string
+        ackResult:
+          $ref: 'TS29522_TrafficInfluence.yaml#/components/schemas/AfResultInfo'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        remoteImsAddress:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteInformation'
+      required:
+        - notifId
+        - ackResult
+
+    SmNasFromUe:
+      description: >
+        Represents information on the SM NAS messages that SMF receives from UE for PDU Session.
+      type: object
+      properties:
+        smNasType:
+          type: string
+        timeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - smNasType
+        - timeStamp
+
+    SmNasFromSmf:
+      description: >
+        Represents information on the SM congestion control applied SM NAS messages that SMF sends 
+        to UE for PDU Session.
+      type: object
+      properties:
+        smNasType:
+          type: string
+        timeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        backoffTimer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        appliedSmccType:
+          $ref: '#/components/schemas/AppliedSmccType'
+      required:
+        - smNasType
+        - timeStamp
+        - backoffTimer
+        - appliedSmccType
+
+    TransactionInfo:
+      description: Represents SMF Transaction Information.
+      type: object
+      properties:
+        transaction:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        appIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+          minItems: 1
+        transacMetrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionMetric'
+          minItems: 1
+      required:
+        - transaction
+
+    PduSessionInformation:
+      description: Represents the PDU session related information.
+      type: object
+      properties:
+        pduSessId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        sessInfo:
+          $ref: '#/components/schemas/PduSessionInfo'
+
+    PduSessionInfo:
+      description: Represents session information.
+      type: object
+      properties:
+        n4SessId:
+          type: string
+          description: The identifier of the N4 session for the reported PDU Session.
+        sessInactiveTimer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        pduSessStatus:
+          $ref: '#/components/schemas/PduSessionStatus'
+
+    UpfInformation:
+      description: Represents the ID/address/FQDN of the UPF.
+      type: object
+      properties:
+        upfId:
+          type: string
+        upfAddr:
+          $ref: 'TS29517_Naf_EventExposure.yaml#/components/schemas/AddrFqdn'
+
+    TrafficCorrelationNotification:
+      description: Represents notifications for 5GC determined Traffic Correlation Information.
+      type: object
+      properties:
+        smfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        tfcCorrId:
+          type: string
+          description: >
+            Identification of a set of UEs accessing the application identified by the 
+            Application Identifier or traffic filtering information.
+        dnais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          minItems: 1
+        easFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        easIpAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        pduSessionNbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - smfId
+        - pduSessionNbr
+        - tfcCorrId
+      anyOf:
+        - required: [dnais]
+        - oneOf:
+          - required: [easFqdn]
+          - required: [easIpAddr]
+
+    TraffRouteReqOutcome:
+      description: >
+        Represents the installation outcome of the requested traffic routing requirements.
+      type: object
+      properties:
+        succTrafficFlows:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/FlowDescription'
+          minItems: 1
+        succEthTrafficFlows:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+          minItems: 1
+        failedTrafficFlows:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/FlowDescription'
+          minItems: 1
+        failedEthTrafficFlows:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+          minItems: 1
+      allOf:
+        - not:
+           required: [succTrafficFlows, succEthTrafficFlows]
+        - not:
+           required: [failedTrafficFlows, failedEthTrafficFlows]
+
+    DataVolumeInformation:
+      description: Represents the Data Volume information.
+      type: object
+      properties:
+        dataVol:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/VolumeTimedReport'
+        upfIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpfInformation'
+          minItems: 1
+        gNBId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GNbId'
+      required:
+        - dataVol
+        - upfIds
+
+    IpAddrUsageInfo:
+      description: Indicates the usage information of UE IP address resources.
+      type: object
+      properties:
+        ipv4AllocNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        ipv6AllocNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        ipv4Usage:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        ipv6Usage:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        ueIpNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        prohibitTimeWins:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+          minItems: 1
+
+    SmfEvent:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - AC_TY_CH
+        - UP_PATH_CH
+        - PDU_SES_REL
+        - PLMN_CH
+        - UE_IP_CH
+        - RAT_TY_CH
+        - DDDS
+        - COMM_FAIL
+        - PDU_SES_EST
+        - QFI_ALLOC
+        - QOS_MON
+        - SMCC_EXP
+        - DISPERSION
+        - RED_TRANS_EXP
+        - WLAN_INFO
+        - UPF_INFO
+        - UP_STATUS_INFO
+        - UPF_EVENT
+        - SATB_CH
+        - TRAFFIC_CORRELATION
+        - TRAFF_ROUTE_REQ_OUTCOME
+        - SIM_CONN_FAIL
+        - QFI_DEALLOCATION
+        - QOS_FLOW_CHANGE
+        - ENERGY_USAGE_DATA
+        - SIGNALLING_INFO
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the types of events that can be subscribed.  
+#        Possible values are:
+#        - AC_TY_CH: Access Type Change.
+#        - UP_PATH_CH: UP Path Change.
+#        - PDU_SES_REL: PDU Session Release.
+#        - PLMN_CH: PLMN Change.
+#        - UE_IP_CH: UE IP address change.
+#        - RAT_TY_CH: RAT Type Change.
+#        - DDDS: Downlink data delivery status.
+#        - COMM_FAIL: Communication Failure.
+#        - PDU_SES_EST: PDU Session Establishment.
+#        - QFI_ALLOC: QFI allocation.
+#        - QOS_MON: QoS Monitoring.
+#        - SMCC_EXP: SM congestion control experience for PDU Session.
+#        - DISPERSION: Session Management transaction dispersion.
+#        - RED_TRANS_EXP: Redundant transmission experience for PDU Session.
+#        - WLAN_INFO: WLAN information on PDU session for which Access Type is NON_3GPP_ACCESS and
+#          RAT Type is TRUSTED_WLAN.
+#        - UPF_INFO: The UPF information, including the UPF ID/address/FQDN information.
+#        - UP_STATUS_INFO: The User Plane status information.
+#        - UPF_EVENT: UPF event subscribed via SMF.
+#        - SATB_CH: Satellite backhaul category change.
+#        - TRAFFIC_CORRELATION: Indicates that the SMF provides 5GC determined traffic correlation
+#          information for a set of UEs identified by Traffic Correlation ID.
+#        - TRAFF_ROUTE_REQ_OUTCOME: Indicates the report of the installation outcome of the requested
+#          traffic routing requirements.
+#        - SIM_CONN_FAIL: Indicates that the simultaneous connectivity over the source and the target
+#          PDU Session Anchor failed to be established during a PDU Session Anchor change.
+#        - QFI_DEALLOCATION: QFI deallocation.
+#        - QOS_FLOW_CHANGE: QoS flow change.
+#        - ENERGY_USAGE_DATA: Indicates that the SMF event is the Energy Consumption Information.
+#        - SIGNALLING_INFO: Indicates the report of Service Signalling characteristics.
+#
+    NotificationMethod:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - PERIODIC
+        - ONE_TIME
+        - ON_EVENT_DETECTION
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the notification methods that can be subscribed.  
+#        Possible values are:
+#        - PERIODIC: The notification is periodically sent.
+#        - ONE_TIME: The notification is only sent one time.
+#        - ON_EVENT_DETECTION: The notification is sent each time the event is detected.
+#
+    AppliedSmccType:
+      type: string
+      enum:
+        - DNN_CC
+        - SNSSAI_CC
+#      anyOf:
+#      - type: string
+#        enum:
+#          - DNN_CC
+#          - SNSSAI_CC
+#        description: >
+#          This string indicates the type of applied SM congestion control.
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+      description: |
+        Represents the type of applied SM congestion control.  
+        Possible values are:
+        - DNN_CC: Indicates the DNN based congestion control.
+        - SNSSAI_CC: Indicates the S-NSSAI based congestion control.
+
+    TransactionMetric:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - PDU_SES_EST
+        - PDU_SES_AUTH
+        - PDU_SES_MODIF
+        - PDU_SES_REL
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the metric on UE Session Management transactions.  
+#        Possible values are:
+#        - PDU_SES_EST: PDU Session Establishment.
+#        - PDU_SES_AUTH: PDU Session Authentication.
+#        - PDU_SES_MODIF: PDU Session Modification.
+#        - PDU_SES_REL: PDU Session Release
+#
+    PduSessionStatus:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - ACTIVATED
+        - DEACTIVATED
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#          
+#      description: |
+#        Represents the status of the PDU Session.  
+#        Possible values are:
+#        - ACTIVATED: PDU Session status is activated.
+#        - DEACTIVATED: PDU Session status is deactivated.
+#
+    TerminationCause:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - PDU_SESSION_RELEASE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#          
+#      description: |
+#        Represents the reason to terminate the subscription.  
+#        Possible values are:
+#        - PDU_SESSION_RELEASE: Indicates that the subscription to the Energy Consumption Information
+#          event is terminated due to all the related PDU session(s) being released.

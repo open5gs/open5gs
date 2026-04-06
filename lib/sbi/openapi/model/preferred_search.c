@@ -24,7 +24,15 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_create(
     bool is_preferred_pgw_match_ind,
     int preferred_pgw_match_ind,
     bool is_preferred_analytics_delays_ind,
-    int preferred_analytics_delays_ind
+    int preferred_analytics_delays_ind,
+    bool is_preferred_features_match_ind,
+    int preferred_features_match_ind,
+    bool is_no_preferred_features_ind,
+    int no_preferred_features_ind,
+    bool is_preferred_op_config_cap_ind,
+    int preferred_op_config_cap_ind,
+    bool is_preferred_upf_packet_inspection_match_ind,
+    int preferred_upf_packet_inspection_match_ind
 )
 {
     OpenAPI_preferred_search_t *preferred_search_local_var = ogs_malloc(sizeof(OpenAPI_preferred_search_t));
@@ -50,6 +58,14 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_create(
     preferred_search_local_var->preferred_pgw_match_ind = preferred_pgw_match_ind;
     preferred_search_local_var->is_preferred_analytics_delays_ind = is_preferred_analytics_delays_ind;
     preferred_search_local_var->preferred_analytics_delays_ind = preferred_analytics_delays_ind;
+    preferred_search_local_var->is_preferred_features_match_ind = is_preferred_features_match_ind;
+    preferred_search_local_var->preferred_features_match_ind = preferred_features_match_ind;
+    preferred_search_local_var->is_no_preferred_features_ind = is_no_preferred_features_ind;
+    preferred_search_local_var->no_preferred_features_ind = no_preferred_features_ind;
+    preferred_search_local_var->is_preferred_op_config_cap_ind = is_preferred_op_config_cap_ind;
+    preferred_search_local_var->preferred_op_config_cap_ind = preferred_op_config_cap_ind;
+    preferred_search_local_var->is_preferred_upf_packet_inspection_match_ind = is_preferred_upf_packet_inspection_match_ind;
+    preferred_search_local_var->preferred_upf_packet_inspection_match_ind = preferred_upf_packet_inspection_match_ind;
 
     return preferred_search_local_var;
 }
@@ -145,6 +161,34 @@ cJSON *OpenAPI_preferred_search_convertToJSON(OpenAPI_preferred_search_t *prefer
     }
     }
 
+    if (preferred_search->is_preferred_features_match_ind) {
+    if (cJSON_AddBoolToObject(item, "preferredFeaturesMatchInd", preferred_search->preferred_features_match_ind) == NULL) {
+        ogs_error("OpenAPI_preferred_search_convertToJSON() failed [preferred_features_match_ind]");
+        goto end;
+    }
+    }
+
+    if (preferred_search->is_no_preferred_features_ind) {
+    if (cJSON_AddBoolToObject(item, "noPreferredFeaturesInd", preferred_search->no_preferred_features_ind) == NULL) {
+        ogs_error("OpenAPI_preferred_search_convertToJSON() failed [no_preferred_features_ind]");
+        goto end;
+    }
+    }
+
+    if (preferred_search->is_preferred_op_config_cap_ind) {
+    if (cJSON_AddBoolToObject(item, "preferredOpConfigCapInd", preferred_search->preferred_op_config_cap_ind) == NULL) {
+        ogs_error("OpenAPI_preferred_search_convertToJSON() failed [preferred_op_config_cap_ind]");
+        goto end;
+    }
+    }
+
+    if (preferred_search->is_preferred_upf_packet_inspection_match_ind) {
+    if (cJSON_AddBoolToObject(item, "preferredUpfPacketInspectionMatchInd", preferred_search->preferred_upf_packet_inspection_match_ind) == NULL) {
+        ogs_error("OpenAPI_preferred_search_convertToJSON() failed [preferred_upf_packet_inspection_match_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -163,6 +207,10 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *prefer
     cJSON *preferred_collocated_nf_type_ind = NULL;
     cJSON *preferred_pgw_match_ind = NULL;
     cJSON *preferred_analytics_delays_ind = NULL;
+    cJSON *preferred_features_match_ind = NULL;
+    cJSON *no_preferred_features_ind = NULL;
+    cJSON *preferred_op_config_cap_ind = NULL;
+    cJSON *preferred_upf_packet_inspection_match_ind = NULL;
     preferred_tai_match_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "preferredTaiMatchInd");
     if (preferred_tai_match_ind) {
     if (!cJSON_IsBool(preferred_tai_match_ind)) {
@@ -243,6 +291,38 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *prefer
     }
     }
 
+    preferred_features_match_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "preferredFeaturesMatchInd");
+    if (preferred_features_match_ind) {
+    if (!cJSON_IsBool(preferred_features_match_ind)) {
+        ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [preferred_features_match_ind]");
+        goto end;
+    }
+    }
+
+    no_preferred_features_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "noPreferredFeaturesInd");
+    if (no_preferred_features_ind) {
+    if (!cJSON_IsBool(no_preferred_features_ind)) {
+        ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [no_preferred_features_ind]");
+        goto end;
+    }
+    }
+
+    preferred_op_config_cap_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "preferredOpConfigCapInd");
+    if (preferred_op_config_cap_ind) {
+    if (!cJSON_IsBool(preferred_op_config_cap_ind)) {
+        ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [preferred_op_config_cap_ind]");
+        goto end;
+    }
+    }
+
+    preferred_upf_packet_inspection_match_ind = cJSON_GetObjectItemCaseSensitive(preferred_searchJSON, "preferredUpfPacketInspectionMatchInd");
+    if (preferred_upf_packet_inspection_match_ind) {
+    if (!cJSON_IsBool(preferred_upf_packet_inspection_match_ind)) {
+        ogs_error("OpenAPI_preferred_search_parseFromJSON() failed [preferred_upf_packet_inspection_match_ind]");
+        goto end;
+    }
+    }
+
     preferred_search_local_var = OpenAPI_preferred_search_create (
         preferred_tai_match_ind ? true : false,
         preferred_tai_match_ind ? preferred_tai_match_ind->valueint : 0,
@@ -263,7 +343,15 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *prefer
         preferred_pgw_match_ind ? true : false,
         preferred_pgw_match_ind ? preferred_pgw_match_ind->valueint : 0,
         preferred_analytics_delays_ind ? true : false,
-        preferred_analytics_delays_ind ? preferred_analytics_delays_ind->valueint : 0
+        preferred_analytics_delays_ind ? preferred_analytics_delays_ind->valueint : 0,
+        preferred_features_match_ind ? true : false,
+        preferred_features_match_ind ? preferred_features_match_ind->valueint : 0,
+        no_preferred_features_ind ? true : false,
+        no_preferred_features_ind ? no_preferred_features_ind->valueint : 0,
+        preferred_op_config_cap_ind ? true : false,
+        preferred_op_config_cap_ind ? preferred_op_config_cap_ind->valueint : 0,
+        preferred_upf_packet_inspection_match_ind ? true : false,
+        preferred_upf_packet_inspection_match_ind ? preferred_upf_packet_inspection_match_ind->valueint : 0
     );
 
     return preferred_search_local_var;

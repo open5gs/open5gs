@@ -1,0 +1,245 @@
+openapi: 3.0.0
+
+info:
+  title: Aimles_UeTLModelSelectionAssistance
+  version: 1.0.2
+  description: |
+    API for Transfer Learning (TL) Enablement Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.560 V19.1.0; Artificial Intelligence / Machine Learning (AIML) Services – Service
+    Enabler Architecture Layer for Verticals (SEAL); Protocol Specification; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/24_series/24.560/'
+
+servers:
+  - url: '{apiRoot}/aimles-ue-tl-msa/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /assist-tlms:
+    post:
+      summary: >
+        Used by the AIMLE client to request the AIMLE server to perform TL enablement service.
+      operationId: UeTlModSelectAssistReq
+      tags:
+        - UE transfer learning model selection assistance request
+      requestBody:
+        description: Contains information to trigger TL enablement service.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TlModelSelectAssistReq'
+      responses:
+        '200':
+          description: Contains one or more pre-trained ML models for the TL enablement service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TlModelSelectAssistResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+# Structured data types
+
+    TlModelSelectAssistReq:
+      description: Contains information to trigger TL enablement service.
+      type: object
+      required:
+      - serverId
+      - valSrvId
+      - tlCriteria
+      properties:
+        serverId:
+          description: Represents the AIMLE server identity.
+          type: string
+        valSrvId:
+          description: Represents the VAL service for the TL enablement service.
+          type: string
+        tlCriteria:
+          $ref: '#/components/schemas/TlCriteria'
+        mlTaskId:
+          description: Represents the task for the TL enablement service.
+          type: string
+        adaeAnalyticsId:
+          description: Represents the ADAE analytics for the TL enablement service.
+          type: string
+        mlModelProfile:
+          $ref: 'TS29482_MLR_MLModelManagement.yaml#/components/schemas/MLModelProfile'
+        mlModelReq:
+          description: Represents the requirements for the ML model for the TL enablement service.
+          type: array
+          items:
+            type: string
+          minItems: 0
+        valUeIds:
+          description: Represents VAL UEs associated with the ML task for the TL enablement service.
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 0
+        mlModelRateReq:
+          description: Represents requirements for rating the ML model for TL enablement service.
+          type: array
+          items:
+            type: string
+          minItems: 0
+
+    TlModelSelectAssistResp:
+      description: Contains the pre-trained ML models for the TL enablement service.
+      type: object
+      required:
+      - mlModelList
+      properties:
+        mlModelList:
+          description: Represents the selected pre-trained ML models for the TL enablement service.
+          type: array
+          items:
+            $ref: '#/components/schemas/MlModel'
+          minItems: 1
+
+    TlCriteria:
+      description: Contains the criteria for the TL enablement service.
+      type: object
+      properties:
+        reqFeatures:
+          description: Represents the required features for a pre-trained model.
+          type: array
+          items:
+            type: string
+          minItems: 0
+        dataReq:
+          description: Represents the training data requirements.
+          type: array
+          items:
+            type: string
+          minItems: 0
+        tlType:
+          $ref: '#/components/schemas/TlType'
+        environment:
+          $ref: '#/components/schemas/EnvironmentType'
+        access:
+          description: Permissions and restrictions to access the pre-trained model.
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessType'
+          minItems: 0
+
+    MlModel:
+      description: Contains the pre-trained ML models for the TL enablement service.
+      type: object
+      required:
+      - mlRepositoryId
+      - mlModelInfo
+      properties:
+        mlRepositoryId:
+          description: Represents the unique repository identity of an ML model.
+          type: string
+        mlModelInfo:
+          $ref: 'TS24560_Aimlec_MLModTngCapEva.yaml#/components/schemas/AimlModelInfo'
+        mlModelRating:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+
+    AccessType:
+      description: Contains permission and restriction to access the pre-trained model.
+      type: object
+      properties:
+        modelLicense:
+          description: Represents the license of the pre-trained ML model.
+          type: string
+        dataTrainLicense:
+          description: Represents the license of the dataset for the pre-trained ML model.
+          type: string
+        codeTrainLicense:
+          description: Represents the license of the code for the pre-trained ML model.
+          type: string
+
+# Enumerations
+
+    TlType:
+      anyOf:
+      - type: string
+        enum:
+          - INDUCTIVE
+          - TRANSDUCTIVE
+          - UNSUPERVISED
+      - type: string
+        description: >
+          This string provides the type of transfer learning.
+      description: |
+        Identifies how the pre-trained ML models can be related to the trained ML models for
+        the target ML task.  
+        Possible values are:
+        - INDUCTIVE: For different task than the target ML task
+        - TRANSDUCTIVE: For similar task as target ML task but different data distributions
+        - UNSUPERVISED: For similar tasks as target ML task but with unlabelled data
+
+    EnvironmentType:
+      anyOf:
+      - type: string
+        enum:
+          - DOMAIN_SHIFT
+          - SIMULATED_REAL
+          - DYNAMIC
+          - HETEROGENEOUS
+          - ROBOTICS
+          - SMART
+      - type: string
+        description: >
+          This string provides the type of the environment.
+      description: |
+        Identifies how the environment and data distributions, suited for pre-trained ML models
+        in relationship with the trained ML model for the target ML task.  
+        Possible values are:
+        - DOMAIN_SHIFT: Different data distributions
+        - SIMULATED_REAL: Simulated data vs. real data
+        - DYNAMIC: Data distributions changes over time
+        - HETEROGENEOUS: Significantly different data distributions
+        - ROBOTICS: Suitable for the target ML task for robotic platforms
+        - SMART: Suitable for the target ML task for smart platforms

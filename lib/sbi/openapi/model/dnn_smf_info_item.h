@@ -12,21 +12,28 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "dnn_smf_info_item_dnai_list_inner.h"
+typedef struct OpenAPI_dnn_smf_info_item_s OpenAPI_dnn_smf_info_item_t;
+#include "ip_index.h"
+#include "plmn_range.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dnn_smf_info_item_s OpenAPI_dnn_smf_info_item_t;
-typedef struct OpenAPI_dnn_smf_info_item_s {
+struct OpenAPI_dnn_smf_info_item_s {
     char *dnn;
     OpenAPI_list_t *dnai_list;
-} OpenAPI_dnn_smf_info_item_t;
+    OpenAPI_list_t *ue_plmn_range_list;
+    OpenAPI_list_t *ipv4_index_list;
+    OpenAPI_list_t *ipv6_index_list;
+};
 
 OpenAPI_dnn_smf_info_item_t *OpenAPI_dnn_smf_info_item_create(
     char *dnn,
-    OpenAPI_list_t *dnai_list
+    OpenAPI_list_t *dnai_list,
+    OpenAPI_list_t *ue_plmn_range_list,
+    OpenAPI_list_t *ipv4_index_list,
+    OpenAPI_list_t *ipv6_index_list
 );
 void OpenAPI_dnn_smf_info_item_free(OpenAPI_dnn_smf_info_item_t *dnn_smf_info_item);
 OpenAPI_dnn_smf_info_item_t *OpenAPI_dnn_smf_info_item_parseFromJSON(cJSON *dnn_smf_info_itemJSON);

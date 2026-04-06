@@ -8,7 +8,8 @@ OpenAPI_smf_selection_subscription_data_t *OpenAPI_smf_selection_subscription_da
     char *supported_features,
     OpenAPI_list_t* subscribed_snssai_infos,
     char *shared_snssai_infos_id,
-    char *hss_group_id
+    char *hss_group_id,
+    OpenAPI_list_t *additional_shared_snssai_infos_ids
 )
 {
     OpenAPI_smf_selection_subscription_data_t *smf_selection_subscription_data_local_var = ogs_malloc(sizeof(OpenAPI_smf_selection_subscription_data_t));
@@ -18,6 +19,7 @@ OpenAPI_smf_selection_subscription_data_t *OpenAPI_smf_selection_subscription_da
     smf_selection_subscription_data_local_var->subscribed_snssai_infos = subscribed_snssai_infos;
     smf_selection_subscription_data_local_var->shared_snssai_infos_id = shared_snssai_infos_id;
     smf_selection_subscription_data_local_var->hss_group_id = hss_group_id;
+    smf_selection_subscription_data_local_var->additional_shared_snssai_infos_ids = additional_shared_snssai_infos_ids;
 
     return smf_selection_subscription_data_local_var;
 }
@@ -50,6 +52,13 @@ void OpenAPI_smf_selection_subscription_data_free(OpenAPI_smf_selection_subscrip
     if (smf_selection_subscription_data->hss_group_id) {
         ogs_free(smf_selection_subscription_data->hss_group_id);
         smf_selection_subscription_data->hss_group_id = NULL;
+    }
+    if (smf_selection_subscription_data->additional_shared_snssai_infos_ids) {
+        OpenAPI_list_for_each(smf_selection_subscription_data->additional_shared_snssai_infos_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(smf_selection_subscription_data->additional_shared_snssai_infos_ids);
+        smf_selection_subscription_data->additional_shared_snssai_infos_ids = NULL;
     }
     ogs_free(smf_selection_subscription_data);
 }
@@ -116,6 +125,20 @@ cJSON *OpenAPI_smf_selection_subscription_data_convertToJSON(OpenAPI_smf_selecti
     }
     }
 
+    if (smf_selection_subscription_data->additional_shared_snssai_infos_ids) {
+    cJSON *additional_shared_snssai_infos_idsList = cJSON_AddArrayToObject(item, "additionalSharedSnssaiInfosIds");
+    if (additional_shared_snssai_infos_idsList == NULL) {
+        ogs_error("OpenAPI_smf_selection_subscription_data_convertToJSON() failed [additional_shared_snssai_infos_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(smf_selection_subscription_data->additional_shared_snssai_infos_ids, node) {
+        if (cJSON_AddStringToObject(additional_shared_snssai_infos_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_smf_selection_subscription_data_convertToJSON() failed [additional_shared_snssai_infos_ids]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -129,6 +152,8 @@ OpenAPI_smf_selection_subscription_data_t *OpenAPI_smf_selection_subscription_da
     OpenAPI_list_t *subscribed_snssai_infosList = NULL;
     cJSON *shared_snssai_infos_id = NULL;
     cJSON *hss_group_id = NULL;
+    cJSON *additional_shared_snssai_infos_ids = NULL;
+    OpenAPI_list_t *additional_shared_snssai_infos_idsList = NULL;
     supported_features = cJSON_GetObjectItemCaseSensitive(smf_selection_subscription_dataJSON, "supportedFeatures");
     if (supported_features) {
     if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
@@ -179,24 +204,53 @@ OpenAPI_smf_selection_subscription_data_t *OpenAPI_smf_selection_subscription_da
     }
     }
 
+    additional_shared_snssai_infos_ids = cJSON_GetObjectItemCaseSensitive(smf_selection_subscription_dataJSON, "additionalSharedSnssaiInfosIds");
+    if (additional_shared_snssai_infos_ids) {
+        cJSON *additional_shared_snssai_infos_ids_local = NULL;
+        if (!cJSON_IsArray(additional_shared_snssai_infos_ids)) {
+            ogs_error("OpenAPI_smf_selection_subscription_data_parseFromJSON() failed [additional_shared_snssai_infos_ids]");
+            goto end;
+        }
+
+        additional_shared_snssai_infos_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(additional_shared_snssai_infos_ids_local, additional_shared_snssai_infos_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(additional_shared_snssai_infos_ids_local)) {
+                ogs_error("OpenAPI_smf_selection_subscription_data_parseFromJSON() failed [additional_shared_snssai_infos_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(additional_shared_snssai_infos_idsList, ogs_strdup(additional_shared_snssai_infos_ids_local->valuestring));
+        }
+    }
+
     smf_selection_subscription_data_local_var = OpenAPI_smf_selection_subscription_data_create (
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         subscribed_snssai_infos ? subscribed_snssai_infosList : NULL,
         shared_snssai_infos_id && !cJSON_IsNull(shared_snssai_infos_id) ? ogs_strdup(shared_snssai_infos_id->valuestring) : NULL,
-        hss_group_id && !cJSON_IsNull(hss_group_id) ? ogs_strdup(hss_group_id->valuestring) : NULL
+        hss_group_id && !cJSON_IsNull(hss_group_id) ? ogs_strdup(hss_group_id->valuestring) : NULL,
+        additional_shared_snssai_infos_ids ? additional_shared_snssai_infos_idsList : NULL
     );
 
     return smf_selection_subscription_data_local_var;
 end:
     if (subscribed_snssai_infosList) {
         OpenAPI_list_for_each(subscribed_snssai_infosList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_snssai_info_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(subscribed_snssai_infosList);
         subscribed_snssai_infosList = NULL;
+    }
+    if (additional_shared_snssai_infos_idsList) {
+        OpenAPI_list_for_each(additional_shared_snssai_infos_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(additional_shared_snssai_infos_idsList);
+        additional_shared_snssai_infos_idsList = NULL;
     }
     return NULL;
 }

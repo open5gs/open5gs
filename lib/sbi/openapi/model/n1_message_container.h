@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_n1_message_container_s OpenAPI_n1_message_container_t;
 #include "n1_message_class.h"
 #include "ref_to_binary_data.h"
 
@@ -19,13 +20,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n1_message_container_s OpenAPI_n1_message_container_t;
-typedef struct OpenAPI_n1_message_container_s {
+struct OpenAPI_n1_message_container_s {
     OpenAPI_n1_message_class_e n1_message_class;
     struct OpenAPI_ref_to_binary_data_s *n1_message_content;
     char *nf_id;
     char *service_instance_id;
-} OpenAPI_n1_message_container_t;
+};
 
 OpenAPI_n1_message_container_t *OpenAPI_n1_message_container_create(
     OpenAPI_n1_message_class_e n1_message_class,

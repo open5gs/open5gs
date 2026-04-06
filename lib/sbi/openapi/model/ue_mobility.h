@@ -1,7 +1,7 @@
 /*
  * ue_mobility.h
  *
- * Represents UE mobility information.
+ * 
  */
 
 #ifndef _OpenAPI_ue_mobility_H_
@@ -12,6 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_mobility_s OpenAPI_ue_mobility_t;
+#include "direction_info.h"
 #include "location_info.h"
 #include "scheduled_communication_time_1.h"
 
@@ -19,8 +21,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_mobility_s OpenAPI_ue_mobility_t;
-typedef struct OpenAPI_ue_mobility_s {
+struct OpenAPI_ue_mobility_s {
     char *ts;
     struct OpenAPI_scheduled_communication_time_1_s *recurring_time;
     bool is_duration;
@@ -28,7 +29,8 @@ typedef struct OpenAPI_ue_mobility_s {
     bool is_duration_variance;
     float duration_variance;
     OpenAPI_list_t *loc_infos;
-} OpenAPI_ue_mobility_t;
+    OpenAPI_list_t *direction_infos;
+};
 
 OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_create(
     char *ts,
@@ -37,7 +39,8 @@ OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_create(
     int duration,
     bool is_duration_variance,
     float duration_variance,
-    OpenAPI_list_t *loc_infos
+    OpenAPI_list_t *loc_infos,
+    OpenAPI_list_t *direction_infos
 );
 void OpenAPI_ue_mobility_free(OpenAPI_ue_mobility_t *ue_mobility);
 OpenAPI_ue_mobility_t *OpenAPI_ue_mobility_parseFromJSON(cJSON *ue_mobilityJSON);

@@ -12,21 +12,21 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nf_group_cond_s OpenAPI_nf_group_cond_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nf_group_cond_s OpenAPI_nf_group_cond_t;
-typedef enum { OpenAPI_nf_group_cond_NFTYPE_NULL = 0, OpenAPI_nf_group_cond_NFTYPE_UDM, OpenAPI_nf_group_cond_NFTYPE_AUSF, OpenAPI_nf_group_cond_NFTYPE_UDR, OpenAPI_nf_group_cond_NFTYPE_PCF, OpenAPI_nf_group_cond_NFTYPE_CHF, OpenAPI_nf_group_cond_NFTYPE_HSS } OpenAPI_nf_group_cond_nf_type_e;
+typedef enum { OpenAPI_nf_group_cond_NFTYPE_NULL = 0, OpenAPI_nf_group_cond_NFTYPE_UDM, OpenAPI_nf_group_cond_NFTYPE_AUSF, OpenAPI_nf_group_cond_NFTYPE_UDR, OpenAPI_nf_group_cond_NFTYPE_PCF, OpenAPI_nf_group_cond_NFTYPE_CHF, OpenAPI_nf_group_cond_NFTYPE_HSS, OpenAPI_nf_group_cond_NFTYPE_BSF, OpenAPI_nf_group_cond_NFTYPE_UDSF } OpenAPI_nf_group_cond_nf_type_e;
 
 char* OpenAPI_nf_group_cond_nf_type_ToString(OpenAPI_nf_group_cond_nf_type_e nf_type);
 
 OpenAPI_nf_group_cond_nf_type_e OpenAPI_nf_group_cond_nf_type_FromString(char* nf_type);
-typedef struct OpenAPI_nf_group_cond_s {
+struct OpenAPI_nf_group_cond_s {
     OpenAPI_nf_group_cond_nf_type_e nf_type;
     char *nf_group_id;
-} OpenAPI_nf_group_cond_t;
+};
 
 OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_create(
     OpenAPI_nf_group_cond_nf_type_e nf_type,

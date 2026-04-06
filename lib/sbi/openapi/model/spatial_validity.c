@@ -125,7 +125,7 @@ OpenAPI_spatial_validity_t *OpenAPI_spatial_validity_parseFromJSON(cJSON *spatia
 end:
     if (presence_info_listList) {
         OpenAPI_list_for_each(presence_info_listList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_presence_info_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

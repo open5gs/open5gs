@@ -1,0 +1,339 @@
+openapi: 3.0.0
+
+info:
+
+  title: 'IMS AS SessionEventControl Service'
+  version: 1.1.0
+  description: |
+    Nimsas_SessionEventControl Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.175 V19.4.0; IP Multimedia Subsystem; IP Multimedia Subsystem (IMS) Application
+    Server (AS) Services; Stage 3
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.175/'
+
+servers:
+  - url: '{apiRoot}/nimsas-sec/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - nimsas-sec
+
+paths:
+  /session-event-subscriptions:
+    post:
+    # This is a pseudo operation, NF service consumers shall NOT invoke this method!
+      summary: Nimsas_SessionEventControl Subscribe service operation, pseudo operation
+      tags:
+        - Session Event Subscriptions (Collection)
+      operationId: Subscribe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            # Unspecified schema for the JSON body, since this is not used by consumer or producer.
+            schema: {}
+      responses:
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+      callbacks:
+        eeNotification:
+          '{SessionEventNotificationUri}':
+          # The notification URI is provided by local configuration or via NRF.
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SessionEventNotification'
+              responses:
+                '204':
+                  description: No Content, notification was succesfull.
+                '307':
+                  description: Temporary Redirect
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+                  headers:
+                    Location:
+                      description: >
+                        The URI pointing to the resource located on the redirect target NF
+                        service consumer.
+                      required: true
+                      schema:
+                        type: string
+                '308':
+                  description: Permanent Redirect
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+                  headers:
+                    Location:
+                      description: >
+                        The URI pointing to the resource located on the redirect target NF
+                        service consumer.
+                      required: true
+                      schema:
+                        type: string
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nimsas-sec: Access to the Nimsas_SessionEventControl API
+
+  schemas:
+
+# STRUCTURED DATA TYPES
+
+    SessionEventNotification:
+      description: The session event notification item.
+      type: object
+      required:
+        - notificationEvent
+        - sessionId
+      properties:
+        notificationEvent:
+          $ref: '#/components/schemas/NotificationEvent'
+        sessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SessionId'
+        sessionInfo:
+          $ref: '#/components/schemas/SessionInfo'
+        mediaInfoList:
+          description: >
+            Contains a media related information. The mediaId attribute within the MediaInfo
+            data type is the key of the map.
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MediaInfo'
+          minItems: 1
+        psDataOff:
+          $ref: '#/components/schemas/PsDataOffStatus'
+        mediaInfoSet:
+          type: array
+          minItems: 1
+          items:
+            $ref: 'TS29175_Nimsas_ImsSessionManagement.yaml#/components/schemas/MediaInfoExternal'
+
+
+    NotificationEvent:
+      description: The notification event information.
+      type: object
+      required:
+        - eventType
+      properties:
+        eventType:
+          $ref: '#/components/schemas/EventType'
+        eventInitiator:
+          $ref: '#/components/schemas/EventInitiator'
+
+    SessionInfo:
+      description: The session information related to the notification event.
+      type: object
+      properties:
+        callingIdentity:
+          $ref: 'TS29562_Nhss_imsSDM.yaml#/components/schemas/ImsPublicId'
+        calledIdentity:
+          $ref: 'TS29562_Nhss_imsSDM.yaml#/components/schemas/ImsPublicId'
+        sessionCase:
+          $ref: '#/components/schemas/SessionCase'
+
+    MediaInfo:
+      description: The media information related to the notification event.
+      type: object
+      required:
+        - mediaId
+        - mediaType
+      properties:
+        mediaId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MediaId'
+        mediaType:
+          $ref: '#/components/schemas/MediaType'
+        dcMediaSpec:
+          $ref: '#/components/schemas/DcMediaSpec'
+        mediaSuspended:
+          type: boolean
+        mediaRemovalInd:
+          type: boolean
+          enum:
+            - true
+
+
+    DcMediaSpec:
+      description: >
+        The data channel media specification information contains media description attributes.
+      type: object
+      required:
+        - streams
+        - receivedDcEndpoint
+      properties:
+        streams:
+          description: >
+            Contains a data channel mapping and configuration information. The streamId
+            attribute within the DcStream data type is the key of the map.
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/DcEndpoint'
+          minItems: 1
+        maxMessageSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MaxMessageSize'
+        receivedDcEndpoint:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DcEndpoint'
+        bdcUsedBy:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BdcUsedBy'
+        appBindingInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AppBindingInfo'
+        multiAppBindingInfo:
+          description: Includes a list of multiplexed application binding information.
+          type: array
+          minItems: 1
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AppBindingInfo'
+        qosHintInfo:
+          $ref: '#/components/schemas/QosHintInfo'
+
+    QosHintInfo:
+      description: The QoS hint information used for the media.
+      type: object
+      properties:
+        loss:
+          description: the maximum desirable end-to-end transport level packet loss rate
+          type: number
+          format: zero-based-integer or non-zero-real
+        localLoss:
+          description: the maximum desirable end-to-end transport level packet loss rate applied across the local link
+          type: number
+          format: zero-based-integer or non-zero-real
+        latency:
+          description: the maximum desirable end-to-end transport level packet latency
+          type: number
+          format: zero-based-integer or non-zero-real
+        localLatency:
+          description: the maximum desirable end-to-end transport level packet latency applied across the local link
+          type: number
+          format: zero-based-integer or non-zero-real
+
+
+
+# ENUMS
+
+    EventType:
+      description: The type of the event for which the notification is generated.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - SESSION_ESTABLISHMENT_REQUEST
+        - SESSION_ESTABLISHMENT_PROGRESS
+        - SESSION_ESTABLISHMENT_ALERTING
+        - SESSION_ESTABLISHMENT_SUCCESS
+        - SESSION_ESTABLISHMENT_FAILURE
+        - SESSION_ESTABLISHMENT_CANCEL
+        - MEDIA_CHANGE_REQUEST
+        - MEDIA_CHANGE_SUCCESS
+        - MEDIA_CHANGE_FAILURE
+        - MEDIA_CHANGE_CANCEL
+        - SESSION_TERMINATION
+        - EXTERNAL_SESSION_UPDATE
+        - EXTERNAL_SESSION_CREATE
+        - PS_DATA_OFF_STATUS_CHANGE
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#
+    MediaType:
+      description: The type of the media for which the notification is generated.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - DC
+        - AUDIO
+        - VIDEO
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#
+    SessionCase:
+      description: The type of the session case.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - ORIGINATING_IMS_SESSION
+        - TERMINATING_IMS_SESSION
+        - EXTERNAL_INITIATED_IMS_SESSION
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#
+    EventInitiator:
+      description: The initiator of the event for which the notification is generated.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - SERVED_IMS_SUBSCRIBER
+        - REMOTE_IMS_SUBSCRIBER
+        - EXTERNAL_PARTY
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#
+    PsDataOffStatus:
+      description: The active/inactive status of PS Data Off.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - ACTIVE
+        - INACTIVE
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.

@@ -12,14 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_authorized_default_qos_s OpenAPI_authorized_default_qos_t;
 #include "arp.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_authorized_default_qos_s OpenAPI_authorized_default_qos_t;
-typedef struct OpenAPI_authorized_default_qos_s {
+struct OpenAPI_authorized_default_qos_s {
     bool is__5qi;
     int _5qi;
     struct OpenAPI_arp_s *arp;
@@ -43,7 +43,7 @@ typedef struct OpenAPI_authorized_default_qos_s {
     bool is_ext_max_data_burst_vol_null;
     bool is_ext_max_data_burst_vol;
     int ext_max_data_burst_vol;
-} OpenAPI_authorized_default_qos_t;
+};
 
 OpenAPI_authorized_default_qos_t *OpenAPI_authorized_default_qos_create(
     bool is__5qi,

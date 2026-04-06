@@ -23,12 +23,19 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_create(
     int any_ue,
     OpenAPI_amf_event_mode_t *options,
     OpenAPI_nf_type_e source_nf_type,
+    bool is_term_notify_ind,
+    int term_notify_ind,
     OpenAPI_list_t *binding_info,
     OpenAPI_nf_type_e subscribing_nf_type,
     bool is_event_sync_ind,
     int event_sync_ind,
     OpenAPI_list_t *nf_consumer_info,
-    OpenAPI_list_t* aoi_state_list
+    OpenAPI_list_t* aoi_state_list,
+    char *access_token,
+    bool is_amf_set_level_bulk_subs,
+    int amf_set_level_bulk_subs,
+    OpenAPI_list_t *ue_access_behavior_trends,
+    OpenAPI_list_t *ue_location_trends
 )
 {
     OpenAPI_ext_amf_event_subscription_t *ext_amf_event_subscription_local_var = ogs_malloc(sizeof(OpenAPI_ext_amf_event_subscription_t));
@@ -52,12 +59,19 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_create(
     ext_amf_event_subscription_local_var->any_ue = any_ue;
     ext_amf_event_subscription_local_var->options = options;
     ext_amf_event_subscription_local_var->source_nf_type = source_nf_type;
+    ext_amf_event_subscription_local_var->is_term_notify_ind = is_term_notify_ind;
+    ext_amf_event_subscription_local_var->term_notify_ind = term_notify_ind;
     ext_amf_event_subscription_local_var->binding_info = binding_info;
     ext_amf_event_subscription_local_var->subscribing_nf_type = subscribing_nf_type;
     ext_amf_event_subscription_local_var->is_event_sync_ind = is_event_sync_ind;
     ext_amf_event_subscription_local_var->event_sync_ind = event_sync_ind;
     ext_amf_event_subscription_local_var->nf_consumer_info = nf_consumer_info;
     ext_amf_event_subscription_local_var->aoi_state_list = aoi_state_list;
+    ext_amf_event_subscription_local_var->access_token = access_token;
+    ext_amf_event_subscription_local_var->is_amf_set_level_bulk_subs = is_amf_set_level_bulk_subs;
+    ext_amf_event_subscription_local_var->amf_set_level_bulk_subs = amf_set_level_bulk_subs;
+    ext_amf_event_subscription_local_var->ue_access_behavior_trends = ue_access_behavior_trends;
+    ext_amf_event_subscription_local_var->ue_location_trends = ue_location_trends;
 
     return ext_amf_event_subscription_local_var;
 }
@@ -167,6 +181,24 @@ void OpenAPI_ext_amf_event_subscription_free(OpenAPI_ext_amf_event_subscription_
         }
         OpenAPI_list_free(ext_amf_event_subscription->aoi_state_list);
         ext_amf_event_subscription->aoi_state_list = NULL;
+    }
+    if (ext_amf_event_subscription->access_token) {
+        ogs_free(ext_amf_event_subscription->access_token);
+        ext_amf_event_subscription->access_token = NULL;
+    }
+    if (ext_amf_event_subscription->ue_access_behavior_trends) {
+        OpenAPI_list_for_each(ext_amf_event_subscription->ue_access_behavior_trends, node) {
+            OpenAPI_ue_access_behavior_report_item_free(node->data);
+        }
+        OpenAPI_list_free(ext_amf_event_subscription->ue_access_behavior_trends);
+        ext_amf_event_subscription->ue_access_behavior_trends = NULL;
+    }
+    if (ext_amf_event_subscription->ue_location_trends) {
+        OpenAPI_list_for_each(ext_amf_event_subscription->ue_location_trends, node) {
+            OpenAPI_ue_location_trends_report_item_free(node->data);
+        }
+        OpenAPI_list_free(ext_amf_event_subscription->ue_location_trends);
+        ext_amf_event_subscription->ue_location_trends = NULL;
     }
     ogs_free(ext_amf_event_subscription);
 }
@@ -352,6 +384,13 @@ cJSON *OpenAPI_ext_amf_event_subscription_convertToJSON(OpenAPI_ext_amf_event_su
     }
     }
 
+    if (ext_amf_event_subscription->is_term_notify_ind) {
+    if (cJSON_AddBoolToObject(item, "termNotifyInd", ext_amf_event_subscription->term_notify_ind) == NULL) {
+        ogs_error("OpenAPI_ext_amf_event_subscription_convertToJSON() failed [term_notify_ind]");
+        goto end;
+    }
+    }
+
     if (ext_amf_event_subscription->binding_info) {
     cJSON *binding_infoList = cJSON_AddArrayToObject(item, "bindingInfo");
     if (binding_infoList == NULL) {
@@ -424,6 +463,52 @@ cJSON *OpenAPI_ext_amf_event_subscription_convertToJSON(OpenAPI_ext_amf_event_su
     }
     }
 
+    if (ext_amf_event_subscription->access_token) {
+    if (cJSON_AddStringToObject(item, "accessToken", ext_amf_event_subscription->access_token) == NULL) {
+        ogs_error("OpenAPI_ext_amf_event_subscription_convertToJSON() failed [access_token]");
+        goto end;
+    }
+    }
+
+    if (ext_amf_event_subscription->is_amf_set_level_bulk_subs) {
+    if (cJSON_AddBoolToObject(item, "amfSetLevelBulkSubs", ext_amf_event_subscription->amf_set_level_bulk_subs) == NULL) {
+        ogs_error("OpenAPI_ext_amf_event_subscription_convertToJSON() failed [amf_set_level_bulk_subs]");
+        goto end;
+    }
+    }
+
+    if (ext_amf_event_subscription->ue_access_behavior_trends) {
+    cJSON *ue_access_behavior_trendsList = cJSON_AddArrayToObject(item, "ueAccessBehaviorTrends");
+    if (ue_access_behavior_trendsList == NULL) {
+        ogs_error("OpenAPI_ext_amf_event_subscription_convertToJSON() failed [ue_access_behavior_trends]");
+        goto end;
+    }
+    OpenAPI_list_for_each(ext_amf_event_subscription->ue_access_behavior_trends, node) {
+        cJSON *itemLocal = OpenAPI_ue_access_behavior_report_item_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_ext_amf_event_subscription_convertToJSON() failed [ue_access_behavior_trends]");
+            goto end;
+        }
+        cJSON_AddItemToArray(ue_access_behavior_trendsList, itemLocal);
+    }
+    }
+
+    if (ext_amf_event_subscription->ue_location_trends) {
+    cJSON *ue_location_trendsList = cJSON_AddArrayToObject(item, "ueLocationTrends");
+    if (ue_location_trendsList == NULL) {
+        ogs_error("OpenAPI_ext_amf_event_subscription_convertToJSON() failed [ue_location_trends]");
+        goto end;
+    }
+    OpenAPI_list_for_each(ext_amf_event_subscription->ue_location_trends, node) {
+        cJSON *itemLocal = OpenAPI_ue_location_trends_report_item_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_ext_amf_event_subscription_convertToJSON() failed [ue_location_trends]");
+            goto end;
+        }
+        cJSON_AddItemToArray(ue_location_trendsList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -456,6 +541,7 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
     OpenAPI_amf_event_mode_t *options_local_nonprim = NULL;
     cJSON *source_nf_type = NULL;
     OpenAPI_nf_type_e source_nf_typeVariable = 0;
+    cJSON *term_notify_ind = NULL;
     cJSON *binding_info = NULL;
     OpenAPI_list_t *binding_infoList = NULL;
     cJSON *subscribing_nf_type = NULL;
@@ -465,6 +551,12 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
     OpenAPI_list_t *nf_consumer_infoList = NULL;
     cJSON *aoi_state_list = NULL;
     OpenAPI_list_t *aoi_state_listList = NULL;
+    cJSON *access_token = NULL;
+    cJSON *amf_set_level_bulk_subs = NULL;
+    cJSON *ue_access_behavior_trends = NULL;
+    OpenAPI_list_t *ue_access_behavior_trendsList = NULL;
+    cJSON *ue_location_trends = NULL;
+    OpenAPI_list_t *ue_location_trendsList = NULL;
     event_list = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "eventList");
     if (!event_list) {
         ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [event_list]");
@@ -679,6 +771,14 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
     source_nf_typeVariable = OpenAPI_nf_type_FromString(source_nf_type->valuestring);
     }
 
+    term_notify_ind = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "termNotifyInd");
+    if (term_notify_ind) {
+    if (!cJSON_IsBool(term_notify_ind)) {
+        ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [term_notify_ind]");
+        goto end;
+    }
+    }
+
     binding_info = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "bindingInfo");
     if (binding_info) {
         cJSON *binding_info_local = NULL;
@@ -764,6 +864,70 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
         }
     }
 
+    access_token = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "accessToken");
+    if (access_token) {
+    if (!cJSON_IsString(access_token) && !cJSON_IsNull(access_token)) {
+        ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [access_token]");
+        goto end;
+    }
+    }
+
+    amf_set_level_bulk_subs = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "amfSetLevelBulkSubs");
+    if (amf_set_level_bulk_subs) {
+    if (!cJSON_IsBool(amf_set_level_bulk_subs)) {
+        ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [amf_set_level_bulk_subs]");
+        goto end;
+    }
+    }
+
+    ue_access_behavior_trends = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "ueAccessBehaviorTrends");
+    if (ue_access_behavior_trends) {
+        cJSON *ue_access_behavior_trends_local = NULL;
+        if (!cJSON_IsArray(ue_access_behavior_trends)) {
+            ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [ue_access_behavior_trends]");
+            goto end;
+        }
+
+        ue_access_behavior_trendsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(ue_access_behavior_trends_local, ue_access_behavior_trends) {
+            if (!cJSON_IsObject(ue_access_behavior_trends_local)) {
+                ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [ue_access_behavior_trends]");
+                goto end;
+            }
+            OpenAPI_ue_access_behavior_report_item_t *ue_access_behavior_trendsItem = OpenAPI_ue_access_behavior_report_item_parseFromJSON(ue_access_behavior_trends_local);
+            if (!ue_access_behavior_trendsItem) {
+                ogs_error("No ue_access_behavior_trendsItem");
+                goto end;
+            }
+            OpenAPI_list_add(ue_access_behavior_trendsList, ue_access_behavior_trendsItem);
+        }
+    }
+
+    ue_location_trends = cJSON_GetObjectItemCaseSensitive(ext_amf_event_subscriptionJSON, "ueLocationTrends");
+    if (ue_location_trends) {
+        cJSON *ue_location_trends_local = NULL;
+        if (!cJSON_IsArray(ue_location_trends)) {
+            ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [ue_location_trends]");
+            goto end;
+        }
+
+        ue_location_trendsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(ue_location_trends_local, ue_location_trends) {
+            if (!cJSON_IsObject(ue_location_trends_local)) {
+                ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [ue_location_trends]");
+                goto end;
+            }
+            OpenAPI_ue_location_trends_report_item_t *ue_location_trendsItem = OpenAPI_ue_location_trends_report_item_parseFromJSON(ue_location_trends_local);
+            if (!ue_location_trendsItem) {
+                ogs_error("No ue_location_trendsItem");
+                goto end;
+            }
+            OpenAPI_list_add(ue_location_trendsList, ue_location_trendsItem);
+        }
+    }
+
     ext_amf_event_subscription_local_var = OpenAPI_ext_amf_event_subscription_create (
         event_listList,
         ogs_strdup(event_notify_uri->valuestring),
@@ -783,12 +947,19 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
         any_ue ? any_ue->valueint : 0,
         options ? options_local_nonprim : NULL,
         source_nf_type ? source_nf_typeVariable : 0,
+        term_notify_ind ? true : false,
+        term_notify_ind ? term_notify_ind->valueint : 0,
         binding_info ? binding_infoList : NULL,
         subscribing_nf_type ? subscribing_nf_typeVariable : 0,
         event_sync_ind ? true : false,
         event_sync_ind ? event_sync_ind->valueint : 0,
         nf_consumer_info ? nf_consumer_infoList : NULL,
-        aoi_state_list ? aoi_state_listList : NULL
+        aoi_state_list ? aoi_state_listList : NULL,
+        access_token && !cJSON_IsNull(access_token) ? ogs_strdup(access_token->valuestring) : NULL,
+        amf_set_level_bulk_subs ? true : false,
+        amf_set_level_bulk_subs ? amf_set_level_bulk_subs->valueint : 0,
+        ue_access_behavior_trends ? ue_access_behavior_trendsList : NULL,
+        ue_location_trends ? ue_location_trendsList : NULL
     );
 
     return ext_amf_event_subscription_local_var;
@@ -848,13 +1019,27 @@ end:
     }
     if (aoi_state_listList) {
         OpenAPI_list_for_each(aoi_state_listList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_area_of_interest_event_state_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(aoi_state_listList);
         aoi_state_listList = NULL;
+    }
+    if (ue_access_behavior_trendsList) {
+        OpenAPI_list_for_each(ue_access_behavior_trendsList, node) {
+            OpenAPI_ue_access_behavior_report_item_free(node->data);
+        }
+        OpenAPI_list_free(ue_access_behavior_trendsList);
+        ue_access_behavior_trendsList = NULL;
+    }
+    if (ue_location_trendsList) {
+        OpenAPI_list_for_each(ue_location_trendsList, node) {
+            OpenAPI_ue_location_trends_report_item_free(node->data);
+        }
+        OpenAPI_list_free(ue_location_trendsList);
+        ue_location_trendsList = NULL;
     }
     return NULL;
 }

@@ -1,0 +1,1528 @@
+openapi: 3.0.1
+info:
+  title: Scenario specific Intent Expectations
+  version: 19.3.0
+  description: >-
+    OAS 3.0.1 definition of scenario specific Intent Expectations 
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.312; Intent driven management services for mobile networks
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.312/
+paths: {}
+components:
+  schemas:
+       
+   #-------Definition of the Scenario specific IntentExpectation dataType ----------#    
+    RadioNetworkExpectation:
+      description: >-
+        This data type is the "IntentExpectation" data type with specialisations to represent MnS consumer's expectations for radio network delivering and performance assurance    
+      type: object
+      properties:
+        expectationId:
+          type: string
+        expectationVerb:
+           $ref: 'TS28312_IntentNrm.yaml#/components/schemas/ExpectationVerb'
+        expectationObject:
+          $ref: '#/components/schemas/RadioNetworkExpectationObject'
+        expectationTargets:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/WeakRSRPRatioTarget'
+              - $ref: '#/components/schemas/LowSINRRatioTarget'
+              - $ref: '#/components/schemas/AveULRANUEThptTarget'
+              - $ref: '#/components/schemas/AveDLRANUEThptTarget'
+              - $ref: '#/components/schemas/LowULRANUEThptRatioTarget'
+              - $ref: '#/components/schemas/LowDLRANUEThptRatioTarget' 
+              - $ref: '#/components/schemas/HighULPrbLoadRatioTarget'
+              - $ref: '#/components/schemas/HighDLPrbLoadRatioTarget'
+              - $ref: '#/components/schemas/AveULPrbLoadTarget'
+              - $ref: '#/components/schemas/AveDLPrbLoadTarget'
+              - $ref: '#/components/schemas/RANEnergyConsumptionTarget'
+              - $ref: '#/components/schemas/RANEnergyEfficiencyTarget'
+              - $ref: '#/components/schemas/ActiveUEsNumTarget'
+              - $ref: '#/components/schemas/PRBsTarget'
+              - $ref: '#/components/schemas/InterRAThandoverTarget'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/ExpectationTarget'
+        expectationContexts:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            oneOf:
+             - $ref: '#/components/schemas/TargetAssuranceTimeContext'
+             - $ref: '#/components/schemas/SchedulingTimeContext'
+             - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/Context'
+      required:
+        - expectationId
+        - expectationObject
+        - expectationTargets
+    RadioServiceExpectation:
+      description: >-
+        This data type is the "IntentExpectation" data type with specialisations to represent MnS consumer's expectations for radio service delivering   
+      type: object
+      properties:
+        expectationId:
+          type: string
+        expectationVerb:
+           $ref: 'TS28312_IntentNrm.yaml#/components/schemas/ExpectationVerb'
+        expectationObject:
+          $ref: '#/components/schemas/RadioServiceExpectationObject'
+        expectationTargets:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/DLLatencyTarget'
+              - $ref: '#/components/schemas/ULLatencyTarget'
+              - $ref: '#/components/schemas/DLThptPerUETarget'
+              - $ref: '#/components/schemas/ULThptPerUETarget'
+              - $ref: '#/components/schemas/NumberofUEsTarget'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/ExpectationTarget'
+        expectationContexts:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/SchedulingTimeContext'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/Context'
+      required:
+        - expectationId
+        - expectationObject
+        - expectationTargets
+    EdgeServiceSupportExpectation:
+      description: >-
+        This data type is the "IntentExpectation" data type with specialisations to represent MnS consumer's expectations for service deployment    
+      type: object
+      properties:
+        expectationId:
+          type: string
+        expectationVerb:
+           $ref: 'TS28312_IntentNrm.yaml#/components/schemas/ExpectationVerb'
+        expectationObject:
+          $ref: '#/components/schemas/EdgeServiceSupportExpectationObject'
+        expectationTargets:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/DLThptPerUETarget'
+              - $ref: '#/components/schemas/ULThptPerUETarget'
+              - $ref: '#/components/schemas/DLLatencyTarget'
+              - $ref: '#/components/schemas/ULLatencyTarget'
+              - $ref: '#/components/schemas/MaxNumberofUEsTarget'
+              - $ref: '#/components/schemas/ActivityFactorTarget'
+              - $ref: '#/components/schemas/UESpeedTarget'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/ExpectationTarget'
+        expectationContexts:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/ServiceStartTimeContext'
+              - $ref: '#/components/schemas/ServiceEndTimeContext'
+              - $ref: '#/components/schemas/UEMobilityLevelContext'
+              - $ref: '#/components/schemas/ResourceSharingLevelContext'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/Context'
+      required:
+        - expectationId
+        - expectationObject
+        - expectationTargets   
+    5GCNetworkExpectation:
+      description: >-
+        This data type is the "IntentExpectation" data type with specialisations to represent MnS consumer's expectations for 5GC network delivering   
+      type: object
+      properties:
+        expectationId:
+          type: string
+        expectationVerb:
+           $ref: 'TS28312_IntentNrm.yaml#/components/schemas/ExpectationVerb'
+        expectationObject:
+           $ref: '#/components/schemas/5GCNetworkExpectationObject'
+        expectationTargets:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/MaxNumberofPDUsessionsTarget'
+              - $ref: '#/components/schemas/MaxNumberofRegisteredsubscribersTarget'
+              - $ref: '#/components/schemas/IncomingDataTarget'
+              - $ref: '#/components/schemas/OutgoingDataTarget'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/ExpectationTarget'
+        expectationContexts:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/StartTimeContext'
+              - $ref: '#/components/schemas/ResourceSharingLevelContext'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/Context'
+      required:
+        - expectationId
+    NetworkMaintenanceExpectation:
+      description: >-
+        This data type is the "IntentExpectation" data type with specialisations to represent MnS consumer's expectations for Network Maintenance
+      type: object
+      properties:
+        expectationId:
+          type: string
+        expectationVerb:
+          $ref: 'TS28312_IntentNrm.yaml#/components/schemas/ExpectationVerb'
+        expectationObject:
+          $ref: '#/components/schemas/NetworkMaintenanceExpectationObject'
+        expectationTargets:
+          type: array
+          uniqueItems: true 
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/MaintenanceVersionTarget'
+              - $ref: '#/components/schemas/WeakRSRPRatioTarget'
+              - $ref: '#/components/schemas/LowSINRRatioTarget'
+              - $ref: '#/components/schemas/AveULRANUEThptTarget'
+              - $ref: '#/components/schemas/AveDLRANUEThptTarget'
+              - $ref: '#/components/schemas/LowULRANUEThptRatioTarget'
+              - $ref: '#/components/schemas/LowDLRANUEThptRatioTarget' 
+              - $ref: '#/components/schemas/HighULPrbLoadRatioTarget'
+              - $ref: '#/components/schemas/HighDLPrbLoadRatioTarget'
+              - $ref: '#/components/schemas/AveULPrbLoadTarget'
+              - $ref: '#/components/schemas/AveDLPrbLoadTarget'
+              - $ref: '#/components/schemas/RANEnergyConsumptionTarget'
+              - $ref: '#/components/schemas/RANEnergyEfficiencyTarget'
+              - $ref: '#/components/schemas/MaxNumberofPDUsessionsTarget'
+              - $ref: '#/components/schemas/MaxNumberofRegisteredsubscribersTarget'
+              - $ref: '#/components/schemas/IncomingDataTarget'
+              - $ref: '#/components/schemas/OutgoingDataTarget'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/ExpectationTarget'
+        expectationContexts:
+          type: array
+          uniqueItems: true 
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/MaintenanceTimeContext'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/Context'
+      required:
+        - expectationId
+        - expectationObject
+        - expectationTargets
+   #-------Definition of the IntentExpectation dataType ----------#    
+
+   #-------Definition of the scenario specific ExpectationObject dataType ----------#    
+    RadioNetworkExpectationObject:
+      description: >-
+        This data type is the "ExpectationObject" data type with specialisations for RadioNetworkExpectation
+      type: object
+      properties:
+        objectType:
+          type: string
+          enum:
+            - RAN_SUBNETWORK
+        objectInstance:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        objectContexts:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/CoverageAreaPolygonContext'
+              - $ref: '#/components/schemas/CoverageTACContext'
+              - $ref: '#/components/schemas/TimeBasedAreaContext'
+              - $ref: '#/components/schemas/CellContext'
+              - $ref: '#/components/schemas/PLMNContext'
+              - $ref: '#/components/schemas/DlFrequencyContext'
+              - $ref: '#/components/schemas/UlFrequencyContext'
+              - $ref: '#/components/schemas/RATContext'
+              - $ref: '#/components/schemas/UEGroupContext'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/Context'                                
+    RadioServiceExpectationObject:
+      description: >-
+        This data type is the "ExpectationObject" data type with specialisations for RadioServicekExpectation
+      type: object
+      properties:
+        objectType:
+          type: string
+          enum:
+            - RADIO_SERVICE
+        objectInstance:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        objectContexts:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/CoverageAreaPolygonContext'
+              - $ref: '#/components/schemas/DlFrequencyContext'
+              - $ref: '#/components/schemas/UlFrequencyContext'
+              - $ref: '#/components/schemas/CellContext'  
+              - $ref: '#/components/schemas/ServiceTypeContext'
+              - $ref: '#/components/schemas/UEGroupContext'
+              - $ref: '#/components/schemas/GeoCoordinateContext'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/Context'
+    EdgeServiceSupportExpectationObject: 
+      description: >-
+        This data type is the "ExpectationObject" data type with specialisations for EdgeServiceSupportExpectation
+      type: object
+      properties:
+        objectType:
+          type: string
+          enum:
+            - EDGE_SERVICE_SUPPORT #value for Edge Service Support Expectation--#
+        objectInstance:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        objectContexts:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/EdgeIdentificationIdContext'
+              - $ref: '#/components/schemas/EdgeIdentificationLocContext'
+              - $ref: '#/components/schemas/CoverageAreaTAContext'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/Context'
+    5GCNetworkExpectationObject:
+      description: >-
+        This data type is the "ExpectationObject" data type with specialisations for 5GCNetworkExpectation
+      type: object
+      properties:
+        objectType:
+          type: string
+          enum:
+            - 5GC_SUBNETWORK #value for 5GC Network Expectation--#
+        objectInstance:
+          $ref: "TS28623_ComDefs.yaml#/components/schemas/Dn"
+        objectContexts:
+          type: array
+          uniqueItems: true
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/NfTypeContext'
+              - $ref: '#/components/schemas/NfInstanceLocationContext'
+              - $ref: '#/components/schemas/PLMNContext'
+              - $ref: '#/components/schemas/TaiContext'
+              - $ref: '#/components/schemas/ServingScopeContext'
+              - $ref: '#/components/schemas/DnnContext'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/Context'
+    NetworkMaintenanceExpectationObject:
+      description: >-
+        This data type is the "ExpectationObject" data type with specialisations for NetworkMaintenanceExpectation
+      type: object
+      properties:
+        objectInstance:
+          $ref: "TS28623_ComDefs.yaml#/components/schemas/Dn"
+        objectContexts:
+          type: array
+          uniqueItems: true 
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/MaintenanceVersionContext'
+              - $ref: '#/components/schemas/MaintenanceOrderContext'
+              - $ref: '#/components/schemas/MaintenanceTypeContext'
+              - $ref: '#/components/schemas/NfTypeContext'
+              - $ref: '#/components/schemas/NfInstanceLocationContext'
+              - $ref: '#/components/schemas/PLMNContext'
+              - $ref: '#/components/schemas/TaiContext'
+              - $ref: '#/components/schemas/ServingScopeContext'
+              - $ref: '#/components/schemas/DnnContext'
+              - $ref: '#/components/schemas/CoverageAreaPolygonContext'
+              - $ref: '#/components/schemas/CoverageTACContext'
+              - $ref: '#/components/schemas/PLMNContext'
+              - $ref: '#/components/schemas/DlFrequencyContext'
+              - $ref: '#/components/schemas/UlFrequencyContext'
+              - $ref: '#/components/schemas/RATContext'
+              - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/Context'
+   #-------Definition of the ExpectationObject dataType ----------#    
+
+
+   #-------Definition of the Scenario specific ExpectationTarget dataType----------#     
+    WeakRSRPRatioTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for WeakRSRPRatioTarget. It describes
+        the downlink weak coverage ratio target for the RAN SubNetwork that the intent expectation is applied. 
+        The numerator is the number of the cells with downlink weak RSRP, and the denominator is the total number
+        of cells of the RAN Subnetwork in the specified area.
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - WeakRSRPRatio
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+          minimum: 0
+          maximum: 100
+        targetContexts:
+          $ref: '#/components/schemas/WeakRSRPContext'
+    WeakRSRPContext:
+      description: >-
+        This data type is the "TargetContext" data type with specialisations for WeakRSRPContext. It describes the threshold
+        for downlink weak RSRP of the cells (see RSRP measurements in TS 28.552 [6]) of the RAN SubNetwork that the intent 
+        expectation is applied.
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - WeakRSRPThreshold
+        contextCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        contextValueRange:
+          type: number
+    LowSINRRatioTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for LowSINRatioTarget.It describes the low SINR 
+        ratio target for the RAN SubNetwork that the intent expectation is applied. The numerator is the number of the cells with
+        low SINR, and the denominator is the total number of cells of the RAN Subnetwork in the specified area.
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - LowSINRRatio
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+          minimum: 0
+          maximum: 100
+        targetContexts:
+          $ref: '#/components/schemas/LowSINRContext'
+    LowSINRContext:
+      description: >-
+        This data type is the "TargetContext" data type with specialisations for LowSINRContext.It describes the threshold for 
+        low SINR of the cells (see SINR measurements in TS 28.552 [6]) of the RAN SubNetwork that the intent expectation is applied.
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - LowSINRThreshold
+        contextCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        contextValueRange:
+          type: integer
+    AveULRANUEThptTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for AveULRANUEThptTarget.It describes the average
+        UL RAN UE throughput target for RAN SubNetwork (see UL RAN UE throughput for a sub-network in TS 28.554[11]) that the intent
+        expectation is applied.
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - AveULRANUEThpt
+        targetCondition:
+          type: string
+          enum:
+            - IS_GREATER_THAN
+        targetValueRange:
+          type: integer
+        targetContexts:
+          type: array
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/UlFrequencyContext'
+              - $ref: '#/components/schemas/RATContext'
+    AveDLRANUEThptTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for AveDLRANUEThptTarget.It describes the average
+        DL RAN UE throughput target for RAN SubNetwork (see DL RAN UE throughput for a sub-network in TS 28.554[11]) that the intent
+        expectation is applied.    
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - AveDLRANUEThpt
+        targetCondition:
+          type: string
+          enum:
+            - IS_GREATER_THAN
+        targetValueRange:
+          type: integer
+        targetContexts:
+          type: array
+          items:
+            type: object
+            oneOf:
+              - $ref: '#/components/schemas/DlFrequencyContext'
+              - $ref: '#/components/schemas/RATContext'
+    LowULRANUEThptRatioTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for LowULRANUEThptRatioTarget.It describes the low
+        UL RAN UE throughput ratio target for the RAN SubNetwork that the intent expectation is applied. The numerator is the number
+        of the cells with low UL RAN UE throughput, and the denominator is the total number of cells of the RAN Subnetwork in the 
+        specified area.        
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - LowULRANUEThptRatio
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+          minimum: 0
+          maximum: 100
+        targetContexts:
+          $ref: '#/components/schemas/LowULRANUEThptContext'
+    LowULRANUEThptContext:
+      description: >-
+        This data type is the "TargetContext" data type with specialisations for LowULRANUEThptContext.It describes the threshold 
+        for the low UL RAN UE throughput cells (see average UL RAN UE throughput in gNB and distribution of UL UE throughput in gNB
+        in TS 28.552[6]) of the RAN SubNetwork that the intent expectation is applied.
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - LowULRANUEThptThreshold
+        contextCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        contextValueRange:
+          type: number
+    LowDLRANUEThptRatioTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for LowDLRANUEThptRatioTarget. It describes
+        the low DL RAN UE throughput ratio target for the RAN SubNetwork that the intent expectation is applied.The numerator
+        is the number of the cells with low DL RAN UE throughput, and the denominator is the total number of cells of the 
+        RAN Subnetwork in the specified area.
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - LowDLRANUEThptRatio
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+          minimum: 0
+          maximum: 100
+        targetContexts:
+          $ref: '#/components/schemas/LowDLRANUEThptContext'
+    LowDLRANUEThptContext:
+      description: >-
+        This data type is the "TargetContext" data type with specialisations for LowDLRANUEThptContext.It describes the threshold
+        for the low DL RAN UE throughput cells ((see average DL RAN UE throughput in gNB and distribution of DL UE throughput in gNB
+        in TS 28.552[6]) ) of the RAN SubNetwork that the intent expectation is applied.      
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - LowDLRANUEThptThreshold
+        contextCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        contextValueRange:
+          type: number
+    HighULPrbLoadRatioTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for HighULPrbLoadRatioTarget. It describes the high UL
+        PRB load ratio target (as percentage) for the RAN SubNetwork that the intent expectation is applied. The numerator is the number
+        of the cells with high UL PRB load, and the denominator is the total number of cells of the RAN Subnetwork in the specified area.         
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - HighULPrbLoadRatio
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+          minimum: 0
+          maximum: 100
+        targetContexts:
+          $ref: '#/components/schemas/HighULPrbLoadContext'
+    HighULPrbLoadContext:
+      description: >-
+        This data type is the "TargetContext" data type with specialisations for HighULPrbLoadContext.It describes the threshold for high
+        uplink PRB load (i.e. UL Total PRB Usage in TS 28.552 [12] to represent the percentage of UL PRBs used) of the cells of the RAN
+        SubNetwork in the specified area that the intent expectation is applied.
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - HighULPrbLoadThreshold
+        contextCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        contextValueRange:
+          type: integer
+          minimum: 0
+          maximum: 100
+    HighDLPrbLoadRatioTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for HighDLPrbLoadRatioTarget.It describes the high DL PRB
+        load ratio target (as percentage) for the RAN SubNetwork that the intent expectation is applied. The numerator is the number of the
+        cells with high DL PRB load, and the denominator is the total number of cells of the RAN Subnetwork in the specified area.         
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - HighDLPrbLoadRatio
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+          minimum: 0
+          maximum: 100
+        targetContexts:
+          $ref: '#/components/schemas/HighDLPrbLoadContext'
+    HighDLPrbLoadContext:
+      description: >-
+        This data type is the "TargetContext" data type with specialisations for HighDLPrbLoadContext.It describes the threshold for high downlink
+        PRB load (i.e. DL Total PRB Usage in TS 28.552 [12] to represent the percentage of DL PRBs used) of the cells of the RAN SubNetwork in the
+        specified area that the intent expectation is applied. 
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - HighDLPrbLoadThreshold
+        contextCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        contextValueRange:
+          type: integer
+          minimum: 0
+          maximum: 100
+    AveULPrbLoadTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for AveULPrbLoadTarget.It describes the average uplink PRB load target
+        (i.e. UL Total PRB Usage in TS 28.552 [12] to represent the percentage of UL PRBs used) of the cells of the RAN SubNetwork that the intent
+        expectation is applied.    
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - AveULPrbLoad
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+          minimum: 0
+          maximum: 100
+    AveDLPrbLoadTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for AveDLPrbLoadTarget.It describes the average dowlink PRB load
+        (i.e. DL Total PRB Usage in TS 28.552 [12] to represent the percentage of DL PRBs used) target for RAN SubNetwork that the intent expectation
+        is applied.    
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - AveDLPrbLoad
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+          minimum: 0
+          maximum: 100
+    RANEnergyConsumptionTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for RANEnergyConsumptionTarget.It describes the RAN energy consumption
+        target for RAN SubNetwork that the intent expectation is applied. The definition for RAN energy consumption see ECNG-RAN in clause 6.7.3.4.1 in
+        TS 28.554 [11].
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - RANEnergyConsumption
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+    RANEnergyEfficiencyTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for RANEnergyEfficiencyTarget.It describes the RAN energy efficiency target
+        for RAN SubNetwork that the intent expectation is applied. The unit of this target is bit/J. The definition for RAN energy efficiency target for RAN
+        SubNetwork see EEMN,DV in clause 6.7.1.1 in TS 28.554 [11].
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - RANEnergyEfficiency
+        targetCondition:
+          type: string
+          enum:
+            - IS_GREATER_THAN
+        targetValueRange:
+          type: integer
+    ActiveUEsNumTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for ActiveUEsNumTarget.
+        It describes the number of Active UEs for the specified areas. This target is related to Mean
+        number of Active UEs in the DL per cell and Mean number of Active UEs in the UL per cell defined
+        in 3GPP TS 28.552 [6].
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - ActiveUEsNum
+        targetCondition:
+          type: string
+          enum:
+            - IS_WITHIN_RANGE
+        targetValueRange:
+          type: array
+          description: >- 
+           a pair of integer values to represent minimum number of active UEs and maximum number of active UEs.
+          items:
+            type: integer
+            minItems: 1
+            maxItems: 2
+    PRBsTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for PRBsTarget.
+        It describes total available number of physical resource blocks (PRBs). This target is equal to the difference between the DL total available PRB plus UL total available PRB of operator A and the DL total available PRB plus UL total available PRB of operator B. DL total available PRB and UL total available PRB defined in clause 5.1.1.2.6 and 5.1.1.2.8 of TS 28.552 [12].
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - pRBS
+        targetCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        targetValueRange:
+          type: integer
+    InterRAThandoverTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for PRBsTarget.
+        it shows how often a handover from 5GS to EPS is successful. The InterRAThandover target is equal to the difference between 5GS to EPS handover success rate of operator A and 5GS to EPS handover success rate of operator B. For details see attribute 5GS to EPS handover success rate defined in clause 6.6.4 of TS 28.554 [11].
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - InterRATHandover
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+          minimum: 0
+          maximum: 100
+    NumberofUEsTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for NumberofUEsTarget.It describes 
+        the number of UEs target for the Radio Service that the intent expectation is applied.
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - NumberofUEs
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+    DLThptPerUETarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for DLThptPerUETarget. It describes the DL throughput target by the per UE for the 
+        edge service supporting or radio servicde that the intent expectation is applied. For details see dlThptPerUE defined in clause 6.3.1 of TS 28.541 [5].     
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - DlThptPerUE
+        targetCondition:
+          type: string
+          enum:
+            - IS_GREATER_THAN
+        targetValueRange:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Float'
+    ULThptPerUETarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for ULThptPerUETarget.It describes the UL throughput target by the per UE for the edge
+        service supporting or radio service that the intent expectation is applied. For details see ulThptPerUE defined in clause 6.3.1 of TS 28.541 [5].       
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - UlThptPerUE
+        targetCondition:
+          type: string
+          enum:
+            - IS_GREATER_THAN
+        targetValueRange:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Float' 
+    DLLatencyTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for DLLatencyTarget.It describes the DL latency target for the edge service supporting or radio service
+        that the intent expectation is applied       
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - DlLatency
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+    ULLatencyTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for ULLatencyTarget. It describes the UL latency target for the edge service supporting or radioService
+        that the intent expectation is applied. For details see attribute ulLatency defined in clause 6.3.1 of TS 28.541 [5]     
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - UlLatency
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+    MaxNumberofUEsTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for MaxNumberofUEsTarget.It describes the the number of UEs for edge service supporting
+        that the intent expectation is applied. For details see attribute maxNumberofUE defined in clause 6.3.1 of of TS 28.541 [5]     
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - maxNumberofUEs
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+    ActivityFactorTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for ActivityFactorTarget.It describes the percentage value of the amount of simultaneous
+        active UEs to the total number of UEs where active means the UEs are exchanging data with the edge service supporting that the intent expectation is applied.
+        For details see activityFactor in clause 6.3.1 in TS 28.541 [5].       
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - activityFactor
+        targetCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        targetValueRange:
+          type: integer
+    UESpeedTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for UESpeedTarget.It describes the speed (in km/hour) supported for edge service supporting
+        that the intent expectation is applied. For details see uESpeed in clause 6.3.1 in TS 28.541[5].
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - uESpeed
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+    MaxNumberofPDUsessionsTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for MaxNumberofPDUsessionsTarget.It describes the maximum number of PDU sessions for 5GC
+        SubNetwork supporting that the intent expectation is applied. For details, see maxNumberofPDUsessions in clause 5.3.1.2 in TS 28.552 [12].     
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - MaxNumberofPDUsessions
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+        targetContexts:
+          $ref: '#/components/schemas/5GSessionContext'
+    5GSessionContext:
+      description: >-
+        This data type is the "TargetContext" data type with specialisations for 5GSessionContext.It describes the maximum supported 5G PDU session of the 5GC SubNetwork
+        related to the intent expectation.
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - 5GSession
+        contextCondition:
+          type: string
+          enum:
+            - IS_less_THAN
+        contextValueRange:
+          type: integer
+    MaxNumberofRegisteredsubscribersTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for MaxNumberofRegisteredsubscribersTarget.It describes the maximum number of Registered
+        subscribers for 5GC SubNetwork supporting that the intent expectation is applied. For details, see maxNumberofRegisteredsubscribers in clause 5.6.2 in TS 28.552 [12].     
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - MaxNumberofRegisteredsubscribers
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+    IncomingDataTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for IncomingDataTarget.It describes the maximum incoming data packets for 5GC SubNetwork
+        related to the intent expectation. For details, see N6 incoming link usage measurement in clause 5.4.2.1 in TS 28.552 [12].     
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - IncomingData
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+    OutgoingDataTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for OutgoingDataTarget.It describes the maximum outgoing data packets for 5GC SubNetwork
+        related to the intent expectation. For details, see N6 outgoing link usage measurement in clause 5.4.2.2 in TS 28.552 [12].     
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - OutgoingData
+        targetCondition:
+          type: string
+          enum:
+            - IS_LESS_THAN
+        targetValueRange:
+          type: integer
+    MaintenanceVersionTarget:
+      description: >-
+        This data type is the "ExpectationTarget" data type with specialisations for Maintenance Version Target. It describes the maintenance version target for the network maintenance, such as target version of the maintenance object after maintenance.
+      type: object
+      properties:
+        targetName:
+          type: string
+          enum:
+            - MaintenanceVersion
+        targetCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        targetValueRange:
+          type: string
+
+   #-------Definition of the concrete ExpectationTarget  dataType----------#  
+   
+   #-------Definition of the concrete ObjectTarget dataType----------------#
+    CoverageAreaPolygonContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for CoverageAreaPolygonContext.It describes the coverage areas for the RAN SubNetwork that the
+        intent expectation is applied in the form of polygon.
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - CoverageAreaPolygon
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+    CoverageTACContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for CoverageTACContext.It describes the coverage areas for the RAN SubNetwork that the intent
+        expectation is applied in the form of TAC.     
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - CoverageAreaTac
+        contextCondition:
+          type: string
+          enum:
+             - IS_ALL_OF
+        contextValueRange:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: "TS28623_ComDefs.yaml#/components/schemas/Tac"
+    CellContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for CellContext.
+        It describes the coverage areas for the RAN SubNetwork or Radio Service that the intent expectation is applied
+        in the form of a list of cells (including E-UTRAN cells identified by E-UTRAN-CGI and NR cells
+        identified by NG-RAN CGI).
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - Cell
+        contextCondition:
+          type: string
+          enum:
+             - IS_ALL_OF
+        contextValueRange:
+          type: array
+          items:
+            $ref: "#/components/schemas/CellId"
+    CellId:
+      oneOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/EutraCellId'
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NrCellId'
+    TimeBasedAreaContext:
+      description: >- 
+        This data type is the "ObjectContext" data type with specialisations for TimeBasedAreaContext. 
+        It describes the areas for specific times for the RAN SubNetwork that the intent expectation is 
+        applied in the form of a <GeoArea, TimeWindow> list.
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - TimeBasedArea
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeBasedArea"
+    TimeBasedArea:
+      type: object
+      properties:
+        geoArea:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+        timeWindow:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow'
+    PLMNContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for PLMNContext
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - PLMN
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+    GeoCoordinateContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for GeoCoordinateContext.
+        It describes the location (i.e. geocoordinate) that radio service intent is applied.
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - GeoCoordinate
+        contextCondition:
+          type: string
+          enum:
+             - IS_EQUAL_TO
+        contextValueRange:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoCoordinate'
+    DlFrequencyContext:
+      description: >-
+        This data type is the "Context" data type with specialisations for Object context "DLFrequencyContext". It describes the downlink frequency information (RF reference
+        frequencies and/ or the frequency operating band) supported by the RAN SubNetwork or Radio Service that the intent expectation is applied.       
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - DlFrequency
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28312_IntentNrm.yaml#/components/schemas/Frequency'
+    UlFrequencyContext:
+      description: >-
+        This data type is the "Context" data type with specialisations for Object context "ULFrequencyContext".It describes the uplink frequency information (RF reference
+        frequencies and/ or the frequency operating band) supported by the RAN SubNetwork or Radio Service that the intent expectation is applied.       
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - UlFrequency
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28312_IntentNrm.yaml#/components/schemas/Frequency'
+    RATContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for RATContext.It describes the RAT supported by the RAN SubNetwork that the intent expectation
+        is applied.           
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - RAT
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+              - UTRAN
+              - EUTRAN
+              - NR
+    UEGroupContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for UEGroup([5QI, SNSSAI, pLMNId])
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - UEGroup
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: "TS28312_IntentNrm.yaml#/components/schemas/UEGroup"
+    EdgeIdentificationIdContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for EdgeIdentificationIdContext      
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - edgeIdentificationId
+        contextCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        contextValueRange:
+          type: string
+    EdgeIdentificationLocContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for EdgeIdentificationLocContext    
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - edgeIdentificationTarget
+        contextCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        contextValueRange:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoCoordinate'
+    CoverageAreaTAContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for CoverageAreaTAContext       
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - coverageAreaTA
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/Tac'
+    NfTypeContext:          
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for NfTypeContext
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - NfType
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28541_5GcNrm.yaml#/components/schemas/NFType'
+    NfInstanceLocationContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for NfInstanceLocationContext 
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - NfInstanceLocation
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+    TaiContext: 
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for TaiContext
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - Tai
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Tai'
+    ServingScopeContext:          
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for ServingScopeContext   
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - ServingScope
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+    DnnContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for DnnContext   
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - Dnn
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+    MaintenanceVersionContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for MaintenanceVersionContext. It describes the scope of the maintenance objects based on software version.
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - swVersion
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          items:
+            type: string
+    MaintenanceOrderContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for MaintenanceOrderContext. It describes describes the list of DNs for NFs/NEs based on their order for maintenance.
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - maintenanceOrder
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          type: array
+          items:
+            type: string
+    MaintenanceTypeContext:
+      description: >-
+        This data type is the "ObjectContext" data type with specialisations for MaintenanceTypeContext. It describes the type of maintenance expected for the maintenance object.
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - maintenanceType
+        contextCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        contextValueRange:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+              - UPGRADE
+              - DOWNGRADE
+   #-------Definition of the scenario specific  ObjectTarget dataType----------------#
+   
+   #-------Definition of the concrete ExpectationContext dataType----------------#
+
+    TargetAssuranceTimeContext:
+      description: >-
+        This data type is the "Expectation Context" data type with specialisations for TargetAssuranceTimeContext.It describes the timeWindows
+        (including startTime, endTime) when the targets in the Intent Expectation need to be assured.       
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - TargetAssuranceTime
+        contextCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        contextValueRange:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow' 
+
+    ServiceStartTimeContext:
+      description: >-
+        This data type is the "ExpectationContext" data type with specialisations for ServiceStartTimeContext       
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - ServiceStartTime
+        contextCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        contextValueRange:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+    ServiceEndTimeContext:
+      description: >-
+        This data type is the "ExpectationContext" data type with specialisations for ServiceEndTimeContext         
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - ServiceEndTime
+        contextCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        contextValueRange:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+    UEMobilityLevelContext:
+      description: >-
+        This data type is the "ExpectationContext" data type with specialisations for UEMobilityLevelContext       
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - UEMobilityLevel
+        contextCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        contextValueRange:
+          $ref: "TS28541_SliceNrm.yaml#/components/schemas/MobilityLevel"
+    ResourceSharingLevelContext:
+      description: >-
+        This data type is the "ExpectationContext" data type with specialisations for ResourceSharingLevelContext          
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - ResourceSharingLevel
+        contextCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        contextValueRange:
+          $ref: "TS28541_SliceNrm.yaml#/components/schemas/SharingLevel"
+    ServiceTypeContext:
+      description: >-
+        This data type is the "ExpectationContext" data type with specialisations for ServiceTypeContext.It describes
+        the service type for the Radio Service that the intent expectation is applied. For details see sST in clause 6.4.1 in TS 28.541 [5]       
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - ServiceType
+        contextCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        contextValueRange:
+          $ref: "TS28541_NrNrm.yaml#/components/schemas/Sst"
+    SchedulingTimeContext:
+      description: >-
+        This data type is the "ExpectationContext" data type with specialisations for SchedulingTimeContext.It describes
+        the scheduled times (including one-time interval, daily periodicity, weekly periodicity or monthly periodicity)
+        for the IntentObject that the intent expectation is applied.
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - schedulingTime
+        contextCondition:
+          type: string
+          enum:
+            - IS_ALL_OF
+        contextValueRange:
+          $ref: "TS28623_GenericNrm.yaml#/components/schemas/SchedulingTime"
+    StartTimeContext:
+      description: >-
+        This data type is the "ExpectationContext" data type with specialisations for StartTimeContext       
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - StartTime
+        contextCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        contextValueRange:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+    MaintenanceTimeContext:
+      description: >-
+        This data type is the "ExpectationContext" data type with specialisations for MaintenanceTimeContext
+      type: object
+      properties:
+        contextAttribute:
+          type: string
+          enum:
+            - MaintenanceTime
+        contextCondition:
+          type: string
+          enum:
+            - IS_EQUAL_TO
+        contextValueRange:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow'
+   #-------Definition of the concrete ExpectionContext dataType----------------#

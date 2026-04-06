@@ -1,7 +1,7 @@
 /*
  * sip_forking_indication.h
  *
- * 
+ * Indicates whether several SIP dialogues are related to an \&quot;Individual Application Session Context\&quot; resource. 
  */
 
 #ifndef _OpenAPI_sip_forking_indication_H_

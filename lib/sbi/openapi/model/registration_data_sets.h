@@ -1,7 +1,7 @@
 /*
  * registration_data_sets.h
  *
- * 
+ * This data type contains all the attributes related to 3GPP access and non-access registration. 
  */
 
 #ifndef _OpenAPI_registration_data_sets_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_registration_data_sets_s OpenAPI_registration_data_sets_t;
 #include "amf3_gpp_access_registration.h"
 #include "amf_non3_gpp_access_registration.h"
 #include "ip_sm_gw_registration.h"
@@ -23,16 +24,16 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_registration_data_sets_s OpenAPI_registration_data_sets_t;
-typedef struct OpenAPI_registration_data_sets_s {
+struct OpenAPI_registration_data_sets_s {
     struct OpenAPI_amf3_gpp_access_registration_s *amf3_gpp;
     struct OpenAPI_amf_non3_gpp_access_registration_s *amf_non3_gpp;
     struct OpenAPI_smf_registration_info_s *smf_registration;
     struct OpenAPI_smsf_registration_s *smsf3_gpp;
     struct OpenAPI_smsf_registration_s *smsf_non3_gpp;
+    bool is_ip_sm_gw_null;
     struct OpenAPI_ip_sm_gw_registration_s *ip_sm_gw;
     struct OpenAPI_nwdaf_registration_info_s *nwdaf_registration;
-} OpenAPI_registration_data_sets_t;
+};
 
 OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_create(
     OpenAPI_amf3_gpp_access_registration_t *amf3_gpp,
@@ -40,6 +41,7 @@ OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_create(
     OpenAPI_smf_registration_info_t *smf_registration,
     OpenAPI_smsf_registration_t *smsf3_gpp,
     OpenAPI_smsf_registration_t *smsf_non3_gpp,
+    bool is_ip_sm_gw_null,
     OpenAPI_ip_sm_gw_registration_t *ip_sm_gw,
     OpenAPI_nwdaf_registration_info_t *nwdaf_registration
 );

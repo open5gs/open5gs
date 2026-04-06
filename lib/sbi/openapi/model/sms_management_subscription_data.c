@@ -20,7 +20,10 @@ OpenAPI_sms_management_subscription_data_t *OpenAPI_sms_management_subscription_
     int mo_sms_barring_roaming,
     OpenAPI_list_t *shared_sms_mng_data_ids,
     bool is_trace_data_null,
-    OpenAPI_trace_data_t *trace_data
+    OpenAPI_trace_data_t *trace_data,
+    char *shared_trace_data_id,
+    char *chf_group_id,
+    char *_3gpp_charging_characteristics
 )
 {
     OpenAPI_sms_management_subscription_data_t *sms_management_subscription_data_local_var = ogs_malloc(sizeof(OpenAPI_sms_management_subscription_data_t));
@@ -42,6 +45,9 @@ OpenAPI_sms_management_subscription_data_t *OpenAPI_sms_management_subscription_
     sms_management_subscription_data_local_var->shared_sms_mng_data_ids = shared_sms_mng_data_ids;
     sms_management_subscription_data_local_var->is_trace_data_null = is_trace_data_null;
     sms_management_subscription_data_local_var->trace_data = trace_data;
+    sms_management_subscription_data_local_var->shared_trace_data_id = shared_trace_data_id;
+    sms_management_subscription_data_local_var->chf_group_id = chf_group_id;
+    sms_management_subscription_data_local_var->_3gpp_charging_characteristics = _3gpp_charging_characteristics;
 
     return sms_management_subscription_data_local_var;
 }
@@ -67,6 +73,18 @@ void OpenAPI_sms_management_subscription_data_free(OpenAPI_sms_management_subscr
     if (sms_management_subscription_data->trace_data) {
         OpenAPI_trace_data_free(sms_management_subscription_data->trace_data);
         sms_management_subscription_data->trace_data = NULL;
+    }
+    if (sms_management_subscription_data->shared_trace_data_id) {
+        ogs_free(sms_management_subscription_data->shared_trace_data_id);
+        sms_management_subscription_data->shared_trace_data_id = NULL;
+    }
+    if (sms_management_subscription_data->chf_group_id) {
+        ogs_free(sms_management_subscription_data->chf_group_id);
+        sms_management_subscription_data->chf_group_id = NULL;
+    }
+    if (sms_management_subscription_data->_3gpp_charging_characteristics) {
+        ogs_free(sms_management_subscription_data->_3gpp_charging_characteristics);
+        sms_management_subscription_data->_3gpp_charging_characteristics = NULL;
     }
     ogs_free(sms_management_subscription_data);
 }
@@ -163,6 +181,27 @@ cJSON *OpenAPI_sms_management_subscription_data_convertToJSON(OpenAPI_sms_manage
         }
     }
 
+    if (sms_management_subscription_data->shared_trace_data_id) {
+    if (cJSON_AddStringToObject(item, "sharedTraceDataId", sms_management_subscription_data->shared_trace_data_id) == NULL) {
+        ogs_error("OpenAPI_sms_management_subscription_data_convertToJSON() failed [shared_trace_data_id]");
+        goto end;
+    }
+    }
+
+    if (sms_management_subscription_data->chf_group_id) {
+    if (cJSON_AddStringToObject(item, "chfGroupId", sms_management_subscription_data->chf_group_id) == NULL) {
+        ogs_error("OpenAPI_sms_management_subscription_data_convertToJSON() failed [chf_group_id]");
+        goto end;
+    }
+    }
+
+    if (sms_management_subscription_data->_3gpp_charging_characteristics) {
+    if (cJSON_AddStringToObject(item, "3gppChargingCharacteristics", sms_management_subscription_data->_3gpp_charging_characteristics) == NULL) {
+        ogs_error("OpenAPI_sms_management_subscription_data_convertToJSON() failed [_3gpp_charging_characteristics]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -182,6 +221,9 @@ OpenAPI_sms_management_subscription_data_t *OpenAPI_sms_management_subscription_
     OpenAPI_list_t *shared_sms_mng_data_idsList = NULL;
     cJSON *trace_data = NULL;
     OpenAPI_trace_data_t *trace_data_local_nonprim = NULL;
+    cJSON *shared_trace_data_id = NULL;
+    cJSON *chf_group_id = NULL;
+    cJSON *_3gpp_charging_characteristics = NULL;
     supported_features = cJSON_GetObjectItemCaseSensitive(sms_management_subscription_dataJSON, "supportedFeatures");
     if (supported_features) {
     if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
@@ -270,6 +312,30 @@ OpenAPI_sms_management_subscription_data_t *OpenAPI_sms_management_subscription_
     }
     }
 
+    shared_trace_data_id = cJSON_GetObjectItemCaseSensitive(sms_management_subscription_dataJSON, "sharedTraceDataId");
+    if (shared_trace_data_id) {
+    if (!cJSON_IsString(shared_trace_data_id) && !cJSON_IsNull(shared_trace_data_id)) {
+        ogs_error("OpenAPI_sms_management_subscription_data_parseFromJSON() failed [shared_trace_data_id]");
+        goto end;
+    }
+    }
+
+    chf_group_id = cJSON_GetObjectItemCaseSensitive(sms_management_subscription_dataJSON, "chfGroupId");
+    if (chf_group_id) {
+    if (!cJSON_IsString(chf_group_id) && !cJSON_IsNull(chf_group_id)) {
+        ogs_error("OpenAPI_sms_management_subscription_data_parseFromJSON() failed [chf_group_id]");
+        goto end;
+    }
+    }
+
+    _3gpp_charging_characteristics = cJSON_GetObjectItemCaseSensitive(sms_management_subscription_dataJSON, "3gppChargingCharacteristics");
+    if (_3gpp_charging_characteristics) {
+    if (!cJSON_IsString(_3gpp_charging_characteristics) && !cJSON_IsNull(_3gpp_charging_characteristics)) {
+        ogs_error("OpenAPI_sms_management_subscription_data_parseFromJSON() failed [_3gpp_charging_characteristics]");
+        goto end;
+    }
+    }
+
     sms_management_subscription_data_local_var = OpenAPI_sms_management_subscription_data_create (
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         mt_sms_subscribed ? true : false,
@@ -286,7 +352,10 @@ OpenAPI_sms_management_subscription_data_t *OpenAPI_sms_management_subscription_
         mo_sms_barring_roaming ? mo_sms_barring_roaming->valueint : 0,
         shared_sms_mng_data_ids ? shared_sms_mng_data_idsList : NULL,
         trace_data && cJSON_IsNull(trace_data) ? true : false,
-        trace_data ? trace_data_local_nonprim : NULL
+        trace_data ? trace_data_local_nonprim : NULL,
+        shared_trace_data_id && !cJSON_IsNull(shared_trace_data_id) ? ogs_strdup(shared_trace_data_id->valuestring) : NULL,
+        chf_group_id && !cJSON_IsNull(chf_group_id) ? ogs_strdup(chf_group_id->valuestring) : NULL,
+        _3gpp_charging_characteristics && !cJSON_IsNull(_3gpp_charging_characteristics) ? ogs_strdup(_3gpp_charging_characteristics->valuestring) : NULL
     );
 
     return sms_management_subscription_data_local_var;

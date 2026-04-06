@@ -1,0 +1,419 @@
+openapi: 3.0.0
+
+info:
+  title: SS_GroupManagement
+  description: |
+    API for SEAL Group management.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.3.0"
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-gm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /group-documents:
+    post:
+      description: Creates a new VAL group document.
+      operationId: CreateValGroupDoc
+      tags:
+        - VAL Group Documents (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VALGroupDocument'
+      responses:
+        '201':
+          description: VAL group created sucessfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VALGroupDocument'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    get:
+      description: Retrieves VAL group documents satisfying filter criteria
+      operationId: RetrieveValGroupDocs
+      tags:
+        - VAL Group Documents (Collection)
+      parameters:
+        - name: val-group-id
+          in: query
+          description: String identifying the VAL group.
+          schema:
+            type: string
+        - name: val-service-id
+          in: query
+          description: String identifying the Val service.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of VAL group documents matching the query parameters in the request.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VALGroupDocument'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /group-documents/{groupDocId}:
+    get:
+      description: Retrieves VAL group information satisfying filter criteria.
+      operationId: RetrieveIndValGroupDoc
+      tags:
+        - Individual VAL Group Document (Document)
+      parameters:
+        - name: groupDocId
+          in: path
+          description: String identifying an individual VAL group document resource.
+          required: true
+          schema:
+            type: string
+        - name: group-members
+          in: query
+          description: >
+            When set to true indicates the group management server to send the members
+            list information of the VAL group.
+          schema:
+            type: boolean
+        - name: group-configuration
+          in: query
+          description: >
+            When set to true indicates the group management server to send the group
+            configuration information of the VAL group.
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: >
+            The VAL group information based on the request from the VAL server. Includes
+            VAL group members list if group-members flag is set to true in the request,
+            VAL group configuration information if the group-configuration flag is set to
+            true in the request, VAL group identifier, whole VAL group document resource
+            if both group-members and group-configuration flags are omitted/set to false
+            in the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VALGroupDocument'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      description: Updates an individual VAL group document.
+      operationId: UpdateIndValGroupDoc
+      tags:
+        - Individual VAL Group Document (Document)
+      parameters:
+        - name: groupDocId
+          in: path
+          description: String identifying an individual VAL group document resource
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: VAL group document to be updated in Group management server.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VALGroupDocument'
+      responses:
+        '200':
+          description: VAL group document updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VALGroupDocument'
+        '204':
+          description: No Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      description: Deletes a VAL Group.
+      operationId: DeleteIndValGroupDoc
+      tags:
+        - Individual VAL Group Document (Document)
+      parameters:
+        - name: groupDocId
+          in: path
+          description: String identifying an individual VAL group document resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The individual VAL group matching groupDocId was deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      description: Modify an existing VAL Group document.
+      operationId: ModifyIndValGroupDoc
+      tags:
+        - Individual VAL Group Document (Document)
+      parameters:
+        - name: groupDocId
+          in: path
+          description: Identifier of an individual VAL group document.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/VALGroupDocumentPatch'
+      responses:
+        '200':
+          description: >
+            The individual VAL Group document is modified successfully and a
+            representation of the updated VAL Group document is returned in the request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VALGroupDocument'
+        '204':
+          description: No Content. The individual VAL group document is modified successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    VALGroupDocument:
+      description: Represents details of the VAL group document information.
+      type: object
+      properties:
+        valGroupId:
+          type: string
+          description: The VAL group idenitity.
+        grpDesc:
+          type: string
+          description: The text description of the VAL group.
+        members:
+          type: array
+          description: The list of VAL User IDs or VAL UE IDs, which are members of the VAL group.
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+        valGrpConf:
+          type: string
+          description: Configuration data for the VAL group.
+        valServiceIds:
+          type: array
+          description: The list of VAL services enabled on the group.
+          items:
+            type: string
+          minItems: 1
+        valSvcInf:
+          type: string
+          description: VAL service specific information.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        resUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        locInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        addLocInfo:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        valSvcAreaId:
+          $ref: 'TS29549_SS_VALServiceAreaConfiguration.yaml#/components/schemas/ValSvcAreaId'
+        extGrpId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        com5GLanType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+      required:
+        - valGroupId
+
+    VALGroupDocumentPatch:
+      description: Represents details of the partial update of VAL group document information.
+      type: object
+      properties:
+        grpDesc:
+          type: string
+          description: The text description of the VAL group.
+        members:
+          type: array
+          description: The list of VAL User IDs or VAL UE IDs, which are members of the VAL group.
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+        valGrpConf:
+          type: string
+          description: Configuration data for the VAL group.
+        valServiceIds:
+          type: array
+          description: The list of VAL services enabled on the group.
+          items:
+            type: string
+          minItems: 1
+        locInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        addLocInfo:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        valSvcAreaId:
+          $ref: 'TS29549_SS_VALServiceAreaConfiguration.yaml#/components/schemas/ValSvcAreaId'
+        extGrpId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        com5GLanType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'

@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_vsmf_update_error_s OpenAPI_vsmf_update_error_t;
 #include "arp.h"
 #include "ext_problem_details.h"
 #include "n4_information.h"
@@ -22,8 +23,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_vsmf_update_error_s OpenAPI_vsmf_update_error_t;
-typedef struct OpenAPI_vsmf_update_error_s {
+struct OpenAPI_vsmf_update_error_s {
     struct OpenAPI_ext_problem_details_s *error;
     bool is_pti;
     int pti;
@@ -39,7 +39,11 @@ typedef struct OpenAPI_vsmf_update_error_s {
     struct OpenAPI_n4_information_s *n4_info_ext1;
     struct OpenAPI_n4_information_s *n4_info_ext2;
     struct OpenAPI_n4_information_s *n4_info_ext3;
-} OpenAPI_vsmf_update_error_t;
+    bool is_retry_after;
+    int retry_after;
+    bool is_max_waiting_time;
+    int max_waiting_time;
+};
 
 OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_create(
     OpenAPI_ext_problem_details_t *error,
@@ -56,7 +60,11 @@ OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_create(
     OpenAPI_n4_information_t *n4_info,
     OpenAPI_n4_information_t *n4_info_ext1,
     OpenAPI_n4_information_t *n4_info_ext2,
-    OpenAPI_n4_information_t *n4_info_ext3
+    OpenAPI_n4_information_t *n4_info_ext3,
+    bool is_retry_after,
+    int retry_after,
+    bool is_max_waiting_time,
+    int max_waiting_time
 );
 void OpenAPI_vsmf_update_error_free(OpenAPI_vsmf_update_error_t *vsmf_update_error);
 OpenAPI_vsmf_update_error_t *OpenAPI_vsmf_update_error_parseFromJSON(cJSON *vsmf_update_errorJSON);

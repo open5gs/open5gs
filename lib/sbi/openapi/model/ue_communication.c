@@ -17,6 +17,7 @@ OpenAPI_ue_communication_t *OpenAPI_ue_communication_create(
     bool is_ts_variance,
     float ts_variance,
     OpenAPI_scheduled_communication_time_1_t *recurring_time,
+    bool is_traf_char_null,
     OpenAPI_traffic_characterization_t *traf_char,
     bool is_ratio,
     int ratio,
@@ -43,6 +44,7 @@ OpenAPI_ue_communication_t *OpenAPI_ue_communication_create(
     ue_communication_local_var->is_ts_variance = is_ts_variance;
     ue_communication_local_var->ts_variance = ts_variance;
     ue_communication_local_var->recurring_time = recurring_time;
+    ue_communication_local_var->is_traf_char_null = is_traf_char_null;
     ue_communication_local_var->traf_char = traf_char;
     ue_communication_local_var->is_ratio = is_ratio;
     ue_communication_local_var->ratio = ratio;
@@ -163,6 +165,11 @@ cJSON *OpenAPI_ue_communication_convertToJSON(OpenAPI_ue_communication_t *ue_com
         ogs_error("OpenAPI_ue_communication_convertToJSON() failed [traf_char]");
         goto end;
     }
+    } else if (ue_communication->is_traf_char_null) {
+        if (cJSON_AddNullToObject(item, "trafChar") == NULL) {
+            ogs_error("OpenAPI_ue_communication_convertToJSON() failed [traf_char]");
+            goto end;
+        }
     }
 
     if (ue_communication->is_ratio) {
@@ -296,10 +303,12 @@ OpenAPI_ue_communication_t *OpenAPI_ue_communication_parseFromJSON(cJSON *ue_com
 
     traf_char = cJSON_GetObjectItemCaseSensitive(ue_communicationJSON, "trafChar");
     if (traf_char) {
+    if (!cJSON_IsNull(traf_char)) {
     traf_char_local_nonprim = OpenAPI_traffic_characterization_parseFromJSON(traf_char);
     if (!traf_char_local_nonprim) {
         ogs_error("OpenAPI_traffic_characterization_parseFromJSON failed [traf_char]");
         goto end;
+    }
     }
     }
 
@@ -358,6 +367,7 @@ OpenAPI_ue_communication_t *OpenAPI_ue_communication_parseFromJSON(cJSON *ue_com
         ts_variance ? true : false,
         ts_variance ? ts_variance->valuedouble : 0,
         recurring_time ? recurring_time_local_nonprim : NULL,
+        traf_char && cJSON_IsNull(traf_char) ? true : false,
         traf_char ? traf_char_local_nonprim : NULL,
         ratio ? true : false,
         ratio ? ratio->valuedouble : 0,

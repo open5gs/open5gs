@@ -8,7 +8,9 @@ OpenAPI_nsacf_capability_t *OpenAPI_nsacf_capability_create(
     bool is_support_ue_sac,
     int support_ue_sac,
     bool is_support_pdu_sac,
-    int support_pdu_sac
+    int support_pdu_sac,
+    bool is_support_ue_with_pdu_sac,
+    int support_ue_with_pdu_sac
 )
 {
     OpenAPI_nsacf_capability_t *nsacf_capability_local_var = ogs_malloc(sizeof(OpenAPI_nsacf_capability_t));
@@ -18,6 +20,8 @@ OpenAPI_nsacf_capability_t *OpenAPI_nsacf_capability_create(
     nsacf_capability_local_var->support_ue_sac = support_ue_sac;
     nsacf_capability_local_var->is_support_pdu_sac = is_support_pdu_sac;
     nsacf_capability_local_var->support_pdu_sac = support_pdu_sac;
+    nsacf_capability_local_var->is_support_ue_with_pdu_sac = is_support_ue_with_pdu_sac;
+    nsacf_capability_local_var->support_ue_with_pdu_sac = support_ue_with_pdu_sac;
 
     return nsacf_capability_local_var;
 }
@@ -57,6 +61,13 @@ cJSON *OpenAPI_nsacf_capability_convertToJSON(OpenAPI_nsacf_capability_t *nsacf_
     }
     }
 
+    if (nsacf_capability->is_support_ue_with_pdu_sac) {
+    if (cJSON_AddBoolToObject(item, "supportUeWithPduSAC", nsacf_capability->support_ue_with_pdu_sac) == NULL) {
+        ogs_error("OpenAPI_nsacf_capability_convertToJSON() failed [support_ue_with_pdu_sac]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -67,6 +78,7 @@ OpenAPI_nsacf_capability_t *OpenAPI_nsacf_capability_parseFromJSON(cJSON *nsacf_
     OpenAPI_lnode_t *node = NULL;
     cJSON *support_ue_sac = NULL;
     cJSON *support_pdu_sac = NULL;
+    cJSON *support_ue_with_pdu_sac = NULL;
     support_ue_sac = cJSON_GetObjectItemCaseSensitive(nsacf_capabilityJSON, "supportUeSAC");
     if (support_ue_sac) {
     if (!cJSON_IsBool(support_ue_sac)) {
@@ -83,11 +95,21 @@ OpenAPI_nsacf_capability_t *OpenAPI_nsacf_capability_parseFromJSON(cJSON *nsacf_
     }
     }
 
+    support_ue_with_pdu_sac = cJSON_GetObjectItemCaseSensitive(nsacf_capabilityJSON, "supportUeWithPduSAC");
+    if (support_ue_with_pdu_sac) {
+    if (!cJSON_IsBool(support_ue_with_pdu_sac)) {
+        ogs_error("OpenAPI_nsacf_capability_parseFromJSON() failed [support_ue_with_pdu_sac]");
+        goto end;
+    }
+    }
+
     nsacf_capability_local_var = OpenAPI_nsacf_capability_create (
         support_ue_sac ? true : false,
         support_ue_sac ? support_ue_sac->valueint : 0,
         support_pdu_sac ? true : false,
-        support_pdu_sac ? support_pdu_sac->valueint : 0
+        support_pdu_sac ? support_pdu_sac->valueint : 0,
+        support_ue_with_pdu_sac ? true : false,
+        support_ue_with_pdu_sac ? support_ue_with_pdu_sac->valueint : 0
     );
 
     return nsacf_capability_local_var;

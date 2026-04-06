@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_deregistration_info_s OpenAPI_deregistration_info_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_deregistration_info_s OpenAPI_deregistration_info_t;
-typedef struct OpenAPI_deregistration_info_s {
+struct OpenAPI_deregistration_info_s {
     char *supi;
     char *supported_features;
-} OpenAPI_deregistration_info_t;
+};
 
 OpenAPI_deregistration_info_t *OpenAPI_deregistration_info_create(
     char *supi,

@@ -1,0 +1,102 @@
+openapi: 3.0.0
+
+info:
+  title: SS_LocationAreaInfoRetrieval
+  description: |
+    API for SEAL Location Area Info Retrieval.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.2.0"
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-lair/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /location-retrievals:
+    get:
+      description: >
+        Retrieve the UE(s) information in an application defined proximity range of a location.
+      operationId: RetrieveUeLocInfo
+      tags:
+        - Location Information (Collection)
+      parameters:
+        - name: location-info
+          in: query
+          description: Location information around which the UE(s) information is requested.
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        - name: val-svc-area-id
+          in: query
+          description: >
+            The val service area identifier around which which the UE(s) information is requested.
+          schema:
+            $ref: 'TS29549_SS_VALServiceAreaConfiguration.yaml#/components/schemas/ValSvcAreaId'
+        - name: range
+          in: query
+          description: >
+            The range information over which the UE(s) information is required,
+            expressed in meters.
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+      responses:
+        '200':
+          description: >
+            The UE(s) information in an application defined proximity range of a location.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS29549_SS_Events.yaml#/components/schemas/LMInformation'
+                minItems: 0
+                description: >
+                  The UE(s) information in an application defined proximity range of a location.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}

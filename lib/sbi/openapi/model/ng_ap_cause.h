@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ng_ap_cause_s OpenAPI_ng_ap_cause_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ng_ap_cause_s OpenAPI_ng_ap_cause_t;
-typedef struct OpenAPI_ng_ap_cause_s {
+struct OpenAPI_ng_ap_cause_s {
     int group;
     int value;
-} OpenAPI_ng_ap_cause_t;
+};
 
 OpenAPI_ng_ap_cause_t *OpenAPI_ng_ap_cause_create(
     int group,

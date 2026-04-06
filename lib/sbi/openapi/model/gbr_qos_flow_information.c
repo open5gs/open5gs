@@ -14,7 +14,8 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_create(
     int max_packet_loss_rate_dl,
     bool is_max_packet_loss_rate_ul,
     int max_packet_loss_rate_ul,
-    OpenAPI_list_t *alternative_qos_profile_list
+    OpenAPI_list_t *alternative_qos_profile_list,
+    OpenAPI_available_bitrate_monitoring_request_t *avail_bitrate_mon_req
 )
 {
     OpenAPI_gbr_qos_flow_information_t *gbr_qos_flow_information_local_var = ogs_malloc(sizeof(OpenAPI_gbr_qos_flow_information_t));
@@ -30,6 +31,7 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_create(
     gbr_qos_flow_information_local_var->is_max_packet_loss_rate_ul = is_max_packet_loss_rate_ul;
     gbr_qos_flow_information_local_var->max_packet_loss_rate_ul = max_packet_loss_rate_ul;
     gbr_qos_flow_information_local_var->alternative_qos_profile_list = alternative_qos_profile_list;
+    gbr_qos_flow_information_local_var->avail_bitrate_mon_req = avail_bitrate_mon_req;
 
     return gbr_qos_flow_information_local_var;
 }
@@ -63,6 +65,10 @@ void OpenAPI_gbr_qos_flow_information_free(OpenAPI_gbr_qos_flow_information_t *g
         }
         OpenAPI_list_free(gbr_qos_flow_information->alternative_qos_profile_list);
         gbr_qos_flow_information->alternative_qos_profile_list = NULL;
+    }
+    if (gbr_qos_flow_information->avail_bitrate_mon_req) {
+        OpenAPI_available_bitrate_monitoring_request_free(gbr_qos_flow_information->avail_bitrate_mon_req);
+        gbr_qos_flow_information->avail_bitrate_mon_req = NULL;
     }
     ogs_free(gbr_qos_flow_information);
 }
@@ -151,6 +157,19 @@ cJSON *OpenAPI_gbr_qos_flow_information_convertToJSON(OpenAPI_gbr_qos_flow_infor
     }
     }
 
+    if (gbr_qos_flow_information->avail_bitrate_mon_req) {
+    cJSON *avail_bitrate_mon_req_local_JSON = OpenAPI_available_bitrate_monitoring_request_convertToJSON(gbr_qos_flow_information->avail_bitrate_mon_req);
+    if (avail_bitrate_mon_req_local_JSON == NULL) {
+        ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [avail_bitrate_mon_req]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "availBitrateMonReq", avail_bitrate_mon_req_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_gbr_qos_flow_information_convertToJSON() failed [avail_bitrate_mon_req]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -169,6 +188,8 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJS
     cJSON *max_packet_loss_rate_ul = NULL;
     cJSON *alternative_qos_profile_list = NULL;
     OpenAPI_list_t *alternative_qos_profile_listList = NULL;
+    cJSON *avail_bitrate_mon_req = NULL;
+    OpenAPI_available_bitrate_monitoring_request_t *avail_bitrate_mon_req_local_nonprim = NULL;
     max_fbr_dl = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "maxFbrDl");
     if (!max_fbr_dl) {
         ogs_error("OpenAPI_gbr_qos_flow_information_parseFromJSON() failed [max_fbr_dl]");
@@ -258,6 +279,15 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJS
         }
     }
 
+    avail_bitrate_mon_req = cJSON_GetObjectItemCaseSensitive(gbr_qos_flow_informationJSON, "availBitrateMonReq");
+    if (avail_bitrate_mon_req) {
+    avail_bitrate_mon_req_local_nonprim = OpenAPI_available_bitrate_monitoring_request_parseFromJSON(avail_bitrate_mon_req);
+    if (!avail_bitrate_mon_req_local_nonprim) {
+        ogs_error("OpenAPI_available_bitrate_monitoring_request_parseFromJSON failed [avail_bitrate_mon_req]");
+        goto end;
+    }
+    }
+
     gbr_qos_flow_information_local_var = OpenAPI_gbr_qos_flow_information_create (
         ogs_strdup(max_fbr_dl->valuestring),
         ogs_strdup(max_fbr_ul->valuestring),
@@ -268,7 +298,8 @@ OpenAPI_gbr_qos_flow_information_t *OpenAPI_gbr_qos_flow_information_parseFromJS
         max_packet_loss_rate_dl ? max_packet_loss_rate_dl->valuedouble : 0,
         max_packet_loss_rate_ul ? true : false,
         max_packet_loss_rate_ul ? max_packet_loss_rate_ul->valuedouble : 0,
-        alternative_qos_profile_list ? alternative_qos_profile_listList : NULL
+        alternative_qos_profile_list ? alternative_qos_profile_listList : NULL,
+        avail_bitrate_mon_req ? avail_bitrate_mon_req_local_nonprim : NULL
     );
 
     return gbr_qos_flow_information_local_var;
@@ -279,6 +310,10 @@ end:
         }
         OpenAPI_list_free(alternative_qos_profile_listList);
         alternative_qos_profile_listList = NULL;
+    }
+    if (avail_bitrate_mon_req_local_nonprim) {
+        OpenAPI_available_bitrate_monitoring_request_free(avail_bitrate_mon_req_local_nonprim);
+        avail_bitrate_mon_req_local_nonprim = NULL;
     }
     return NULL;
 }

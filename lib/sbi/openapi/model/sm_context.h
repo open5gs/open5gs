@@ -12,35 +12,44 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_context_s OpenAPI_sm_context_t;
 #include "ambr.h"
 #include "charging_information.h"
 #include "dnn_selection_mode.h"
+#include "eas_info_to_refresh.h"
 #include "eps_bearer_info.h"
 #include "eps_pdn_cnx_info.h"
 #include "ip_address.h"
+#include "local_offloading_management_info.h"
 #include "max_integrity_protected_data_rate.h"
 #include "pdu_session_type.h"
+#include "pending_update_info.h"
 #include "qos_flow_setup_item.h"
 #include "qos_flow_tunnel.h"
+#include "qos_monitoring_info.h"
 #include "redundant_pdu_session_information.h"
 #include "roaming_charging_profile.h"
 #include "satellite_backhaul_category.h"
 #include "sbi_binding_level.h"
 #include "snssai.h"
+#include "traffic_influence_info.h"
 #include "tunnel_info.h"
 #include "up_security.h"
+#include "vplmn_dl_ambr.h"
+#include "vplmn_offloading_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_context_s OpenAPI_sm_context_t;
-typedef struct OpenAPI_sm_context_s {
+struct OpenAPI_sm_context_s {
     int pdu_session_id;
     char *dnn;
     char *selected_dnn;
     struct OpenAPI_snssai_s *s_nssai;
+    struct OpenAPI_snssai_s *alt_snssai;
     struct OpenAPI_snssai_s *hplmn_snssai;
+    struct OpenAPI_snssai_s *alt_hplmn_snssai;
     OpenAPI_pdu_session_type_e pdu_session_type;
     char *gpsi;
     char *h_smf_uri;
@@ -81,6 +90,7 @@ typedef struct OpenAPI_sm_context_s {
     int forwarding_ind;
     struct OpenAPI_tunnel_info_s *psa_tunnel_info;
     char *charging_id;
+    char *smf_charging_id;
     struct OpenAPI_charging_information_s *charging_info;
     struct OpenAPI_roaming_charging_profile_s *roaming_charging_profile;
     bool is_nef_ext_buf_support_ind;
@@ -102,18 +112,39 @@ typedef struct OpenAPI_sm_context_s {
     int dlset_support_ind;
     bool is_n9fsc_support_ind;
     int n9fsc_support_ind;
-    bool is_disaster_roaming_ind;
-    int disaster_roaming_ind;
     bool is_anchor_smf_oauth2_required;
     int anchor_smf_oauth2_required;
-} OpenAPI_sm_context_t;
+    OpenAPI_list_t *full_dnai_list;
+    bool is_hrsbo_auth_req_ind;
+    int hrsbo_auth_req_ind;
+    struct OpenAPI_ip_address_s *h_dns_addr;
+    struct OpenAPI_ip_address_s *h_plmn_addr;
+    OpenAPI_list_t *vplmn_offloading_info_list;
+    bool is_vplmn_dl_ambr_null;
+    struct OpenAPI_vplmn_dl_ambr_s *vplmn_dl_ambr;
+    OpenAPI_list_t *offload_ids;
+    char *target_dnai;
+    struct OpenAPI_traffic_influence_info_s *traffic_influ_info;
+    OpenAPI_list_t *pending_update_info_list;
+    struct OpenAPI_eas_info_to_refresh_s *eas_info_to_refresh;
+    bool is_local_offloading_mgt_allowed_ind;
+    int local_offloading_mgt_allowed_ind;
+    struct OpenAPI_ip_address_s *dns_addr;
+    struct OpenAPI_ip_address_s *psa_upf_addr;
+    OpenAPI_list_t *local_offloading_info_list;
+    bool is_priority_user_ind;
+    int priority_user_ind;
+    struct OpenAPI_qos_monitoring_info_s *qos_monitoring_info;
+};
 
 OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     int pdu_session_id,
     char *dnn,
     char *selected_dnn,
     OpenAPI_snssai_t *s_nssai,
+    OpenAPI_snssai_t *alt_snssai,
     OpenAPI_snssai_t *hplmn_snssai,
+    OpenAPI_snssai_t *alt_hplmn_snssai,
     OpenAPI_pdu_session_type_e pdu_session_type,
     char *gpsi,
     char *h_smf_uri,
@@ -154,6 +185,7 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     int forwarding_ind,
     OpenAPI_tunnel_info_t *psa_tunnel_info,
     char *charging_id,
+    char *smf_charging_id,
     OpenAPI_charging_information_t *charging_info,
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile,
     bool is_nef_ext_buf_support_ind,
@@ -175,10 +207,29 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     int dlset_support_ind,
     bool is_n9fsc_support_ind,
     int n9fsc_support_ind,
-    bool is_disaster_roaming_ind,
-    int disaster_roaming_ind,
     bool is_anchor_smf_oauth2_required,
-    int anchor_smf_oauth2_required
+    int anchor_smf_oauth2_required,
+    OpenAPI_list_t *full_dnai_list,
+    bool is_hrsbo_auth_req_ind,
+    int hrsbo_auth_req_ind,
+    OpenAPI_ip_address_t *h_dns_addr,
+    OpenAPI_ip_address_t *h_plmn_addr,
+    OpenAPI_list_t *vplmn_offloading_info_list,
+    bool is_vplmn_dl_ambr_null,
+    OpenAPI_vplmn_dl_ambr_t *vplmn_dl_ambr,
+    OpenAPI_list_t *offload_ids,
+    char *target_dnai,
+    OpenAPI_traffic_influence_info_t *traffic_influ_info,
+    OpenAPI_list_t *pending_update_info_list,
+    OpenAPI_eas_info_to_refresh_t *eas_info_to_refresh,
+    bool is_local_offloading_mgt_allowed_ind,
+    int local_offloading_mgt_allowed_ind,
+    OpenAPI_ip_address_t *dns_addr,
+    OpenAPI_ip_address_t *psa_upf_addr,
+    OpenAPI_list_t *local_offloading_info_list,
+    bool is_priority_user_ind,
+    int priority_user_ind,
+    OpenAPI_qos_monitoring_info_t *qos_monitoring_info
 );
 void OpenAPI_sm_context_free(OpenAPI_sm_context_t *sm_context);
 OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON);

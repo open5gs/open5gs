@@ -6,7 +6,7 @@
 
 char* OpenAPI_notification_cause_ToString(OpenAPI_notification_cause_e notification_cause)
 {
-    const char *notification_causeArray[] =  { "NULL", "QOS_FULFILLED", "QOS_NOT_FULFILLED", "UP_SEC_FULFILLED", "UP_SEC_NOT_FULFILLED" };
+    const char *notification_causeArray[] =  { "NULL", "QOS_FULFILLED", "QOS_NOT_FULFILLED", "QOS_NOT_FULFILLED_DL", "QOS_NOT_FULFILLED_UL", "UP_SEC_FULFILLED", "UP_SEC_NOT_FULFILLED" };
     size_t sizeofArray = sizeof(notification_causeArray) / sizeof(notification_causeArray[0]);
     if (notification_cause < sizeofArray)
         return (char *)notification_causeArray[notification_cause];
@@ -17,7 +17,7 @@ char* OpenAPI_notification_cause_ToString(OpenAPI_notification_cause_e notificat
 OpenAPI_notification_cause_e OpenAPI_notification_cause_FromString(char* notification_cause)
 {
     int stringToReturn = 0;
-    const char *notification_causeArray[] =  { "NULL", "QOS_FULFILLED", "QOS_NOT_FULFILLED", "UP_SEC_FULFILLED", "UP_SEC_NOT_FULFILLED" };
+    const char *notification_causeArray[] =  { "NULL", "QOS_FULFILLED", "QOS_NOT_FULFILLED", "QOS_NOT_FULFILLED_DL", "QOS_NOT_FULFILLED_UL", "UP_SEC_FULFILLED", "UP_SEC_NOT_FULFILLED" };
     size_t sizeofArray = sizeof(notification_causeArray) / sizeof(notification_causeArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(notification_cause, notification_causeArray[stringToReturn]) == 0) {

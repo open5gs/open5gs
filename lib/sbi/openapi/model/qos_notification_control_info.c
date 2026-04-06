@@ -7,7 +7,9 @@
 OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_create(
     OpenAPI_qos_notif_type_e notif_type,
     OpenAPI_list_t *flows,
-    char *alt_ser_req
+    char *alt_ser_req,
+    bool is_alt_ser_req_not_supp_ind,
+    int alt_ser_req_not_supp_ind
 )
 {
     OpenAPI_qos_notification_control_info_t *qos_notification_control_info_local_var = ogs_malloc(sizeof(OpenAPI_qos_notification_control_info_t));
@@ -16,6 +18,8 @@ OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_c
     qos_notification_control_info_local_var->notif_type = notif_type;
     qos_notification_control_info_local_var->flows = flows;
     qos_notification_control_info_local_var->alt_ser_req = alt_ser_req;
+    qos_notification_control_info_local_var->is_alt_ser_req_not_supp_ind = is_alt_ser_req_not_supp_ind;
+    qos_notification_control_info_local_var->alt_ser_req_not_supp_ind = alt_ser_req_not_supp_ind;
 
     return qos_notification_control_info_local_var;
 }
@@ -84,6 +88,13 @@ cJSON *OpenAPI_qos_notification_control_info_convertToJSON(OpenAPI_qos_notificat
     }
     }
 
+    if (qos_notification_control_info->is_alt_ser_req_not_supp_ind) {
+    if (cJSON_AddBoolToObject(item, "altSerReqNotSuppInd", qos_notification_control_info->alt_ser_req_not_supp_ind) == NULL) {
+        ogs_error("OpenAPI_qos_notification_control_info_convertToJSON() failed [alt_ser_req_not_supp_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -97,6 +108,7 @@ OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_p
     cJSON *flows = NULL;
     OpenAPI_list_t *flowsList = NULL;
     cJSON *alt_ser_req = NULL;
+    cJSON *alt_ser_req_not_supp_ind = NULL;
     notif_type = cJSON_GetObjectItemCaseSensitive(qos_notification_control_infoJSON, "notifType");
     if (!notif_type) {
         ogs_error("OpenAPI_qos_notification_control_info_parseFromJSON() failed [notif_type]");
@@ -140,10 +152,20 @@ OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_p
     }
     }
 
+    alt_ser_req_not_supp_ind = cJSON_GetObjectItemCaseSensitive(qos_notification_control_infoJSON, "altSerReqNotSuppInd");
+    if (alt_ser_req_not_supp_ind) {
+    if (!cJSON_IsBool(alt_ser_req_not_supp_ind)) {
+        ogs_error("OpenAPI_qos_notification_control_info_parseFromJSON() failed [alt_ser_req_not_supp_ind]");
+        goto end;
+    }
+    }
+
     qos_notification_control_info_local_var = OpenAPI_qos_notification_control_info_create (
         notif_typeVariable,
         flows ? flowsList : NULL,
-        alt_ser_req && !cJSON_IsNull(alt_ser_req) ? ogs_strdup(alt_ser_req->valuestring) : NULL
+        alt_ser_req && !cJSON_IsNull(alt_ser_req) ? ogs_strdup(alt_ser_req->valuestring) : NULL,
+        alt_ser_req_not_supp_ind ? true : false,
+        alt_ser_req_not_supp_ind ? alt_ser_req_not_supp_ind->valueint : 0
     );
 
     return qos_notification_control_info_local_var;

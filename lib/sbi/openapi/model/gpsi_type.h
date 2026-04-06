@@ -1,7 +1,7 @@
 /*
  * gpsi_type.h
  *
- * 
+ * Type of GPSI (MSISDN or External-ID)
  */
 
 #ifndef _OpenAPI_gpsi_type_H_

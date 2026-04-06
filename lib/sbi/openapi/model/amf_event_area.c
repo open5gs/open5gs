@@ -7,6 +7,7 @@
 OpenAPI_amf_event_area_t *OpenAPI_amf_event_area_create(
     OpenAPI_presence_info_t *presence_info,
     OpenAPI_ladn_info_t *ladn_info,
+    OpenAPI_slice_area_restriction_info_t *slice_area_restriction_info,
     OpenAPI_snssai_t *s_nssai,
     char *nsi_id
 )
@@ -16,6 +17,7 @@ OpenAPI_amf_event_area_t *OpenAPI_amf_event_area_create(
 
     amf_event_area_local_var->presence_info = presence_info;
     amf_event_area_local_var->ladn_info = ladn_info;
+    amf_event_area_local_var->slice_area_restriction_info = slice_area_restriction_info;
     amf_event_area_local_var->s_nssai = s_nssai;
     amf_event_area_local_var->nsi_id = nsi_id;
 
@@ -36,6 +38,10 @@ void OpenAPI_amf_event_area_free(OpenAPI_amf_event_area_t *amf_event_area)
     if (amf_event_area->ladn_info) {
         OpenAPI_ladn_info_free(amf_event_area->ladn_info);
         amf_event_area->ladn_info = NULL;
+    }
+    if (amf_event_area->slice_area_restriction_info) {
+        OpenAPI_slice_area_restriction_info_free(amf_event_area->slice_area_restriction_info);
+        amf_event_area->slice_area_restriction_info = NULL;
     }
     if (amf_event_area->s_nssai) {
         OpenAPI_snssai_free(amf_event_area->s_nssai);
@@ -85,6 +91,19 @@ cJSON *OpenAPI_amf_event_area_convertToJSON(OpenAPI_amf_event_area_t *amf_event_
     }
     }
 
+    if (amf_event_area->slice_area_restriction_info) {
+    cJSON *slice_area_restriction_info_local_JSON = OpenAPI_slice_area_restriction_info_convertToJSON(amf_event_area->slice_area_restriction_info);
+    if (slice_area_restriction_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_amf_event_area_convertToJSON() failed [slice_area_restriction_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "sliceAreaRestrictionInfo", slice_area_restriction_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_amf_event_area_convertToJSON() failed [slice_area_restriction_info]");
+        goto end;
+    }
+    }
+
     if (amf_event_area->s_nssai) {
     cJSON *s_nssai_local_JSON = OpenAPI_snssai_convertToJSON(amf_event_area->s_nssai);
     if (s_nssai_local_JSON == NULL) {
@@ -117,6 +136,8 @@ OpenAPI_amf_event_area_t *OpenAPI_amf_event_area_parseFromJSON(cJSON *amf_event_
     OpenAPI_presence_info_t *presence_info_local_nonprim = NULL;
     cJSON *ladn_info = NULL;
     OpenAPI_ladn_info_t *ladn_info_local_nonprim = NULL;
+    cJSON *slice_area_restriction_info = NULL;
+    OpenAPI_slice_area_restriction_info_t *slice_area_restriction_info_local_nonprim = NULL;
     cJSON *s_nssai = NULL;
     OpenAPI_snssai_t *s_nssai_local_nonprim = NULL;
     cJSON *nsi_id = NULL;
@@ -134,6 +155,15 @@ OpenAPI_amf_event_area_t *OpenAPI_amf_event_area_parseFromJSON(cJSON *amf_event_
     ladn_info_local_nonprim = OpenAPI_ladn_info_parseFromJSON(ladn_info);
     if (!ladn_info_local_nonprim) {
         ogs_error("OpenAPI_ladn_info_parseFromJSON failed [ladn_info]");
+        goto end;
+    }
+    }
+
+    slice_area_restriction_info = cJSON_GetObjectItemCaseSensitive(amf_event_areaJSON, "sliceAreaRestrictionInfo");
+    if (slice_area_restriction_info) {
+    slice_area_restriction_info_local_nonprim = OpenAPI_slice_area_restriction_info_parseFromJSON(slice_area_restriction_info);
+    if (!slice_area_restriction_info_local_nonprim) {
+        ogs_error("OpenAPI_slice_area_restriction_info_parseFromJSON failed [slice_area_restriction_info]");
         goto end;
     }
     }
@@ -158,6 +188,7 @@ OpenAPI_amf_event_area_t *OpenAPI_amf_event_area_parseFromJSON(cJSON *amf_event_
     amf_event_area_local_var = OpenAPI_amf_event_area_create (
         presence_info ? presence_info_local_nonprim : NULL,
         ladn_info ? ladn_info_local_nonprim : NULL,
+        slice_area_restriction_info ? slice_area_restriction_info_local_nonprim : NULL,
         s_nssai ? s_nssai_local_nonprim : NULL,
         nsi_id && !cJSON_IsNull(nsi_id) ? ogs_strdup(nsi_id->valuestring) : NULL
     );
@@ -171,6 +202,10 @@ end:
     if (ladn_info_local_nonprim) {
         OpenAPI_ladn_info_free(ladn_info_local_nonprim);
         ladn_info_local_nonprim = NULL;
+    }
+    if (slice_area_restriction_info_local_nonprim) {
+        OpenAPI_slice_area_restriction_info_free(slice_area_restriction_info_local_nonprim);
+        slice_area_restriction_info_local_nonprim = NULL;
     }
     if (s_nssai_local_nonprim) {
         OpenAPI_snssai_free(s_nssai_local_nonprim);

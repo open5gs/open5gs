@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nrf_info_served_chf_info_value_s OpenAPI_nrf_info_served_chf_info_value_t;
 #include "chf_info.h"
 #include "identity_range.h"
 #include "plmn_range.h"
@@ -21,15 +22,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nrf_info_served_chf_info_value_s OpenAPI_nrf_info_served_chf_info_value_t;
-typedef struct OpenAPI_nrf_info_served_chf_info_value_s {
+struct OpenAPI_nrf_info_served_chf_info_value_s {
     OpenAPI_list_t *supi_range_list;
     OpenAPI_list_t *gpsi_range_list;
     OpenAPI_list_t *plmn_range_list;
     char *group_id;
     char *primary_chf_instance;
     char *secondary_chf_instance;
-} OpenAPI_nrf_info_served_chf_info_value_t;
+};
 
 OpenAPI_nrf_info_served_chf_info_value_t *OpenAPI_nrf_info_served_chf_info_value_create(
     OpenAPI_list_t *supi_range_list,

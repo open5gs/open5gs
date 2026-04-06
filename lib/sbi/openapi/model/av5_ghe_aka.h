@@ -12,20 +12,20 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_av5_ghe_aka_s OpenAPI_av5_ghe_aka_t;
 #include "av_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_av5_ghe_aka_s OpenAPI_av5_ghe_aka_t;
-typedef struct OpenAPI_av5_ghe_aka_s {
+struct OpenAPI_av5_ghe_aka_s {
     OpenAPI_av_type_e av_type;
     char *rand;
     char *xres_star;
     char *autn;
     char *kausf;
-} OpenAPI_av5_ghe_aka_t;
+};
 
 OpenAPI_av5_ghe_aka_t *OpenAPI_av5_ghe_aka_create(
     OpenAPI_av_type_e av_type,

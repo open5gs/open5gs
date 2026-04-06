@@ -12,30 +12,27 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ext_snssai_s OpenAPI_ext_snssai_t;
 #include "sd_range.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ext_snssai_s OpenAPI_ext_snssai_t;
-typedef enum { OpenAPI_ext_snssai_WILDCARDSD_NULL = 0, OpenAPI_ext_snssai_WILDCARDSD__true } OpenAPI_ext_snssai_wildcard_sd_e;
-
-char* OpenAPI_ext_snssai_wildcard_sd_ToString(OpenAPI_ext_snssai_wildcard_sd_e wildcard_sd);
-
-OpenAPI_ext_snssai_wildcard_sd_e OpenAPI_ext_snssai_wildcard_sd_FromString(char* wildcard_sd);
-typedef struct OpenAPI_ext_snssai_s {
+struct OpenAPI_ext_snssai_s {
     int sst;
     char *sd;
     OpenAPI_list_t *sd_ranges;
-    OpenAPI_ext_snssai_wildcard_sd_e wildcard_sd;
-} OpenAPI_ext_snssai_t;
+    bool is_wildcard_sd;
+    int wildcard_sd;
+};
 
 OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_create(
     int sst,
     char *sd,
     OpenAPI_list_t *sd_ranges,
-    OpenAPI_ext_snssai_wildcard_sd_e wildcard_sd
+    bool is_wildcard_sd,
+    int wildcard_sd
 );
 void OpenAPI_ext_snssai_free(OpenAPI_ext_snssai_t *ext_snssai);
 OpenAPI_ext_snssai_t *OpenAPI_ext_snssai_parseFromJSON(cJSON *ext_snssaiJSON);

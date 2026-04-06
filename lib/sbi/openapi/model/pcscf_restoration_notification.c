@@ -6,14 +6,18 @@
 
 OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification_create(
     char *supi,
-    OpenAPI_pcscf_address_t *failed_pcscf
+    bool is_failed_pcscf_null,
+    OpenAPI_pcscf_address_t *failed_pcscf,
+    OpenAPI_guami_t *old_guami
 )
 {
     OpenAPI_pcscf_restoration_notification_t *pcscf_restoration_notification_local_var = ogs_malloc(sizeof(OpenAPI_pcscf_restoration_notification_t));
     ogs_assert(pcscf_restoration_notification_local_var);
 
     pcscf_restoration_notification_local_var->supi = supi;
+    pcscf_restoration_notification_local_var->is_failed_pcscf_null = is_failed_pcscf_null;
     pcscf_restoration_notification_local_var->failed_pcscf = failed_pcscf;
+    pcscf_restoration_notification_local_var->old_guami = old_guami;
 
     return pcscf_restoration_notification_local_var;
 }
@@ -32,6 +36,10 @@ void OpenAPI_pcscf_restoration_notification_free(OpenAPI_pcscf_restoration_notif
     if (pcscf_restoration_notification->failed_pcscf) {
         OpenAPI_pcscf_address_free(pcscf_restoration_notification->failed_pcscf);
         pcscf_restoration_notification->failed_pcscf = NULL;
+    }
+    if (pcscf_restoration_notification->old_guami) {
+        OpenAPI_guami_free(pcscf_restoration_notification->old_guami);
+        pcscf_restoration_notification->old_guami = NULL;
     }
     ogs_free(pcscf_restoration_notification);
 }
@@ -67,6 +75,24 @@ cJSON *OpenAPI_pcscf_restoration_notification_convertToJSON(OpenAPI_pcscf_restor
         ogs_error("OpenAPI_pcscf_restoration_notification_convertToJSON() failed [failed_pcscf]");
         goto end;
     }
+    } else if (pcscf_restoration_notification->is_failed_pcscf_null) {
+        if (cJSON_AddNullToObject(item, "failedPcscf") == NULL) {
+            ogs_error("OpenAPI_pcscf_restoration_notification_convertToJSON() failed [failed_pcscf]");
+            goto end;
+        }
+    }
+
+    if (pcscf_restoration_notification->old_guami) {
+    cJSON *old_guami_local_JSON = OpenAPI_guami_convertToJSON(pcscf_restoration_notification->old_guami);
+    if (old_guami_local_JSON == NULL) {
+        ogs_error("OpenAPI_pcscf_restoration_notification_convertToJSON() failed [old_guami]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "oldGuami", old_guami_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_pcscf_restoration_notification_convertToJSON() failed [old_guami]");
+        goto end;
+    }
     }
 
 end:
@@ -80,6 +106,8 @@ OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification
     cJSON *supi = NULL;
     cJSON *failed_pcscf = NULL;
     OpenAPI_pcscf_address_t *failed_pcscf_local_nonprim = NULL;
+    cJSON *old_guami = NULL;
+    OpenAPI_guami_t *old_guami_local_nonprim = NULL;
     supi = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_notificationJSON, "supi");
     if (!supi) {
         ogs_error("OpenAPI_pcscf_restoration_notification_parseFromJSON() failed [supi]");
@@ -92,16 +120,29 @@ OpenAPI_pcscf_restoration_notification_t *OpenAPI_pcscf_restoration_notification
 
     failed_pcscf = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_notificationJSON, "failedPcscf");
     if (failed_pcscf) {
+    if (!cJSON_IsNull(failed_pcscf)) {
     failed_pcscf_local_nonprim = OpenAPI_pcscf_address_parseFromJSON(failed_pcscf);
     if (!failed_pcscf_local_nonprim) {
         ogs_error("OpenAPI_pcscf_address_parseFromJSON failed [failed_pcscf]");
         goto end;
     }
     }
+    }
+
+    old_guami = cJSON_GetObjectItemCaseSensitive(pcscf_restoration_notificationJSON, "oldGuami");
+    if (old_guami) {
+    old_guami_local_nonprim = OpenAPI_guami_parseFromJSON(old_guami);
+    if (!old_guami_local_nonprim) {
+        ogs_error("OpenAPI_guami_parseFromJSON failed [old_guami]");
+        goto end;
+    }
+    }
 
     pcscf_restoration_notification_local_var = OpenAPI_pcscf_restoration_notification_create (
         ogs_strdup(supi->valuestring),
-        failed_pcscf ? failed_pcscf_local_nonprim : NULL
+        failed_pcscf && cJSON_IsNull(failed_pcscf) ? true : false,
+        failed_pcscf ? failed_pcscf_local_nonprim : NULL,
+        old_guami ? old_guami_local_nonprim : NULL
     );
 
     return pcscf_restoration_notification_local_var;
@@ -109,6 +150,10 @@ end:
     if (failed_pcscf_local_nonprim) {
         OpenAPI_pcscf_address_free(failed_pcscf_local_nonprim);
         failed_pcscf_local_nonprim = NULL;
+    }
+    if (old_guami_local_nonprim) {
+        OpenAPI_guami_free(old_guami_local_nonprim);
+        old_guami_local_nonprim = NULL;
     }
     return NULL;
 }

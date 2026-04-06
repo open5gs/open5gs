@@ -1,0 +1,313 @@
+openapi: 3.0.0
+
+info:
+  title: PIN Server PAS Registration Service
+  version: 1.0.0
+  description: |
+    PIN Server PAS Registration Service.  
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.583 V18.1.0; Application layer support for Personal IoT Network (PINAPP);
+    Personal IoT Network (PIN) Server Services; Stage 3.
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.583/
+
+servers:
+  - url: '{apiRoot}/pin-as-registration/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.1 of 3GPP TS 29.583.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /registrations:
+    post:
+      summary: Create a new PAS Registration
+      operationId: CreatePASRegistration
+      tags:
+        - PAS Registrations (Collection)
+      description: Register a new PAS at the PIN Server.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PASRegistration'
+      responses:
+        '201':
+          description: PAS information is registered successfully at PIN server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PASRegistration'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /registrations/{registrationId}:
+    parameters:
+        - name: registrationId
+          in: path
+          description: Registration Id.
+          required: true
+          schema:
+            type: string
+
+    get:
+      summary: Get an Individual PAS Registration
+      operationId: GetIndPASReg
+      tags:
+        - Individual PAS Registration (Document)
+      description: Retrieve an Individual PAS registration resource.
+      responses:
+        '200':
+          description: OK (The PAS registration information at the PIN Server).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PASRegistration'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Fully update an Individual PAS Registration
+      operationId: UpdateIndPASReg
+      tags:
+        - Individual PAS Registration (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PASRegistration'
+      responses:
+        '200':
+          description: OK (The PAS registration information is updated successfully).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PASRegistration'
+        '204':
+          description: No Content. The PAS registration information is updated successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify an Individual PAS Registration
+      operationId: ModifyIndPASReg
+      tags:
+        - Individual PAS Registration (Document)
+      requestBody:
+        description: Partial update an existing PAS registration resource.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/PASRegistrationPatch'
+      responses:
+        '200':
+          description: >
+            The Individual PAS registration is successfully modified and
+            the updated registration information is returned in the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PASRegistration'
+        '204':
+          description: No Content. The Individual PAS registration is successfully modified.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an Individual PAS Registration
+      operationId: DeleteIndPASReg
+      tags:
+        - Individual PAS Registration (Document)
+      responses:
+        '204':
+          description: The individual PAS registration is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    PASRegistration:
+      type: object
+      description: Represents an PAS registration information.
+      properties:
+        conInfo:
+          $ref: '#/components/schemas/ConnectivityInfo'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        passId:
+          type: string
+          description: Indentifies a PIN service
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - conInfo
+        - passId
+
+    ConnectivityInfo:
+      type: object
+      description: Represents a connection information of PAS.
+      properties:
+        fqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        ipv4Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv6Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv6Addr'
+        uri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+      anyOf:
+        - required: [uri]
+        - required: [fqdn]
+        - required: [ipv4Addr]
+        - required: [ipv6Addr]
+
+    PASRegistrationPatch:
+      type: object
+      description: Represents partial update request of individual PAS registration information.
+      properties:
+        conInfo:
+          $ref: '#/components/schemas/ConnectivityInfo'
+        expTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTimeRm'
+        passId:
+          type: string
+          description: Identifies a PIN service provided by PAS.
+      anyOf:
+        - required: [conInfo]
+        - required: [expTime]
+        - required: [passId]

@@ -12,10 +12,8 @@ OpenAPI_bsf_subscription_resp_t *OpenAPI_bsf_subscription_resp_create(
     char *gpsi,
     OpenAPI_snssai_dnn_pair_t *snssai_dnn_pairs,
     OpenAPI_list_t *add_snssai_dnn_pairs,
+    char *expiry,
     char *supp_feat,
-    char *pcf_id,
-    char *pcf_set_id,
-    OpenAPI_binding_level_e bind_level,
     OpenAPI_list_t *event_notifs
 )
 {
@@ -29,10 +27,8 @@ OpenAPI_bsf_subscription_resp_t *OpenAPI_bsf_subscription_resp_create(
     bsf_subscription_resp_local_var->gpsi = gpsi;
     bsf_subscription_resp_local_var->snssai_dnn_pairs = snssai_dnn_pairs;
     bsf_subscription_resp_local_var->add_snssai_dnn_pairs = add_snssai_dnn_pairs;
+    bsf_subscription_resp_local_var->expiry = expiry;
     bsf_subscription_resp_local_var->supp_feat = supp_feat;
-    bsf_subscription_resp_local_var->pcf_id = pcf_id;
-    bsf_subscription_resp_local_var->pcf_set_id = pcf_set_id;
-    bsf_subscription_resp_local_var->bind_level = bind_level;
     bsf_subscription_resp_local_var->event_notifs = event_notifs;
 
     return bsf_subscription_resp_local_var;
@@ -76,17 +72,13 @@ void OpenAPI_bsf_subscription_resp_free(OpenAPI_bsf_subscription_resp_t *bsf_sub
         OpenAPI_list_free(bsf_subscription_resp->add_snssai_dnn_pairs);
         bsf_subscription_resp->add_snssai_dnn_pairs = NULL;
     }
+    if (bsf_subscription_resp->expiry) {
+        ogs_free(bsf_subscription_resp->expiry);
+        bsf_subscription_resp->expiry = NULL;
+    }
     if (bsf_subscription_resp->supp_feat) {
         ogs_free(bsf_subscription_resp->supp_feat);
         bsf_subscription_resp->supp_feat = NULL;
-    }
-    if (bsf_subscription_resp->pcf_id) {
-        ogs_free(bsf_subscription_resp->pcf_id);
-        bsf_subscription_resp->pcf_id = NULL;
-    }
-    if (bsf_subscription_resp->pcf_set_id) {
-        ogs_free(bsf_subscription_resp->pcf_set_id);
-        bsf_subscription_resp->pcf_set_id = NULL;
     }
     if (bsf_subscription_resp->event_notifs) {
         OpenAPI_list_for_each(bsf_subscription_resp->event_notifs, node) {
@@ -188,30 +180,16 @@ cJSON *OpenAPI_bsf_subscription_resp_convertToJSON(OpenAPI_bsf_subscription_resp
     }
     }
 
+    if (bsf_subscription_resp->expiry) {
+    if (cJSON_AddStringToObject(item, "expiry", bsf_subscription_resp->expiry) == NULL) {
+        ogs_error("OpenAPI_bsf_subscription_resp_convertToJSON() failed [expiry]");
+        goto end;
+    }
+    }
+
     if (bsf_subscription_resp->supp_feat) {
     if (cJSON_AddStringToObject(item, "suppFeat", bsf_subscription_resp->supp_feat) == NULL) {
         ogs_error("OpenAPI_bsf_subscription_resp_convertToJSON() failed [supp_feat]");
-        goto end;
-    }
-    }
-
-    if (bsf_subscription_resp->pcf_id) {
-    if (cJSON_AddStringToObject(item, "pcfId", bsf_subscription_resp->pcf_id) == NULL) {
-        ogs_error("OpenAPI_bsf_subscription_resp_convertToJSON() failed [pcf_id]");
-        goto end;
-    }
-    }
-
-    if (bsf_subscription_resp->pcf_set_id) {
-    if (cJSON_AddStringToObject(item, "pcfSetId", bsf_subscription_resp->pcf_set_id) == NULL) {
-        ogs_error("OpenAPI_bsf_subscription_resp_convertToJSON() failed [pcf_set_id]");
-        goto end;
-    }
-    }
-
-    if (bsf_subscription_resp->bind_level != OpenAPI_binding_level_NULL) {
-    if (cJSON_AddStringToObject(item, "bindLevel", OpenAPI_binding_level_ToString(bsf_subscription_resp->bind_level)) == NULL) {
-        ogs_error("OpenAPI_bsf_subscription_resp_convertToJSON() failed [bind_level]");
         goto end;
     }
     }
@@ -252,11 +230,8 @@ OpenAPI_bsf_subscription_resp_t *OpenAPI_bsf_subscription_resp_parseFromJSON(cJS
     OpenAPI_snssai_dnn_pair_t *snssai_dnn_pairs_local_nonprim = NULL;
     cJSON *add_snssai_dnn_pairs = NULL;
     OpenAPI_list_t *add_snssai_dnn_pairsList = NULL;
+    cJSON *expiry = NULL;
     cJSON *supp_feat = NULL;
-    cJSON *pcf_id = NULL;
-    cJSON *pcf_set_id = NULL;
-    cJSON *bind_level = NULL;
-    OpenAPI_binding_level_e bind_levelVariable = 0;
     cJSON *event_notifs = NULL;
     OpenAPI_list_t *event_notifsList = NULL;
     events = cJSON_GetObjectItemCaseSensitive(bsf_subscription_respJSON, "events");
@@ -362,37 +337,20 @@ OpenAPI_bsf_subscription_resp_t *OpenAPI_bsf_subscription_resp_parseFromJSON(cJS
         }
     }
 
+    expiry = cJSON_GetObjectItemCaseSensitive(bsf_subscription_respJSON, "expiry");
+    if (expiry) {
+    if (!cJSON_IsString(expiry) && !cJSON_IsNull(expiry)) {
+        ogs_error("OpenAPI_bsf_subscription_resp_parseFromJSON() failed [expiry]");
+        goto end;
+    }
+    }
+
     supp_feat = cJSON_GetObjectItemCaseSensitive(bsf_subscription_respJSON, "suppFeat");
     if (supp_feat) {
     if (!cJSON_IsString(supp_feat) && !cJSON_IsNull(supp_feat)) {
         ogs_error("OpenAPI_bsf_subscription_resp_parseFromJSON() failed [supp_feat]");
         goto end;
     }
-    }
-
-    pcf_id = cJSON_GetObjectItemCaseSensitive(bsf_subscription_respJSON, "pcfId");
-    if (pcf_id) {
-    if (!cJSON_IsString(pcf_id) && !cJSON_IsNull(pcf_id)) {
-        ogs_error("OpenAPI_bsf_subscription_resp_parseFromJSON() failed [pcf_id]");
-        goto end;
-    }
-    }
-
-    pcf_set_id = cJSON_GetObjectItemCaseSensitive(bsf_subscription_respJSON, "pcfSetId");
-    if (pcf_set_id) {
-    if (!cJSON_IsString(pcf_set_id) && !cJSON_IsNull(pcf_set_id)) {
-        ogs_error("OpenAPI_bsf_subscription_resp_parseFromJSON() failed [pcf_set_id]");
-        goto end;
-    }
-    }
-
-    bind_level = cJSON_GetObjectItemCaseSensitive(bsf_subscription_respJSON, "bindLevel");
-    if (bind_level) {
-    if (!cJSON_IsString(bind_level)) {
-        ogs_error("OpenAPI_bsf_subscription_resp_parseFromJSON() failed [bind_level]");
-        goto end;
-    }
-    bind_levelVariable = OpenAPI_binding_level_FromString(bind_level->valuestring);
     }
 
     event_notifs = cJSON_GetObjectItemCaseSensitive(bsf_subscription_respJSON, "eventNotifs");
@@ -429,10 +387,8 @@ OpenAPI_bsf_subscription_resp_t *OpenAPI_bsf_subscription_resp_parseFromJSON(cJS
         gpsi && !cJSON_IsNull(gpsi) ? ogs_strdup(gpsi->valuestring) : NULL,
         snssai_dnn_pairs ? snssai_dnn_pairs_local_nonprim : NULL,
         add_snssai_dnn_pairs ? add_snssai_dnn_pairsList : NULL,
+        expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
         supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL,
-        pcf_id && !cJSON_IsNull(pcf_id) ? ogs_strdup(pcf_id->valuestring) : NULL,
-        pcf_set_id && !cJSON_IsNull(pcf_set_id) ? ogs_strdup(pcf_set_id->valuestring) : NULL,
-        bind_level ? bind_levelVariable : 0,
         event_notifsList
     );
 

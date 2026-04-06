@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_steering_info_s OpenAPI_steering_info_t;
 #include "access_tech.h"
 #include "plmn_id.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_steering_info_s OpenAPI_steering_info_t;
-typedef struct OpenAPI_steering_info_s {
+struct OpenAPI_steering_info_s {
     struct OpenAPI_plmn_id_s *plmn_id;
     OpenAPI_list_t *access_tech_list;
-} OpenAPI_steering_info_t;
+};
 
 OpenAPI_steering_info_t *OpenAPI_steering_info_create(
     OpenAPI_plmn_id_t *plmn_id,

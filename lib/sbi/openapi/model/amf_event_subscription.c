@@ -22,7 +22,9 @@ OpenAPI_amf_event_subscription_t *OpenAPI_amf_event_subscription_create(
     bool is_any_ue,
     int any_ue,
     OpenAPI_amf_event_mode_t *options,
-    OpenAPI_nf_type_e source_nf_type
+    OpenAPI_nf_type_e source_nf_type,
+    bool is_term_notify_ind,
+    int term_notify_ind
 )
 {
     OpenAPI_amf_event_subscription_t *amf_event_subscription_local_var = ogs_malloc(sizeof(OpenAPI_amf_event_subscription_t));
@@ -46,6 +48,8 @@ OpenAPI_amf_event_subscription_t *OpenAPI_amf_event_subscription_create(
     amf_event_subscription_local_var->any_ue = any_ue;
     amf_event_subscription_local_var->options = options;
     amf_event_subscription_local_var->source_nf_type = source_nf_type;
+    amf_event_subscription_local_var->is_term_notify_ind = is_term_notify_ind;
+    amf_event_subscription_local_var->term_notify_ind = term_notify_ind;
 
     return amf_event_subscription_local_var;
 }
@@ -316,6 +320,13 @@ cJSON *OpenAPI_amf_event_subscription_convertToJSON(OpenAPI_amf_event_subscripti
     }
     }
 
+    if (amf_event_subscription->is_term_notify_ind) {
+    if (cJSON_AddBoolToObject(item, "termNotifyInd", amf_event_subscription->term_notify_ind) == NULL) {
+        ogs_error("OpenAPI_amf_event_subscription_convertToJSON() failed [term_notify_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -348,6 +359,7 @@ OpenAPI_amf_event_subscription_t *OpenAPI_amf_event_subscription_parseFromJSON(c
     OpenAPI_amf_event_mode_t *options_local_nonprim = NULL;
     cJSON *source_nf_type = NULL;
     OpenAPI_nf_type_e source_nf_typeVariable = 0;
+    cJSON *term_notify_ind = NULL;
     event_list = cJSON_GetObjectItemCaseSensitive(amf_event_subscriptionJSON, "eventList");
     if (!event_list) {
         ogs_error("OpenAPI_amf_event_subscription_parseFromJSON() failed [event_list]");
@@ -562,6 +574,14 @@ OpenAPI_amf_event_subscription_t *OpenAPI_amf_event_subscription_parseFromJSON(c
     source_nf_typeVariable = OpenAPI_nf_type_FromString(source_nf_type->valuestring);
     }
 
+    term_notify_ind = cJSON_GetObjectItemCaseSensitive(amf_event_subscriptionJSON, "termNotifyInd");
+    if (term_notify_ind) {
+    if (!cJSON_IsBool(term_notify_ind)) {
+        ogs_error("OpenAPI_amf_event_subscription_parseFromJSON() failed [term_notify_ind]");
+        goto end;
+    }
+    }
+
     amf_event_subscription_local_var = OpenAPI_amf_event_subscription_create (
         event_listList,
         ogs_strdup(event_notify_uri->valuestring),
@@ -580,7 +600,9 @@ OpenAPI_amf_event_subscription_t *OpenAPI_amf_event_subscription_parseFromJSON(c
         any_ue ? true : false,
         any_ue ? any_ue->valueint : 0,
         options ? options_local_nonprim : NULL,
-        source_nf_type ? source_nf_typeVariable : 0
+        source_nf_type ? source_nf_typeVariable : 0,
+        term_notify_ind ? true : false,
+        term_notify_ind ? term_notify_ind->valueint : 0
     );
 
     return amf_event_subscription_local_var;

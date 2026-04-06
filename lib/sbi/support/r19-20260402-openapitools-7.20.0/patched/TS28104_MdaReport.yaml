@@ -1,0 +1,426 @@
+openapi: 3.0.1
+info:
+  title: MDA Report
+  version: 19.3.0
+  description: >-
+    OAS 3.0.1 specification of the MDA Report
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.104; MDA Report
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.104/
+paths: {}
+components:
+  schemas:
+
+#-------- Definition of types-----------------------------------------------------
+    ProjectionDuration:
+      type: object
+      properties:
+        fromTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+        toTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+    PagingOptimizationAnalysisOutput:
+      type: object
+      properties:
+        oOCDuration:
+          $ref: '#/components/schemas/ProjectionDuration'
+        oOCLocation:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoCoordinate'
+          minItems: 1
+        oOCMap:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+          minItems: 1
+
+    MDAOutputs:
+      type: object
+      properties:
+        mDAType:
+          $ref: 'TS28104_MdaNrm.yaml#/components/schemas/MDAType'
+        mDAOutputList:
+          oneOf:            
+            - $ref: '#/components/schemas/CoverageProblemAnalysisOutput'
+            - $ref: '#/components/schemas/MobilityPerformanceAnalysisOutput'
+            - $ref: '#/components/schemas/TrainingDataAnalysisOutput'
+            - $ref: '#/components/schemas/NFScalingDimensioningDataAnalysisOutput'
+            - $ref: '#/components/schemas/PMDataOutput'
+            - $ref: '#/components/schemas/FailurePredictionOutput'
+            - $ref: '#/components/schemas/PagingOptimizationAnalysisOutput'
+            - $ref: '#/components/schemas/TrafficCongestionProblemAnalysisOutput'                      
+            - type: array
+              uniqueItems: true
+              items:
+                $ref: '#/components/schemas/MDAOutputEntry'
+        analyticsWindow:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindowRo'
+        confidenceDegree:
+          type: number
+          format: float
+
+    MDAOutputEntry:
+      type: object
+      properties:
+        mDAOutputIEName:
+          type: string
+          readOnly: true
+        mDAOutputIEValue: {}
+
+
+#-------- Definition of MDA Report --------------------------------------------
+
+    MDAReport:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - type: object
+                  properties:
+                    mDAReportID:
+                      type: string
+                    mDAOutputs:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        $ref: '#/components/schemas/MDAOutputs'
+                    mDARequestRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+
+#-------- Definition of recommended action --------------------------------------------
+    Recommended3GPPAction:
+      type: object
+      properties:
+        mOInstance:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        path:
+          type: string
+        op:
+          type: string
+          enum:
+            - ADD
+            - REMOVE
+            - REPLACE
+        value:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+        additionalText:
+          type: array
+          items:
+            type: string
+
+    RecommendedAction:
+      type: object
+      properties:
+        recommended3GPPActions:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Recommended3GPPAction'
+        recommendedNon3GPPActions:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        recommendedHumanReadableActions:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        actionInterval:
+          type: integer
+        timeWindow:
+          type: array
+          uniqueItems: false
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow'
+ 
+
+
+#-------- Definition of specific MobilityPerformanceAnalysis MDAoutput -----------------------------
+    MobilityPerformanceAnalysisOutput:
+      type: object
+      properties:
+        mobilityPerformanceIssueIdentifier:
+          type: integer
+        mobilityPerformanceIssueRootCause:
+          type: string
+          enum:
+              - TooLongMobilityInterruptionTime
+              - PoorCoverageOfTheCelledge
+              - InappropriateHandoverParameters
+              - Other
+        mobilityPerformanceIssueLocation:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+
+#-------- Definition of specific CoverageProblemAnalysis MDAoutput -----------------------------
+    CoverageProblemAnalysisOutput:
+      type: object
+      properties:
+        coverageProblemId:
+          type: string
+        coverageProblemType:
+          type: string
+          enum:
+              - WEAK_COVERAGE
+              - COVERAGE_HOLE
+              - PILOT_POLLUTION
+              - OVERSHOOT_COVERAGE
+              - DL_ULCHANNEL_COVERAGE_MISMATCH
+              - Other
+        coverageProblemAreas:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+        problematicCells:
+          type: integer
+        recommendedActions:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RecommendedAction'
+        radioEnvironmentMap:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RadioEnvironmentMap'
+        cellConfigurations:
+          description: A map (list of key-value pairs)
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'  
+          
+    RadioEnvironmentMap:
+      type: object
+      properties:
+        geoCoordinate:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+        coverageCharacterization:
+          $ref: '#/components/schemas/CoverageCharacterization'
+
+    CoverageCharacterization:
+      type: object
+      properties:
+        rsrp:
+          type: number
+          format: float
+        sinr:
+          type: number
+          format: float
+
+#-------- Definition of specific TrainingDataAnalysis MDAoutput -----------------------------
+
+    TrainingDataAnalysisOutput:
+      type: object
+      properties:
+        measurementDataCorrelationRecommendation:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/MeasurementDataCorrelationRecommendation'
+
+    MeasurementDataCorrelationRecommendation:
+      type: object
+      properties:
+        recommendedMeasurementDataToCollect:
+          type: array
+          uniqueItems: true
+          items: 
+            type: string
+        recommendedMeasurementDataNotToCollect:
+          type: array
+          uniqueItems: true
+          items: 
+            type: string
+        modelPerformanceImpact:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+
+
+
+#-------- Definition of specific NFScalingDimensioningDataAnalysis MDAoutput -----------------------------
+
+    NFScalingDimensioningDataAnalysisOutput:
+      type: object
+      properties:
+        recommendedActions:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RecommendedAction'
+
+
+
+
+
+#-------- Definition of specific PMData MDAoutput -----------------------------
+    PMDataOutput:
+      type: object
+      properties:
+        pmPredictions:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/PmPrediction'
+          minItems: 1
+        thresholdAssessment:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/ThresholdAssessment'
+        thresholdAdjustmentRecommendations:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RecommendedAction'
+
+    PmPrediction:
+      type: object
+      properties:
+        pmName:
+          type: string
+        pmPredictedValue:
+          description: >-
+            This specifies the predicted value of the PM specified by “pmName”
+            attribute.
+          oneOf:
+            - type: integer
+            - type: number
+              format: float
+
+        thresholdAssessment:
+          $ref: '#/components/schemas/ThresholdAssessment'
+
+    ThresholdAssessment:
+      type: object
+      properties:
+        performanceMetrics:
+          description: >-
+            It indicates list of performance metrics with threshold
+            configuration issue.
+            Performance metrics include measurements defined in TS 28.552
+            and KPIs defined in TS 28.554.
+            For non-3GPP specified measurements the name is defined elsewhere.
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        timeWindow:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow'
+        confidenceScore:
+          type: number
+          format: float
+
+
+#-------- Definition of specific FailurePrediction MDAoutput -----------------------------
+
+    FailurePredictionOutput:
+      type: object
+      properties:
+        failurePredictionObject:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+        potentialFailureType:
+          type: string
+        potentialFailureCause:
+          oneOf:
+            - type: integer
+            - type: string
+        eventTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+        issueID:
+          type: string
+        issueDomain:
+          type: string
+          enum:
+            - RAN_ISSUE
+            - CN_ISSUE
+            - UNKNOWN
+        perceivedSeverity:
+          type: string
+          enum:
+            - CRITICAL
+            - MAJOR
+            - MINOR
+            - WARNING
+            - INTERMEDIATE
+            - CLEARED
+        trendIndication:
+          type: string
+          enum:
+            - MORE_SEVERE
+            - NO_CHANGE
+            - LESS_SEVERE
+        predictedFailureEndTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+        statisticsInfoList:
+          type: array
+          items:
+            type: integer
+        managementDataCollectionRecommendations:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/ManagementDataCollectionInfo'
+        recommendedActions:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RecommendedAction'
+
+    ManagementDataCollectionInfo:
+      type: object
+      properties:
+        managementDataType:
+          type: string
+          enum:
+            - MEASUREMENT
+            - KPI
+            - TRACE_MDT
+            - QOE
+        managementData:
+          $ref: 'TS28623_ManagementDataCollectionNrm.yaml#/components/schemas/ManagementData'
+        targetEntities:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+        collectionDuration:
+          type: array
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow'
+
+#-------- Definition of specific UEThroughputAnalysis MDAoutput -----------------------------
+    TrafficCongestionProblemAnalysisOutput:
+      type: object
+      properties:
+        trafficCongestionId:
+          type: string
+        trafficCongestionType:
+          type: string
+          enum:
+              - NON_REGULAR_TRAFFIC_CONGESTION
+              - REGULAR_TRAFFIC_CONGESTION
+        timeDuration:
+          type: array
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow'
+        trafficCongestionAreas:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+        recommendedActions:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RecommendedAction'
+        severityLevel:
+          type: string
+          enum:
+            - SLIGHT_CONGESTION
+            - MODERATE_CONGESTION
+            - SEVERE_CONGESTION
+
+
+

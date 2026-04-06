@@ -20,7 +20,9 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
     char *alt_anchor_smf_id,
     OpenAPI_target_dnai_info_t *target_dnai_info,
     char *old_pdu_session_ref,
-    char *inter_plmn_api_root
+    char *inter_plmn_api_root,
+    char *target_dnai,
+    OpenAPI_guami_t *old_guami
 )
 {
     OpenAPI_sm_context_status_notification_t *sm_context_status_notification_local_var = ogs_malloc(sizeof(OpenAPI_sm_context_status_notification_t));
@@ -42,6 +44,8 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
     sm_context_status_notification_local_var->target_dnai_info = target_dnai_info;
     sm_context_status_notification_local_var->old_pdu_session_ref = old_pdu_session_ref;
     sm_context_status_notification_local_var->inter_plmn_api_root = inter_plmn_api_root;
+    sm_context_status_notification_local_var->target_dnai = target_dnai;
+    sm_context_status_notification_local_var->old_guami = old_guami;
 
     return sm_context_status_notification_local_var;
 }
@@ -111,6 +115,14 @@ void OpenAPI_sm_context_status_notification_free(OpenAPI_sm_context_status_notif
     if (sm_context_status_notification->inter_plmn_api_root) {
         ogs_free(sm_context_status_notification->inter_plmn_api_root);
         sm_context_status_notification->inter_plmn_api_root = NULL;
+    }
+    if (sm_context_status_notification->target_dnai) {
+        ogs_free(sm_context_status_notification->target_dnai);
+        sm_context_status_notification->target_dnai = NULL;
+    }
+    if (sm_context_status_notification->old_guami) {
+        OpenAPI_guami_free(sm_context_status_notification->old_guami);
+        sm_context_status_notification->old_guami = NULL;
     }
     ogs_free(sm_context_status_notification);
 }
@@ -264,6 +276,26 @@ cJSON *OpenAPI_sm_context_status_notification_convertToJSON(OpenAPI_sm_context_s
     }
     }
 
+    if (sm_context_status_notification->target_dnai) {
+    if (cJSON_AddStringToObject(item, "targetDnai", sm_context_status_notification->target_dnai) == NULL) {
+        ogs_error("OpenAPI_sm_context_status_notification_convertToJSON() failed [target_dnai]");
+        goto end;
+    }
+    }
+
+    if (sm_context_status_notification->old_guami) {
+    cJSON *old_guami_local_JSON = OpenAPI_guami_convertToJSON(sm_context_status_notification->old_guami);
+    if (old_guami_local_JSON == NULL) {
+        ogs_error("OpenAPI_sm_context_status_notification_convertToJSON() failed [old_guami]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "oldGuami", old_guami_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_sm_context_status_notification_convertToJSON() failed [old_guami]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -292,6 +324,9 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
     OpenAPI_target_dnai_info_t *target_dnai_info_local_nonprim = NULL;
     cJSON *old_pdu_session_ref = NULL;
     cJSON *inter_plmn_api_root = NULL;
+    cJSON *target_dnai = NULL;
+    cJSON *old_guami = NULL;
+    OpenAPI_guami_t *old_guami_local_nonprim = NULL;
     status_info = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "statusInfo");
     if (!status_info) {
         ogs_error("OpenAPI_sm_context_status_notification_parseFromJSON() failed [status_info]");
@@ -431,6 +466,23 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
     }
     }
 
+    target_dnai = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "targetDnai");
+    if (target_dnai) {
+    if (!cJSON_IsString(target_dnai) && !cJSON_IsNull(target_dnai)) {
+        ogs_error("OpenAPI_sm_context_status_notification_parseFromJSON() failed [target_dnai]");
+        goto end;
+    }
+    }
+
+    old_guami = cJSON_GetObjectItemCaseSensitive(sm_context_status_notificationJSON, "oldGuami");
+    if (old_guami) {
+    old_guami_local_nonprim = OpenAPI_guami_parseFromJSON(old_guami);
+    if (!old_guami_local_nonprim) {
+        ogs_error("OpenAPI_guami_parseFromJSON failed [old_guami]");
+        goto end;
+    }
+    }
+
     sm_context_status_notification_local_var = OpenAPI_sm_context_status_notification_create (
         status_info_local_nonprim,
         small_data_rate_status ? small_data_rate_status_local_nonprim : NULL,
@@ -447,7 +499,9 @@ OpenAPI_sm_context_status_notification_t *OpenAPI_sm_context_status_notification
         alt_anchor_smf_id && !cJSON_IsNull(alt_anchor_smf_id) ? ogs_strdup(alt_anchor_smf_id->valuestring) : NULL,
         target_dnai_info ? target_dnai_info_local_nonprim : NULL,
         old_pdu_session_ref && !cJSON_IsNull(old_pdu_session_ref) ? ogs_strdup(old_pdu_session_ref->valuestring) : NULL,
-        inter_plmn_api_root && !cJSON_IsNull(inter_plmn_api_root) ? ogs_strdup(inter_plmn_api_root->valuestring) : NULL
+        inter_plmn_api_root && !cJSON_IsNull(inter_plmn_api_root) ? ogs_strdup(inter_plmn_api_root->valuestring) : NULL,
+        target_dnai && !cJSON_IsNull(target_dnai) ? ogs_strdup(target_dnai->valuestring) : NULL,
+        old_guami ? old_guami_local_nonprim : NULL
     );
 
     return sm_context_status_notification_local_var;
@@ -474,6 +528,10 @@ end:
     if (target_dnai_info_local_nonprim) {
         OpenAPI_target_dnai_info_free(target_dnai_info_local_nonprim);
         target_dnai_info_local_nonprim = NULL;
+    }
+    if (old_guami_local_nonprim) {
+        OpenAPI_guami_free(old_guami_local_nonprim);
+        old_guami_local_nonprim = NULL;
     }
     return NULL;
 }

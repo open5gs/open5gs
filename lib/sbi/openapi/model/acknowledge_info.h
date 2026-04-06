@@ -1,7 +1,7 @@
 /*
  * acknowledge_info.h
  *
- * 
+ * Contains acknowledgement information
  */
 
 #ifndef _OpenAPI_acknowledge_info_H_
@@ -12,13 +12,13 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_acknowledge_info_s OpenAPI_acknowledge_info_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_acknowledge_info_s OpenAPI_acknowledge_info_t;
-typedef struct OpenAPI_acknowledge_info_s {
+struct OpenAPI_acknowledge_info_s {
     char *sor_mac_iue;
     char *upu_mac_iue;
     char *provisioning_time;
@@ -26,7 +26,7 @@ typedef struct OpenAPI_acknowledge_info_s {
     bool is_ue_not_reachable;
     int ue_not_reachable;
     char *upu_transparent_container;
-} OpenAPI_acknowledge_info_t;
+};
 
 OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_create(
     char *sor_mac_iue,

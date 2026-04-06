@@ -1,7 +1,7 @@
 /*
  * sm_policy_control.h
  *
- * Contains the parameters used to request the SM policies and the SM policies authorized by the PCF.
+ * Contains the parameters used to request the SM policies and the SM policies authorized by  the PCF. 
  */
 
 #ifndef _OpenAPI_sm_policy_control_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_policy_control_s OpenAPI_sm_policy_control_t;
 #include "sm_policy_context_data.h"
 #include "sm_policy_decision.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_policy_control_s OpenAPI_sm_policy_control_t;
-typedef struct OpenAPI_sm_policy_control_s {
+struct OpenAPI_sm_policy_control_s {
     struct OpenAPI_sm_policy_context_data_s *context;
     struct OpenAPI_sm_policy_decision_s *policy;
-} OpenAPI_sm_policy_control_t;
+};
 
 OpenAPI_sm_policy_control_t *OpenAPI_sm_policy_control_create(
     OpenAPI_sm_policy_context_data_t *context,

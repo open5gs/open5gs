@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_retrieve_data_s OpenAPI_retrieve_data_t;
 #include "pdu_session_context_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_retrieve_data_s OpenAPI_retrieve_data_t;
-typedef struct OpenAPI_retrieve_data_s {
+struct OpenAPI_retrieve_data_s {
     bool is_small_data_rate_status_req;
     int small_data_rate_status_req;
     OpenAPI_pdu_session_context_type_e pdu_session_context_type;
-} OpenAPI_retrieve_data_t;
+};
 
 OpenAPI_retrieve_data_t *OpenAPI_retrieve_data_create(
     bool is_small_data_rate_status_req,

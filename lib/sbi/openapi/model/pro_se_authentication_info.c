@@ -8,8 +8,8 @@ OpenAPI_pro_se_authentication_info_t *OpenAPI_pro_se_authentication_info_create(
     char *supi_or_suci,
     char *_5g_pruk_id,
     int relay_service_code,
-    bool is_nonce1_null,
     char *nonce1,
+    char *serving_network_name,
     char *supported_features
 )
 {
@@ -19,8 +19,8 @@ OpenAPI_pro_se_authentication_info_t *OpenAPI_pro_se_authentication_info_create(
     pro_se_authentication_info_local_var->supi_or_suci = supi_or_suci;
     pro_se_authentication_info_local_var->_5g_pruk_id = _5g_pruk_id;
     pro_se_authentication_info_local_var->relay_service_code = relay_service_code;
-    pro_se_authentication_info_local_var->is_nonce1_null = is_nonce1_null;
     pro_se_authentication_info_local_var->nonce1 = nonce1;
+    pro_se_authentication_info_local_var->serving_network_name = serving_network_name;
     pro_se_authentication_info_local_var->supported_features = supported_features;
 
     return pro_se_authentication_info_local_var;
@@ -44,6 +44,10 @@ void OpenAPI_pro_se_authentication_info_free(OpenAPI_pro_se_authentication_info_
     if (pro_se_authentication_info->nonce1) {
         ogs_free(pro_se_authentication_info->nonce1);
         pro_se_authentication_info->nonce1 = NULL;
+    }
+    if (pro_se_authentication_info->serving_network_name) {
+        ogs_free(pro_se_authentication_info->serving_network_name);
+        pro_se_authentication_info->serving_network_name = NULL;
     }
     if (pro_se_authentication_info->supported_features) {
         ogs_free(pro_se_authentication_info->supported_features);
@@ -91,6 +95,15 @@ cJSON *OpenAPI_pro_se_authentication_info_convertToJSON(OpenAPI_pro_se_authentic
         goto end;
     }
 
+    if (!pro_se_authentication_info->serving_network_name) {
+        ogs_error("OpenAPI_pro_se_authentication_info_convertToJSON() failed [serving_network_name]");
+        return NULL;
+    }
+    if (cJSON_AddStringToObject(item, "servingNetworkName", pro_se_authentication_info->serving_network_name) == NULL) {
+        ogs_error("OpenAPI_pro_se_authentication_info_convertToJSON() failed [serving_network_name]");
+        goto end;
+    }
+
     if (pro_se_authentication_info->supported_features) {
     if (cJSON_AddStringToObject(item, "supportedFeatures", pro_se_authentication_info->supported_features) == NULL) {
         ogs_error("OpenAPI_pro_se_authentication_info_convertToJSON() failed [supported_features]");
@@ -110,6 +123,7 @@ OpenAPI_pro_se_authentication_info_t *OpenAPI_pro_se_authentication_info_parseFr
     cJSON *_5g_pruk_id = NULL;
     cJSON *relay_service_code = NULL;
     cJSON *nonce1 = NULL;
+    cJSON *serving_network_name = NULL;
     cJSON *supported_features = NULL;
     supi_or_suci = cJSON_GetObjectItemCaseSensitive(pro_se_authentication_infoJSON, "supiOrSuci");
     if (supi_or_suci) {
@@ -147,6 +161,16 @@ OpenAPI_pro_se_authentication_info_t *OpenAPI_pro_se_authentication_info_parseFr
         goto end;
     }
 
+    serving_network_name = cJSON_GetObjectItemCaseSensitive(pro_se_authentication_infoJSON, "servingNetworkName");
+    if (!serving_network_name) {
+        ogs_error("OpenAPI_pro_se_authentication_info_parseFromJSON() failed [serving_network_name]");
+        goto end;
+    }
+    if (!cJSON_IsString(serving_network_name)) {
+        ogs_error("OpenAPI_pro_se_authentication_info_parseFromJSON() failed [serving_network_name]");
+        goto end;
+    }
+
     supported_features = cJSON_GetObjectItemCaseSensitive(pro_se_authentication_infoJSON, "supportedFeatures");
     if (supported_features) {
     if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
@@ -160,8 +184,8 @@ OpenAPI_pro_se_authentication_info_t *OpenAPI_pro_se_authentication_info_parseFr
         _5g_pruk_id && !cJSON_IsNull(_5g_pruk_id) ? ogs_strdup(_5g_pruk_id->valuestring) : NULL,
         
         relay_service_code->valuedouble,
-        nonce1 && cJSON_IsNull(nonce1) ? true : false,
         ogs_strdup(nonce1->valuestring),
+        ogs_strdup(serving_network_name->valuestring),
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );
 

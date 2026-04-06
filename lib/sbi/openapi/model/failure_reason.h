@@ -1,7 +1,7 @@
 /*
  * failure_reason.h
  *
- * 
+ * Reason for failure to reconstruct a HTTP/2 message from N32-f message
  */
 
 #ifndef _OpenAPI_failure_reason_H_

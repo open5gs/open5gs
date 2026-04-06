@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_dccf_cond_s OpenAPI_dccf_cond_t;
 #include "nf_type.h"
 #include "tai.h"
 #include "tai_range.h"
@@ -20,19 +21,18 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dccf_cond_s OpenAPI_dccf_cond_t;
 typedef enum { OpenAPI_dccf_cond_CONDITIONTYPE_NULL = 0, OpenAPI_dccf_cond_CONDITIONTYPE_DCCF_COND } OpenAPI_dccf_cond_condition_type_e;
 
 char* OpenAPI_dccf_cond_condition_type_ToString(OpenAPI_dccf_cond_condition_type_e condition_type);
 
 OpenAPI_dccf_cond_condition_type_e OpenAPI_dccf_cond_condition_type_FromString(char* condition_type);
-typedef struct OpenAPI_dccf_cond_s {
+struct OpenAPI_dccf_cond_s {
     OpenAPI_dccf_cond_condition_type_e condition_type;
     OpenAPI_list_t *tai_list;
     OpenAPI_list_t *tai_range_list;
     OpenAPI_list_t *serving_nf_type_list;
     OpenAPI_list_t *serving_nf_set_id_list;
-} OpenAPI_dccf_cond_t;
+};
 
 OpenAPI_dccf_cond_t *OpenAPI_dccf_cond_create(
     OpenAPI_dccf_cond_condition_type_e condition_type,

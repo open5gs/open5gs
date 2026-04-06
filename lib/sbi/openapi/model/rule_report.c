@@ -9,7 +9,9 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_create(
     OpenAPI_rule_status_e rule_status,
     OpenAPI_list_t *cont_vers,
     OpenAPI_failure_code_e failure_code,
-    OpenAPI_final_unit_action_t *fin_unit_act,
+    bool is_retry_after,
+    int retry_after,
+    OpenAPI_final_unit_action_e fin_unit_act,
     OpenAPI_list_t *ran_nas_rel_causes,
     char *alt_qos_param_id
 )
@@ -21,6 +23,8 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_create(
     rule_report_local_var->rule_status = rule_status;
     rule_report_local_var->cont_vers = cont_vers;
     rule_report_local_var->failure_code = failure_code;
+    rule_report_local_var->is_retry_after = is_retry_after;
+    rule_report_local_var->retry_after = retry_after;
     rule_report_local_var->fin_unit_act = fin_unit_act;
     rule_report_local_var->ran_nas_rel_causes = ran_nas_rel_causes;
     rule_report_local_var->alt_qos_param_id = alt_qos_param_id;
@@ -48,10 +52,6 @@ void OpenAPI_rule_report_free(OpenAPI_rule_report_t *rule_report)
         }
         OpenAPI_list_free(rule_report->cont_vers);
         rule_report->cont_vers = NULL;
-    }
-    if (rule_report->fin_unit_act) {
-        OpenAPI_final_unit_action_free(rule_report->fin_unit_act);
-        rule_report->fin_unit_act = NULL;
     }
     if (rule_report->ran_nas_rel_causes) {
         OpenAPI_list_for_each(rule_report->ran_nas_rel_causes, node) {
@@ -128,14 +128,15 @@ cJSON *OpenAPI_rule_report_convertToJSON(OpenAPI_rule_report_t *rule_report)
     }
     }
 
-    if (rule_report->fin_unit_act) {
-    cJSON *fin_unit_act_local_JSON = OpenAPI_final_unit_action_convertToJSON(rule_report->fin_unit_act);
-    if (fin_unit_act_local_JSON == NULL) {
-        ogs_error("OpenAPI_rule_report_convertToJSON() failed [fin_unit_act]");
+    if (rule_report->is_retry_after) {
+    if (cJSON_AddNumberToObject(item, "retryAfter", rule_report->retry_after) == NULL) {
+        ogs_error("OpenAPI_rule_report_convertToJSON() failed [retry_after]");
         goto end;
     }
-    cJSON_AddItemToObject(item, "finUnitAct", fin_unit_act_local_JSON);
-    if (item->child == NULL) {
+    }
+
+    if (rule_report->fin_unit_act != OpenAPI_final_unit_action_NULL) {
+    if (cJSON_AddStringToObject(item, "finUnitAct", OpenAPI_final_unit_action_ToString(rule_report->fin_unit_act)) == NULL) {
         ogs_error("OpenAPI_rule_report_convertToJSON() failed [fin_unit_act]");
         goto end;
     }
@@ -180,8 +181,9 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
     OpenAPI_list_t *cont_versList = NULL;
     cJSON *failure_code = NULL;
     OpenAPI_failure_code_e failure_codeVariable = 0;
+    cJSON *retry_after = NULL;
     cJSON *fin_unit_act = NULL;
-    OpenAPI_final_unit_action_t *fin_unit_act_local_nonprim = NULL;
+    OpenAPI_final_unit_action_e fin_unit_actVariable = 0;
     cJSON *ran_nas_rel_causes = NULL;
     OpenAPI_list_t *ran_nas_rel_causesList = NULL;
     cJSON *alt_qos_param_id = NULL;
@@ -255,13 +257,21 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
     failure_codeVariable = OpenAPI_failure_code_FromString(failure_code->valuestring);
     }
 
-    fin_unit_act = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "finUnitAct");
-    if (fin_unit_act) {
-    fin_unit_act_local_nonprim = OpenAPI_final_unit_action_parseFromJSON(fin_unit_act);
-    if (!fin_unit_act_local_nonprim) {
-        ogs_error("OpenAPI_final_unit_action_parseFromJSON failed [fin_unit_act]");
+    retry_after = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "retryAfter");
+    if (retry_after) {
+    if (!cJSON_IsNumber(retry_after)) {
+        ogs_error("OpenAPI_rule_report_parseFromJSON() failed [retry_after]");
         goto end;
     }
+    }
+
+    fin_unit_act = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "finUnitAct");
+    if (fin_unit_act) {
+    if (!cJSON_IsString(fin_unit_act)) {
+        ogs_error("OpenAPI_rule_report_parseFromJSON() failed [fin_unit_act]");
+        goto end;
+    }
+    fin_unit_actVariable = OpenAPI_final_unit_action_FromString(fin_unit_act->valuestring);
     }
 
     ran_nas_rel_causes = cJSON_GetObjectItemCaseSensitive(rule_reportJSON, "ranNasRelCauses");
@@ -301,7 +311,9 @@ OpenAPI_rule_report_t *OpenAPI_rule_report_parseFromJSON(cJSON *rule_reportJSON)
         rule_statusVariable,
         cont_vers ? cont_versList : NULL,
         failure_code ? failure_codeVariable : 0,
-        fin_unit_act ? fin_unit_act_local_nonprim : NULL,
+        retry_after ? true : false,
+        retry_after ? retry_after->valuedouble : 0,
+        fin_unit_act ? fin_unit_actVariable : 0,
         ran_nas_rel_causes ? ran_nas_rel_causesList : NULL,
         alt_qos_param_id && !cJSON_IsNull(alt_qos_param_id) ? ogs_strdup(alt_qos_param_id->valuestring) : NULL
     );
@@ -321,10 +333,6 @@ end:
         }
         OpenAPI_list_free(cont_versList);
         cont_versList = NULL;
-    }
-    if (fin_unit_act_local_nonprim) {
-        OpenAPI_final_unit_action_free(fin_unit_act_local_nonprim);
-        fin_unit_act_local_nonprim = NULL;
     }
     if (ran_nas_rel_causesList) {
         OpenAPI_list_for_each(ran_nas_rel_causesList, node) {

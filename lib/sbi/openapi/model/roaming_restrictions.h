@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_roaming_restrictions_s OpenAPI_roaming_restrictions_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_roaming_restrictions_s OpenAPI_roaming_restrictions_t;
-typedef struct OpenAPI_roaming_restrictions_s {
+struct OpenAPI_roaming_restrictions_s {
     bool is_access_allowed;
     int access_allowed;
-} OpenAPI_roaming_restrictions_t;
+};
 
 OpenAPI_roaming_restrictions_t *OpenAPI_roaming_restrictions_create(
     bool is_access_allowed,

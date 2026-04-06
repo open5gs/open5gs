@@ -13,6 +13,7 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     char *supported_features,
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile,
     char *home_provided_charging_id,
+    char *home_provided_smf_charging_id,
     OpenAPI_up_security_t *up_security,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_ul,
     OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate_dl,
@@ -25,7 +26,10 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     bool is_pti,
     int pti,
     char *inter_plmn_api_root,
-    char *intra_plmn_api_root
+    char *intra_plmn_api_root,
+    OpenAPI_hrsbo_info_from_hplmn_t *hrsbo_info,
+    OpenAPI_local_offloading_mgt_info_to_ismf_t *local_offload_mgt_info,
+    OpenAPI_uli_change_granularity_e uli_change_granularity
 )
 {
     OpenAPI_hsmf_updated_data_t *hsmf_updated_data_local_var = ogs_malloc(sizeof(OpenAPI_hsmf_updated_data_t));
@@ -39,6 +43,7 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     hsmf_updated_data_local_var->supported_features = supported_features;
     hsmf_updated_data_local_var->roaming_charging_profile = roaming_charging_profile;
     hsmf_updated_data_local_var->home_provided_charging_id = home_provided_charging_id;
+    hsmf_updated_data_local_var->home_provided_smf_charging_id = home_provided_smf_charging_id;
     hsmf_updated_data_local_var->up_security = up_security;
     hsmf_updated_data_local_var->max_integrity_protected_data_rate_ul = max_integrity_protected_data_rate_ul;
     hsmf_updated_data_local_var->max_integrity_protected_data_rate_dl = max_integrity_protected_data_rate_dl;
@@ -52,6 +57,9 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_create(
     hsmf_updated_data_local_var->pti = pti;
     hsmf_updated_data_local_var->inter_plmn_api_root = inter_plmn_api_root;
     hsmf_updated_data_local_var->intra_plmn_api_root = intra_plmn_api_root;
+    hsmf_updated_data_local_var->hrsbo_info = hrsbo_info;
+    hsmf_updated_data_local_var->local_offload_mgt_info = local_offload_mgt_info;
+    hsmf_updated_data_local_var->uli_change_granularity = uli_change_granularity;
 
     return hsmf_updated_data_local_var;
 }
@@ -98,6 +106,10 @@ void OpenAPI_hsmf_updated_data_free(OpenAPI_hsmf_updated_data_t *hsmf_updated_da
         ogs_free(hsmf_updated_data->home_provided_charging_id);
         hsmf_updated_data->home_provided_charging_id = NULL;
     }
+    if (hsmf_updated_data->home_provided_smf_charging_id) {
+        ogs_free(hsmf_updated_data->home_provided_smf_charging_id);
+        hsmf_updated_data->home_provided_smf_charging_id = NULL;
+    }
     if (hsmf_updated_data->up_security) {
         OpenAPI_up_security_free(hsmf_updated_data->up_security);
         hsmf_updated_data->up_security = NULL;
@@ -131,6 +143,14 @@ void OpenAPI_hsmf_updated_data_free(OpenAPI_hsmf_updated_data_t *hsmf_updated_da
     if (hsmf_updated_data->intra_plmn_api_root) {
         ogs_free(hsmf_updated_data->intra_plmn_api_root);
         hsmf_updated_data->intra_plmn_api_root = NULL;
+    }
+    if (hsmf_updated_data->hrsbo_info) {
+        OpenAPI_hrsbo_info_from_hplmn_free(hsmf_updated_data->hrsbo_info);
+        hsmf_updated_data->hrsbo_info = NULL;
+    }
+    if (hsmf_updated_data->local_offload_mgt_info) {
+        OpenAPI_local_offloading_mgt_info_to_ismf_free(hsmf_updated_data->local_offload_mgt_info);
+        hsmf_updated_data->local_offload_mgt_info = NULL;
     }
     ogs_free(hsmf_updated_data);
 }
@@ -235,6 +255,13 @@ cJSON *OpenAPI_hsmf_updated_data_convertToJSON(OpenAPI_hsmf_updated_data_t *hsmf
     if (hsmf_updated_data->home_provided_charging_id) {
     if (cJSON_AddStringToObject(item, "homeProvidedChargingId", hsmf_updated_data->home_provided_charging_id) == NULL) {
         ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [home_provided_charging_id]");
+        goto end;
+    }
+    }
+
+    if (hsmf_updated_data->home_provided_smf_charging_id) {
+    if (cJSON_AddStringToObject(item, "homeProvidedSmfChargingId", hsmf_updated_data->home_provided_smf_charging_id) == NULL) {
+        ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [home_provided_smf_charging_id]");
         goto end;
     }
     }
@@ -352,6 +379,39 @@ cJSON *OpenAPI_hsmf_updated_data_convertToJSON(OpenAPI_hsmf_updated_data_t *hsmf
     }
     }
 
+    if (hsmf_updated_data->hrsbo_info) {
+    cJSON *hrsbo_info_local_JSON = OpenAPI_hrsbo_info_from_hplmn_convertToJSON(hsmf_updated_data->hrsbo_info);
+    if (hrsbo_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [hrsbo_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "hrsboInfo", hrsbo_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [hrsbo_info]");
+        goto end;
+    }
+    }
+
+    if (hsmf_updated_data->local_offload_mgt_info) {
+    cJSON *local_offload_mgt_info_local_JSON = OpenAPI_local_offloading_mgt_info_to_ismf_convertToJSON(hsmf_updated_data->local_offload_mgt_info);
+    if (local_offload_mgt_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [local_offload_mgt_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "localOffloadMgtInfo", local_offload_mgt_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [local_offload_mgt_info]");
+        goto end;
+    }
+    }
+
+    if (hsmf_updated_data->uli_change_granularity != OpenAPI_uli_change_granularity_NULL) {
+    if (cJSON_AddStringToObject(item, "uliChangeGranularity", OpenAPI_uli_change_granularity_ToString(hsmf_updated_data->uli_change_granularity)) == NULL) {
+        ogs_error("OpenAPI_hsmf_updated_data_convertToJSON() failed [uli_change_granularity]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -374,6 +434,7 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
     cJSON *roaming_charging_profile = NULL;
     OpenAPI_roaming_charging_profile_t *roaming_charging_profile_local_nonprim = NULL;
     cJSON *home_provided_charging_id = NULL;
+    cJSON *home_provided_smf_charging_id = NULL;
     cJSON *up_security = NULL;
     OpenAPI_up_security_t *up_security_local_nonprim = NULL;
     cJSON *max_integrity_protected_data_rate_ul = NULL;
@@ -392,6 +453,12 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
     cJSON *pti = NULL;
     cJSON *inter_plmn_api_root = NULL;
     cJSON *intra_plmn_api_root = NULL;
+    cJSON *hrsbo_info = NULL;
+    OpenAPI_hrsbo_info_from_hplmn_t *hrsbo_info_local_nonprim = NULL;
+    cJSON *local_offload_mgt_info = NULL;
+    OpenAPI_local_offloading_mgt_info_to_ismf_t *local_offload_mgt_info_local_nonprim = NULL;
+    cJSON *uli_change_granularity = NULL;
+    OpenAPI_uli_change_granularity_e uli_change_granularityVariable = 0;
     n1_sm_info_to_ue = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "n1SmInfoToUe");
     if (n1_sm_info_to_ue) {
     n1_sm_info_to_ue_local_nonprim = OpenAPI_ref_to_binary_data_parseFromJSON(n1_sm_info_to_ue);
@@ -470,6 +537,14 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
     if (home_provided_charging_id) {
     if (!cJSON_IsString(home_provided_charging_id) && !cJSON_IsNull(home_provided_charging_id)) {
         ogs_error("OpenAPI_hsmf_updated_data_parseFromJSON() failed [home_provided_charging_id]");
+        goto end;
+    }
+    }
+
+    home_provided_smf_charging_id = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "homeProvidedSmfChargingId");
+    if (home_provided_smf_charging_id) {
+    if (!cJSON_IsString(home_provided_smf_charging_id) && !cJSON_IsNull(home_provided_smf_charging_id)) {
+        ogs_error("OpenAPI_hsmf_updated_data_parseFromJSON() failed [home_provided_smf_charging_id]");
         goto end;
     }
     }
@@ -599,6 +674,33 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
     }
     }
 
+    hrsbo_info = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "hrsboInfo");
+    if (hrsbo_info) {
+    hrsbo_info_local_nonprim = OpenAPI_hrsbo_info_from_hplmn_parseFromJSON(hrsbo_info);
+    if (!hrsbo_info_local_nonprim) {
+        ogs_error("OpenAPI_hrsbo_info_from_hplmn_parseFromJSON failed [hrsbo_info]");
+        goto end;
+    }
+    }
+
+    local_offload_mgt_info = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "localOffloadMgtInfo");
+    if (local_offload_mgt_info) {
+    local_offload_mgt_info_local_nonprim = OpenAPI_local_offloading_mgt_info_to_ismf_parseFromJSON(local_offload_mgt_info);
+    if (!local_offload_mgt_info_local_nonprim) {
+        ogs_error("OpenAPI_local_offloading_mgt_info_to_ismf_parseFromJSON failed [local_offload_mgt_info]");
+        goto end;
+    }
+    }
+
+    uli_change_granularity = cJSON_GetObjectItemCaseSensitive(hsmf_updated_dataJSON, "uliChangeGranularity");
+    if (uli_change_granularity) {
+    if (!cJSON_IsString(uli_change_granularity)) {
+        ogs_error("OpenAPI_hsmf_updated_data_parseFromJSON() failed [uli_change_granularity]");
+        goto end;
+    }
+    uli_change_granularityVariable = OpenAPI_uli_change_granularity_FromString(uli_change_granularity->valuestring);
+    }
+
     hsmf_updated_data_local_var = OpenAPI_hsmf_updated_data_create (
         n1_sm_info_to_ue ? n1_sm_info_to_ue_local_nonprim : NULL,
         n4_info ? n4_info_local_nonprim : NULL,
@@ -608,6 +710,7 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
         roaming_charging_profile ? roaming_charging_profile_local_nonprim : NULL,
         home_provided_charging_id && !cJSON_IsNull(home_provided_charging_id) ? ogs_strdup(home_provided_charging_id->valuestring) : NULL,
+        home_provided_smf_charging_id && !cJSON_IsNull(home_provided_smf_charging_id) ? ogs_strdup(home_provided_smf_charging_id->valuestring) : NULL,
         up_security ? up_security_local_nonprim : NULL,
         max_integrity_protected_data_rate_ul ? max_integrity_protected_data_rate_ulVariable : 0,
         max_integrity_protected_data_rate_dl ? max_integrity_protected_data_rate_dlVariable : 0,
@@ -620,7 +723,10 @@ OpenAPI_hsmf_updated_data_t *OpenAPI_hsmf_updated_data_parseFromJSON(cJSON *hsmf
         pti ? true : false,
         pti ? pti->valuedouble : 0,
         inter_plmn_api_root && !cJSON_IsNull(inter_plmn_api_root) ? ogs_strdup(inter_plmn_api_root->valuestring) : NULL,
-        intra_plmn_api_root && !cJSON_IsNull(intra_plmn_api_root) ? ogs_strdup(intra_plmn_api_root->valuestring) : NULL
+        intra_plmn_api_root && !cJSON_IsNull(intra_plmn_api_root) ? ogs_strdup(intra_plmn_api_root->valuestring) : NULL,
+        hrsbo_info ? hrsbo_info_local_nonprim : NULL,
+        local_offload_mgt_info ? local_offload_mgt_info_local_nonprim : NULL,
+        uli_change_granularity ? uli_change_granularityVariable : 0
     );
 
     return hsmf_updated_data_local_var;
@@ -677,6 +783,14 @@ end:
         }
         OpenAPI_list_free(eps_bearer_infoList);
         eps_bearer_infoList = NULL;
+    }
+    if (hrsbo_info_local_nonprim) {
+        OpenAPI_hrsbo_info_from_hplmn_free(hrsbo_info_local_nonprim);
+        hrsbo_info_local_nonprim = NULL;
+    }
+    if (local_offload_mgt_info_local_nonprim) {
+        OpenAPI_local_offloading_mgt_info_to_ismf_free(local_offload_mgt_info_local_nonprim);
+        local_offload_mgt_info_local_nonprim = NULL;
     }
     return NULL;
 }

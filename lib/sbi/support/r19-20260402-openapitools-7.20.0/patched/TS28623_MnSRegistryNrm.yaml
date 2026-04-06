@@ -1,0 +1,218 @@
+openapi: 3.0.1
+info:
+  title: MnS Registry NRM
+  version: 19.6.0
+  description: >-
+    OAS 3.0.1 definition of the MnS Registry NRM fragment
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.623; Generic NRM, MnS Registry NRM
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.623/
+paths: {}
+components:
+  schemas:
+  #-------- Definition of types for name-containments ------
+    SubNetwork-ncO-MnSRegistryNrm:
+      type: object
+      properties:
+        MnsRegistry:
+          $ref: '#/components/schemas/MnsRegistry-Single'
+    
+   #-------Definition of generic IOCs ----------# 
+
+#-------- Definition of types-----------------------------------------------------
+    MnsCapability:
+      type: string
+      enum:
+        - NR_PROVISIONING
+        - 5GC_PROVISIONING
+        - NETWORK_SLICING_PROVISIONING
+        - EDGE_COMPUTING_PROVISIONING
+        - PERFORMANCE_METRIC_COLLECTION_CONTROL
+        - PERFORMANCE_METRIC_DATA_REPORT
+        - PERFORMANCE_METRIC_THRESHOLD_MONITOR_CONTROL
+        - PERFORMANCE_METRIC_THRESHOLD_NOTIFICATION
+        - FAULT_CONTROL
+        - FAULT_NOTIFICATION
+        - TRACE_MDT_DATA_COLLECTION_CONTROL
+        - TRACE_MDT_DATA_REPORT
+        - STM_PROVISIONING
+        - STM_STREAMING
+        - QOE_DATA_COLLECTION_CONTROL
+        - QOE_DATA_REPORT
+        - FILE_RETRIEVAL
+        - FILE_DOWNLOAD
+        - CONFIGURATION_PLAN_MGMT
+        - SUBSCRIPTION_CONTROL
+        - HEARTBEAT_CONTROL
+        - HEARTBEAT_NOTIFICATION
+        - MANAGEMENT_DATA_ANALYTIC
+        - RANSC_MANAGEMENT
+        - SON_POLICY
+        - COMMUNICATION_SERVICE_ASSURANCE_CONTROL
+        - CLOSED_CONTROL_LOOP_MANAGEMENT
+        - INTENT_DRIVEN_MANAGEMENT
+        - ML_MODEL_MANAGEMENT
+        - NDT_LCM
+        - MNS_REGISTRY_AND_DISCOVERY
+        - MGMTDATA_REGISTRY_AND_DISCOVERY
+        - MNS_ACCESS_CONTROL_MANAGEMENT
+        - DSO_RAPID_RECOVERY_AND_THRESHOLD_MONITORING
+        - EXTERNALDATA_DISCOVERY_AND_REQUEST
+#-------- Definition of concrete IOCs --------------------------------------------          
+    MnsRegistry-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            MnsInfo:
+              $ref: '#/components/schemas/MnsInfo-Multiple'
+            MgmtDataInfo:
+              $ref: '#/components/schemas/MgmtDataInfo-Multiple'
+
+    MnsInfo-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+             mnsLabel:
+               type: string
+             mnsType:
+               type: string
+               enum:
+                 - PROV_MNS
+                 - FAULT_SUPERVISION_MNS
+                 - STREAMING_DATA_REPORTING_MNS
+                 - FILE_DATA_REPORTING_MNS
+             mnsVersion:
+               type: string
+             mnsAddress:
+               description: Resource URI as defined in the relevant Technical Specification
+               $ref: 'TS28623_ComDefs.yaml#/components/schemas/UriRo'
+             mnsCapability:
+               description: >- 
+                 It describes the types of management capabilities of the MnS instance provided by the MnS producer.
+               type: array
+               uniqueItems: true
+               items:
+                $ref: '#/components/schemas/MnsCapability'
+             mnsScope:
+               description: >-
+                 It is used to provide information about the management scope of the Management Service. The management scope is 
+                 used to represent the set of managed object instances that can be accessed using the Management Service.
+               type: array
+               uniqueItems: true
+               items:
+                 $ref: '#/components/schemas/MnsScope'
+               minItems: 1
+             mgmtDataInfoRef:
+               description: >-
+                 List of DN of MgmtDataInfo instance(s) which are associated the MnSInfo which represent a
+                 management service instance
+               type: array
+               items:
+                 $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+               uniqueItems: true
+               minItems: 1 
+
+    MnsScope:
+      description: ->
+        It defines the information about the management scope of the Management Service.
+      oneOf:
+        - type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        - type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+        - type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Tai'
+
+    MgmtDataInfo-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            supportedManagementData:             
+              description: >-
+                It defines the list of management data that can be supported.
+              type: array
+              uniqueItems: true
+              items:           
+                $ref: 'TS28623_ManagementDataCollectionNrm.yaml#/components/schemas/ManagementData'
+            supportedGranularityPeriods:
+              description: >-
+                Granularity periods supported for the production of associated management data.
+                The period is defined in seconds.
+              type: array
+              items: 
+                type: integer
+              uniqueItems: true
+            supportedReportingPeriods:
+              description: >-
+                Reporting periods supported for the associated management data.
+                The period is defined in seconds.
+              type: array
+              items: 
+                type: integer
+              uniqueItems: true
+            historicalDataPeriod:
+              description: >-
+                This attribute describes the maximum period of the requested
+                historical data.
+                The period is defined in seconds.
+                When the value of this attribute is NULL, which means the 
+                capability of querying historical data is not supported.
+              type: integer
+            supportedReportingMethod:
+              description: >-
+                List of supported reporting methods for the associated 
+                management data.
+              type: array
+              uniqueItems: true
+              items:
+                type: string
+                enum:
+                  - FILE
+                  - STREAM
+              minItems: 1
+            supportedDataScope:
+              description: >-
+               List of supported sub counter capabilities for the associated management data.
+              type: array
+              uniqueItems: true
+              items:
+               type: string
+               enum:
+                 - SNSSAI
+                 - 5QI
+                 - PLMN
+              minItems: 1
+            supportedDataRequestMnSRef:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+            supportedDataReportingMnSRef:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+
+#-------- Definition of YAML arrays for name-contained IOCs ----------------------
+
+    MnsInfo-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/MnsInfo-Single'
+
+    MgmtDataInfo-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/MgmtDataInfo-Single'
+
+#-------- Definitions in TS 28.623 for TS 28.532 ---------------------------------
+    resources-mnSRegistryNrm:
+      oneOf:
+       - $ref: '#/components/schemas/MnsInfo-Single'
+       - $ref: '#/components/schemas/MnsRegistry-Single'
+       - $ref: '#/components/schemas/MgmtDataInfo-Single'

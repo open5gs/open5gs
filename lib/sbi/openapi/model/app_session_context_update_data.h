@@ -12,13 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_app_session_context_update_data_s OpenAPI_app_session_context_update_data_t;
+#include "af_header_handling_control_info.h"
 #include "af_routing_requirement_rm.h"
+#include "af_sfc_requirement.h"
 #include "bridge_management_container.h"
 #include "events_subsc_req_data_rm.h"
 #include "media_component_rm.h"
 #include "mps_action.h"
 #include "port_management_container.h"
-#include "preemption_control_information_rm.h"
+#include "preemption_control_information.h"
 #include "reserv_priority.h"
 #include "service_info_status.h"
 #include "sip_forking_indication.h"
@@ -28,11 +31,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_app_session_context_update_data_s OpenAPI_app_session_context_update_data_t;
-typedef struct OpenAPI_app_session_context_update_data_s {
+struct OpenAPI_app_session_context_update_data_s {
     char *af_app_id;
     bool is_af_rout_req_null;
     struct OpenAPI_af_routing_requirement_rm_s *af_rout_req;
+    bool is_af_sfc_req_null;
+    struct OpenAPI_af_sfc_requirement_s *af_sfc_req;
+    bool is_af_hdr_req_null;
+    struct OpenAPI_af_header_handling_control_info_s *af_hdr_req;
     char *asp_id;
     char *bdt_ref_id;
     bool is_ev_subsc_null;
@@ -43,7 +49,13 @@ typedef struct OpenAPI_app_session_context_update_data_s {
     OpenAPI_mps_action_e mps_action;
     char *mps_id;
     char *mcs_id;
-    struct OpenAPI_preemption_control_information_rm_s *preempt_control_info;
+    OpenAPI_preemption_control_information_e preempt_control_info;
+    bool is_qos_duration_null;
+    bool is_qos_duration;
+    int qos_duration;
+    bool is_qos_inact_int_null;
+    bool is_qos_inact_int;
+    int qos_inact_int;
     OpenAPI_reserv_priority_e res_prio;
     OpenAPI_service_info_status_e serv_inf_status;
     OpenAPI_sip_forking_indication_e sip_fork_ind;
@@ -52,12 +64,18 @@ typedef struct OpenAPI_app_session_context_update_data_s {
     struct OpenAPI_bridge_management_container_s *tsn_bridge_man_cont;
     struct OpenAPI_port_management_container_s *tsn_port_man_cont_dstt;
     OpenAPI_list_t *tsn_port_man_cont_nwtts;
-} OpenAPI_app_session_context_update_data_t;
+    char *tsc_notif_uri;
+    char *tsc_notif_corre_id;
+};
 
 OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_data_create(
     char *af_app_id,
     bool is_af_rout_req_null,
     OpenAPI_af_routing_requirement_rm_t *af_rout_req,
+    bool is_af_sfc_req_null,
+    OpenAPI_af_sfc_requirement_t *af_sfc_req,
+    bool is_af_hdr_req_null,
+    OpenAPI_af_header_handling_control_info_t *af_hdr_req,
     char *asp_id,
     char *bdt_ref_id,
     bool is_ev_subsc_null,
@@ -68,7 +86,13 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     OpenAPI_mps_action_e mps_action,
     char *mps_id,
     char *mcs_id,
-    OpenAPI_preemption_control_information_rm_t *preempt_control_info,
+    OpenAPI_preemption_control_information_e preempt_control_info,
+    bool is_qos_duration_null,
+    bool is_qos_duration,
+    int qos_duration,
+    bool is_qos_inact_int_null,
+    bool is_qos_inact_int,
+    int qos_inact_int,
     OpenAPI_reserv_priority_e res_prio,
     OpenAPI_service_info_status_e serv_inf_status,
     OpenAPI_sip_forking_indication_e sip_fork_ind,
@@ -76,7 +100,9 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
     OpenAPI_sponsoring_status_e spon_status,
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,
-    OpenAPI_list_t *tsn_port_man_cont_nwtts
+    OpenAPI_list_t *tsn_port_man_cont_nwtts,
+    char *tsc_notif_uri,
+    char *tsc_notif_corre_id
 );
 void OpenAPI_app_session_context_update_data_free(OpenAPI_app_session_context_update_data_t *app_session_context_update_data);
 OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_data_parseFromJSON(cJSON *app_session_context_update_dataJSON);

@@ -1,7 +1,7 @@
 /*
  * downlink_data_notification_control_rm.h
  *
- * This data type is defined in the same way as the DownlinkDataNotificationControl data type, but with the nullable:true property.
+ * This data type is defined in the same way as the DownlinkDataNotificationControl data type, but with the nullable:true property. 
  */
 
 #ifndef _OpenAPI_downlink_data_notification_control_rm_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_downlink_data_notification_control_rm_s OpenAPI_downlink_data_notification_control_rm_t;
 #include "dl_data_delivery_status.h"
 #include "notification_control_indication.h"
 
@@ -19,13 +20,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_downlink_data_notification_control_rm_s OpenAPI_downlink_data_notification_control_rm_t;
-typedef struct OpenAPI_downlink_data_notification_control_rm_s {
+struct OpenAPI_downlink_data_notification_control_rm_s {
     bool is_notif_ctrl_inds_null;
     OpenAPI_list_t *notif_ctrl_inds;
     bool is_types_of_notif_null;
     OpenAPI_list_t *types_of_notif;
-} OpenAPI_downlink_data_notification_control_rm_t;
+};
 
 OpenAPI_downlink_data_notification_control_rm_t *OpenAPI_downlink_data_notification_control_rm_create(
     bool is_notif_ctrl_inds_null,

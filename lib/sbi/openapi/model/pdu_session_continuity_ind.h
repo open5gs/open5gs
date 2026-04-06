@@ -1,7 +1,7 @@
 /*
  * pdu_session_continuity_ind.h
  *
- * 
+ * It indicates the handling of PDU session when the UE moves in and out of NB-IoT. In its absence, the local policy should be used. 
  */
 
 #ifndef _OpenAPI_pdu_session_continuity_ind_H_

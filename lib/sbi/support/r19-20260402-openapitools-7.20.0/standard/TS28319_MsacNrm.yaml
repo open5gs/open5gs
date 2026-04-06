@@ -1,0 +1,90 @@
+
+openapi: 3.0.1
+info:
+  title: MSAC NRM
+  version: 19.0.0
+  description: >-
+    OAS 3.0.1 definition of the MSAC NRM
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.319; MSAC NRM
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.319/
+paths: {}
+components:
+  schemas:
+
+#-------- Definition of types-----------------------------------------------------
+
+#-------- Definition of concrete IOCs --------------------------------------------
+
+    Identity-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                identityType:
+                    type: string
+                    enum:
+                      - USERNAME
+                      - EMAIL_ADDRESS
+                      - PHONE_NUMBER
+                      - IP_ADDRESS
+                      - MACHINEUSER
+                identityName:
+                  type: string
+                credential:
+                  type: string
+                roleList:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+
+    Role-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                roleName:
+                  type: string
+                accessRulesList:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+                  
+    AccessRule-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes: 
+              type: object  
+              properties:
+                ruleName:
+                  type: string
+                dataNodeSelector:
+                  oneOf:
+                    - $ref: 'TS28623_ComDefs.yaml#/components/schemas/JexNodeSelectionBasic'
+                    - $ref: 'TS28623_ComDefs.yaml#/components/schemas/JexNodeSelectionAdvanced' 
+                operations:
+                  type: array
+                  uniqueItems: true
+                  items: 
+                    type: string
+                actions:
+                  type: string
+                  enum:
+                    - ALLOW
+                    - DENY
+                componentCData:
+                  type: array
+                  uniqueItems: true
+                  items: 
+                    type: string
+    resources-msacNrm:
+      oneOf:
+        - $ref: '#/components/schemas/Identity-Single'
+        - $ref: '#/components/schemas/Role-Single'
+        - $ref: '#/components/schemas/AccessRule-Single'

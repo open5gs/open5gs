@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_supi_range_s OpenAPI_supi_range_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_supi_range_s OpenAPI_supi_range_t;
-typedef struct OpenAPI_supi_range_s {
+struct OpenAPI_supi_range_s {
     char *start;
     char *end;
     char *pattern;
-} OpenAPI_supi_range_t;
+};
 
 OpenAPI_supi_range_t *OpenAPI_supi_range_create(
     char *start,

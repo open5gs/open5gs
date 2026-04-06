@@ -37,12 +37,12 @@ bool udm_sbi_send_request(
 #define UDM_SBI_UE_PROVISIONED_DATASETS                    2
 
 int udm_ue_sbi_discover_and_send(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(udm_ue_t *udm_ue, void *data),
         udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, int state, void *data);
 int udm_sess_sbi_discover_and_send(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(udm_sess_t *sess, void *data),
         udm_sess_t *sess, ogs_sbi_stream_t *stream, int state, void *data);

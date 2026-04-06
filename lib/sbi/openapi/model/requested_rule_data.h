@@ -1,7 +1,7 @@
 /*
  * requested_rule_data.h
  *
- * Contains rule data requested by the PCF to receive information associated with PCC rule(s).
+ * Contains rule data requested by the PCF to receive information associated with PCC rule(s). 
  */
 
 #ifndef _OpenAPI_requested_rule_data_H_
@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_requested_rule_data_s OpenAPI_requested_rule_data_t;
 #include "requested_rule_data_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_requested_rule_data_s OpenAPI_requested_rule_data_t;
-typedef struct OpenAPI_requested_rule_data_s {
+struct OpenAPI_requested_rule_data_s {
     OpenAPI_list_t *ref_pcc_rule_ids;
     OpenAPI_list_t *req_data;
-} OpenAPI_requested_rule_data_t;
+};
 
 OpenAPI_requested_rule_data_t *OpenAPI_requested_rule_data_create(
     OpenAPI_list_t *ref_pcc_rule_ids,

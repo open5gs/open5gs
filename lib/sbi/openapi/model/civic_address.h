@@ -12,13 +12,13 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_civic_address_s OpenAPI_civic_address_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_civic_address_s OpenAPI_civic_address_t;
-typedef struct OpenAPI_civic_address_s {
+struct OpenAPI_civic_address_s {
     char *country;
     char *a1;
     char *a2;
@@ -53,7 +53,7 @@ typedef struct OpenAPI_civic_address_s {
     char *usage_rules;
     char *method;
     char *provided_by;
-} OpenAPI_civic_address_t;
+};
 
 OpenAPI_civic_address_t *OpenAPI_civic_address_create(
     char *country,

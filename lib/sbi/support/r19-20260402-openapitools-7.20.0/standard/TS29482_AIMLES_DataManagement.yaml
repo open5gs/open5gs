@@ -1,0 +1,551 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLES Data Management Service
+  version: 1.0.0
+  description: |
+    AIMLES Data Management Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.0.0; Service Enabler Architecture Layer for Verticals (SEAL); Artificial
+    Intelligence Machine Learning Enablement (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/aimles-dm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Request the creation of an AIMLE Data Management Assistance Subscription.
+      operationId: CreateAimleDmAssistSubsc
+      tags:
+        - AIMLE Data Management Assistance Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataMgmtAssistSubsc'
+      responses:
+        '201':
+          description: >
+            The requested Individual AIMLE Data Management Assistance Subscription is successfully
+            created and a representation of the created resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataMgmtAssistSubsc'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        AIMLEDataMngtAssistNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/DataMgmtAssistNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The AIMLE Data Management Assistance Notification is successfully
+                    received and acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of the Individual AIMLE Data Management Assistance Subscription
+          resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual AIMLE Data Management Assistance Subscription resource.
+      operationId: GetIndAimleDmAssistSubsc
+      tags:
+        - Individual AIMLE Data Management Assistance Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual AIMLE Data Management Assistance Subscription resource
+            shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataMgmtAssistSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual AIMLE Data Management Assistance Subscription resource.
+      operationId: UpdateIndAimleDmAssistSubsc
+      tags:
+        - Individual AIMLE Data Management Assistance Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataMgmtAssistSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual AIMLE Data Management Assistance Subscription resource is
+            successfully updated and a representation of the updated resource shall be returned in
+            the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataMgmtAssistSubsc'
+        '204':
+          description: >
+            No Content. The Individual AIMLE Data Management Assistance Subscription resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual AIMLE Data Management Assistance Subscription resource.
+      operationId: ModifyIndAimleDmAssistSubsc
+      tags:
+        - Individual AIMLE Data Management Assistance Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataMgmtAssistSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual AIMLE Data Management Assistance Subscription resource is
+            successfully modified and a representation of the updated resource shall be returned in
+            the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataMgmtAssistSubsc'
+        '204':
+          description: >
+            No Content. The Individual AIMLE Data Management Assistance Subscription resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual AIMLE Data Management Assistance Subscription.
+      operationId: DeleteIndAimleDmAssistSubsc
+      tags:
+        - Individual AIMLE Data Management Assistance Subscription (Document).
+      responses:
+        '204':
+          description: >
+            No Content. The individual AIMLE Data Management Assistance Subscription resource
+            is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    DataMgmtAssistSubsc:
+      description: Represents the AIMLE Data Management Assistance Subscription.
+      type: object
+      properties:
+        clientList:
+          type: array
+          items:
+            $ref: 'TS29482_AIMLES_ContextTransfer.yaml#/components/schemas/AimleClientId'
+          minItems: 1
+        selCriteria:
+          $ref: 'TS29482_AIMLES_AIMLEClientDiscovery.yaml#/components/schemas/ClientDiscCriteria'
+        dataMgmtOp:
+          $ref: '#/components/schemas/DataMgmtOp'
+        dataPrepReqs:
+          $ref: '#/components/schemas/DataProcessReqs'
+        dataAnalysisReqs:
+          $ref: '#/components/schemas/DataProcessReqs'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - dataMgmtOp
+        - notifUri
+      anyOf:
+        - required: [clientList]
+        - required: [selCriteria]
+
+
+    DataMgmtAssistNotif:
+      description: Represents the AIMLE Data Management Assistance Notification.
+      type: object
+      properties:
+        aggrDataPrepOut:
+          $ref: '#/components/schemas/AggregatedDataPrepOutputs'
+        aggrDataAnaOut:
+          $ref: '#/components/schemas/AggregatedDataAnaOutputs'
+        timeStamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+
+    DataProcessReqs:
+      description: Represents the data preparation or analysis requirements.
+      type: object
+      properties:
+        dataSetId:
+          type: string
+        dataOperReqs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataOperReqs'
+          minItems: 1
+      required:
+        - dataSetId
+        - dataOperReqs
+
+
+    DataOperReqs:
+      description: Represents the data operation requirements.
+      type: object
+      properties:
+        dataId:
+          type: string
+        dataSetFeatId:
+          type: string
+        dataOperFuncId:
+          type: string
+        dataOperFunction:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+      required:
+        - dataId
+        - dataSetFeatId
+      anyOf:
+        - required: [dataOperFuncId]
+        - required: [dataOperFunction]
+
+    DataMgmtAssistSubscPatch:
+      description: >
+        Represents the requested modifications to an AIMLE Data Management Assistance Subscription.
+      type: object
+      properties:
+        dataPrepReqs:
+          $ref: '#/components/schemas/DataProcessReqs'
+        dataAnalysisReqs:
+          $ref: '#/components/schemas/DataProcessReqs'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    AggregatedDataPrepOutputs:
+      description: >
+        Represents the outputs for data preparation.
+      type: object
+      properties:
+        dataSetId:
+          type: string
+        preparedDataOutputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/PreparedDataOutput'
+          minItems: 1
+      required:
+        - dataSetId
+        - preparedDataOutputs
+
+    PreparedDataOutput:
+      description: >
+        Represents the prepared data output.
+      type: object
+      properties:
+        featureId:
+          type: string
+        format:
+          $ref: '#/components/schemas/DataFormat'
+        categoryType:
+          $ref: '#/components/schemas/CategoryType'
+        numericValues:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+        categoricValues:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - featureId
+        - format
+
+    AggregatedDataAnaOutputs:
+      description: >
+        Represents the analysis data output.
+      type: object
+      properties:
+        dataSetId:
+          type: string
+        statisticaOutputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatisticalOutput'
+          minItems: 1
+      required:
+        - dataSetId
+        - statisticaOutputs
+
+    StatisticalOutput:
+      description: >
+        Represents the statistical output.
+      type: object
+      properties:
+        featureId:
+          type: string
+        mean:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        std:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        min:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        max:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        outlierValues:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+          minItems: 1
+        anomalies:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+          minItems: 1
+        featureCorrelatedInfo:
+          type: string
+      required:
+        - featureId
+      anyOf:
+        - required: [mean]
+        - required: [std]
+        - required: [min]
+        - required: [max]
+        - required: [outlierValues]
+        - required: [anomalies]
+        - required: [featureCorrelatedInfo]
+
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+    DataMgmtOp:
+      anyOf:
+      - type: string
+        enum:
+         - DATA_PREPARATION
+         - DATA_ANALYSIS
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the data management operation type.  
+        Possible values are:
+        - DATA_PREPARATION: Indicates that the data management operation type is data preparation.
+        - DATA_ANALYSIS: Indicates that the data management operation type is data analysis.
+
+    DataFormat:
+      anyOf:
+      - type: string
+        enum:
+           - NUMERICAL
+           - CATEGORICAL
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the data management operation type.  
+        Possible values are:
+        - NUMERICAL: Indicates that the data format type is numerical.
+        - CATEGORICAL: Indicates that the data format type is categorical.
+
+    CategoryType:
+      anyOf:
+      - type: string
+        enum:
+           - NOMINAL
+           - ORDINAL
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the data management operation type.  
+        Possible values are:
+        - NOMINAL: Indicates that the categorical output type is nominal.
+        - ORDINAL: Indicates that the categorical output type is ordinal.
+
+#

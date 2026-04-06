@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_cn_assisted_ran_para_s OpenAPI_cn_assisted_ran_para_t;
 #include "battery_indication.h"
 #include "scheduled_communication_time.h"
 #include "scheduled_communication_type.h"
@@ -22,8 +23,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_cn_assisted_ran_para_s OpenAPI_cn_assisted_ran_para_t;
-typedef struct OpenAPI_cn_assisted_ran_para_s {
+struct OpenAPI_cn_assisted_ran_para_s {
     OpenAPI_stationary_indication_e stationary_indication;
     bool is_communication_duration_time;
     int communication_duration_time;
@@ -33,7 +33,7 @@ typedef struct OpenAPI_cn_assisted_ran_para_s {
     OpenAPI_scheduled_communication_type_e scheduled_communication_type;
     OpenAPI_traffic_profile_e traffic_profile;
     struct OpenAPI_battery_indication_s *battery_indication;
-} OpenAPI_cn_assisted_ran_para_t;
+};
 
 OpenAPI_cn_assisted_ran_para_t *OpenAPI_cn_assisted_ran_para_create(
     OpenAPI_stationary_indication_e stationary_indication,

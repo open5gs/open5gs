@@ -1,0 +1,1414 @@
+openapi: 3.0.0
+
+info:
+  title: 3gpp-analyticsexposure
+  version: 1.3.1
+  description: |
+    API for Analytics Exposure.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.522 V19.6.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/3gpp-analyticsexposure/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+paths:
+  /{afId}/subscriptions:
+    get:
+      summary: read all of the active subscriptions for the AF
+      operationId: ReadAllSubscriptions
+      tags:
+        - Analytics Exposure Subscriptions
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+        - name: supp-feat
+          in: query
+          description: Contains the list of supported features.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: OK (Successful get all of the active subscriptions for the AF)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnalyticsExposureSubsc'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Creates a new subscription resource
+      operationId: CreateNewSubscription
+      tags:
+        - Analytics Exposure Subscriptions
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: new subscription creation
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyticsExposureSubsc'
+      callbacks:
+        notification:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AnalyticsEventNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: Created (Successful creation)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsExposureSubsc'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '204':
+          description: >
+            Successful case. The resource has been successfully created and no additional
+            content is to be sent in the response message.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{afId}/subscriptions/{subscriptionId}:
+    get:
+      summary: read an active subscription for the AF and the subscription Id
+      operationId: ReadAnSubscription
+      tags:
+        - Individual Analytics Exposure Subscription
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource
+          required: true
+          schema:
+            type: string
+        - name: supp-feat
+          in: query
+          description: Contains the list of supported features.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: OK (Successful get the active subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsExposureSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Fully updates/replaces an existing subscription resource
+      operationId: FullyUpdateAnSubscription
+      tags:
+        - Individual Analytics Exposure Subscription
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to update/replace the existing subscription
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyticsExposureSubsc'
+      responses:
+        '200':
+          description: OK (Successful deletion of the existing subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsExposureSubsc'
+        '204':
+          description: >
+            Successful case. The resource has been successfully updated and no additional
+            content is to be sent in the response message.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes an already existing subscription
+      operationId: DeleteAnSubscription
+      tags:
+        - Individual Analytics Exposure Subscription
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content (Successful deletion of the existing subscription)
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{afId}/fetch:
+    post:
+      summary: Fetch analytics information
+      operationId: FetchAnalyticsInfo
+      tags:
+        - AnalyticsExposure API Fetch analytics information
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyticsRequest'
+      responses:
+        '200':
+          description: The requested information was returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsData'
+        '204':
+          description: No Content (The requested Analytics data does not exist)
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: >
+            The request is rejected by the NEF and more details (not only the ProblemDetails)
+            are returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29520_Nnwdaf_AnalyticsInfo.yaml#/components/schemas/ProblemDetailsAnalyticsInfoRequest'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas: 
+    AnalyticsExposureSubsc:
+      description: Represents an analytics exposure subscription.
+      type: object
+      properties:
+        analyEventsSubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyticsEventSubsc'
+          minItems: 1
+        analyRepInfo:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        notifId:
+          type: string
+        eventNotifis:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyticsEventNotif'
+          minItems: 1
+        failEventReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyticsFailureEventInfo'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        requestTestNotification:
+          type: boolean
+          description: >
+            Set to true by the AF to request the NEF to send a test notification
+            as defined in clause 5.2.5.3 of 3GPP TS 29.122. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+      required:
+        - analyEventsSubs
+        - notifUri
+        - notifId
+
+    AnalyticsEventNotification:
+      description: Represents an analytics event(s) notification.
+      type: object
+      properties:
+        notifId:
+          type: string
+        analyEventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyticsEventNotif'
+          minItems: 1
+        termCause:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/TermCause'
+      required:
+        - notifId
+        - analyEventNotifs
+
+    AnalyticsEventNotif:
+      description: Represents an analytics event to be reported.
+      type: object
+      properties:
+        analyEvent:
+          $ref: '#/components/schemas/AnalyticsEvent'
+        expiry:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        timeStamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        failNotifyCode:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NwdafFailureCode'
+        rvWaitTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        ueMobilityInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeMobilityExposure'
+          minItems: 1
+        ueCommInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/UeCommunication'
+          minItems: 1
+        abnormalInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/AbnormalExposure'
+          minItems: 1
+        congestInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/CongestInfo'
+          minItems: 1
+        dataVlTrnsTmIfs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/E2eDataVolTransTimeInfo'
+          minItems: 1
+        nwPerfInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/NetworkPerfExposure'
+          minItems: 1
+        qosSustainInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosSustainabilityExposure'
+          minItems: 1
+        disperInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DispersionInfo'
+          minItems: 1
+        dnPerfInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DnPerfInfo'
+          minItems: 1
+        svcExps:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ServiceExperienceInfo'
+          minItems: 1
+        movBehavInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/MovBehavInfo'
+          minItems: 1
+        wlanInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/WlanPerformInfo'
+          minItems: 1
+        relProxInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RelProxInfo'
+          minItems: 1
+        start:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        timeStampGen:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        pauseInd:
+          type: boolean
+          description: >
+            Pause analytics consumption indication. Set to "true" to indicate the consumer to stop
+            the consumption of the analytics. Default value is "false" if omitted.
+        resumeInd:
+          type: boolean
+          description: >
+            Resume analytics consumption indication. Set to "true" to indicate the consumer to
+            resume the consumption of the analytics. Default value is "false" if omitted.
+        accuInfo:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AccuracyInfo'
+        cancelAccuInd:
+          type: boolean
+          description: >
+            Indicates cancelled subscription of the analytics accuracy information.
+            Set to "true" indicates the NWDAF cancelled subscription of analytics accuracy
+            information as the NWDAF does not support the accuracy checking capability.
+            Otherwise set to "false". Default value is "false" if omitted.
+        nsiLoadLevelData:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NsiLoadLevelInfo'
+          minItems: 1
+        signalStorms:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/SignalStormInfo'
+          minItems: 1
+      required:
+        - analyEvent
+        - timeStamp
+
+    AnalyticsEventSubsc:
+      description: Represents a subscribed analytics event.
+      type: object
+      properties:
+        analyEvent:
+          $ref: '#/components/schemas/AnalyticsEvent'
+        analyEventFilter:
+          $ref: '#/components/schemas/AnalyticsEventFilterSubsc'
+        tgtUe:
+          $ref: '#/components/schemas/TargetUeId'
+      required:
+        - analyEvent
+
+    AnalyticsEventFilterSubsc:
+      description: Represents an analytics event filter.
+      type: object
+      properties:
+        nwPerfReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NetworkPerfRequirement'
+          minItems: 1
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        fineGranAreas:
+          type: array
+          items:
+            $ref: 'TS29522_AMPolicyAuthorization.yaml#/components/schemas/GeographicalArea'
+          minItems: 1
+          description: Indicates the fine granularity areas to which the subscription applies.
+        temporalGranSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        spatialGranSizeTa:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        spatialGranSizeCell:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        appIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+          minItems: 1
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        dnns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+        dnais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          minItems: 1
+        dataVlTrnsTmRqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/E2eDataVolTransTimeReq'
+          minItems: 1
+        excepRequs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/Exception'
+          minItems: 1
+        exptAnaType:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ExpectedAnalyticsType'
+        exptUeBehav:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ExpectedUeBehaviourData'
+        matchingDir:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/MatchingDirection'
+        reptThlds:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ThresholdLevel'
+          minItems: 1
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        snssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        nsiIdInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NsiIdInfo'
+          minItems: 1
+        nsLevelThrds:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+          minProperties: 1
+          description: >
+            Contains the network slice load level related thresholds.
+            The key of the map shall be set to the value of the S-NSSAI (among the ones provided
+            within the nsiIdInfos attribute to which the provided thresholds within the map value
+            apply.
+            Each map value shall have a maximum value of 100.
+        qosReq:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/QosRequirement'
+        qosFlowRetThds:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RetainabilityThreshold'
+          minItems: 1
+        ranUeThrouThds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+          minItems: 1
+        e2eDelayThds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudget'
+          minItems: 1
+        deviations:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+          minItems: 1
+        disperReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DispersionRequirement'
+          minItems: 1
+        listOfAnaSubsets:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AnalyticsSubset'
+          minItems: 1
+        dnPerfReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DnPerformanceReq'
+          minItems: 1
+        bwRequs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/BwRequirement'
+          minItems: 1
+        ratFreqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RatFreqInformation'
+          minItems: 1
+        appServerAddrs:
+          type: array
+          items:
+            $ref: 'TS29517_Naf_EventExposure.yaml#/components/schemas/AddrFqdn'
+          minItems: 1
+        wlanReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/WlanPerformanceReq'
+          minItems: 1
+        extraReportReq:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/EventReportingRequirement'
+        maxNumOfTopAppUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxNumOfTopAppDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        visitedLocAreas:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+          minItems: 1
+        pduSesInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/PduSessionInfo'
+          minItems: 1
+        ueCommReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/UeCommReq'
+          minItems: 1
+        userDataConOrderCri:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/UserDataConOrderCrit'
+        locGranularity:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/LocInfoGranularity'
+        locOrientation:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/LocationOrientation'
+        ueMobilityReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/UeMobilityReq'
+          minItems: 1
+        movBehavReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/MovBehavReq'
+          minItems: 1
+        relProxReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RelProxReq'
+          minItems: 1
+        useCaseCxt:
+          type: string
+          description: >
+            Indicates the context of usage of the analytics. The value and format of this parameter
+            are not standardized.
+        pauseFlg:
+          type: boolean
+          description: >
+            Pause analytics consumption flag. Set to "true" to indicate the NWDAF to stop sending
+            the notifications of analytics. Default value is "false" if omitted.
+        resumeFlg:
+          type: boolean
+          description: >
+            Resume analytics consumption flag. Set to "true" to indicate the NWDAF to resume sending
+            the notifications of analytics. Default value is "false" if omitted.
+        accuReq:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AccuracyReq'
+        feedback:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AnalyticsFeedbackInfo'
+        sigStormReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/SignalStormReq'
+          minItems: 1
+        nfInstanceIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+          minItems: 1
+        nfSetIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+          minItems: 1
+        lastUeLocs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/TimestampedLocation'
+          minItems: 1
+          description: Contains the last known location of target UE(s).
+
+    TargetUeId:
+      description: Represents the target UE(s) information.
+      type: object
+      properties:
+        anyUeInd:
+          type: boolean
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        exterGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+
+    UeMobilityExposure:
+      description: Represents a UE mobility information.
+      type: object
+      properties:
+        ts:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        recurringTime:
+          $ref: 'TS29122_CpProvisioning.yaml#/components/schemas/ScheduledCommunicationTime'
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        durationVariance:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        locInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeLocationInfo'
+          minItems: 1
+        directionInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DirectionInfo'
+          minItems: 1
+      required:
+        - duration
+        - locInfo
+
+    UeLocationInfo:
+      description: Represents a UE location information.
+      type: object
+      properties:
+        loc:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        geoLoc:
+          $ref: 'TS29522_AMPolicyAuthorization.yaml#/components/schemas/GeographicalArea'
+        ratio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SamplingRatio'
+        confidence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        geoDistrInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/GeoDistributionInfo'
+          minItems: 1
+      required:
+        - loc
+
+    AnalyticsRequest:
+      description: Represents the parameters to request to retrieve analytics information.
+      type: object
+      properties:
+        analyEvent:
+          $ref: '#/components/schemas/AnalyticsEvent'
+        analyEventFilter:
+          $ref: '#/components/schemas/AnalyticsEventFilter'
+        analyRep:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/EventReportingRequirement'
+        tgtUe:
+          $ref: '#/components/schemas/TargetUeId'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - analyEvent
+        - suppFeat
+
+    AnalyticsEventFilter:
+      description: Represents analytics event filter information.
+      type: object
+      properties:
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        fineGranAreas:
+          type: array
+          items:
+            $ref: 'TS29522_AMPolicyAuthorization.yaml#/components/schemas/GeographicalArea'
+          minItems: 1
+          description: Indicates the fine granularity areas to which the request applies.
+        temporalGranSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        spatialGranSizeTa:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        spatialGranSizeCell:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        dnns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+        dnais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          minItems: 1
+        nwPerfTypes:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NetworkPerfType'
+          minItems: 1
+        appIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+          minItems: 1
+        excepIds:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ExceptionId'
+          minItems: 1
+        exptAnaType:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ExpectedAnalyticsType'
+        exptUeBehav:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ExpectedUeBehaviourData'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        snssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        nsiIdInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NsiIdInfo'
+          minItems: 1
+        qosReq:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/QosRequirement'
+        listOfAnaSubsets:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AnalyticsSubset'
+          minItems: 1
+        dnPerfReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DnPerformanceReq'
+          minItems: 1
+        dataVlTrnsTmReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/E2eDataVolTransTimeReq'
+          minItems: 1
+        bwRequs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/BwRequirement'
+          minItems: 1
+        ratFreqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RatFreqInformation'
+          minItems: 1
+        appServerAddrs:
+          type: array
+          items:
+            $ref: 'TS29517_Naf_EventExposure.yaml#/components/schemas/AddrFqdn'
+          minItems: 1
+        wlanReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/WlanPerformanceReq'
+          minItems: 1
+        disperReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DispersionRequirement'
+          minItems: 1
+        maxNumOfTopAppUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxNumOfTopAppDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        visitedLocAreas:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+          minItems: 1
+        pduSesInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/PduSessionInfo'
+          minItems: 1
+        ueCommReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/UeCommReq'
+          minItems: 1
+        userDataConReq:
+          $ref: 'TS29520_Nnwdaf_AnalyticsInfo.yaml#/components/schemas/UserDataCongestReq'
+        locGranularity:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/LocInfoGranularity'
+        locOrientation:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/LocationOrientation'
+        ueMobilityReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/UeMobilityReq'
+          minItems: 1
+        movBehavReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/MovBehavReq'
+          minItems: 1
+        useCaseCxt:
+          type: string
+          description: >
+            Indicates the context of usage of the analytics. The value and format of this parameter
+            are not standardized.
+        accuReq:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AccuracyReq'
+        relProxReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RelProxReq'
+          minItems: 1
+        sigStormReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/SignalStormReq'
+          minItems: 1
+        nfInstanceIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+          minItems: 1
+        nfSetIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+          minItems: 1
+        lastUeLocs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/TimestampedLocation'
+          minItems: 1
+          description: Contains the last known location of target UE(s).
+
+    AnalyticsData:
+      description: Represents analytics data.
+      type: object
+      properties: 
+        start:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        expiry:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        timeStampGen:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        ueMobilityInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeMobilityExposure'
+          minItems: 1
+        ueCommInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/UeCommunication'
+          minItems: 1
+        nwPerfInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/NetworkPerfExposure'
+          minItems: 1
+        abnormalInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/AbnormalExposure'
+          minItems: 1
+        congestInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/CongestInfo'
+          minItems: 1
+        dataVlTrnsTmInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/E2eDataVolTransTimeInfo'
+          minItems: 1
+        qosSustainInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosSustainabilityExposure'
+          minItems: 1
+        dnPerfInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DnPerfInfo'
+          minItems: 1
+        svcExps:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ServiceExperienceInfo'
+          minItems: 1
+        disperReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DispersionRequirement'
+          minItems: 1
+        movBehavInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/MovBehavInfo'
+          minItems: 1
+        wlanInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/WlanPerformInfo'
+          minItems: 1
+        accuInfo:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AccuracyInfo'
+        cancelAccuInd:
+          type: boolean
+          description: >
+            Indicates cancelled request of the analytics accuracy information.
+            Set to "true" indicates the NWDAF cancelled request of analytics accuracy
+            information as the NWDAF does not support the accuracy checking capability.
+            Otherwise set to "false". Default value is "false" if omitted.
+        relProxInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RelProxInfo'
+          minItems: 1
+        nsLoadLevelData:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NsiLoadLevelInfo'
+          minItems: 1
+        signalStorms:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/SignalStormInfo'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - suppFeat
+
+    NetworkPerfExposure:
+      description: Represents network performance information.
+      type: object
+      properties:
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        anaPeriod:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        nwPerfType:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NetworkPerfType'
+        relativeRatio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SamplingRatio'
+        absoluteNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        rscUsgReq:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ResourceUsageRequirement'
+        confidence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - locArea
+        - nwPerfType
+
+    AbnormalExposure:
+      description: Represents a user's abnormal behavior information.
+      type: object
+      properties:
+        gpsis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+        appId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        excep:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/Exception'
+        ratio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SamplingRatio'
+        confidence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        addtMeasInfo:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AdditionalMeasurement'
+      required:
+        - excep
+
+    CongestInfo:
+      description: Represents a UE's user data congestion information.
+      type: object
+      properties:
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        cngAnas:
+          type: array
+          items:
+            $ref: '#/components/schemas/CongestionAnalytics'
+          minItems: 1
+      required:
+        - locArea
+        - cngAnas
+
+    CongestionAnalytics:
+      description: >
+        Represents data congestion analytics for transfer over the user plane,
+        control plane or both.
+      type: object
+      properties:
+        cngType:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/CongestionType'
+        tmWdw:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        nsi:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ThresholdLevel'
+        confidence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        topAppListUl:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/TopApplication'
+          minItems: 1
+        topAppListDl:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/TopApplication'
+          minItems: 1
+      required:
+        - cngType
+        - tmWdw
+        - nsi
+
+    QosSustainabilityExposure:
+      description: Represents a QoS sustainability information.
+      type: object
+      properties:
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        fineAreaInfos:
+          type: array
+          items:
+            $ref: 'TS29522_AMPolicyAuthorization.yaml#/components/schemas/GeographicalArea'
+          minItems: 1
+          description: This attribute contains the geographical locations in a fine granularity.
+        startTs:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        endTs:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        qosFlowRetThd:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RetainabilityThreshold'
+        ranUeThrouThd:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        e2eDelayThd:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudget'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        confidence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - locArea
+        - startTs
+        - endTs
+
+    WlanPerformInfo:
+      description: The WLAN performance related information.
+      type: object
+      properties:
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        wlanPerSsidInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/WlanPerSsIdPerformanceInfo'
+          minItems: 1
+        wlanPerUeIdInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/WlanPerUeIdPerformanceInfo'
+          minItems: 1
+          description: >
+            WLAN performance information for UE Id(s) of WLAN access points deployed in the Area
+            of Interest.
+      required:
+        - wlanPerSsidInfos
+
+    AnalyticsFailureEventInfo:
+      description: >
+        Represents an event for which the subscription request was not successful
+        and including the associated failure reason.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/AnalyticsEvent'
+        failureCode:
+          $ref: '#/components/schemas/AnalyticsFailureCode'
+      required:
+        - event
+        - failureCode
+
+    AnalyticsEvent:
+      anyOf:
+      - type: string
+        enum:
+          - UE_MOBILITY
+          - UE_COMM
+          - ABNORMAL_BEHAVIOR
+          - CONGESTION
+          - NETWORK_PERFORMANCE
+          - QOS_SUSTAINABILITY
+          - DISPERSION
+          - DN_PERFORMANCE
+          - SERVICE_EXPERIENCE
+          - E2E_DATA_VOL_TRANS_TIME
+          - MOVEMENT_BEHAVIOUR
+          - RELATIVE_PROXIMITY
+          - WLAN_PERFORMANCE
+          - NS_LOAD_LEVEL
+          - SIGNALLING_STORM
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents the analytics event that is subscribed or notified.  
+        Possible values are:
+        - UE_MOBILITY: The AF requests to be notified about analytics information of UE mobility.
+        - UE_COMM: The AF requests to be notified about analytics information of UE communication.
+        - ABNORMAL_BEHAVIOR: The AF requests to be notified about analytics information of UE's
+          abnormal behavior.
+        - CONGESTION: The AF requests to be notified about analytics information of user data
+          congestion information. 
+        - NETWORK_PERFORMANCE: The AF requests to be notified about analytics information
+          of network performance. 
+        - QOS_SUSTAINABILITY: The AF requests to be notified about analytics information
+          of QoS sustainability.
+        - DISPERSION: The AF requests to be notified about analytics information of Dispersion
+          analytics.
+        - DN_PERFORMANCE: The AF requests to be notified about analytics information of DN
+          performance.
+        - SERVICE_EXPERIENCE: The AF requests to be notified about analytics information of service
+          experience.
+        - E2E_DATA_VOL_TRANS_TIME: The AF requests to be notified about analytics information of
+          E2E data volume transfer time.
+        - MOVEMENT_BEHAVIOUR: The AF requests to be notified about analytics information of
+          Movement Behaviour.
+        - RELATIVE_PROXIMITY: The AF requests to be notified about analytics information of
+          Relative Proximity.
+        - WLAN_PERFORMANCE: Indicates that the event subscribed is the Wlan Performance
+          information.
+        - NS_LOAD_LEVEL: Indicates that the event subscribed is load level information of Network
+          Slice.
+        - SIGNALLING_STORM: The AF requests to be notified about analytics information of Signalling
+          Storm.
+
+    AnalyticsFailureCode:
+      anyOf:
+      - type: string
+        enum:
+          - UNAVAILABLE_DATA
+          - BOTH_STAT_PRED_NOT_ALLOWED
+          - UNSATISFIED_REQUESTED_ANALYTICS_TIME
+          - NO_ROAMING_SUPPORT
+          - PREDICTION_NOT_ALLOWED
+          - OTHER
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Identifies the failure reason.  
+        Possible values are:
+        - UNAVAILABLE_DATA: The event is rejected since necessary data to perform the service
+          is unavailable.
+        - BOTH_STAT_PRED_NOT_ALLOWED: The event is rejected since the start time is in the past
+          and the end time is in the future, which means the AF requested both
+          statistics and prediction for the analytics.
+        - UNSATISFIED_REQUESTED_ANALYTICS_TIME: Indicates that the requested event is rejected
+          since the analytics information is not ready when the time indicated by the timeAnaNeeded
+          attribute (as provided during the creation or modification of subscription) is reached.
+        - NO_ROAMING_SUPPORT: Indicates that the request shall be rejected because roaming analytics
+          or data are required and the NWDAF that was invoked by the NEF neither supported roaming
+          exchange capabilitiy nor could it forward the request to another NWDAF.
+        - PREDICTION_NOT_ALLOWED: Indicates that the request for the prediction of the analytics
+          event is not allowed.
+        - OTHER: The event is rejected due to other reasons.

@@ -31,7 +31,7 @@ void OpenAPI_ue_context_in_amf_data_free(OpenAPI_ue_context_in_amf_data_t *ue_co
     }
     if (ue_context_in_amf_data->amf_info) {
         OpenAPI_list_for_each(ue_context_in_amf_data->amf_info, node) {
-            OpenAPI_nudm_amf_info_free(node->data);
+            OpenAPI_amf_info_free(node->data);
         }
         OpenAPI_list_free(ue_context_in_amf_data->amf_info);
         ue_context_in_amf_data->amf_info = NULL;
@@ -70,7 +70,7 @@ cJSON *OpenAPI_ue_context_in_amf_data_convertToJSON(OpenAPI_ue_context_in_amf_da
         goto end;
     }
     OpenAPI_list_for_each(ue_context_in_amf_data->amf_info, node) {
-        cJSON *itemLocal = OpenAPI_nudm_amf_info_convertToJSON(node->data);
+        cJSON *itemLocal = OpenAPI_amf_info_convertToJSON(node->data);
         if (itemLocal == NULL) {
             ogs_error("OpenAPI_ue_context_in_amf_data_convertToJSON() failed [amf_info]");
             goto end;
@@ -115,7 +115,7 @@ OpenAPI_ue_context_in_amf_data_t *OpenAPI_ue_context_in_amf_data_parseFromJSON(c
                 ogs_error("OpenAPI_ue_context_in_amf_data_parseFromJSON() failed [amf_info]");
                 goto end;
             }
-            OpenAPI_nudm_amf_info_t *amf_infoItem = OpenAPI_nudm_amf_info_parseFromJSON(amf_info_local);
+            OpenAPI_amf_info_t *amf_infoItem = OpenAPI_amf_info_parseFromJSON(amf_info_local);
             if (!amf_infoItem) {
                 ogs_error("No amf_infoItem");
                 goto end;
@@ -137,7 +137,7 @@ end:
     }
     if (amf_infoList) {
         OpenAPI_list_for_each(amf_infoList, node) {
-            OpenAPI_nudm_amf_info_free(node->data);
+            OpenAPI_amf_info_free(node->data);
         }
         OpenAPI_list_free(amf_infoList);
         amf_infoList = NULL;

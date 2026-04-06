@@ -5,7 +5,7 @@
 #include "gad_shape.h"
 
 OpenAPI_gad_shape_t *OpenAPI_gad_shape_create(
-    OpenAPI_supported_gad_shapes_t *shape
+    OpenAPI_supported_gad_shapes_e shape
 )
 {
     OpenAPI_gad_shape_t *gad_shape_local_var = ogs_malloc(sizeof(OpenAPI_gad_shape_t));
@@ -23,10 +23,6 @@ void OpenAPI_gad_shape_free(OpenAPI_gad_shape_t *gad_shape)
     if (NULL == gad_shape) {
         return;
     }
-    if (gad_shape->shape) {
-        OpenAPI_supported_gad_shapes_free(gad_shape->shape);
-        gad_shape->shape = NULL;
-    }
     ogs_free(gad_shape);
 }
 
@@ -41,17 +37,11 @@ cJSON *OpenAPI_gad_shape_convertToJSON(OpenAPI_gad_shape_t *gad_shape)
     }
 
     item = cJSON_CreateObject();
-    if (!gad_shape->shape) {
+    if (gad_shape->shape == OpenAPI_supported_gad_shapes_NULL) {
         ogs_error("OpenAPI_gad_shape_convertToJSON() failed [shape]");
         return NULL;
     }
-    cJSON *shape_local_JSON = OpenAPI_supported_gad_shapes_convertToJSON(gad_shape->shape);
-    if (shape_local_JSON == NULL) {
-        ogs_error("OpenAPI_gad_shape_convertToJSON() failed [shape]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "shape", shape_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "shape", OpenAPI_supported_gad_shapes_ToString(gad_shape->shape)) == NULL) {
         ogs_error("OpenAPI_gad_shape_convertToJSON() failed [shape]");
         goto end;
     }
@@ -65,28 +55,24 @@ OpenAPI_gad_shape_t *OpenAPI_gad_shape_parseFromJSON(cJSON *gad_shapeJSON)
     OpenAPI_gad_shape_t *gad_shape_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *shape = NULL;
-    OpenAPI_supported_gad_shapes_t *shape_local_nonprim = NULL;
+    OpenAPI_supported_gad_shapes_e shapeVariable = 0;
     shape = cJSON_GetObjectItemCaseSensitive(gad_shapeJSON, "shape");
     if (!shape) {
         ogs_error("OpenAPI_gad_shape_parseFromJSON() failed [shape]");
         goto end;
     }
-    shape_local_nonprim = OpenAPI_supported_gad_shapes_parseFromJSON(shape);
-    if (!shape_local_nonprim) {
-        ogs_error("OpenAPI_supported_gad_shapes_parseFromJSON failed [shape]");
+    if (!cJSON_IsString(shape)) {
+        ogs_error("OpenAPI_gad_shape_parseFromJSON() failed [shape]");
         goto end;
     }
+    shapeVariable = OpenAPI_supported_gad_shapes_FromString(shape->valuestring);
 
     gad_shape_local_var = OpenAPI_gad_shape_create (
-        shape_local_nonprim
+        shapeVariable
     );
 
     return gad_shape_local_var;
 end:
-    if (shape_local_nonprim) {
-        OpenAPI_supported_gad_shapes_free(shape_local_nonprim);
-        shape_local_nonprim = NULL;
-    }
     return NULL;
 }
 

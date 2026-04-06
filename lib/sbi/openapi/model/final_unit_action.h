@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "final_unit_action_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_final_unit_action_s OpenAPI_final_unit_action_t;
-typedef struct OpenAPI_final_unit_action_s {
-} OpenAPI_final_unit_action_t;
+typedef enum { OpenAPI_final_unit_action_NULL = 0, OpenAPI_final_unit_action_TERMINATE, OpenAPI_final_unit_action_REDIRECT, OpenAPI_final_unit_action_RESTRICT_ACCESS } OpenAPI_final_unit_action_e;
 
-OpenAPI_final_unit_action_t *OpenAPI_final_unit_action_create(
-);
-void OpenAPI_final_unit_action_free(OpenAPI_final_unit_action_t *final_unit_action);
-OpenAPI_final_unit_action_t *OpenAPI_final_unit_action_parseFromJSON(cJSON *final_unit_actionJSON);
-cJSON *OpenAPI_final_unit_action_convertToJSON(OpenAPI_final_unit_action_t *final_unit_action);
-OpenAPI_final_unit_action_t *OpenAPI_final_unit_action_copy(OpenAPI_final_unit_action_t *dst, OpenAPI_final_unit_action_t *src);
+char* OpenAPI_final_unit_action_ToString(OpenAPI_final_unit_action_e final_unit_action);
+
+OpenAPI_final_unit_action_e OpenAPI_final_unit_action_FromString(char* final_unit_action);
 
 #ifdef __cplusplus
 }

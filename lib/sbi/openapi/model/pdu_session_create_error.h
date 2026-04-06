@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pdu_session_create_error_s OpenAPI_pdu_session_create_error_t;
 #include "problem_details.h"
 #include "ref_to_binary_data.h"
 
@@ -19,15 +20,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pdu_session_create_error_s OpenAPI_pdu_session_create_error_t;
-typedef struct OpenAPI_pdu_session_create_error_s {
+struct OpenAPI_pdu_session_create_error_s {
     struct OpenAPI_problem_details_s *error;
     char *n1sm_cause;
     struct OpenAPI_ref_to_binary_data_s *n1_sm_info_to_ue;
     bool is_back_off_timer;
     int back_off_timer;
     char *recovery_time;
-} OpenAPI_pdu_session_create_error_t;
+};
 
 OpenAPI_pdu_session_create_error_t *OpenAPI_pdu_session_create_error_create(
     OpenAPI_problem_details_t *error,

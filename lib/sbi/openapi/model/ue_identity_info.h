@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_identity_info_s OpenAPI_ue_identity_info_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_identity_info_s OpenAPI_ue_identity_info_t;
-typedef struct OpenAPI_ue_identity_info_s {
+struct OpenAPI_ue_identity_info_s {
     char *gpsi;
     char *pei;
     char *supi;
-} OpenAPI_ue_identity_info_t;
+};
 
 OpenAPI_ue_identity_info_t *OpenAPI_ue_identity_info_create(
     char *gpsi,

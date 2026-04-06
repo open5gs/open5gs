@@ -1,0 +1,552 @@
+openapi: 3.0.1
+info:
+  title: 3GPP Edge NRM
+  version: 19.4.0
+  description: >-
+    OAS 3.0.1 specification of the Edge NRM
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.538; Edge NRM
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.538/
+paths: {}
+components:
+  schemas:
+  
+#-------- Definition of types-----------------------------------------------------
+    ServingLocation:
+      type: object
+      properties:
+        geographicalLocation:
+          $ref: '#/components/schemas/GeoLoc'
+        topologicalLocation:
+          $ref: '#/components/schemas/TopologicalServiceArea'
+    TopologicalServiceArea:
+      type: object
+      properties:
+        cellIdList:
+          type: array
+          items:
+            type: integer
+        trackingAreaIdList:
+          $ref: 'TS28541_NrNrm.yaml#/components/schemas/TaiList'
+        servingPLMN:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+    GeoLoc:
+      type: object
+      properties:
+        geographicalCoordinates:
+          $ref: '#/components/schemas/GeographicalCoordinates'
+        civicLocation:
+          type: string
+    GeographicalCoordinates:
+      type: object
+      properties:
+        latitude:
+          type: integer
+        longitude:
+          type: integer
+    EDNConnectionInfo:
+      type: object
+      properties:
+        dNN:
+          type: string
+        eDNServiceArea:
+          $ref: '#/components/schemas/ServingLocation'
+    AffinityAntiAffinity:
+      type: object
+      properties:
+        affinityEAS:
+          type: array
+          items:
+            type: string
+        antiAffinityEAS:
+          type: array
+          items:
+            type: string
+    VirtualResource:
+      type: object
+      properties:
+        virtualMemory:
+          type: integer
+        virtualDisk:
+          type: integer
+        virtualCPU:
+          type: string
+        vnfdId:
+          type: string
+    SoftwareImageInfo:
+      type: object
+      properties:
+        minimumDisk:
+          type: integer
+        minimumRAM:
+          type: integer
+        discFormat:
+          type: string
+        operatingSystem:
+          type: string
+        swImageRef:
+          type: string
+    RegistrationInfo:
+      type: object
+      properties:
+        registrationExpiry:
+          type: string
+          readOnly: true
+        registrationID:
+          type: string
+          readOnly: true
+        secCredential:
+          type: string
+    EASServicePermission:
+      type: string
+      description: any of enumerated value
+      readOnly: true
+      enum:
+        - TRIAL
+        - SILVER
+        - GOLD
+    EASFeature:
+      type: string
+    EASStatus:
+      type: string
+      description: any of enumerated value
+      readOnly: true
+      enum:
+        - ENABLED
+        - DISABLED
+        - OVERLOAD_WARNING
+    ResourceReservationRequirement:
+      type: object
+      properties:
+        computeRequirement:
+          type: string
+        storageRequirement:
+          type: string
+        networkingRequirement:
+          type: integer
+
+    ResourceReservationStatus:
+      type: object
+      properties:
+        resourceId:
+          type: string
+          readOnly: true
+        reservationStatus:
+          type: string
+          description: any of enumrated value
+          readOnly: true
+          enum:
+            - RESERVED
+            - USEd
+    RelocationTriggerInfo:
+      type: object
+      properties:
+        triggerType:
+          type: string
+          description: any of enumrated value
+          enum:
+            - IMMEDIATE
+            - FUTURE
+        futuristicTriggerTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+    AvailableEDN:
+      type: object
+      properties:
+        AvailableEDN:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        resourceQuota:
+          $ref: '#/components/schemas/VirtualResource'
+    FederatedECSInfo:
+      type: object
+      properties:
+        federateECSIdentifier:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        federatedECSProfile:
+          type: integer
+        servedEASList:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        servedEESList:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+    SAP:
+      type: object
+      properties:
+        host:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Host'
+        port:
+          type: integer
+    Operation:
+      type: object
+      properties:
+        name:
+          type: string
+        allowedConsumers:
+          type: string
+        operationSemantics:
+          type: string
+          description: any of enumrated value
+          enum:
+            - REQUEST_RESPONSE
+            - SUBSCRIBE_NOTIFY         
+
+#-------- Definition of types for name-containments ------
+    SubNetwork-ncO-EdgeNrm:
+      type: object
+      properties:
+        ECSFunction:
+          $ref: '#/components/schemas/ECSFunction-Multiple'
+        EdgeDataNetwork:
+          $ref: '#/components/schemas/EdgeDataNetwork-Multiple'
+        EASBundle:
+          $ref: '#/components/schemas/EASBundle-Multiple'
+
+#-------- Definition of Edge common IOCs --------------------------------------------
+    ManagedEdgeNFService-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                userLabel:
+                  type: string
+                sAP:
+                  $ref: '#/components/schemas/SAP'
+                operations:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Operation'
+                administrativeState:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/AdministrativeState'
+                operationalState:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/OperationalState'
+#-------- Definition of Edge common IOCs --------------------------------------------
+
+#-------- Definition of concrete IOCs --------------------------------------------
+
+    EdgeDataNetwork-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            ednIdentifier:
+              type: string
+            eDNConnectionInfo:
+              $ref: '#/components/schemas/EDNConnectionInfo'         
+        - type: object
+          properties:
+            EASFunction:
+              $ref: '#/components/schemas/EASFunction-Multiple'
+            EESFunction:
+              $ref: '#/components/schemas/EESFunction-Multiple'
+            availableEdgeVirtualResources:
+              type: string
+              readOnly: true
+   
+    EASFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    eASIdentifier:
+                      type: string
+                    eESAddress:
+                      type: array
+                      items:
+                        type: string
+                    registrationInfo:
+                      $ref: '#/components/schemas/RegistrationInfo'  
+                    eASRequirementsRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                    eASAddress:
+                      type: array
+                      items:
+                        type: string
+                    relocationTriggerInfo:
+                      $ref: '#/components/schemas/RelocationTriggerInfo'
+                    relocationRejectByASP:
+                        type: boolean
+                        default: FALSE
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            ManagedEdgeNFService:
+              $ref: '#/components/schemas/ManagedEdgeNFService-Multiple'        
+    EASProfile-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            aCID:
+              type: string
+              readOnly: true
+            eASProvider:
+              type: string
+              readOnly: true
+            eASdescription:
+              type: string
+              readOnly: true
+            eASSchedule:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindowRo'
+            eASGeographicalServiceArea:
+              $ref: '#/components/schemas/GeoLoc'
+            eASTopologicalServiceArea:
+              $ref: '#/components/schemas/TopologicalServiceArea'
+            eASServicePermissionLevel:
+              $ref: '#/components/schemas/EASServicePermission'
+            eASFeature:
+              $ref: '#/components/schemas/EASFeature'
+            eASServiceContinuitySupport:
+              type: boolean
+              readOnly: true
+              default: FALSE
+            eASDNAI:
+              type: string
+              readOnly: true
+            eASAvailabilityReportingPeriod:
+              type: integer
+              readOnly: true
+            eASStatus:
+              $ref: '#/components/schemas/EASStatus'
+    EESFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    eESIdentifier:
+                      type: string
+                    eESServingLocation:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/ServingLocation'
+                    eESAddress:
+                      type: array
+                      items:
+                        type: string
+                    softwareImageInfo:
+                      $ref: '#/components/schemas/SoftwareImageInfo'
+                    serviceContinuitySupport:
+                      type: boolean
+                    eASFunctionRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList' 
+                    registrationInfo:
+                      $ref: '#/components/schemas/RegistrationInfo'  
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            ManagedEdgeNFService:
+              $ref: '#/components/schemas/ManagedEdgeNFService-Multiple'
+
+    ECSFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    eCSAddress:
+                      type: string
+                    providerIdentifier:
+                      type: string
+                    edgeDataNetworkRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+                    eESFuncitonRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+                    softwareImageInfo:
+                      $ref: '#/components/schemas/SoftwareImageInfo'
+                    sharedECSInfo:
+                      $ref: '#/components/schemas/FederatedECSInfo'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            ManagedEdgeNFService:
+              $ref: '#/components/schemas/ManagedEdgeNFService-Multiple'
+
+    EASRequirements-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            requiredEASservingLocation:
+              $ref: '#/components/schemas/ServingLocation'
+            affinityAntiAffinity:
+              $ref: '#/components/schemas/AffinityAntiAffinity'
+            serviceContinuity:
+              type: boolean
+            virtualResource:
+              $ref: '#/components/schemas/VirtualResource'
+            softwareImageInfo:
+              $ref: '#/components/schemas/SoftwareImageInfo'
+            eASSchedule:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow'
+            eASFeature:
+              $ref: '#/components/schemas/EASFeature'
+            relocationPolicy:
+              type: string
+              description: any of enumrated value
+              enum:
+                - YES
+                - NO
+                - YESwNOTIFY
+            federationID:
+              type: string
+            eASDeploymentMonitor:
+              $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ProcessMonitor'
+            reservationJobRef:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+    EASResourceReservationJob-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            reservationLocation:
+              $ref: '#/components/schemas/ServingLocation'
+            resourceReservationRequirement:
+              type: array
+              items:
+                $ref: '#/components/schemas/ResourceReservationRequirement'
+            requestedReservationExpiration:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+            resourceReservationStatus:
+              type: array
+              items:
+                $ref: '#/components/schemas/ResourceReservationStatus'
+    EdgeFederation-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            participatingOPiD:
+              type: string
+            leadingOPiD:
+              type: string
+            federatedECSInfo:
+              $ref: '#/components/schemas/FederatedECSInfo'
+
+    OperatorEdgeFederation-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            federationID:
+              type: string
+            federationExpiry:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+            leadingOPiD:
+              type: string
+            availableEDNList:
+              type: array
+              items:
+                $ref: '#/components/schemas/AvailableEDN'
+            acceptedEDN:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+    OperatorEdgeDataNetwork-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            availableEASResource:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+            edgeDataNetworkRef:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+    EASBundle-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            bundleIdentifier:
+              type: string
+              readOnly: true
+            bundledEASIdentifier:
+              type: string
+            bundleType:
+              type: string
+            mainEASIdentifier:
+              type: string
+            coordinatedEASDiscovery:
+              type: boolean
+              default: FALSE
+            coordinatedACR:
+              type: boolean
+            eDNAffinity:
+              type: string
+              description: any of enumrated value
+              enum:
+                - STRONG
+                - WEAK
+                - PREFERRED
+
+#-------- Definition of JSON arrays for name-contained IOCs ----------------------                               
+
+    EASFunction-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EASFunction-Single'   
+    ECSFunction-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ECSFunction-Single'
+    EESFunction-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EESFunction-Single'
+    EdgeDataNetwork-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EdgeDataNetwork-Single'
+    EASProfile-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EASProfile-Single'
+    EdgeFederation-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EASProfile-Single'
+    OperatorEdgeFederation-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/OperatorEdgeFederation-Single'
+    OperatorEdgeDataNetwork-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/OperatorEdgeDataNetwork-Single'
+    EASBundle-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EASBundle-Single'
+    ManagedEdgeNFService-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ManagedEdgeNFService-Single'
+
+#--------------------------------- Definition ------------------------------------                          
+
+    resources-edgeNrm:
+      oneOf:
+        - $ref: '#/components/schemas/EASFunction-Single'
+        - $ref: '#/components/schemas/ECSFunction-Single'
+        - $ref: '#/components/schemas/EESFunction-Single' 
+        - $ref: '#/components/schemas/EdgeDataNetwork-Single'
+        - $ref: '#/components/schemas/EASRequirements-Single'
+        - $ref: '#/components/schemas/EASProfile-Single'
+        - $ref: '#/components/schemas/EdgeFederation-Single'
+        - $ref: '#/components/schemas/OperatorEdgeFederation-Single'
+        - $ref: '#/components/schemas/OperatorEdgeDataNetwork-Single'
+        - $ref: '#/components/schemas/EASResourceReservationJob-Single'
+        - $ref: '#/components/schemas/EASBundle-Single'
+        - $ref: '#/components/schemas/ManagedEdgeNFService-Single'

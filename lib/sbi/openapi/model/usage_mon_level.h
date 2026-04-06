@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "usage_mon_level_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_usage_mon_level_s OpenAPI_usage_mon_level_t;
-typedef struct OpenAPI_usage_mon_level_s {
-} OpenAPI_usage_mon_level_t;
+typedef enum { OpenAPI_usage_mon_level_NULL = 0, OpenAPI_usage_mon_level_SESSION_LEVEL, OpenAPI_usage_mon_level_SERVICE_LEVEL } OpenAPI_usage_mon_level_e;
 
-OpenAPI_usage_mon_level_t *OpenAPI_usage_mon_level_create(
-);
-void OpenAPI_usage_mon_level_free(OpenAPI_usage_mon_level_t *usage_mon_level);
-OpenAPI_usage_mon_level_t *OpenAPI_usage_mon_level_parseFromJSON(cJSON *usage_mon_levelJSON);
-cJSON *OpenAPI_usage_mon_level_convertToJSON(OpenAPI_usage_mon_level_t *usage_mon_level);
-OpenAPI_usage_mon_level_t *OpenAPI_usage_mon_level_copy(OpenAPI_usage_mon_level_t *dst, OpenAPI_usage_mon_level_t *src);
+char* OpenAPI_usage_mon_level_ToString(OpenAPI_usage_mon_level_e usage_mon_level);
+
+OpenAPI_usage_mon_level_e OpenAPI_usage_mon_level_FromString(char* usage_mon_level);
 
 #ifdef __cplusplus
 }

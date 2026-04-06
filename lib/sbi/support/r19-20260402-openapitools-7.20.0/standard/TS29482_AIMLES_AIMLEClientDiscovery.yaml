@@ -1,0 +1,380 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLES_AIMLEClientDiscovery
+  version: 1.0.1
+  description: |
+    API for AIMLES Client Discovery Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.1.0; Artificial Intelligence Machine Learning Enablement 
+    (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/aimles-disc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /clients:
+    get:
+      summary: Retrieve an existing the Individual AIMLE Data Management Assistance Subscription resource.
+      operationId: GetAimleClients
+      tags:
+        - AIMLE Clients (Collection)
+      parameters:
+        - name: filt-criteria
+          in: query
+          description: >
+             Represents the AIMLE Client(s) filtering criteria.
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientDiscCriteria'
+        - name: cl-number
+          in: query
+          description: >
+            Represents the required number of the discovered AIMLE Clients.
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        - name: supported-features
+          in: query
+          description: >
+            Contains supported features information, used to negotiate the applicability
+            of optional features.
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            OK. The response body contains the result of the search over the list of AIMLE Clients.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientDiscResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    ClientDiscCriteria:
+      description: Represents the AIMLE Client discovery criteria.
+      type: object
+      properties:
+        serviceReq:
+          $ref: '#/components/schemas/ServiceRequirement'
+        mlModelTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MlModelType'
+          minItems: 1
+        aimlOpers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AimlOperationRole'
+          minItems: 1
+        clientAppCap:
+          $ref: '#/components/schemas/ClientAppCapability'
+        datasetReq:
+          $ref: '#/components/schemas/DatasetRequirement'
+        clientTaskCap:
+          $ref: '#/components/schemas/ClientTaskCapability'
+        clientVel:
+          $ref: '#/components/schemas/ClientVelocity'
+        location:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        clientQosReqs:
+          type: array
+          items:
+            $ref: 'TS29548_SDD_TransmissionQualityMeasurement.yaml#/components/schemas/TransQualMeasCriteriaSet'
+          minItems: 1
+      required:
+        - serviceReq
+        - aimlOpers
+        - clientAppCap
+
+    ServiceRequirement:
+      description: Represents the AIMLE service requirements.
+      type: object
+      properties:
+        valServId:
+          type: string
+        permLevel:
+          $ref: '#/components/schemas/ServicePermLevel'
+      required:
+        - valServId
+
+    ClientAppCapability:
+      description: Represents the AIMLE Client compute capability type.
+      type: object
+      properties:
+        appType:
+          $ref: '#/components/schemas/MlAppType'
+        avail:
+          type: array
+          items:
+            $ref: 'TS29122_CpProvisioning.yaml#/components/schemas/ScheduledCommunicationTime'
+          minItems: 1
+        dropOfRate:
+          type: integer
+          minimum: 0
+          maximum: 100
+      required:
+        - appType
+
+    DatasetRequirement:
+      description: Represents the dataset requirements.
+      type: object
+      properties:
+        avail:
+          $ref: '#/components/schemas/DatasetAvailability'
+        cap:
+          $ref: '#/components/schemas/DatasetCapability'
+
+    DatasetAvailability:
+      description: Represents the dataset availability information.
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        age:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        size:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        features:
+          type: array
+          items:
+            type: string
+          minItems: 1
+
+    DatasetCapability:
+      description: Represents the dataset capability information.
+      type: object
+      properties:
+        dataType:
+          $ref: '#/components/schemas/DataType'
+        functions:
+          type: array
+          items:
+            type: string
+          minItems: 1
+
+    ClientTaskCapability:
+      description: Represents the performance capabilities.
+      type: object
+      properties:
+        compCap:
+          $ref: '#/components/schemas/ComputeCapability'
+        perfCap:
+          $ref: '#/components/schemas/PerformanceCapability'
+
+    ClientDiscResp:
+      description: Represents the AIMLE Client discovery response.
+      type: object
+      properties:
+        clients:
+          type: array
+          items:
+            $ref: 'TS29482_AIMLES_ContextTransfer.yaml#/components/schemas/AimleClientId'
+          minItems: 0
+        suppTasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClientTaskCapability'
+          minItems: 1
+        suppFeats:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - clients
+
+
+# SIMPLE DATA TYPES
+#
+
+
+# ENUMERATIONS
+    ServicePermLevel:
+      anyOf:
+      - type: string
+        enum:
+           - PREMIUM
+           - STANDARD
+           - LIMITED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the  service permission level.  
+        Possible values are:
+        - PREMIUM: Indicates that the service permission level is premium.
+        - STANDARD: Indicates that the service permission level is standard.
+        - LIMITED: Indicates that the service permission level is limited.
+
+    MlModelType:
+      anyOf:
+      - type: string
+        enum:
+           - DECISION_TREES
+           - LINEAR_REGRESSION
+           - NEURAL_NETWORKS
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the ML model type.  
+        Possible values are:
+        - DECISION_TREES: Indicates that the ML model type is decision trees.
+        - LINEAR_REGRESSION: Indicates that the ML model type is linear regression.
+        - NEURAL_NETWORKS: Indicates that the ML model type is neural networks.
+
+    AimlOperationRole:
+      anyOf:
+      - type: string
+        enum:
+           - MODEL_TRAINING
+           - MODEL_TRANSFER
+           - MODEL_INFERENCE
+           - MODEL_OFFLOAD
+           - MODEL_SPLIT
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the AIMLE operation role.  
+        Possible values are:
+        - MODEL_TRAINING: Indicates that the supported AIML operation role is model training.
+        - MODEL_TRANSFER: Indicates that the supported AIML operation role is model transfer.
+        - MODEL_INFERENCE: Indicates that the supported AIML operation role is model inference.
+        - MODEL_OFFLOAD: Indicates that the supported AIML operation role is model offload.
+        - MODEL_SPLIT: Indicates that the supported AIML operation role is model split.
+
+    MlAppType:
+      anyOf:
+      - type: string
+        enum:
+           - FL
+           - TL
+           - SL
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the ML model type.  
+        Possible values are:
+        - FL: Indicates that the supported ML application type is Federated Learning.
+        - TL: Indicates that the supported ML application type is Transfer Learning.
+        - SL: Indicates that the supported ML application type is Split Learning.
+
+    DataType:
+      anyOf:
+      - type: string
+        enum:
+           - RAW
+           - PROCESSED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the type of the collected data.  
+        Possible values are:
+        - RAW: Indicates that the type of the collected data is raw.
+        - PROCESSED: Indicates that the type of the collected data is processed.
+
+    PerformanceCapability:
+      anyOf:
+      - type: string
+        enum:
+           - GREEN_TASK
+           - ENERGY_EFFICIENT
+           - LOW_COSTS
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the performance capabilities.  
+        Possible values are:
+        - GREEN_TASK: Indicates that the performance capability is green task.
+        - ENERGY_EFFICIENT: Indicates that the performance capability is energy-efficient.
+        - LOW_COSTS: Indicates that the performance capability is low costs.
+
+    ComputeCapability:
+      anyOf:
+      - type: string
+        enum:
+           - LOW
+           - HIGH
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the AIMLE Client compute capability type.  
+        Possible values are:
+        - LOW: Indicates that the compute capability is low.
+        - HIGH: Indicates that the compute capability is high.
+
+    ClientVelocity:
+      anyOf:
+      - type: string
+        enum:
+           - MOBILE_LOW
+           - MOBILE_HIGH
+           - STATIC
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the AIMLE Client velocity level.  
+        Possible values are:
+        - MOBILE_LOW: Indicates that the AIMLE Client is mobile with low velocity.
+        - MOBILE_HIGH: Indicates that the AIMLE Client is mobile with high velocity.
+        - STATIC: Indicates that the AIMLE Client is static.

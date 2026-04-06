@@ -1,0 +1,225 @@
+openapi: 3.0.0
+
+info:
+  title: EES UE Identifier Service
+  version: 1.2.0
+  description: |
+    EES UE Identifier Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.558 V19.5.0; Enabling Edge Applications;
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.558/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/eees-ueidentifier/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+paths:
+  /fetch:
+    post:
+      deprecated: true
+      summary: Fetch the identifier of an UE.
+      operationId: FetchUEId
+      tags:
+        - Fetch UE Identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInformation'
+      responses:
+        '200':
+          description: >
+            The communicated ACR update information was successfully received.
+            The response body contains the feedback of the EES.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /get:
+    post:
+      summary: Get the identifier of an UE.
+      operationId: GetUEId
+      tags:
+        - Get UE Identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInfo'
+      responses:
+        '200':
+          description: >
+            The operation is successful and the corresponding UE Identifier information, returned 
+            by the Edge Enabler Server is included in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeIdInfo'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    UserInformation:
+      deprecated: true
+      description: >
+        Represents information about the User or the UE, that used by EES to use 3GPP CN capability 
+        to retrieve the EAS specific UE identifier.
+      type: object
+      properties:
+        easId:
+          description: >
+            The application identifier of the EAS, e.g. URI, FQDN, requesting the UE Identifier 
+            information
+          type: string
+        easProviderId:
+          description: Identifier of the ASP that provides the EAS.
+          type: string
+        ipAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - easId
+        - ipAddr
+
+    UserInfo:
+      description: >
+        Represents information about the User or the UE, that used by EES to retrieve the UE 
+        Identifier information.
+      type: object
+      properties:
+        requestorId:
+          type: string
+        easIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: >
+            The additional list of EAS Identifier for which the UE IDs are requested for by EAS or
+            EEC given the User information (e.g. IP address).
+        easProviderId:
+          description: Identifier of the ASP that provides the EAS.
+          type: string
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        ipAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        appPortId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        portNumber:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      anyOf:
+        - required: [ueId]
+        - required: [ipAddr]
+
+    UeIdInfo:
+      description: >
+        Represents UE Identifier Information, including list of UE Identifier related information.
+      type: object
+      properties:
+        ueIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeId'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ueIds
+
+    UeId:
+      description: >
+        Represents UE Identifier Information, including list of UE Identifier related information.
+      type: object
+      properties:
+        edgeUeId:
+          description: Represents EDGE UE Identifier.
+          type: string
+        afSpecUeId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        easId:
+          description: >
+            The application identifier of the EAS, e.g. URI, FQDN, requesting the UE Identifier
+            Information.
+          type: string
+#      oneOf:
+#        - required: [edgeUeId]
+#        - required: [afSpecUeId]

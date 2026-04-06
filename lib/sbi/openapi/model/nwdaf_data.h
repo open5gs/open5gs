@@ -1,7 +1,7 @@
 /*
  * nwdaf_data.h
  *
- * Indicates the list of Analytic ID(s) per NWDAF instance ID used for the PDU Session consumed by the SMF.
+ * Indicates the list of Analytic ID(s) per NWDAF instance ID used for the PDU Session consumed by the SMF. 
  */
 
 #ifndef _OpenAPI_nwdaf_data_H_
@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nwdaf_data_s OpenAPI_nwdaf_data_t;
 #include "nwdaf_event.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nwdaf_data_s OpenAPI_nwdaf_data_t;
-typedef struct OpenAPI_nwdaf_data_s {
+struct OpenAPI_nwdaf_data_s {
     char *nwdaf_instance_id;
     OpenAPI_list_t *nwdaf_events;
-} OpenAPI_nwdaf_data_t;
+};
 
 OpenAPI_nwdaf_data_t *OpenAPI_nwdaf_data_create(
     char *nwdaf_instance_id,

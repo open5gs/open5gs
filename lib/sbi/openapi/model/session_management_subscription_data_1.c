@@ -11,13 +11,22 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     OpenAPI_list_t* shared_vn_group_data_ids,
     char *shared_dnn_configurations_id,
     OpenAPI_odb_packet_services_e odb_packet_services,
+    OpenAPI_list_t* odb_exempted_dnn_data,
     bool is_trace_data_null,
     OpenAPI_trace_data_t *trace_data,
     char *shared_trace_data_id,
     OpenAPI_list_t* expected_ue_behaviours_list,
+    OpenAPI_list_t* expected_ue_behaviour_data,
+    OpenAPI_list_t* app_specific_expected_ue_behaviour_data,
     OpenAPI_list_t* suggested_packet_num_dl_list,
     char *_3gpp_charging_characteristics,
-    char *supported_features
+    char *chf_group_id,
+    OpenAPI_nsac_admission_mode_e nsac_mode,
+    bool is_sess_inact_timer,
+    int sess_inact_timer,
+    char *supported_features,
+    OpenAPI_list_t *additional_shared_dnn_configurations_ids,
+    OpenAPI_ue_level_measurements_configuration_1_t *ue_level_meas_config
 )
 {
     OpenAPI_session_management_subscription_data_1_t *session_management_subscription_data_1_local_var = ogs_malloc(sizeof(OpenAPI_session_management_subscription_data_1_t));
@@ -29,13 +38,22 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     session_management_subscription_data_1_local_var->shared_vn_group_data_ids = shared_vn_group_data_ids;
     session_management_subscription_data_1_local_var->shared_dnn_configurations_id = shared_dnn_configurations_id;
     session_management_subscription_data_1_local_var->odb_packet_services = odb_packet_services;
+    session_management_subscription_data_1_local_var->odb_exempted_dnn_data = odb_exempted_dnn_data;
     session_management_subscription_data_1_local_var->is_trace_data_null = is_trace_data_null;
     session_management_subscription_data_1_local_var->trace_data = trace_data;
     session_management_subscription_data_1_local_var->shared_trace_data_id = shared_trace_data_id;
     session_management_subscription_data_1_local_var->expected_ue_behaviours_list = expected_ue_behaviours_list;
+    session_management_subscription_data_1_local_var->expected_ue_behaviour_data = expected_ue_behaviour_data;
+    session_management_subscription_data_1_local_var->app_specific_expected_ue_behaviour_data = app_specific_expected_ue_behaviour_data;
     session_management_subscription_data_1_local_var->suggested_packet_num_dl_list = suggested_packet_num_dl_list;
     session_management_subscription_data_1_local_var->_3gpp_charging_characteristics = _3gpp_charging_characteristics;
+    session_management_subscription_data_1_local_var->chf_group_id = chf_group_id;
+    session_management_subscription_data_1_local_var->nsac_mode = nsac_mode;
+    session_management_subscription_data_1_local_var->is_sess_inact_timer = is_sess_inact_timer;
+    session_management_subscription_data_1_local_var->sess_inact_timer = sess_inact_timer;
     session_management_subscription_data_1_local_var->supported_features = supported_features;
+    session_management_subscription_data_1_local_var->additional_shared_dnn_configurations_ids = additional_shared_dnn_configurations_ids;
+    session_management_subscription_data_1_local_var->ue_level_meas_config = ue_level_meas_config;
 
     return session_management_subscription_data_1_local_var;
 }
@@ -82,6 +100,16 @@ void OpenAPI_session_management_subscription_data_1_free(OpenAPI_session_managem
         ogs_free(session_management_subscription_data_1->shared_dnn_configurations_id);
         session_management_subscription_data_1->shared_dnn_configurations_id = NULL;
     }
+    if (session_management_subscription_data_1->odb_exempted_dnn_data) {
+        OpenAPI_list_for_each(session_management_subscription_data_1->odb_exempted_dnn_data, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_odb_exempted_dnn_info_1_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(session_management_subscription_data_1->odb_exempted_dnn_data);
+        session_management_subscription_data_1->odb_exempted_dnn_data = NULL;
+    }
     if (session_management_subscription_data_1->trace_data) {
         OpenAPI_trace_data_free(session_management_subscription_data_1->trace_data);
         session_management_subscription_data_1->trace_data = NULL;
@@ -100,6 +128,26 @@ void OpenAPI_session_management_subscription_data_1_free(OpenAPI_session_managem
         OpenAPI_list_free(session_management_subscription_data_1->expected_ue_behaviours_list);
         session_management_subscription_data_1->expected_ue_behaviours_list = NULL;
     }
+    if (session_management_subscription_data_1->expected_ue_behaviour_data) {
+        OpenAPI_list_for_each(session_management_subscription_data_1->expected_ue_behaviour_data, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_expected_ue_behaviour_data_1_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(session_management_subscription_data_1->expected_ue_behaviour_data);
+        session_management_subscription_data_1->expected_ue_behaviour_data = NULL;
+    }
+    if (session_management_subscription_data_1->app_specific_expected_ue_behaviour_data) {
+        OpenAPI_list_for_each(session_management_subscription_data_1->app_specific_expected_ue_behaviour_data, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_app_specific_expected_ue_behaviour_data_1_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(session_management_subscription_data_1->app_specific_expected_ue_behaviour_data);
+        session_management_subscription_data_1->app_specific_expected_ue_behaviour_data = NULL;
+    }
     if (session_management_subscription_data_1->suggested_packet_num_dl_list) {
         OpenAPI_list_for_each(session_management_subscription_data_1->suggested_packet_num_dl_list, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
@@ -114,9 +162,24 @@ void OpenAPI_session_management_subscription_data_1_free(OpenAPI_session_managem
         ogs_free(session_management_subscription_data_1->_3gpp_charging_characteristics);
         session_management_subscription_data_1->_3gpp_charging_characteristics = NULL;
     }
+    if (session_management_subscription_data_1->chf_group_id) {
+        ogs_free(session_management_subscription_data_1->chf_group_id);
+        session_management_subscription_data_1->chf_group_id = NULL;
+    }
     if (session_management_subscription_data_1->supported_features) {
         ogs_free(session_management_subscription_data_1->supported_features);
         session_management_subscription_data_1->supported_features = NULL;
+    }
+    if (session_management_subscription_data_1->additional_shared_dnn_configurations_ids) {
+        OpenAPI_list_for_each(session_management_subscription_data_1->additional_shared_dnn_configurations_ids, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(session_management_subscription_data_1->additional_shared_dnn_configurations_ids);
+        session_management_subscription_data_1->additional_shared_dnn_configurations_ids = NULL;
+    }
+    if (session_management_subscription_data_1->ue_level_meas_config) {
+        OpenAPI_ue_level_measurements_configuration_1_free(session_management_subscription_data_1->ue_level_meas_config);
+        session_management_subscription_data_1->ue_level_meas_config = NULL;
     }
     ogs_free(session_management_subscription_data_1);
 }
@@ -231,6 +294,36 @@ cJSON *OpenAPI_session_management_subscription_data_1_convertToJSON(OpenAPI_sess
     }
     }
 
+    if (session_management_subscription_data_1->odb_exempted_dnn_data) {
+    cJSON *odb_exempted_dnn_data = cJSON_AddObjectToObject(item, "odbExemptedDnnData");
+    if (odb_exempted_dnn_data == NULL) {
+        ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [odb_exempted_dnn_data]");
+        goto end;
+    }
+    cJSON *localMapObject = odb_exempted_dnn_data;
+    if (session_management_subscription_data_1->odb_exempted_dnn_data) {
+        OpenAPI_list_for_each(session_management_subscription_data_1->odb_exempted_dnn_data, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [odb_exempted_dnn_data]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [odb_exempted_dnn_data]");
+                goto end;
+            }
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_odb_exempted_dnn_info_1_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [inner]");
+                goto end;
+            }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        }
+    }
+    }
+
     if (session_management_subscription_data_1->trace_data) {
     cJSON *trace_data_local_JSON = OpenAPI_trace_data_convertToJSON(session_management_subscription_data_1->trace_data);
     if (trace_data_local_JSON == NULL) {
@@ -286,6 +379,66 @@ cJSON *OpenAPI_session_management_subscription_data_1_convertToJSON(OpenAPI_sess
     }
     }
 
+    if (session_management_subscription_data_1->expected_ue_behaviour_data) {
+    cJSON *expected_ue_behaviour_data = cJSON_AddObjectToObject(item, "expectedUeBehaviourData");
+    if (expected_ue_behaviour_data == NULL) {
+        ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [expected_ue_behaviour_data]");
+        goto end;
+    }
+    cJSON *localMapObject = expected_ue_behaviour_data;
+    if (session_management_subscription_data_1->expected_ue_behaviour_data) {
+        OpenAPI_list_for_each(session_management_subscription_data_1->expected_ue_behaviour_data, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [expected_ue_behaviour_data]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [expected_ue_behaviour_data]");
+                goto end;
+            }
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_expected_ue_behaviour_data_1_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [inner]");
+                goto end;
+            }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        }
+    }
+    }
+
+    if (session_management_subscription_data_1->app_specific_expected_ue_behaviour_data) {
+    cJSON *app_specific_expected_ue_behaviour_data = cJSON_AddObjectToObject(item, "appSpecificExpectedUeBehaviourData");
+    if (app_specific_expected_ue_behaviour_data == NULL) {
+        ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [app_specific_expected_ue_behaviour_data]");
+        goto end;
+    }
+    cJSON *localMapObject = app_specific_expected_ue_behaviour_data;
+    if (session_management_subscription_data_1->app_specific_expected_ue_behaviour_data) {
+        OpenAPI_list_for_each(session_management_subscription_data_1->app_specific_expected_ue_behaviour_data, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [app_specific_expected_ue_behaviour_data]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [app_specific_expected_ue_behaviour_data]");
+                goto end;
+            }
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_app_specific_expected_ue_behaviour_data_1_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [inner]");
+                goto end;
+            }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        }
+    }
+    }
+
     if (session_management_subscription_data_1->suggested_packet_num_dl_list) {
     cJSON *suggested_packet_num_dl_list = cJSON_AddObjectToObject(item, "suggestedPacketNumDlList");
     if (suggested_packet_num_dl_list == NULL) {
@@ -323,9 +476,57 @@ cJSON *OpenAPI_session_management_subscription_data_1_convertToJSON(OpenAPI_sess
     }
     }
 
+    if (session_management_subscription_data_1->chf_group_id) {
+    if (cJSON_AddStringToObject(item, "chfGroupId", session_management_subscription_data_1->chf_group_id) == NULL) {
+        ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [chf_group_id]");
+        goto end;
+    }
+    }
+
+    if (session_management_subscription_data_1->nsac_mode != OpenAPI_nsac_admission_mode_NULL) {
+    if (cJSON_AddStringToObject(item, "nsacMode", OpenAPI_nsac_admission_mode_ToString(session_management_subscription_data_1->nsac_mode)) == NULL) {
+        ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [nsac_mode]");
+        goto end;
+    }
+    }
+
+    if (session_management_subscription_data_1->is_sess_inact_timer) {
+    if (cJSON_AddNumberToObject(item, "sessInactTimer", session_management_subscription_data_1->sess_inact_timer) == NULL) {
+        ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [sess_inact_timer]");
+        goto end;
+    }
+    }
+
     if (session_management_subscription_data_1->supported_features) {
     if (cJSON_AddStringToObject(item, "supportedFeatures", session_management_subscription_data_1->supported_features) == NULL) {
         ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [supported_features]");
+        goto end;
+    }
+    }
+
+    if (session_management_subscription_data_1->additional_shared_dnn_configurations_ids) {
+    cJSON *additional_shared_dnn_configurations_idsList = cJSON_AddArrayToObject(item, "additionalSharedDnnConfigurationsIds");
+    if (additional_shared_dnn_configurations_idsList == NULL) {
+        ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [additional_shared_dnn_configurations_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(session_management_subscription_data_1->additional_shared_dnn_configurations_ids, node) {
+        if (cJSON_AddStringToObject(additional_shared_dnn_configurations_idsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [additional_shared_dnn_configurations_ids]");
+            goto end;
+        }
+    }
+    }
+
+    if (session_management_subscription_data_1->ue_level_meas_config) {
+    cJSON *ue_level_meas_config_local_JSON = OpenAPI_ue_level_measurements_configuration_1_convertToJSON(session_management_subscription_data_1->ue_level_meas_config);
+    if (ue_level_meas_config_local_JSON == NULL) {
+        ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [ue_level_meas_config]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ueLevelMeasConfig", ue_level_meas_config_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_session_management_subscription_data_1_convertToJSON() failed [ue_level_meas_config]");
         goto end;
     }
     }
@@ -349,15 +550,29 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     cJSON *shared_dnn_configurations_id = NULL;
     cJSON *odb_packet_services = NULL;
     OpenAPI_odb_packet_services_e odb_packet_servicesVariable = 0;
+    cJSON *odb_exempted_dnn_data = NULL;
+    OpenAPI_list_t *odb_exempted_dnn_dataList = NULL;
     cJSON *trace_data = NULL;
     OpenAPI_trace_data_t *trace_data_local_nonprim = NULL;
     cJSON *shared_trace_data_id = NULL;
     cJSON *expected_ue_behaviours_list = NULL;
     OpenAPI_list_t *expected_ue_behaviours_listList = NULL;
+    cJSON *expected_ue_behaviour_data = NULL;
+    OpenAPI_list_t *expected_ue_behaviour_dataList = NULL;
+    cJSON *app_specific_expected_ue_behaviour_data = NULL;
+    OpenAPI_list_t *app_specific_expected_ue_behaviour_dataList = NULL;
     cJSON *suggested_packet_num_dl_list = NULL;
     OpenAPI_list_t *suggested_packet_num_dl_listList = NULL;
     cJSON *_3gpp_charging_characteristics = NULL;
+    cJSON *chf_group_id = NULL;
+    cJSON *nsac_mode = NULL;
+    OpenAPI_nsac_admission_mode_e nsac_modeVariable = 0;
+    cJSON *sess_inact_timer = NULL;
     cJSON *supported_features = NULL;
+    cJSON *additional_shared_dnn_configurations_ids = NULL;
+    OpenAPI_list_t *additional_shared_dnn_configurations_idsList = NULL;
+    cJSON *ue_level_meas_config = NULL;
+    OpenAPI_ue_level_measurements_configuration_1_t *ue_level_meas_config_local_nonprim = NULL;
     single_nssai = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "singleNssai");
     if (!single_nssai) {
         ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [single_nssai]");
@@ -457,6 +672,32 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     odb_packet_servicesVariable = OpenAPI_odb_packet_services_FromString(odb_packet_services->valuestring);
     }
 
+    odb_exempted_dnn_data = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "odbExemptedDnnData");
+    if (odb_exempted_dnn_data) {
+        cJSON *odb_exempted_dnn_data_local_map = NULL;
+        if (!cJSON_IsObject(odb_exempted_dnn_data) && !cJSON_IsNull(odb_exempted_dnn_data)) {
+            ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [odb_exempted_dnn_data]");
+            goto end;
+        }
+        if (cJSON_IsObject(odb_exempted_dnn_data)) {
+            odb_exempted_dnn_dataList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(odb_exempted_dnn_data_local_map, odb_exempted_dnn_data) {
+                cJSON *localMapObject = odb_exempted_dnn_data_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_odb_exempted_dnn_info_1_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(odb_exempted_dnn_dataList, localMapKeyPair);
+            }
+        }
+    }
+
     trace_data = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "traceData");
     if (trace_data) {
     if (!cJSON_IsNull(trace_data)) {
@@ -502,6 +743,58 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
         }
     }
 
+    expected_ue_behaviour_data = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "expectedUeBehaviourData");
+    if (expected_ue_behaviour_data) {
+        cJSON *expected_ue_behaviour_data_local_map = NULL;
+        if (!cJSON_IsObject(expected_ue_behaviour_data) && !cJSON_IsNull(expected_ue_behaviour_data)) {
+            ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [expected_ue_behaviour_data]");
+            goto end;
+        }
+        if (cJSON_IsObject(expected_ue_behaviour_data)) {
+            expected_ue_behaviour_dataList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(expected_ue_behaviour_data_local_map, expected_ue_behaviour_data) {
+                cJSON *localMapObject = expected_ue_behaviour_data_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_expected_ue_behaviour_data_1_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(expected_ue_behaviour_dataList, localMapKeyPair);
+            }
+        }
+    }
+
+    app_specific_expected_ue_behaviour_data = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "appSpecificExpectedUeBehaviourData");
+    if (app_specific_expected_ue_behaviour_data) {
+        cJSON *app_specific_expected_ue_behaviour_data_local_map = NULL;
+        if (!cJSON_IsObject(app_specific_expected_ue_behaviour_data) && !cJSON_IsNull(app_specific_expected_ue_behaviour_data)) {
+            ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [app_specific_expected_ue_behaviour_data]");
+            goto end;
+        }
+        if (cJSON_IsObject(app_specific_expected_ue_behaviour_data)) {
+            app_specific_expected_ue_behaviour_dataList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(app_specific_expected_ue_behaviour_data_local_map, app_specific_expected_ue_behaviour_data) {
+                cJSON *localMapObject = app_specific_expected_ue_behaviour_data_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_app_specific_expected_ue_behaviour_data_1_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(app_specific_expected_ue_behaviour_dataList, localMapKeyPair);
+            }
+        }
+    }
+
     suggested_packet_num_dl_list = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "suggestedPacketNumDlList");
     if (suggested_packet_num_dl_list) {
         cJSON *suggested_packet_num_dl_list_local_map = NULL;
@@ -536,10 +829,65 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
     }
     }
 
+    chf_group_id = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "chfGroupId");
+    if (chf_group_id) {
+    if (!cJSON_IsString(chf_group_id) && !cJSON_IsNull(chf_group_id)) {
+        ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [chf_group_id]");
+        goto end;
+    }
+    }
+
+    nsac_mode = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "nsacMode");
+    if (nsac_mode) {
+    if (!cJSON_IsString(nsac_mode)) {
+        ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [nsac_mode]");
+        goto end;
+    }
+    nsac_modeVariable = OpenAPI_nsac_admission_mode_FromString(nsac_mode->valuestring);
+    }
+
+    sess_inact_timer = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "sessInactTimer");
+    if (sess_inact_timer) {
+    if (!cJSON_IsNumber(sess_inact_timer)) {
+        ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [sess_inact_timer]");
+        goto end;
+    }
+    }
+
     supported_features = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "supportedFeatures");
     if (supported_features) {
     if (!cJSON_IsString(supported_features) && !cJSON_IsNull(supported_features)) {
         ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [supported_features]");
+        goto end;
+    }
+    }
+
+    additional_shared_dnn_configurations_ids = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "additionalSharedDnnConfigurationsIds");
+    if (additional_shared_dnn_configurations_ids) {
+        cJSON *additional_shared_dnn_configurations_ids_local = NULL;
+        if (!cJSON_IsArray(additional_shared_dnn_configurations_ids)) {
+            ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [additional_shared_dnn_configurations_ids]");
+            goto end;
+        }
+
+        additional_shared_dnn_configurations_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(additional_shared_dnn_configurations_ids_local, additional_shared_dnn_configurations_ids) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(additional_shared_dnn_configurations_ids_local)) {
+                ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [additional_shared_dnn_configurations_ids]");
+                goto end;
+            }
+            OpenAPI_list_add(additional_shared_dnn_configurations_idsList, ogs_strdup(additional_shared_dnn_configurations_ids_local->valuestring));
+        }
+    }
+
+    ue_level_meas_config = cJSON_GetObjectItemCaseSensitive(session_management_subscription_data_1JSON, "ueLevelMeasConfig");
+    if (ue_level_meas_config) {
+    ue_level_meas_config_local_nonprim = OpenAPI_ue_level_measurements_configuration_1_parseFromJSON(ue_level_meas_config);
+    if (!ue_level_meas_config_local_nonprim) {
+        ogs_error("OpenAPI_ue_level_measurements_configuration_1_parseFromJSON failed [ue_level_meas_config]");
         goto end;
     }
     }
@@ -551,13 +899,22 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
         shared_vn_group_data_ids ? shared_vn_group_data_idsList : NULL,
         shared_dnn_configurations_id && !cJSON_IsNull(shared_dnn_configurations_id) ? ogs_strdup(shared_dnn_configurations_id->valuestring) : NULL,
         odb_packet_services ? odb_packet_servicesVariable : 0,
+        odb_exempted_dnn_data ? odb_exempted_dnn_dataList : NULL,
         trace_data && cJSON_IsNull(trace_data) ? true : false,
         trace_data ? trace_data_local_nonprim : NULL,
         shared_trace_data_id && !cJSON_IsNull(shared_trace_data_id) ? ogs_strdup(shared_trace_data_id->valuestring) : NULL,
         expected_ue_behaviours_list ? expected_ue_behaviours_listList : NULL,
+        expected_ue_behaviour_data ? expected_ue_behaviour_dataList : NULL,
+        app_specific_expected_ue_behaviour_data ? app_specific_expected_ue_behaviour_dataList : NULL,
         suggested_packet_num_dl_list ? suggested_packet_num_dl_listList : NULL,
         _3gpp_charging_characteristics && !cJSON_IsNull(_3gpp_charging_characteristics) ? ogs_strdup(_3gpp_charging_characteristics->valuestring) : NULL,
-        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
+        chf_group_id && !cJSON_IsNull(chf_group_id) ? ogs_strdup(chf_group_id->valuestring) : NULL,
+        nsac_mode ? nsac_modeVariable : 0,
+        sess_inact_timer ? true : false,
+        sess_inact_timer ? sess_inact_timer->valuedouble : 0,
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        additional_shared_dnn_configurations_ids ? additional_shared_dnn_configurations_idsList : NULL,
+        ue_level_meas_config ? ue_level_meas_config_local_nonprim : NULL
     );
 
     return session_management_subscription_data_1_local_var;
@@ -568,7 +925,7 @@ end:
     }
     if (dnn_configurationsList) {
         OpenAPI_list_for_each(dnn_configurationsList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_dnn_configuration_1_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
@@ -585,7 +942,7 @@ end:
     }
     if (shared_vn_group_data_idsList) {
         OpenAPI_list_for_each(shared_vn_group_data_idsList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             ogs_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
@@ -593,13 +950,23 @@ end:
         OpenAPI_list_free(shared_vn_group_data_idsList);
         shared_vn_group_data_idsList = NULL;
     }
+    if (odb_exempted_dnn_dataList) {
+        OpenAPI_list_for_each(odb_exempted_dnn_dataList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_odb_exempted_dnn_info_1_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(odb_exempted_dnn_dataList);
+        odb_exempted_dnn_dataList = NULL;
+    }
     if (trace_data_local_nonprim) {
         OpenAPI_trace_data_free(trace_data_local_nonprim);
         trace_data_local_nonprim = NULL;
     }
     if (expected_ue_behaviours_listList) {
         OpenAPI_list_for_each(expected_ue_behaviours_listList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_expected_ue_behaviour_data_1_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
@@ -607,15 +974,46 @@ end:
         OpenAPI_list_free(expected_ue_behaviours_listList);
         expected_ue_behaviours_listList = NULL;
     }
+    if (expected_ue_behaviour_dataList) {
+        OpenAPI_list_for_each(expected_ue_behaviour_dataList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_expected_ue_behaviour_data_1_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(expected_ue_behaviour_dataList);
+        expected_ue_behaviour_dataList = NULL;
+    }
+    if (app_specific_expected_ue_behaviour_dataList) {
+        OpenAPI_list_for_each(app_specific_expected_ue_behaviour_dataList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_app_specific_expected_ue_behaviour_data_1_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(app_specific_expected_ue_behaviour_dataList);
+        app_specific_expected_ue_behaviour_dataList = NULL;
+    }
     if (suggested_packet_num_dl_listList) {
         OpenAPI_list_for_each(suggested_packet_num_dl_listList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_suggested_packet_num_dl_1_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(suggested_packet_num_dl_listList);
         suggested_packet_num_dl_listList = NULL;
+    }
+    if (additional_shared_dnn_configurations_idsList) {
+        OpenAPI_list_for_each(additional_shared_dnn_configurations_idsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(additional_shared_dnn_configurations_idsList);
+        additional_shared_dnn_configurations_idsList = NULL;
+    }
+    if (ue_level_meas_config_local_nonprim) {
+        OpenAPI_ue_level_measurements_configuration_1_free(ue_level_meas_config_local_nonprim);
+        ue_level_meas_config_local_nonprim = NULL;
     }
     return NULL;
 }

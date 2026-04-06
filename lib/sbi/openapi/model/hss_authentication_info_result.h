@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_hss_authentication_info_result_s OpenAPI_hss_authentication_info_result_t;
 #include "hss_authentication_vectors.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_hss_authentication_info_result_s OpenAPI_hss_authentication_info_result_t;
-typedef struct OpenAPI_hss_authentication_info_result_s {
+struct OpenAPI_hss_authentication_info_result_s {
     char *supported_features;
     struct OpenAPI_hss_authentication_vectors_s *hss_authentication_vectors;
-} OpenAPI_hss_authentication_info_result_t;
+};
 
 OpenAPI_hss_authentication_info_result_t *OpenAPI_hss_authentication_info_result_create(
     char *supported_features,

@@ -1,7 +1,7 @@
 /*
  * hss_av_type.h
  *
- * 
+ * Indicates a type of authentication vector.
  */
 
 #ifndef _OpenAPI_hss_av_type_H_

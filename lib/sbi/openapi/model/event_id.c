@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "event_id.h"
 
-OpenAPI_event_id_t *OpenAPI_event_id_create(
-)
+char* OpenAPI_event_id_ToString(OpenAPI_event_id_e event_id)
 {
-    OpenAPI_event_id_t *event_id_local_var = ogs_malloc(sizeof(OpenAPI_event_id_t));
-    ogs_assert(event_id_local_var);
-
-
-    return event_id_local_var;
+    const char *event_idArray[] =  { "NULL", "LOAD_LEVEL_INFORMATION", "NETWORK_PERFORMANCE", "NF_LOAD", "SERVICE_EXPERIENCE", "UE_MOBILITY", "UE_COMMUNICATION", "QOS_SUSTAINABILITY", "ABNORMAL_BEHAVIOUR", "USER_DATA_CONGESTION", "NSI_LOAD_LEVEL", "SM_CONGESTION", "DISPERSION", "RED_TRANS_EXP", "WLAN_PERFORMANCE", "DN_PERFORMANCE", "PDU_SESSION_TRAFFIC", "E2E_DATA_VOL_TRANS_TIME", "MOVEMENT_BEHAVIOUR", "LOC_ACCURACY", "RELATIVE_PROXIMITY", "SIGNALLING_STORM", "QOS_POLICY_ASSIST" };
+    size_t sizeofArray = sizeof(event_idArray) / sizeof(event_idArray[0]);
+    if (event_id < sizeofArray)
+        return (char *)event_idArray[event_id];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_event_id_free(OpenAPI_event_id_t *event_id)
+OpenAPI_event_id_e OpenAPI_event_id_FromString(char* event_id)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == event_id) {
-        return;
+    int stringToReturn = 0;
+    const char *event_idArray[] =  { "NULL", "LOAD_LEVEL_INFORMATION", "NETWORK_PERFORMANCE", "NF_LOAD", "SERVICE_EXPERIENCE", "UE_MOBILITY", "UE_COMMUNICATION", "QOS_SUSTAINABILITY", "ABNORMAL_BEHAVIOUR", "USER_DATA_CONGESTION", "NSI_LOAD_LEVEL", "SM_CONGESTION", "DISPERSION", "RED_TRANS_EXP", "WLAN_PERFORMANCE", "DN_PERFORMANCE", "PDU_SESSION_TRAFFIC", "E2E_DATA_VOL_TRANS_TIME", "MOVEMENT_BEHAVIOUR", "LOC_ACCURACY", "RELATIVE_PROXIMITY", "SIGNALLING_STORM", "QOS_POLICY_ASSIST" };
+    size_t sizeofArray = sizeof(event_idArray) / sizeof(event_idArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(event_id, event_idArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(event_id);
-}
-
-cJSON *OpenAPI_event_id_convertToJSON(OpenAPI_event_id_t *event_id)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (event_id == NULL) {
-        ogs_error("OpenAPI_event_id_convertToJSON() failed [EventId]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_event_id_t *OpenAPI_event_id_parseFromJSON(cJSON *event_idJSON)
-{
-    OpenAPI_event_id_t *event_id_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    event_id_local_var = OpenAPI_event_id_create (
-    );
-
-    return event_id_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_event_id_t *OpenAPI_event_id_copy(OpenAPI_event_id_t *dst, OpenAPI_event_id_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_event_id_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_event_id_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_event_id_free(dst);
-    dst = OpenAPI_event_id_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

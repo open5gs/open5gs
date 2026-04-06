@@ -6,7 +6,7 @@
 
 char* OpenAPI_steering_functionality_ToString(OpenAPI_steering_functionality_e steering_functionality)
 {
-    const char *steering_functionalityArray[] =  { "NULL", "MPTCP", "ATSSS_LL" };
+    const char *steering_functionalityArray[] =  { "NULL", "MPTCP", "MPQUIC", "ATSSS_LL", "MPQUIC_IP", "MPQUIC_E" };
     size_t sizeofArray = sizeof(steering_functionalityArray) / sizeof(steering_functionalityArray[0]);
     if (steering_functionality < sizeofArray)
         return (char *)steering_functionalityArray[steering_functionality];
@@ -17,7 +17,7 @@ char* OpenAPI_steering_functionality_ToString(OpenAPI_steering_functionality_e s
 OpenAPI_steering_functionality_e OpenAPI_steering_functionality_FromString(char* steering_functionality)
 {
     int stringToReturn = 0;
-    const char *steering_functionalityArray[] =  { "NULL", "MPTCP", "ATSSS_LL" };
+    const char *steering_functionalityArray[] =  { "NULL", "MPTCP", "MPQUIC", "ATSSS_LL", "MPQUIC_IP", "MPQUIC_E" };
     size_t sizeofArray = sizeof(steering_functionalityArray) / sizeof(steering_functionalityArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(steering_functionality, steering_functionalityArray[stringToReturn]) == 0) {

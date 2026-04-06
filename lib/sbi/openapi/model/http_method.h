@@ -1,7 +1,7 @@
 /*
  * http_method.h
  *
- * 
+ * Enumeration of HTTP methods
  */
 
 #ifndef _OpenAPI_http_method_H_

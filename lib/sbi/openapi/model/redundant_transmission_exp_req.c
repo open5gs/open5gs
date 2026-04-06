@@ -5,8 +5,8 @@
 #include "redundant_transmission_exp_req.h"
 
 OpenAPI_redundant_transmission_exp_req_t *OpenAPI_redundant_transmission_exp_req_create(
-    OpenAPI_red_trans_exp_ordering_criterion_t *red_t_order_criter,
-    OpenAPI_matching_direction_t *order
+    OpenAPI_red_trans_exp_ordering_criterion_e red_t_order_criter,
+    OpenAPI_matching_direction_e order
 )
 {
     OpenAPI_redundant_transmission_exp_req_t *redundant_transmission_exp_req_local_var = ogs_malloc(sizeof(OpenAPI_redundant_transmission_exp_req_t));
@@ -25,14 +25,6 @@ void OpenAPI_redundant_transmission_exp_req_free(OpenAPI_redundant_transmission_
     if (NULL == redundant_transmission_exp_req) {
         return;
     }
-    if (redundant_transmission_exp_req->red_t_order_criter) {
-        OpenAPI_red_trans_exp_ordering_criterion_free(redundant_transmission_exp_req->red_t_order_criter);
-        redundant_transmission_exp_req->red_t_order_criter = NULL;
-    }
-    if (redundant_transmission_exp_req->order) {
-        OpenAPI_matching_direction_free(redundant_transmission_exp_req->order);
-        redundant_transmission_exp_req->order = NULL;
-    }
     ogs_free(redundant_transmission_exp_req);
 }
 
@@ -47,27 +39,15 @@ cJSON *OpenAPI_redundant_transmission_exp_req_convertToJSON(OpenAPI_redundant_tr
     }
 
     item = cJSON_CreateObject();
-    if (redundant_transmission_exp_req->red_t_order_criter) {
-    cJSON *red_t_order_criter_local_JSON = OpenAPI_red_trans_exp_ordering_criterion_convertToJSON(redundant_transmission_exp_req->red_t_order_criter);
-    if (red_t_order_criter_local_JSON == NULL) {
-        ogs_error("OpenAPI_redundant_transmission_exp_req_convertToJSON() failed [red_t_order_criter]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "redTOrderCriter", red_t_order_criter_local_JSON);
-    if (item->child == NULL) {
+    if (redundant_transmission_exp_req->red_t_order_criter != OpenAPI_red_trans_exp_ordering_criterion_NULL) {
+    if (cJSON_AddStringToObject(item, "redTOrderCriter", OpenAPI_red_trans_exp_ordering_criterion_ToString(redundant_transmission_exp_req->red_t_order_criter)) == NULL) {
         ogs_error("OpenAPI_redundant_transmission_exp_req_convertToJSON() failed [red_t_order_criter]");
         goto end;
     }
     }
 
-    if (redundant_transmission_exp_req->order) {
-    cJSON *order_local_JSON = OpenAPI_matching_direction_convertToJSON(redundant_transmission_exp_req->order);
-    if (order_local_JSON == NULL) {
-        ogs_error("OpenAPI_redundant_transmission_exp_req_convertToJSON() failed [order]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "order", order_local_JSON);
-    if (item->child == NULL) {
+    if (redundant_transmission_exp_req->order != OpenAPI_matching_direction_NULL) {
+    if (cJSON_AddStringToObject(item, "order", OpenAPI_matching_direction_ToString(redundant_transmission_exp_req->order)) == NULL) {
         ogs_error("OpenAPI_redundant_transmission_exp_req_convertToJSON() failed [order]");
         goto end;
     }
@@ -82,42 +62,34 @@ OpenAPI_redundant_transmission_exp_req_t *OpenAPI_redundant_transmission_exp_req
     OpenAPI_redundant_transmission_exp_req_t *redundant_transmission_exp_req_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *red_t_order_criter = NULL;
-    OpenAPI_red_trans_exp_ordering_criterion_t *red_t_order_criter_local_nonprim = NULL;
+    OpenAPI_red_trans_exp_ordering_criterion_e red_t_order_criterVariable = 0;
     cJSON *order = NULL;
-    OpenAPI_matching_direction_t *order_local_nonprim = NULL;
+    OpenAPI_matching_direction_e orderVariable = 0;
     red_t_order_criter = cJSON_GetObjectItemCaseSensitive(redundant_transmission_exp_reqJSON, "redTOrderCriter");
     if (red_t_order_criter) {
-    red_t_order_criter_local_nonprim = OpenAPI_red_trans_exp_ordering_criterion_parseFromJSON(red_t_order_criter);
-    if (!red_t_order_criter_local_nonprim) {
-        ogs_error("OpenAPI_red_trans_exp_ordering_criterion_parseFromJSON failed [red_t_order_criter]");
+    if (!cJSON_IsString(red_t_order_criter)) {
+        ogs_error("OpenAPI_redundant_transmission_exp_req_parseFromJSON() failed [red_t_order_criter]");
         goto end;
     }
+    red_t_order_criterVariable = OpenAPI_red_trans_exp_ordering_criterion_FromString(red_t_order_criter->valuestring);
     }
 
     order = cJSON_GetObjectItemCaseSensitive(redundant_transmission_exp_reqJSON, "order");
     if (order) {
-    order_local_nonprim = OpenAPI_matching_direction_parseFromJSON(order);
-    if (!order_local_nonprim) {
-        ogs_error("OpenAPI_matching_direction_parseFromJSON failed [order]");
+    if (!cJSON_IsString(order)) {
+        ogs_error("OpenAPI_redundant_transmission_exp_req_parseFromJSON() failed [order]");
         goto end;
     }
+    orderVariable = OpenAPI_matching_direction_FromString(order->valuestring);
     }
 
     redundant_transmission_exp_req_local_var = OpenAPI_redundant_transmission_exp_req_create (
-        red_t_order_criter ? red_t_order_criter_local_nonprim : NULL,
-        order ? order_local_nonprim : NULL
+        red_t_order_criter ? red_t_order_criterVariable : 0,
+        order ? orderVariable : 0
     );
 
     return redundant_transmission_exp_req_local_var;
 end:
-    if (red_t_order_criter_local_nonprim) {
-        OpenAPI_red_trans_exp_ordering_criterion_free(red_t_order_criter_local_nonprim);
-        red_t_order_criter_local_nonprim = NULL;
-    }
-    if (order_local_nonprim) {
-        OpenAPI_matching_direction_free(order_local_nonprim);
-        order_local_nonprim = NULL;
-    }
     return NULL;
 }
 

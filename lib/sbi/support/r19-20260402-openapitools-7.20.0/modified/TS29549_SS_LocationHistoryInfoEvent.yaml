@@ -1,0 +1,454 @@
+openapi: 3.0.0
+
+info:
+  title: LM Server Location Tracing Configuration Management Service
+  version: 1.0.0
+  description: |
+    LM Server Location Tracing Configuration Management Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+servers:
+  - url: '{apiRoot}/ss-lhie/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /configurations:
+    post:
+      summary: Request the creation of a Location Tracing Configuration.
+      operationId: CreateLocTracingConfig
+      tags:
+        - Location Tracing Configurations (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocTracingConfig'
+      responses:
+        '201':
+          description: >
+            Created. The Location Tracing Configuration is successfully created and
+            a representation of the created Individual Location Tracing Configuration
+            resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocTracingConfig'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Location Tracing Configuration resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /configurations/{configId}:
+    parameters:
+      - name: configId
+        in: path
+        description: >
+          Represents the identifier of the Individual Location Tracing Configuration resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Location Tracing Configuration resource.
+      operationId: GetIndLocTracingConfig
+      tags:
+        - Individual Location Tracing Configuration (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Location Tracing Configuration resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocTracingConfig'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Location Tracing Configuration resource.
+      operationId: UpdateIndLocTracingConfig
+      tags:
+        - Individual Location Tracing Configuration (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocTracingConfig'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Location Tracing Configuration resource is successfully updated and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocTracingConfig'
+        '204':
+          description: >
+            No Content. The Individual Location Tracing Configuration resource is successfully
+            updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Location Tracing Configuration resource.
+      operationId: ModifyIndLocTracingConfig
+      tags:
+        - Individual Location Tracing Configuration (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/LocTracingConfigPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Location Tracing Configuration resource is successfully modified and
+            a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocTracingConfig'
+        '204':
+          description: >
+            No Content. The Individual Location Tracing Configuration resource is successfully
+            modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Location Tracing Configuration resource.
+      operationId: DeleteIndLocTracingConfig
+      tags:
+        - Individual Location Tracing Configuration (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Location Tracing Configuration resource is successfully
+            deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /reports:
+    get:
+      summary: Retrieve Location History Report(s).
+      operationId: GetHistTransQualMeasReports
+      tags:
+        - Location History Reports (Collection)
+      parameters:
+        - name: target-id
+          in: query
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        - name: val-service-id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: req-loc-history
+          in: query
+          required: false
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReqLocHistory'
+        - name: supp-feat
+          in: query
+          required: false
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            OK. The requested Location History Report(s), if any, shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocHistoryReports'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    LocTracingConfig:
+      description: >
+        Represents a Location Tracing Configuration.
+      type: object
+      properties:
+        target:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        valServiceId:
+          type: string
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        locQoS:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocationQoS'
+        triggerConds:
+          $ref: 'TS29549_SS_LocationReporting.yaml#/components/schemas/TriggeringCriteria'
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        posMethod:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/PositioningMethod'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - target
+
+    LocTracingConfigPatch:
+      description: >
+        Represents the parameters to request the modification of a Location Tracing Configuration.
+      type: object
+      properties:
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        locQoS:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocationQoS'
+        triggerConds:
+          $ref: 'TS29549_SS_LocationReporting.yaml#/components/schemas/TriggeringCriteria'
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        posMethod:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/PositioningMethod'
+
+    ReqLocHistory:
+      description: >
+        Represents the requested location history filtering information.
+      type: object
+      properties:
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        time:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+      anyOf:
+        - required: [locArea]
+        - required: [time]
+        - required: [duration]
+
+    LocHistoryReports:
+      description: >
+        Represents Location History Report(s).
+      type: object
+      properties:
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocHistoryReport'
+          minItems: 0
+          description: >
+            Contains the Location History Report(s).
+            If there are no Location History Report(s) fulfilling the request, this attribute shall
+            contain an empty array.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - reports
+
+    LocHistoryReport:
+      description: >
+        Represents a Location History Report.
+      type: object
+      properties:
+        targets:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+        locData:
+          type: object
+          additionalProperties:
+            $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+          minProperties: 1
+          description: >
+            Contains the location history information report.
+            The key of the map shall be set to the identifier of the VAL UE/user (among the ones
+            provided within the targets attribute) to which the provided location history
+            information provided within the map value is related.
+        timestamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - locData
+#      oneOf:
+#        - required: [valUEs]
+#        - required: [valUsers]
+#
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+
+# Data types describing alternative data types or combinations of data types
+#

@@ -1,0 +1,495 @@
+openapi: 3.0.0
+
+info:
+  title: SS_DAProfileManagement
+  version: 1.0.1
+  description: |
+    SS_DAProfileManagement service to manage digital asset profile on a DA server.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.6.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-da-pm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /profiles:
+    post:
+      description: Creates a new Individual DA profile.
+      operationId: CreateDAProfile
+      tags:
+        - DA profile (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DigitalAssetProfile'
+      responses:
+        '201':
+          description: Digital Asset Profile resource is created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalAssetProfile'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /profiles/{daId}:
+    get:
+      description: Retrieves an individual DA profile.
+      operationId: RetrieveDAProfile
+      tags:
+        - Individual DA Profile(Document)
+      parameters:
+        - name: daId
+          in: path
+          description: String identifying an individual DA profile resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful case. The requested "Individual DA profile” is retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalAssetProfile'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      description: Updates an individual DA Profile.
+      operationId: UpdateDAProfile
+      tags:
+        - Individual DA Profile(Document)
+      parameters:
+        - name: daId
+          in: path
+          description: String identifying an individual DA profile.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Configuration information to be updated in DA server.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DigitalAssetProfile'
+      responses:
+        '200':
+          description: The configuration is updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalAssetProfile'
+        '204':
+          description: No Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      description: Modify an existing DA Profile.
+      operationId: ModifyDAProfile
+      tags:
+        - Individual DA Profile(Document)
+      parameters:
+        - name: daId
+          in: path
+          description: Identifier of an individual DA Profile.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/DigitalAssetProfilePatch'
+      responses:
+        '200':
+          description: >
+            The individual DA Profile is modified successfully and
+            a representation of the updated DA Profile is returned
+            in the request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalAssetProfile'
+        '204':
+          description: >
+            No Content. The individual DA Profile is
+            modified successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      description: Deletes an individual DA Profile.
+      operationId: DeleteDAProfile
+      tags:
+        - Individual DA Profile(Document)
+      parameters:
+        - name: daId
+          in: path
+          description: String identifying an individual DA profile resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The individual configuration matching daId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    DigitalAssetProfile:
+      description: Represents the DA Profile information.
+      type: object
+      properties:
+        accCtrlLists:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/AccessControlList'
+          description: >
+            Represents the list of tuples indicating the requestors allowed to perform operations
+            with this digital asset and the allowed operation types.
+        accessories:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/DaId'
+          description: >
+            Represents the list of digital asset identifiers which are accessories (e.g. Hat, watch,
+            shoes) purchased for this digital asset profile
+        appIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        daId:
+          $ref: '#/components/schemas/DaId'
+        daOwnerIds:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/DigitalAssetOwnerId'
+          description: >
+            Represents the list of identifier(s) for the digital asset owner.
+        daType:
+          $ref: '#/components/schemas/DigitalAssetType'
+        daUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        spatialCondts:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/SpatialCondition'
+          description: >
+            Represents the list of spatial conditions (e.g. locations) where this digital asset
+            profile is allowed to be accessed.
+        srvProviderIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          description: >
+            Represents the list of service providers for the digital asset.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        valServerId:
+          type: string
+
+    DigitalAssetProfilePatch:
+      description: Represents the DA Profile information patch.
+      type: object
+      properties:
+        accCtrlLists:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/AccessControlList'
+          description: >
+            Represents the list of tuples indicating the requestors allowed to perform operations
+            with this digital asset and the allowed operation types.
+        accessories:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/DaId'
+          description: >
+            Represents the list of digital asset identifiers which are accessories (e.g. Hat, watch,
+            shoes) purchased for this digital asset profile
+        appIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        daOwnerIds:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/DigitalAssetOwnerId'
+          description: >
+            Represents the list of identifier(s) for the digital asset owner.
+        daType:
+          $ref: '#/components/schemas/DigitalAssetType'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        spatialCondts:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/SpatialCondition'
+          description: >
+            Represents the list of spatial conditions (e.g. locations) where this digital asset
+            profile is allowed to be accessed.
+        srvProviderIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          description: >
+            Represents the list of service providers for the digital asset.
+
+    AccessControlList:
+      description: >
+        Represents the list of tuples indicating the requestors allowed to perform
+        operations with this digital asset and the allowed operation types
+      type: object
+      properties:
+        allowedUsers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllowedUser'
+          description: >
+            Represents the list of users allowed to access this digital asset.
+          minItems: 1
+
+    AllowedUser:
+      description: Represents the user allowed to access this digital asset.
+      type: object
+      properties:
+        user:
+          type: string
+        allowedOperations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Operations'
+          description: >
+            Represents the list of operations allowed by the user.
+          minItems: 1
+        predModels:
+          type: array
+          items:
+            type: string
+          description: >
+            Represents the list of one or more predictive model for the user.
+          minItems: 1
+      required:
+        - user
+
+    SpatialCondition:
+      description: Represents the location where DA profile is allowed to be accessed.
+      type: object
+      properties:
+        currLoc:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+
+# Simple data types and Enumerations
+
+    DigitalAssetOwnerId:
+      description: Represents the identity of the digital asset owner
+      type: string
+
+    DaId:
+      description: Represents the identity of the digital asset
+      type: string
+
+    DigitalAssetType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - ACCESSORY
+         - AVATAR
+         - GIFT_CERTIFICATES
+         - SOFTWARE_LICENSE
+         - TOKENS_AND_FILES
+         - WALLET
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the different type of digital assets e.g. avatar, wallet  
+#        Possible values are:
+#        - ACCESSORY: Represents the accessory.
+#        - AVATAR: Represents the avatar
+#        - GIFT_CERTIFICATES: Represents the gift certificates.
+#        - SOFTWARE_LICENSE: Represents the software license
+#        - TOKENS_AND_FILES: Represents the tokens and files.
+#        - WALLET: Represents the Digital wallet
+#
+    Operations:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - DISCOVERY
+         - RETRIEVE
+         - CREATE
+         - UDPATE
+         - DELETE
+         - UPLOAD
+         - DOWNLOAD
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the allowed operations for the given user.  
+#        Possible values are:
+#        - DISCOVERY: Indicates that the operation is discovery.
+#        - RETRIEVE: Indicates that the operation is retrieval.
+#        - CREATE: Indicates that the operation is CREATE.
+#        - UDPATE: Indicates that the operation is UPDATE.
+#        - DELETE: Indicates that the operation is DELETE.
+#        - UPLOAD: Indicates that the Digital asset media operation is UPLOAD.
+#        - DOWNLOAD: Indicates that the Digital asset media operation is DOWNLOAD.

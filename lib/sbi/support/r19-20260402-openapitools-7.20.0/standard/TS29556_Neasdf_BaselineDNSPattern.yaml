@@ -1,0 +1,355 @@
+openapi: 3.0.0
+
+info:
+  version: '1.2.0'
+  title: 'Neasdf_BaselineDNSPattern'
+  description: |
+    EASDF Baseline DNS Pattern Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.556 V19.4.0; 5G System; Edge Application Server Discovery Services; Stage 3
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.556/'
+
+servers:
+  - url: '{apiRoot}/neasdf-baselinednspattern/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description:  apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - neasdf-baselinednspattern
+
+paths:
+
+  /base-dns-patterns/{smfId}/{smfImplementationSegmentPaths}:
+    patch:
+      summary: Updates the Baseline DNS Pattern
+      operationId: UpdateBaseDNSPattern
+      tags:
+        - Individual Baseline DNS Pattern
+      parameters:
+        - name: smfId
+          in: path
+          description: SMF or SMF set identifier or Set Id part in SMF set identifier
+          required: true
+          schema:
+            $ref: '#/components/schemas/VarNfId'
+          style: simple
+          explode: true
+        - name: smfImplementationSegmentPaths
+          in: path
+          description: SMF Implementation Dependent Segment Paths
+          required: true
+          schema:
+            type: string
+        - name: Content-Encoding
+          in: header
+          description: Content-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+        required: true
+      responses:
+        '200':
+          description: Partial update of the Baseline DNS Pattern
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '204':
+          description: Successful update of the Baseline DNS Pattern
+          headers:
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Creates or Updates the Baseline DNS Pattern (complete replacement)
+      operationId: CreateOrReplaceBaseDnsPattern
+      tags:
+        - Individual Baseline DNS Pattern
+      parameters:
+        - name: smfId
+          in: path
+          description: SMF or SMF set identifier or Set Id part in SMF set identifier
+          required: true
+          schema:
+            $ref: '#/components/schemas/VarNfId'
+          style: simple
+          explode: true
+        - name: smfImplementationSegmentPaths
+          in: path
+          description: SMF Implementation Dependent Segment Paths
+          required: true
+          schema:
+            type: string
+        - name: Content-Encoding
+          in: header
+          description: Content-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaseDnsPatternCreateData'
+      responses:
+        '201':
+          description: successful creation of a Baseline DNS pattern
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseDnsPatternCreatedData'
+          headers:
+            Location:
+              description: >
+                'Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/neasdf-baselinednspattern/<apiVersion>/
+                base-dns-patterns/{smfId}/{smfImplementationSegmentPaths}'
+              required: true
+              schema:
+                type: string
+        '204':
+          description: Successful update of the Baseline DNS Pattern
+          headers:
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary:  Deletes a Baseline DNS Pattern
+      tags:
+        - Individual Baseline DNS Pattern
+      operationId: DeleteBaseDnsPattern
+      parameters:
+        - name: smfId
+          in: path
+          description: SMF or SMF set identifier or Set Id part in SMF set identifier
+          required: true
+          schema:
+            $ref: '#/components/schemas/VarNfId'
+          style: simple
+          explode: true
+        - name: smfImplementationSegmentPaths
+          in: path
+          description: SMF Implementation Dependent Segment Paths
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: successful deletion of a Baseline DNS Pattern
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            neasdf-baselinednspattern: Access to the neasdf-baselinednspattern API
+
+  schemas:
+#
+# STRUCTURED DATA TYPES
+#
+    BaseDnsPatternCreateData:
+      description: Data in Baseline DNS Pattern Create request
+      type: object
+      properties:
+        label:
+          type: string
+        baseDnsMdtList:
+          description: >
+            map of baseline DNS message detection templates where a valid JSON string serves as key
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/BaselineDnsMdt'
+          minProperties: 1
+        baseDnsAitList:
+          description: >
+            map of Baseline DNS action information Template where a valid JSON string serves as key
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/BaselineDnsAit'
+          minProperties: 1
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    BaseDnsPatternCreatedData:
+      description: Data in Baseline DNS Pattern Create response
+      type: object
+      properties:
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    BaselineDnsMdt:
+      description: Baseline DNS message detection template
+      type: object
+      properties:
+        mdtId:
+          type: string
+        label:
+          type: string
+        dnsQueryMdtList:
+          description: >
+            map of DNS query message detection templates where a valid JSON string serves as key
+          type: object
+          additionalProperties:
+            $ref: 'TS29556_Neasdf_DNSContext.yaml#/components/schemas/DnsQueryMdt'
+          minProperties: 1
+        dnsRspMdtList:
+          description: >
+            map of DNS response message detection templates where a valid JSON string serves as key
+          type: object
+          additionalProperties:
+            $ref: 'TS29556_Neasdf_DNSContext.yaml#/components/schemas/DnsRspMdt'
+          minProperties: 1
+      required:
+        - mdtId
+      oneOf:
+        - required: [ dnsQueryMdtList ]
+        - required: [ dnsRspMdtList ]
+
+    BaselineDnsAit:
+      description: Baseline DNS action information Template
+      type: object
+      properties:
+        aitId:
+          type: string
+        label:
+          type: string
+        ecsOption:
+          $ref: 'TS29556_Neasdf_DNSContext.yaml#/components/schemas/EcsOption'
+        dnsServerAddressList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+          minItems: 1
+      required:
+        - aitId
+
+    VarNfId:
+      description: SMF or SMF Set Id or Set Id part in NF Set Id
+      type: object
+      properties:
+        smfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        setId:
+          type: string
+          pattern: '^([A-Za-z0-9\-]*[A-Za-z0-9])$'
+        smfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+
+#
+# SIMPLE DATA TYPES
+#
+
+
+
+#
+# ENUMERATIONS
+#

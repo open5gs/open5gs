@@ -1,7 +1,7 @@
 /*
  * amf_non3_gpp_access_registration.h
  *
- * 
+ * Represents the complete set of information relevant to the AMF when the UE has registered via non 3GPP access. 
  */
 
 #ifndef _OpenAPI_amf_non3_gpp_access_registration_H_
@@ -12,19 +12,20 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_amf_non3_gpp_access_registration_s OpenAPI_amf_non3_gpp_access_registration_t;
 #include "backup_amf_info.h"
 #include "context_info.h"
 #include "guami.h"
 #include "ims_vo_ps.h"
 #include "rat_type.h"
+#include "service_name.h"
 #include "vgmlc_address.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_amf_non3_gpp_access_registration_s OpenAPI_amf_non3_gpp_access_registration_t;
-typedef struct OpenAPI_amf_non3_gpp_access_registration_s {
+struct OpenAPI_amf_non3_gpp_access_registration_s {
     char *amf_instance_id;
     char *supported_features;
     bool is_purge_flag;
@@ -32,9 +33,9 @@ typedef struct OpenAPI_amf_non3_gpp_access_registration_s {
     char *pei;
     OpenAPI_ims_vo_ps_e ims_vo_ps;
     char *dereg_callback_uri;
-    char *amf_service_name_dereg;
+    OpenAPI_service_name_e amf_service_name_dereg;
     char *pcscf_restoration_callback_uri;
-    char *amf_service_name_pcscf_rest;
+    OpenAPI_service_name_e amf_service_name_pcscf_rest;
     struct OpenAPI_guami_s *guami;
     OpenAPI_list_t *backup_amf_info;
     OpenAPI_rat_type_e rat_type;
@@ -60,7 +61,9 @@ typedef struct OpenAPI_amf_non3_gpp_access_registration_s {
     bool is_udr_restart_ind;
     int udr_restart_ind;
     char *last_synchronization_time;
-} OpenAPI_amf_non3_gpp_access_registration_t;
+    bool is_ue_snpn_subscription_ind;
+    int ue_snpn_subscription_ind;
+};
 
 OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registration_create(
     char *amf_instance_id,
@@ -70,9 +73,9 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
     char *pei,
     OpenAPI_ims_vo_ps_e ims_vo_ps,
     char *dereg_callback_uri,
-    char *amf_service_name_dereg,
+    OpenAPI_service_name_e amf_service_name_dereg,
     char *pcscf_restoration_callback_uri,
-    char *amf_service_name_pcscf_rest,
+    OpenAPI_service_name_e amf_service_name_pcscf_rest,
     OpenAPI_guami_t *guami,
     OpenAPI_list_t *backup_amf_info,
     OpenAPI_rat_type_e rat_type,
@@ -97,7 +100,9 @@ OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registra
     int sor_snpn_si_supported,
     bool is_udr_restart_ind,
     int udr_restart_ind,
-    char *last_synchronization_time
+    char *last_synchronization_time,
+    bool is_ue_snpn_subscription_ind,
+    int ue_snpn_subscription_ind
 );
 void OpenAPI_amf_non3_gpp_access_registration_free(OpenAPI_amf_non3_gpp_access_registration_t *amf_non3_gpp_access_registration);
 OpenAPI_amf_non3_gpp_access_registration_t *OpenAPI_amf_non3_gpp_access_registration_parseFromJSON(cJSON *amf_non3_gpp_access_registrationJSON);

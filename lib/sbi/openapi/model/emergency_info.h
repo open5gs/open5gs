@@ -1,7 +1,7 @@
 /*
  * emergency_info.h
  *
- * 
+ * Contains Emergency Information
  */
 
 #ifndef _OpenAPI_emergency_info_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_emergency_info_s OpenAPI_emergency_info_t;
 #include "ip_address.h"
 #include "plmn_id.h"
 
@@ -19,15 +20,15 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_emergency_info_s OpenAPI_emergency_info_t;
-typedef struct OpenAPI_emergency_info_s {
+struct OpenAPI_emergency_info_s {
     char *pgw_fqdn;
     struct OpenAPI_ip_address_s *pgw_ip_address;
     char *smf_instance_id;
     bool is_epdg_ind;
     int epdg_ind;
     struct OpenAPI_plmn_id_s *plmn_id;
-} OpenAPI_emergency_info_t;
+    char *emergency_registration_time;
+};
 
 OpenAPI_emergency_info_t *OpenAPI_emergency_info_create(
     char *pgw_fqdn,
@@ -35,7 +36,8 @@ OpenAPI_emergency_info_t *OpenAPI_emergency_info_create(
     char *smf_instance_id,
     bool is_epdg_ind,
     int epdg_ind,
-    OpenAPI_plmn_id_t *plmn_id
+    OpenAPI_plmn_id_t *plmn_id,
+    char *emergency_registration_time
 );
 void OpenAPI_emergency_info_free(OpenAPI_emergency_info_t *emergency_info);
 OpenAPI_emergency_info_t *OpenAPI_emergency_info_parseFromJSON(cJSON *emergency_infoJSON);

@@ -1,0 +1,62 @@
+openapi: 3.0.0
+info:
+  title: Maf_Provisioning (Real-Time media Communication)
+  version: 1.1.0
+  description: |
+    RTC AF Provisioning API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Maf_Provisioning
+    description: 'Real-Time media Communication: AF Provisioning APIs'
+
+externalDocs:
+  description: 'TS 26.113 V19.0.0; Real-Time Media Communication; Protocols and APIs'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.512/'
+
+servers:
+  - url: '{apiRoot}/3gpp-maf-provisioning/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 29.510 clause 8.
+
+paths:
+  # Provisioning Sessions API
+  /provisioning-sessions:
+    $ref: 'TS26510_Maf_Provisioning_ProvisioningSessions.yaml#/paths/~1provisioning-sessions'
+  /provisioning-sessions/%7bprovisioningSessionId%7d:
+    $ref: 'TS26510_Maf_Provisioning_ProvisioningSessions.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d'
+
+  # Server Certificates provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/certificates:
+    $ref: 'TS26510_Maf_Provisioning_ServerCertificates.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1certificates'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/certificates/%7bcertificateId%7d:
+    $ref: 'TS26510_Maf_Provisioning_ServerCertificates.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1certificates~1%7bcertificateId%7d'
+
+  # Policy Templates provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/policy-templates:
+    $ref: 'TS26510_Maf_Provisioning_PolicyTemplates.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1policy-templates'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/policy-templates/%7bpolicyTemplateId%7d:
+    $ref: 'TS26510_Maf_Provisioning_PolicyTemplates.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1policy-templates~1%7bpolicyTemplateId%7d'
+
+  # Edge Resources provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/edge-resources-configurations:
+    $ref: 'TS26510_Maf_Provisioning_EdgeResources.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1edge-resources-configurations'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/edge-resources-configurations/%7bedgeResourcesConfigurationId%7d:
+    $ref: 'TS26510_Maf_Provisioning_EdgeResources.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1edge-resources-configurations~1%7bedgeResourcesConfigurationId%7d'
+
+  # Real-Time media Communication provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/rtc-configuration:
+    $ref: 'TS26510_Maf_Provisioning_RealTimeCommunication.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1rtc-configuration'
+
+  # Metrics Reporting provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/metrics-reporting-configurations:
+    $ref: 'TS26510_Maf_Provisioning_MetricsReporting.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1metrics-reporting-configurations'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/metrics-reporting-configurations/%7bmetricsReportingConfigurationId%7d:
+    $ref: 'TS26510_Maf_Provisioning_MetricsReporting.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1metrics-reporting-configurations~1%7bmetricsReportingConfigurationId%7d'
+
+  # Consumption Reporting provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/consumption-reporting-configuration:
+    $ref: 'TS26510_Maf_Provisioning_ConsumptionReporting.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1consumption-reporting-configuration'

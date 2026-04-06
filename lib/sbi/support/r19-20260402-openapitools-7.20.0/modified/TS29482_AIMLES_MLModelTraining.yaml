@@ -1,0 +1,384 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLE ML Model Training API
+  version: 1.0.0
+  description: |
+    API for AIMLES ML Model Training Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.0.0; Service Enabler Architecture Layer for Verticals (SEAL); Artificial
+    Intelligence Machine Learning Enablement (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/aimles-trn/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /request-train:
+    post:
+      summary: Request the AIMLE server for AIMLE ML Model Training.
+      operationId: RequestTrain
+      tags:
+        - AIMLE ML Model Training service (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainRequest'
+      responses:
+        '200':
+          description: >
+            OK. The requested ML model training response containing ML model ID and ML model
+            training ID shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MlModelTrainResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        myNotification:
+          '{$request.body#/notifUri}':
+            post:
+              summary: Notify on the requested data.
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/MlModelTrainNotif'
+              responses:
+                '204':
+                  description: The notification is successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    TrainRequest:
+      description: >
+        Represents the AIMLE ML Model Training service.
+      type: object
+      properties:
+        trnType:
+          $ref: '#/components/schemas/TrainingType'
+        members:
+          type: array
+          items:
+            $ref: 'TS29482_AIMLES_ContextTransfer.yaml#/components/schemas/AimleClientId'
+          minItems: 1
+        clientSetId:
+          type: string
+        memSelCrit:
+          $ref: '#/components/schemas/MemberSelCriteria'
+        numReqClients:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        modelInf:
+          $ref: '#/components/schemas/MlModelInfo'
+        modelReq:
+          $ref: 'TS29482_MLR_MLModelManagement.yaml#/components/schemas/MLModel'
+        trainObj:
+          $ref: '#/components/schemas/TrainingObj'
+        datasetId:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        dataSamples:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        opSchedule:
+          type: string
+        vflParam:
+          $ref: '#/components/schemas/VFLParam'
+        memUpdNotif:
+          type: boolean
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+      required:
+        - trnType
+        - datasetId
+
+    MlModelTrainNotif:
+      description: >
+        Represents the AIMLE ML Model Training Notification.
+      type: object
+      properties:
+        trainingID:
+          type: string
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/MemberInfo'
+          minItems: 1
+        trainOut:
+          $ref: '#/components/schemas/PerfParams'
+        percentageComp:
+          type: integer
+          minimum: 0
+          maximum: 100
+        trainErr:
+          $ref: '#/components/schemas/TrainingErr'
+
+    MlModelTrainResp:
+      description: >
+        Represents the AIMLE service status information.
+      type: object
+      properties:
+        trainingId:
+          type: string
+        modelId:
+          type: string
+      required:
+        - trainingId
+
+    MemberSelCriteria:
+      description: >
+        Represents the criteria that needs to be continuously monitored for selecting
+        the member clients.
+      type: object
+      properties:
+        clientLoc:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        clientAvailability:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        clientCapability:
+          $ref: 'TS24560_Aimles_AIMLEClientRegistration.yaml#/components/schemas/ClientCapability'
+
+    MlModelInfo:
+      description: >
+        Represents the ML model that has to be distributed to the selected member clients 
+        for training.
+      type: object
+      properties:
+        mlModelId:
+          type: string
+        mlModelLoc:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+
+    MemberInfo:
+      description: >
+        Represents the list of AIMLE clients selected/de-selected for ML model training.
+      type: object
+      properties:
+        clientSel:
+          type: boolean
+        clientUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    PerfParams:
+      description: >
+        Represents the output of training, e.g., ML model parameters for the training.
+      type: object
+      properties:
+        modelAccuracy:
+          type: integer
+          minimum: 0
+          maximum: 100
+        modelPrecision:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        modelRecall:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        modelF1score:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        errorMeanSquare:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        errorMeanAbs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+
+    TrainingObj:
+      description: >
+        Represents the termination condition for the ML model training. 
+      type: object
+      properties:
+        objType:
+          $ref: 'TS29482_AIMLES_AssistedMLModelSelection.yaml#/components/schemas/PerformanceMetric'
+        targetValue:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        earlyStopCri:
+          $ref: '#/components/schemas/EarlyStopCri'
+        maxEpochs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        accTrainingErr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        inferenceLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+      required:
+        - objType
+
+    EarlyStopCri:
+      description: >
+        Represents the AIMLE service status information.
+      type: object
+      properties:
+        minDelta:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        patience:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+
+    VFLParam:
+      description: >
+        Represents the parameters specific to VFL training.
+      type: object
+      properties:
+        datasetComm:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommonId'
+          minItems: 1
+        featureList:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureList'
+          minItems: 1
+        featureAlign:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureList'
+          minItems: 1
+        dataLabels:
+          type: array
+          items:
+            type: string
+          minItems: 1
+
+    CommonId:
+      description: >
+        Represents the list of one or more common features required for VFL training.
+      type: object
+      properties:
+        featureType:
+          type: string
+        featureId:
+          type: string
+
+    FeatureList:
+      description: >
+        Represents the list of features for each data domain of the dataset at the
+        client.
+      type: object
+      properties:
+        clientId:
+          $ref: 'TS29482_AIMLES_ContextTransfer.yaml#/components/schemas/AimleClientId'
+        list:
+          type: array
+          items:
+            type: string
+          minItems: 1
+
+# SIMPLE DATA TYPES
+#
+
+# ENUMERATIONS
+#
+
+    TrainingType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - TRAIN_VFL
+        - TRAIN_HFL
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the AIMLE service operation status.  
+#        Possible values are:
+#        - TRAIN_VFL: Indicates that the training type is horizontal federated learning
+#        - TRAIN_HFL: Indicates that the training type is vertical federated learning
+#
+    TrainingErr:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - UNDERFITTING
+        - OVERFITTING
+        - PERFORMANCE_ERRORS
+        - DATA_LEAKAGE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the training error encountered during ML model training.  
+#        Possible values are:
+#        - UNDERFITTING: Indicates that the trained model is underfitting the
+#          training data.
+#        - OVERFITTING: Indicates that the trained mode is overfitting the training
+#          data.
+#        - PERFORMANCE_ERRORS: Indicates that the trained model is unable to meet the
+#          desired performance.
+#        - DATA_LEAKAGE: Indicates that there is data leakage from evaluation data set
+#          to the training data.

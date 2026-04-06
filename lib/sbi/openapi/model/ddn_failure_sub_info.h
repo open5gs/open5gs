@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ddn_failure_sub_info_s OpenAPI_ddn_failure_sub_info_t;
 #include "ddd_traffic_descriptor.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ddn_failure_sub_info_s OpenAPI_ddn_failure_sub_info_t;
-typedef struct OpenAPI_ddn_failure_sub_info_s {
+struct OpenAPI_ddn_failure_sub_info_s {
     char *notify_correlation_id;
     OpenAPI_list_t *ddd_traffic_descriptor_list;
-} OpenAPI_ddn_failure_sub_info_t;
+};
 
 OpenAPI_ddn_failure_sub_info_t *OpenAPI_ddn_failure_sub_info_create(
     char *notify_correlation_id,

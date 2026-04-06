@@ -1,0 +1,250 @@
+openapi: 3.0.0
+
+info:
+  title: Nnef_Authentication
+  version: '1.2.0'
+  description: |
+    NEF Auth Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.256 V19.4.0; 5G System;Uncrewed Aerial Systems Network Function (UAS-NF);
+    Aerial Management Services; Stage 3
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.256/
+
+servers:
+  - url: '{apiRoot}/nnef-authentication/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nnef-authentication
+
+paths:
+  /uav-authentications:
+    post:
+      summary:  UAV authentication
+      tags:
+        - UAV authentication
+      requestBody:
+        description: UAV authentication
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UAVAuthInfo'
+      responses:
+        '200':
+          description: UAV Auth response or message exchange
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UAVAuthResponse'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          description: UAV authentication failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UAVAuthFailure'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        authNotification:
+          '{$request.body#/authNotificationURI}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AuthNotification'
+              responses:
+                '204':
+                  description: Successful Notification response
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nnef-authentication: Access to the Nnef_authentication API
+
+
+
+
+
+  schemas:
+#
+# STRUCTURED DATA TYPES
+#
+    UAVAuthInfo:
+      description: UAV auth data
+      type: object
+      required:
+        - gpsi
+        - serviceLevelId
+        - nfType
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        serviceLevelId:
+          type: string
+        authNotificationURI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        ipAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        authServerAddress:
+          type: string
+        authMsg:
+          allOf:
+          - $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+          deprecated: true
+        authContainer:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthContainer'
+          minItems: 1
+        ueLocInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExtSnssai'
+        nfType:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NFType'
+
+    UAVAuthResponse:
+      description: UAV auth response data
+      type: object
+      required:
+        - gpsi
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        serviceLevelId:
+          type: string
+        authMsg:
+          allOf:
+          - $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+          deprecated: true
+        authContainer:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthContainer'
+          minItems: 1
+        authResult:
+          allOf:
+          - $ref: '#/components/schemas/AuthResult'
+          deprecated: true
+        notifyCorrId:
+          type: string
+        authSessAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        authProfIndex:
+          type: string
+
+
+    AuthNotification:
+      description: UAV related notification
+      type: object
+      required:
+        - gpsi
+        - serviceLevelId
+        - notifType
+        - notifyCorrId
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        serviceLevelId:
+          type: string
+        notifyCorrId:
+          type: string
+        authMsg:
+          allOf:
+          - $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+          deprecated: true
+        authContainer:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthContainer'
+          minItems: 1
+        notifType:
+          $ref: '#/components/schemas/NotifType'
+
+    UAVAuthFailure:
+      description: UAV auth failure
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        uasResourceRelease:
+          type: boolean
+          default: false
+
+    AuthContainer:
+      description: Authentication/Authorization data
+      type: object
+      properties:
+        authMsgType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+        authMsgPayload:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        authResult:
+          $ref: '#/components/schemas/AuthResult'
+
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    AuthResult:
+      description: Enumeration representing the result of authentication and/or authorization.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - AUTH_SUCCESS
+      - AUTH_FAIL
+#        - type: string
+    NotifType:
+      description: Enumeration representing the type of notification.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - REAUTH
+      - UPDATEAUTH
+      - REVOKE
+#        - type: string

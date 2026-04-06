@@ -7,7 +7,7 @@
 OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_create(
     OpenAPI_transfer_reason_e reason,
     OpenAPI_access_type_e access_type,
-    OpenAPI_plmn_id_t *plmn_id,
+    OpenAPI_plmn_id_nid_t *plmn_id,
     OpenAPI_n1_message_container_t *reg_request,
     char *supported_features
 )
@@ -32,7 +32,7 @@ void OpenAPI_ue_context_transfer_req_data_free(OpenAPI_ue_context_transfer_req_d
         return;
     }
     if (ue_context_transfer_req_data->plmn_id) {
-        OpenAPI_plmn_id_free(ue_context_transfer_req_data->plmn_id);
+        OpenAPI_plmn_id_nid_free(ue_context_transfer_req_data->plmn_id);
         ue_context_transfer_req_data->plmn_id = NULL;
     }
     if (ue_context_transfer_req_data->reg_request) {
@@ -76,7 +76,7 @@ cJSON *OpenAPI_ue_context_transfer_req_data_convertToJSON(OpenAPI_ue_context_tra
     }
 
     if (ue_context_transfer_req_data->plmn_id) {
-    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(ue_context_transfer_req_data->plmn_id);
+    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_nid_convertToJSON(ue_context_transfer_req_data->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_ue_context_transfer_req_data_convertToJSON() failed [plmn_id]");
         goto end;
@@ -121,7 +121,7 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_par
     cJSON *access_type = NULL;
     OpenAPI_access_type_e access_typeVariable = 0;
     cJSON *plmn_id = NULL;
-    OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
+    OpenAPI_plmn_id_nid_t *plmn_id_local_nonprim = NULL;
     cJSON *reg_request = NULL;
     OpenAPI_n1_message_container_t *reg_request_local_nonprim = NULL;
     cJSON *supported_features = NULL;
@@ -149,9 +149,9 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_par
 
     plmn_id = cJSON_GetObjectItemCaseSensitive(ue_context_transfer_req_dataJSON, "plmnId");
     if (plmn_id) {
-    plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
+    plmn_id_local_nonprim = OpenAPI_plmn_id_nid_parseFromJSON(plmn_id);
     if (!plmn_id_local_nonprim) {
-        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
+        ogs_error("OpenAPI_plmn_id_nid_parseFromJSON failed [plmn_id]");
         goto end;
     }
     }
@@ -184,7 +184,7 @@ OpenAPI_ue_context_transfer_req_data_t *OpenAPI_ue_context_transfer_req_data_par
     return ue_context_transfer_req_data_local_var;
 end:
     if (plmn_id_local_nonprim) {
-        OpenAPI_plmn_id_free(plmn_id_local_nonprim);
+        OpenAPI_plmn_id_nid_free(plmn_id_local_nonprim);
         plmn_id_local_nonprim = NULL;
     }
     if (reg_request_local_nonprim) {

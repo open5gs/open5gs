@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "domain_name_protocol.h"
 
-OpenAPI_domain_name_protocol_t *OpenAPI_domain_name_protocol_create(
-)
+char* OpenAPI_domain_name_protocol_ToString(OpenAPI_domain_name_protocol_e domain_name_protocol)
 {
-    OpenAPI_domain_name_protocol_t *domain_name_protocol_local_var = ogs_malloc(sizeof(OpenAPI_domain_name_protocol_t));
-    ogs_assert(domain_name_protocol_local_var);
-
-
-    return domain_name_protocol_local_var;
+    const char *domain_name_protocolArray[] =  { "NULL", "DNS_QNAME", "TLS_SNI", "TLS_SAN", "TSL_SCN" };
+    size_t sizeofArray = sizeof(domain_name_protocolArray) / sizeof(domain_name_protocolArray[0]);
+    if (domain_name_protocol < sizeofArray)
+        return (char *)domain_name_protocolArray[domain_name_protocol];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_domain_name_protocol_free(OpenAPI_domain_name_protocol_t *domain_name_protocol)
+OpenAPI_domain_name_protocol_e OpenAPI_domain_name_protocol_FromString(char* domain_name_protocol)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == domain_name_protocol) {
-        return;
+    int stringToReturn = 0;
+    const char *domain_name_protocolArray[] =  { "NULL", "DNS_QNAME", "TLS_SNI", "TLS_SAN", "TSL_SCN" };
+    size_t sizeofArray = sizeof(domain_name_protocolArray) / sizeof(domain_name_protocolArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(domain_name_protocol, domain_name_protocolArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(domain_name_protocol);
-}
-
-cJSON *OpenAPI_domain_name_protocol_convertToJSON(OpenAPI_domain_name_protocol_t *domain_name_protocol)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (domain_name_protocol == NULL) {
-        ogs_error("OpenAPI_domain_name_protocol_convertToJSON() failed [DomainNameProtocol]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_domain_name_protocol_t *OpenAPI_domain_name_protocol_parseFromJSON(cJSON *domain_name_protocolJSON)
-{
-    OpenAPI_domain_name_protocol_t *domain_name_protocol_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    domain_name_protocol_local_var = OpenAPI_domain_name_protocol_create (
-    );
-
-    return domain_name_protocol_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_domain_name_protocol_t *OpenAPI_domain_name_protocol_copy(OpenAPI_domain_name_protocol_t *dst, OpenAPI_domain_name_protocol_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_domain_name_protocol_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_domain_name_protocol_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_domain_name_protocol_free(dst);
-    dst = OpenAPI_domain_name_protocol_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

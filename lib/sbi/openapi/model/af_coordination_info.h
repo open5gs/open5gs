@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_af_coordination_info_s OpenAPI_af_coordination_info_t;
 #include "notification_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_af_coordination_info_s OpenAPI_af_coordination_info_t;
-typedef struct OpenAPI_af_coordination_info_s {
+struct OpenAPI_af_coordination_info_s {
     char *source_dnai;
     char *source_ue_ipv4_addr;
     char *source_ue_ipv6_prefix;
     OpenAPI_list_t *notification_info_list;
-} OpenAPI_af_coordination_info_t;
+};
 
 OpenAPI_af_coordination_info_t *OpenAPI_af_coordination_info_create(
     char *source_dnai,

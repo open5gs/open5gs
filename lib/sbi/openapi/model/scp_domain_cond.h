@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_scp_domain_cond_s OpenAPI_scp_domain_cond_t;
 #include "nf_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_scp_domain_cond_s OpenAPI_scp_domain_cond_t;
-typedef struct OpenAPI_scp_domain_cond_s {
+struct OpenAPI_scp_domain_cond_s {
     OpenAPI_list_t *scp_domains;
     OpenAPI_list_t *nf_type_list;
-} OpenAPI_scp_domain_cond_t;
+};
 
 OpenAPI_scp_domain_cond_t *OpenAPI_scp_domain_cond_create(
     OpenAPI_list_t *scp_domains,

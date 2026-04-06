@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_limit_id_to_monitoring_key_s OpenAPI_limit_id_to_monitoring_key_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_limit_id_to_monitoring_key_s OpenAPI_limit_id_to_monitoring_key_t;
-typedef struct OpenAPI_limit_id_to_monitoring_key_s {
+struct OpenAPI_limit_id_to_monitoring_key_s {
     char *limit_id;
     OpenAPI_list_t *monkey;
-} OpenAPI_limit_id_to_monitoring_key_t;
+};
 
 OpenAPI_limit_id_to_monitoring_key_t *OpenAPI_limit_id_to_monitoring_key_create(
     char *limit_id,

@@ -12,16 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nr_location_s OpenAPI_nr_location_t;
 #include "global_ran_node_id.h"
 #include "ncgi.h"
+#include "ntn_tai_info.h"
 #include "tai.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nr_location_s OpenAPI_nr_location_t;
-typedef struct OpenAPI_nr_location_s {
+struct OpenAPI_nr_location_s {
     struct OpenAPI_tai_s *tai;
     struct OpenAPI_ncgi_s *ncgi;
     bool is_ignore_ncgi;
@@ -32,7 +33,8 @@ typedef struct OpenAPI_nr_location_s {
     char *geographical_information;
     char *geodetic_information;
     struct OpenAPI_global_ran_node_id_s *global_gnb_id;
-} OpenAPI_nr_location_t;
+    struct OpenAPI_ntn_tai_info_s *ntn_tai_info;
+};
 
 OpenAPI_nr_location_t *OpenAPI_nr_location_create(
     OpenAPI_tai_t *tai,
@@ -44,7 +46,8 @@ OpenAPI_nr_location_t *OpenAPI_nr_location_create(
     char *ue_location_timestamp,
     char *geographical_information,
     char *geodetic_information,
-    OpenAPI_global_ran_node_id_t *global_gnb_id
+    OpenAPI_global_ran_node_id_t *global_gnb_id,
+    OpenAPI_ntn_tai_info_t *ntn_tai_info
 );
 void OpenAPI_nr_location_free(OpenAPI_nr_location_t *nr_location);
 OpenAPI_nr_location_t *OpenAPI_nr_location_parseFromJSON(cJSON *nr_locationJSON);

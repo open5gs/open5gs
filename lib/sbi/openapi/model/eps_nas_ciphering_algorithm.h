@@ -1,7 +1,7 @@
 /*
  * eps_nas_ciphering_algorithm.h
  *
- * 
+ * Indicates the supported EPS NAS Ciphering Algorithm
  */
 
 #ifndef _OpenAPI_eps_nas_ciphering_algorithm_H_

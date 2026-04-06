@@ -11,7 +11,9 @@ OpenAPI_trace_data_1_t *OpenAPI_trace_data_1_create(
     char *event_list,
     char *collection_entity_ipv4_addr,
     char *collection_entity_ipv6_addr,
-    char *interface_list
+    char *trace_reporting_consumer_uri,
+    char *interface_list,
+    OpenAPI_job_type_e job_type
 )
 {
     OpenAPI_trace_data_1_t *trace_data_1_local_var = ogs_malloc(sizeof(OpenAPI_trace_data_1_t));
@@ -23,7 +25,9 @@ OpenAPI_trace_data_1_t *OpenAPI_trace_data_1_create(
     trace_data_1_local_var->event_list = event_list;
     trace_data_1_local_var->collection_entity_ipv4_addr = collection_entity_ipv4_addr;
     trace_data_1_local_var->collection_entity_ipv6_addr = collection_entity_ipv6_addr;
+    trace_data_1_local_var->trace_reporting_consumer_uri = trace_reporting_consumer_uri;
     trace_data_1_local_var->interface_list = interface_list;
+    trace_data_1_local_var->job_type = job_type;
 
     return trace_data_1_local_var;
 }
@@ -54,6 +58,10 @@ void OpenAPI_trace_data_1_free(OpenAPI_trace_data_1_t *trace_data_1)
     if (trace_data_1->collection_entity_ipv6_addr) {
         ogs_free(trace_data_1->collection_entity_ipv6_addr);
         trace_data_1->collection_entity_ipv6_addr = NULL;
+    }
+    if (trace_data_1->trace_reporting_consumer_uri) {
+        ogs_free(trace_data_1->trace_reporting_consumer_uri);
+        trace_data_1->trace_reporting_consumer_uri = NULL;
     }
     if (trace_data_1->interface_list) {
         ogs_free(trace_data_1->interface_list);
@@ -123,9 +131,23 @@ cJSON *OpenAPI_trace_data_1_convertToJSON(OpenAPI_trace_data_1_t *trace_data_1)
     }
     }
 
+    if (trace_data_1->trace_reporting_consumer_uri) {
+    if (cJSON_AddStringToObject(item, "traceReportingConsumerUri", trace_data_1->trace_reporting_consumer_uri) == NULL) {
+        ogs_error("OpenAPI_trace_data_1_convertToJSON() failed [trace_reporting_consumer_uri]");
+        goto end;
+    }
+    }
+
     if (trace_data_1->interface_list) {
     if (cJSON_AddStringToObject(item, "interfaceList", trace_data_1->interface_list) == NULL) {
         ogs_error("OpenAPI_trace_data_1_convertToJSON() failed [interface_list]");
+        goto end;
+    }
+    }
+
+    if (trace_data_1->job_type != OpenAPI_job_type_NULL) {
+    if (cJSON_AddStringToObject(item, "jobType", OpenAPI_job_type_ToString(trace_data_1->job_type)) == NULL) {
+        ogs_error("OpenAPI_trace_data_1_convertToJSON() failed [job_type]");
         goto end;
     }
     }
@@ -145,7 +167,10 @@ OpenAPI_trace_data_1_t *OpenAPI_trace_data_1_parseFromJSON(cJSON *trace_data_1JS
     cJSON *event_list = NULL;
     cJSON *collection_entity_ipv4_addr = NULL;
     cJSON *collection_entity_ipv6_addr = NULL;
+    cJSON *trace_reporting_consumer_uri = NULL;
     cJSON *interface_list = NULL;
+    cJSON *job_type = NULL;
+    OpenAPI_job_type_e job_typeVariable = 0;
     trace_ref = cJSON_GetObjectItemCaseSensitive(trace_data_1JSON, "traceRef");
     if (!trace_ref) {
         ogs_error("OpenAPI_trace_data_1_parseFromJSON() failed [trace_ref]");
@@ -203,12 +228,29 @@ OpenAPI_trace_data_1_t *OpenAPI_trace_data_1_parseFromJSON(cJSON *trace_data_1JS
     }
     }
 
+    trace_reporting_consumer_uri = cJSON_GetObjectItemCaseSensitive(trace_data_1JSON, "traceReportingConsumerUri");
+    if (trace_reporting_consumer_uri) {
+    if (!cJSON_IsString(trace_reporting_consumer_uri) && !cJSON_IsNull(trace_reporting_consumer_uri)) {
+        ogs_error("OpenAPI_trace_data_1_parseFromJSON() failed [trace_reporting_consumer_uri]");
+        goto end;
+    }
+    }
+
     interface_list = cJSON_GetObjectItemCaseSensitive(trace_data_1JSON, "interfaceList");
     if (interface_list) {
     if (!cJSON_IsString(interface_list) && !cJSON_IsNull(interface_list)) {
         ogs_error("OpenAPI_trace_data_1_parseFromJSON() failed [interface_list]");
         goto end;
     }
+    }
+
+    job_type = cJSON_GetObjectItemCaseSensitive(trace_data_1JSON, "jobType");
+    if (job_type) {
+    if (!cJSON_IsString(job_type)) {
+        ogs_error("OpenAPI_trace_data_1_parseFromJSON() failed [job_type]");
+        goto end;
+    }
+    job_typeVariable = OpenAPI_job_type_FromString(job_type->valuestring);
     }
 
     trace_data_1_local_var = OpenAPI_trace_data_1_create (
@@ -218,7 +260,9 @@ OpenAPI_trace_data_1_t *OpenAPI_trace_data_1_parseFromJSON(cJSON *trace_data_1JS
         ogs_strdup(event_list->valuestring),
         collection_entity_ipv4_addr && !cJSON_IsNull(collection_entity_ipv4_addr) ? ogs_strdup(collection_entity_ipv4_addr->valuestring) : NULL,
         collection_entity_ipv6_addr && !cJSON_IsNull(collection_entity_ipv6_addr) ? ogs_strdup(collection_entity_ipv6_addr->valuestring) : NULL,
-        interface_list && !cJSON_IsNull(interface_list) ? ogs_strdup(interface_list->valuestring) : NULL
+        trace_reporting_consumer_uri && !cJSON_IsNull(trace_reporting_consumer_uri) ? ogs_strdup(trace_reporting_consumer_uri->valuestring) : NULL,
+        interface_list && !cJSON_IsNull(interface_list) ? ogs_strdup(interface_list->valuestring) : NULL,
+        job_type ? job_typeVariable : 0
     );
 
     return trace_data_1_local_var;

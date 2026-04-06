@@ -1,7 +1,7 @@
 /*
  * lcs_mo_service_class.h
  *
- * 
+ * Indicates the MO-LR services allowed for a UE subscriber
  */
 
 #ifndef _OpenAPI_lcs_mo_service_class_H_

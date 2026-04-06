@@ -1,0 +1,234 @@
+openapi: 3.0.0
+
+info:
+  title: Eees_EASInformationProvisioning
+  version: "1.1.0"
+  description: |
+    API for EAS Information Provisioning.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.558 V19.5.0 Enabling Edge Applications; Protocol specification.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/24_series/24.558/'
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/eees-easinfoprov/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.558.
+
+paths:
+
+  /declare:
+    post:
+      operationId: declare
+      tags:
+        - EAS Information Provision
+      description: Declare EAS information provisioning to the EES.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EASInfoProvReq'
+      responses:
+        '200':
+          description: Information about the successful EAS information provisioning response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EASInfoProvResp'
+        '204':
+          description: No Content (EAS information request is processed and successful)
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+    EASInfoProvReq:
+      description: >
+        Describes the parameters shared to perform EAS Information Provision related operations.
+      type: object
+      properties:
+        eecId:
+          type: string
+          description: Represents a unique identifier of the EEC.
+        acId:
+          type: string
+          description: Identity of the AC.
+        selEasIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: >
+            Indicates the identifier(s) of the selected EAS(s) for EAS bundles, which is either
+            instantiated or instantiable.
+        appGrpId:
+          type: string
+          description: >
+            Application group identifier, identifying a group of UEs using the same
+            application service.
+        eesList:
+          type: array
+          items:
+            $ref: 'TS24558_Eecs_ServiceProvisioning.yaml#/components/schemas/EESInfo'
+          minItems: 1
+          description: Contains the list of EES which supports the application group identifier.
+        eesId:
+          type: string
+          description: Represents the identifier of the EES.
+        eesEndPnts:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minItems: 1
+          description: Represents the endpoint(s) of the EES.
+        reqType:
+          $ref: '#/components/schemas/EasInfoProvReqType'
+        selAcrScenarios:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          minItems: 1
+          description: >
+            Indicates the list of ACR scenarios selected by the EEC.
+        selEasEndPoints:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minItems: 1
+          description: >
+            Indicates the endpoints of the selected EAS(s) for EAS bundles.
+        dnais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          minItems: 1
+          description: >
+            Represents list of Data network access identifiers for each selected EAS indentifier.
+        svcArea:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+          minItems: 1
+          description: >
+            Represents list of service area for each selected EAS indentifier.
+        assEesEndPoints:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minItems: 1
+          description: >
+            Indicates the endpoints of the selected EES(s) of other EES which support the direct
+            bundled EAS within the same EDN and associated with the EASID list for EAS bundles.
+        casInfo:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        acProf:
+          $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACProfile'
+        eecSvcContSupp:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          minItems: 1
+          description: >
+            Indicates which ACR scenarios are supported by the EEC, if this attribute is not
+            present, then the EEC does not support service continuity.
+      required:
+        - eecId
+        - acId
+        - selEasIds
+    EASInfoProvResp:
+      description: Information about the EAS information provisioning response.
+      type: object
+      properties:
+        selAcrScenarioList:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          minItems: 1
+          description: >
+            Indicates the list of ACR scenarios are selected by the EES.
+        instEasInfo:
+            $ref: '#/components/schemas/InstantiatedEASInfo'
+        comEasEndpoint:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        comEesEndpoint:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+
+    InstantiatedEASInfo:
+      description: Contains the instantiated EAS information.
+      type: object
+      properties:
+        eas:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASProfile'
+        lifeTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        eesEndpoint:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+      required:
+        - eas
+
+    EasInfoProvReqType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - ACR_SCENARIO_SELECTION_ANNOUNCEMENT
+        - ACR_SCENARIO_SELECTION_REQUEST
+        - EAS_SELECTION
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the type of EAS Information Provisioning Request.  
+#        Possible values are:
+#        - ACR_SCENARIO_SELECTION_ANNOUNCEMENT: Indicates EAS information provisioning request type
+#          is ACR scenario selection announcement.
+#        - ACR_SCENARIO_SELECTION_REQUEST: Indicates EAS information provisioning request type is
+#          ACR scenario selection request.
+#        - EAS_SELECTION: Indicates EAS information provisioning request type is EAS selection.

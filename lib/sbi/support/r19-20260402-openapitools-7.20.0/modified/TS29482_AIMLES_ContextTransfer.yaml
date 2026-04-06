@@ -1,0 +1,182 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLE Context Transfer Service
+  version: 1.0.0
+  description: |
+    AIMLES Context Transfer Information Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.0.0; Service Enabler Architecture Layer for Verticals (SEAL); Artificial
+    Intelligence Machine Learning Enablement (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/aimles-ct/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /transfer:
+    post:
+      summary: Request AIMLE context information transfer.
+      operationId: Transfer
+      tags:
+        - AIMLE Context Transfer Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransReq'
+      responses:
+        '204':
+          description: >
+            No Content. The AIMLE Context Transfer request is successfully received and
+            processed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    TransReq:
+      description: >
+        Represents the AIMLE Context Transfer request.
+      type: object
+      properties:
+        clientId:
+          $ref: '#/components/schemas/AimleClientId'
+        currServerId:
+          type: string
+        prevServerIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        servStatus:
+          $ref: '#/components/schemas/AimleServStatus'
+        servRes:
+          type: string
+        servApp:
+          $ref: '#/components/schemas/AimleServApp'
+        mlContextInfo:
+          $ref: '#/components/schemas/MLContextInformation'
+      required:
+        - clientId
+
+    AimleServStatus:
+      description: >
+        Represents the AIMLE service operations status related information.
+      type: object
+      properties:
+        servOpStatus:
+          $ref: '#/components/schemas/AimleServOpStatus'
+        servOpCompPer:
+          type: integer
+          minimum: 0
+          maximum: 100
+      required:
+        - servOpStatus
+
+    AimleServApp:
+      description: >
+        Represents the AIMLE service applicability information.
+      type: object
+      properties:
+        serviceArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        operationPipeline:
+          type: string
+
+    MLContextInformation:
+      description: >
+        Represents the context information related to the ML operation.
+      type: object
+      properties:
+        valServId:
+          type: string
+        mlModelInfo:
+          $ref: 'TS29482_AIMLES_MLModelRetrieval.yaml#/components/schemas/MLModelDetail'
+        mlTask:
+          $ref: 'TS24560_Aimles_AIMLEClientRegistration.yaml#/components/schemas/AimlOperation'
+        dataSetInfo:
+          $ref: 'TS24560_Aimlec_MLModTngCapEva.yaml#/components/schemas/DataSetRequirements'
+        trainOpStatus:
+          $ref: '#/components/schemas/AimleServOpStatus'
+        splitTaskInfo:
+          $ref: 'TS29482_AIMLES_SplitOpEvent.yaml#/components/schemas/SplitOpProfile'
+      required:
+        - mlModelInfo
+
+# SIMPLE DATA TYPES
+#
+
+    AimleClientId:
+      description: Represents the unique identifier of a AIMLE Client.
+      type: string
+
+#
+# ENUMERATIONS
+#
+
+    AimleServOpStatus:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - ACTIVE
+        - PAUSED
+        - COMPLETED
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the AIMLE service operations status.  
+#        Possible values are:
+#        - ACTIVE: Indicates that the status of the AIML operations at the AIMLE Client is active.
+#        - PAUSED: Indicates that the status of the AIML operations at the AIMLE Client is paused.
+#        - COMPLETED: Indicates that the status of the AIML operations at the AIMLE Client is
+#          completed.

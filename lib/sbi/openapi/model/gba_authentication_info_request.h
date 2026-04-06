@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_gba_authentication_info_request_s OpenAPI_gba_authentication_info_request_t;
 #include "gba_auth_type.h"
 #include "resynchronization_info_1.h"
 
@@ -19,12 +20,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_gba_authentication_info_request_s OpenAPI_gba_authentication_info_request_t;
-typedef struct OpenAPI_gba_authentication_info_request_s {
+struct OpenAPI_gba_authentication_info_request_s {
     OpenAPI_gba_auth_type_e auth_type;
     struct OpenAPI_resynchronization_info_1_s *resynchronization_info;
     char *supported_features;
-} OpenAPI_gba_authentication_info_request_t;
+};
 
 OpenAPI_gba_authentication_info_request_t *OpenAPI_gba_authentication_info_request_create(
     OpenAPI_gba_auth_type_e auth_type,

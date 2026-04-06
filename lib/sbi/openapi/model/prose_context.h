@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_prose_context_s OpenAPI_prose_context_t;
 #include "pc5_qo_s_para.h"
 #include "ue_auth.h"
 
@@ -19,16 +20,29 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_prose_context_s OpenAPI_prose_context_t;
-typedef struct OpenAPI_prose_context_s {
+struct OpenAPI_prose_context_s {
     OpenAPI_ue_auth_e direct_discovery;
     OpenAPI_ue_auth_e direct_comm;
     OpenAPI_ue_auth_e l2_relay;
     OpenAPI_ue_auth_e l3_relay;
     OpenAPI_ue_auth_e l2_remote;
+    OpenAPI_ue_auth_e l3_remote;
+    OpenAPI_ue_auth_e l2_ue_relay;
+    OpenAPI_ue_auth_e l3_ue_relay;
+    OpenAPI_ue_auth_e l2_end;
+    OpenAPI_ue_auth_e l3_end;
+    OpenAPI_ue_auth_e multi_path_comm;
     char *nr_ue_pc5_ambr;
     struct OpenAPI_pc5_qo_s_para_s *pc5_qo_s_para;
-} OpenAPI_prose_context_t;
+    OpenAPI_ue_auth_e l3_interm_relay;
+    OpenAPI_ue_auth_e l3_multihop_remote;
+    OpenAPI_ue_auth_e l3_net_multihop_relay;
+    OpenAPI_ue_auth_e l3_ue_multihop_relay;
+    OpenAPI_ue_auth_e l3_end_multihop_relay;
+    OpenAPI_ue_auth_e l2_interm_relay;
+    OpenAPI_ue_auth_e l2_multihop_remote;
+    OpenAPI_ue_auth_e l2_net_multihop_relay;
+};
 
 OpenAPI_prose_context_t *OpenAPI_prose_context_create(
     OpenAPI_ue_auth_e direct_discovery,
@@ -36,8 +50,22 @@ OpenAPI_prose_context_t *OpenAPI_prose_context_create(
     OpenAPI_ue_auth_e l2_relay,
     OpenAPI_ue_auth_e l3_relay,
     OpenAPI_ue_auth_e l2_remote,
+    OpenAPI_ue_auth_e l3_remote,
+    OpenAPI_ue_auth_e l2_ue_relay,
+    OpenAPI_ue_auth_e l3_ue_relay,
+    OpenAPI_ue_auth_e l2_end,
+    OpenAPI_ue_auth_e l3_end,
+    OpenAPI_ue_auth_e multi_path_comm,
     char *nr_ue_pc5_ambr,
-    OpenAPI_pc5_qo_s_para_t *pc5_qo_s_para
+    OpenAPI_pc5_qo_s_para_t *pc5_qo_s_para,
+    OpenAPI_ue_auth_e l3_interm_relay,
+    OpenAPI_ue_auth_e l3_multihop_remote,
+    OpenAPI_ue_auth_e l3_net_multihop_relay,
+    OpenAPI_ue_auth_e l3_ue_multihop_relay,
+    OpenAPI_ue_auth_e l3_end_multihop_relay,
+    OpenAPI_ue_auth_e l2_interm_relay,
+    OpenAPI_ue_auth_e l2_multihop_remote,
+    OpenAPI_ue_auth_e l2_net_multihop_relay
 );
 void OpenAPI_prose_context_free(OpenAPI_prose_context_t *prose_context);
 OpenAPI_prose_context_t *OpenAPI_prose_context_parseFromJSON(cJSON *prose_contextJSON);

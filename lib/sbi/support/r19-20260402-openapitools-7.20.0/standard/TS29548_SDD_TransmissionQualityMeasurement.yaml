@@ -1,0 +1,1144 @@
+openapi: 3.0.0
+
+info:
+  title: SEALDD Server Data Transmission Quality Measurement Service
+  version: 1.1.0
+  description: |
+    SEALDD Server Data Transmission Quality Measurement Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.548 V19.5.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    SEAL Data Delivery (SEALDD) Server Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.548/
+
+servers:
+  - url: '{apiRoot}/sdd-tqm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Request the creation of a Transmission Quality Measurement Subscription.
+      operationId: CreateTransQualMeasSubsc
+      tags:
+        - Transmission Quality Measurement Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransQualMeasSubsc'
+      responses:
+        '201':
+          description: >
+            Created. The Transmission Quality Measurement Subscription is successfully created
+            and a representation of the created Individual Transmission Quality Measurement
+            Subscription resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransQualMeasSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Transmission Quality Measurement
+                Subscription resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        TransQualMeasNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/TransQualMeasNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Transmission Quality Measurement notification is successfully
+                    received and acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of the Individual Transmission Quality Measurement Subscription
+          resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Transmission Quality Measurement Subscription resource.
+      operationId: GetIndTransQualMeasSubsc
+      tags:
+        - Individual Transmission Quality Measurement Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Transmission Quality Measurement Subscription resource
+            shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransQualMeasSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Transmission Quality Measurement Subscription resource.
+      operationId: UpdateIndTransQualMeasSubsc
+      tags:
+        - Individual Transmission Quality Measurement Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransQualMeasSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Transmission Quality Measurement Subscription resource is
+            successfully updated and a representation of the updated resource shall be returned in
+            the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransQualMeasSubsc'
+        '204':
+          description: >
+            No Content. The Individual Transmission Quality Measurement Subscription resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Transmission Quality Measurement Subscription resource.
+      operationId: ModifyIndTransQualMeasSubsc
+      tags:
+        - Individual Transmission Quality Measurement Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/TransQualMeasSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Transmission Quality Measurement Subscription resource is
+            successfully modified and a representation of the updated resource shall be returned in
+            the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransQualMeasSubsc'
+        '204':
+          description: >
+            No Content. The Individual Transmission Quality Measurement Subscription resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Transmission Quality Measurement Subscription resource.
+      operationId: DeleteIndTransQualMeasSubsc
+      tags:
+        - Individual Transmission Quality Measurement Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Transmission Quality Measurement Subscription resource is
+            successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /reports:
+    get:
+      summary: Retrieve Historical Transmission Quality Measurement Report(s).
+      operationId: GetHistTransQualMeasReports
+      tags:
+        - Historical Transmission Quality Measurement Reports (Collection)
+      parameters:
+        - name: app-traffic-ids
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        - name: val-group-id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: val-ue-ids-list
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        - name: val-user-ids-list
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        - name: all-val-ues
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+            description: >
+              Indicates that the request is related to all VAL UE(s) of the application traffic
+              identified by the application traffic identifier(s) provided within the
+              appTrafficIds attribute.
+              true indicates that the request is related to all VAL UE(s).
+              false" indicates that the request is not related to all VAL UE(s).
+              The default value when this query parameter is omitted is false.
+        - name: supp-feat
+          in: query
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            OK. The requested Historical Transmission Quality Measurement Report(s) , if any, shall
+            be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistTransQualMeasReports'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    TransQualMeasSubsc:
+      description: >
+        Represents a Transmission Quality Measurement Subscription.
+      type: object
+      properties:
+        appTrafficIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        valGroupId:
+          type: string
+        valUeIdsList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        valUserIdsList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        allValUesInd:
+          type: boolean
+          default: false
+        flows:
+          type: array
+          items:
+            $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ConnInfo'
+          minItems: 1
+        crossflows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Crossflow'
+          minItems: 1
+        measConds:
+          type: array
+          items:
+            $ref: 'TS29549_SS_Events.yaml#/components/schemas/ValidityConditions'
+          minItems: 1
+        reqs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/TransQualMeasReq'
+          minProperties: 1
+          nullable: true
+          description: >
+            Represents the transmission quality measurement reporting requirements of the
+            subscription.
+            The key of the map shall be any unique string encoded value.
+        subsExpTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTimeRo'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - appTrafficIds
+        - reqs
+        - notifUri
+      oneOf:
+        - required: [valGroupId]
+        - required: [valUeIdsList]
+        - required: [valUserIdsList]
+        - required: [allValUesInd]
+
+    TransQualMeasReq:
+      description: >
+        Represents Transmission Quality Measurement requirements.
+      type: object
+      properties:
+        measId:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeasurementId'
+          minItems: 1
+        repType:
+          $ref: 'TS29508_Nsmf_EventExposure.yaml#/components/schemas/NotificationMethod'
+        repPeriodicity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        repGranularity:
+          $ref: '#/components/schemas/RepGranularity'
+        measWindow:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        measExpTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        repCriteriaSets:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/TransQualMeasCriteriaSet'
+          minProperties: 1
+          description: >
+            Contains one or several set(s) of transmission quality measurement reporting
+            criteria.
+            The key of the map shall be any unique string encoded value.
+            Only the criteria related to the subscribed measurement(s) within the measId attribute
+            shall be present within this attribute.
+      required:
+        - measId
+
+    TransQualMeasSubscPatch:
+      description: >
+        Represents the requested modifications to a Transmission Quality Measurement Subscription.
+      type: object
+      properties:
+        measConds:
+          type: array
+          items:
+            $ref: 'TS29549_SS_Events.yaml#/components/schemas/ValidityConditions'
+          minItems: 1
+        reqs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/TransQualMeasReq'
+          minProperties: 1
+          nullable: true
+          description: >
+            Represents the transmission quality measurement reporting requirements of the
+            subscription.
+            The key of the map shall be any unique string encoded value and shall be set to the same
+            value as the one provided during the creation of the transmission quality measurement
+            subscription.
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    TransQualMeasNotif:
+      description: >
+        Represents a Transmission Quality Measurement Notification.
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransQualMeasReport'
+          minItems: 1
+      required:
+        - subscriptionId
+        - reports
+
+    TransQualMeasReport:
+      description: >
+        Represents a Transmission Quality Measurement report.
+      type: object
+      properties:
+        measId:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeasurementId'
+          minItems: 1
+        valUeIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        valUserIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        flows:
+          type: array
+          items:
+            $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ConnInfo'
+          minItems: 1
+        crossflows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Crossflow'
+          minItems: 1
+        measData:
+          $ref: '#/components/schemas/TransQualMeasData'
+        timestamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - measId
+      not:
+        required: [valUeIds, valUserIds]
+
+    TransQualMeasCriteria:
+      description: >
+        Represents the Transmission Quality Measurement reporting criteria.
+      type: object
+      properties:
+        minLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avgLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minLatencyDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avgLatencyDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxLatencyDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minLatencyUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avgLatencyUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxLatencyUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minLatencyCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avgLatencyCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxLatencyCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        avgBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        minBitRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        avgBitRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxBitRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        minBitRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        avgBitRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxBitRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        minBitRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        avgBitRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxBitRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        minPackLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        avgPackLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        maxPackLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        minPackLossRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        avgPackLossRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        maxPackLossRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        minPackLossRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        avgPackLossRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        maxPackLossRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        minPackLossRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        avgPackLossRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        maxPackLossRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        minJitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        avgJitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxJitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        minJitterDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        avgJitterDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxJitterDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        minJitterUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        avgJitterUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxJitterUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        minJitterCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        avgJitterCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxJitterCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+      oneOf:
+        - required: [minLatency]
+        - required: [avgLatency]
+        - required: [maxLatency]
+        - required: [minLatencyDl]
+        - required: [avgLatencyDl]
+        - required: [maxLatencyDl]
+        - required: [minLatencyUl]
+        - required: [avgLatencyUl]
+        - required: [maxLatencyUl]
+        - required: [minLatencyCrossflow]
+        - required: [avgLatencyCrossflow]
+        - required: [maxLatencyCrossflow]
+        - required: [minBitRate]
+        - required: [avgBitRate]
+        - required: [maxBitRate]
+        - required: [minLatencyDl]
+        - required: [avgLatencyDl]
+        - required: [maxLatencyDl]
+        - required: [minLatencyUl]
+        - required: [avgLatencyUl]
+        - required: [maxLatencyUl]
+        - required: [minLatencyCrossflow]
+        - required: [avgLatencyCrossflow]
+        - required: [maxLatencyCrossflow]
+        - required: [minPackLossRate]
+        - required: [avgPackLossRate]
+        - required: [maxPackLossRate]
+        - required: [minPackLossRateDl]
+        - required: [avgPackLossRateDl]
+        - required: [maxPackLossRateDl]
+        - required: [minPackLossRateUl]
+        - required: [avgPackLossRateUl]
+        - required: [maxPackLossRateUl]
+        - required: [minPackLossRateCrossflow]
+        - required: [avgPackLossRateCrossflow]
+        - required: [maxPackLossRateCrossflow]
+        - required: [minJitter]
+        - required: [avgJitter]
+        - required: [maxJitter]
+        - required: [minJitterDl]
+        - required: [avgJitterDl]
+        - required: [maxJitterDl]
+        - required: [minJitterUl]
+        - required: [avgJitterUl]
+        - required: [maxJitterUl]
+        - required: [minJitterCrossflow]
+        - required: [avgJitterCrossflow]
+        - required: [maxJitterCrossflow]
+
+    TransQualMeasData:
+      description: >
+        Represents the Transmission Quality Measurement data.
+      type: object
+      properties:
+        minLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avgLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        stdDevLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        kPercLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        kValLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minLatencyUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxLatencyUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avgLatencyUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        stdDevLatencyUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        kPercLatencyUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        kValLatencyUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minLatencyDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxLatencyDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avgLatencyDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        stdDevLatencyDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        kPercLatencyDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        kValLatencyDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minLatencyCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxLatencyCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avgLatencyCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        stdDevLatencyCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        kPercLatencyCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        kValLatencyCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        avgBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        stdDevBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        kPercBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        kValBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minBitRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxBitRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        avgBitRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        stdDevBitRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        kPercBitRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        kValBitRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minBitRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxBitRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        avgBitRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        stdDevBitRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        kPercBitRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        kValBitRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minBitRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxBitRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        avgBitRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        stdDevBitRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        kPercBitRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        kValBitRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minPackLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        maxPackLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        avgPackLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        stdDevPackLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        kPercPackLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        kValPackLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minPackLossRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        maxPackLossRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        avgPackLossRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        stdDevPackLossRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        kPercPackLossRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        kValPackLossRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minPackLossRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        maxPackLossRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        avgPackLossRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        stdDevPackLossRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        kPercPackLossRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        kValPackLossRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minPackLossRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        maxPackLossRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        avgPackLossRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        stdDevPackLossRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        kPercPackLossRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        kValPackLossRateCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minJitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxJitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        avgJitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        stdDevJitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        kPercJitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        kValJitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minJitterUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxJitterUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        avgJitterUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        stdDevJitterUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        kPercJitterUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        kValJitterUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minJitterDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxJitterDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        avgJitterDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        stdDevJitterDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        kPercJitterDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        kValJitterDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minJitterCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxJitterCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        avgJitterCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        stdDevJitterCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        kPercJitterCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        kValJitterCrossflow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        measPeriod:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        timestamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      anyOf:
+        - required: [minLatency]
+        - required: [maxLatency]
+        - required: [avgLatency]
+        - required: [minLatencyDl]
+        - required: [avgLatencyDl]
+        - required: [maxLatencyDl]
+        - required: [minLatencyUl]
+        - required: [avgLatencyUl]
+        - required: [maxLatencyUl]
+        - required: [minLatencyCrossflow]
+        - required: [avgLatencyCrossflow]
+        - required: [maxLatencyCrossflow]
+        - required: [minBitRate]
+        - required: [maxBitRate]
+        - required: [avgBitRate]
+        - required: [minBitRateDl]
+        - required: [avgBitRateDl]
+        - required: [maxBitRateDl]
+        - required: [minBitRateUl]
+        - required: [avgBitRateUl]
+        - required: [maxBitRateUl]
+        - required: [minBitRateCrossflow]
+        - required: [avgBitRateCrossflow]
+        - required: [maxBitRateCrossflow]
+        - required: [minPackLossRate]
+        - required: [maxPackLossRate]
+        - required: [avgPackLossRate]
+        - required: [minPackLossRateDl]
+        - required: [avgPackLossRateDl]
+        - required: [maxPackLossRateDl]
+        - required: [minPackLossRateUl]
+        - required: [avgPackLossRateUl]
+        - required: [maxPackLossRateUl]
+        - required: [minPackLossRateCrossflow]
+        - required: [avgPackLossRateCrossflow]
+        - required: [maxPackLossRateCrossflow]
+        - required: [minJitter]
+        - required: [maxJitter]
+        - required: [avgJitter]
+        - required: [minJitterDl]
+        - required: [avgJitterDl]
+        - required: [maxJitterDl]
+        - required: [minJitterUl]
+        - required: [avgJitterUl]
+        - required: [maxJitterUl]
+        - required: [minJitterCrossflow]
+        - required: [avgJitterCrossflow]
+        - required: [maxJitterCrossflow]
+
+    HistTransQualMeasReports:
+      description: >
+        Represents Historical Transmission Quality Measurement Report(s).
+      type: object
+      properties:
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransQualMeasReport'
+          minItems: 0
+          description: >
+            Contains the Historical Transmission Quality Measurement Report(s).
+            If there are no Historical Transmission Quality Measurement Report(s) fulfilling the
+            request, this attribute shall contain an empty array.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - reports
+
+    TransQualMeasCriteriaSet:
+      description: >
+        Represents a set of transmission quality measurement reporting criteria.
+      type: object
+      properties:
+        criteria:
+          $ref: '#/components/schemas/TransQualMeasCriteria'
+        direction:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/MatchingDirection'
+      required:
+        - criteria
+        - direction
+
+    Crossflow:
+      description: >
+        Represents a crossflow.
+      type: object
+      properties:
+        crossflow:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrossflowInfo'
+          minItems: 2
+          maxItems: 2
+      required:
+        - crossflow
+
+    CrossflowInfo:
+      description: >
+        Represents the crossflow information.
+      type: object
+      properties:
+        flowDesc:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ConnInfo'
+        direction:
+          $ref: '#/components/schemas/FlowDirection'
+      required:
+        - flowDesc
+        - direction
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    MeasurementId:
+      anyOf:
+        - type: string
+          enum:
+          - LATENCY
+          - UL_LATENCY
+          - DL_LATENCY
+          - CROSSFLOW_LATENCY
+          - BITRATE
+          - UL_BITRATE
+          - DL_BITRATE
+          - CROSSFLOW_BITRATE
+          - PACKET_LOSS_RATE
+          - UL_PACKET_LOSS_RATE
+          - DL_PACKET_LOSS_RATE
+          - CROSSFLOW_PACKET_LOSS_RATE
+          - JITTER
+          - UL_JITTER
+          - DL_JITTER
+          - CROSSFLOW_JITTER
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the transmission quality measurement type.  
+        Possible values are:
+        - LATENCY: Indicates that the requested/reported measurement is the E2E latency.
+        - UL_LATENCY: Indicates that the requested/reported measurement is the UL latency.
+        - DL_LATENCY: Indicates that the requested/reported measurement is the DL latency.
+        - CROSSFLOW_LATENCY: Indicates that the requested/reported measurement is
+          the crossflow latency.
+        - BITRATE: Indicates that the requested/reported measurement is the E2E bit rate.
+        - UL_BITRATE: Indicates that the requested/reported measurement is the UL bit rate.
+        - DL_BITRATE: Indicates that the requested/reported measurement is the DL bit rate.
+        - CROSSFLOW_BITRATE: Indicates that the requested/reported measurement is the crossflow
+          bit rate.
+        - PACKET_LOSS_RATE: Indicates that the requested/reported measurement is the E2E packet loss
+        - UL_PACKET_LOSS_RATE: Indicates that the requested/reported measurement is the UL
+          packet loss rate.
+        - DL_PACKET_LOSS_RATE: Indicates that the requested/reported measurement is the DL
+          packet loss rate.
+        - CROSSFLOW_PACKET_LOSS_RATE: Indicates that the requested/reported measurement is
+          the crossflow packet loss
+          rate.
+          rate.
+        - JITTER: Indicates that the requested/reported measurement is the jitter.
+        - UL_JITTER: Indicates that the requested/reported measurement is the UL jitter.
+        - DL_JITTER: Indicates that the requested/reported measurement is the DL jitter.
+        - CROSSFLOW_JITTER: Indicates that the requested/reported measurement is
+          the crossflow jitter.
+
+    RepGranularity:
+      anyOf:
+        - type: string
+          enum:
+          - INDIVIDUAL_VAL_UE
+          - VAL_GROUP
+          - ALL_VAL_UES
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the reporting granularity.  
+        Possible values are:
+        - INDIVIDUAL_VAL_UE: Indicates that the granularity is individual VAL UE/user.
+        - VAL_GROUP: Indicates that the granularity is VAL Group.
+        - ALL_VAL_UES: Indicates that the granularity is all VAL UE/user(s).
+
+    FlowDirection:
+      anyOf:
+        - type: string
+          enum:
+          - UL
+          - DL
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the flow direction.  
+        Possible values are:
+        - UL: Indicates that the flow direction is uplink.
+        - DL: Indicates that the flow direction is downlink.
+
+
+# Data types describing alternative data types or combinations of data types:
+#

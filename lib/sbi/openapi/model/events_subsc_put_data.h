@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_events_subsc_put_data_s OpenAPI_events_subsc_put_data_t;
 #include "acc_net_charging_address.h"
 #include "access_net_charging_identifier.h"
 #include "access_type.h"
@@ -21,11 +22,18 @@
 #include "af_event_subscription.h"
 #include "an_gw_address.h"
 #include "app_detection_report.h"
+#include "bat_offset_info.h"
 #include "bridge_management_container.h"
+#include "capability_report.h"
+#include "dnai_change_type.h"
 #include "events_notification.h"
 #include "events_subsc_req_data.h"
+#include "l4s_support.h"
 #include "net_loc_access_support.h"
 #include "out_of_credit_information.h"
+#include "pc_session_recovery_status.h"
+#include "pdu_session_type.h"
+#include "pdv_monitoring_report.h"
 #include "plmn_id_nid.h"
 #include "port_management_container.h"
 #include "qos_monitoring_information.h"
@@ -33,10 +41,14 @@
 #include "qos_notification_control_info.h"
 #include "ran_nas_rel_cause.h"
 #include "rat_type.h"
+#include "rate_limit_repo.h"
 #include "requested_qos_monitoring_parameter.h"
 #include "required_access_info.h"
 #include "resources_allocation_info.h"
+#include "rtt_flow_reference.h"
 #include "satellite_backhaul_category.h"
+#include "ssc_mode.h"
+#include "ue_reachability_status.h"
 #include "usage_threshold.h"
 #include "user_location.h"
 
@@ -44,25 +56,36 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_events_subsc_put_data_s OpenAPI_events_subsc_put_data_t;
-typedef struct OpenAPI_events_subsc_put_data_s {
+struct OpenAPI_events_subsc_put_data_s {
     OpenAPI_list_t *events;
     char *notif_uri;
     OpenAPI_list_t *req_qos_mon_params;
     struct OpenAPI_qos_monitoring_information_s *qos_mon;
+    struct OpenAPI_qos_monitoring_information_s *qos_mon_dat_rate;
+    OpenAPI_list_t *pdv_req_mon_params;
+    struct OpenAPI_qos_monitoring_information_s *pdv_mon;
+    struct OpenAPI_qos_monitoring_information_s *congest_mon;
+    struct OpenAPI_qos_monitoring_information_s *rtt_mon;
+    struct OpenAPI_qos_monitoring_information_s *avl_bit_rate_mon;
+    struct OpenAPI_rtt_flow_reference_s *rtt_flow_ref;
     OpenAPI_list_t *req_anis;
     struct OpenAPI_usage_threshold_s *usg_thres;
     char *notif_corre_id;
     OpenAPI_list_t *af_app_ids;
     bool is_direct_notif_ind;
     int direct_notif_ind;
+    bool is_avrg_wndw;
+    int avrg_wndw;
     OpenAPI_list_t *ad_reports;
     OpenAPI_access_type_e access_type;
     struct OpenAPI_additional_access_info_s *add_access_info;
     struct OpenAPI_additional_access_info_s *rel_access_info;
+    bool is_an_charg_addr_null;
     struct OpenAPI_acc_net_charging_address_s *an_charg_addr;
     OpenAPI_list_t *an_charg_ids;
+    bool is_an_gw_addr_null;
     struct OpenAPI_an_gw_address_s *an_gw_addr;
+    OpenAPI_list_t *l4s_reports;
     char *ev_subs_uri;
     OpenAPI_list_t *ev_notifs;
     OpenAPI_list_t *failed_resourc_alloc_reports;
@@ -72,6 +95,11 @@ typedef struct OpenAPI_events_subsc_put_data_s {
     struct OpenAPI_plmn_id_nid_s *plmn_id;
     OpenAPI_list_t *qnc_reports;
     OpenAPI_list_t *qos_mon_reports;
+    OpenAPI_list_t *qos_mon_dat_rate_reps;
+    OpenAPI_list_t *pdv_mon_reports;
+    OpenAPI_list_t *congest_reports;
+    OpenAPI_list_t *rtt_mon_reports;
+    OpenAPI_list_t* qos_mon_cap_repos;
     OpenAPI_list_t *ran_nas_rel_causes;
     OpenAPI_rat_type_e rat_type;
     OpenAPI_satellite_backhaul_category_e sat_backhaul_category;
@@ -79,29 +107,57 @@ typedef struct OpenAPI_events_subsc_put_data_s {
     char *ue_loc_time;
     char *ue_time_zone;
     struct OpenAPI_accumulated_usage_s *usg_rep;
+    char *ursp_enf_rep;
+    OpenAPI_ssc_mode_e ssc_mode;
+    char *ue_req_dnn;
+    OpenAPI_pdu_session_type_e ue_req_pdu_session_type;
     struct OpenAPI_bridge_management_container_s *tsn_bridge_man_cont;
     struct OpenAPI_port_management_container_s *tsn_port_man_cont_dstt;
     OpenAPI_list_t *tsn_port_man_cont_nwtts;
-} OpenAPI_events_subsc_put_data_t;
+    OpenAPI_list_t *ipv4_addr_list;
+    OpenAPI_list_t *ipv6_prefix_list;
+    struct OpenAPI_bat_offset_info_s *bat_offset_info;
+    OpenAPI_ue_reachability_status_e ue_reach_status;
+    bool is_retry_after;
+    int retry_after;
+    char *serv_sat_id;
+    struct OpenAPI_rate_limit_repo_s *rate_limit_repo;
+    OpenAPI_dnai_change_type_e dnai_chg_type;
+    char *source_dnai;
+    char *target_dnai;
+    OpenAPI_pc_session_recovery_status_e session_recov_status;
+};
 
 OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_create(
     OpenAPI_list_t *events,
     char *notif_uri,
     OpenAPI_list_t *req_qos_mon_params,
     OpenAPI_qos_monitoring_information_t *qos_mon,
+    OpenAPI_qos_monitoring_information_t *qos_mon_dat_rate,
+    OpenAPI_list_t *pdv_req_mon_params,
+    OpenAPI_qos_monitoring_information_t *pdv_mon,
+    OpenAPI_qos_monitoring_information_t *congest_mon,
+    OpenAPI_qos_monitoring_information_t *rtt_mon,
+    OpenAPI_qos_monitoring_information_t *avl_bit_rate_mon,
+    OpenAPI_rtt_flow_reference_t *rtt_flow_ref,
     OpenAPI_list_t *req_anis,
     OpenAPI_usage_threshold_t *usg_thres,
     char *notif_corre_id,
     OpenAPI_list_t *af_app_ids,
     bool is_direct_notif_ind,
     int direct_notif_ind,
+    bool is_avrg_wndw,
+    int avrg_wndw,
     OpenAPI_list_t *ad_reports,
     OpenAPI_access_type_e access_type,
     OpenAPI_additional_access_info_t *add_access_info,
     OpenAPI_additional_access_info_t *rel_access_info,
+    bool is_an_charg_addr_null,
     OpenAPI_acc_net_charging_address_t *an_charg_addr,
     OpenAPI_list_t *an_charg_ids,
+    bool is_an_gw_addr_null,
     OpenAPI_an_gw_address_t *an_gw_addr,
+    OpenAPI_list_t *l4s_reports,
     char *ev_subs_uri,
     OpenAPI_list_t *ev_notifs,
     OpenAPI_list_t *failed_resourc_alloc_reports,
@@ -111,6 +167,11 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_create(
     OpenAPI_plmn_id_nid_t *plmn_id,
     OpenAPI_list_t *qnc_reports,
     OpenAPI_list_t *qos_mon_reports,
+    OpenAPI_list_t *qos_mon_dat_rate_reps,
+    OpenAPI_list_t *pdv_mon_reports,
+    OpenAPI_list_t *congest_reports,
+    OpenAPI_list_t *rtt_mon_reports,
+    OpenAPI_list_t* qos_mon_cap_repos,
     OpenAPI_list_t *ran_nas_rel_causes,
     OpenAPI_rat_type_e rat_type,
     OpenAPI_satellite_backhaul_category_e sat_backhaul_category,
@@ -118,9 +179,25 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_create(
     char *ue_loc_time,
     char *ue_time_zone,
     OpenAPI_accumulated_usage_t *usg_rep,
+    char *ursp_enf_rep,
+    OpenAPI_ssc_mode_e ssc_mode,
+    char *ue_req_dnn,
+    OpenAPI_pdu_session_type_e ue_req_pdu_session_type,
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,
-    OpenAPI_list_t *tsn_port_man_cont_nwtts
+    OpenAPI_list_t *tsn_port_man_cont_nwtts,
+    OpenAPI_list_t *ipv4_addr_list,
+    OpenAPI_list_t *ipv6_prefix_list,
+    OpenAPI_bat_offset_info_t *bat_offset_info,
+    OpenAPI_ue_reachability_status_e ue_reach_status,
+    bool is_retry_after,
+    int retry_after,
+    char *serv_sat_id,
+    OpenAPI_rate_limit_repo_t *rate_limit_repo,
+    OpenAPI_dnai_change_type_e dnai_chg_type,
+    char *source_dnai,
+    char *target_dnai,
+    OpenAPI_pc_session_recovery_status_e session_recov_status
 );
 void OpenAPI_events_subsc_put_data_free(OpenAPI_events_subsc_put_data_t *events_subsc_put_data);
 OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJSON *events_subsc_put_dataJSON);

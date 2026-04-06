@@ -1,0 +1,154 @@
+openapi: 3.0.0
+
+info:
+  title: EES Common EAS Announcement Service
+  version: 1.1.0
+  description: |
+    EES Common EAS Announcement Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.558 V19.5.0; Enabling Edge Applications;
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.558/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/eees-cea/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+paths:
+  /declare:
+    post:
+      summary: Request to declare common EAS information.
+      operationId: Declare
+      tags:
+        - Declare common EAS Information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommonEASInfo'
+      responses:
+        '204':
+          description: >
+            No Content. The common EAS information is successfully received and no content is
+            returned in the response body.
+        '200':
+          description: >
+            OK. The common EAS information is successfully received and common EAS declaration
+            related information is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonEASInfoDecResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    CommonEASInfo:
+      description: >
+        Represents the common EAS information.
+      type: object
+      properties:
+        requestorId:
+          type: string
+          description: Represents the identifier of the announcing EES sending the request.
+        requestorEndPt:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        easId:
+          type: string
+          description: Represents the EAS ID of the selected common EAS
+        easEndPt:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        serviceKpisList:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASServiceKPI'
+        ednInfo:
+          $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/EDNInfo'
+        appGrpId:
+          type: string
+          description: Represents the application group identifier.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - requestorId
+        - easId
+        - easEndPt
+        - appGrpId
+
+    CommonEASInfoDecResp:
+      description: >
+        Represents the Represents the response to a common EAS information declaration request.
+      type: object
+      properties:
+        grpConnInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrpConnInfo'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      anyOf:
+        - required: [grpConnInfo]
+
+    GrpConnInfo:
+      description: >
+        Represents the group connection information.
+      type: object
+      properties:
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        connInd:
+          type: boolean
+          description: >
+            Represents the common EAS connection indication, i.e., whether or not the UE identified
+            by the ueId attribute should connect to the selected common EAS.
+            When set to true, it indicates that the UE should connect to the selected common EAS.
+            When set to false, it indicates that the UE should not connect to the selected common
+            EAS.
+      required:
+        - ueId
+        - connInd

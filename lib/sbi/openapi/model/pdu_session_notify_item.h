@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pdu_session_notify_item_s OpenAPI_pdu_session_notify_item_t;
 #include "notification_cause.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pdu_session_notify_item_s OpenAPI_pdu_session_notify_item_t;
-typedef struct OpenAPI_pdu_session_notify_item_s {
+struct OpenAPI_pdu_session_notify_item_s {
     OpenAPI_notification_cause_e notification_cause;
-} OpenAPI_pdu_session_notify_item_t;
+};
 
 OpenAPI_pdu_session_notify_item_t *OpenAPI_pdu_session_notify_item_create(
     OpenAPI_notification_cause_e notification_cause

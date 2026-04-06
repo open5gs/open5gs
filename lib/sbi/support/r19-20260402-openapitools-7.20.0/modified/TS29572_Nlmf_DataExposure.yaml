@@ -1,0 +1,346 @@
+openapi: 3.0.0
+
+info:
+  version: 1.0.0
+  title: Nlmf_DataExposure
+  description: |
+    LMF Data Exposure Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - nlmf-dataexposure
+
+externalDocs:
+  description: 3GPP TS 29.572 V19.5.0; 5G System; Location Management Services; Stage 3
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.572/'
+
+servers:
+  - url: '{apiRoot}/nlmf-dataexposure/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+paths:
+  /subscriptions:
+    post:
+      summary: Nlmf_Data Exposure Subscribe Service Operation
+      tags:
+        - Subscriptions(Collection)
+      operationId: CreateSubscription
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LmfDataExposureSubscription'
+        required: true
+      responses:
+        '201':
+          description: Subscription Created
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nlmf-dataexposure/<apiVersion>/subscriptions/{subscriptionId}
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LmfDataExposureSubscription'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        LmfDataExposureNotification:
+          '{$request.body#/subscription/notificationUri}':
+            post:
+              summary: LMF Data Exposure Notification
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/LmfDataExposureNotification'
+                required: true
+              responses:
+                '204':
+                  description: Successful acknowledgement
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    patch:
+      summary: Nlmf_DataExposure Subscribe Modify service Operation
+      tags:
+        - Individual subscription (Document)
+      operationId: ModifySubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Unique ID of the subscription to be modified
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '204':
+          description: Expected response to a successful subscription modification
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+    delete:
+      summary: Nlmf_DataExposure Unsubscribe service Operation
+      tags:
+        - Individual subscription (Document)
+      operationId: DeleteSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Deletion of Subscription
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Subscription deleted successfully
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nlmf-dataexposure: Access to the Nlmf_DataExposure API
+
+  schemas:
+#
+# STRUCTURED TYPES
+#
+    LmfDataExposureSubscription:
+      description: Describes subscription operation of LMF data exposure
+      type: object
+      properties:
+        notificationUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifyCorrelationId:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CorrelationID'
+        aoi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+        recurTime:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/RecurTime'
+        numOfSamples:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        dataSources:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataSourceType'
+          minItems: 1
+        qualityThreshold:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocationQoS'
+        mlModelId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        expiryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        pruIndication:
+          type: boolean
+          enum:
+            - true
+      required:
+        - notificationUri
+        - notifyCorrelationId
+        - aoi
+
+    LmfDataExposureNotification:
+      description: Describes Notification for LMF data collection
+      properties:
+        notifyCorrelationId:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CorrelationID'
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/LmfDataExposureReport'
+          minItems: 1
+      required:
+        - notifyCorrelationId
+        - reports
+
+    LmfDataExposureReport:
+      description: Describes an LMF data collection exposure report
+      properties:
+        samplingDataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/LmfDataExposureSamplingData'
+          minItems: 1
+        mlModelId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        cause:
+          $ref: '#/components/schemas/LmfDataExposureCause'
+
+    LmfDataExposureSamplingData:
+      description: Describes an LMF data collection exposure Sampling Data
+      properties:
+        timestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        locMeasureData:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocMeasurements'
+        groundTruth:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocationData'
+        qualityIndicator:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        mlLocEstimate:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocationData'
+      required:
+        - timestamp
+        - locMeasureData
+        - groundTruth
+
+#
+# SIMPLE TYPES
+#
+
+#
+# ENUMERATIONS
+#
+    DataSourceType:
+      description: The data source for location measurement data collection.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - NG_RAN
+#        - type: string
+#
+    LmfDataExposureCause:
+      description: The cause code for LMF Data Exposure Report.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - NOT_ENOUGH_SAMPLES
+#        - type: string

@@ -12,10 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_policy_decision_s OpenAPI_sm_policy_decision_t;
 #include "bridge_management_container.h"
 #include "charging_data.h"
 #include "charging_information.h"
 #include "condition_data.h"
+#include "local_offloading_management_info.h"
+#include "notif_cap_type.h"
+#include "pc_session_recovery_status.h"
 #include "pcc_rule.h"
 #include "policy_control_request_trigger.h"
 #include "port_management_container.h"
@@ -27,16 +31,18 @@
 #include "requested_rule_data.h"
 #include "requested_usage_data.h"
 #include "session_rule.h"
+#include "slice_usg_ctrl_info.h"
 #include "sm_policy_association_release_cause.h"
 #include "traffic_control_data.h"
 #include "usage_monitoring_data.h"
+#include "vplmn_dl_ambr.h"
+#include "vplmn_offloading_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_policy_decision_s OpenAPI_sm_policy_decision_t;
-typedef struct OpenAPI_sm_policy_decision_s {
+struct OpenAPI_sm_policy_decision_s {
     OpenAPI_list_t* sess_rules;
     bool is_pcc_rules_null;
     OpenAPI_list_t* pcc_rules;
@@ -46,6 +52,7 @@ typedef struct OpenAPI_sm_policy_decision_s {
     bool is_chg_decs_null;
     OpenAPI_list_t* chg_decs;
     struct OpenAPI_charging_information_s *charging_info;
+    char *chf_group_id;
     OpenAPI_list_t* traff_cont_decs;
     bool is_um_decs_null;
     OpenAPI_list_t* um_decs;
@@ -74,14 +81,27 @@ typedef struct OpenAPI_sm_policy_decision_s {
     bool is_ipv6_index;
     int ipv6_index;
     OpenAPI_qos_flow_usage_e qos_flow_usage;
+    OpenAPI_list_t *qos_mon_cap_repo_types;
     OpenAPI_sm_policy_association_release_cause_e rel_cause;
     char *supp_feat;
     struct OpenAPI_bridge_management_container_s *tsn_bridge_man_cont;
     struct OpenAPI_port_management_container_s *tsn_port_man_cont_dstt;
     OpenAPI_list_t *tsn_port_man_cont_nwtts;
+    char *tsc_notif_uri;
+    char *tsc_notif_corre_id;
     bool is_red_sess_indication;
     int red_sess_indication;
-} OpenAPI_sm_policy_decision_t;
+    char *ue_pol_cont;
+    bool is_slice_usg_ctrl_info_null;
+    struct OpenAPI_slice_usg_ctrl_info_s *slice_usg_ctrl_info;
+    bool is_vplmn_offload_infos_null;
+    OpenAPI_list_t *vplmn_offload_infos;
+    bool is_loc_offload_infos_null;
+    OpenAPI_list_t *loc_offload_infos;
+    bool is_vplmn_dl_ambr_null;
+    struct OpenAPI_vplmn_dl_ambr_s *vplmn_dl_ambr;
+    OpenAPI_pc_session_recovery_status_e session_recov_status;
+};
 
 OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_create(
     OpenAPI_list_t* sess_rules,
@@ -93,6 +113,7 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_create(
     bool is_chg_decs_null,
     OpenAPI_list_t* chg_decs,
     OpenAPI_charging_information_t *charging_info,
+    char *chf_group_id,
     OpenAPI_list_t* traff_cont_decs,
     bool is_um_decs_null,
     OpenAPI_list_t* um_decs,
@@ -121,13 +142,26 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_create(
     bool is_ipv6_index,
     int ipv6_index,
     OpenAPI_qos_flow_usage_e qos_flow_usage,
+    OpenAPI_list_t *qos_mon_cap_repo_types,
     OpenAPI_sm_policy_association_release_cause_e rel_cause,
     char *supp_feat,
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,
     OpenAPI_list_t *tsn_port_man_cont_nwtts,
+    char *tsc_notif_uri,
+    char *tsc_notif_corre_id,
     bool is_red_sess_indication,
-    int red_sess_indication
+    int red_sess_indication,
+    char *ue_pol_cont,
+    bool is_slice_usg_ctrl_info_null,
+    OpenAPI_slice_usg_ctrl_info_t *slice_usg_ctrl_info,
+    bool is_vplmn_offload_infos_null,
+    OpenAPI_list_t *vplmn_offload_infos,
+    bool is_loc_offload_infos_null,
+    OpenAPI_list_t *loc_offload_infos,
+    bool is_vplmn_dl_ambr_null,
+    OpenAPI_vplmn_dl_ambr_t *vplmn_dl_ambr,
+    OpenAPI_pc_session_recovery_status_e session_recov_status
 );
 void OpenAPI_sm_policy_decision_free(OpenAPI_sm_policy_decision_t *sm_policy_decision);
 OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm_policy_decisionJSON);

@@ -12,19 +12,20 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_context_relocate_data_s OpenAPI_ue_context_relocate_data_t;
 #include "n2_info_content.h"
 #include "n2_sm_information.h"
 #include "ng_ap_cause.h"
 #include "ng_ran_target_id.h"
 #include "ref_to_binary_data.h"
 #include "ue_context.h"
+#include "xr_device_with2_rx.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_context_relocate_data_s OpenAPI_ue_context_relocate_data_t;
-typedef struct OpenAPI_ue_context_relocate_data_s {
+struct OpenAPI_ue_context_relocate_data_s {
     struct OpenAPI_ue_context_s *ue_context;
     struct OpenAPI_ng_ran_target_id_s *target_id;
     struct OpenAPI_n2_info_content_s *source_to_target_data;
@@ -33,7 +34,8 @@ typedef struct OpenAPI_ue_context_relocate_data_s {
     struct OpenAPI_n2_info_content_s *ue_radio_capability;
     struct OpenAPI_ng_ap_cause_s *ngap_cause;
     char *supported_features;
-} OpenAPI_ue_context_relocate_data_t;
+    OpenAPI_xr_device_with2_rx_e xr_device_with2_rx;
+};
 
 OpenAPI_ue_context_relocate_data_t *OpenAPI_ue_context_relocate_data_create(
     OpenAPI_ue_context_t *ue_context,
@@ -43,7 +45,8 @@ OpenAPI_ue_context_relocate_data_t *OpenAPI_ue_context_relocate_data_create(
     OpenAPI_list_t *pdu_session_list,
     OpenAPI_n2_info_content_t *ue_radio_capability,
     OpenAPI_ng_ap_cause_t *ngap_cause,
-    char *supported_features
+    char *supported_features,
+    OpenAPI_xr_device_with2_rx_e xr_device_with2_rx
 );
 void OpenAPI_ue_context_relocate_data_free(OpenAPI_ue_context_relocate_data_t *ue_context_relocate_data);
 OpenAPI_ue_context_relocate_data_t *OpenAPI_ue_context_relocate_data_parseFromJSON(cJSON *ue_context_relocate_dataJSON);

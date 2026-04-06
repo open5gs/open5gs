@@ -7,7 +7,10 @@
 OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_create(
     OpenAPI_lpi_t *lpi,
     OpenAPI_unrelated_class_t *unrelated_class,
-    OpenAPI_list_t *plmn_operator_classes
+    OpenAPI_list_t *plmn_operator_classes,
+    OpenAPI_geographic_area_t *evt_rpt_expected_area,
+    OpenAPI_area_usage_ind_e area_usage_ind,
+    OpenAPI_up_loc_rep_ind_af_e up_loc_rep_ind_af
 )
 {
     OpenAPI_lcs_privacy_data_t *lcs_privacy_data_local_var = ogs_malloc(sizeof(OpenAPI_lcs_privacy_data_t));
@@ -16,6 +19,9 @@ OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_create(
     lcs_privacy_data_local_var->lpi = lpi;
     lcs_privacy_data_local_var->unrelated_class = unrelated_class;
     lcs_privacy_data_local_var->plmn_operator_classes = plmn_operator_classes;
+    lcs_privacy_data_local_var->evt_rpt_expected_area = evt_rpt_expected_area;
+    lcs_privacy_data_local_var->area_usage_ind = area_usage_ind;
+    lcs_privacy_data_local_var->up_loc_rep_ind_af = up_loc_rep_ind_af;
 
     return lcs_privacy_data_local_var;
 }
@@ -41,6 +47,10 @@ void OpenAPI_lcs_privacy_data_free(OpenAPI_lcs_privacy_data_t *lcs_privacy_data)
         }
         OpenAPI_list_free(lcs_privacy_data->plmn_operator_classes);
         lcs_privacy_data->plmn_operator_classes = NULL;
+    }
+    if (lcs_privacy_data->evt_rpt_expected_area) {
+        OpenAPI_geographic_area_free(lcs_privacy_data->evt_rpt_expected_area);
+        lcs_privacy_data->evt_rpt_expected_area = NULL;
     }
     ogs_free(lcs_privacy_data);
 }
@@ -98,6 +108,33 @@ cJSON *OpenAPI_lcs_privacy_data_convertToJSON(OpenAPI_lcs_privacy_data_t *lcs_pr
     }
     }
 
+    if (lcs_privacy_data->evt_rpt_expected_area) {
+    cJSON *evt_rpt_expected_area_local_JSON = OpenAPI_geographic_area_convertToJSON(lcs_privacy_data->evt_rpt_expected_area);
+    if (evt_rpt_expected_area_local_JSON == NULL) {
+        ogs_error("OpenAPI_lcs_privacy_data_convertToJSON() failed [evt_rpt_expected_area]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "evtRptExpectedArea", evt_rpt_expected_area_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_lcs_privacy_data_convertToJSON() failed [evt_rpt_expected_area]");
+        goto end;
+    }
+    }
+
+    if (lcs_privacy_data->area_usage_ind != OpenAPI_area_usage_ind_NULL) {
+    if (cJSON_AddStringToObject(item, "areaUsageInd", OpenAPI_area_usage_ind_ToString(lcs_privacy_data->area_usage_ind)) == NULL) {
+        ogs_error("OpenAPI_lcs_privacy_data_convertToJSON() failed [area_usage_ind]");
+        goto end;
+    }
+    }
+
+    if (lcs_privacy_data->up_loc_rep_ind_af != OpenAPI_up_loc_rep_ind_af_NULL) {
+    if (cJSON_AddStringToObject(item, "upLocRepIndAf", OpenAPI_up_loc_rep_ind_af_ToString(lcs_privacy_data->up_loc_rep_ind_af)) == NULL) {
+        ogs_error("OpenAPI_lcs_privacy_data_convertToJSON() failed [up_loc_rep_ind_af]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -112,6 +149,12 @@ OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_parseFromJSON(cJSON *lcs_pr
     OpenAPI_unrelated_class_t *unrelated_class_local_nonprim = NULL;
     cJSON *plmn_operator_classes = NULL;
     OpenAPI_list_t *plmn_operator_classesList = NULL;
+    cJSON *evt_rpt_expected_area = NULL;
+    OpenAPI_geographic_area_t *evt_rpt_expected_area_local_nonprim = NULL;
+    cJSON *area_usage_ind = NULL;
+    OpenAPI_area_usage_ind_e area_usage_indVariable = 0;
+    cJSON *up_loc_rep_ind_af = NULL;
+    OpenAPI_up_loc_rep_ind_af_e up_loc_rep_ind_afVariable = 0;
     lpi = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "lpi");
     if (lpi) {
     lpi_local_nonprim = OpenAPI_lpi_parseFromJSON(lpi);
@@ -154,10 +197,40 @@ OpenAPI_lcs_privacy_data_t *OpenAPI_lcs_privacy_data_parseFromJSON(cJSON *lcs_pr
         }
     }
 
+    evt_rpt_expected_area = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "evtRptExpectedArea");
+    if (evt_rpt_expected_area) {
+    evt_rpt_expected_area_local_nonprim = OpenAPI_geographic_area_parseFromJSON(evt_rpt_expected_area);
+    if (!evt_rpt_expected_area_local_nonprim) {
+        ogs_error("OpenAPI_geographic_area_parseFromJSON failed [evt_rpt_expected_area]");
+        goto end;
+    }
+    }
+
+    area_usage_ind = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "areaUsageInd");
+    if (area_usage_ind) {
+    if (!cJSON_IsString(area_usage_ind)) {
+        ogs_error("OpenAPI_lcs_privacy_data_parseFromJSON() failed [area_usage_ind]");
+        goto end;
+    }
+    area_usage_indVariable = OpenAPI_area_usage_ind_FromString(area_usage_ind->valuestring);
+    }
+
+    up_loc_rep_ind_af = cJSON_GetObjectItemCaseSensitive(lcs_privacy_dataJSON, "upLocRepIndAf");
+    if (up_loc_rep_ind_af) {
+    if (!cJSON_IsString(up_loc_rep_ind_af)) {
+        ogs_error("OpenAPI_lcs_privacy_data_parseFromJSON() failed [up_loc_rep_ind_af]");
+        goto end;
+    }
+    up_loc_rep_ind_afVariable = OpenAPI_up_loc_rep_ind_af_FromString(up_loc_rep_ind_af->valuestring);
+    }
+
     lcs_privacy_data_local_var = OpenAPI_lcs_privacy_data_create (
         lpi ? lpi_local_nonprim : NULL,
         unrelated_class ? unrelated_class_local_nonprim : NULL,
-        plmn_operator_classes ? plmn_operator_classesList : NULL
+        plmn_operator_classes ? plmn_operator_classesList : NULL,
+        evt_rpt_expected_area ? evt_rpt_expected_area_local_nonprim : NULL,
+        area_usage_ind ? area_usage_indVariable : 0,
+        up_loc_rep_ind_af ? up_loc_rep_ind_afVariable : 0
     );
 
     return lcs_privacy_data_local_var;
@@ -176,6 +249,10 @@ end:
         }
         OpenAPI_list_free(plmn_operator_classesList);
         plmn_operator_classesList = NULL;
+    }
+    if (evt_rpt_expected_area_local_nonprim) {
+        OpenAPI_geographic_area_free(evt_rpt_expected_area_local_nonprim);
+        evt_rpt_expected_area_local_nonprim = NULL;
     }
     return NULL;
 }

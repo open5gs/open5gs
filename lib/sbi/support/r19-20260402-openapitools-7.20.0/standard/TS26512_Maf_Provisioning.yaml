@@ -1,0 +1,86 @@
+openapi: 3.0.0
+info:
+  title: Maf_Provisioning (5G Media Streaming)
+  version: 1.1.1
+  description: |
+    5GMS AF Provisioning API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Maf_Provisioning
+    description: '5G Media Streaming: AF Provisioning APIs'
+
+externalDocs:
+  description: 'TS 26.512 V19.1.0; 5G Media Streaming (5GMS); Protocols'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.512/'
+
+servers:
+  - url: '{apiRoot}/3gpp-maf-provisioning/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 26.512 clause 6.1.2.
+
+paths:
+  # Provisioning Sessions API
+  /provisioning-sessions:
+    $ref: 'TS26510_Maf_Provisioning_ProvisioningSessions.yaml#/paths/~1provisioning-sessions'
+  /provisioning-sessions/%7bprovisioningSessionId%7d:
+    $ref: 'TS26510_Maf_Provisioning_ProvisioningSessions.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d'
+
+  # Content Protocols Discovery API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/content-protocols:
+    $ref: 'TS26510_Maf_Provisioning_ContentProtocols.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1content-protocols'
+
+  # Server Certificates Provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/certificates:
+    $ref: 'TS26510_Maf_Provisioning_ServerCertificates.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1certificates'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/certificates/%7bcertificateId%7d:
+    $ref: 'TS26510_Maf_Provisioning_ServerCertificates.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1certificates~1%7bcertificateId%7d'
+
+  # Policy Templates Provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/policy-templates:
+    $ref: 'TS26510_Maf_Provisioning_PolicyTemplates.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1policy-templates'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/policy-templates/%7bpolicyTemplateId%7d:
+    $ref: 'TS26510_Maf_Provisioning_PolicyTemplates.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1policy-templates~1%7bpolicyTemplateId%7d'
+
+  # Content Preparation Templates Provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/content-preparation-templates:
+    $ref: 'TS26510_Maf_Provisioning_ContentPreparationTemplates.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1content-preparation-templates'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/content-preparation-templates/%7bcontentPreparationTemplateId%7d:
+    $ref: 'TS26510_Maf_Provisioning_ContentPreparationTemplates.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1content-preparation-templates~1%7bcontentPreparationTemplateId%7d'
+
+  # Edge Resources Provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/edge-resources-configurations:
+    $ref: 'TS26510_Maf_Provisioning_EdgeResources.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1edge-resources-configurations'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/edge-resources-configurations/%7bedgeResourcesConfigurationId%7d:
+    $ref: 'TS26510_Maf_Provisioning_EdgeResources.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1edge-resources-configurations~1%7bedgeResourcesConfigurationId%7d'
+
+  # Content Hosting Provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/content-hosting-configuration:
+    $ref: 'TS26510_Maf_Provisioning_ContentHosting.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1content-hosting-configuration'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/content-hosting-configuration/purge:
+    $ref: 'TS26510_Maf_Provisioning_ContentHosting.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1content-hosting-configuration~1purge'
+
+  # Content Publishing Provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/content-publishing-configuration:
+    $ref: 'TS26510_Maf_Provisioning_ContentPublishing.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1content-publishing-configuration'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/content-publishng-configuration/purge:
+    $ref: 'TS26510_Maf_Provisioning_ContentPublishing.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1content-publishing-configuration~1purge'
+
+  # Metrics Reporting Provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/metrics-reporting-configurations:
+    $ref: 'TS26510_Maf_Provisioning_MetricsReporting.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1metrics-reporting-configurations'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/metrics-reporting-configurations/%7bmetricsReportingConfigurationId%7d:
+    $ref: 'TS26510_Maf_Provisioning_MetricsReporting.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1metrics-reporting-configurations~1%7bmetricsReportingConfigurationId%7d'
+
+  # Consumption Reporting Provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/consumption-reporting-configuration:
+    $ref: 'TS26510_Maf_Provisioning_ConsumptionReporting.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1consumption-reporting-configuration'
+
+  # Event Data Processing Provisioning API
+  /provisioning-sessions/%7bprovisioningSessionId%7d/event-data-processing-configurations:
+    $ref: 'TS26510_Maf_Provisioning_EventDataProcessing.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1event-data-processing-configurations'
+  /provisioning-sessions/%7bprovisioningSessionId%7d/event-data-processing-configurations/%7beventDataProcessingConfigurationId%7d:
+    $ref: 'TS26510_Maf_Provisioning_EventDataProcessing.yaml#/paths/~1provisioning-sessions~1%7bprovisioningSessionId%7d~1event-data-processing-configurations~1%7beventDataProcessingConfigurationId%7d'

@@ -1,0 +1,627 @@
+openapi: 3.0.0
+
+info:
+  title: SS_SLPositioningManagement
+  version: 1.0.0
+  description: |
+    API for SEAL SL Positioning management Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+servers:
+  - url: '{apiRoot}/ss-slpm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Create individual SL Positioning Management subscription.
+      operationId: SubscribeSlPositionMgmt
+      tags:
+        - SL Positioning Management Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SlPositionMgmtSubsc'
+      responses:
+        '201':
+          description: >
+            The requested individual SL Positioning MAnagement subscription
+            resource is successfully created and a representation of the created
+            resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SlPositionMgmtSubsc'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        SlPositionMgmtNotif:
+          '{$request.body#/notifUri}': 
+            post:
+              summary: Notify on changes of the SL Positioning Management according to the 
+                requested reporting settings.
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SlPositionMgmtNotif'
+              responses:
+                '204':
+                  description: The notification is successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    get:
+      summary: Read an existing individual SL Positioning Management subscription resource 
+        according to the subscriptionId.
+      operationId: ReadSlPositioningMgmtSubscription
+      tags:
+        - Individual SL Positioning Management Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: >
+            Represents the identifier of an individual SL Positioning Management 
+            subscription resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The requested individual SL Positioning Management subscription returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SlPositionMgmtSubsc'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: >
+        Update an individual SL Positioning Management subscription identified by the
+        subscriptionId.
+      operationId: UpdateSlPositionMgmt
+      tags:
+        - Individual Unicast SL Positioning Management Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: >
+            Represents the identifier of an individual unicast monitoring subscription resource.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Updated details of the unicast QoS monitoring subscription.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SlPositionMgmtSubsc'
+      responses:
+        '200':
+          description: >
+            The subscription is updated successfully, and the updated subscription
+            information returned in the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SlPositionMgmtSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: >
+        Modify an individual SL Positioning Management subscription identified
+        by the subscriptionId.
+      operationId: ModifySlPositionMgmt
+      tags:
+        - Individual SL Positioning Management Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: >
+            Represents the identifier of an individual SL Positioning Management 
+            subscription resource.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/SlPositionMgmtSubscPatch'
+      responses:
+        '200':
+          description: >
+            Individual individual SL Position Management resource is modified
+            successfully and representation of the modified individual SL Positioning Management
+            resource
+            subscription resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SlPositionMgmtSubscPatch'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Remove an existing individual SL Positioning Management resource according to 
+        the subscriptionId.
+      operationId: UnsubscribeSlPositionMgmt
+      tags:
+        - Individual SL Positioning Management Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: >
+            Represents the identifier of an individual SL Positioning Management 
+            subscription resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            The Individual SL Positioning Management Subscription resource matching the
+            subscriptionId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /request-srp:
+    post:
+      summary: Enables a service consumer to request SR positioning information.
+      operationId: RequestSRPosInfo
+      tags:
+        - SR Positioning Information Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SrPosInfoReq'
+      responses:
+        '200':
+          description: >
+            OK. The Positioning Information Request is successfully received and processed, and the
+            requested SR based positioning information is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SrPosInfoResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    SlPositionMgmtSubsc:
+      description: Indicate the SL Positioning Management subscription.
+      type: object
+      properties:
+        valSvcId:
+          type: string
+          description: Identity of the VAL service
+        tgtUes:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: List of VAL Users or UE IDs for which SL location management is requested.
+        valServArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        slPosMgmtParams:
+          $ref: '#/components/schemas/SlPosMgmtParam'
+        valUeSel:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValUeSel'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - notifUri
+        - valSvcId
+
+    SlPositionMgmtSubscPatch:
+      description: Indicate the SL Positioning Management subscription update.
+      type: object
+      properties:
+        tgtUes:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: List of VAL Users or UE IDs for which SL location management is requested.
+        valServArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        slPosMgmtParams:
+          $ref: '#/components/schemas/SlPosMgmtParam'
+        valUeSel:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValUeSel'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    SlPositionMgmtNotif:
+      description: SL Positioning Management notification.
+      type: object
+      properties:
+        subscId:
+          type: string
+          description: Subscription Identifier
+        refUes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValUeInfo'
+          minItems: 1
+          description: List of VAL UE(s) identified as Reference UE(s).
+        tgtUes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValUeInfo'
+          minItems: 1
+          description: List of VAL UE(s) identified as Target UE(s).
+        slPosMgmtParamResp:
+          description: A map(list of key-value pairs) where the key is the ID of Reference UE.
+          type: object
+          additionalProperties:
+            description: A map(list of key-value pairs) where the key is the ID of Target UE.
+            type: object
+            additionalProperties:
+              $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/RangeDirection'
+            minProperties: 1
+          minProperties: 1
+      required:
+        - subscId
+
+    ValUeInfo:
+      description: Indicate the Val UE Information.
+      type: object
+      properties:
+        valUeId:
+          type: string
+          description: Identity of the VAL UE ID.
+        valUeAddr:
+          $ref: 'TS29549_SS_NetworkResourceAdaptation.yaml#/components/schemas/ValUeAddrInfo'
+    SrPosInfoReq:
+      description: >
+        Represents the SR Positioning Information Request.
+      type: object
+      properties:
+        valSvcId:
+          type: string
+        ueList:
+          $ref: '#/components/schemas/SrUeList'
+        srPosFltr:
+          type: array
+          items:
+            $ref: '#/components/schemas/SrPosFilter'
+          minItems: 1
+        locQoS:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocationQoS'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+      required:
+        - ueList
+        - srPosFltr
+
+    SrPosInfoResp:
+      description: >
+        Represents the SR Positioning Information Response.
+      type: object
+      properties:
+        srPosInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/SrPosInfo'
+          minItems: 1
+      required:
+        - srPosInfo
+
+    SrUeList:
+      description: >
+        Contains the list of UE identities of Short-Range based positioning.
+      type: object
+      properties:
+        clientUes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        tgtUes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        refUes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - tgtUes
+        - refUes
+
+    SrPosInfo:
+      description: >
+        Contains the Short-Range based positioning information.
+      type: object
+      properties:
+        refUe:
+          type: string
+        tgtUe:
+          type: string
+        relativeLocation2D:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/2DRelativeLocation'
+        relativeLocation3D:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/3DRelativeLocation'
+        relativeVelocity:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/RelativeVelocityWithUncertainty'
+        distanceDirection:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/RangeDirection'
+      required:
+        - refUe
+        - tgtUe
+      anyOf:
+        - required: [ relativeLocation2D ]
+        - required: [ relativeLocation3D ]
+        - required: [ relativeVelocity ]
+        - required: [ distanceDirection ]
+
+    SlPosMgmtParam:
+      description: Represents the SL Positioning parameter.
+      type: object
+      properties:
+        reqMetric:
+          $ref: '#/components/schemas/SlPosMgmtMetric'
+      required:
+        - reqMetric
+
+
+# Simple data types and Enumerations
+    SlPosMgmtMetric:
+      anyOf:
+      - type: string
+        enum:
+          - DISTANCE
+          - DIRECTION
+          - DISTANCE_DIRECTION
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Possible values are: 
+        Enumeration of SL Positioning management matric.  
+        - DISTANCE: This value indicates that the SL Positioning Management metric
+          is distance.
+        - DIRECTION: This value indicates that the SL Positioning Management metric 
+          is direction.
+        - DISTANCE_DIRECTION: This value indicates that the SL Positioning Management 
+          metric is both distance and direction .
+
+    ValUeSel:
+      anyOf:
+      - type: string
+        enum:
+          - REF_UE
+          - TARGET_UE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Possible values are: 
+        Enumeration of VAL UE(s) selection criteria for SL Positioning management.  
+        - REF_UE: Indicates the selection criteria of UE role is reference UE.
+        - TARGET_UE: Indicates the selection criteria of UE role is target UE.
+
+    SrPosFilter:
+      anyOf:
+      - type: string
+        enum:
+          - RANGE
+          - DIRECTION
+          - RELATIVE_POS
+          - RELATIVE_VEL
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Possible values are: 
+        Enumeration of requested SR based positioning information filters.
+        - RANGE: Indicates that the range is requested.
+        - DIRECTION: Indicates that the direction is requested.
+        - RELATIVE_POS: Indicates that the relative position is requested.
+        - RELATIVE_VEL: Indicates that the relative velocity is requested.

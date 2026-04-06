@@ -1,0 +1,406 @@
+openapi: 3.0.0
+info:
+  title: SM Server Data Source Registration and Notification Service
+  version: 1.0.1
+  description: >
+    API for Data Source Registration and Notification Service.
+
+    ©2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA,
+    TTC).
+
+    All rights reserved.
+externalDocs:
+  description: >
+    3GPP TS 24.550 V19.0.0; Digital asset, Spatial mapping and Spatial anchors
+    server - Service Enabler Architecture Layer for Verticals (SEAL); Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/24_series/24.550/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/sm_smds/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549.
+        
+paths:
+
+  /datasources-reg-lists:
+    post:
+      description: Register a new Data Source Registration.
+      operationId: DataSourceRegistration
+      tags:
+        - Data Source Registration List (Collection)
+      requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataSourceRegReq'
+      responses:
+        '201':
+          description: >
+            Created. The Data Source Registration List is successfully created and a representation of the created Individual Data Source Registration List resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataSourceRegReq'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+      callbacks:
+        DataSourceNotification:
+          '{$request.body#/notificationDestination}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/DataSourceNotification'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Spatial Anchors Notification is successfully
+                    received and acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /datasources-reg-lists/{dataSourceRegId}:
+    parameters:
+      - name: dataSourceRegId
+        in: path
+        description: Represents the identifier of the Individual Data Source Registration List resource.
+        required: true
+        schema:
+          type: string
+          
+    put:
+      summary: Update an existing Individual Data Source Registration List.
+      operationId: UpdateIndDataSourceRegistrationList
+      tags:
+        - Individual Data Source Registration List (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataSourceRegReq'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Data Source Registration List resource is successfully updated and
+            a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataSourceRegReq'
+        '204':
+          description: >
+            No Content. The Individual Data Source Registration List resource is successfully
+            updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify an existing Individual Data Source Registration List.
+      operationId: ModifyIndDataSourceRegistrationList
+      tags:
+        - Individual Data Source Registration List (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataSourcePatchRegReq'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Data Source Registration List resource is successfully modified and
+            a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataSourceRegReq'
+        '204':
+          description: >
+            No Content. The Individual Data Source Registration List resource is successfully modified
+            and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an existing Individual Data Source Registration List.
+      operationId: DeleteIndDataSourceRegistrationList
+      tags:
+        - Individual Data Source Registration List
+      responses:
+        '204':
+          description: >
+            No Content. The 'Individual Data Source Registration List' resource is successfully
+            deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+    DataSourceRegReq:
+        description: >
+          Represents the Data Source Registration Request List.
+        type: object
+        properties:
+          requestorId:
+            type: string
+            description: Represents the identity of the requestor, either a VAL User or a VAL UE.
+          expTime:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+          ueId:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          valClientID:
+            type: string
+            description: Represents the identifier of the VAL client.
+          notificationDestination:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+          dsProfile:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        required:
+          - requestorId
+          - notificationDestination
+          - dsProfile
+
+    DataSourcePatchRegReq:
+      description: >
+        Represents the Data Source Patch Registration Request List.
+      type: object
+      properties:
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        dsProfile:
+          $ref: '#/components/schemas/DataSourceProfile'
+  
+    DataSourceProfile:
+      description: Represents the profile information of the SM data source.
+      type: object
+      properties:
+        dsId:
+          type: string
+          description: Represents the identifier of the SM data source.
+        smInformation:
+          $ref: '#/components/schemas/SpatialMapInfoDetails'
+      required:
+        - dsId
+        - smInformation
+
+    SpatialMapInfoDetails:
+      description: Represents the Spatial Map Information.
+      type: object
+      properties:
+        smDataIdentifier:
+          type: string
+          description: Represents the identifier of the spatial map information.
+        smDataType:
+          type: string
+          description: Represents the type of the spatial map information provided by the VAL.
+        smRawDataFormat:
+          type: boolean
+          description: >
+            Indicates data format. When present, it shall be set as follows:
+            true: indicates the raw data format.
+            false: indicates processed data format.
+            Default value when omitted is "false".
+        smDataArea:
+          $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+        smPosition:
+          $ref: 'TS29437_SS_SAnManagement.yaml#/components/schemas/PositionInfo'
+        availabilityInfo:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        dsUpdateIntervalInfo:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+      required:
+        - smDataIdentifier
+        - smDataType
+        - smDataArea
+
+    DataSourceNotification:
+      description: >
+        Represents the Data Source Notification.
+      type: object
+      properties:
+        requestorId:
+          type: string
+          description: >
+            Represents the identity of the requestor, either a VAL User or a VAL UE.
+        dataSourceRegId:
+          type: string
+          description: >
+            Represents the identifier of the SM data source registration resource.
+        dsNotificationInfo:
+            $ref: '#/components/schemas/DataSourceNotificationInfo'
+      required:
+        - requestorId
+        - dataSourceRegId
+        - dsNotificationInfo
+
+    DataSourceNotificationInfo:
+      description: >
+        Represents the detailed Data Source Notification information.
+      type: object
+      properties:
+        smDataIdentifier:
+          type: string
+        smDataType:
+          type: string
+        smFormat:
+#          anyOf:
+#          - type: string
+          type: string
+          enum:
+            - RAW_MAP
+            - PROCESSED_MAP
+#          - type: string
+#            description: >
+#              This string provides forward-compatibility with future
+#              extensions to the enumeration but is not used to encode
+#              content defined in the present version of this API.
+#          description: >
+#              Possible values are:
+#              - RAW_MAP: Represents the raw spatial map.
+#              - PROCESSED_MAP: Represents the processed spatial map.
+        smDurationInfo:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        smFrequencyInfo:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        smEndPt:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+      required:
+        - smDataIdentifier
+        - smEndPt

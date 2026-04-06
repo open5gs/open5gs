@@ -11,7 +11,10 @@ OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_create(
     OpenAPI_nrppa_information_t *nrppa_info,
     OpenAPI_pws_information_t *pws_info,
     OpenAPI_v2x_information_t *v2x_info,
-    OpenAPI_pro_se_information_t *prose_info
+    OpenAPI_pro_se_information_t *prose_info,
+    OpenAPI_tss_information_t *tss_info,
+    OpenAPI_rslp_information_t *rslp_info,
+    OpenAPI_a2x_information_t *a2x_info
 )
 {
     OpenAPI_n2_info_container_t *n2_info_container_local_var = ogs_malloc(sizeof(OpenAPI_n2_info_container_t));
@@ -24,6 +27,9 @@ OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_create(
     n2_info_container_local_var->pws_info = pws_info;
     n2_info_container_local_var->v2x_info = v2x_info;
     n2_info_container_local_var->prose_info = prose_info;
+    n2_info_container_local_var->tss_info = tss_info;
+    n2_info_container_local_var->rslp_info = rslp_info;
+    n2_info_container_local_var->a2x_info = a2x_info;
 
     return n2_info_container_local_var;
 }
@@ -58,6 +64,18 @@ void OpenAPI_n2_info_container_free(OpenAPI_n2_info_container_t *n2_info_contain
     if (n2_info_container->prose_info) {
         OpenAPI_pro_se_information_free(n2_info_container->prose_info);
         n2_info_container->prose_info = NULL;
+    }
+    if (n2_info_container->tss_info) {
+        OpenAPI_tss_information_free(n2_info_container->tss_info);
+        n2_info_container->tss_info = NULL;
+    }
+    if (n2_info_container->rslp_info) {
+        OpenAPI_rslp_information_free(n2_info_container->rslp_info);
+        n2_info_container->rslp_info = NULL;
+    }
+    if (n2_info_container->a2x_info) {
+        OpenAPI_a2x_information_free(n2_info_container->a2x_info);
+        n2_info_container->a2x_info = NULL;
     }
     ogs_free(n2_info_container);
 }
@@ -160,6 +178,45 @@ cJSON *OpenAPI_n2_info_container_convertToJSON(OpenAPI_n2_info_container_t *n2_i
     }
     }
 
+    if (n2_info_container->tss_info) {
+    cJSON *tss_info_local_JSON = OpenAPI_tss_information_convertToJSON(n2_info_container->tss_info);
+    if (tss_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_n2_info_container_convertToJSON() failed [tss_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "tssInfo", tss_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n2_info_container_convertToJSON() failed [tss_info]");
+        goto end;
+    }
+    }
+
+    if (n2_info_container->rslp_info) {
+    cJSON *rslp_info_local_JSON = OpenAPI_rslp_information_convertToJSON(n2_info_container->rslp_info);
+    if (rslp_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_n2_info_container_convertToJSON() failed [rslp_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "rslpInfo", rslp_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n2_info_container_convertToJSON() failed [rslp_info]");
+        goto end;
+    }
+    }
+
+    if (n2_info_container->a2x_info) {
+    cJSON *a2x_info_local_JSON = OpenAPI_a2x_information_convertToJSON(n2_info_container->a2x_info);
+    if (a2x_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_n2_info_container_convertToJSON() failed [a2x_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "a2xInfo", a2x_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n2_info_container_convertToJSON() failed [a2x_info]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -182,6 +239,12 @@ OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_parseFromJSON(cJSON *n2_i
     OpenAPI_v2x_information_t *v2x_info_local_nonprim = NULL;
     cJSON *prose_info = NULL;
     OpenAPI_pro_se_information_t *prose_info_local_nonprim = NULL;
+    cJSON *tss_info = NULL;
+    OpenAPI_tss_information_t *tss_info_local_nonprim = NULL;
+    cJSON *rslp_info = NULL;
+    OpenAPI_rslp_information_t *rslp_info_local_nonprim = NULL;
+    cJSON *a2x_info = NULL;
+    OpenAPI_a2x_information_t *a2x_info_local_nonprim = NULL;
     n2_information_class = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "n2InformationClass");
     if (!n2_information_class) {
         ogs_error("OpenAPI_n2_info_container_parseFromJSON() failed [n2_information_class]");
@@ -247,6 +310,33 @@ OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_parseFromJSON(cJSON *n2_i
     }
     }
 
+    tss_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "tssInfo");
+    if (tss_info) {
+    tss_info_local_nonprim = OpenAPI_tss_information_parseFromJSON(tss_info);
+    if (!tss_info_local_nonprim) {
+        ogs_error("OpenAPI_tss_information_parseFromJSON failed [tss_info]");
+        goto end;
+    }
+    }
+
+    rslp_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "rslpInfo");
+    if (rslp_info) {
+    rslp_info_local_nonprim = OpenAPI_rslp_information_parseFromJSON(rslp_info);
+    if (!rslp_info_local_nonprim) {
+        ogs_error("OpenAPI_rslp_information_parseFromJSON failed [rslp_info]");
+        goto end;
+    }
+    }
+
+    a2x_info = cJSON_GetObjectItemCaseSensitive(n2_info_containerJSON, "a2xInfo");
+    if (a2x_info) {
+    a2x_info_local_nonprim = OpenAPI_a2x_information_parseFromJSON(a2x_info);
+    if (!a2x_info_local_nonprim) {
+        ogs_error("OpenAPI_a2x_information_parseFromJSON failed [a2x_info]");
+        goto end;
+    }
+    }
+
     n2_info_container_local_var = OpenAPI_n2_info_container_create (
         n2_information_classVariable,
         sm_info ? sm_info_local_nonprim : NULL,
@@ -254,7 +344,10 @@ OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_parseFromJSON(cJSON *n2_i
         nrppa_info ? nrppa_info_local_nonprim : NULL,
         pws_info ? pws_info_local_nonprim : NULL,
         v2x_info ? v2x_info_local_nonprim : NULL,
-        prose_info ? prose_info_local_nonprim : NULL
+        prose_info ? prose_info_local_nonprim : NULL,
+        tss_info ? tss_info_local_nonprim : NULL,
+        rslp_info ? rslp_info_local_nonprim : NULL,
+        a2x_info ? a2x_info_local_nonprim : NULL
     );
 
     return n2_info_container_local_var;
@@ -282,6 +375,18 @@ end:
     if (prose_info_local_nonprim) {
         OpenAPI_pro_se_information_free(prose_info_local_nonprim);
         prose_info_local_nonprim = NULL;
+    }
+    if (tss_info_local_nonprim) {
+        OpenAPI_tss_information_free(tss_info_local_nonprim);
+        tss_info_local_nonprim = NULL;
+    }
+    if (rslp_info_local_nonprim) {
+        OpenAPI_rslp_information_free(rslp_info_local_nonprim);
+        rslp_info_local_nonprim = NULL;
+    }
+    if (a2x_info_local_nonprim) {
+        OpenAPI_a2x_information_free(a2x_info_local_nonprim);
+        a2x_info_local_nonprim = NULL;
     }
     return NULL;
 }

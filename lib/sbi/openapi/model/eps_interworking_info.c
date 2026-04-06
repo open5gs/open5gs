@@ -5,13 +5,15 @@
 #include "eps_interworking_info.h"
 
 OpenAPI_eps_interworking_info_t *OpenAPI_eps_interworking_info_create(
-    OpenAPI_list_t* eps_iwk_pgws
+    OpenAPI_list_t* eps_iwk_pgws,
+    char *registration_time
 )
 {
     OpenAPI_eps_interworking_info_t *eps_interworking_info_local_var = ogs_malloc(sizeof(OpenAPI_eps_interworking_info_t));
     ogs_assert(eps_interworking_info_local_var);
 
     eps_interworking_info_local_var->eps_iwk_pgws = eps_iwk_pgws;
+    eps_interworking_info_local_var->registration_time = registration_time;
 
     return eps_interworking_info_local_var;
 }
@@ -32,6 +34,10 @@ void OpenAPI_eps_interworking_info_free(OpenAPI_eps_interworking_info_t *eps_int
         }
         OpenAPI_list_free(eps_interworking_info->eps_iwk_pgws);
         eps_interworking_info->eps_iwk_pgws = NULL;
+    }
+    if (eps_interworking_info->registration_time) {
+        ogs_free(eps_interworking_info->registration_time);
+        eps_interworking_info->registration_time = NULL;
     }
     ogs_free(eps_interworking_info);
 }
@@ -77,6 +83,13 @@ cJSON *OpenAPI_eps_interworking_info_convertToJSON(OpenAPI_eps_interworking_info
     }
     }
 
+    if (eps_interworking_info->registration_time) {
+    if (cJSON_AddStringToObject(item, "registrationTime", eps_interworking_info->registration_time) == NULL) {
+        ogs_error("OpenAPI_eps_interworking_info_convertToJSON() failed [registration_time]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -87,6 +100,7 @@ OpenAPI_eps_interworking_info_t *OpenAPI_eps_interworking_info_parseFromJSON(cJS
     OpenAPI_lnode_t *node = NULL;
     cJSON *eps_iwk_pgws = NULL;
     OpenAPI_list_t *eps_iwk_pgwsList = NULL;
+    cJSON *registration_time = NULL;
     eps_iwk_pgws = cJSON_GetObjectItemCaseSensitive(eps_interworking_infoJSON, "epsIwkPgws");
     if (eps_iwk_pgws) {
         cJSON *eps_iwk_pgws_local_map = NULL;
@@ -113,15 +127,24 @@ OpenAPI_eps_interworking_info_t *OpenAPI_eps_interworking_info_parseFromJSON(cJS
         }
     }
 
+    registration_time = cJSON_GetObjectItemCaseSensitive(eps_interworking_infoJSON, "registrationTime");
+    if (registration_time) {
+    if (!cJSON_IsString(registration_time) && !cJSON_IsNull(registration_time)) {
+        ogs_error("OpenAPI_eps_interworking_info_parseFromJSON() failed [registration_time]");
+        goto end;
+    }
+    }
+
     eps_interworking_info_local_var = OpenAPI_eps_interworking_info_create (
-        eps_iwk_pgws ? eps_iwk_pgwsList : NULL
+        eps_iwk_pgws ? eps_iwk_pgwsList : NULL,
+        registration_time && !cJSON_IsNull(registration_time) ? ogs_strdup(registration_time->valuestring) : NULL
     );
 
     return eps_interworking_info_local_var;
 end:
     if (eps_iwk_pgwsList) {
         OpenAPI_list_for_each(eps_iwk_pgwsList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_eps_iwk_pgw_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

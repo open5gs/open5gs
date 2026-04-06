@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ipv4_address_range_s OpenAPI_ipv4_address_range_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ipv4_address_range_s OpenAPI_ipv4_address_range_t;
-typedef struct OpenAPI_ipv4_address_range_s {
+struct OpenAPI_ipv4_address_range_s {
     char *start;
     char *end;
-} OpenAPI_ipv4_address_range_t;
+};
 
 OpenAPI_ipv4_address_range_t *OpenAPI_ipv4_address_range_create(
     char *start,

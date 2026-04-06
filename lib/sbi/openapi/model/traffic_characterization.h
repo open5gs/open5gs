@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_traffic_characterization_s OpenAPI_traffic_characterization_t;
 #include "ip_eth_flow_description.h"
 #include "snssai.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_traffic_characterization_s OpenAPI_traffic_characterization_t;
-typedef struct OpenAPI_traffic_characterization_s {
+struct OpenAPI_traffic_characterization_s {
     char *dnn;
     struct OpenAPI_snssai_s *snssai;
     char *app_id;
@@ -33,7 +33,7 @@ typedef struct OpenAPI_traffic_characterization_s {
     long dl_vol;
     bool is_dl_vol_variance;
     float dl_vol_variance;
-} OpenAPI_traffic_characterization_t;
+};
 
 OpenAPI_traffic_characterization_t *OpenAPI_traffic_characterization_create(
     char *dnn,

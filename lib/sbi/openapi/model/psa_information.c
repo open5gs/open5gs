@@ -8,7 +8,8 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_create(
     OpenAPI_psa_indication_e psa_ind,
     OpenAPI_list_t *dnai_list,
     char *ue_ipv6_prefix,
-    char *psa_upf_id
+    char *psa_upf_id,
+    OpenAPI_list_t *upf_events
 )
 {
     OpenAPI_psa_information_t *psa_information_local_var = ogs_malloc(sizeof(OpenAPI_psa_information_t));
@@ -18,6 +19,7 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_create(
     psa_information_local_var->dnai_list = dnai_list;
     psa_information_local_var->ue_ipv6_prefix = ue_ipv6_prefix;
     psa_information_local_var->psa_upf_id = psa_upf_id;
+    psa_information_local_var->upf_events = upf_events;
 
     return psa_information_local_var;
 }
@@ -43,6 +45,10 @@ void OpenAPI_psa_information_free(OpenAPI_psa_information_t *psa_information)
     if (psa_information->psa_upf_id) {
         ogs_free(psa_information->psa_upf_id);
         psa_information->psa_upf_id = NULL;
+    }
+    if (psa_information->upf_events) {
+        OpenAPI_list_free(psa_information->upf_events);
+        psa_information->upf_events = NULL;
     }
     ogs_free(psa_information);
 }
@@ -93,6 +99,20 @@ cJSON *OpenAPI_psa_information_convertToJSON(OpenAPI_psa_information_t *psa_info
     }
     }
 
+    if (psa_information->upf_events != OpenAPI_event_type_NULL) {
+    cJSON *upf_eventsList = cJSON_AddArrayToObject(item, "upfEvents");
+    if (upf_eventsList == NULL) {
+        ogs_error("OpenAPI_psa_information_convertToJSON() failed [upf_events]");
+        goto end;
+    }
+    OpenAPI_list_for_each(psa_information->upf_events, node) {
+        if (cJSON_AddStringToObject(upf_eventsList, "", OpenAPI_event_type_ToString((intptr_t)node->data)) == NULL) {
+            ogs_error("OpenAPI_psa_information_convertToJSON() failed [upf_events]");
+            goto end;
+        }
+    }
+    }
+
 end:
     return item;
 }
@@ -107,6 +127,8 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
     OpenAPI_list_t *dnai_listList = NULL;
     cJSON *ue_ipv6_prefix = NULL;
     cJSON *psa_upf_id = NULL;
+    cJSON *upf_events = NULL;
+    OpenAPI_list_t *upf_eventsList = NULL;
     psa_ind = cJSON_GetObjectItemCaseSensitive(psa_informationJSON, "psaInd");
     if (psa_ind) {
     if (!cJSON_IsString(psa_ind)) {
@@ -153,11 +175,42 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
     }
     }
 
+    upf_events = cJSON_GetObjectItemCaseSensitive(psa_informationJSON, "upfEvents");
+    if (upf_events) {
+        cJSON *upf_events_local = NULL;
+        if (!cJSON_IsArray(upf_events)) {
+            ogs_error("OpenAPI_psa_information_parseFromJSON() failed [upf_events]");
+            goto end;
+        }
+
+        upf_eventsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(upf_events_local, upf_events) {
+            OpenAPI_event_type_e localEnum = OpenAPI_event_type_NULL;
+            if (!cJSON_IsString(upf_events_local)) {
+                ogs_error("OpenAPI_psa_information_parseFromJSON() failed [upf_events]");
+                goto end;
+            }
+            localEnum = OpenAPI_event_type_FromString(upf_events_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"upf_events\" is not supported. Ignoring it ...",
+                         upf_events_local->valuestring);
+            } else {
+                OpenAPI_list_add(upf_eventsList, (void *)localEnum);
+            }
+        }
+        if (upf_eventsList->count == 0) {
+            ogs_error("OpenAPI_psa_information_parseFromJSON() failed: Expected upf_eventsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+    }
+
     psa_information_local_var = OpenAPI_psa_information_create (
         psa_ind ? psa_indVariable : 0,
         dnai_list ? dnai_listList : NULL,
         ue_ipv6_prefix && !cJSON_IsNull(ue_ipv6_prefix) ? ogs_strdup(ue_ipv6_prefix->valuestring) : NULL,
-        psa_upf_id && !cJSON_IsNull(psa_upf_id) ? ogs_strdup(psa_upf_id->valuestring) : NULL
+        psa_upf_id && !cJSON_IsNull(psa_upf_id) ? ogs_strdup(psa_upf_id->valuestring) : NULL,
+        upf_events ? upf_eventsList : NULL
     );
 
     return psa_information_local_var;
@@ -168,6 +221,10 @@ end:
         }
         OpenAPI_list_free(dnai_listList);
         dnai_listList = NULL;
+    }
+    if (upf_eventsList) {
+        OpenAPI_list_free(upf_eventsList);
+        upf_eventsList = NULL;
     }
     return NULL;
 }

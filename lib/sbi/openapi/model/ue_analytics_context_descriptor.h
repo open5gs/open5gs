@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_analytics_context_descriptor_s OpenAPI_ue_analytics_context_descriptor_t;
 #include "nwdaf_event.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_analytics_context_descriptor_s OpenAPI_ue_analytics_context_descriptor_t;
-typedef struct OpenAPI_ue_analytics_context_descriptor_s {
+struct OpenAPI_ue_analytics_context_descriptor_s {
     char *supi;
     OpenAPI_list_t *ana_types;
-} OpenAPI_ue_analytics_context_descriptor_t;
+};
 
 OpenAPI_ue_analytics_context_descriptor_t *OpenAPI_ue_analytics_context_descriptor_create(
     char *supi,

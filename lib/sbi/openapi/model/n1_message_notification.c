@@ -14,7 +14,10 @@ OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_create(
     bool is_c_io_t5_gs_optimisation,
     int c_io_t5_gs_optimisation,
     OpenAPI_ecgi_t *ecgi,
-    OpenAPI_ncgi_t *ncgi
+    OpenAPI_ncgi_t *ncgi,
+    OpenAPI_tai_t *tai,
+    char *supi,
+    OpenAPI_pru_ind_e pru_ind
 )
 {
     OpenAPI_n1_message_notification_t *n1_message_notification_local_var = ogs_malloc(sizeof(OpenAPI_n1_message_notification_t));
@@ -30,6 +33,9 @@ OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_create(
     n1_message_notification_local_var->c_io_t5_gs_optimisation = c_io_t5_gs_optimisation;
     n1_message_notification_local_var->ecgi = ecgi;
     n1_message_notification_local_var->ncgi = ncgi;
+    n1_message_notification_local_var->tai = tai;
+    n1_message_notification_local_var->supi = supi;
+    n1_message_notification_local_var->pru_ind = pru_ind;
 
     return n1_message_notification_local_var;
 }
@@ -72,6 +78,14 @@ void OpenAPI_n1_message_notification_free(OpenAPI_n1_message_notification_t *n1_
     if (n1_message_notification->ncgi) {
         OpenAPI_ncgi_free(n1_message_notification->ncgi);
         n1_message_notification->ncgi = NULL;
+    }
+    if (n1_message_notification->tai) {
+        OpenAPI_tai_free(n1_message_notification->tai);
+        n1_message_notification->tai = NULL;
+    }
+    if (n1_message_notification->supi) {
+        ogs_free(n1_message_notification->supi);
+        n1_message_notification->supi = NULL;
     }
     ogs_free(n1_message_notification);
 }
@@ -182,6 +196,33 @@ cJSON *OpenAPI_n1_message_notification_convertToJSON(OpenAPI_n1_message_notifica
     }
     }
 
+    if (n1_message_notification->tai) {
+    cJSON *tai_local_JSON = OpenAPI_tai_convertToJSON(n1_message_notification->tai);
+    if (tai_local_JSON == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [tai]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "tai", tai_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [tai]");
+        goto end;
+    }
+    }
+
+    if (n1_message_notification->supi) {
+    if (cJSON_AddStringToObject(item, "supi", n1_message_notification->supi) == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [supi]");
+        goto end;
+    }
+    }
+
+    if (n1_message_notification->pru_ind != OpenAPI_pru_ind_NULL) {
+    if (cJSON_AddStringToObject(item, "pruInd", OpenAPI_pru_ind_ToString(n1_message_notification->pru_ind)) == NULL) {
+        ogs_error("OpenAPI_n1_message_notification_convertToJSON() failed [pru_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -204,6 +245,11 @@ OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_parseFromJSON
     OpenAPI_ecgi_t *ecgi_local_nonprim = NULL;
     cJSON *ncgi = NULL;
     OpenAPI_ncgi_t *ncgi_local_nonprim = NULL;
+    cJSON *tai = NULL;
+    OpenAPI_tai_t *tai_local_nonprim = NULL;
+    cJSON *supi = NULL;
+    cJSON *pru_ind = NULL;
+    OpenAPI_pru_ind_e pru_indVariable = 0;
     n1_notify_subscription_id = cJSON_GetObjectItemCaseSensitive(n1_message_notificationJSON, "n1NotifySubscriptionId");
     if (n1_notify_subscription_id) {
     if (!cJSON_IsString(n1_notify_subscription_id) && !cJSON_IsNull(n1_notify_subscription_id)) {
@@ -283,6 +329,32 @@ OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_parseFromJSON
     }
     }
 
+    tai = cJSON_GetObjectItemCaseSensitive(n1_message_notificationJSON, "tai");
+    if (tai) {
+    tai_local_nonprim = OpenAPI_tai_parseFromJSON(tai);
+    if (!tai_local_nonprim) {
+        ogs_error("OpenAPI_tai_parseFromJSON failed [tai]");
+        goto end;
+    }
+    }
+
+    supi = cJSON_GetObjectItemCaseSensitive(n1_message_notificationJSON, "supi");
+    if (supi) {
+    if (!cJSON_IsString(supi) && !cJSON_IsNull(supi)) {
+        ogs_error("OpenAPI_n1_message_notification_parseFromJSON() failed [supi]");
+        goto end;
+    }
+    }
+
+    pru_ind = cJSON_GetObjectItemCaseSensitive(n1_message_notificationJSON, "pruInd");
+    if (pru_ind) {
+    if (!cJSON_IsString(pru_ind)) {
+        ogs_error("OpenAPI_n1_message_notification_parseFromJSON() failed [pru_ind]");
+        goto end;
+    }
+    pru_indVariable = OpenAPI_pru_ind_FromString(pru_ind->valuestring);
+    }
+
     n1_message_notification_local_var = OpenAPI_n1_message_notification_create (
         n1_notify_subscription_id && !cJSON_IsNull(n1_notify_subscription_id) ? ogs_strdup(n1_notify_subscription_id->valuestring) : NULL,
         n1_message_container_local_nonprim,
@@ -293,7 +365,10 @@ OpenAPI_n1_message_notification_t *OpenAPI_n1_message_notification_parseFromJSON
         c_io_t5_gs_optimisation ? true : false,
         c_io_t5_gs_optimisation ? c_io_t5_gs_optimisation->valueint : 0,
         ecgi ? ecgi_local_nonprim : NULL,
-        ncgi ? ncgi_local_nonprim : NULL
+        ncgi ? ncgi_local_nonprim : NULL,
+        tai ? tai_local_nonprim : NULL,
+        supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
+        pru_ind ? pru_indVariable : 0
     );
 
     return n1_message_notification_local_var;
@@ -317,6 +392,10 @@ end:
     if (ncgi_local_nonprim) {
         OpenAPI_ncgi_free(ncgi_local_nonprim);
         ncgi_local_nonprim = NULL;
+    }
+    if (tai_local_nonprim) {
+        OpenAPI_tai_free(tai_local_nonprim);
+        tai_local_nonprim = NULL;
     }
     return NULL;
 }

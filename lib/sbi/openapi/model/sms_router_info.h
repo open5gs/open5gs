@@ -12,21 +12,21 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sms_router_info_s OpenAPI_sms_router_info_t;
 #include "network_node_diameter_address.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sms_router_info_s OpenAPI_sms_router_info_t;
-typedef struct OpenAPI_sms_router_info_s {
+struct OpenAPI_sms_router_info_s {
     char *nf_instance_id;
     struct OpenAPI_network_node_diameter_address_s *diameter_address;
     char *map_address;
     char *router_ipv4;
     char *router_ipv6;
     char *router_fqdn;
-} OpenAPI_sms_router_info_t;
+};
 
 OpenAPI_sms_router_info_t *OpenAPI_sms_router_info_create(
     char *nf_instance_id,

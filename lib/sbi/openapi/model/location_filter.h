@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "location_filter_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_location_filter_s OpenAPI_location_filter_t;
-typedef struct OpenAPI_location_filter_s {
-} OpenAPI_location_filter_t;
+typedef enum { OpenAPI_location_filter_NULL = 0, OpenAPI_location_filter_TAI, OpenAPI_location_filter_CELL_ID, OpenAPI_location_filter_RAN_NODE, OpenAPI_location_filter_N3IWF, OpenAPI_location_filter_UE_IP, OpenAPI_location_filter_UDP_PORT, OpenAPI_location_filter_TNAP_ID, OpenAPI_location_filter_GLI, OpenAPI_location_filter_TWAP_ID } OpenAPI_location_filter_e;
 
-OpenAPI_location_filter_t *OpenAPI_location_filter_create(
-);
-void OpenAPI_location_filter_free(OpenAPI_location_filter_t *location_filter);
-OpenAPI_location_filter_t *OpenAPI_location_filter_parseFromJSON(cJSON *location_filterJSON);
-cJSON *OpenAPI_location_filter_convertToJSON(OpenAPI_location_filter_t *location_filter);
-OpenAPI_location_filter_t *OpenAPI_location_filter_copy(OpenAPI_location_filter_t *dst, OpenAPI_location_filter_t *src);
+char* OpenAPI_location_filter_ToString(OpenAPI_location_filter_e location_filter);
+
+OpenAPI_location_filter_e OpenAPI_location_filter_FromString(char* location_filter);
 
 #ifdef __cplusplus
 }

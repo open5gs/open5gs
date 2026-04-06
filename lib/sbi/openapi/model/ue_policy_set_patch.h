@@ -12,29 +12,49 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_policy_set_patch_s OpenAPI_ue_policy_set_patch_t;
+#include "policy_counter_info_rm.h"
+#include "restricted_status.h"
 #include "ue_policy_section.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_policy_set_patch_s OpenAPI_ue_policy_set_patch_t;
-typedef struct OpenAPI_ue_policy_set_patch_s {
+struct OpenAPI_ue_policy_set_patch_s {
     OpenAPI_list_t* ue_policy_sections;
     OpenAPI_list_t *upsis;
     bool is_andsp_ind;
     int andsp_ind;
+    bool is_eps_ursp_ind;
+    int eps_ursp_ind;
+    bool is_vps_ursp_ind;
+    int vps_ursp_ind;
+    bool is_ursp_enf_ind;
+    int ursp_enf_ind;
     char *pei;
     OpenAPI_list_t *os_ids;
-} OpenAPI_ue_policy_set_patch_t;
+    OpenAPI_list_t *restri_status;
+    bool is_spend_lim_info_null;
+    OpenAPI_list_t* spend_lim_info;
+};
 
 OpenAPI_ue_policy_set_patch_t *OpenAPI_ue_policy_set_patch_create(
     OpenAPI_list_t* ue_policy_sections,
     OpenAPI_list_t *upsis,
     bool is_andsp_ind,
     int andsp_ind,
+    bool is_eps_ursp_ind,
+    int eps_ursp_ind,
+    bool is_vps_ursp_ind,
+    int vps_ursp_ind,
+    bool is_ursp_enf_ind,
+    int ursp_enf_ind,
     char *pei,
-    OpenAPI_list_t *os_ids
+    OpenAPI_list_t *os_ids,
+    OpenAPI_list_t *restri_status,
+    bool is_spend_lim_info_null,
+    OpenAPI_list_t* spend_lim_info
 );
 void OpenAPI_ue_policy_set_patch_free(OpenAPI_ue_policy_set_patch_t *ue_policy_set_patch);
 OpenAPI_ue_policy_set_patch_t *OpenAPI_ue_policy_set_patch_parseFromJSON(cJSON *ue_policy_set_patchJSON);

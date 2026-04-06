@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_dnai_information_s OpenAPI_dnai_information_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dnai_information_s OpenAPI_dnai_information_t;
-typedef struct OpenAPI_dnai_information_s {
+struct OpenAPI_dnai_information_s {
     char *dnai;
     bool is_no_dnai_change_ind;
     int no_dnai_change_ind;
     bool is_no_local_psa_change_ind;
     int no_local_psa_change_ind;
-} OpenAPI_dnai_information_t;
+};
 
 OpenAPI_dnai_information_t *OpenAPI_dnai_information_create(
     char *dnai,

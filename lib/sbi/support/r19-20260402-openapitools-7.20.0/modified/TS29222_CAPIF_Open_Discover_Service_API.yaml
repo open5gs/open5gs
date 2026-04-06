@@ -1,0 +1,267 @@
+openapi: 3.0.0
+
+info:
+  title: CAPIF_Open_Discover_Service_API
+  version: 1.0.0
+  description: |
+    API for open discovery of service APIs.
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.222 V19.5.0; Common API Framework for 3GPP Northbound APIs
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.222/
+
+servers:
+  - url: '{apiRoot}/open-api-disc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.222.
+
+paths:
+  /service-apis:
+    get:
+      description: >
+        Request Open discovery of the Service API(s) according to a set of filtering criteria.
+      operationId: GetServAPIs
+      tags:
+        - Service APIs (Collection)
+      parameters:
+        - name: api-names
+          in: query
+          description: >
+            Contains the name(s) of the target Service API(s).
+            Each Service API name shall be set to the value of the <apiName> placeholder of the
+            target Service API URI structure as defined in clause 5.2.4 of 3GPP TS 29.122 [14].
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        - name: api-versions
+          in: query
+          description: >
+            Contains the major version(s) (e.g., v1) of the target Service API(s).
+            Each Service API version shall be set to the value of the <apiVersion> placeholder of
+            the target Service API URI structure as defined in clause 5.2.4 of 3GPP TS 29.122 [14].
+            The key of the map shall be set to the value of the Service API name (i.e., the value of
+            the <apiName> placeholder of the Service API URI structure as defined in clause 5.2.4 of
+            3GPP TS 29.122 [14]) of the Service API to which the provided list of Service API
+            version(s) provided within the map value applies.
+          schema:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                type: string
+              minItems: 1
+            minProperties: 1
+        - name: comm-type
+          in: query
+          description: >
+            Contains the communication type supported by the target Service API(s).
+          schema:
+            $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/CommunicationType' 
+        - name: protocols 
+          in: query 
+          description: >
+            Contains the protocol(s) supported by the target Service API(s). 
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/Protocol'
+            minItems: 1
+        - name: data-format
+          in: query 
+          description: >
+            Contains data format supported by the target Service API(s).
+          schema: 
+            $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/DataFormat'
+        - name: api-cats
+          in: query
+          description: >
+            Contains the category(ies) of the target Service API(s).
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        - name: preferred-aef-loc 
+          in: query 
+          description: >
+            Contains the preferred location information for AEF(s) exposing the target
+            Service API(s).
+            This query parameter is ignored by the CCF if there are no matching records at the CCF.
+          content: 
+            application/json: 
+              schema: 
+                $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/AefLocation'
+        - name: api-prov-names
+          in: query
+          description: >
+            Contains the name(s) of the provider(s) of the target Service API(s).
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        - name: api-supported-features
+          in: query
+          description: >
+            Contains the list of the features supported by the target Service API(s) identified by 
+            the api-name query parameter.
+            This query parameter may be present only if the api-name query parameter is also
+            present.
+            The key of the map shall be set to the value of the Service API name (among the ones
+            provided within the api-names query parameter) of the Service API to which the provided
+            list of supported feature(s) provided within the map value applies.
+          schema:
+            type: object
+            additionalProperties:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+            minProperties: 1
+        - name: service-kpis 
+          in: query 
+          description: > 
+            Contains iInformation about service characteristics provided by the target 
+            Service API(s). 
+          schema: 
+            $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/ServiceKpis'
+        - name: api-ids
+          in: query
+          description: >
+            Contains the identifier(s) of the targeted Service APIs.
+          required: false
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        - name: res-ops
+          in: query
+          description: >
+            Contains the list of supported Service API resource(s) and service operation(s).
+            This query parameter may be present only if the api-names query parameter is present.
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: 'TS29222_CAPIF_Discover_Service_API.yaml#/components/schemas/ResOperInfo'
+            minItems: 1
+        - name: supported-features
+          in: query
+          description: >
+            Contains the list of supported features among the ones defined in clause 8.11.6.
+            This query parameter shall be present only when feature negotiation is required.
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            OK. The result of the requested Open Service APIs discovery is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenDiscoveryResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  schemas:
+    OpenDiscoveryResp:
+      type: object
+      description: >
+        Represents the Open Service API Discovery response.
+      properties:
+        discApis:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAPIDetails'
+          minItems: 0
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - discApis
+
+    OpenAPIDetails:
+      type: object
+      description: >
+        Represents the Service API details provided within an Open Service API Discovery
+        response.
+      properties:
+        apiName:
+          type: string
+        apiId:
+          type: string
+        apiStatus:
+          $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/ApiStatus'
+        description:
+          type: string
+        serviceAPICategory:
+          type: string
+        apiSuppFeats:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        apiProvName:
+          type: string
+        aefProfiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAefProfile'
+          minItems: 1
+      required:
+        - apiName
+      
+    OpenAefProfile:
+      type: object
+      description: >
+        Represents the AEF Profile details provided within an Open Service API Discovery response.
+      properties:
+        aefId:
+          type: string
+        versions:
+          type: array
+          items:
+            $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/Version'
+          minItems: 1
+        protocol:
+          $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/Protocol'
+        dataFormat:
+          $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/DataFormat'
+        aefLocation:
+          $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/AefLocation'
+        serviceKpis:
+          $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/ServiceKpis'

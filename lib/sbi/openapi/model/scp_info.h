@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_scp_info_s OpenAPI_scp_info_t;
 #include "ip_reachability.h"
 #include "ipv4_address_range.h"
 #include "ipv6_prefix_range.h"
@@ -24,8 +25,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_scp_info_s OpenAPI_scp_info_t;
-typedef struct OpenAPI_scp_info_s {
+struct OpenAPI_scp_info_s {
     OpenAPI_list_t* scp_domain_info_list;
     char *scp_prefix;
     OpenAPI_list_t* scp_ports;
@@ -39,7 +39,7 @@ typedef struct OpenAPI_scp_info_s {
     OpenAPI_list_t *remote_snpn_list;
     OpenAPI_ip_reachability_e ip_reachability;
     OpenAPI_list_t *scp_capabilities;
-} OpenAPI_scp_info_t;
+};
 
 OpenAPI_scp_info_t *OpenAPI_scp_info_create(
     OpenAPI_list_t* scp_domain_info_list,

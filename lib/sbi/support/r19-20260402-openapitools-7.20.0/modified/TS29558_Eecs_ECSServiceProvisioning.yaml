@@ -1,0 +1,532 @@
+openapi: 3.0.0
+
+info:
+  title: ECS Service Provisioning Service
+  version: 1.1.0
+  description: |
+    ECS Service Provisioning Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.558 V19.5.0; Enabling Edge Applications;
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.558/
+
+servers:
+  - url: '{apiRoot}/eecs-esp/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /request:
+    post:
+      summary: Enables to request service provisioning information.
+      operationId: ServProvRetReq
+      tags:
+        - Service Provisioning Information Retrieval Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServProvReq'
+      responses:
+        '200':
+          description: >
+            OK. The requested service provisioning information shall be returned in the response
+            body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServProvResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions:
+    post:
+      summary: Request the creation of a Service Provisioning Subscription.
+      operationId: CreateServProvSubsc
+      tags:
+        - Service Provisioning Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServProvSubsc'
+      responses:
+        '201':
+          description: >
+            Created. The Service Provisioning Subscription is successfully created and a
+            representation of the created Individual Service Provisioning Subscription resource
+            shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServProvSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Service Provisioning Subscription
+                resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        ServProvNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ServProvNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Service Provisioning Notification is successfully received and
+                    acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscId}:
+    parameters:
+      - name: subscId
+        in: path
+        description: >
+          Represents the identifier of the Individual Service Provisioning Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Service Provisioning Subscription resource.
+      operationId: GetIndServProvSubsc
+      tags:
+        - Individual Service Provisioning Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Service Provisioning Subscription resource shall be
+            returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServProvSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Service Provisioning Subscription resource.
+      operationId: UpdateIndServProvSubsc
+      tags:
+        - Individual Service Provisioning Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServProvSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Service Provisioning Subscription resource is successfully updated
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServProvSubsc'
+        '204':
+          description: >
+            No Content. The Individual Service Provisioning Subscription resource is successfully
+            updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Service Provisioning Subscription resource.
+      operationId: ModifyIndServProvSubsc
+      tags:
+        - Individual Service Provisioning Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/ServProvSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Service Provisioning Subscription resource is successfully modified
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServProvSubsc'
+        '204':
+          description: >
+            No Content. The Individual Service Provisioning Subscription resource is successfully
+            modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Service Provisioning Subscription resource.
+      operationId: DeleteIndServProvSubsc
+      tags:
+        - Individual Service Provisioning Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Service Provisioning Subscription resource is successfully
+            deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+
+    ServProvReq:
+      description: >
+        Represents a Service Provisioning information retrieval request.
+      type: object
+      properties:
+        fedInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/FederationInfo'
+          minItems: 1
+        acProfs:
+          type: array
+          items:
+            $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACProfile'
+          minItems: 1
+        appInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppInfo'
+          minItems: 1
+        connInfo:
+          type: array
+          items:
+            $ref: 'TS24558_Eecs_ServiceProvisioning.yaml#/components/schemas/ConnectivityInfo'
+          minItems: 1
+        locInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    ServProvResp:
+      description: >
+        Represents a Service Provisioning information retrieval response.
+      type: object
+      properties:
+        ednConfigInfo:
+          type: array
+          items:
+            $ref: 'TS24558_Eecs_ServiceProvisioning.yaml#/components/schemas/EDNConfigInfo'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ednConfigInfo
+
+    ServProvSubsc:
+      description: >
+        Represents a Service Provisioning Subscription.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        fedInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/FederationInfo'
+          minItems: 1
+        acProfs:
+          type: array
+          items:
+            $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACProfile'
+          minItems: 1
+        connInfo:
+          type: array
+          items:
+            $ref: 'TS24558_Eecs_ServiceProvisioning.yaml#/components/schemas/ConnectivityInfo'
+          minItems: 1
+        locInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - notifUri
+
+    ServProvSubscPatch:
+      description: >
+        Represents the requested modifications to a Service Provisioning Subscription.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        fedInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/FederationInfo'
+          minItems: 1
+        acProfs:
+          type: array
+          items:
+            $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACProfile'
+          minItems: 1
+        connInfo:
+          type: array
+          items:
+            $ref: 'TS24558_Eecs_ServiceProvisioning.yaml#/components/schemas/ConnectivityInfo'
+          minItems: 1
+        locInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+
+    ServProvNotif:
+      description: >
+        Represents a Service Provisioning Notification.
+      type: object
+      properties:
+        subscId:
+          type: string
+        ednConfigInfo:
+          type: array
+          items:
+            $ref: 'TS24558_Eecs_ServiceProvisioning.yaml#/components/schemas/EDNConfigInfo'
+          minItems: 1
+        lifetime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+      required:
+        - subscId
+        - ednConfigInfo
+
+    FederationInfo:
+      description: >
+        Represents federation agreements related information.
+      type: object
+      properties:
+        federationId:
+          type: string
+      required:
+        - federationId
+
+    AppInfo:
+      description: >
+        Represents the application informations.
+      type: object
+      properties:
+        acProf:
+          $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACProfile'
+        appGrpProf:
+          $ref: '#/components/schemas/AppGrpProfile'
+      required:
+        - acProf
+
+    AppGrpProfile:
+      description: >
+        Represents application group profile.
+      type: object
+      properties:
+        appGrpId:
+          type: string
+        e2eRespTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        easId:
+          type: string
+        expGeoAreas:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+          description: A list of geographic area information.
+      required:
+        - appGrpId
+        - easId
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#

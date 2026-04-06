@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_usage_mon_data_scope_s OpenAPI_usage_mon_data_scope_t;
 #include "snssai.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_usage_mon_data_scope_s OpenAPI_usage_mon_data_scope_t;
-typedef struct OpenAPI_usage_mon_data_scope_s {
+struct OpenAPI_usage_mon_data_scope_s {
     struct OpenAPI_snssai_s *snssai;
     OpenAPI_list_t *dnn;
-} OpenAPI_usage_mon_data_scope_t;
+};
 
 OpenAPI_usage_mon_data_scope_t *OpenAPI_usage_mon_data_scope_create(
     OpenAPI_snssai_t *snssai,

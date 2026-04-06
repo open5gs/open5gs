@@ -12,14 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_eth_flow_description_s OpenAPI_eth_flow_description_t;
 #include "flow_direction.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_eth_flow_description_s OpenAPI_eth_flow_description_t;
-typedef struct OpenAPI_eth_flow_description_s {
+struct OpenAPI_eth_flow_description_s {
     char *dest_mac_addr;
     char *eth_type;
     char *f_desc;
@@ -28,7 +28,7 @@ typedef struct OpenAPI_eth_flow_description_s {
     OpenAPI_list_t *vlan_tags;
     char *src_mac_addr_end;
     char *dest_mac_addr_end;
-} OpenAPI_eth_flow_description_t;
+};
 
 OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_create(
     char *dest_mac_addr,

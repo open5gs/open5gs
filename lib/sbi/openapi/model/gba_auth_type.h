@@ -1,7 +1,7 @@
 /*
  * gba_auth_type.h
  *
- * 
+ * Indicates the authentication method.
  */
 
 #ifndef _OpenAPI_gba_auth_type_H_

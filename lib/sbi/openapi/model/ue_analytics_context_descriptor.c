@@ -30,9 +30,6 @@ void OpenAPI_ue_analytics_context_descriptor_free(OpenAPI_ue_analytics_context_d
         ue_analytics_context_descriptor->supi = NULL;
     }
     if (ue_analytics_context_descriptor->ana_types) {
-        OpenAPI_list_for_each(ue_analytics_context_descriptor->ana_types, node) {
-            OpenAPI_nwdaf_event_free(node->data);
-        }
         OpenAPI_list_free(ue_analytics_context_descriptor->ana_types);
         ue_analytics_context_descriptor->ana_types = NULL;
     }
@@ -59,7 +56,7 @@ cJSON *OpenAPI_ue_analytics_context_descriptor_convertToJSON(OpenAPI_ue_analytic
         goto end;
     }
 
-    if (!ue_analytics_context_descriptor->ana_types) {
+    if (ue_analytics_context_descriptor->ana_types == OpenAPI_nwdaf_event_NULL) {
         ogs_error("OpenAPI_ue_analytics_context_descriptor_convertToJSON() failed [ana_types]");
         return NULL;
     }
@@ -69,12 +66,10 @@ cJSON *OpenAPI_ue_analytics_context_descriptor_convertToJSON(OpenAPI_ue_analytic
         goto end;
     }
     OpenAPI_list_for_each(ue_analytics_context_descriptor->ana_types, node) {
-        cJSON *itemLocal = OpenAPI_nwdaf_event_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        if (cJSON_AddStringToObject(ana_typesList, "", OpenAPI_nwdaf_event_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_ue_analytics_context_descriptor_convertToJSON() failed [ana_types]");
             goto end;
         }
-        cJSON_AddItemToArray(ana_typesList, itemLocal);
     }
 
 end:
@@ -112,16 +107,22 @@ OpenAPI_ue_analytics_context_descriptor_t *OpenAPI_ue_analytics_context_descript
         ana_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(ana_types_local, ana_types) {
-            if (!cJSON_IsObject(ana_types_local)) {
+            OpenAPI_nwdaf_event_e localEnum = OpenAPI_nwdaf_event_NULL;
+            if (!cJSON_IsString(ana_types_local)) {
                 ogs_error("OpenAPI_ue_analytics_context_descriptor_parseFromJSON() failed [ana_types]");
                 goto end;
             }
-            OpenAPI_nwdaf_event_t *ana_typesItem = OpenAPI_nwdaf_event_parseFromJSON(ana_types_local);
-            if (!ana_typesItem) {
-                ogs_error("No ana_typesItem");
-                goto end;
+            localEnum = OpenAPI_nwdaf_event_FromString(ana_types_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"ana_types\" is not supported. Ignoring it ...",
+                         ana_types_local->valuestring);
+            } else {
+                OpenAPI_list_add(ana_typesList, (void *)localEnum);
             }
-            OpenAPI_list_add(ana_typesList, ana_typesItem);
+        }
+        if (ana_typesList->count == 0) {
+            ogs_error("OpenAPI_ue_analytics_context_descriptor_parseFromJSON() failed: Expected ana_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
 
     ue_analytics_context_descriptor_local_var = OpenAPI_ue_analytics_context_descriptor_create (
@@ -132,9 +133,6 @@ OpenAPI_ue_analytics_context_descriptor_t *OpenAPI_ue_analytics_context_descript
     return ue_analytics_context_descriptor_local_var;
 end:
     if (ana_typesList) {
-        OpenAPI_list_for_each(ana_typesList, node) {
-            OpenAPI_nwdaf_event_free(node->data);
-        }
         OpenAPI_list_free(ana_typesList);
         ana_typesList = NULL;
     }

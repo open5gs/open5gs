@@ -5,7 +5,6 @@
 #include "eap_session.h"
 
 OpenAPI_eap_session_t *OpenAPI_eap_session_create(
-    bool is_eap_payload_null,
     char *eap_payload,
     char *k_seaf,
     OpenAPI_list_t* _links,
@@ -19,7 +18,6 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_create(
     OpenAPI_eap_session_t *eap_session_local_var = ogs_malloc(sizeof(OpenAPI_eap_session_t));
     ogs_assert(eap_session_local_var);
 
-    eap_session_local_var->is_eap_payload_null = is_eap_payload_null;
     eap_session_local_var->eap_payload = eap_payload;
     eap_session_local_var->k_seaf = k_seaf;
     eap_session_local_var->_links = _links;
@@ -301,7 +299,6 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
     }
 
     eap_session_local_var = OpenAPI_eap_session_create (
-        eap_payload && cJSON_IsNull(eap_payload) ? true : false,
         ogs_strdup(eap_payload->valuestring),
         k_seaf && !cJSON_IsNull(k_seaf) ? ogs_strdup(k_seaf->valuestring) : NULL,
         _links ? _linksList : NULL,
@@ -316,7 +313,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON)
 end:
     if (_linksList) {
         OpenAPI_list_for_each(_linksList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_links_value_schema_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

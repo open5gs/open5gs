@@ -1,7 +1,7 @@
 /*
  * requested_usage_data.h
  *
- * Contains usage data requested by the PCF requesting usage reports for the corresponding usage monitoring data instances.
+ * Contains usage data requested by the PCF requesting usage reports for the corresponding usage monitoring data instances. 
  */
 
 #ifndef _OpenAPI_requested_usage_data_H_
@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_requested_usage_data_s OpenAPI_requested_usage_data_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_requested_usage_data_s OpenAPI_requested_usage_data_t;
-typedef struct OpenAPI_requested_usage_data_s {
+struct OpenAPI_requested_usage_data_s {
     OpenAPI_list_t *ref_um_ids;
     bool is_all_um_ids;
     int all_um_ids;
-} OpenAPI_requested_usage_data_t;
+};
 
 OpenAPI_requested_usage_data_t *OpenAPI_requested_usage_data_create(
     OpenAPI_list_t *ref_um_ids,

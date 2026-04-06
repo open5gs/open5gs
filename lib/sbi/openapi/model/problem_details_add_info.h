@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_problem_details_add_info_s OpenAPI_problem_details_add_info_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_problem_details_add_info_s OpenAPI_problem_details_add_info_t;
-typedef struct OpenAPI_problem_details_add_info_s {
+struct OpenAPI_problem_details_add_info_s {
     bool is_remote_error;
     int remote_error;
-} OpenAPI_problem_details_add_info_t;
+};
 
 OpenAPI_problem_details_add_info_t *OpenAPI_problem_details_add_info_create(
     bool is_remote_error,

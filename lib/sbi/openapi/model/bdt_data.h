@@ -12,6 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_bdt_data_s OpenAPI_bdt_data_t;
+#include "any_type.h"
 #include "bdt_policy_status.h"
 #include "network_area_info_2.h"
 #include "snssai.h"
@@ -22,8 +24,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_bdt_data_s OpenAPI_bdt_data_t;
-typedef struct OpenAPI_bdt_data_s {
+struct OpenAPI_bdt_data_s {
     char *asp_id;
     struct OpenAPI_transfer_policy_s *trans_policy;
     char *bdt_ref_id;
@@ -34,10 +35,15 @@ typedef struct OpenAPI_bdt_data_s {
     char *dnn;
     struct OpenAPI_snssai_s *snssai;
     char *traffic_des;
-    struct OpenAPI_bdt_policy_status_s *bdtp_status;
+    OpenAPI_bdt_policy_status_e bdtp_status;
+    bool is_warn_notif_enabled_null;
+    OpenAPI_any_type_t *warn_notif_enabled;
+    bool is_energy_ind;
+    int energy_ind;
+    char *notif_uri;
     char *supp_feat;
     OpenAPI_list_t *reset_ids;
-} OpenAPI_bdt_data_t;
+};
 
 OpenAPI_bdt_data_t *OpenAPI_bdt_data_create(
     char *asp_id,
@@ -50,7 +56,12 @@ OpenAPI_bdt_data_t *OpenAPI_bdt_data_create(
     char *dnn,
     OpenAPI_snssai_t *snssai,
     char *traffic_des,
-    OpenAPI_bdt_policy_status_t *bdtp_status,
+    OpenAPI_bdt_policy_status_e bdtp_status,
+    bool is_warn_notif_enabled_null,
+    OpenAPI_any_type_t *warn_notif_enabled,
+    bool is_energy_ind,
+    int energy_ind,
+    char *notif_uri,
     char *supp_feat,
     OpenAPI_list_t *reset_ids
 );

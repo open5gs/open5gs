@@ -1,0 +1,98 @@
+openapi: 3.0.1
+info:
+  title: QoE Measurement Collection NRM
+  version: 19.3.0
+  description: >-
+    OAS 3.0.1 definition of the QoE Measurement Collection NRM
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.623; Generic NRM,QoE Measurement Collection NRM fragment
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.623/
+paths: {}
+components:
+  schemas:
+  #-------- Definition of types for name-containments ------
+    SubNetwork-ncO-QoEMeasurementCollectionNrm:
+      type: object
+      properties:
+        QMCJobs:
+          $ref: '#/components/schemas/QMCJob-Multiple'
+    ManagedElement-ncO-QoEMeasurementCollectionNrm:
+      type: object
+      properties:
+        QMCJobs:
+          $ref: '#/components/schemas/QMCJob-Multiple'      
+   #-------Definition of generic IOCs ----------#    
+
+  
+#-------- Definition of types-----------------------------------------------------
+
+#-------- Definition of concrete IOCs --------------------------------------------
+    QMCJob-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                serviceType:
+                  type: string
+                  enum:
+                    - DASH
+                    - MTSI
+                    - VR
+                areaScope:
+                  type: array
+                  uniqueItems: true
+                  items:
+                    $ref: 'TS28623_GenericNrm.yaml#/components/schemas/AreaScope'
+                qoECollectionEntityAddress:
+                  $ref: 'TS28623_GenericNrm.yaml#/components/schemas/IpAddr'
+                pLMNTarget:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+                qoETarget:
+                  type: string
+                qoEReference:
+                  type: string
+                jobId:
+                  type: string
+                sliceScope:
+                  type: array
+                  uniqueItems: true
+                  items:
+                    $ref: 'TS28541_NrNrm.yaml#/components/schemas/Snssai'
+                qMCConfigFile:
+                  type: string
+                mDTAlignmentInformation:
+                  $ref: 'TS28623_TraceControlNrm.yaml#/components/schemas/traceReference-Type'
+                availableRANqoEMetrics:
+                  type: array
+                  uniqueItems: true
+                  items:
+                    type: string
+                    enum:
+                      - APP_LAYER_BUFFER_LEVEL_LIST
+                      - PLAYOUT_DELAY_FOR_MEDIA_STARTUP
+                  minItems: 0
+                  maxItems: 2
+                mBSCommunicationServiceType:
+                  type: string
+                  readOnly: true
+                  enum:
+                    - BROADCAST
+                    - MULTICAST
+
+
+#-------- Definition of YAML arrays for name-contained IOCs ----------------------
+
+    QMCJob-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/QMCJob-Single'
+
+#-------- Definitions in TS 28.623 for TS 28.532 ---------------------------------
+    resources-qoEMeasuremetCollectionNrm:
+      oneOf:
+       - $ref: '#/components/schemas/QMCJob-Single'

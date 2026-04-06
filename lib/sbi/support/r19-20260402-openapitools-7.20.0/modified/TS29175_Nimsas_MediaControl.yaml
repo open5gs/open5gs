@@ -1,0 +1,337 @@
+openapi: 3.0.0
+
+info:
+  title: 'IMS AS MediaControl Service'
+  version: 1.1.2
+  description: |
+    Nimsas_MediaControl Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.175 V19.5.0; IP Multimedia Subsystem; IP Multimedia Subsystem (IMS) Application
+    Server (AS) Services; Stage 3
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.175'
+
+servers:
+  - url: '{apiRoot}/nimsas-mc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - nimsas-mc
+
+paths:
+
+  /call-sessions/{sessionId}/media-instruction:
+    post:
+      summary: Update
+      operationId: UpdateCallSession
+      tags:
+        - Individual call session (Document)
+      parameters:
+        - name: sessionId
+          in: path
+          description: Session ID assigned by the IMS AS during the IMS session setup.
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SessionId'
+      requestBody:
+        description: Representation of the updates to apply to the call session.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaInstructionData'
+      responses:
+        '200':
+          description: >
+            Successful update of the call session, when the IMS AS needs to return information
+            in the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaInstructionData'
+        '204':
+          description: >
+            Successful update of the call session, when the IMS AS does not need to return
+            information in the response.
+        '307':
+          description: Temporary Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target IMS AS.
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target IMS AS.
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nimsas-mc: Access to the Nimsas_MediaControl API.
+
+  schemas:
+
+# STRUCTURED DATA TYPES
+
+    MediaInstructionData:
+      description: The media instruction data for a specific session.
+      type: object
+      required:
+        - sessionId
+        - mediaInstructionSet
+      properties:
+        sessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SessionId'
+        mediaInstructionSet:
+          description: >
+            Contains a set of instructions for each media flow to control. The mediaId
+            attribute within the MediaInstructions data type is the key of the map.
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MediaInstructions'
+          minProperties: 1
+
+    MediaInstructions:
+      description: The media instructions for a specific media flow.
+      type: object
+      required:
+        - mediaId
+        - mediaResourceType
+      properties:
+        mediaId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MediaIdRm'
+        associatedMediaId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MediaId'
+        mediaResourceType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MediaResourceType'
+        mediaInstruction:
+          $ref: '#/components/schemas/MediaInstruction'
+        dcMediaSpecification:
+          $ref: '#/components/schemas/DcMediaSpecification'
+        arMediaSpecification:
+          $ref: '#/components/schemas/ArMediaSpecification'
+        mediaProcessingUrl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        audioVideoReNegotiationInd:
+          $ref: '#/components/schemas/AudioVideoReNegotiationInd'
+        mdc2AudioEndpoint:
+          $ref: '#/components/schemas/Mdc2AudioVideoEndpoint'
+        mdc2VideoEndpoint:
+          $ref: '#/components/schemas/Mdc2AudioVideoEndpoint'
+        avatarMedia:
+          $ref: 'TS29176_Nmf_MRM.yaml#/components/schemas/AvatarMedia'
+
+    DcMediaSpecification:
+      description: The data channel media specification information.
+      type: object
+      required:
+        - streams
+        - mediaProxyConfig
+      properties:
+        mediaProxyConfig:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MediaProxy'
+        replaceHttpUrls:
+          description: >
+            Contains a list of replacement HTTP URLs. The streamId
+            attribute within the ReplaceHttpUrl data type is the key of the map.
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ReplaceHttpUrl'
+          minProperties: 1
+        mdc1EndpointDcsf:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MdcEndpoint'
+        mdc1EndpointMf:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MdcEndpoint'
+        mdc2EndpointInfo:
+          $ref: '#/components/schemas/Mdc2EndpointInfo'
+        streams:
+          description: >
+            Contains a data channel mapping and configuration information. The streamId
+            attribute within the DcStream data type is the key of the map.
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/DcStream'
+          minProperties: 1
+        bdcUsedBy:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BdcUsedBy'
+        appBindingInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AppBindingInfo'
+        qosHintInfo:
+          $ref: 'TS29175_Nimsas_SessionEventControl.yaml#/components/schemas/QosHintInfo'
+        interworkingInfo:
+          $ref: '#/components/schemas/InterworkingInstruction'
+        dcIwkInd:
+          type: boolean
+          default: false
+
+
+
+
+    ArMediaSpecification:
+      description: The AR media specification information.
+      type: object
+      required:
+        - mediaProcessingSpec
+      properties:
+        mediaProcessingSpec:
+          type: string
+
+    Mdc2EndpointInfo:
+      description: Represents the negotiated MDC2 media endpoint information.
+      type: object
+      properties:
+        mdc2Protocol:
+          $ref: 'TS29176_Nmf_MRM.yaml#/components/schemas/Mdc2Protocol'
+        mdc2EndpointDcAs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MdcEndpoint'
+        mdc2EndpointMf:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MdcEndpoint'
+
+    AudioVideoReNegotiationInd:
+      description: The audio/video media re-negotiation indication information.
+      type: object
+      required:
+        - reNegotiation
+      properties:
+        reNegotiation:
+          type: boolean
+        mediaConnSide:
+          $ref: '#/components/schemas/MediaConnSide'
+        mediaDirection:
+          $ref: '#/components/schemas/SendRecvMode'
+
+    InterworkingInstruction:
+      description: The interworking instruction of data channel transcoding.
+      type: object
+      required:
+        - transcodeMode
+      properties:
+        transcodeMode:
+          $ref: '#/components/schemas/TranscodeMode'
+        addTransInfo:
+          type: string
+
+    Mdc2AudioVideoEndpoint:
+      description: The audio or video media endpoint information in MDC2 interface.
+      type: object
+      properties:
+        mdc2AVEndpointDcAs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Endpoint'
+        mdc2AVEndpointMf:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Endpoint'
+        audioVideoMedia:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AudioVideoMedia'
+
+
+
+
+# ENUMS
+
+    MediaInstruction:
+      description: The media instruction for handling a specific media flow.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - TERMINATE_MEDIA
+        - ORIGINATE_MEDIA
+        - TERMINATE_AND_ORIGINATE_MEDIA
+        - UPDATE_MEDIA
+        - DELETE_MEDIA
+        - REJECT_MEDIA
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#
+    MediaConnSide:
+      description: The audio or video media connection side.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - BOTH
+        - TERMINATING_SIDE
+        - ORIGINATING_SIDE
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#
+    SendRecvMode:
+      description: The send and receive mode of media stream.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - SENDRECV
+        - SENDONLY
+        - RECVONLY
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#
+    TranscodeMode:
+      description: The mode of the trancoding.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - DC_TO_VIDEO
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.

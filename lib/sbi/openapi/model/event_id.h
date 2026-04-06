@@ -1,7 +1,7 @@
 /*
  * event_id.h
  *
- * Possible values are: - LOAD_LEVEL_INFORMATION: Represent the analytics of load level information of corresponding network slice. - NETWORK_PERFORMANCE: Represent the analytics of network performance information. - NF_LOAD: Indicates that the event subscribed is NF Load. - SERVICE_EXPERIENCE: Represent the analytics of service experience information of the specific applications. - UE_MOBILITY: Represent the analytics of UE mobility. - UE_COMMUNICATION: Represent the analytics of UE communication. - QOS_SUSTAINABILITY: Represent the analytics of QoS sustainability information in the certain area. - ABNORMAL_BEHAVIOUR: Indicates that the event subscribed is abnormal behaviour information. - USER_DATA_CONGESTION: Represent the analytics of the user data congestion in the certain area. - NSI_LOAD_LEVEL: Represent the analytics of Network Slice and the optionally associated Network Slice Instance. - SM_CONGESTION: Represent the analytics of Session Management congestion control experience information for specific DNN and/or S-NSSAI. - DISPERSION: Represents the analytics of dispersion. - RED_TRANS_EXP: Represents the analytics of Redundant Transmission Experience. - WLAN_PERFORMANCE: Represents the analytics of WLAN performance. - DN_PERFORMANCE: Represents the analytics of DN performance. 
+ * 
  */
 
 #ifndef _OpenAPI_event_id_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "event_id_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_event_id_s OpenAPI_event_id_t;
-typedef struct OpenAPI_event_id_s {
-} OpenAPI_event_id_t;
+typedef enum { OpenAPI_event_id_NULL = 0, OpenAPI_event_id_LOAD_LEVEL_INFORMATION, OpenAPI_event_id_NETWORK_PERFORMANCE, OpenAPI_event_id_NF_LOAD, OpenAPI_event_id_SERVICE_EXPERIENCE, OpenAPI_event_id_UE_MOBILITY, OpenAPI_event_id_UE_COMMUNICATION, OpenAPI_event_id_QOS_SUSTAINABILITY, OpenAPI_event_id_ABNORMAL_BEHAVIOUR, OpenAPI_event_id_USER_DATA_CONGESTION, OpenAPI_event_id_NSI_LOAD_LEVEL, OpenAPI_event_id_SM_CONGESTION, OpenAPI_event_id_DISPERSION, OpenAPI_event_id_RED_TRANS_EXP, OpenAPI_event_id_WLAN_PERFORMANCE, OpenAPI_event_id_DN_PERFORMANCE, OpenAPI_event_id_PDU_SESSION_TRAFFIC, OpenAPI_event_id_E2E_DATA_VOL_TRANS_TIME, OpenAPI_event_id_MOVEMENT_BEHAVIOUR, OpenAPI_event_id_LOC_ACCURACY, OpenAPI_event_id_RELATIVE_PROXIMITY, OpenAPI_event_id_SIGNALLING_STORM, OpenAPI_event_id_QOS_POLICY_ASSIST } OpenAPI_event_id_e;
 
-OpenAPI_event_id_t *OpenAPI_event_id_create(
-);
-void OpenAPI_event_id_free(OpenAPI_event_id_t *event_id);
-OpenAPI_event_id_t *OpenAPI_event_id_parseFromJSON(cJSON *event_idJSON);
-cJSON *OpenAPI_event_id_convertToJSON(OpenAPI_event_id_t *event_id);
-OpenAPI_event_id_t *OpenAPI_event_id_copy(OpenAPI_event_id_t *dst, OpenAPI_event_id_t *src);
+char* OpenAPI_event_id_ToString(OpenAPI_event_id_e event_id);
+
+OpenAPI_event_id_e OpenAPI_event_id_FromString(char* event_id);
 
 #ifdef __cplusplus
 }

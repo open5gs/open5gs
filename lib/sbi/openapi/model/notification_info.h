@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_notification_info_s OpenAPI_notification_info_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_notification_info_s OpenAPI_notification_info_t;
-typedef struct OpenAPI_notification_info_s {
+struct OpenAPI_notification_info_s {
     char *notif_id;
     char *notif_uri;
     bool is_up_buffer_ind;
     int up_buffer_ind;
-} OpenAPI_notification_info_t;
+};
 
 OpenAPI_notification_info_t *OpenAPI_notification_info_create(
     char *notif_id,

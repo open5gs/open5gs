@@ -1,7 +1,7 @@
 /*
  * sponsoring_status.h
  *
- * 
+ * Indicates whether sponsored data connectivity is enabled or disabled/not enabled.
  */
 
 #ifndef _OpenAPI_sponsoring_status_H_

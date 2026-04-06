@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_plmn_id_nid_s OpenAPI_plmn_id_nid_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_plmn_id_nid_s OpenAPI_plmn_id_nid_t;
-typedef struct OpenAPI_plmn_id_nid_s {
+struct OpenAPI_plmn_id_nid_s {
     char *mcc;
     char *mnc;
     char *nid;
-} OpenAPI_plmn_id_nid_t;
+};
 
 OpenAPI_plmn_id_nid_t *OpenAPI_plmn_id_nid_create(
     char *mcc,

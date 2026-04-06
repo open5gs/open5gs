@@ -49,9 +49,6 @@ void OpenAPI_service_name_list_cond_free(OpenAPI_service_name_list_cond_t *servi
         return;
     }
     if (service_name_list_cond->service_name_list) {
-        OpenAPI_list_for_each(service_name_list_cond->service_name_list, node) {
-            ogs_free(node->data);
-        }
         OpenAPI_list_free(service_name_list_cond->service_name_list);
         service_name_list_cond->service_name_list = NULL;
     }
@@ -78,7 +75,7 @@ cJSON *OpenAPI_service_name_list_cond_convertToJSON(OpenAPI_service_name_list_co
         goto end;
     }
 
-    if (!service_name_list_cond->service_name_list) {
+    if (service_name_list_cond->service_name_list == OpenAPI_service_name_NULL) {
         ogs_error("OpenAPI_service_name_list_cond_convertToJSON() failed [service_name_list]");
         return NULL;
     }
@@ -88,7 +85,7 @@ cJSON *OpenAPI_service_name_list_cond_convertToJSON(OpenAPI_service_name_list_co
         goto end;
     }
     OpenAPI_list_for_each(service_name_list_cond->service_name_list, node) {
-        if (cJSON_AddStringToObject(service_name_listList, "", (char*)node->data) == NULL) {
+        if (cJSON_AddStringToObject(service_name_listList, "", OpenAPI_service_name_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_service_name_list_cond_convertToJSON() failed [service_name_list]");
             goto end;
         }
@@ -131,13 +128,22 @@ OpenAPI_service_name_list_cond_t *OpenAPI_service_name_list_cond_parseFromJSON(c
         service_name_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(service_name_list_local, service_name_list) {
-            double *localDouble = NULL;
-            int *localInt = NULL;
+            OpenAPI_service_name_e localEnum = OpenAPI_service_name_NULL;
             if (!cJSON_IsString(service_name_list_local)) {
                 ogs_error("OpenAPI_service_name_list_cond_parseFromJSON() failed [service_name_list]");
                 goto end;
             }
-            OpenAPI_list_add(service_name_listList, ogs_strdup(service_name_list_local->valuestring));
+            localEnum = OpenAPI_service_name_FromString(service_name_list_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"service_name_list\" is not supported. Ignoring it ...",
+                         service_name_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(service_name_listList, (void *)localEnum);
+            }
+        }
+        if (service_name_listList->count == 0) {
+            ogs_error("OpenAPI_service_name_list_cond_parseFromJSON() failed: Expected service_name_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
 
     service_name_list_cond_local_var = OpenAPI_service_name_list_cond_create (
@@ -148,9 +154,6 @@ OpenAPI_service_name_list_cond_t *OpenAPI_service_name_list_cond_parseFromJSON(c
     return service_name_list_cond_local_var;
 end:
     if (service_name_listList) {
-        OpenAPI_list_for_each(service_name_listList, node) {
-            ogs_free(node->data);
-        }
         OpenAPI_list_free(service_name_listList);
         service_name_listList = NULL;
     }

@@ -12,13 +12,13 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_accu_usage_report_s OpenAPI_accu_usage_report_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_accu_usage_report_s OpenAPI_accu_usage_report_t;
-typedef struct OpenAPI_accu_usage_report_s {
+struct OpenAPI_accu_usage_report_s {
     char *ref_um_ids;
     bool is_vol_usage;
     long vol_usage;
@@ -36,7 +36,7 @@ typedef struct OpenAPI_accu_usage_report_s {
     long next_vol_usage_downlink;
     bool is_next_time_usage;
     int next_time_usage;
-} OpenAPI_accu_usage_report_t;
+};
 
 OpenAPI_accu_usage_report_t *OpenAPI_accu_usage_report_create(
     char *ref_um_ids,

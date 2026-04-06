@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_context_created_data_s OpenAPI_sm_context_created_data_t;
 #include "ebi_arp_mapping.h"
 #include "ho_state.h"
 #include "n2_sm_info_type.h"
@@ -23,13 +24,15 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_context_created_data_s OpenAPI_sm_context_created_data_t;
-typedef struct OpenAPI_sm_context_created_data_s {
+struct OpenAPI_sm_context_created_data_s {
     char *h_smf_uri;
+    char *h_smf_instance_id;
     char *smf_uri;
+    char *smf_instance_id;
     bool is_pdu_session_id;
     int pdu_session_id;
     struct OpenAPI_snssai_s *s_nssai;
+    struct OpenAPI_snssai_s *additional_snssai;
     OpenAPI_up_cnx_state_e up_cnx_state;
     struct OpenAPI_ref_to_binary_data_s *n2_sm_info;
     OpenAPI_n2_sm_info_type_e n2_sm_info_type;
@@ -42,14 +45,21 @@ typedef struct OpenAPI_sm_context_created_data_s {
     char *selected_smf_id;
     char *selected_old_smf_id;
     char *inter_plmn_api_root;
-} OpenAPI_sm_context_created_data_t;
+    char *udm_group_id;
+    char *pcf_group_id;
+    bool is_pdu_session_prio;
+    int pdu_session_prio;
+};
 
 OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_create(
     char *h_smf_uri,
+    char *h_smf_instance_id,
     char *smf_uri,
+    char *smf_instance_id,
     bool is_pdu_session_id,
     int pdu_session_id,
     OpenAPI_snssai_t *s_nssai,
+    OpenAPI_snssai_t *additional_snssai,
     OpenAPI_up_cnx_state_e up_cnx_state,
     OpenAPI_ref_to_binary_data_t *n2_sm_info,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type,
@@ -61,7 +71,11 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_create(
     char *supported_features,
     char *selected_smf_id,
     char *selected_old_smf_id,
-    char *inter_plmn_api_root
+    char *inter_plmn_api_root,
+    char *udm_group_id,
+    char *pcf_group_id,
+    bool is_pdu_session_prio,
+    int pdu_session_prio
 );
 void OpenAPI_sm_context_created_data_free(OpenAPI_sm_context_created_data_t *sm_context_created_data);
 OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_parseFromJSON(cJSON *sm_context_created_dataJSON);

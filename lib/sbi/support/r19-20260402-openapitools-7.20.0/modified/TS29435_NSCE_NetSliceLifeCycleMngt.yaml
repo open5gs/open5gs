@@ -1,0 +1,728 @@
+openapi: 3.0.0
+
+info:
+  title: NSCE Server Network Slice LifeCycle Management
+  version: 1.1.0
+  description: |
+    NSCE Server Network Slice LifeCycle Management.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.435 V19.3.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Network Slice Capability Exposure (NSCE) Server Service(s); Stage 3.
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.435/
+
+servers:
+  - url: '{apiRoot}/nsce-nslcm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Request the creation of a Network Slice Lifecycle Management Subscription.
+      operationId: CreateNetSliceLifeCycleMngtSubsc
+      tags:
+        - Network Slice Lifecycle Management Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NSLCMSubsc'
+      responses:
+        '201':
+          description: >
+            Created. The Network Slice Lifecycle Management Subscription is successfully created
+            and a representation of the created Individual Network Slice Lifecycle Management
+            Subscription resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NSLCMSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        NetSliceLifeCycleMngtNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NSLCMNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Network Slice Lifecycle Management Notification is successfully
+                    received and processed.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+        QoEMetricsSubsNotif:
+          '{$request.body#/notifUri}/subscribe-qoe':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/QoEMetricsSubsc'
+              responses:
+                '200':
+                  description: >
+                    OK. The QoE metrics Subscription is successfully received
+                    and processed, and immediate QoE metrics reporting related information
+                    shall be returned in the response body.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/QoEMetricsResp'
+                '204':
+                  description: >
+                    No Content. The QoE metrics Subscription is successfully received and
+                    processed, and no content is returned in the response body.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+        NetSliceLCMRecomNotif:
+          '{$request.body#/notifUri}/recommend':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NSLCMRecom'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Network Slice LCM Recommendation Notification
+                    is successfully received and processed, and no content is
+                    returned in the response body.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of the Individual Network Slice Lifecycle Management
+          Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Network Slice Lifecycle Management Subscription" resource at the NSCE Server.
+      operationId: GetIndNetSliceLifeCycleMngtSubsc
+      tags:
+        - Individual Network Slice Lifecycle Management Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Network Slice Lifecycle Management Subscription
+            resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NSLCMSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Network Slice Lifecycle Management Subscription resource at the NSCE Server.
+      operationId: UpdateIndNetSliceLifeCycleMngtSubc
+      tags:
+        - Individual Network Slice Lifecycle Management Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NSLCMSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Management Discovery Subscription resource is successfully updated
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NSLCMSubsc'
+        '204':
+          description: >
+            No Content. The Individual Network Slice Lifecycle Management Subscription resource
+            is successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Network Slice Lifecycle Management Subscription resource at the NSCE Server.
+      operationId: ModifyIndNetSliceLifeCycleMngtSubsc
+      tags:
+        - Individual Network Slice Lifecycle Management Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/NSLCMSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Network Slice Lifecycle Management Subscription resource is
+            successfully modified and a representation of the updated resource shall
+            be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NSLCMSubsc'
+        '204':
+          description: >
+            No Content. The Individual Network Slice Lifecycle Management Subscription resource
+            is successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Network Slice Lifecycle Management Subscription resource.
+      operationId: DeleteIndNetSliceLifeCycleMngtSubc
+      tags:
+        - Individual Network Slice Lifecycle Management Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Network Slice Lifecycle Management Subscription
+            resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+  /subscriptions/{subscriptionId}/notify:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of the Individual Network Slice Lifecycle Management
+          Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    post:
+      summary: Enables the service consumer to send a notification to the NSCE Server on QoE metrics.
+      operationId: QoEMetricNotify
+      tags:
+        - QoE metrics Notification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QoEMetricsReportNotif'
+      responses:
+        '204':
+          description: >
+            No Content. The QoE metrics notification is successfully received and processed,
+            and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    NSLCMSubsc:
+      description: Represents a Network Slice Life Cycle Management Subscription.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        servReqs:
+          type: array
+          items:
+            $ref: 'TS29435_NSCE_SliceApiManagement.yaml#/components/schemas/AppServReqs'
+          minItems: 1
+        triggerConds:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerCond'
+          minItems: 1
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - notifUri
+
+    NSLCMSubscPatch:
+      description: >
+        Represents the requested modifications to a Network Slice Life Cycle
+        Management Subscription.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        servReqs:
+          type: array
+          items:
+            $ref: 'TS29435_NSCE_SliceApiManagement.yaml#/components/schemas/AppServReqs'
+          minItems: 1
+        triggerConds:
+          type: array
+          items:
+            $ref: '#/components/schemas/TriggerCond'
+          minItems: 1
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+
+    NSLCMNotif:
+      description: Represents a Network Slice Life Cycle Management Notification.
+      type: object
+      properties:
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+      required:
+        - netSliceId
+
+    QoEMetricsSubsc:
+      description: Represents a QoE Metrics Subscription.
+      type: object
+      properties:
+        notifCorrId:
+          type: string
+        subscriptionId:
+          type: string
+        collectInfos:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CollectInfo'
+          minProperties: 1
+          description: >
+            Contains the information collected from the interested network slice.
+            The key of the map shall be any unique string encoded value.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - collectInfos
+
+    QoEMetricsResp:
+      description: Represents the response to a QoE Metris Subscription.
+      type: object
+      properties:
+        qoeMetrics:
+          $ref: '#/components/schemas/QoEMetricsSubsc'
+        qoeMetricsReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/QoEMetricsReport'
+          minItems: 1
+
+    QoEMetricsReport:
+      description: Represents the report of QoE Metris.
+      type: object
+      properties:
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        qoeMetrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/QoEMetric'
+          minItems: 1
+      required:
+        - netSliceId
+        - qoeMetrics
+
+    NSLCMRecom:
+      description: Represents the Network Slice LCM Recommendation.
+      type: object
+      properties:
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        sliceLCMActions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SliceLCMAction'
+          minItems: 1
+        sliceInfo:
+          $ref: 'TS29435_NSCE_NSInfoDelivery.yaml#/components/schemas/NSInfoSet'
+      required:
+        - netSliceId
+        - sliceLCMActions
+
+    CollectInfo:
+      description: Represents the information collected from the interested network slice.
+      type: object
+      properties:
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        qoeMetrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/QoEMetric'
+          minItems: 1
+        repPeriod:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        immRepFlag:
+          type: boolean
+          description: >
+            Contains the immediate reporting indication.
+            true means that immediate reporting is requested.
+            false means that immediate reporting is not requested.
+            The default value is false if this attribute is omitted.
+      required:
+        - netSliceId
+
+    TriggerCond:
+      description: >
+        Represents the updated monitored parameters and the corresponding thresholds
+        which could trigger the AppLayer-NS-LCM.
+      type: object
+      properties:
+        triggerType:
+          $ref: '#/components/schemas/TriggerType'
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        loadLevelThreshold:
+          type: integer
+          minimum: 0
+          maximum: 100
+        perfThreshold:
+          type: integer
+          minimum: 0
+          maximum: 100
+        qoeMetrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/QoEMetric'
+          minItems: 1
+      required:
+        - triggerType
+
+    QoEMetric:
+      description: >
+        Represents the QoE metric type and the corresponding QoE threshold.
+      type: object
+      properties:
+        qoeType:
+          $ref: '#/components/schemas/QoEType'
+        latency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        throughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        jitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        avgPacketLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        maxPacketLossRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+      required:
+        - qoeType
+
+    QoEMetricsReportNotif:
+      description: >
+        Represents the QoE metrics notification including the QoE Metrics Report.
+      type: object
+      properties:
+        notifCorrId:
+          type: string
+        qoEMetricsReport:
+          $ref: '#/components/schemas/QoEMetricsReport'
+      required:
+        - notifCorrId
+        - qoEMetricsReport
+
+
+#
+# ENUMERATIONS DATA TYPES
+#
+
+    QoEType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - LATENCY
+        - THROUGHPUT
+        - JITTER
+        - AVG_PKT_LOSS_RATE
+        - MAX_PKT_LOSS_RATE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the QoE metric type, e.g., latency, throughput, jitter, etc.
+#        Possible values are:
+#        - LATENCY: Indicates that the QoE type is latency.
+#        - THROUGHPUT: Indicates that the QoE type is throughput.
+#        - JITTER: Indicates that the QoE type is jitter.
+#        - AVG_PKT_LOSS_RATE: Indicates that the QoE type is the average Packet Loss Rate.
+#        - MAX_PKT_LOSS_RATE: Indicates that the QoE type is the maximum Packet Loss Rate.
+#
+    TriggerType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - NETWORK_SLICE_LOAD
+        - NETWORK_SLICE_PERFORMANCE
+        - QOE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the monitored parameter type, e.g., Network Slice load,
+#        collected Network Slice performance, collected QoE, etc.
+#        Possible values are:
+#        - NETWORK_SLICE_LOAD: Indicates that the trigger type is Network Slice Load.
+#        - NETWORK_SLICE_PERFORMANCE: Indicates that the trigger type is Network Slice Performance.
+#        - QOE: Indicates that the trigger type is QoE.
+#
+    SliceLCMAction:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - MODIFY_CONFIGURATION
+        - ALLOCATE_SLICE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the recommended slice LCM action.
+#        Possible values are:
+#        - MODIFY_CONFIGURATION: Indicates that the recommended action is modifying the
+#          configuration.
+#        - ALLOCATE_SLICE: Indicates that the recommended action is allocating a network slice.

@@ -428,7 +428,7 @@ void smf_5gc_n4_handle_session_modification_response(
                 sess->nsmf_param.rat_type = sess->sbi_rat_type;
 
                 r = smf_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                        OpenAPI_service_name_nsmf_pdusession, NULL,
                         smf_nsmf_pdusession_build_hsmf_update_data,
                         sess, stream,
                         flags & OGS_PFCP_MODIFY_XN_HANDOVER ?
@@ -484,7 +484,7 @@ void smf_5gc_n4_handle_session_modification_response(
                     sess->nsmf_param.rat_type = sess->sbi_rat_type;
 
                     r = smf_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            OpenAPI_service_name_nsmf_pdusession, NULL,
                             smf_nsmf_pdusession_build_hsmf_update_data,
                             sess, stream,
                             flags & OGS_PFCP_MODIFY_FROM_ACTIVATING ?
@@ -621,7 +621,7 @@ void smf_5gc_n4_handle_session_modification_response(
                         OpenAPI_request_indication_UE_REQ_PDU_SES_REL;
 
                     r = smf_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            OpenAPI_service_name_nsmf_pdusession, NULL,
                             smf_nsmf_pdusession_build_hsmf_update_data,
                             sess, stream, trigger, NULL);
                     ogs_expect(r == OGS_OK);
@@ -654,7 +654,7 @@ void smf_5gc_n4_handle_session_modification_response(
                         OpenAPI_request_indication_NW_REQ_PDU_SES_REL;
 
                     r = smf_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            OpenAPI_service_name_nsmf_pdusession, NULL,
                             smf_nsmf_pdusession_build_hsmf_update_data,
                             sess, stream, trigger, NULL);
                     ogs_expect(r == OGS_OK);
@@ -684,7 +684,7 @@ void smf_5gc_n4_handle_session_modification_response(
      * 16. V: OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
      */
                     r = smf_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            OpenAPI_service_name_nsmf_pdusession, NULL,
                             smf_nsmf_pdusession_build_release_data,
                             sess, stream, trigger, NULL);
                     ogs_expect(r == OGS_OK);
@@ -764,7 +764,7 @@ void smf_5gc_n4_handle_session_modification_response(
             }
 
             r = smf_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                    OpenAPI_service_name_nsmf_pdusession, NULL,
                     smf_nsmf_pdusession_build_vsmf_update_data,
                     sess, NULL, state, NULL);
             ogs_expect(r == OGS_OK);
@@ -816,7 +816,7 @@ void smf_5gc_n4_handle_session_modification_response(
                         sess, stream, OpenAPI_up_cnx_state_ACTIVATED);
             } else {
                 r = smf_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NUDM_UECM, NULL,
+                        OpenAPI_service_name_nudm_uecm, NULL,
                         smf_nudm_uecm_build_registration,
                         sess, stream, SMF_UECM_STATE_REGISTERED, NULL);
                 ogs_expect(r == OGS_OK);

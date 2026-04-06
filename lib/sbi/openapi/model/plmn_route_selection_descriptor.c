@@ -5,7 +5,7 @@
 #include "plmn_route_selection_descriptor.h"
 
 OpenAPI_plmn_route_selection_descriptor_t *OpenAPI_plmn_route_selection_descriptor_create(
-    OpenAPI_plmn_id_1_t *serving_plmn,
+    OpenAPI_plmn_id_t *serving_plmn,
     OpenAPI_list_t *snssai_route_sel_descs
 )
 {
@@ -26,7 +26,7 @@ void OpenAPI_plmn_route_selection_descriptor_free(OpenAPI_plmn_route_selection_d
         return;
     }
     if (plmn_route_selection_descriptor->serving_plmn) {
-        OpenAPI_plmn_id_1_free(plmn_route_selection_descriptor->serving_plmn);
+        OpenAPI_plmn_id_free(plmn_route_selection_descriptor->serving_plmn);
         plmn_route_selection_descriptor->serving_plmn = NULL;
     }
     if (plmn_route_selection_descriptor->snssai_route_sel_descs) {
@@ -54,7 +54,7 @@ cJSON *OpenAPI_plmn_route_selection_descriptor_convertToJSON(OpenAPI_plmn_route_
         ogs_error("OpenAPI_plmn_route_selection_descriptor_convertToJSON() failed [serving_plmn]");
         return NULL;
     }
-    cJSON *serving_plmn_local_JSON = OpenAPI_plmn_id_1_convertToJSON(plmn_route_selection_descriptor->serving_plmn);
+    cJSON *serving_plmn_local_JSON = OpenAPI_plmn_id_convertToJSON(plmn_route_selection_descriptor->serving_plmn);
     if (serving_plmn_local_JSON == NULL) {
         ogs_error("OpenAPI_plmn_route_selection_descriptor_convertToJSON() failed [serving_plmn]");
         goto end;
@@ -90,7 +90,7 @@ OpenAPI_plmn_route_selection_descriptor_t *OpenAPI_plmn_route_selection_descript
     OpenAPI_plmn_route_selection_descriptor_t *plmn_route_selection_descriptor_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *serving_plmn = NULL;
-    OpenAPI_plmn_id_1_t *serving_plmn_local_nonprim = NULL;
+    OpenAPI_plmn_id_t *serving_plmn_local_nonprim = NULL;
     cJSON *snssai_route_sel_descs = NULL;
     OpenAPI_list_t *snssai_route_sel_descsList = NULL;
     serving_plmn = cJSON_GetObjectItemCaseSensitive(plmn_route_selection_descriptorJSON, "servingPlmn");
@@ -98,9 +98,9 @@ OpenAPI_plmn_route_selection_descriptor_t *OpenAPI_plmn_route_selection_descript
         ogs_error("OpenAPI_plmn_route_selection_descriptor_parseFromJSON() failed [serving_plmn]");
         goto end;
     }
-    serving_plmn_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(serving_plmn);
+    serving_plmn_local_nonprim = OpenAPI_plmn_id_parseFromJSON(serving_plmn);
     if (!serving_plmn_local_nonprim) {
-        ogs_error("OpenAPI_plmn_id_1_parseFromJSON failed [serving_plmn]");
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [serving_plmn]");
         goto end;
     }
 
@@ -136,7 +136,7 @@ OpenAPI_plmn_route_selection_descriptor_t *OpenAPI_plmn_route_selection_descript
     return plmn_route_selection_descriptor_local_var;
 end:
     if (serving_plmn_local_nonprim) {
-        OpenAPI_plmn_id_1_free(serving_plmn_local_nonprim);
+        OpenAPI_plmn_id_free(serving_plmn_local_nonprim);
         serving_plmn_local_nonprim = NULL;
     }
     if (snssai_route_sel_descsList) {

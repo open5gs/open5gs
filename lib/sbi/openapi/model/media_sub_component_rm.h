@@ -12,23 +12,28 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_media_sub_component_rm_s OpenAPI_media_sub_component_rm_t;
+#include "add_flow_description_info.h"
 #include "af_sig_protocol.h"
 #include "eth_flow_description.h"
+#include "events_subsc_req_data_rm.h"
 #include "flow_status.h"
 #include "flow_usage.h"
+#include "mpx_media_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_media_sub_component_rm_s OpenAPI_media_sub_component_rm_t;
-typedef struct OpenAPI_media_sub_component_rm_s {
+struct OpenAPI_media_sub_component_rm_s {
     OpenAPI_af_sig_protocol_e af_sig_protocol;
     bool is_ethf_descs_null;
     OpenAPI_list_t *ethf_descs;
     int f_num;
     bool is_f_descs_null;
     OpenAPI_list_t *f_descs;
+    bool is_add_info_flow_descs_null;
+    OpenAPI_list_t *add_info_flow_descs;
     OpenAPI_flow_status_e f_status;
     bool is_mar_bw_dl_null;
     char *mar_bw_dl;
@@ -37,7 +42,13 @@ typedef struct OpenAPI_media_sub_component_rm_s {
     bool is_tos_tr_cl_null;
     char *tos_tr_cl;
     OpenAPI_flow_usage_e flow_usage;
-} OpenAPI_media_sub_component_rm_t;
+    bool is_ev_subsc_null;
+    struct OpenAPI_events_subsc_req_data_rm_s *ev_subsc;
+    bool is_mpx_media_ul_infos_null;
+    OpenAPI_list_t *mpx_media_ul_infos;
+    bool is_mpx_media_dl_infos_null;
+    OpenAPI_list_t *mpx_media_dl_infos;
+};
 
 OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_create(
     OpenAPI_af_sig_protocol_e af_sig_protocol,
@@ -46,6 +57,8 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_create(
     int f_num,
     bool is_f_descs_null,
     OpenAPI_list_t *f_descs,
+    bool is_add_info_flow_descs_null,
+    OpenAPI_list_t *add_info_flow_descs,
     OpenAPI_flow_status_e f_status,
     bool is_mar_bw_dl_null,
     char *mar_bw_dl,
@@ -53,7 +66,13 @@ OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_create(
     char *mar_bw_ul,
     bool is_tos_tr_cl_null,
     char *tos_tr_cl,
-    OpenAPI_flow_usage_e flow_usage
+    OpenAPI_flow_usage_e flow_usage,
+    bool is_ev_subsc_null,
+    OpenAPI_events_subsc_req_data_rm_t *ev_subsc,
+    bool is_mpx_media_ul_infos_null,
+    OpenAPI_list_t *mpx_media_ul_infos,
+    bool is_mpx_media_dl_infos_null,
+    OpenAPI_list_t *mpx_media_dl_infos
 );
 void OpenAPI_media_sub_component_rm_free(OpenAPI_media_sub_component_rm_t *media_sub_component_rm);
 OpenAPI_media_sub_component_rm_t *OpenAPI_media_sub_component_rm_parseFromJSON(cJSON *media_sub_component_rmJSON);

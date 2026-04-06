@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_update_pdu_session_400_response_s OpenAPI_update_pdu_session_400_response_t;
 #include "hsmf_update_error.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_update_pdu_session_400_response_s OpenAPI_update_pdu_session_400_response_t;
-typedef struct OpenAPI_update_pdu_session_400_response_s {
+struct OpenAPI_update_pdu_session_400_response_s {
     struct OpenAPI_hsmf_update_error_s *json_data;
     OpenAPI_binary_t* binary_data_n1_sm_info_to_ue;
-} OpenAPI_update_pdu_session_400_response_t;
+};
 
 OpenAPI_update_pdu_session_400_response_t *OpenAPI_update_pdu_session_400_response_create(
     OpenAPI_hsmf_update_error_t *json_data,

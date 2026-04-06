@@ -5,7 +5,7 @@
 #include "ncgi_1.h"
 
 OpenAPI_ncgi_1_t *OpenAPI_ncgi_1_create(
-    OpenAPI_plmn_id_1_t *plmn_id,
+    OpenAPI_plmn_id_t *plmn_id,
     char *nr_cell_id,
     char *nid
 )
@@ -28,7 +28,7 @@ void OpenAPI_ncgi_1_free(OpenAPI_ncgi_1_t *ncgi_1)
         return;
     }
     if (ncgi_1->plmn_id) {
-        OpenAPI_plmn_id_1_free(ncgi_1->plmn_id);
+        OpenAPI_plmn_id_free(ncgi_1->plmn_id);
         ncgi_1->plmn_id = NULL;
     }
     if (ncgi_1->nr_cell_id) {
@@ -57,7 +57,7 @@ cJSON *OpenAPI_ncgi_1_convertToJSON(OpenAPI_ncgi_1_t *ncgi_1)
         ogs_error("OpenAPI_ncgi_1_convertToJSON() failed [plmn_id]");
         return NULL;
     }
-    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_1_convertToJSON(ncgi_1->plmn_id);
+    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(ncgi_1->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_ncgi_1_convertToJSON() failed [plmn_id]");
         goto end;
@@ -93,7 +93,7 @@ OpenAPI_ncgi_1_t *OpenAPI_ncgi_1_parseFromJSON(cJSON *ncgi_1JSON)
     OpenAPI_ncgi_1_t *ncgi_1_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *plmn_id = NULL;
-    OpenAPI_plmn_id_1_t *plmn_id_local_nonprim = NULL;
+    OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
     cJSON *nr_cell_id = NULL;
     cJSON *nid = NULL;
     plmn_id = cJSON_GetObjectItemCaseSensitive(ncgi_1JSON, "plmnId");
@@ -101,9 +101,9 @@ OpenAPI_ncgi_1_t *OpenAPI_ncgi_1_parseFromJSON(cJSON *ncgi_1JSON)
         ogs_error("OpenAPI_ncgi_1_parseFromJSON() failed [plmn_id]");
         goto end;
     }
-    plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
+    plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
     if (!plmn_id_local_nonprim) {
-        ogs_error("OpenAPI_plmn_id_1_parseFromJSON failed [plmn_id]");
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
         goto end;
     }
 
@@ -134,7 +134,7 @@ OpenAPI_ncgi_1_t *OpenAPI_ncgi_1_parseFromJSON(cJSON *ncgi_1JSON)
     return ncgi_1_local_var;
 end:
     if (plmn_id_local_nonprim) {
-        OpenAPI_plmn_id_1_free(plmn_id_local_nonprim);
+        OpenAPI_plmn_id_free(plmn_id_local_nonprim);
         plmn_id_local_nonprim = NULL;
     }
     return NULL;

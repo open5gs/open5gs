@@ -6,6 +6,7 @@
 
 OpenAPI_dispersion_area_t *OpenAPI_dispersion_area_create(
     OpenAPI_list_t *tai_list,
+    OpenAPI_list_t *ran_node_id_list,
     OpenAPI_list_t *ncgi_list,
     OpenAPI_list_t *ecgi_list,
     bool is_n3ga_ind,
@@ -16,6 +17,7 @@ OpenAPI_dispersion_area_t *OpenAPI_dispersion_area_create(
     ogs_assert(dispersion_area_local_var);
 
     dispersion_area_local_var->tai_list = tai_list;
+    dispersion_area_local_var->ran_node_id_list = ran_node_id_list;
     dispersion_area_local_var->ncgi_list = ncgi_list;
     dispersion_area_local_var->ecgi_list = ecgi_list;
     dispersion_area_local_var->is_n3ga_ind = is_n3ga_ind;
@@ -37,6 +39,13 @@ void OpenAPI_dispersion_area_free(OpenAPI_dispersion_area_t *dispersion_area)
         }
         OpenAPI_list_free(dispersion_area->tai_list);
         dispersion_area->tai_list = NULL;
+    }
+    if (dispersion_area->ran_node_id_list) {
+        OpenAPI_list_for_each(dispersion_area->ran_node_id_list, node) {
+            OpenAPI_global_ran_node_id_free(node->data);
+        }
+        OpenAPI_list_free(dispersion_area->ran_node_id_list);
+        dispersion_area->ran_node_id_list = NULL;
     }
     if (dispersion_area->ncgi_list) {
         OpenAPI_list_for_each(dispersion_area->ncgi_list, node) {
@@ -79,6 +88,22 @@ cJSON *OpenAPI_dispersion_area_convertToJSON(OpenAPI_dispersion_area_t *dispersi
             goto end;
         }
         cJSON_AddItemToArray(tai_listList, itemLocal);
+    }
+    }
+
+    if (dispersion_area->ran_node_id_list) {
+    cJSON *ran_node_id_listList = cJSON_AddArrayToObject(item, "ranNodeIdList");
+    if (ran_node_id_listList == NULL) {
+        ogs_error("OpenAPI_dispersion_area_convertToJSON() failed [ran_node_id_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(dispersion_area->ran_node_id_list, node) {
+        cJSON *itemLocal = OpenAPI_global_ran_node_id_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_dispersion_area_convertToJSON() failed [ran_node_id_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(ran_node_id_listList, itemLocal);
     }
     }
 
@@ -131,6 +156,8 @@ OpenAPI_dispersion_area_t *OpenAPI_dispersion_area_parseFromJSON(cJSON *dispersi
     OpenAPI_lnode_t *node = NULL;
     cJSON *tai_list = NULL;
     OpenAPI_list_t *tai_listList = NULL;
+    cJSON *ran_node_id_list = NULL;
+    OpenAPI_list_t *ran_node_id_listList = NULL;
     cJSON *ncgi_list = NULL;
     OpenAPI_list_t *ncgi_listList = NULL;
     cJSON *ecgi_list = NULL;
@@ -157,6 +184,30 @@ OpenAPI_dispersion_area_t *OpenAPI_dispersion_area_parseFromJSON(cJSON *dispersi
                 goto end;
             }
             OpenAPI_list_add(tai_listList, tai_listItem);
+        }
+    }
+
+    ran_node_id_list = cJSON_GetObjectItemCaseSensitive(dispersion_areaJSON, "ranNodeIdList");
+    if (ran_node_id_list) {
+        cJSON *ran_node_id_list_local = NULL;
+        if (!cJSON_IsArray(ran_node_id_list)) {
+            ogs_error("OpenAPI_dispersion_area_parseFromJSON() failed [ran_node_id_list]");
+            goto end;
+        }
+
+        ran_node_id_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(ran_node_id_list_local, ran_node_id_list) {
+            if (!cJSON_IsObject(ran_node_id_list_local)) {
+                ogs_error("OpenAPI_dispersion_area_parseFromJSON() failed [ran_node_id_list]");
+                goto end;
+            }
+            OpenAPI_global_ran_node_id_t *ran_node_id_listItem = OpenAPI_global_ran_node_id_parseFromJSON(ran_node_id_list_local);
+            if (!ran_node_id_listItem) {
+                ogs_error("No ran_node_id_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(ran_node_id_listList, ran_node_id_listItem);
         }
     }
 
@@ -218,6 +269,7 @@ OpenAPI_dispersion_area_t *OpenAPI_dispersion_area_parseFromJSON(cJSON *dispersi
 
     dispersion_area_local_var = OpenAPI_dispersion_area_create (
         tai_list ? tai_listList : NULL,
+        ran_node_id_list ? ran_node_id_listList : NULL,
         ncgi_list ? ncgi_listList : NULL,
         ecgi_list ? ecgi_listList : NULL,
         n3ga_ind ? true : false,
@@ -232,6 +284,13 @@ end:
         }
         OpenAPI_list_free(tai_listList);
         tai_listList = NULL;
+    }
+    if (ran_node_id_listList) {
+        OpenAPI_list_for_each(ran_node_id_listList, node) {
+            OpenAPI_global_ran_node_id_free(node->data);
+        }
+        OpenAPI_list_free(ran_node_id_listList);
+        ran_node_id_listList = NULL;
     }
     if (ncgi_listList) {
         OpenAPI_list_for_each(ncgi_listList, node) {

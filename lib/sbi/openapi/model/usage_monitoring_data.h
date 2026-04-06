@@ -12,13 +12,13 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_usage_monitoring_data_s OpenAPI_usage_monitoring_data_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_usage_monitoring_data_s OpenAPI_usage_monitoring_data_t;
-typedef struct OpenAPI_usage_monitoring_data_s {
+struct OpenAPI_usage_monitoring_data_s {
     char *um_id;
     bool is_volume_threshold_null;
     bool is_volume_threshold;
@@ -51,7 +51,7 @@ typedef struct OpenAPI_usage_monitoring_data_s {
     int inactivity_time;
     bool is_ex_usage_pcc_rule_ids_null;
     OpenAPI_list_t *ex_usage_pcc_rule_ids;
-} OpenAPI_usage_monitoring_data_t;
+};
 
 OpenAPI_usage_monitoring_data_t *OpenAPI_usage_monitoring_data_create(
     char *um_id,

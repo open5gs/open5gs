@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "dataset_statistical_property.h"
 
-OpenAPI_dataset_statistical_property_t *OpenAPI_dataset_statistical_property_create(
-)
+char* OpenAPI_dataset_statistical_property_ToString(OpenAPI_dataset_statistical_property_e dataset_statistical_property)
 {
-    OpenAPI_dataset_statistical_property_t *dataset_statistical_property_local_var = ogs_malloc(sizeof(OpenAPI_dataset_statistical_property_t));
-    ogs_assert(dataset_statistical_property_local_var);
-
-
-    return dataset_statistical_property_local_var;
+    const char *dataset_statistical_propertyArray[] =  { "NULL", "UNIFORM_DIST_DATA", "NO_OUTLIERS" };
+    size_t sizeofArray = sizeof(dataset_statistical_propertyArray) / sizeof(dataset_statistical_propertyArray[0]);
+    if (dataset_statistical_property < sizeofArray)
+        return (char *)dataset_statistical_propertyArray[dataset_statistical_property];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_dataset_statistical_property_free(OpenAPI_dataset_statistical_property_t *dataset_statistical_property)
+OpenAPI_dataset_statistical_property_e OpenAPI_dataset_statistical_property_FromString(char* dataset_statistical_property)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == dataset_statistical_property) {
-        return;
+    int stringToReturn = 0;
+    const char *dataset_statistical_propertyArray[] =  { "NULL", "UNIFORM_DIST_DATA", "NO_OUTLIERS" };
+    size_t sizeofArray = sizeof(dataset_statistical_propertyArray) / sizeof(dataset_statistical_propertyArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(dataset_statistical_property, dataset_statistical_propertyArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(dataset_statistical_property);
-}
-
-cJSON *OpenAPI_dataset_statistical_property_convertToJSON(OpenAPI_dataset_statistical_property_t *dataset_statistical_property)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (dataset_statistical_property == NULL) {
-        ogs_error("OpenAPI_dataset_statistical_property_convertToJSON() failed [DatasetStatisticalProperty]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_dataset_statistical_property_t *OpenAPI_dataset_statistical_property_parseFromJSON(cJSON *dataset_statistical_propertyJSON)
-{
-    OpenAPI_dataset_statistical_property_t *dataset_statistical_property_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    dataset_statistical_property_local_var = OpenAPI_dataset_statistical_property_create (
-    );
-
-    return dataset_statistical_property_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_dataset_statistical_property_t *OpenAPI_dataset_statistical_property_copy(OpenAPI_dataset_statistical_property_t *dst, OpenAPI_dataset_statistical_property_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_dataset_statistical_property_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_dataset_statistical_property_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_dataset_statistical_property_free(dst);
-    dst = OpenAPI_dataset_statistical_property_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

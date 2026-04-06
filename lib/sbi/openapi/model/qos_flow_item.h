@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_qos_flow_item_s OpenAPI_qos_flow_item_t;
 #include "cause.h"
 #include "ng_ap_cause.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_qos_flow_item_s OpenAPI_qos_flow_item_t;
-typedef struct OpenAPI_qos_flow_item_s {
+struct OpenAPI_qos_flow_item_s {
     int qfi;
     OpenAPI_cause_e cause;
     bool is_current_qos_profile_index;
@@ -28,7 +28,7 @@ typedef struct OpenAPI_qos_flow_item_s {
     bool is_null_qo_s_profile_index;
     int null_qo_s_profile_index;
     struct OpenAPI_ng_ap_cause_s *ng_ap_cause;
-} OpenAPI_qos_flow_item_t;
+};
 
 OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_create(
     int qfi,

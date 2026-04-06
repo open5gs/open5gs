@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_amf_event_subscription_s OpenAPI_amf_event_subscription_t;
 #include "amf_event.h"
 #include "amf_event_mode.h"
 #include "nf_type.h"
@@ -20,8 +21,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_amf_event_subscription_s OpenAPI_amf_event_subscription_t;
-typedef struct OpenAPI_amf_event_subscription_s {
+struct OpenAPI_amf_event_subscription_s {
     OpenAPI_list_t *event_list;
     char *event_notify_uri;
     char *notify_correlation_id;
@@ -40,7 +40,9 @@ typedef struct OpenAPI_amf_event_subscription_s {
     int any_ue;
     struct OpenAPI_amf_event_mode_s *options;
     OpenAPI_nf_type_e source_nf_type;
-} OpenAPI_amf_event_subscription_t;
+    bool is_term_notify_ind;
+    int term_notify_ind;
+};
 
 OpenAPI_amf_event_subscription_t *OpenAPI_amf_event_subscription_create(
     OpenAPI_list_t *event_list,
@@ -60,7 +62,9 @@ OpenAPI_amf_event_subscription_t *OpenAPI_amf_event_subscription_create(
     bool is_any_ue,
     int any_ue,
     OpenAPI_amf_event_mode_t *options,
-    OpenAPI_nf_type_e source_nf_type
+    OpenAPI_nf_type_e source_nf_type,
+    bool is_term_notify_ind,
+    int term_notify_ind
 );
 void OpenAPI_amf_event_subscription_free(OpenAPI_amf_event_subscription_t *amf_event_subscription);
 OpenAPI_amf_event_subscription_t *OpenAPI_amf_event_subscription_parseFromJSON(cJSON *amf_event_subscriptionJSON);

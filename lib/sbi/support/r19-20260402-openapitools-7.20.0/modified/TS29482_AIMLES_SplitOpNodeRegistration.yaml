@@ -1,0 +1,420 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLES_SplitOpNodeRegistration
+  version: 1.0.0
+  description: |
+    API for AIMLES Split Operation Node Register Configurations.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.0.0; Artificial Intelligence Machine Learning Enablement 
+    (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/aimles-sonreg/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /configurations:
+    post:
+      summary: Request the creation of a Individual AIMLE Split Operation Node Register.
+      operationId: CreateAimleSplitOpNodeRegSubscription
+      tags:
+        - AIMLE Split Operation Node Register Configurations (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SplitOpNodeReg'
+      responses:
+        '201':
+          description: >
+            The registration of the new Individual AIMLE AIMLE Split Operation Node Register is confirmed
+            and a representation of that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SplitOpNodeReg'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /configurations/{configurationId}:
+    get:
+      summary: Retrieve an existing Individual AIMLE Split Operation Node Register resource.
+      operationId: GetIndAimleSplitOpNodeRegSubscription
+      tags:
+        - Individual AIMLE Split Operation Node Register Configuration (Document)
+      parameters:
+        - name: configurationId
+          in: path
+          description: Identifier of the configuration resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >
+            OK. The requested information on the Individual Resgietered AIMLE Split
+            Operation Node Register is confirmed and a representation of that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SplitOpNodeReg'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual AIMLE Split Operation Node Register resource.
+      operationId: UpdateIndAimleSplitOpNodeRegSubscription
+      tags:
+        - Individual AIMLE Split Operation Node Register Configuration (Document)
+      parameters:
+        - name: configurationId
+          in: path
+          description: Identifier of the configuration resource
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SplitOpNodeReg'
+      responses:
+        '200':
+          description: >
+            OK. The requested update of the Individual Registered AIMLE Split Operation
+            Node Register is confirmed and a representation of that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SplitOpNodeReg'
+        '204':
+          description: >
+            No Content. The Individual AIMLE Split Operation Node Register resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual AIMLE Split Operation Node Register resource.
+      operationId: ModifyIndAimleSplitOpNodeRegSubscription
+      tags:
+        - Individual AIMLE Split Operation Node Register Configuration (Document)
+      parameters:
+        - name: configurationId
+          in: path
+          description: Identifier of the configuration resource
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SplitOpNodeRegPatch'
+      responses:
+        '200':
+          description: >
+            OK. The requested modification of the Individual Registered AIMLE Split Operation Node
+            Register is confirmed and a representation of that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SplitOpNodeReg'
+        '204':
+          description: >
+            No Content. The requested modification of the Individual Registered AIMLE Split
+            Operation Node Register is confirmed and no content is returned.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Remove the Individual AIMLE Split Operation Node Register.
+      operationId: UnsubscribeAimleSplitOpNodeRegSubscription
+      tags:
+        - Individual AIMLE Split Operation Node Register Configuration (Document).
+      parameters:
+        - name: configurationId
+          in: path
+          description: Identifier of the configuration resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            Deregistration of the Individual Registered AIMLE Split Operation Node Register is
+            confirmed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    SplitOpNodeReg:
+      description: Represents the Split Operation Node Register information.
+      type: object
+      properties:
+        nodeInfo:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ConnInfo'
+        sonRegCapability:
+          $ref: '#/components/schemas/SplitOpCapabilities'
+        timeValidity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+      required:
+        - nodeInfo
+        - sonRegCapability
+
+    SplitOpNodeRegPatch:
+      description: Represents the split operation node register information to be modified.
+      type: object
+      properties:
+        sonRegCapability:
+          $ref: '#/components/schemas/SplitOpCapabilities'
+        timeValidity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+
+    SplitOpCapabilities:
+      description: Represents the split operation capabilities.
+      type: object
+      properties:
+        modelInfo:
+          $ref: '#/components/schemas/ModelInformation'
+        usageInfo:
+          $ref: '#/components/schemas/UsageInformation'
+      required:
+        - modelInfo
+
+    ModelInformation:
+      description: Represents the ML model information.
+      type: object
+      properties:
+        modelId:
+          type: string
+        modelName:
+          type: string
+        modelVersion:
+          type: string
+        suppOperation:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - modelId
+        - modelVersion
+        - suppOperation
+
+    UsageInformation:
+      description: Represents the data analysis requirement.
+      type: object
+      properties:
+        inputFreq:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        inputSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        outputFreq:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        outputSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+    SuppMlTaskType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - FL_CLIENT
+        - FL_SERVER
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents information regarding the supported AIML role identity of the AIMLE Split
+#        Operation Node Register.  
+#        Possible values are:
+#        - FL_CLIENT: Identifies the supported AIML role of AIMLE Split Operation Node Register is
+#          used as FL client.
+#        - FL_SERVER: Identifies the supported AIML role of AIMLE Split Operation Node Register is
+#          used as FL server.
+#
+    MLAppType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - REINFORCEMENT_LEARNING
+        - SUPERVISED_LEARNING
+        - TRANSFER_LEARNING
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents information regarding the supported ML application related to the capability of
+#        the AIMLE Split Operation Node Register.  
+#        Possible values are:
+#        - REINFORCEMENT_LEARNING: Identifies the ML application of reinforcement learning type
+#          related to the capability of AIMLE Split Operation Node Register.
+#        - SUPERVISED_LEARNING: Identifies the ML application of supervised learning type related to
+#          the capability of AIMLE Split Operation Node Register.
+#        - TRANSFER_LEARNING: Identifies the ML application of transfer learning type related to the
+#          capability of AIMLE Split Operation Node Register.
+#
+    AvailabilityType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - AVAILABLE
+        - NOT_AVAILABLE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents represents information regarding the availability of the AIMLE Split Operation
+#        Node Register.  
+#        Possible values are:
+#        - AVAILABLE: Identifies the AIMLE Split Operation Node Register is available.
+#        - NOT_AVAILABLE: Identifies the AIMLE Split Operation Node Register is not available.

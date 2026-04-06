@@ -1,7 +1,7 @@
 /*
  * dn_perf_ordering_criterion.h
  *
- * Possible values are:   - AVERAGE_TRAFFIC_RATE: Indicates the average traffic rate.   - MAXIMUM_TRAFFIC_RATE: Indicates the maximum traffic rate.   - AVERAGE_PACKET_DELAY: Indicates the average packet delay.   - MAXIMUM_PACKET_DELAY: Indicates the maximum packet delay.   - AVERAGE_PACKET_LOSS_RATE: Indicates the average packet loss rate. 
+ * 
  */
 
 #ifndef _OpenAPI_dn_perf_ordering_criterion_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "dn_perf_ordering_criterion_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dn_perf_ordering_criterion_s OpenAPI_dn_perf_ordering_criterion_t;
-typedef struct OpenAPI_dn_perf_ordering_criterion_s {
-} OpenAPI_dn_perf_ordering_criterion_t;
+typedef enum { OpenAPI_dn_perf_ordering_criterion_NULL = 0, OpenAPI_dn_perf_ordering_criterion_AVERAGE_TRAFFIC_RATE, OpenAPI_dn_perf_ordering_criterion_MAXIMUM_TRAFFIC_RATE, OpenAPI_dn_perf_ordering_criterion_AVERAGE_PACKET_DELAY, OpenAPI_dn_perf_ordering_criterion_MAXIMUM_PACKET_DELAY, OpenAPI_dn_perf_ordering_criterion_AVERAGE_PACKET_LOSS_RATE } OpenAPI_dn_perf_ordering_criterion_e;
 
-OpenAPI_dn_perf_ordering_criterion_t *OpenAPI_dn_perf_ordering_criterion_create(
-);
-void OpenAPI_dn_perf_ordering_criterion_free(OpenAPI_dn_perf_ordering_criterion_t *dn_perf_ordering_criterion);
-OpenAPI_dn_perf_ordering_criterion_t *OpenAPI_dn_perf_ordering_criterion_parseFromJSON(cJSON *dn_perf_ordering_criterionJSON);
-cJSON *OpenAPI_dn_perf_ordering_criterion_convertToJSON(OpenAPI_dn_perf_ordering_criterion_t *dn_perf_ordering_criterion);
-OpenAPI_dn_perf_ordering_criterion_t *OpenAPI_dn_perf_ordering_criterion_copy(OpenAPI_dn_perf_ordering_criterion_t *dst, OpenAPI_dn_perf_ordering_criterion_t *src);
+char* OpenAPI_dn_perf_ordering_criterion_ToString(OpenAPI_dn_perf_ordering_criterion_e dn_perf_ordering_criterion);
+
+OpenAPI_dn_perf_ordering_criterion_e OpenAPI_dn_perf_ordering_criterion_FromString(char* dn_perf_ordering_criterion);
 
 #ifdef __cplusplus
 }

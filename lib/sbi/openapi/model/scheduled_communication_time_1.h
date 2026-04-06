@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_scheduled_communication_time_1_s OpenAPI_scheduled_communication_time_1_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_scheduled_communication_time_1_s OpenAPI_scheduled_communication_time_1_t;
-typedef struct OpenAPI_scheduled_communication_time_1_s {
+struct OpenAPI_scheduled_communication_time_1_s {
     OpenAPI_list_t *days_of_week;
     char *time_of_day_start;
     char *time_of_day_end;
-} OpenAPI_scheduled_communication_time_1_t;
+};
 
 OpenAPI_scheduled_communication_time_1_t *OpenAPI_scheduled_communication_time_1_create(
     OpenAPI_list_t *days_of_week,

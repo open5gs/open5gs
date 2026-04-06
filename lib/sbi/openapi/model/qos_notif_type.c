@@ -6,7 +6,7 @@
 
 char* OpenAPI_qos_notif_type_ToString(OpenAPI_qos_notif_type_e qos_notif_type)
 {
-    const char *qos_notif_typeArray[] =  { "NULL", "GUARANTEED", "NOT_GUARANTEED" };
+    const char *qos_notif_typeArray[] =  { "NULL", "GUARANTEED", "NOT_GUARANTEED", "NOT_GUARANTEED_DL", "NOT_GUARANTEED_UL" };
     size_t sizeofArray = sizeof(qos_notif_typeArray) / sizeof(qos_notif_typeArray[0]);
     if (qos_notif_type < sizeofArray)
         return (char *)qos_notif_typeArray[qos_notif_type];
@@ -17,7 +17,7 @@ char* OpenAPI_qos_notif_type_ToString(OpenAPI_qos_notif_type_e qos_notif_type)
 OpenAPI_qos_notif_type_e OpenAPI_qos_notif_type_FromString(char* qos_notif_type)
 {
     int stringToReturn = 0;
-    const char *qos_notif_typeArray[] =  { "NULL", "GUARANTEED", "NOT_GUARANTEED" };
+    const char *qos_notif_typeArray[] =  { "NULL", "GUARANTEED", "NOT_GUARANTEED", "NOT_GUARANTEED_DL", "NOT_GUARANTEED_UL" };
     size_t sizeofArray = sizeof(qos_notif_typeArray) / sizeof(qos_notif_typeArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(qos_notif_type, qos_notif_typeArray[stringToReturn]) == 0) {

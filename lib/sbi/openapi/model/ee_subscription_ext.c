@@ -21,6 +21,10 @@ OpenAPI_ee_subscription_ext_t *OpenAPI_ee_subscription_ext_create(
     OpenAPI_list_t *exclude_gpsi_list,
     OpenAPI_list_t *include_gpsi_list,
     char *data_restoration_callback_uri,
+    bool is_udr_restart_ind,
+    int udr_restart_ind,
+    char *last_synchronization_time,
+    char *subscription_update_callback_uri,
     OpenAPI_list_t *amf_subscription_info_list,
     OpenAPI_smf_subscription_info_t *smf_subscription_info,
     OpenAPI_hss_subscription_info_t *hss_subscription_info
@@ -45,6 +49,10 @@ OpenAPI_ee_subscription_ext_t *OpenAPI_ee_subscription_ext_create(
     ee_subscription_ext_local_var->exclude_gpsi_list = exclude_gpsi_list;
     ee_subscription_ext_local_var->include_gpsi_list = include_gpsi_list;
     ee_subscription_ext_local_var->data_restoration_callback_uri = data_restoration_callback_uri;
+    ee_subscription_ext_local_var->is_udr_restart_ind = is_udr_restart_ind;
+    ee_subscription_ext_local_var->udr_restart_ind = udr_restart_ind;
+    ee_subscription_ext_local_var->last_synchronization_time = last_synchronization_time;
+    ee_subscription_ext_local_var->subscription_update_callback_uri = subscription_update_callback_uri;
     ee_subscription_ext_local_var->amf_subscription_info_list = amf_subscription_info_list;
     ee_subscription_ext_local_var->smf_subscription_info = smf_subscription_info;
     ee_subscription_ext_local_var->hss_subscription_info = hss_subscription_info;
@@ -126,6 +134,14 @@ void OpenAPI_ee_subscription_ext_free(OpenAPI_ee_subscription_ext_t *ee_subscrip
     if (ee_subscription_ext->data_restoration_callback_uri) {
         ogs_free(ee_subscription_ext->data_restoration_callback_uri);
         ee_subscription_ext->data_restoration_callback_uri = NULL;
+    }
+    if (ee_subscription_ext->last_synchronization_time) {
+        ogs_free(ee_subscription_ext->last_synchronization_time);
+        ee_subscription_ext->last_synchronization_time = NULL;
+    }
+    if (ee_subscription_ext->subscription_update_callback_uri) {
+        ogs_free(ee_subscription_ext->subscription_update_callback_uri);
+        ee_subscription_ext->subscription_update_callback_uri = NULL;
     }
     if (ee_subscription_ext->amf_subscription_info_list) {
         OpenAPI_list_for_each(ee_subscription_ext->amf_subscription_info_list, node) {
@@ -314,6 +330,27 @@ cJSON *OpenAPI_ee_subscription_ext_convertToJSON(OpenAPI_ee_subscription_ext_t *
     }
     }
 
+    if (ee_subscription_ext->is_udr_restart_ind) {
+    if (cJSON_AddBoolToObject(item, "udrRestartInd", ee_subscription_ext->udr_restart_ind) == NULL) {
+        ogs_error("OpenAPI_ee_subscription_ext_convertToJSON() failed [udr_restart_ind]");
+        goto end;
+    }
+    }
+
+    if (ee_subscription_ext->last_synchronization_time) {
+    if (cJSON_AddStringToObject(item, "lastSynchronizationTime", ee_subscription_ext->last_synchronization_time) == NULL) {
+        ogs_error("OpenAPI_ee_subscription_ext_convertToJSON() failed [last_synchronization_time]");
+        goto end;
+    }
+    }
+
+    if (ee_subscription_ext->subscription_update_callback_uri) {
+    if (cJSON_AddStringToObject(item, "subscriptionUpdateCallbackUri", ee_subscription_ext->subscription_update_callback_uri) == NULL) {
+        ogs_error("OpenAPI_ee_subscription_ext_convertToJSON() failed [subscription_update_callback_uri]");
+        goto end;
+    }
+    }
+
     if (ee_subscription_ext->amf_subscription_info_list) {
     cJSON *amf_subscription_info_listList = cJSON_AddArrayToObject(item, "amfSubscriptionInfoList");
     if (amf_subscription_info_listList == NULL) {
@@ -384,6 +421,9 @@ OpenAPI_ee_subscription_ext_t *OpenAPI_ee_subscription_ext_parseFromJSON(cJSON *
     cJSON *include_gpsi_list = NULL;
     OpenAPI_list_t *include_gpsi_listList = NULL;
     cJSON *data_restoration_callback_uri = NULL;
+    cJSON *udr_restart_ind = NULL;
+    cJSON *last_synchronization_time = NULL;
+    cJSON *subscription_update_callback_uri = NULL;
     cJSON *amf_subscription_info_list = NULL;
     OpenAPI_list_t *amf_subscription_info_listList = NULL;
     cJSON *smf_subscription_info = NULL;
@@ -560,6 +600,30 @@ OpenAPI_ee_subscription_ext_t *OpenAPI_ee_subscription_ext_parseFromJSON(cJSON *
     }
     }
 
+    udr_restart_ind = cJSON_GetObjectItemCaseSensitive(ee_subscription_extJSON, "udrRestartInd");
+    if (udr_restart_ind) {
+    if (!cJSON_IsBool(udr_restart_ind)) {
+        ogs_error("OpenAPI_ee_subscription_ext_parseFromJSON() failed [udr_restart_ind]");
+        goto end;
+    }
+    }
+
+    last_synchronization_time = cJSON_GetObjectItemCaseSensitive(ee_subscription_extJSON, "lastSynchronizationTime");
+    if (last_synchronization_time) {
+    if (!cJSON_IsString(last_synchronization_time) && !cJSON_IsNull(last_synchronization_time)) {
+        ogs_error("OpenAPI_ee_subscription_ext_parseFromJSON() failed [last_synchronization_time]");
+        goto end;
+    }
+    }
+
+    subscription_update_callback_uri = cJSON_GetObjectItemCaseSensitive(ee_subscription_extJSON, "subscriptionUpdateCallbackUri");
+    if (subscription_update_callback_uri) {
+    if (!cJSON_IsString(subscription_update_callback_uri) && !cJSON_IsNull(subscription_update_callback_uri)) {
+        ogs_error("OpenAPI_ee_subscription_ext_parseFromJSON() failed [subscription_update_callback_uri]");
+        goto end;
+    }
+    }
+
     amf_subscription_info_list = cJSON_GetObjectItemCaseSensitive(ee_subscription_extJSON, "amfSubscriptionInfoList");
     if (amf_subscription_info_list) {
         cJSON *amf_subscription_info_list_local = NULL;
@@ -619,6 +683,10 @@ OpenAPI_ee_subscription_ext_t *OpenAPI_ee_subscription_ext_parseFromJSON(cJSON *
         exclude_gpsi_list ? exclude_gpsi_listList : NULL,
         include_gpsi_list ? include_gpsi_listList : NULL,
         data_restoration_callback_uri && !cJSON_IsNull(data_restoration_callback_uri) ? ogs_strdup(data_restoration_callback_uri->valuestring) : NULL,
+        udr_restart_ind ? true : false,
+        udr_restart_ind ? udr_restart_ind->valueint : 0,
+        last_synchronization_time && !cJSON_IsNull(last_synchronization_time) ? ogs_strdup(last_synchronization_time->valuestring) : NULL,
+        subscription_update_callback_uri && !cJSON_IsNull(subscription_update_callback_uri) ? ogs_strdup(subscription_update_callback_uri->valuestring) : NULL,
         amf_subscription_info_list ? amf_subscription_info_listList : NULL,
         smf_subscription_info ? smf_subscription_info_local_nonprim : NULL,
         hss_subscription_info ? hss_subscription_info_local_nonprim : NULL
@@ -628,7 +696,7 @@ OpenAPI_ee_subscription_ext_t *OpenAPI_ee_subscription_ext_parseFromJSON(cJSON *
 end:
     if (monitoring_configurationsList) {
         OpenAPI_list_for_each(monitoring_configurationsList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_monitoring_configuration_1_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

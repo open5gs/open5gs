@@ -1,7 +1,7 @@
 /*
  * ngap_ie_type.h
  *
- * 
+ * Indicates the supported NGAP IE types
  */
 
 #ifndef _OpenAPI_ngap_ie_type_H_

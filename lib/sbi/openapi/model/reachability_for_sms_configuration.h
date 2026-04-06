@@ -1,7 +1,7 @@
 /*
  * reachability_for_sms_configuration.h
  *
- * 
+ * Indicates the configuration for report of reachability status for SMS. 
  */
 
 #ifndef _OpenAPI_reachability_for_sms_configuration_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "reachability_for_sms_configuration_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_reachability_for_sms_configuration_s OpenAPI_reachability_for_sms_configuration_t;
-typedef struct OpenAPI_reachability_for_sms_configuration_s {
-} OpenAPI_reachability_for_sms_configuration_t;
+typedef enum { OpenAPI_reachability_for_sms_configuration_NULL = 0, OpenAPI_reachability_for_sms_configuration_REACHABILITY_FOR_SMS_OVER_NAS, OpenAPI_reachability_for_sms_configuration_REACHABILITY_FOR_SMS_OVER_IP } OpenAPI_reachability_for_sms_configuration_e;
 
-OpenAPI_reachability_for_sms_configuration_t *OpenAPI_reachability_for_sms_configuration_create(
-);
-void OpenAPI_reachability_for_sms_configuration_free(OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_configuration);
-OpenAPI_reachability_for_sms_configuration_t *OpenAPI_reachability_for_sms_configuration_parseFromJSON(cJSON *reachability_for_sms_configurationJSON);
-cJSON *OpenAPI_reachability_for_sms_configuration_convertToJSON(OpenAPI_reachability_for_sms_configuration_t *reachability_for_sms_configuration);
-OpenAPI_reachability_for_sms_configuration_t *OpenAPI_reachability_for_sms_configuration_copy(OpenAPI_reachability_for_sms_configuration_t *dst, OpenAPI_reachability_for_sms_configuration_t *src);
+char* OpenAPI_reachability_for_sms_configuration_ToString(OpenAPI_reachability_for_sms_configuration_e reachability_for_sms_configuration);
+
+OpenAPI_reachability_for_sms_configuration_e OpenAPI_reachability_for_sms_configuration_FromString(char* reachability_for_sms_configuration);
 
 #ifdef __cplusplus
 }

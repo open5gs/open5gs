@@ -12,20 +12,23 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_n2_info_container_s OpenAPI_n2_info_container_t;
+#include "a2x_information.h"
 #include "n2_information_class.h"
 #include "n2_ran_information.h"
 #include "n2_sm_information.h"
 #include "nrppa_information.h"
 #include "pro_se_information.h"
 #include "pws_information.h"
+#include "rslp_information.h"
+#include "tss_information.h"
 #include "v2x_information.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n2_info_container_s OpenAPI_n2_info_container_t;
-typedef struct OpenAPI_n2_info_container_s {
+struct OpenAPI_n2_info_container_s {
     OpenAPI_n2_information_class_e n2_information_class;
     struct OpenAPI_n2_sm_information_s *sm_info;
     struct OpenAPI_n2_ran_information_s *ran_info;
@@ -33,7 +36,10 @@ typedef struct OpenAPI_n2_info_container_s {
     struct OpenAPI_pws_information_s *pws_info;
     struct OpenAPI_v2x_information_s *v2x_info;
     struct OpenAPI_pro_se_information_s *prose_info;
-} OpenAPI_n2_info_container_t;
+    struct OpenAPI_tss_information_s *tss_info;
+    struct OpenAPI_rslp_information_s *rslp_info;
+    struct OpenAPI_a2x_information_s *a2x_info;
+};
 
 OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_create(
     OpenAPI_n2_information_class_e n2_information_class,
@@ -42,7 +48,10 @@ OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_create(
     OpenAPI_nrppa_information_t *nrppa_info,
     OpenAPI_pws_information_t *pws_info,
     OpenAPI_v2x_information_t *v2x_info,
-    OpenAPI_pro_se_information_t *prose_info
+    OpenAPI_pro_se_information_t *prose_info,
+    OpenAPI_tss_information_t *tss_info,
+    OpenAPI_rslp_information_t *rslp_info,
+    OpenAPI_a2x_information_t *a2x_info
 );
 void OpenAPI_n2_info_container_free(OpenAPI_n2_info_container_t *n2_info_container);
 OpenAPI_n2_info_container_t *OpenAPI_n2_info_container_parseFromJSON(cJSON *n2_info_containerJSON);

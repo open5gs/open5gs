@@ -1,7 +1,7 @@
 /*
  * flow_status.h
  *
- * 
+ * Describes whether the IP flow(s) are enabled or disabled.
  */
 
 #ifndef _OpenAPI_flow_status_H_

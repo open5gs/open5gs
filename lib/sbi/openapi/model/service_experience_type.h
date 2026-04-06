@@ -1,7 +1,7 @@
 /*
  * service_experience_type.h
  *
- * Possible values are: - VOICE: Indicates that the service experience analytics is for voice service. - VIDEO: Indicates that the service experience analytics is for video service. - OTHER: Indicates that the service experience analytics is for other service. 
+ * 
  */
 
 #ifndef _OpenAPI_service_experience_type_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "service_experience_type_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_service_experience_type_s OpenAPI_service_experience_type_t;
-typedef struct OpenAPI_service_experience_type_s {
-} OpenAPI_service_experience_type_t;
+typedef enum { OpenAPI_service_experience_type_NULL = 0, OpenAPI_service_experience_type_VOICE, OpenAPI_service_experience_type_VIDEO, OpenAPI_service_experience_type_OTHER } OpenAPI_service_experience_type_e;
 
-OpenAPI_service_experience_type_t *OpenAPI_service_experience_type_create(
-);
-void OpenAPI_service_experience_type_free(OpenAPI_service_experience_type_t *service_experience_type);
-OpenAPI_service_experience_type_t *OpenAPI_service_experience_type_parseFromJSON(cJSON *service_experience_typeJSON);
-cJSON *OpenAPI_service_experience_type_convertToJSON(OpenAPI_service_experience_type_t *service_experience_type);
-OpenAPI_service_experience_type_t *OpenAPI_service_experience_type_copy(OpenAPI_service_experience_type_t *dst, OpenAPI_service_experience_type_t *src);
+char* OpenAPI_service_experience_type_ToString(OpenAPI_service_experience_type_e service_experience_type);
+
+OpenAPI_service_experience_type_e OpenAPI_service_experience_type_FromString(char* service_experience_type);
 
 #ifdef __cplusplus
 }

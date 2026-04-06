@@ -6,7 +6,7 @@
 
 char* OpenAPI_required_access_info_ToString(OpenAPI_required_access_info_e required_access_info)
 {
-    const char *required_access_infoArray[] =  { "NULL", "USER_LOCATION", "UE_TIME_ZONE" };
+    const char *required_access_infoArray[] =  { "NULL", "USER_LOCATION", "UE_TIME_ZONE", "UE_SAT_INFO" };
     size_t sizeofArray = sizeof(required_access_infoArray) / sizeof(required_access_infoArray[0]);
     if (required_access_info < sizeofArray)
         return (char *)required_access_infoArray[required_access_info];
@@ -17,7 +17,7 @@ char* OpenAPI_required_access_info_ToString(OpenAPI_required_access_info_e requi
 OpenAPI_required_access_info_e OpenAPI_required_access_info_FromString(char* required_access_info)
 {
     int stringToReturn = 0;
-    const char *required_access_infoArray[] =  { "NULL", "USER_LOCATION", "UE_TIME_ZONE" };
+    const char *required_access_infoArray[] =  { "NULL", "USER_LOCATION", "UE_TIME_ZONE", "UE_SAT_INFO" };
     size_t sizeofArray = sizeof(required_access_infoArray) / sizeof(required_access_infoArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(required_access_info, required_access_infoArray[stringToReturn]) == 0) {

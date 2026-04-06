@@ -1,0 +1,187 @@
+openapi: 3.0.0
+
+info:
+  title: SS_ASCAIInfoRetrieval
+  version: 1.0.0
+  description: |
+    API for Application Satellite Coverage Availability Information retrieval.
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-ascaiinfo/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /request-ascai-info:
+    post:
+      description: >
+        Enables a service consumer to request Application Satellite Coverage Availability 
+        Information.
+      operationId: RequestASCAIInfo
+      tags:
+        - Application Satellite Coverage Availability Information Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AscaiInfoReq'
+      responses:
+        '200':
+          description: >
+            OK. The requested Application Satellite Coverage Availability Information is returned 
+            in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AscaiInfoResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    AscaiInfoReq:
+      description: >
+        Represents the Application Satellite Coverage Availability Information request data.
+      type: object
+      properties:
+        ascaiReqs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AscaiInfoReqUe'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ascaiReqs
+
+    AscaiInfoReqUe:
+      description: >
+        Represents the Application Satellite Coverage Availability Information request data 
+        per target VAL UE/user.
+      type: object
+      properties:
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        valSvcId:
+          type: string
+        satId:
+          type: string
+        locInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+      required:
+        - valTgtUe
+
+    AscaiInfoResp:
+      description: >
+        Represents the response to Application Satellite Coverage Availability Information request.
+      type: object
+      properties:
+        ascaiInfoData:
+          type: array
+          items:
+            $ref: '#/components/schemas/AscaiInfoData'
+          minItems: 0
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ascaiInfoData
+
+    AscaiInfoData:
+      description: >
+        Represents the Application Satellite Coverage Availability Information data.
+      type: object
+      properties:
+        ascaiInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/AscaiInfo'
+          minItems: 1
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        valSvcId:
+          type: string
+        satId:
+          type: string
+        locInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+      required:
+        - ascaiInfo
+        - valTgtUe
+
+    AscaiInfo:
+      description: Represents the Application Satellite Coverage Availability Information.
+      type: object
+      properties:
+        geoArea:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        availTimeWnds:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+          minItems: 1
+        availRatTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+          minItems: 1
+      required:
+        - geoArea
+        - availTimeWnds
+
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+# Data types describing alternative data types or combinations of data types:

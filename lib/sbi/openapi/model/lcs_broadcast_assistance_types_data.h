@@ -1,7 +1,7 @@
 /*
  * lcs_broadcast_assistance_types_data.h
  *
- * 
+ * LCS Broadcast Assistance Data Types
  */
 
 #ifndef _OpenAPI_lcs_broadcast_assistance_types_data_H_
@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_lcs_broadcast_assistance_types_data_s OpenAPI_lcs_broadcast_assistance_types_data_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_lcs_broadcast_assistance_types_data_s OpenAPI_lcs_broadcast_assistance_types_data_t;
-typedef struct OpenAPI_lcs_broadcast_assistance_types_data_s {
-    OpenAPI_binary_t* location_assistance_type;
-} OpenAPI_lcs_broadcast_assistance_types_data_t;
+struct OpenAPI_lcs_broadcast_assistance_types_data_s {
+    char *location_assistance_type;
+};
 
 OpenAPI_lcs_broadcast_assistance_types_data_t *OpenAPI_lcs_broadcast_assistance_types_data_create(
-    OpenAPI_binary_t* location_assistance_type
+    char *location_assistance_type
 );
 void OpenAPI_lcs_broadcast_assistance_types_data_free(OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_broadcast_assistance_types_data);
 OpenAPI_lcs_broadcast_assistance_types_data_t *OpenAPI_lcs_broadcast_assistance_types_data_parseFromJSON(cJSON *lcs_broadcast_assistance_types_dataJSON);

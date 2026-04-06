@@ -12,24 +12,22 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_atom_s OpenAPI_atom_t;
 #include "any_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_atom_s OpenAPI_atom_t;
-typedef struct OpenAPI_atom_s {
+struct OpenAPI_atom_s {
     char *attr;
-    bool is_value_null;
     OpenAPI_any_type_t *value;
     bool is_negative;
     int negative;
-} OpenAPI_atom_t;
+};
 
 OpenAPI_atom_t *OpenAPI_atom_create(
     char *attr,
-    bool is_value_null,
     OpenAPI_any_type_t *value,
     bool is_negative,
     int negative

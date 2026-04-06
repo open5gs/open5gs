@@ -1,0 +1,454 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLES_AIMLEClientSelection
+  version: 1.0.0
+  description: |
+    API for AIMLES Client Selection Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.0.0; Artificial Intelligence Machine Learning Enablement 
+    (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/aimles-sel/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Request the creation of a Individual AIMLE Client Selection Subscription.
+      operationId: CreateAimleClSelSubscription
+      tags:
+        - AIMLE Client Selection Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientSelSub'
+      responses:
+        '201':
+          description: >
+            The requested Individual AIMLE Client Selection Subscription is successfully
+            created and a representation of the created resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientSelSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        myNotification:
+          '{$request.body#/notifUri}':
+            post:
+              summary: Notify on the requested data.
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ClientSelNotif'
+              responses:
+                '204':
+                  description: The notification is successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the Individual AIMLE Client Selection Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing the Individual AIMLE Client Selection Subscription resource.
+      operationId: GetIndAimleClSelSubscription
+      tags:
+        - Individual AIMLE Client Selection Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual AIMLE Client Selection Subscription resource
+            shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientSelSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual AIMLE Client Selection Subscription resource.
+      operationId: UpdateIndAimleClSelSubscription
+      tags:
+        - Individual AIMLE Client Selection Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientSelSub'
+      responses:
+        '200':
+          description: >
+            OK. The Individual AIMLE Client Selection Subscription resource is
+            successfully updated and a representation of the updated resource shall be returned in
+            the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientSelSub'
+        '204':
+          description: >
+            No Content. The Individual AIMLE Client Selection Subscription resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual AIMLE Client Selection Subscription resource.
+      operationId: ModifyIndAimleClSelSubscription
+      tags:
+        - Individual AIMLE Client Selection Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientSelSubPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual AIMLE Client Selection Subscription resource is
+            successfully modified and a representation of the updated resource shall be returned in
+            the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientSelSub'
+        '204':
+          description: >
+            No Content. The Individual AIMLE Client Selection Subscription resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Remove the Individual AIMLE Client Selection Subscription.
+      operationId: UnsubscribeAimleClSelSubscription
+      tags:
+        - Individual AIMLE Client Selection Subscription (Document).
+      responses:
+        '204':
+          description: >
+            The individual AIMLE Client Selection Subscription resource matching the
+            subscriptionId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /select:
+    post:
+      summary: Request to select AIMLE Clients.
+      operationId: Select
+      tags:
+        - AIMLE Client Selection Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientSelReq'
+      responses:
+        '200':
+          description: >
+            The requested Individual AIMLE Client Selection Subscription is successfully
+            created and a representation of the created resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientSelResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    ClientSelSub:
+      description: Represents the AIMLE Client selection subscription information.
+      type: object
+      properties:
+        selCriteria:
+          $ref: 'TS29482_AIMLES_AIMLEClientDiscovery.yaml#/components/schemas/ClientDiscCriteria'
+        reqNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - selCriteria
+        - notifUri
+
+    ClientSelNotif:
+      description: Represents the AIMLE Client selection notification.
+      type: object
+      properties:
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/SelUpdate'
+          minItems: 1
+        timeStamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - reports
+
+    ClientSelSubPatch:
+      description: >
+        Represents the requested modifications to a AIMLE Client
+        selection subscription information.
+      type: object
+      properties:
+        selCriteria:
+          $ref: 'TS29482_AIMLES_AIMLEClientDiscovery.yaml#/components/schemas/ClientDiscCriteria'
+        reqNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    ClientSelReq:
+      description: Represents the AIMLE Client selection request.
+      type: object
+      properties:
+        valSvcId:
+          type: string
+        clients:
+          type: array
+          items:
+            $ref: 'TS29482_AIMLES_ContextTransfer.yaml#/components/schemas/AimleClientId'
+          minItems: 1
+        selCriteria:
+          $ref: 'TS29482_AIMLES_AIMLEClientDiscovery.yaml#/components/schemas/ClientDiscCriteria'
+        reqNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        minNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      oneOf:
+        - required: [clients]
+        - required: [selCriteria]
+
+    ClientSelResp:
+      description: Represents the AIMLE Client selection response.
+      type: object
+      properties:
+        clients:
+          type: array
+          items:
+            $ref: 'TS29482_AIMLES_ContextTransfer.yaml#/components/schemas/AimleClientId'
+          minItems: 1
+        clientSet:
+          type: string
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    SelUpdate:
+      description: Represents the update of the selected client.
+      type: object
+      properties:
+        replaced:
+          type: string
+        selected:
+          type: string
+      required:
+        - replaced
+        - selected
+
+# SIMPLE DATA TYPES
+#

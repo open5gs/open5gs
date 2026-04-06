@@ -1,0 +1,159 @@
+openapi: 3.0.0
+
+info:
+  title: SM Server Spatial Map Localization 
+  version: 1.0.1
+  description: |
+    API for SM Server Spatial Map Localization.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.437 V19.1.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Metaverse Enablement Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.437/
+
+servers:
+  - url: '{apiRoot}/ssm-loc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /localization:
+    get:
+      summary: Retrieve Spatial Map localization information.
+      operationId: GetSpatialMapLocalization
+      tags:
+        - Spatial Localization
+      parameters:
+        - name: area-int
+          in: query
+          description: Contains the three-dimensional area or localization information.
+          content:
+            application/json:
+              schema:
+                  $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+        - name: map-id
+          in: query
+          description: >
+            Contains the spatial map identifier.
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29437_SS_SmManagement.yaml#/components/schemas/SpatialMapId'
+        - name: target-id
+          in: query
+          description: Contains the identifier of the user or object to localize.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        - name: target-ids
+          in: query
+          description: >
+            Contains the list of the identifier(s) of the user(s) or object(s) to localize.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+                minItems: 1
+        - name: supp-feats
+          in: query
+          description: >
+            Contains the list of supported feature(s) among the ones defined in clause 6.1.2.8.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            OK. The requested SM data source information shall be returned.
+          content:
+            application/json:
+              schema:
+               $ref: '#/components/schemas/SpatialMapLocalizeResp'
+        '307':  
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    SpatialMapLocalizeResp:
+      description: Represents the spatial map localization response.
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpatialMapLocDetails'
+          minItems: 0
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - results
+
+    SpatialMapLocDetails:
+      description: Represents the localization details of the spatial map.
+      type: object
+      properties:
+        targetId:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        position:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/RelativeCartesianLocation'
+        pose:
+          $ref: 'TS29437_SS_SAnManagement.yaml#/components/schemas/Pose'
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+#
+# Data types describing alternative data types or combinations of data types:
+#

@@ -21,7 +21,7 @@
 
 ogs_sbi_request_t *amf_nnrf_disc_build_discover(
         char *nrf_id,
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option)
 {
     ogs_sbi_message_t message;
@@ -32,8 +32,8 @@ ogs_sbi_request_t *amf_nnrf_disc_build_discover(
 
     ogs_assert(nrf_id);
 
-    ogs_assert(service_type);
-    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
+    ogs_assert(service_name);
+    target_nf_type = ogs_sbi_service_name_to_nf_type(service_name);
     ogs_assert(target_nf_type);
 
     ogs_assert(ogs_sbi_self()->nf_instance);

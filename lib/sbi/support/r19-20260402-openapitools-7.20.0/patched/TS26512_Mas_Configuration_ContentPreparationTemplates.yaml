@@ -1,0 +1,199 @@
+openapi: 3.0.0
+info:
+  title: Mas_Configuration_ContentPreparationTemplates
+  version: 1.0.1
+  description: |
+    5GMS AS Configuration API: Content Preparation Templates
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Mas_Configuration_ContentPreparationTemplates
+    description: '5G Media Streaming: Application Server Configuration (M3) APIs: Content Preparation Templates'
+
+externalDocs:
+  description: 'TS 26.512 V18.6.0; 5G Media Streaming (5GMS); Protocols'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.512/'
+
+servers:
+  - url: '{apiRoot}/3gpp-mas-configuration/v3'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 29.512 clause 6.1.2.
+
+security:
+  - {}
+  - OAuth2: [] 
+
+paths:
+  /content-preparation-templates:
+    summary: "Content Preparation Templates collection"
+    get:
+      operationId: enumerateContentPreparationTemplates
+      summary: "Retrieve a list of Content Preparation Template resource identifiers currently registered with the 5GMS AS"
+      security:
+        - OAuth2:
+          - content-preparation-template_enumerate
+      responses:
+        '200':
+          # OK
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /content-preparation-templates/{afResourceId}:
+    summary: "Operations to manipulate a single Content Preparation Template resource"
+    description: "Individual resources in the collection are addressed using an afResourceId nominated by the 5GMS AF which is unique in this collection at a given 5GMS AS instance."
+    parameters:
+     - name: afResourceId
+       in: path
+       required: true
+       schema:
+         $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+       description: "The resource identifier, assigned by the 5GMS AF, of the target Content Preparation Template. Unique for all content preparation templates in the 5GMS System."
+    post:
+      operationId: createContentPreparationTemplate
+      summary: "Create a new Content Preparation Template resource and populate it with the representation provided in the request body"
+      security:
+        - OAuth2:
+          - content-preparation-template_create
+      requestBody:
+        description: "A Content Preparation Template of any content type supported by the 5GMS AS."
+        required: true
+        content:
+          '*/*':
+            schema:
+              type: string
+      responses:
+        '201': # Created
+          description: "Content Preparation Template Created"
+          headers:
+            Location:
+              description: "URL of the newly created Content Preparation Template resource (which may be redirected from the request URL."
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '409': # Conflict: Resource already exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/409'
+        '410': # Gone: This resource has previously been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'   
+    # get (Retrieval of individual Content Preparation Template resources is not permitted at reference point M3.)
+    put:
+      operationId: replaceContentPreparationTemplate
+      summary: "Replace an existing Content Preparation Template resource with a new representation"
+      security:
+        - OAuth2:
+          - content-preparation-template_replace
+      requestBody:
+        description: "A Content Preparation Template of any content type supported by the 5GMS AS."
+        required: true
+        content:
+          '*/*':
+            schema:
+              type: string
+      responses:
+        '200': # OK
+          description: "Content Preparation Template Replaced"
+        '204': # No Content
+          description: 'Content Preparation Template Unchanged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden: Failed attempt to update read-only property of the resource
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: This resource has previously been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    delete:
+      operationId: destroyContentPreparationTemplate
+      summary: 'Destroy an existing Server Certificate resource'
+      security:
+        - OAuth2:
+          - content-preparation-template_destroy
+      responses:
+        '204': # No Content
+          description: 'Content Preparation Template Destroyed'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '409': # Conflict: This resource is still referenced by a Content Hosting Configuration or Content Publication Configuration
+          $ref: 'TS29571_CommonData.yaml#/components/responses/409'
+        '410': # Gone: This resource has previously been destroyed
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            content-preparation-template_enumerate: Enumerate the current set of Content Preparation Template resources
+            content-preparation-template_create: Create a Content Preparation Template resource
+            content-preparation-template_replace: Replace a Content Preparation Template resource
+            content-preparation-template_destroy: Destroy a Content Preparation Template resource

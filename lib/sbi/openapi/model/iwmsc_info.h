@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_iwmsc_info_s OpenAPI_iwmsc_info_t;
 #include "identity_range.h"
 #include "supi_range.h"
 #include "tai_range.h"
@@ -20,13 +21,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_iwmsc_info_s OpenAPI_iwmsc_info_t;
-typedef struct OpenAPI_iwmsc_info_s {
+struct OpenAPI_iwmsc_info_s {
     OpenAPI_list_t *msisdn_ranges;
     OpenAPI_list_t *supi_ranges;
     OpenAPI_list_t *tai_range_list;
     char *sc_number;
-} OpenAPI_iwmsc_info_t;
+};
 
 OpenAPI_iwmsc_info_t *OpenAPI_iwmsc_info_create(
     OpenAPI_list_t *msisdn_ranges,

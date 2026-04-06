@@ -35,9 +35,9 @@ int ausf_sbi_open(void)
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AMF);
 
     /* Build NF service information. It will be transmitted to NRF. */
-    if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)) {
+    if (ogs_sbi_nf_service_is_available(OpenAPI_service_name_nausf_auth)) {
         service = ogs_sbi_nf_service_build_default(
-                    nf_instance, OGS_SBI_SERVICE_NAME_NAUSF_AUTH);
+                    nf_instance, OpenAPI_service_name_nausf_auth);
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
@@ -50,9 +50,10 @@ int ausf_sbi_open(void)
         ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Setup Subscription-Data */
-    ogs_sbi_subscription_spec_add(OpenAPI_nf_type_SEPP, NULL);
     ogs_sbi_subscription_spec_add(
-            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NUDM_UEAU);
+            OpenAPI_nf_type_SEPP, OpenAPI_service_name_NULL);
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_NULL, OpenAPI_service_name_nudm_ueau);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
@@ -75,7 +76,7 @@ bool ausf_sbi_send_request(
 }
 
 int ausf_sbi_discover_and_send(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(ausf_ue_t *ausf_ue, void *data),
         ausf_ue_t *ausf_ue, ogs_sbi_stream_t *stream, void *data)
@@ -83,7 +84,7 @@ int ausf_sbi_discover_and_send(
     ogs_sbi_xact_t *xact = NULL;
     int r;
 
-    ogs_assert(service_type);
+    ogs_assert(service_name);
     ogs_assert(ausf_ue);
     ogs_assert(stream);
     ogs_assert(build);
@@ -92,7 +93,7 @@ int ausf_sbi_discover_and_send(
             ausf_ue->id <= OGS_MAX_POOL_ID);
 
     xact = ogs_sbi_xact_add(
-            ausf_ue->id, &ausf_ue->sbi, service_type, discovery_option,
+            ausf_ue->id, &ausf_ue->sbi, service_name, discovery_option,
             (ogs_sbi_build_f)build, ausf_ue, data);
     if (!xact) {
         ogs_error("ausf_sbi_discover_and_send() failed");

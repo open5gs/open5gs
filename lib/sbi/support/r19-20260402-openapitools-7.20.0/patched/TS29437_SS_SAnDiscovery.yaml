@@ -1,0 +1,144 @@
+openapi: 3.0.0
+
+info:
+  title: SAn Server Spatial Anchors Discovery Service
+  version: 1.0.1
+  description: |
+    API for Spatial Anchors Discovery Service.
+    ©2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.437 V19.1.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Metaverse Enablement Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.437/
+
+servers:
+  - url: "{apiRoot}/ssan-disc/v1"
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /spatial-anchors:
+    get:
+      summary: Discover Spatial Anchors profiles.
+      operationId: DiscSpatialAnchorsProfiles
+      tags:
+        - Spatial Anchors (Collection)
+      parameters:
+        - name: anchor-ids
+          in: query
+          description: Contains the identifier(s) of the targeted spatial anchor(s).
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: 'TS29437_SS_SAnManagement.yaml#/components/schemas/SpatialAnchorId'
+            minItems: 1
+        - name: area-int
+          in: query
+          description: >
+            Contains the area of interest within which the targeted spatial anchors are located.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+        - name: svc-id
+          in: query
+          description: Contains the identifier of the target VAL service.
+          schema:
+            type: string
+        - name: anch-inf
+          in: query
+          description: >
+            Contains the application specific information of the targeted spatial anchors.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+        - name: supp-feats
+          in: query
+          description: >
+            Contains the list of supported feature(s) among the ones defined in clause 6.1.2.8.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            OK. The Spatial Anchors profiles matching the filter criteria are returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialAnchorsDiscResp'
+        '307':  
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: "{tokenUrl}"
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    SpatialAnchorsDiscResp:
+      description: >
+        Represents the Spatial Anchors discovery response.
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: 'TS29437_SS_SAnManagement.yaml#/components/schemas/SpatialAnchorProfile'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - results
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+# Data types describing alternative data types or combinations of data types:
+#

@@ -12,11 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nrf_info_s OpenAPI_nrf_info_t;
+#include "adm_info.h"
+#include "aiotf_info.h"
 #include "dccf_info.h"
+#include "dcsf_info.h"
 #include "easdf_info.h"
+#include "imsas_info.h"
 #include "mb_upf_info.h"
+#include "mf_info.h"
 #include "mfaf_info.h"
 #include "model_5_g_ddnmf_info.h"
+#include "mrf_info.h"
+#include "mrfp_info.h"
 #include "nf_info.h"
 #include "nrf_info_served_aanf_info_list_value_value.h"
 #include "nrf_info_served_amf_info_value.h"
@@ -39,6 +47,7 @@
 #include "nrf_info_served_udsf_info_value.h"
 #include "nrf_info_served_upf_info_value.h"
 #include "nssaaf_info.h"
+#include "nssf_info.h"
 #include "nwdaf_info.h"
 #include "trust_af_info.h"
 #include "tsctsf_info.h"
@@ -47,8 +56,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nrf_info_s OpenAPI_nrf_info_t;
-typedef struct OpenAPI_nrf_info_s {
+struct OpenAPI_nrf_info_s {
     OpenAPI_list_t* served_udr_info;
     OpenAPI_list_t* served_udr_info_list;
     OpenAPI_list_t* served_udm_info;
@@ -89,7 +97,15 @@ typedef struct OpenAPI_nrf_info_s {
     OpenAPI_list_t* served_mb_upf_info_list;
     OpenAPI_list_t* served_trust_af_info;
     OpenAPI_list_t* served_nssaaf_info;
-} OpenAPI_nrf_info_t;
+    OpenAPI_list_t* served_dcsf_info;
+    OpenAPI_list_t* served_mf_info;
+    OpenAPI_list_t* served_mrf_info;
+    OpenAPI_list_t* served_mrfp_info;
+    OpenAPI_list_t* served_imsas_info;
+    OpenAPI_list_t* served_aiotf_info;
+    OpenAPI_list_t* served_nssf_info;
+    OpenAPI_list_t* served_adm_info;
+};
 
 OpenAPI_nrf_info_t *OpenAPI_nrf_info_create(
     OpenAPI_list_t* served_udr_info,
@@ -131,7 +147,15 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_create(
     OpenAPI_list_t* served_tsctsf_info_list,
     OpenAPI_list_t* served_mb_upf_info_list,
     OpenAPI_list_t* served_trust_af_info,
-    OpenAPI_list_t* served_nssaaf_info
+    OpenAPI_list_t* served_nssaaf_info,
+    OpenAPI_list_t* served_dcsf_info,
+    OpenAPI_list_t* served_mf_info,
+    OpenAPI_list_t* served_mrf_info,
+    OpenAPI_list_t* served_mrfp_info,
+    OpenAPI_list_t* served_imsas_info,
+    OpenAPI_list_t* served_aiotf_info,
+    OpenAPI_list_t* served_nssf_info,
+    OpenAPI_list_t* served_adm_info
 );
 void OpenAPI_nrf_info_free(OpenAPI_nrf_info_t *nrf_info);
 OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON);

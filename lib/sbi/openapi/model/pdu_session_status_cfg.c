@@ -5,13 +5,19 @@
 #include "pdu_session_status_cfg.h"
 
 OpenAPI_pdu_session_status_cfg_t *OpenAPI_pdu_session_status_cfg_create(
-    char *dnn
+    char *dnn,
+    bool is_rat_type_required_null,
+    bool is_rat_type_required,
+    int rat_type_required
 )
 {
     OpenAPI_pdu_session_status_cfg_t *pdu_session_status_cfg_local_var = ogs_malloc(sizeof(OpenAPI_pdu_session_status_cfg_t));
     ogs_assert(pdu_session_status_cfg_local_var);
 
     pdu_session_status_cfg_local_var->dnn = dnn;
+    pdu_session_status_cfg_local_var->is_rat_type_required_null = is_rat_type_required_null;
+    pdu_session_status_cfg_local_var->is_rat_type_required = is_rat_type_required;
+    pdu_session_status_cfg_local_var->rat_type_required = rat_type_required;
 
     return pdu_session_status_cfg_local_var;
 }
@@ -48,6 +54,18 @@ cJSON *OpenAPI_pdu_session_status_cfg_convertToJSON(OpenAPI_pdu_session_status_c
     }
     }
 
+    if (pdu_session_status_cfg->is_rat_type_required) {
+    if (cJSON_AddBoolToObject(item, "ratTypeRequired", pdu_session_status_cfg->rat_type_required) == NULL) {
+        ogs_error("OpenAPI_pdu_session_status_cfg_convertToJSON() failed [rat_type_required]");
+        goto end;
+    }
+    } else if (pdu_session_status_cfg->is_rat_type_required_null) {
+        if (cJSON_AddNullToObject(item, "ratTypeRequired") == NULL) {
+            ogs_error("OpenAPI_pdu_session_status_cfg_convertToJSON() failed [rat_type_required]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -57,6 +75,7 @@ OpenAPI_pdu_session_status_cfg_t *OpenAPI_pdu_session_status_cfg_parseFromJSON(c
     OpenAPI_pdu_session_status_cfg_t *pdu_session_status_cfg_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *dnn = NULL;
+    cJSON *rat_type_required = NULL;
     dnn = cJSON_GetObjectItemCaseSensitive(pdu_session_status_cfgJSON, "dnn");
     if (dnn) {
     if (!cJSON_IsString(dnn) && !cJSON_IsNull(dnn)) {
@@ -65,8 +84,21 @@ OpenAPI_pdu_session_status_cfg_t *OpenAPI_pdu_session_status_cfg_parseFromJSON(c
     }
     }
 
+    rat_type_required = cJSON_GetObjectItemCaseSensitive(pdu_session_status_cfgJSON, "ratTypeRequired");
+    if (rat_type_required) {
+    if (!cJSON_IsNull(rat_type_required)) {
+    if (!cJSON_IsBool(rat_type_required)) {
+        ogs_error("OpenAPI_pdu_session_status_cfg_parseFromJSON() failed [rat_type_required]");
+        goto end;
+    }
+    }
+    }
+
     pdu_session_status_cfg_local_var = OpenAPI_pdu_session_status_cfg_create (
-        dnn && !cJSON_IsNull(dnn) ? ogs_strdup(dnn->valuestring) : NULL
+        dnn && !cJSON_IsNull(dnn) ? ogs_strdup(dnn->valuestring) : NULL,
+        rat_type_required && cJSON_IsNull(rat_type_required) ? true : false,
+        rat_type_required ? true : false,
+        rat_type_required ? rat_type_required->valueint : 0
     );
 
     return pdu_session_status_cfg_local_var;

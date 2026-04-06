@@ -12,15 +12,15 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_callback_name_s OpenAPI_callback_name_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_callback_name_s OpenAPI_callback_name_t;
-typedef struct OpenAPI_callback_name_s {
+struct OpenAPI_callback_name_s {
     char *callback_type;
-} OpenAPI_callback_name_t;
+};
 
 OpenAPI_callback_name_t *OpenAPI_callback_name_create(
     char *callback_type

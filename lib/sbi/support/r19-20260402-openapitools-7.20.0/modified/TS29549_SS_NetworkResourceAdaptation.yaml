@@ -1,0 +1,2370 @@
+openapi: 3.0.0
+info:
+  version: 1.3.0
+  title: SS_NetworkResourceAdaptation
+  description: |
+    SS Network Resource Adaptation Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-nra/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+paths:
+  /multicast-subscriptions:
+    post:
+      summary: Creates a new Individual Multicast Subscription resource
+      operationId: CreateMulticastSubscription
+      tags:
+        - Multicast Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MulticastSubscription'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MulticastSubscription'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created individual multicast subscription resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        UserPlaneNotification:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/UserPlaneNotification'
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /multicast-subscriptions/{multiSubId}:
+    get:
+      summary: "Reads an existing Individual Multicast Subscription"
+      operationId: GetMulticastSubscription
+      tags:
+        - Individual Multicast Subscription (Document)
+      parameters:
+        - name: multiSubId
+          in: path
+          description: Multicast Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MulticastSubscription'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: "Delete an existing Individual Multicast Subscription"
+      operationId: DeleteMulticastSubscription
+      tags:
+        - Individual Multicast Subscription (Document)
+      parameters:
+        - name: multiSubId
+          in: path
+          description: Multicast Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was succesfully deleted
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /mbs-resources:
+    post:
+      summary: Request the creation of a new MBS Resource.
+      operationId: CreateMBSResource
+      tags:
+        - MBS Resources (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MBSResourceReq'
+      responses:
+        '201':
+          description: >
+            Created. Successfull case. The requested MBS resource is successfully created and a
+            representation of the created Individual MBS Resource resource is returned in the
+            response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSResourceResp'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual MBS Resource resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        UserPlaneNotification:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/UserPlaneNotification'
+              responses:
+                '204':
+                  description: No Content. The notification was succesfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /mbs-resources/{mbsResId}:
+    parameters:
+      - name: mbsResId
+        in: path
+        description: Represents the identifier of the Individual MBS Resource resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Request the retrieval of an existing Individual MBS Resource.
+      operationId: GetIndivMBSResource
+      tags:
+        - Individual MBS Resource (Document)
+      responses:
+        '200':
+          description: >
+            OK. Successful case. A representation of the requested Individual MBS Resource resource
+            is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSResource'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual MBS Resource.
+      operationId: UpdateIndivMBSResource
+      tags:
+        - Individual MBS Resource (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MBSResource'
+      responses:
+        '200':
+          description: >
+            OK. Successful case. The targeted Individual MBS Resource resource is successfully
+            updated and a representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSResource'
+        '204':
+          description: >
+            No Content. Successful case. The targeted Individual MBS Resource resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual MBS Resource.
+      operationId: ModifyIndivMBSResource
+      tags:
+        - Individual MBS Resource (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/MBSResourcePatch'
+      responses:
+        '200':
+          description: >
+            OK. Successful case. The targeted Individual MBS Resource resource is successfully
+            modified and a representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSResource'
+        '204':
+          description: >
+            No Content. Successful case. The targeted Individual MBS Resource resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual MBS Resource.
+      operationId: DeleteIndivMBSResource
+      tags:
+        - Individual MBS Resource (Document)
+      responses:
+        '204':
+          description: >
+            No Content. Successful case. The targeted Individual MBS Resource resource is
+            successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /mbs-resources/{mbsResId}/activate:
+    parameters:
+      - name: mbsResId
+        in: path
+        description: Represents the identifier of the Individual MBS Resource resource.
+        required: true
+        schema:
+          type: string
+
+    post:
+      summary: Request the activation of an existing MBS Resource.
+      operationId: ActivateMBSResource
+      tags:
+        - Individual MBS Resource (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MbsResAct'
+      responses:
+        '200':
+          description: >
+            OK. The activation request is successfully received and processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MbsResAct'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /mbs-resources/{mbsResId}/deactivate:
+    parameters:
+      - name: mbsResId
+        in: path
+        description: Represents the identifier of the Individual MBS Resource resource.
+        required: true
+        schema:
+          type: string
+
+    post:
+      summary: Request the deactivation of an existing MBS Resource.
+      operationId: DeactivateMBSResource
+      tags:
+        - Individual MBS Resource (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MbsResDeact'
+      responses:
+        '200':
+          description: >
+            OK. The deactivation request is successfully received and processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MbsResDeact'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /unicast-subscriptions:
+    post:
+      summary: Creates a new Individual Unicast Subscription resource
+      operationId: CreateUnicastSubscription
+      tags:
+        - Unicast Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnicastSubscription'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnicastSubscription'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created individual unicast subscription resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        UserPlaneNotification:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/UserPlaneNotification'
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /unicast-subscriptions/{uniSubId}:
+    get:
+      summary: "Reads an existing Individual Unicast Subscription"
+      operationId: GetUnicastSubscription
+      tags:
+        - Individual Unicast Subscription (Document)
+      parameters:
+        - name: uniSubId
+          in: path
+          description: Unicast Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnicastSubscription'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update Individual Unicast Subscription resource.
+      operationId: UpdateUnicastSubscription
+      tags:
+        - Individual Unicast Subscription (Document)
+      parameters:
+        - name: uniSubId
+          in: path
+          description: Unicast Subscription ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnicastSubscription'
+      responses:
+        '200':
+          description: >
+            Successful case. The "Individual Unicast Subscription" resource is
+            successfully updated and a representation of the updated resource is
+            returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnicastSubscription'
+        '204':
+          description: >
+            Successful case. The "Individual Unicast Subscription" resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify Individual Unicast Subscription resource.
+      operationId: ModifyUnicastSubscription
+      tags:
+        - Individual Unicast Subscription (Document)
+      parameters:
+        - name: uniSubId
+          in: path
+          description: Unicast Subscription ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnicastSubscriptionPatch'
+      responses:
+        '200':
+          description: >
+            Successful case. The "Individual Unicast Subscription" resource is
+            successfully modified and a representation of the updated resource is returned
+            in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnicastSubscription'
+        '204':
+          description: >
+            Successful case. The "Individual Unicast Subscription" resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: "Delete an existing Individual Unicast Subscription"
+      operationId: DeleteUnicastSubscription
+      tags:
+        - Individual Unicast Subscription (Document)
+      parameters:
+        - name: uniSubId
+          in: path
+          description: Unicast Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was succesfully deleted
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /tsc-stream-availability:
+    get:
+      summary: Discover the TSC stream availability information.
+      operationId: GetTscStreamAvailability
+      tags:
+        - TSC stream availability discovery
+      parameters:
+        - name: stream-specs
+          in: query
+          description: >
+            The MAC address(es) of the source DS-TT port(s) and the destination DS-TT port(s).
+          required: true
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StreamSpecification'
+                minItems: 1
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TscStreamAvailability'
+                minItems: 0
+        '204':
+          description: No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /tsc-streams:
+    get:
+      summary: Retrieval of TSC stream data.
+      operationId: GetTscStream
+      tags:
+        - TSC stream retrieval
+      parameters:
+        - name: val-stream-ids
+          in: query
+          description: Retrieval of TSC Stream data, identified by the VAL Stream ID(s).
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+
+      responses:
+        '200':
+          description: OK (successful query of TSC stream resource)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TscStreamData'
+                minItems: 1
+
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /tsc-streams/{valStreamId}:
+    get:
+      summary: "Reads an existing Individual TSC stream data information"
+      operationId: GetTscStreamData
+      tags:
+        - Individual TSC Stream Retrieval
+      parameters:
+        - name: valStreamId
+          in: path
+          description: The VAL Stream ID identifies the TSC stream.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TscStreamData'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Create a TSC stream identified by a VAL stream identifier.
+      operationId: PutTscStream
+      tags:
+        - TSC stream creation
+      description: Create an individual TSC stream identified by VAL Stream ID.
+      parameters:
+        - name: valStreamId
+          in: path
+          description: VAL stream identifier
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: TSC stream creation request data from the service consumer to the NRM server.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TscStreamData'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TscStreamData'
+          headers:
+            Location:
+              description: Contains the URI of the created individual TSC stream resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: "Delete an existing Individual TSC stream"
+      operationId: DeleteTscStream
+      tags:
+        - Individual TSC Stream Deletion
+      parameters:
+        - name: valStreamId
+          in: path
+          description: The VAL Stream ID identifies the TSC stream.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was succesfully deleted
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /bdt-policy-configs:
+    post:
+      summary: Creates a new Individual BDT Policy Configuration
+      operationId: CreateBDTPolicyConfig
+      tags:
+        - BDT Policy Configurations (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BdtPolConfig'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BdtPolConfig'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created individual BDT Policy configuration resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        BdtNotification:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/BdtNotification'
+              responses:
+                '204':
+                  description: No Content, Notification was successful
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /bdt-policy-configs/{bdtPolConfigId}:
+    parameters:
+      - name: bdtPolConfigId
+        in: path
+        description: Represents the identifier of the Individual BDT Policy Configuration.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Reads an existing Individual BDT Policy Configuration
+      operationId: GetBDTPolicyConfig
+      tags:
+        - Individual BDT Policy Configuration(Document)
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BdtPolConfig'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual BDT Policy Configuration.
+      operationId: UpdateBDTPolicyConfig
+      tags:
+        - Individual BDT Policy Configuration(Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BdtPolConfig'
+      responses:
+        '200':
+          description: >
+            OK. Successful case. The targeted Individual BDT Policy Configuration resource 
+            is successfully updated and a representation of the updated resource is returned
+            in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BdtPolConfig'
+        '204':
+          description: >
+            No Content. Successful case. The targeted Individual BDT Policy Configuration 
+            resource is successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual BDT Policy Configuration.
+      operationId: ModifyBDTPolicyConfig
+      tags:
+        - Individual BDT Policy Configuration(Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/BdtPolConfigPatch'
+      responses:
+        '200':
+          description: >
+            OK. Successful case. The targeted Individual BDT Policy Configuration resource 
+            is successfully modified and a representation of the updated resource is returned 
+            in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BdtPolConfig'
+        '204':
+          description: >
+            No Content. Successful case. The targeted Individual BDT Policy Configuration
+            resource is successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an existing Individual BDT policy Configuration
+      operationId: DeleteBDTPolicyConfig
+      tags:
+        - Individual BDT Policy Configuration (Document)
+      responses:
+        '204':
+          description: No Content. Resource was successfully deleted
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /request-rel-trans:
+    post:
+      summary: Enables a service consumer to request reliable transmission service.
+      operationId: RelTransRequest
+      tags:
+        - Reliable Transmission Service Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RelTransReq'
+      responses:
+        '204':
+          description: >
+            No Content. The reliable transmission service request is successfully received and
+            processed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /unif-traff-subscriptions:
+    post:
+      summary: Creates a new Individual Unified Traffic Pattern Subscription.
+      operationId: CreateUnifiedTrafficPatternSubsc
+      tags:
+        - Unified Traffic Pattern Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnfTrafficSubc'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnfTrafficSubc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created individual unified traffic pattern subscription
+                resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        UnfTrafficUpdNotification:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/UnfTrafficUpdNotification'
+              responses:
+                '204':
+                  description: No Content, Notification was successful
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /unif-traff-subscriptions/{unfTrffSubId}:
+    parameters:
+      - name: unfTrffSubId
+        in: path
+        description: >
+          Represents the identifier of the Individual Unified Traffic Pattern Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Reads an existing Individual Unified Traffic Pattern Subscription.
+      operationId: GetUnfTrffSubc
+      tags:
+        - Individual Unified Traffic Pattern Subscription (Document)
+      responses:
+        '200':
+          description: OK. Resource representation is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnfTrafficSubc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update an existing Individual Unified Traffic Pattern Subscription.
+      operationId: UpdateUnfTrffSubc
+      tags:
+        - Individual Unified Traffic Pattern Subscription (Document)
+      requestBody:
+        description: Updated details of the Unified Traffic Pattern subscription.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnfTrafficSubc'
+      responses:
+        '200':
+          description: >
+            The subscription is updated successfully, and the updated subscription
+            information returned in the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnfTrafficSubc'
+        '204':
+          description: No Content. The subscription is updated successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify an existing Individual Unified Traffic Pattern Subscription.
+      operationId: ModifyUnfTrffSubc
+      tags:
+        - Individual Unified Traffic Pattern Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/UnfTrafficSubcPatch'
+      responses:
+        '200':
+          description: >
+            The individual Unified Traffic Pattern subscription is
+            modified successfully, and the representation of the modified resource
+            is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnfTrafficSubcPatch'
+        '204':
+          description: No Content. The subscription is modified successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an existing Individual Unified Traffic Pattern Subscription
+      operationId: DeleteUnfTrffSubc
+      tags:
+        - Individual Unified Traffic Pattern Subscription (Document)
+      responses:
+        '204':
+          description: No Content. Resource was successfully deleted
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    MulticastSubscription:
+      description: Represents a multicast subscription.
+      type: object
+      properties:
+        valGroupId:
+          type: string
+        anncMode:
+          $ref: '#/components/schemas/ServiceAnnoucementMode'
+        multiQosReq:
+          type: string
+        locArea:
+          $ref: 'TS29122_GMDviaMBMSbyMB2.yaml#/components/schemas/MbmsLocArea'
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        tmgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        localMbmsInfo:
+          $ref: 'TS29486_VAE_FileDistribution.yaml#/components/schemas/LocalMbmsInfo'
+        localMbmsActInd:
+          type: boolean
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        reqTestNotif:
+          type: boolean
+        wsNotifCfg:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        upIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        upIpv6Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        upPortNum:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        radioFreqs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+          minItems: 1
+      required:
+        - valGroupId
+        - anncMode
+        - multiQosReq
+        - notifUri
+
+    UnicastSubscription:
+      description: Represents a network resource adaptation subscription.
+      type: object
+      properties:
+        valUes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        valGroupId:
+          type: string
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        bdtId:
+          type: string
+        uniQosReq:
+          type: string
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        reqTestNotif:
+          type: boolean
+        wsNotifCfg:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - notifUri
+#      oneOf:
+#        - required: [valUes]
+#        - required: [valGroupId]
+#        - required: [valTgtUe]
+#
+    UnicastSubscriptionPatch:
+      description: >
+        Represents the requested modifications to a network resource adaptation subscription.
+      type: object
+      properties:
+        valUes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          nullable: true
+        valGroupId:
+          type: string
+          nullable: true
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUeRm'
+        bdtId:
+          type: string
+        uniQosReq:
+          type: string
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    UserPlaneNotification:
+      description: Represents a notification on User Plane events.
+      type: object
+      properties:
+        notifId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        eventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/NrmEventNotification'
+          minItems: 1
+      required:
+        - notifId
+        - eventNotifs
+
+    NrmEventNotification:
+      description: Represents a notification on an individual User Plane event.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/NrmEvent'
+        ts:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        deliveryMode:
+          $ref: '#/components/schemas/DeliveryMode'
+        streamIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        stopUniStreamIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        mbsResServiceArea:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExternalMbsServiceArea'
+        valUeIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - event
+        - ts
+
+    TscStreamAvailability:
+      description: >
+        TSC stream availability information includes the stream specification and list of traffic 
+        specifications. This response shall include stream specification matching one of the query 
+        parameters provided in the request.
+      type: object
+      properties:
+        streamSpec:
+          $ref: '#/components/schemas/StreamSpecification'
+        trafficSpecs:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrafficSpecification'
+          minItems: 1
+      required:
+        - streamSpec
+        - trafficSpecs
+
+    StreamSpecification:
+      description: >
+        Stream specification includes MAC addresses of the source and destination DS-TT ports.
+      type: object
+      properties:
+        srcMacAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        dstMacAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+      required:
+        - srcMacAddr
+        - dstMacAddr
+
+    TrafficSpecification:
+      description: >
+        The traffic classe supported by the DS-TTs and available end-to-end maximum latency value.
+      type: object
+      properties:
+        trafficClass:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        e2eMaxLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - trafficClass
+        - e2eMaxLatency
+
+    TscStreamData:
+      description: TSC stream data information.
+      type: object
+      properties:
+        streamSpec:
+          $ref: '#/components/schemas/StreamSpecification'
+        trafficSpecInfo:
+          $ref: '#/components/schemas/TrafficSpecInformation'
+      required:
+        - streamSpec
+        - trafficSpecInfo
+
+    TrafficSpecInformation:
+      description: >
+        The traffic classe supported by the DS-TTs and available end-to-end latency
+        value and Priority Code Point (PCP) value.
+      type: object
+      properties:
+        pcpValue:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxFramInt:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        maxFramSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxIntFrames:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        maxLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+      required:
+        - pcpValue
+        - maxFramInt
+        - maxFramSize
+        - maxIntFrames
+        - maxLatency
+
+    MBSResourceReq:
+      description: Represents the parameters to request the creation of an MBS Resource.
+      type: object
+      properties:
+        mbsResource:
+          $ref: '#/components/schemas/MBSResource'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - mbsResource
+
+    MBSResource:
+      description: Represents an MBS Resource.
+      type: object
+      properties:
+        valGroupId:
+          type: string
+        valUeIdsList:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+        servAnmtMode:
+          $ref: '#/components/schemas/ServiceAnnoucementMode'
+        mbsResServInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsServiceInfo'
+        mbsResServiceArea:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExternalMbsServiceArea'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        netSysInd:
+          $ref: '#/components/schemas/NetSysIndicator'
+        localMbmsInfo:
+          $ref: 'TS29486_VAE_FileDistribution.yaml#/components/schemas/LocalMbmsInfo'
+        localMbmsActInd:
+          type: boolean
+        mbsResRespInfo:
+          $ref: '#/components/schemas/MBSResourceRespInfo'
+#      oneOf:
+#        - required: [valGroupId]
+#        - required: [valUeIdsList]
+      not:
+        required: [localMbmsInfo, localMbmsActInd]
+      required:
+        - servAnmtMode
+        - mbsResServInfo
+        - notifUri
+
+    MBSResourceRespInfo:
+      description: Represents NRM Server side information related to the MBS Resource.
+      type: object
+      properties:
+        mbs5gSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
+        mbmsBearerId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
+        upIpv4Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4Addr'
+        upIpv6Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv6Addr'
+        upPortNum:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        mbs5GInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSession'
+        epsMbmsInfo:
+          $ref: '#/components/schemas/EpsMbmsInfo'
+      anyOf:
+        - required: [upIpv4Addr]
+        - required: [upIpv6Addr]
+
+    MBSResourceResp:
+      description: Represents a response to an MBS Resource creation/modification request.
+      type: object
+      properties:
+        mbsResource:
+          $ref: '#/components/schemas/MBSResource'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - mbsResource
+
+    MBSResourcePatch:
+      description: Represents the parameters to request the modification of an MBS Resource.
+      type: object
+      properties:
+        mbsResServInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsServiceInfo'
+        mbsResServiceArea:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExternalMbsServiceArea'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        localMbmsInfo:
+          $ref: 'TS29486_VAE_FileDistribution.yaml#/components/schemas/LocalMbmsInfo'
+        localMbmsActInd:
+          type: boolean
+        mbsResRespInfo:
+          $ref: '#/components/schemas/MBSResourceRespInfo'
+      anyOf:
+        - required: [mbsResServInfo]
+        - required: [mbsResServiceArea]
+        - required: [localMbmsInfo]
+      not:
+        required: [localMbmsInfo, localMbmsActInd]
+
+    MbsResAct:
+      description: Represents the parameters related to the activation of the MBS Resource.
+      type: object
+      properties:
+        mbs5gSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - mbs5gSessionId
+
+    MbsResDeact:
+      description: Represents the parameters related to the deactivation of the MBS Resource.
+      type: object
+      properties:
+        mbs5gSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - mbs5gSessionId
+
+
+    BdtPolConfig:
+      description: Represents the parameters related to the BDT Policy configuration.
+      type: object
+      properties:
+        valServId:
+          type: string
+        valGroupId:
+          type: string
+        valUeIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        dataVolUe:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThreshold'
+        desiredTimeWindow:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        grantTimeWindow:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        desiredGeoArea:
+          $ref: '#/components/schemas/GeoArea'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        policyGuidance:
+          $ref: '#/components/schemas/PolicyGuidance'
+        bdtPolRefId:
+          type: string
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+#      oneOf:
+#        - required: [valGroupId]
+#        - required: [valUeIds]
+      required:
+        - valServId
+        - notifUri
+        - dataVolUe
+        - desiredTimeWindow
+        - desiredGeoArea
+
+    BdtPolConfigPatch:
+      description: > 
+        Represents the parameters to request modification of the BDT Policy configuration.
+      type: object
+      properties:
+        dataVolUe:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThreshold'
+        desiredTimeWindow:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        desiredGeoArea:
+          $ref: '#/components/schemas/GeoArea'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+    PolicyGuidance:
+      description: > 
+        Represents the list of Policy Guidance.
+      type: object
+      properties:
+        policyType:
+          $ref: '#/components/schemas/PolicyType'
+        cost:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+    GeoArea:
+      description: Represents a Geographical area.
+      type: object
+      properties:
+        geographicAreas:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+          description: Represents a list of Geographical area.
+        civicAddresses:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CivicAddress'
+          minItems: 1
+          description: Represents a list of Civic address of an area.
+
+
+    BdtNotification:
+      description: Represents a notification on update related to BDT Policy configuration resource.
+      type: object
+      properties:
+        notifId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        bdtConfigId:
+          type: string
+        grantTimeWindow:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        bdtPolicyRemoveInd:
+          type: boolean
+          default: false
+      required:
+        - notifId
+        - bdtConfigId
+
+    UnfTrafficSubc:
+      description: Represents the request parameters for Unified Traffic Pattern subscription.
+      type: object
+      properties:
+        mgmtSubs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ManagementSubc'
+          minProperties: 1
+          description: >
+            Contains contains the unified traffic pattern subscription(s).
+            The key of the map is any unique string encoded value.
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - mgmtSubs
+        - notifUri
+
+    UnfTrafficSubcPatch:
+      description: Represents the request parameters to update Unified Traffic Pattern subscription.
+      type: object
+      properties:
+        mgmtSubs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ManagementSubc'
+          minProperties: 1
+          description: >
+            Contains contains the unified traffic pattern subscription(s).
+            The key of the map is any unique string encoded value.
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    ManagementSubc:
+      description: Represents the Unified Traffic Pattern subscription details.
+      type: object
+      properties:
+        valServId:
+          type: string
+        valUeIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        traffPatInd:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrafficPatternIndication'
+          minItems: 1
+        traffPatConfig:
+          $ref: '#/components/schemas/TrafficPatternConfig'
+      required:
+        - valServId
+        - valUeIds
+        - traffPatInd
+
+    TrafficPatternConfig:
+      description: Represents the traffic pattern configuration parameters.
+      type: object
+      properties:
+        scheds:
+          type: array
+          items:
+            $ref: 'TS29122_CpProvisioning.yaml#/components/schemas/ScheduledCommunicationTime'
+          minItems: 1
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        stationInd:
+          type: boolean
+          default: false
+
+    UnfTrafficUpdNotification:
+      description: Represents a notification on update related to unified traffic pattern.
+      type: object
+      properties:
+        valUeIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        sched:
+          $ref: 'TS29122_CpProvisioning.yaml#/components/schemas/ScheduledCommunicationTime'
+        stationInd:
+          type: boolean
+          default: false
+        cause:
+          type: string
+      required:
+        - valUeIds
+
+
+    RelTransReq:
+      description: Represents the parameters to request reliable transmission service.
+      type: object
+      properties:
+        requestorId:
+          type: string
+        appDescs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppTraffDesc'
+          minItems: 2
+        valUeId:
+          type: string
+        valAddrInfo:
+          $ref: '#/components/schemas/ValUeAddrInfo'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - requestorId
+
+    AppTraffDesc:
+      description: Represents the application traffic descriptor.
+      type: object
+      properties:
+        connInfo:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ConnInfo'
+        transProtoc:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/TransportProtocol'
+      required:
+        - connInfo
+
+    ValUeAddrInfo:
+      description: Represents VAL UE address information.
+      type: object
+      properties:
+        valUeIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        valUeIpv6Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        port:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+#      oneOf:
+#        - required: [valUeIpv4Addr]
+#        - required: [valUeIpv6Addr]
+#
+#
+# Simple data types and Enumerations
+
+    EpsMbmsInfo:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+
+    ServiceAnnoucementMode:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - NRM
+        - VAL
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Indicates the service announcement mode.  
+#        Possible values are:
+#        - NRM: Indicates that the NRM server performs the service announcement.
+#        - VAL: Indicates that the service consumer performs the service announcement.
+#
+    DeliveryMode:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - UNICAST
+        - MULTICAST
+        - MBS_MULTICAST
+        - MBS_BROADCAST
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          but is not used to encode content defined in the present version of this API.
+#      description: |
+#        Indicates the user plane delivery mode.  
+#        Possible values are:
+#        - UNICAST: Indicates Unicast delivery.
+#        - MULTICAST: Indicates EPS MBMS Multicast delivery.
+#        - MBS_MULTICAST: Indicates 5GS MBS Multicast delivery.
+#        - MBS_BROADCAST: Indicates 5GS MBS Broadcast delivery.
+#
+    NrmEvent:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - UP_DELIVERY_MODE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Indicates the NRM event.  
+#        Possible values are:
+#        - UP_DELIVERY_MODE: User Plane delivery mode.
+#
+    NetSysIndicator:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - 5GS
+        - EPS
+        - 5GS_AND_EPS
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          but is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the network system indicator, i.e. 5GS, EPS or both.  
+#        Possible values are:
+#        - 5GS: Indicates that the network system is 5GS.
+#        - EPS: Indicates that the network system is EPS.
+#        - 5GS_AND_EPS: Indicates that the network system is 5GS and EPS.
+#
+    PolicyType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - LOWEST_COST
+        - HIGH_THROUGHPUT_WITH_COST
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Indicates the Policy types.  
+#        Possible values are:
+#        - LOWEST_COST: Indicates that the policy guidance is to consider lowest cost.
+#        - HIGH_THROUGHPUT_WITH_COST: Indicates that the policy guidance is to consider highest
+#          throughput.
+#
+    TrafficPatternIndication:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - TRAFFIC_PATTERN_MANAGE
+        - TRAFFIC_PATTERN_MONITOR
+        - NETWORK_PARAM_COORDINATION
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          but is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the unified traffic pattern indication requests.  
+#        Possible values are:
+#        - TRAFFIC_PATTERN_MANAGE: Indicates management of the UE unified traffic pattern request.
+#        - TRAFFIC_PATTERN_MONITOR: Indicates monitoring of the UE unified traffic pattern.
+#        - NETWORK_PARAM_COORDINATION: Indicates network parameter coordination by NRM with 5GC.

@@ -30,9 +30,6 @@ void OpenAPI_steering_info_free(OpenAPI_steering_info_t *steering_info)
         steering_info->plmn_id = NULL;
     }
     if (steering_info->access_tech_list) {
-        OpenAPI_list_for_each(steering_info->access_tech_list, node) {
-            OpenAPI_access_tech_free(node->data);
-        }
         OpenAPI_list_free(steering_info->access_tech_list);
         steering_info->access_tech_list = NULL;
     }
@@ -65,19 +62,17 @@ cJSON *OpenAPI_steering_info_convertToJSON(OpenAPI_steering_info_t *steering_inf
         goto end;
     }
 
-    if (steering_info->access_tech_list) {
+    if (steering_info->access_tech_list != OpenAPI_access_tech_NULL) {
     cJSON *access_tech_listList = cJSON_AddArrayToObject(item, "accessTechList");
     if (access_tech_listList == NULL) {
         ogs_error("OpenAPI_steering_info_convertToJSON() failed [access_tech_list]");
         goto end;
     }
     OpenAPI_list_for_each(steering_info->access_tech_list, node) {
-        cJSON *itemLocal = OpenAPI_access_tech_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        if (cJSON_AddStringToObject(access_tech_listList, "", OpenAPI_access_tech_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_steering_info_convertToJSON() failed [access_tech_list]");
             goto end;
         }
-        cJSON_AddItemToArray(access_tech_listList, itemLocal);
     }
     }
 
@@ -115,16 +110,22 @@ OpenAPI_steering_info_t *OpenAPI_steering_info_parseFromJSON(cJSON *steering_inf
         access_tech_listList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(access_tech_list_local, access_tech_list) {
-            if (!cJSON_IsObject(access_tech_list_local)) {
+            OpenAPI_access_tech_e localEnum = OpenAPI_access_tech_NULL;
+            if (!cJSON_IsString(access_tech_list_local)) {
                 ogs_error("OpenAPI_steering_info_parseFromJSON() failed [access_tech_list]");
                 goto end;
             }
-            OpenAPI_access_tech_t *access_tech_listItem = OpenAPI_access_tech_parseFromJSON(access_tech_list_local);
-            if (!access_tech_listItem) {
-                ogs_error("No access_tech_listItem");
-                goto end;
+            localEnum = OpenAPI_access_tech_FromString(access_tech_list_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"access_tech_list\" is not supported. Ignoring it ...",
+                         access_tech_list_local->valuestring);
+            } else {
+                OpenAPI_list_add(access_tech_listList, (void *)localEnum);
             }
-            OpenAPI_list_add(access_tech_listList, access_tech_listItem);
+        }
+        if (access_tech_listList->count == 0) {
+            ogs_error("OpenAPI_steering_info_parseFromJSON() failed: Expected access_tech_listList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -140,9 +141,6 @@ end:
         plmn_id_local_nonprim = NULL;
     }
     if (access_tech_listList) {
-        OpenAPI_list_for_each(access_tech_listList, node) {
-            OpenAPI_access_tech_free(node->data);
-        }
         OpenAPI_list_free(access_tech_listList);
         access_tech_listList = NULL;
     }

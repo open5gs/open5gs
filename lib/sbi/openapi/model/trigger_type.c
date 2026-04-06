@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "trigger_type.h"
 
-OpenAPI_trigger_type_t *OpenAPI_trigger_type_create(
-)
+char* OpenAPI_trigger_type_ToString(OpenAPI_trigger_type_e trigger_type)
 {
-    OpenAPI_trigger_type_t *trigger_type_local_var = ogs_malloc(sizeof(OpenAPI_trigger_type_t));
-    ogs_assert(trigger_type_local_var);
-
-
-    return trigger_type_local_var;
+    const char *trigger_typeArray[] =  { "NULL", "QUOTA_THRESHOLD", "QHT", "FINAL", "QUOTA_EXHAUSTED", "VALIDITY_TIME", "OTHER_QUOTA_TYPE", "FORCED_REAUTHORISATION", "UNUSED_QUOTA_TIMER", "UNIT_COUNT_INACTIVITY_TIMER", "ABNORMAL_RELEASE", "QOS_CHANGE", "VOLUME_LIMIT", "TIME_LIMIT", "EVENT_LIMIT", "PLMN_CHANGE", "USER_LOCATION_CHANGE", "RAT_CHANGE", "SESSION_AMBR_CHANGE", "UE_TIMEZONE_CHANGE", "TARIFF_TIME_CHANGE", "MAX_NUMBER_OF_CHANGES_IN_CHARGING_CONDITIONS", "MANAGEMENT_INTERVENTION", "CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA", "CHANGE_OF_3GPP_PS_DATA_OFF_STATUS", "SERVING_NODE_CHANGE", "REMOVAL_OF_UPF", "ADDITION_OF_UPF", "INSERTION_OF_ISMF", "REMOVAL_OF_ISMF", "CHANGE_OF_ISMF", "START_OF_SERVICE_DATA_FLOW", "ECGI_CHANGE", "TAI_CHANGE", "HANDOVER_CANCEL", "HANDOVER_START", "HANDOVER_COMPLETE", "GFBR_GUARANTEED_STATUS_CHANGE", "ADDITION_OF_ACCESS", "REMOVAL_OF_ACCESS", "START_OF_SDF_ADDITIONAL_ACCESS", "REDUNDANT_TRANSMISSION_CHANGE", "CGI_SAI_CHANGE", "RAI_CHANGE", "JOIN_MULTICAST", "MBS_DELIVERY_METHOD_CHANGE", "LEAVE_MULTICAST", "VSMF_CHANGE", "SNSSAI_REPLACEMENT", "SATELLITE_BACKHAUL_CATEGORY_CHANGE", "GEO_SATELLITE_ID_CHANGE", "SIP_INVITE", "SIP_RE-INVITE_OR_UPDATE", "SIP_2XX_ACKNOWLEDGING", "SIP_1XX_PROVISIONAL_RESPONSE", "SIP_4XX_5XX_OR_6XX_RESPONSE", "ANY_OTHER_SIP_MESSAGE", "SIP_BYE_MESSAGE", "SIP_2XX_ACKNOWLEDGING_A_SIP_BYE", "ABORTING_A_SIP_SESSION_SET-UP", "SIP_3XX_FINAL_OR_REDIRECTION_RESPONSE", "SIP_4XX_5XX_OR_6XX_FINAL_RESPONSE", "MBS_CONNECTION_ESTABLISHED_WITH_NG-RAN", "MBS_CONNECTION_RELEASED_WITH_NG-RAN", "MBS_CONNECTION_ESTABLISHED_WITH_UPF", "MBS_CONNECTION_RELEASED_WITH_UPF", "MBS_SESSION_ACTIVITY_STATUS_CHANGE_TO_ACTIVE", "MBS_SESSION_ACTIVITY_STATUS_CHANGE_TO_INACTIVE", "MBS_SESSION_CONTEXT_UPDATE", "NSAC_THRESHOLD_INITIAL", "NSAC_THRESHOLD_UPWARDS_REACHED", "NSAC_THRESHOLD_UPWARDS_CROSSED", "NSAC_THRESHOLD_DOWNWARDS_CROSSED", "NSAC_QUOTA_THRESHOLD", "NSAC_QUOTA_EXHAUSTED", "NSAC_VALIDITY_TIME", "NSAC_QHT", "NSAC_THRESHOLD_TERMINATION", "NS_TERMINATION" };
+    size_t sizeofArray = sizeof(trigger_typeArray) / sizeof(trigger_typeArray[0]);
+    if (trigger_type < sizeofArray)
+        return (char *)trigger_typeArray[trigger_type];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_trigger_type_free(OpenAPI_trigger_type_t *trigger_type)
+OpenAPI_trigger_type_e OpenAPI_trigger_type_FromString(char* trigger_type)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == trigger_type) {
-        return;
+    int stringToReturn = 0;
+    const char *trigger_typeArray[] =  { "NULL", "QUOTA_THRESHOLD", "QHT", "FINAL", "QUOTA_EXHAUSTED", "VALIDITY_TIME", "OTHER_QUOTA_TYPE", "FORCED_REAUTHORISATION", "UNUSED_QUOTA_TIMER", "UNIT_COUNT_INACTIVITY_TIMER", "ABNORMAL_RELEASE", "QOS_CHANGE", "VOLUME_LIMIT", "TIME_LIMIT", "EVENT_LIMIT", "PLMN_CHANGE", "USER_LOCATION_CHANGE", "RAT_CHANGE", "SESSION_AMBR_CHANGE", "UE_TIMEZONE_CHANGE", "TARIFF_TIME_CHANGE", "MAX_NUMBER_OF_CHANGES_IN_CHARGING_CONDITIONS", "MANAGEMENT_INTERVENTION", "CHANGE_OF_UE_PRESENCE_IN_PRESENCE_REPORTING_AREA", "CHANGE_OF_3GPP_PS_DATA_OFF_STATUS", "SERVING_NODE_CHANGE", "REMOVAL_OF_UPF", "ADDITION_OF_UPF", "INSERTION_OF_ISMF", "REMOVAL_OF_ISMF", "CHANGE_OF_ISMF", "START_OF_SERVICE_DATA_FLOW", "ECGI_CHANGE", "TAI_CHANGE", "HANDOVER_CANCEL", "HANDOVER_START", "HANDOVER_COMPLETE", "GFBR_GUARANTEED_STATUS_CHANGE", "ADDITION_OF_ACCESS", "REMOVAL_OF_ACCESS", "START_OF_SDF_ADDITIONAL_ACCESS", "REDUNDANT_TRANSMISSION_CHANGE", "CGI_SAI_CHANGE", "RAI_CHANGE", "JOIN_MULTICAST", "MBS_DELIVERY_METHOD_CHANGE", "LEAVE_MULTICAST", "VSMF_CHANGE", "SNSSAI_REPLACEMENT", "SATELLITE_BACKHAUL_CATEGORY_CHANGE", "GEO_SATELLITE_ID_CHANGE", "SIP_INVITE", "SIP_RE-INVITE_OR_UPDATE", "SIP_2XX_ACKNOWLEDGING", "SIP_1XX_PROVISIONAL_RESPONSE", "SIP_4XX_5XX_OR_6XX_RESPONSE", "ANY_OTHER_SIP_MESSAGE", "SIP_BYE_MESSAGE", "SIP_2XX_ACKNOWLEDGING_A_SIP_BYE", "ABORTING_A_SIP_SESSION_SET-UP", "SIP_3XX_FINAL_OR_REDIRECTION_RESPONSE", "SIP_4XX_5XX_OR_6XX_FINAL_RESPONSE", "MBS_CONNECTION_ESTABLISHED_WITH_NG-RAN", "MBS_CONNECTION_RELEASED_WITH_NG-RAN", "MBS_CONNECTION_ESTABLISHED_WITH_UPF", "MBS_CONNECTION_RELEASED_WITH_UPF", "MBS_SESSION_ACTIVITY_STATUS_CHANGE_TO_ACTIVE", "MBS_SESSION_ACTIVITY_STATUS_CHANGE_TO_INACTIVE", "MBS_SESSION_CONTEXT_UPDATE", "NSAC_THRESHOLD_INITIAL", "NSAC_THRESHOLD_UPWARDS_REACHED", "NSAC_THRESHOLD_UPWARDS_CROSSED", "NSAC_THRESHOLD_DOWNWARDS_CROSSED", "NSAC_QUOTA_THRESHOLD", "NSAC_QUOTA_EXHAUSTED", "NSAC_VALIDITY_TIME", "NSAC_QHT", "NSAC_THRESHOLD_TERMINATION", "NS_TERMINATION" };
+    size_t sizeofArray = sizeof(trigger_typeArray) / sizeof(trigger_typeArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(trigger_type, trigger_typeArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(trigger_type);
-}
-
-cJSON *OpenAPI_trigger_type_convertToJSON(OpenAPI_trigger_type_t *trigger_type)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (trigger_type == NULL) {
-        ogs_error("OpenAPI_trigger_type_convertToJSON() failed [TriggerType]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_trigger_type_t *OpenAPI_trigger_type_parseFromJSON(cJSON *trigger_typeJSON)
-{
-    OpenAPI_trigger_type_t *trigger_type_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    trigger_type_local_var = OpenAPI_trigger_type_create (
-    );
-
-    return trigger_type_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_trigger_type_t *OpenAPI_trigger_type_copy(OpenAPI_trigger_type_t *dst, OpenAPI_trigger_type_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_trigger_type_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_trigger_type_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_trigger_type_free(dst);
-    dst = OpenAPI_trigger_type_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

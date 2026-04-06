@@ -29,7 +29,7 @@ OpenAPI_nf_group_list_cond_condition_type_e OpenAPI_condition_typenf_group_list_
 }
 char *OpenAPI_nf_typenf_group_list_cond_ToString(OpenAPI_nf_group_list_cond_nf_type_e nf_type)
 {
-    const char *nf_typeArray[] =  { "NULL", "UDM", "AUSF", "UDR", "PCF", "CHF", "HSS" };
+    const char *nf_typeArray[] =  { "NULL", "UDM", "AUSF", "UDR", "PCF", "CHF", "HSS", "BSF", "UDSF" };
     size_t sizeofArray = sizeof(nf_typeArray) / sizeof(nf_typeArray[0]);
     if (nf_type < sizeofArray)
         return (char *)nf_typeArray[nf_type];
@@ -40,7 +40,7 @@ char *OpenAPI_nf_typenf_group_list_cond_ToString(OpenAPI_nf_group_list_cond_nf_t
 OpenAPI_nf_group_list_cond_nf_type_e OpenAPI_nf_typenf_group_list_cond_FromString(char* nf_type)
 {
     int stringToReturn = 0;
-    const char *nf_typeArray[] =  { "NULL", "UDM", "AUSF", "UDR", "PCF", "CHF", "HSS" };
+    const char *nf_typeArray[] =  { "NULL", "UDM", "AUSF", "UDR", "PCF", "CHF", "HSS", "BSF", "UDSF" };
     size_t sizeofArray = sizeof(nf_typeArray) / sizeof(nf_typeArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(nf_type, nf_typeArray[stringToReturn]) == 0) {

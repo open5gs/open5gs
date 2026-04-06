@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_collocated_nf_instance_s OpenAPI_collocated_nf_instance_t;
 #include "collocated_nf_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_collocated_nf_instance_s OpenAPI_collocated_nf_instance_t;
-typedef struct OpenAPI_collocated_nf_instance_s {
+struct OpenAPI_collocated_nf_instance_s {
     char *nf_instance_id;
     OpenAPI_collocated_nf_type_e nf_type;
-} OpenAPI_collocated_nf_instance_t;
+};
 
 OpenAPI_collocated_nf_instance_t *OpenAPI_collocated_nf_instance_create(
     char *nf_instance_id,

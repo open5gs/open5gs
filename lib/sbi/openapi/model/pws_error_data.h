@@ -12,15 +12,15 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pws_error_data_s OpenAPI_pws_error_data_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pws_error_data_s OpenAPI_pws_error_data_t;
-typedef struct OpenAPI_pws_error_data_s {
+struct OpenAPI_pws_error_data_s {
     int namf_cause;
-} OpenAPI_pws_error_data_t;
+};
 
 OpenAPI_pws_error_data_t *OpenAPI_pws_error_data_create(
     int namf_cause

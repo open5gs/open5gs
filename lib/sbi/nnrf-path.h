@@ -32,7 +32,7 @@ bool ogs_nnrf_nfm_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance);
 bool ogs_nnrf_nfm_send_nf_status_subscribe(
         OpenAPI_nf_type_e req_nf_type, char *req_nf_instance_id,
         OpenAPI_nf_type_e subscr_cond_nf_type,
-        char *subscr_cond_service_name);
+        OpenAPI_service_name_e subscr_cond_service_name);
 bool ogs_nnrf_nfm_send_nf_status_update(
         ogs_sbi_subscription_data_t *subscription_data);
 bool ogs_nnrf_nfm_send_nf_status_unsubscribe(

@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_n1_n2_message_transfer_rsp_data_s OpenAPI_n1_n2_message_transfer_rsp_data_t;
 #include "n1_n2_message_transfer_cause.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n1_n2_message_transfer_rsp_data_s OpenAPI_n1_n2_message_transfer_rsp_data_t;
-typedef struct OpenAPI_n1_n2_message_transfer_rsp_data_s {
+struct OpenAPI_n1_n2_message_transfer_rsp_data_s {
     OpenAPI_n1_n2_message_transfer_cause_e cause;
     char *supported_features;
-} OpenAPI_n1_n2_message_transfer_rsp_data_t;
+};
 
 OpenAPI_n1_n2_message_transfer_rsp_data_t *OpenAPI_n1_n2_message_transfer_rsp_data_create(
     OpenAPI_n1_n2_message_transfer_cause_e cause,

@@ -1,0 +1,58 @@
+openapi: 3.0.0
+info:
+  title: M5_NetworkAssistance
+  version: 3.0.4
+  description: |
+    5GMS AF M5 Network Assistance API (deprecated)
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: M5_NetworkAssistance
+    description: '5G Media Streaming: Media Session Handling (M5) APIs: Network Assistance (deprecated)'
+
+externalDocs:
+  description: 'TS 26.512 V18.7.0; 5G Media Streaming (5GMS); Protocols'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.512/'
+
+paths: {}
+
+components:
+  schemas:
+    NetworkAssistanceSession:
+      deprecated: true
+      description: "A representation of a Network Assistance Session resource."
+      type: object
+      required: 
+        - naSessionId
+        - provisioningSessionId
+        - serviceDataFlowDescriptions
+      properties:
+        naSessionId:
+          readOnly: true
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+#          allOf:
+#            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        provisioningSessionId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        serviceDataFlowDescriptions:
+          type: array
+          items: 
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ApplicationFlowDescription'
+          minItems: 1
+        mediaType:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/MediaType'
+        policyTemplateId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        requestedQoS:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ClientPolicySpecification'
+        recommendedQoS:
+          readOnly: true
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ClientPolicySpecification'
+#          allOf:
+#            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ClientPolicySpecification'
+        notficationURL:
+          readOnly: true
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+#          allOf:
+#            - $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'

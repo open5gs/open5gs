@@ -8,7 +8,7 @@ OpenAPI_dispersion_info_t *OpenAPI_dispersion_info_create(
     char *ts_start,
     int ts_duration,
     OpenAPI_list_t *disper_collects,
-    OpenAPI_dispersion_type_t *disper_type
+    OpenAPI_dispersion_type_e disper_type
 )
 {
     OpenAPI_dispersion_info_t *dispersion_info_local_var = ogs_malloc(sizeof(OpenAPI_dispersion_info_t));
@@ -39,10 +39,6 @@ void OpenAPI_dispersion_info_free(OpenAPI_dispersion_info_t *dispersion_info)
         }
         OpenAPI_list_free(dispersion_info->disper_collects);
         dispersion_info->disper_collects = NULL;
-    }
-    if (dispersion_info->disper_type) {
-        OpenAPI_dispersion_type_free(dispersion_info->disper_type);
-        dispersion_info->disper_type = NULL;
     }
     ogs_free(dispersion_info);
 }
@@ -90,17 +86,11 @@ cJSON *OpenAPI_dispersion_info_convertToJSON(OpenAPI_dispersion_info_t *dispersi
         cJSON_AddItemToArray(disper_collectsList, itemLocal);
     }
 
-    if (!dispersion_info->disper_type) {
+    if (dispersion_info->disper_type == OpenAPI_dispersion_type_NULL) {
         ogs_error("OpenAPI_dispersion_info_convertToJSON() failed [disper_type]");
         return NULL;
     }
-    cJSON *disper_type_local_JSON = OpenAPI_dispersion_type_convertToJSON(dispersion_info->disper_type);
-    if (disper_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_dispersion_info_convertToJSON() failed [disper_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "disperType", disper_type_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "disperType", OpenAPI_dispersion_type_ToString(dispersion_info->disper_type)) == NULL) {
         ogs_error("OpenAPI_dispersion_info_convertToJSON() failed [disper_type]");
         goto end;
     }
@@ -118,7 +108,7 @@ OpenAPI_dispersion_info_t *OpenAPI_dispersion_info_parseFromJSON(cJSON *dispersi
     cJSON *disper_collects = NULL;
     OpenAPI_list_t *disper_collectsList = NULL;
     cJSON *disper_type = NULL;
-    OpenAPI_dispersion_type_t *disper_type_local_nonprim = NULL;
+    OpenAPI_dispersion_type_e disper_typeVariable = 0;
     ts_start = cJSON_GetObjectItemCaseSensitive(dispersion_infoJSON, "tsStart");
     if (!ts_start) {
         ogs_error("OpenAPI_dispersion_info_parseFromJSON() failed [ts_start]");
@@ -170,18 +160,18 @@ OpenAPI_dispersion_info_t *OpenAPI_dispersion_info_parseFromJSON(cJSON *dispersi
         ogs_error("OpenAPI_dispersion_info_parseFromJSON() failed [disper_type]");
         goto end;
     }
-    disper_type_local_nonprim = OpenAPI_dispersion_type_parseFromJSON(disper_type);
-    if (!disper_type_local_nonprim) {
-        ogs_error("OpenAPI_dispersion_type_parseFromJSON failed [disper_type]");
+    if (!cJSON_IsString(disper_type)) {
+        ogs_error("OpenAPI_dispersion_info_parseFromJSON() failed [disper_type]");
         goto end;
     }
+    disper_typeVariable = OpenAPI_dispersion_type_FromString(disper_type->valuestring);
 
     dispersion_info_local_var = OpenAPI_dispersion_info_create (
         ogs_strdup(ts_start->valuestring),
         
         ts_duration->valuedouble,
         disper_collectsList,
-        disper_type_local_nonprim
+        disper_typeVariable
     );
 
     return dispersion_info_local_var;
@@ -192,10 +182,6 @@ end:
         }
         OpenAPI_list_free(disper_collectsList);
         disper_collectsList = NULL;
-    }
-    if (disper_type_local_nonprim) {
-        OpenAPI_dispersion_type_free(disper_type_local_nonprim);
-        disper_type_local_nonprim = NULL;
     }
     return NULL;
 }

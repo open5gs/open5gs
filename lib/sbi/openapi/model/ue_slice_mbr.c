@@ -191,7 +191,7 @@ OpenAPI_ue_slice_mbr_t *OpenAPI_ue_slice_mbr_parseFromJSON(cJSON *ue_slice_mbrJS
 end:
     if (slice_mbrList) {
         OpenAPI_list_for_each(slice_mbrList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_slice_mbr_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

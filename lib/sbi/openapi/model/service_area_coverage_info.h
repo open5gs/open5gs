@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_service_area_coverage_info_s OpenAPI_service_area_coverage_info_t;
 #include "plmn_id_nid_1.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_service_area_coverage_info_s OpenAPI_service_area_coverage_info_t;
-typedef struct OpenAPI_service_area_coverage_info_s {
+struct OpenAPI_service_area_coverage_info_s {
     OpenAPI_list_t *tac_list;
     struct OpenAPI_plmn_id_nid_1_s *serving_network;
-} OpenAPI_service_area_coverage_info_t;
+};
 
 OpenAPI_service_area_coverage_info_t *OpenAPI_service_area_coverage_info_create(
     OpenAPI_list_t *tac_list,

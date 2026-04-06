@@ -1,7 +1,7 @@
 /*
  * code_word_ind.h
  *
- * 
+ * Indicates that the codeword shall be checked in UE or one or more codeword values to be checked in GMLC. 
  */
 
 #ifndef _OpenAPI_code_word_ind_H_

@@ -1,0 +1,788 @@
+openapi: 3.0.0
+
+info:
+  title: SEALDD Server Data Transmission Service
+  version: 1.1.0
+  description: |
+    SEALDD Server Data Transmission Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.548 V19.5.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    SEAL Data Delivery (SEALDD) Server Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.548/
+
+servers:
+  - url: '{apiRoot}/sdd-trans/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /{transType}/request-trans:
+    parameters:
+      - name: transType
+        in: path
+        description: >
+          Represents the requested transmission type.
+        required: true
+        schema:
+          $ref: '#/components/schemas/TransType'
+
+    post:
+      summary: Request SEALDD enabled Data Transmission.
+      operationId: RequestTrans
+      tags:
+        - Request SEALDD Data Transmission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransReq'
+      responses:
+        '200':
+          description: >
+            OK. The SEALDD enabled application data transmission service request
+            was successfully received and processed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions:
+    post:
+      summary: Request the Creation of a new Connection Status Subscription.
+      operationId: CreateConnStatusSubsc
+      tags:
+        - Connection Status Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnStatusSubsc'
+      responses:
+        '201':
+          description: >
+            Successful case. The requested Connection Status Subscription resource is successfully
+            created and a representation of the created "Individual Connection Status Subscription"
+            resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnStatusSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created Individual Connection Status Subscription
+                resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        ConnStatusNotif:
+          '{$request.body#/notifUri}': 
+            post:
+              summary: Notify a previously subscribed service consumer on SEALDD connection status event(s).
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ConnStatusNotif'
+              responses:
+                '204':
+                  description: >
+                    Successful case. The Connection Status Notification is successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of the Individual Connection Status Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Connection Status Subscription resource.
+      operationId: GetIndConnStatusSubsc
+      tags:
+        - Individual Connection Status Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Connection Status Subscription resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnStatusSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Connection Status Subscription resource.
+      operationId: UpdateIndConnStatusSubsc
+      tags:
+        - Individual Connection Status Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConnStatusSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Connection Status Subscription resource is successfully updated and
+            a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnStatusSubsc'
+        '204':
+          description: >
+            No Content. The Individual Connection Status Subscription resource is successfully
+            updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Connection Status Subscription resource.
+      operationId: ModifyIndConnStatusSubsc
+      tags:
+        - Individual Connection Status Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/ConnStatusSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Connection Status Subscription resource is successfully modified
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnStatusSubsc'
+        '204':
+          description: >
+            No Content. The Individual Connection Status Subscription resource is successfully
+            modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Connection Status Subscription resource.
+      operationId: DeleteIndConnStatusSubsc
+      tags:
+        - Individual Connection Status Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Connection Status Subscription resource is successfully
+            deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    TransReq:
+      description: >
+        Represents the parameters to request the SEALDD enabled application data
+        transmission service.
+      type: object
+      properties:
+        valServiceId:
+          type: string
+        valTargetId:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        valServerConnInfo:
+          $ref: '#/components/schemas/ConnInfo'
+        multiModalId:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/MultiModalId'
+        multiModalFlows:
+          type: array
+          items:
+            $ref: '#/components/schemas/MultiModalFlowInfo'
+          minItems: 1
+        qosInfo:
+          $ref: '#/components/schemas/QosInfo'
+        valServerBdw:
+          $ref: '#/components/schemas/ValServBdw'
+        valUsersBdw:
+          $ref: '#/components/schemas/ValUsersBdw'
+        connStatusSubsc:
+          $ref: '#/components/schemas/SatConnStatusSubsc'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      allOf:
+        - oneOf:
+          - required: [valServerConnInfo]
+          - required: [multiModalFlows]
+        - not:
+            required: [multiModalFlows, qosInfo]
+
+    TransResp:
+      description: >
+        Represents a SEALDD enabled application data transmission service response.
+      type: object
+      properties:
+        ddServerConnInfo:
+          $ref: '#/components/schemas/ConnInfo'
+        connStatusSubsc:
+          $ref: '#/components/schemas/SatConnStatusSubsc'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    ConnInfo:
+      description: >
+        Represents SEALDD connection information.
+      type: object
+      properties:
+        ipv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv6Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        port:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        uri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+      oneOf:
+        - required: [ipv4Addr]
+        - required: [ipv6Addr]
+        - required: [uri]
+
+    QosInfo:
+      description: >
+        Represents SEALDD related QoS requirements.
+      type: object
+      properties:
+        qosReference:
+          type: string
+        altQoSReferences:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        altQosReqs:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/AlternativeServiceRequirementsData'
+          minItems: 1
+      anyOf:
+        - required: [qosReference]
+        - required: [altQoSReferences]
+        - required: [altQosReqs]
+        - not:
+            required: [altQoSReferences, altQosReqs]
+        - not:
+            required: [qosReference, altQosReqs]
+
+    ValServBdw:
+      description: >
+        Represents VAL Server related bandwidth information.
+      type: object
+      properties:
+        totalUlBdw:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bandwidth'
+        totalDlBdw:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bandwidth'
+      required:
+        - totalUlBdw
+        - totalDlBdw
+
+    ValUsersBdw:
+      description: >
+        Represents VAL users related bandwidth information.
+      type: object
+      properties:
+        minUlBdw:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bandwidth'
+        minDlBdw:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bandwidth'
+        maxUlBdw:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bandwidth'
+        maxDlBdw:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bandwidth'
+      required:
+        - minUlBdw
+        - minDlBdw
+        - maxUlBdw
+        - maxDlBdw
+
+    ConnStatusSubsc:
+      description: >
+        Represents a Connection Status Subscription.
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnStatusEvent'
+          minItems: 1
+          description: >
+            Represents the subscribed event(s).
+        valServiceId:
+          type: string
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        valServerConnInfo:
+          $ref: '#/components/schemas/ConnInfo'
+        immRep:
+          type: boolean
+          description: >
+            Represents a Connection Status Subscription.
+            true indicates that immediate reporting is requested.
+            false indicates that immediate reporting is not requested.
+            The default value is false when this attribute is omitted.
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnStatusReport'
+          minItems: 1
+        connStatusPer:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTimeRo'
+        non3gppMeasInfo:
+          $ref: 'TS29548_SDD_PolicyConfiguration.yaml#/components/schemas/Non3gppAccessMeasPol'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - events
+        - valServerConnInfo
+        - notifUri
+
+    ConnStatusSubscPatch:
+      description: >
+        Represents the requested modifications to a Connection Status Subscription.
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnStatusEvent'
+          minItems: 1
+        valServiceId:
+          type: string
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        valServerConnInfo:
+          $ref: '#/components/schemas/ConnInfo'
+        connStatusPer:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    ConnStatusNotif:
+      description: >
+        Represents a Connection Status Notification.
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnStatusReport'
+          minItems: 1
+      required:
+        - subscriptionId
+        - reports
+
+    ConnStatusReport:
+      description: >
+        Represents a Connection Status Event report.
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/ConnStatusEvent'
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        valServiceId:
+          type: string
+        connEstData:
+          $ref: '#/components/schemas/ConnEstabData'
+        clientConnStat:
+          $ref: '#/components/schemas/ClientConnStatus'
+        congestLevel:
+          type: integer
+          minimum: 0
+          maximum: 100
+        dlDelInstrucs:
+          $ref: '#/components/schemas/DLDelInstructions'
+        timestamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - event
+        - valTgtUe
+        - valServiceId
+
+    ConnEstabData:
+      description: >
+        Represents SEALDD connection status establishment data.
+      type: object
+      properties:
+        ddServerConnInfo:
+          $ref: '#/components/schemas/ConnInfo'
+        comLifetime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+      required:
+        - ddServerConnInfo
+
+    ProtocolDesc:
+      description: >
+        Represents the protocol description information for Multi-modal application data
+        transmission.
+      type: object
+      properties:
+        dlDescInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProtocolDescription'
+        ulDescInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProtocolDescription'
+        packetizationInd:
+          type: boolean
+          default: false
+          description: >
+            Contains the packetization indication.
+            true indicates that packetization is requested.
+            false indicates that packetization is not requested.
+            The default value is false when this attribute is omitted.
+      anyOf:
+        - required: [dlDescInfo]
+        - required: [ulDescInfo]
+
+    SatConnStatusSubsc:
+      description: >
+        Represents a Connection Status Subscription relative to the S&F Satellite application data
+        transmission.
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnStatusEvent'
+          minItems: 1
+          description: >
+            Represents the subscribed event(s).
+        valServiceId:
+          type: string
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        valServerConnInfo:
+          $ref: '#/components/schemas/ConnInfo'
+        immRep:
+          type: boolean
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnStatusReport'
+          minItems: 1
+        connStatusPer:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTimeRo'
+      required:
+        - events
+        - valServerConnInfo
+        - notifUri
+
+    MultiModalFlowInfo:
+      description: >
+        Represents the multi-modal flow related application data transmission information.
+      type: object
+      properties:
+        valServerConnInfo:
+          $ref: '#/components/schemas/ConnInfo'
+        qosInfo:
+          $ref: '#/components/schemas/QosInfo'
+        protocolDesc:
+          $ref: '#/components/schemas/ProtocolDesc'
+      required:
+        - valServerConnInfo
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    ConnStatusEvent:
+      anyOf:
+      - type: string
+        enum:
+           - ESTABLISHED
+           - RELEASED
+           - CLIENT_CONN_STATUS
+           - CONGESTION
+           - DL_DEL_INSTRUCTIONS
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents Connection Status Events.  
+        Possible values are:
+        - ESTABLISHED: Indicates that the SEALDD connection status event is that the SEALDD
+          connection is established.
+        - RELEASED: Indicates that the SEALDD connection status event is that the SEALDD connection
+          is released.
+        - CLIENT_CONN_STATUS: Indicates that the SEALDD connection status event is the connection
+          status of the SEALDD Client.
+        - CONGESTION: Indicates that the SEALDD connection status event is congestion reporting.
+        - DL_DEL_INSTRUCTIONS: Indicates that the SEALDD connection status event is the the DL data
+          delivery instructions.
+
+    TransType:
+      anyOf:
+        - type: string
+          enum:
+          - regular
+          - urllc
+          - mm
+          - satellite
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the requested transmission type.  
+        Possible values are:
+        - regular: Indicates that the requested transmission type is Regular transmission.
+        - urllc: Indicates that the requested transmission type is URLLC transmission.
+        - mm: Indicates that the requested transmission type is Multi-modal transmission.
+        - satellite: Indicates that the requested transmission type is S&F Satellite transmission.
+
+    ClientConnStatus:
+      anyOf:
+        - type: string
+          enum:
+          - REACHABLE
+          - UNREACHABLE
+          - SLEEPING
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents a SEALDD client connection status.  
+        Possible values are:
+        - REACHABLE: Indicates that the SEALDD Client connection status is reachable.
+        - UNREACHABLE: Indicates that the SEALDD Client connection status is unreachable.
+        - SLEEPING: Indicates that the SEALDD Client connection status is sleeping.
+
+    DLDelInstructions:
+      anyOf:
+        - type: string
+          enum:
+          - ADJUST
+          - PENDING_DL
+          - RESUMED_DL
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the DL data delivery instructions.  
+        Possible values are:
+        - ADJUST: Indicates that the DL data delivery instructions are to adjust data delivery.
+        - PENDING_DL: Indicates that the DL data delivery instructions are to suspend data delivery
+          as there is pending data delivery (e.g., feeder link is not available).
+        - RESUMED_DL: Indicates that the DL data delivery instructions are to resume data delivery
+          (e.g., feeder link is available).
+
+
+# Data types describing alternative data types or combinations of data types:
+#

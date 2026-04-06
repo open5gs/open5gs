@@ -8,7 +8,13 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_create(
     OpenAPI_list_t *flows,
     OpenAPI_list_t *ul_delays,
     OpenAPI_list_t *dl_delays,
-    OpenAPI_list_t *rt_delays
+    OpenAPI_list_t *rt_delays,
+    bool is_pdmf,
+    int pdmf,
+    OpenAPI_list_t *ul_con_info,
+    OpenAPI_list_t *dl_con_info,
+    char *ul_data_rate,
+    char *dl_data_rate
 )
 {
     OpenAPI_qos_monitoring_report_t *qos_monitoring_report_local_var = ogs_malloc(sizeof(OpenAPI_qos_monitoring_report_t));
@@ -18,6 +24,12 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_create(
     qos_monitoring_report_local_var->ul_delays = ul_delays;
     qos_monitoring_report_local_var->dl_delays = dl_delays;
     qos_monitoring_report_local_var->rt_delays = rt_delays;
+    qos_monitoring_report_local_var->is_pdmf = is_pdmf;
+    qos_monitoring_report_local_var->pdmf = pdmf;
+    qos_monitoring_report_local_var->ul_con_info = ul_con_info;
+    qos_monitoring_report_local_var->dl_con_info = dl_con_info;
+    qos_monitoring_report_local_var->ul_data_rate = ul_data_rate;
+    qos_monitoring_report_local_var->dl_data_rate = dl_data_rate;
 
     return qos_monitoring_report_local_var;
 }
@@ -56,6 +68,28 @@ void OpenAPI_qos_monitoring_report_free(OpenAPI_qos_monitoring_report_t *qos_mon
         }
         OpenAPI_list_free(qos_monitoring_report->rt_delays);
         qos_monitoring_report->rt_delays = NULL;
+    }
+    if (qos_monitoring_report->ul_con_info) {
+        OpenAPI_list_for_each(qos_monitoring_report->ul_con_info, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(qos_monitoring_report->ul_con_info);
+        qos_monitoring_report->ul_con_info = NULL;
+    }
+    if (qos_monitoring_report->dl_con_info) {
+        OpenAPI_list_for_each(qos_monitoring_report->dl_con_info, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(qos_monitoring_report->dl_con_info);
+        qos_monitoring_report->dl_con_info = NULL;
+    }
+    if (qos_monitoring_report->ul_data_rate) {
+        ogs_free(qos_monitoring_report->ul_data_rate);
+        qos_monitoring_report->ul_data_rate = NULL;
+    }
+    if (qos_monitoring_report->dl_data_rate) {
+        ogs_free(qos_monitoring_report->dl_data_rate);
+        qos_monitoring_report->dl_data_rate = NULL;
     }
     ogs_free(qos_monitoring_report);
 }
@@ -141,6 +175,63 @@ cJSON *OpenAPI_qos_monitoring_report_convertToJSON(OpenAPI_qos_monitoring_report
     }
     }
 
+    if (qos_monitoring_report->is_pdmf) {
+    if (cJSON_AddBoolToObject(item, "pdmf", qos_monitoring_report->pdmf) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [pdmf]");
+        goto end;
+    }
+    }
+
+    if (qos_monitoring_report->ul_con_info) {
+    cJSON *ul_con_infoList = cJSON_AddArrayToObject(item, "ulConInfo");
+    if (ul_con_infoList == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [ul_con_info]");
+        goto end;
+    }
+    OpenAPI_list_for_each(qos_monitoring_report->ul_con_info, node) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [ul_con_info]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(ul_con_infoList, "", *(double *)node->data) == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [ul_con_info]");
+            goto end;
+        }
+    }
+    }
+
+    if (qos_monitoring_report->dl_con_info) {
+    cJSON *dl_con_infoList = cJSON_AddArrayToObject(item, "dlConInfo");
+    if (dl_con_infoList == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [dl_con_info]");
+        goto end;
+    }
+    OpenAPI_list_for_each(qos_monitoring_report->dl_con_info, node) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [dl_con_info]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(dl_con_infoList, "", *(double *)node->data) == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [dl_con_info]");
+            goto end;
+        }
+    }
+    }
+
+    if (qos_monitoring_report->ul_data_rate) {
+    if (cJSON_AddStringToObject(item, "ulDataRate", qos_monitoring_report->ul_data_rate) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [ul_data_rate]");
+        goto end;
+    }
+    }
+
+    if (qos_monitoring_report->dl_data_rate) {
+    if (cJSON_AddStringToObject(item, "dlDataRate", qos_monitoring_report->dl_data_rate) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_report_convertToJSON() failed [dl_data_rate]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -157,6 +248,13 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
     OpenAPI_list_t *dl_delaysList = NULL;
     cJSON *rt_delays = NULL;
     OpenAPI_list_t *rt_delaysList = NULL;
+    cJSON *pdmf = NULL;
+    cJSON *ul_con_info = NULL;
+    OpenAPI_list_t *ul_con_infoList = NULL;
+    cJSON *dl_con_info = NULL;
+    OpenAPI_list_t *dl_con_infoList = NULL;
+    cJSON *ul_data_rate = NULL;
+    cJSON *dl_data_rate = NULL;
     flows = cJSON_GetObjectItemCaseSensitive(qos_monitoring_reportJSON, "flows");
     if (flows) {
         cJSON *flows_local = NULL;
@@ -262,11 +360,95 @@ OpenAPI_qos_monitoring_report_t *OpenAPI_qos_monitoring_report_parseFromJSON(cJS
         }
     }
 
+    pdmf = cJSON_GetObjectItemCaseSensitive(qos_monitoring_reportJSON, "pdmf");
+    if (pdmf) {
+    if (!cJSON_IsBool(pdmf)) {
+        ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [pdmf]");
+        goto end;
+    }
+    }
+
+    ul_con_info = cJSON_GetObjectItemCaseSensitive(qos_monitoring_reportJSON, "ulConInfo");
+    if (ul_con_info) {
+        cJSON *ul_con_info_local = NULL;
+        if (!cJSON_IsArray(ul_con_info)) {
+            ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [ul_con_info]");
+            goto end;
+        }
+
+        ul_con_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(ul_con_info_local, ul_con_info) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsNumber(ul_con_info_local)) {
+                ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [ul_con_info]");
+                goto end;
+            }
+            localDouble = (double *)ogs_calloc(1, sizeof(double));
+            if (!localDouble) {
+                ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [ul_con_info]");
+                goto end;
+            }
+            *localDouble = ul_con_info_local->valuedouble;
+            OpenAPI_list_add(ul_con_infoList, localDouble);
+        }
+    }
+
+    dl_con_info = cJSON_GetObjectItemCaseSensitive(qos_monitoring_reportJSON, "dlConInfo");
+    if (dl_con_info) {
+        cJSON *dl_con_info_local = NULL;
+        if (!cJSON_IsArray(dl_con_info)) {
+            ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [dl_con_info]");
+            goto end;
+        }
+
+        dl_con_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(dl_con_info_local, dl_con_info) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsNumber(dl_con_info_local)) {
+                ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [dl_con_info]");
+                goto end;
+            }
+            localDouble = (double *)ogs_calloc(1, sizeof(double));
+            if (!localDouble) {
+                ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [dl_con_info]");
+                goto end;
+            }
+            *localDouble = dl_con_info_local->valuedouble;
+            OpenAPI_list_add(dl_con_infoList, localDouble);
+        }
+    }
+
+    ul_data_rate = cJSON_GetObjectItemCaseSensitive(qos_monitoring_reportJSON, "ulDataRate");
+    if (ul_data_rate) {
+    if (!cJSON_IsString(ul_data_rate) && !cJSON_IsNull(ul_data_rate)) {
+        ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [ul_data_rate]");
+        goto end;
+    }
+    }
+
+    dl_data_rate = cJSON_GetObjectItemCaseSensitive(qos_monitoring_reportJSON, "dlDataRate");
+    if (dl_data_rate) {
+    if (!cJSON_IsString(dl_data_rate) && !cJSON_IsNull(dl_data_rate)) {
+        ogs_error("OpenAPI_qos_monitoring_report_parseFromJSON() failed [dl_data_rate]");
+        goto end;
+    }
+    }
+
     qos_monitoring_report_local_var = OpenAPI_qos_monitoring_report_create (
         flows ? flowsList : NULL,
         ul_delays ? ul_delaysList : NULL,
         dl_delays ? dl_delaysList : NULL,
-        rt_delays ? rt_delaysList : NULL
+        rt_delays ? rt_delaysList : NULL,
+        pdmf ? true : false,
+        pdmf ? pdmf->valueint : 0,
+        ul_con_info ? ul_con_infoList : NULL,
+        dl_con_info ? dl_con_infoList : NULL,
+        ul_data_rate && !cJSON_IsNull(ul_data_rate) ? ogs_strdup(ul_data_rate->valuestring) : NULL,
+        dl_data_rate && !cJSON_IsNull(dl_data_rate) ? ogs_strdup(dl_data_rate->valuestring) : NULL
     );
 
     return qos_monitoring_report_local_var;
@@ -298,6 +480,20 @@ end:
         }
         OpenAPI_list_free(rt_delaysList);
         rt_delaysList = NULL;
+    }
+    if (ul_con_infoList) {
+        OpenAPI_list_for_each(ul_con_infoList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(ul_con_infoList);
+        ul_con_infoList = NULL;
+    }
+    if (dl_con_infoList) {
+        OpenAPI_list_for_each(dl_con_infoList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(dl_con_infoList);
+        dl_con_infoList = NULL;
     }
     return NULL;
 }

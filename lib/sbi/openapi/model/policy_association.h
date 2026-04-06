@@ -12,14 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_policy_association_s OpenAPI_policy_association_t;
 #include "ambr.h"
 #include "as_time_distribution_param.h"
+#include "charging_information.h"
 #include "pcf_ue_callback_info.h"
 #include "pdu_session_info.h"
 #include "policy_association_request.h"
 #include "presence_info.h"
 #include "request_trigger.h"
 #include "service_area_restriction.h"
+#include "slice_repl_req.h"
+#include "slice_usg_ctrl_info.h"
 #include "smf_selection_data.h"
 #include "ue_slice_mbr.h"
 #include "wireline_service_area_restriction.h"
@@ -28,14 +32,15 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_policy_association_s OpenAPI_policy_association_t;
-typedef struct OpenAPI_policy_association_s {
+struct OpenAPI_policy_association_s {
     struct OpenAPI_policy_association_request_s *request;
     OpenAPI_list_t *triggers;
     struct OpenAPI_service_area_restriction_s *serv_area_res;
     struct OpenAPI_wireline_service_area_restriction_s *wl_serv_area_res;
     bool is_rfsp;
     int rfsp;
+    bool is_rfsp_val_time;
+    int rfsp_val_time;
     bool is_target_rfsp;
     int target_rfsp;
     bool is_smf_sel_info_null;
@@ -43,14 +48,18 @@ typedef struct OpenAPI_policy_association_s {
     struct OpenAPI_ambr_s *ue_ambr;
     OpenAPI_list_t *ue_slice_mbrs;
     OpenAPI_list_t* pras;
-    char *supp_feat;
     bool is_pcf_ue_info_null;
     struct OpenAPI_pcf_ue_callback_info_s *pcf_ue_info;
     bool is_match_pdus_null;
     OpenAPI_list_t *match_pdus;
     bool is_as_time_dis_param_null;
     struct OpenAPI_as_time_distribution_param_s *as_time_dis_param;
-} OpenAPI_policy_association_t;
+    OpenAPI_list_t* slice_usg_ctrl_info_sets;
+    struct OpenAPI_charging_information_s *chf_info;
+    char *chf_group_id;
+    struct OpenAPI_slice_repl_req_s *slice_repl_req;
+    char *supp_feat;
+};
 
 OpenAPI_policy_association_t *OpenAPI_policy_association_create(
     OpenAPI_policy_association_request_t *request,
@@ -59,6 +68,8 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_create(
     OpenAPI_wireline_service_area_restriction_t *wl_serv_area_res,
     bool is_rfsp,
     int rfsp,
+    bool is_rfsp_val_time,
+    int rfsp_val_time,
     bool is_target_rfsp,
     int target_rfsp,
     bool is_smf_sel_info_null,
@@ -66,13 +77,17 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_create(
     OpenAPI_ambr_t *ue_ambr,
     OpenAPI_list_t *ue_slice_mbrs,
     OpenAPI_list_t* pras,
-    char *supp_feat,
     bool is_pcf_ue_info_null,
     OpenAPI_pcf_ue_callback_info_t *pcf_ue_info,
     bool is_match_pdus_null,
     OpenAPI_list_t *match_pdus,
     bool is_as_time_dis_param_null,
-    OpenAPI_as_time_distribution_param_t *as_time_dis_param
+    OpenAPI_as_time_distribution_param_t *as_time_dis_param,
+    OpenAPI_list_t* slice_usg_ctrl_info_sets,
+    OpenAPI_charging_information_t *chf_info,
+    char *chf_group_id,
+    OpenAPI_slice_repl_req_t *slice_repl_req,
+    char *supp_feat
 );
 void OpenAPI_policy_association_free(OpenAPI_policy_association_t *policy_association);
 OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *policy_associationJSON);

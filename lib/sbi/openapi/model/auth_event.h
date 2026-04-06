@@ -12,14 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_auth_event_s OpenAPI_auth_event_t;
 #include "auth_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_auth_event_s OpenAPI_auth_event_t;
-typedef struct OpenAPI_auth_event_s {
+struct OpenAPI_auth_event_s {
     char *nf_instance_id;
     int success;
     char *time_stamp;
@@ -29,7 +29,13 @@ typedef struct OpenAPI_auth_event_s {
     int auth_removal_ind;
     char *nf_set_id;
     OpenAPI_list_t *reset_ids;
-} OpenAPI_auth_event_t;
+    char *data_restoration_callback_uri;
+    bool is_udr_restart_ind;
+    int udr_restart_ind;
+    char *last_synchronization_time;
+    bool is_nswo_ind;
+    int nswo_ind;
+};
 
 OpenAPI_auth_event_t *OpenAPI_auth_event_create(
     char *nf_instance_id,
@@ -40,7 +46,13 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_create(
     bool is_auth_removal_ind,
     int auth_removal_ind,
     char *nf_set_id,
-    OpenAPI_list_t *reset_ids
+    OpenAPI_list_t *reset_ids,
+    char *data_restoration_callback_uri,
+    bool is_udr_restart_ind,
+    int udr_restart_ind,
+    char *last_synchronization_time,
+    bool is_nswo_ind,
+    int nswo_ind
 );
 void OpenAPI_auth_event_free(OpenAPI_auth_event_t *auth_event);
 OpenAPI_auth_event_t *OpenAPI_auth_event_parseFromJSON(cJSON *auth_eventJSON);

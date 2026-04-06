@@ -6,6 +6,7 @@
 
 OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     char *qm_id,
+    OpenAPI_qos_monitoring_param_type_e qos_mon_param_type,
     OpenAPI_list_t *req_qos_mon_params,
     OpenAPI_list_t *rep_freqs,
     bool is_rep_thresh_dl_null,
@@ -17,6 +18,12 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     bool is_rep_thresh_rp_null,
     bool is_rep_thresh_rp,
     int rep_thresh_rp,
+    bool is_con_thresh_dl_null,
+    bool is_con_thresh_dl,
+    int con_thresh_dl,
+    bool is_con_thresh_ul_null,
+    bool is_con_thresh_ul,
+    int con_thresh_ul,
     bool is_wait_time_null,
     bool is_wait_time,
     int wait_time,
@@ -28,13 +35,24 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     bool is_notify_corre_id_null,
     char *notify_corre_id,
     bool is_direct_notif_ind,
-    int direct_notif_ind
+    int direct_notif_ind,
+    bool is_avrg_wndw_null,
+    bool is_avrg_wndw,
+    int avrg_wndw,
+    bool is_rep_thresh_dat_rate_ul_null,
+    char *rep_thresh_dat_rate_ul,
+    bool is_rep_thresh_dat_rate_dl_null,
+    char *rep_thresh_dat_rate_dl,
+    OpenAPI_list_t *avl_bitrate_ul_thrs,
+    OpenAPI_list_t *avl_bitrate_dl_thrs,
+    char *data_coll_app_id
 )
 {
     OpenAPI_qos_monitoring_data_t *qos_monitoring_data_local_var = ogs_malloc(sizeof(OpenAPI_qos_monitoring_data_t));
     ogs_assert(qos_monitoring_data_local_var);
 
     qos_monitoring_data_local_var->qm_id = qm_id;
+    qos_monitoring_data_local_var->qos_mon_param_type = qos_mon_param_type;
     qos_monitoring_data_local_var->req_qos_mon_params = req_qos_mon_params;
     qos_monitoring_data_local_var->rep_freqs = rep_freqs;
     qos_monitoring_data_local_var->is_rep_thresh_dl_null = is_rep_thresh_dl_null;
@@ -46,6 +64,12 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     qos_monitoring_data_local_var->is_rep_thresh_rp_null = is_rep_thresh_rp_null;
     qos_monitoring_data_local_var->is_rep_thresh_rp = is_rep_thresh_rp;
     qos_monitoring_data_local_var->rep_thresh_rp = rep_thresh_rp;
+    qos_monitoring_data_local_var->is_con_thresh_dl_null = is_con_thresh_dl_null;
+    qos_monitoring_data_local_var->is_con_thresh_dl = is_con_thresh_dl;
+    qos_monitoring_data_local_var->con_thresh_dl = con_thresh_dl;
+    qos_monitoring_data_local_var->is_con_thresh_ul_null = is_con_thresh_ul_null;
+    qos_monitoring_data_local_var->is_con_thresh_ul = is_con_thresh_ul;
+    qos_monitoring_data_local_var->con_thresh_ul = con_thresh_ul;
     qos_monitoring_data_local_var->is_wait_time_null = is_wait_time_null;
     qos_monitoring_data_local_var->is_wait_time = is_wait_time;
     qos_monitoring_data_local_var->wait_time = wait_time;
@@ -58,6 +82,16 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_create(
     qos_monitoring_data_local_var->notify_corre_id = notify_corre_id;
     qos_monitoring_data_local_var->is_direct_notif_ind = is_direct_notif_ind;
     qos_monitoring_data_local_var->direct_notif_ind = direct_notif_ind;
+    qos_monitoring_data_local_var->is_avrg_wndw_null = is_avrg_wndw_null;
+    qos_monitoring_data_local_var->is_avrg_wndw = is_avrg_wndw;
+    qos_monitoring_data_local_var->avrg_wndw = avrg_wndw;
+    qos_monitoring_data_local_var->is_rep_thresh_dat_rate_ul_null = is_rep_thresh_dat_rate_ul_null;
+    qos_monitoring_data_local_var->rep_thresh_dat_rate_ul = rep_thresh_dat_rate_ul;
+    qos_monitoring_data_local_var->is_rep_thresh_dat_rate_dl_null = is_rep_thresh_dat_rate_dl_null;
+    qos_monitoring_data_local_var->rep_thresh_dat_rate_dl = rep_thresh_dat_rate_dl;
+    qos_monitoring_data_local_var->avl_bitrate_ul_thrs = avl_bitrate_ul_thrs;
+    qos_monitoring_data_local_var->avl_bitrate_dl_thrs = avl_bitrate_dl_thrs;
+    qos_monitoring_data_local_var->data_coll_app_id = data_coll_app_id;
 
     return qos_monitoring_data_local_var;
 }
@@ -89,6 +123,32 @@ void OpenAPI_qos_monitoring_data_free(OpenAPI_qos_monitoring_data_t *qos_monitor
         ogs_free(qos_monitoring_data->notify_corre_id);
         qos_monitoring_data->notify_corre_id = NULL;
     }
+    if (qos_monitoring_data->rep_thresh_dat_rate_ul) {
+        ogs_free(qos_monitoring_data->rep_thresh_dat_rate_ul);
+        qos_monitoring_data->rep_thresh_dat_rate_ul = NULL;
+    }
+    if (qos_monitoring_data->rep_thresh_dat_rate_dl) {
+        ogs_free(qos_monitoring_data->rep_thresh_dat_rate_dl);
+        qos_monitoring_data->rep_thresh_dat_rate_dl = NULL;
+    }
+    if (qos_monitoring_data->avl_bitrate_ul_thrs) {
+        OpenAPI_list_for_each(qos_monitoring_data->avl_bitrate_ul_thrs, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(qos_monitoring_data->avl_bitrate_ul_thrs);
+        qos_monitoring_data->avl_bitrate_ul_thrs = NULL;
+    }
+    if (qos_monitoring_data->avl_bitrate_dl_thrs) {
+        OpenAPI_list_for_each(qos_monitoring_data->avl_bitrate_dl_thrs, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(qos_monitoring_data->avl_bitrate_dl_thrs);
+        qos_monitoring_data->avl_bitrate_dl_thrs = NULL;
+    }
+    if (qos_monitoring_data->data_coll_app_id) {
+        ogs_free(qos_monitoring_data->data_coll_app_id);
+        qos_monitoring_data->data_coll_app_id = NULL;
+    }
     ogs_free(qos_monitoring_data);
 }
 
@@ -110,6 +170,13 @@ cJSON *OpenAPI_qos_monitoring_data_convertToJSON(OpenAPI_qos_monitoring_data_t *
     if (cJSON_AddStringToObject(item, "qmId", qos_monitoring_data->qm_id) == NULL) {
         ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [qm_id]");
         goto end;
+    }
+
+    if (qos_monitoring_data->qos_mon_param_type != OpenAPI_qos_monitoring_param_type_NULL) {
+    if (cJSON_AddStringToObject(item, "qosMonParamType", OpenAPI_qos_monitoring_param_type_ToString(qos_monitoring_data->qos_mon_param_type)) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [qos_mon_param_type]");
+        goto end;
+    }
     }
 
     if (qos_monitoring_data->req_qos_mon_params == OpenAPI_requested_qos_monitoring_parameter_NULL) {
@@ -180,6 +247,30 @@ cJSON *OpenAPI_qos_monitoring_data_convertToJSON(OpenAPI_qos_monitoring_data_t *
         }
     }
 
+    if (qos_monitoring_data->is_con_thresh_dl) {
+    if (cJSON_AddNumberToObject(item, "conThreshDl", qos_monitoring_data->con_thresh_dl) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [con_thresh_dl]");
+        goto end;
+    }
+    } else if (qos_monitoring_data->is_con_thresh_dl_null) {
+        if (cJSON_AddNullToObject(item, "conThreshDl") == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [con_thresh_dl]");
+            goto end;
+        }
+    }
+
+    if (qos_monitoring_data->is_con_thresh_ul) {
+    if (cJSON_AddNumberToObject(item, "conThreshUl", qos_monitoring_data->con_thresh_ul) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [con_thresh_ul]");
+        goto end;
+    }
+    } else if (qos_monitoring_data->is_con_thresh_ul_null) {
+        if (cJSON_AddNullToObject(item, "conThreshUl") == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [con_thresh_ul]");
+            goto end;
+        }
+    }
+
     if (qos_monitoring_data->is_wait_time) {
     if (cJSON_AddNumberToObject(item, "waitTime", qos_monitoring_data->wait_time) == NULL) {
         ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [wait_time]");
@@ -235,6 +326,77 @@ cJSON *OpenAPI_qos_monitoring_data_convertToJSON(OpenAPI_qos_monitoring_data_t *
     }
     }
 
+    if (qos_monitoring_data->is_avrg_wndw) {
+    if (cJSON_AddNumberToObject(item, "avrgWndw", qos_monitoring_data->avrg_wndw) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [avrg_wndw]");
+        goto end;
+    }
+    } else if (qos_monitoring_data->is_avrg_wndw_null) {
+        if (cJSON_AddNullToObject(item, "avrgWndw") == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [avrg_wndw]");
+            goto end;
+        }
+    }
+
+    if (qos_monitoring_data->rep_thresh_dat_rate_ul) {
+    if (cJSON_AddStringToObject(item, "repThreshDatRateUl", qos_monitoring_data->rep_thresh_dat_rate_ul) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [rep_thresh_dat_rate_ul]");
+        goto end;
+    }
+    } else if (qos_monitoring_data->is_rep_thresh_dat_rate_ul_null) {
+        if (cJSON_AddNullToObject(item, "repThreshDatRateUl") == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [rep_thresh_dat_rate_ul]");
+            goto end;
+        }
+    }
+
+    if (qos_monitoring_data->rep_thresh_dat_rate_dl) {
+    if (cJSON_AddStringToObject(item, "repThreshDatRateDl", qos_monitoring_data->rep_thresh_dat_rate_dl) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [rep_thresh_dat_rate_dl]");
+        goto end;
+    }
+    } else if (qos_monitoring_data->is_rep_thresh_dat_rate_dl_null) {
+        if (cJSON_AddNullToObject(item, "repThreshDatRateDl") == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [rep_thresh_dat_rate_dl]");
+            goto end;
+        }
+    }
+
+    if (qos_monitoring_data->avl_bitrate_ul_thrs) {
+    cJSON *avl_bitrate_ul_thrsList = cJSON_AddArrayToObject(item, "avlBitrateUlThrs");
+    if (avl_bitrate_ul_thrsList == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [avl_bitrate_ul_thrs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(qos_monitoring_data->avl_bitrate_ul_thrs, node) {
+        if (cJSON_AddStringToObject(avl_bitrate_ul_thrsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [avl_bitrate_ul_thrs]");
+            goto end;
+        }
+    }
+    }
+
+    if (qos_monitoring_data->avl_bitrate_dl_thrs) {
+    cJSON *avl_bitrate_dl_thrsList = cJSON_AddArrayToObject(item, "avlBitrateDlThrs");
+    if (avl_bitrate_dl_thrsList == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [avl_bitrate_dl_thrs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(qos_monitoring_data->avl_bitrate_dl_thrs, node) {
+        if (cJSON_AddStringToObject(avl_bitrate_dl_thrsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [avl_bitrate_dl_thrs]");
+            goto end;
+        }
+    }
+    }
+
+    if (qos_monitoring_data->data_coll_app_id) {
+    if (cJSON_AddStringToObject(item, "dataCollAppId", qos_monitoring_data->data_coll_app_id) == NULL) {
+        ogs_error("OpenAPI_qos_monitoring_data_convertToJSON() failed [data_coll_app_id]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -244,6 +406,8 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
     OpenAPI_qos_monitoring_data_t *qos_monitoring_data_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *qm_id = NULL;
+    cJSON *qos_mon_param_type = NULL;
+    OpenAPI_qos_monitoring_param_type_e qos_mon_param_typeVariable = 0;
     cJSON *req_qos_mon_params = NULL;
     OpenAPI_list_t *req_qos_mon_paramsList = NULL;
     cJSON *rep_freqs = NULL;
@@ -251,11 +415,21 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
     cJSON *rep_thresh_dl = NULL;
     cJSON *rep_thresh_ul = NULL;
     cJSON *rep_thresh_rp = NULL;
+    cJSON *con_thresh_dl = NULL;
+    cJSON *con_thresh_ul = NULL;
     cJSON *wait_time = NULL;
     cJSON *rep_period = NULL;
     cJSON *notify_uri = NULL;
     cJSON *notify_corre_id = NULL;
     cJSON *direct_notif_ind = NULL;
+    cJSON *avrg_wndw = NULL;
+    cJSON *rep_thresh_dat_rate_ul = NULL;
+    cJSON *rep_thresh_dat_rate_dl = NULL;
+    cJSON *avl_bitrate_ul_thrs = NULL;
+    OpenAPI_list_t *avl_bitrate_ul_thrsList = NULL;
+    cJSON *avl_bitrate_dl_thrs = NULL;
+    OpenAPI_list_t *avl_bitrate_dl_thrsList = NULL;
+    cJSON *data_coll_app_id = NULL;
     qm_id = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "qmId");
     if (!qm_id) {
         ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [qm_id]");
@@ -264,6 +438,15 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
     if (!cJSON_IsString(qm_id)) {
         ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [qm_id]");
         goto end;
+    }
+
+    qos_mon_param_type = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "qosMonParamType");
+    if (qos_mon_param_type) {
+    if (!cJSON_IsString(qos_mon_param_type)) {
+        ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [qos_mon_param_type]");
+        goto end;
+    }
+    qos_mon_param_typeVariable = OpenAPI_qos_monitoring_param_type_FromString(qos_mon_param_type->valuestring);
     }
 
     req_qos_mon_params = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "reqQosMonParams");
@@ -360,6 +543,26 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
     }
     }
 
+    con_thresh_dl = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "conThreshDl");
+    if (con_thresh_dl) {
+    if (!cJSON_IsNull(con_thresh_dl)) {
+    if (!cJSON_IsNumber(con_thresh_dl)) {
+        ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [con_thresh_dl]");
+        goto end;
+    }
+    }
+    }
+
+    con_thresh_ul = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "conThreshUl");
+    if (con_thresh_ul) {
+    if (!cJSON_IsNull(con_thresh_ul)) {
+    if (!cJSON_IsNumber(con_thresh_ul)) {
+        ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [con_thresh_ul]");
+        goto end;
+    }
+    }
+    }
+
     wait_time = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "waitTime");
     if (wait_time) {
     if (!cJSON_IsNull(wait_time)) {
@@ -408,8 +611,89 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
     }
     }
 
+    avrg_wndw = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "avrgWndw");
+    if (avrg_wndw) {
+    if (!cJSON_IsNull(avrg_wndw)) {
+    if (!cJSON_IsNumber(avrg_wndw)) {
+        ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [avrg_wndw]");
+        goto end;
+    }
+    }
+    }
+
+    rep_thresh_dat_rate_ul = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "repThreshDatRateUl");
+    if (rep_thresh_dat_rate_ul) {
+    if (!cJSON_IsNull(rep_thresh_dat_rate_ul)) {
+    if (!cJSON_IsString(rep_thresh_dat_rate_ul) && !cJSON_IsNull(rep_thresh_dat_rate_ul)) {
+        ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [rep_thresh_dat_rate_ul]");
+        goto end;
+    }
+    }
+    }
+
+    rep_thresh_dat_rate_dl = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "repThreshDatRateDl");
+    if (rep_thresh_dat_rate_dl) {
+    if (!cJSON_IsNull(rep_thresh_dat_rate_dl)) {
+    if (!cJSON_IsString(rep_thresh_dat_rate_dl) && !cJSON_IsNull(rep_thresh_dat_rate_dl)) {
+        ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [rep_thresh_dat_rate_dl]");
+        goto end;
+    }
+    }
+    }
+
+    avl_bitrate_ul_thrs = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "avlBitrateUlThrs");
+    if (avl_bitrate_ul_thrs) {
+        cJSON *avl_bitrate_ul_thrs_local = NULL;
+        if (!cJSON_IsArray(avl_bitrate_ul_thrs)) {
+            ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [avl_bitrate_ul_thrs]");
+            goto end;
+        }
+
+        avl_bitrate_ul_thrsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(avl_bitrate_ul_thrs_local, avl_bitrate_ul_thrs) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(avl_bitrate_ul_thrs_local)) {
+                ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [avl_bitrate_ul_thrs]");
+                goto end;
+            }
+            OpenAPI_list_add(avl_bitrate_ul_thrsList, ogs_strdup(avl_bitrate_ul_thrs_local->valuestring));
+        }
+    }
+
+    avl_bitrate_dl_thrs = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "avlBitrateDlThrs");
+    if (avl_bitrate_dl_thrs) {
+        cJSON *avl_bitrate_dl_thrs_local = NULL;
+        if (!cJSON_IsArray(avl_bitrate_dl_thrs)) {
+            ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [avl_bitrate_dl_thrs]");
+            goto end;
+        }
+
+        avl_bitrate_dl_thrsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(avl_bitrate_dl_thrs_local, avl_bitrate_dl_thrs) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(avl_bitrate_dl_thrs_local)) {
+                ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [avl_bitrate_dl_thrs]");
+                goto end;
+            }
+            OpenAPI_list_add(avl_bitrate_dl_thrsList, ogs_strdup(avl_bitrate_dl_thrs_local->valuestring));
+        }
+    }
+
+    data_coll_app_id = cJSON_GetObjectItemCaseSensitive(qos_monitoring_dataJSON, "dataCollAppId");
+    if (data_coll_app_id) {
+    if (!cJSON_IsString(data_coll_app_id) && !cJSON_IsNull(data_coll_app_id)) {
+        ogs_error("OpenAPI_qos_monitoring_data_parseFromJSON() failed [data_coll_app_id]");
+        goto end;
+    }
+    }
+
     qos_monitoring_data_local_var = OpenAPI_qos_monitoring_data_create (
         ogs_strdup(qm_id->valuestring),
+        qos_mon_param_type ? qos_mon_param_typeVariable : 0,
         req_qos_mon_paramsList,
         rep_freqsList,
         rep_thresh_dl && cJSON_IsNull(rep_thresh_dl) ? true : false,
@@ -421,6 +705,12 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
         rep_thresh_rp && cJSON_IsNull(rep_thresh_rp) ? true : false,
         rep_thresh_rp ? true : false,
         rep_thresh_rp ? rep_thresh_rp->valuedouble : 0,
+        con_thresh_dl && cJSON_IsNull(con_thresh_dl) ? true : false,
+        con_thresh_dl ? true : false,
+        con_thresh_dl ? con_thresh_dl->valuedouble : 0,
+        con_thresh_ul && cJSON_IsNull(con_thresh_ul) ? true : false,
+        con_thresh_ul ? true : false,
+        con_thresh_ul ? con_thresh_ul->valuedouble : 0,
         wait_time && cJSON_IsNull(wait_time) ? true : false,
         wait_time ? true : false,
         wait_time ? wait_time->valuedouble : 0,
@@ -432,7 +722,17 @@ OpenAPI_qos_monitoring_data_t *OpenAPI_qos_monitoring_data_parseFromJSON(cJSON *
         notify_corre_id && cJSON_IsNull(notify_corre_id) ? true : false,
         notify_corre_id && !cJSON_IsNull(notify_corre_id) ? ogs_strdup(notify_corre_id->valuestring) : NULL,
         direct_notif_ind ? true : false,
-        direct_notif_ind ? direct_notif_ind->valueint : 0
+        direct_notif_ind ? direct_notif_ind->valueint : 0,
+        avrg_wndw && cJSON_IsNull(avrg_wndw) ? true : false,
+        avrg_wndw ? true : false,
+        avrg_wndw ? avrg_wndw->valuedouble : 0,
+        rep_thresh_dat_rate_ul && cJSON_IsNull(rep_thresh_dat_rate_ul) ? true : false,
+        rep_thresh_dat_rate_ul && !cJSON_IsNull(rep_thresh_dat_rate_ul) ? ogs_strdup(rep_thresh_dat_rate_ul->valuestring) : NULL,
+        rep_thresh_dat_rate_dl && cJSON_IsNull(rep_thresh_dat_rate_dl) ? true : false,
+        rep_thresh_dat_rate_dl && !cJSON_IsNull(rep_thresh_dat_rate_dl) ? ogs_strdup(rep_thresh_dat_rate_dl->valuestring) : NULL,
+        avl_bitrate_ul_thrs ? avl_bitrate_ul_thrsList : NULL,
+        avl_bitrate_dl_thrs ? avl_bitrate_dl_thrsList : NULL,
+        data_coll_app_id && !cJSON_IsNull(data_coll_app_id) ? ogs_strdup(data_coll_app_id->valuestring) : NULL
     );
 
     return qos_monitoring_data_local_var;
@@ -444,6 +744,20 @@ end:
     if (rep_freqsList) {
         OpenAPI_list_free(rep_freqsList);
         rep_freqsList = NULL;
+    }
+    if (avl_bitrate_ul_thrsList) {
+        OpenAPI_list_for_each(avl_bitrate_ul_thrsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(avl_bitrate_ul_thrsList);
+        avl_bitrate_ul_thrsList = NULL;
+    }
+    if (avl_bitrate_dl_thrsList) {
+        OpenAPI_list_for_each(avl_bitrate_dl_thrsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(avl_bitrate_dl_thrsList);
+        avl_bitrate_dl_thrsList = NULL;
     }
     return NULL;
 }

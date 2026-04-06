@@ -1,7 +1,7 @@
 /*
  * sm_policy_update_context_data.h
  *
- * Contains the policy control request trigger(s) that were met and the corresponding new value(s) or the error report of the policy enforcement.
+ * 
  */
 
 #ifndef _OpenAPI_sm_policy_update_context_data_H_
@@ -12,22 +12,30 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_policy_update_context_data_s OpenAPI_sm_policy_update_context_data_t;
 #include "acc_net_ch_id.h"
 #include "access_type.h"
 #include "accu_usage_report.h"
 #include "additional_access_info.h"
 #include "ambr.h"
 #include "app_detection_info.h"
+#include "atsss_capability_ext.h"
+#include "bat_offset_info_pcc.h"
 #include "bridge_management_container.h"
+#include "capability_report.h"
 #include "credit_management_status.h"
 #include "ddd_traffic_descriptor.h"
 #include "dl_data_delivery_status.h"
 #include "invalid_param.h"
 #include "ip_multicast_address_info.h"
+#include "l4s_support_info.h"
 #include "ma_pdu_indication.h"
+#include "n1_n2_message_transfer_cause.h"
+#include "non3gpp_device_info.h"
 #include "npcf_atsss_capability.h"
 #include "nwdaf_data.h"
 #include "pcf_ue_callback_info.h"
+#include "pdu_session_type.h"
 #include "plmn_id_nid.h"
 #include "policy_control_request_trigger.h"
 #include "policy_decision_failure_code.h"
@@ -41,10 +49,13 @@
 #include "satellite_backhaul_category.h"
 #include "serving_nf_identity.h"
 #include "session_rule_report.h"
+#include "snssai.h"
+#include "ssc_mode.h"
 #include "subscribed_default_qos.h"
 #include "trace_data.h"
 #include "tsn_bridge_info.h"
 #include "ue_initiated_resource_request.h"
+#include "ue_reachability_status.h"
 #include "user_location.h"
 #include "vplmn_qos.h"
 
@@ -52,8 +63,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_policy_update_context_data_s OpenAPI_sm_policy_update_context_data_t;
-typedef struct OpenAPI_sm_policy_update_context_data_s {
+struct OpenAPI_sm_policy_update_context_data_s {
     OpenAPI_list_t *rep_policy_ctrl_req_triggers;
     OpenAPI_list_t *acc_net_ch_ids;
     OpenAPI_access_type_e access_type;
@@ -70,6 +80,8 @@ typedef struct OpenAPI_sm_policy_update_context_data_s {
     char *rel_ipv6_address_prefix;
     char *add_ipv6_addr_prefixes;
     char *add_rel_ipv6_addr_prefixes;
+    OpenAPI_list_t *multi_ipv6_prefixes;
+    OpenAPI_list_t *multi_rel_ipv6_prefixes;
     char *rel_ue_mac;
     char *ue_mac;
     struct OpenAPI_ambr_s *subs_sess_ambr;
@@ -88,6 +100,8 @@ typedef struct OpenAPI_sm_policy_update_context_data_s {
     OpenAPI_list_t *sess_rule_reports;
     OpenAPI_list_t *qnc_reports;
     OpenAPI_list_t *qos_mon_reports;
+    OpenAPI_list_t *qos_mon_dat_rate_reps;
+    OpenAPI_list_t *qos_mon_cong_reps;
     char *user_location_info_time;
     OpenAPI_list_t* rep_pra_infos;
     struct OpenAPI_ue_initiated_resource_request_s *ue_init_res_req;
@@ -100,10 +114,13 @@ typedef struct OpenAPI_sm_policy_update_context_data_s {
     struct OpenAPI_trace_data_s *trace_req;
     OpenAPI_ma_pdu_indication_e ma_pdu_ind;
     OpenAPI_npcf_atsss_capability_e atsss_capab;
+    OpenAPI_list_t *atsss_capabs;
     struct OpenAPI_tsn_bridge_info_s *tsn_bridge_info;
     struct OpenAPI_bridge_management_container_s *tsn_bridge_man_cont;
     struct OpenAPI_port_management_container_s *tsn_port_man_cont_dstt;
     OpenAPI_list_t *tsn_port_man_cont_nwtts;
+    char *tsc_notif_uri;
+    char *tsc_notif_corre_id;
     OpenAPI_list_t *mul_addr_infos;
     OpenAPI_list_t *policy_dec_failure_reports;
     OpenAPI_list_t *invalid_policy_decs;
@@ -118,7 +135,24 @@ typedef struct OpenAPI_sm_policy_update_context_data_s {
     OpenAPI_list_t *nwdaf_datas;
     bool is_an_gw_status;
     int an_gw_status;
-} OpenAPI_sm_policy_update_context_data_t;
+    char *ue_pol_cont;
+    OpenAPI_n1_n2_message_transfer_cause_e ue_pol_fail_report;
+    char *ursp_enf_info;
+    OpenAPI_ssc_mode_e ssc_mode;
+    char *ue_req_dnn;
+    OpenAPI_pdu_session_type_e ue_req_pdu_session_type;
+    OpenAPI_list_t *l4s_reports;
+    struct OpenAPI_snssai_s *alt_slice_info;
+    struct OpenAPI_bat_offset_info_pcc_s *bat_offset_info;
+    bool is_hrsbo_ind;
+    int hrsbo_ind;
+    OpenAPI_ue_reachability_status_e ue_reach_status;
+    bool is_retry_after;
+    int retry_after;
+    OpenAPI_list_t* qos_mon_cap_repos;
+    OpenAPI_list_t* n3g_dev_infos;
+    char *serv_sat_id;
+};
 
 OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_create(
     OpenAPI_list_t *rep_policy_ctrl_req_triggers,
@@ -137,6 +171,8 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     char *rel_ipv6_address_prefix,
     char *add_ipv6_addr_prefixes,
     char *add_rel_ipv6_addr_prefixes,
+    OpenAPI_list_t *multi_ipv6_prefixes,
+    OpenAPI_list_t *multi_rel_ipv6_prefixes,
     char *rel_ue_mac,
     char *ue_mac,
     OpenAPI_ambr_t *subs_sess_ambr,
@@ -155,6 +191,8 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     OpenAPI_list_t *sess_rule_reports,
     OpenAPI_list_t *qnc_reports,
     OpenAPI_list_t *qos_mon_reports,
+    OpenAPI_list_t *qos_mon_dat_rate_reps,
+    OpenAPI_list_t *qos_mon_cong_reps,
     char *user_location_info_time,
     OpenAPI_list_t* rep_pra_infos,
     OpenAPI_ue_initiated_resource_request_t *ue_init_res_req,
@@ -167,10 +205,13 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     OpenAPI_trace_data_t *trace_req,
     OpenAPI_ma_pdu_indication_e ma_pdu_ind,
     OpenAPI_npcf_atsss_capability_e atsss_capab,
+    OpenAPI_list_t *atsss_capabs,
     OpenAPI_tsn_bridge_info_t *tsn_bridge_info,
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,
     OpenAPI_list_t *tsn_port_man_cont_nwtts,
+    char *tsc_notif_uri,
+    char *tsc_notif_corre_id,
     OpenAPI_list_t *mul_addr_infos,
     OpenAPI_list_t *policy_dec_failure_reports,
     OpenAPI_list_t *invalid_policy_decs,
@@ -184,7 +225,24 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_c
     bool is_nwdaf_datas_null,
     OpenAPI_list_t *nwdaf_datas,
     bool is_an_gw_status,
-    int an_gw_status
+    int an_gw_status,
+    char *ue_pol_cont,
+    OpenAPI_n1_n2_message_transfer_cause_e ue_pol_fail_report,
+    char *ursp_enf_info,
+    OpenAPI_ssc_mode_e ssc_mode,
+    char *ue_req_dnn,
+    OpenAPI_pdu_session_type_e ue_req_pdu_session_type,
+    OpenAPI_list_t *l4s_reports,
+    OpenAPI_snssai_t *alt_slice_info,
+    OpenAPI_bat_offset_info_pcc_t *bat_offset_info,
+    bool is_hrsbo_ind,
+    int hrsbo_ind,
+    OpenAPI_ue_reachability_status_e ue_reach_status,
+    bool is_retry_after,
+    int retry_after,
+    OpenAPI_list_t* qos_mon_cap_repos,
+    OpenAPI_list_t* n3g_dev_infos,
+    char *serv_sat_id
 );
 void OpenAPI_sm_policy_update_context_data_free(OpenAPI_sm_policy_update_context_data_t *sm_policy_update_context_data);
 OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_parseFromJSON(cJSON *sm_policy_update_context_dataJSON);

@@ -87,7 +87,7 @@ typedef struct sepp_assoc_s {
     ogs_sbi_client_t *client;
 
     ogs_sbi_request_t *request;
-    ogs_sbi_service_type_e service_type;
+    OpenAPI_service_name_e service_name;
     OpenAPI_nf_type_e requester_nf_type;
 
     ogs_sbi_nf_instance_t *nf_service_producer;

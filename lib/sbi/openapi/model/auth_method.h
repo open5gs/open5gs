@@ -1,7 +1,7 @@
 /*
  * auth_method.h
  *
- * 
+ * Contains the Authentication Method.
  */
 
 #ifndef _OpenAPI_auth_method_H_

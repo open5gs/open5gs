@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_release_data_s OpenAPI_release_data_t;
 #include "cause.h"
 #include "n4_information.h"
 #include "ng_ap_cause.h"
@@ -23,8 +24,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_release_data_s OpenAPI_release_data_t;
-typedef struct OpenAPI_release_data_s {
+struct OpenAPI_release_data_s {
     OpenAPI_cause_e cause;
     struct OpenAPI_ng_ap_cause_s *ng_ap_cause;
     bool is__5g_mm_cause_value;
@@ -37,7 +37,7 @@ typedef struct OpenAPI_release_data_s {
     struct OpenAPI_n4_information_s *n4_info;
     struct OpenAPI_n4_information_s *n4_info_ext1;
     struct OpenAPI_n4_information_s *n4_info_ext2;
-} OpenAPI_release_data_t;
+};
 
 OpenAPI_release_data_t *OpenAPI_release_data_create(
     OpenAPI_cause_e cause,

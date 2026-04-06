@@ -1,7 +1,7 @@
 /*
  * parameter_combination.h
  *
- * Represents the combination used by the BSF to check whether there is an existing PCF binding  information. 
+ * Represents the combination used by the BSF to check whether there is an existing PCF binding information. 
  */
 
 #ifndef _OpenAPI_parameter_combination_H_
@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_parameter_combination_s OpenAPI_parameter_combination_t;
 #include "snssai.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_parameter_combination_s OpenAPI_parameter_combination_t;
-typedef struct OpenAPI_parameter_combination_s {
+struct OpenAPI_parameter_combination_s {
     char *supi;
     char *dnn;
     struct OpenAPI_snssai_s *snssai;
-} OpenAPI_parameter_combination_t;
+};
 
 OpenAPI_parameter_combination_t *OpenAPI_parameter_combination_create(
     char *supi,

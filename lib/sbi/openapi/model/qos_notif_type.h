@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_qos_notif_type_NULL = 0, OpenAPI_qos_notif_type_GUARANTEED, OpenAPI_qos_notif_type_NOT_GUARANTEED } OpenAPI_qos_notif_type_e;
+typedef enum { OpenAPI_qos_notif_type_NULL = 0, OpenAPI_qos_notif_type_GUARANTEED, OpenAPI_qos_notif_type_NOT_GUARANTEED, OpenAPI_qos_notif_type_NOT_GUARANTEED_DL, OpenAPI_qos_notif_type_NOT_GUARANTEED_UL } OpenAPI_qos_notif_type_e;
 
 char* OpenAPI_qos_notif_type_ToString(OpenAPI_qos_notif_type_e qos_notif_type);
 

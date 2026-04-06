@@ -58,6 +58,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
+    int service_name_id = OpenAPI_service_name_NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -165,8 +166,10 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             break;
         }
 
-        SWITCH(message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NUDM_UEAU)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message->h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nudm_ueau:
             if (message->res_status != OGS_SBI_HTTP_STATUS_OK &&
                 message->res_status != OGS_SBI_HTTP_STATUS_CREATED &&
                 message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
@@ -222,10 +225,10 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("Invalid API name [%s]", message->h.service.name);
             ogs_assert_if_reached();
-        END
+        }
         break;
 
 

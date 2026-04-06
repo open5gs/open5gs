@@ -873,7 +873,7 @@ bool smf_nsmf_handle_update_sm_context(
                     }
 
                     r = smf_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                            OpenAPI_service_name_nsmf_pdusession, NULL,
                             smf_nsmf_pdusession_build_hsmf_update_data,
                             sess, stream, SMF_UPDATE_STATE_DEACTIVATED, NULL);
                     ogs_expect(r == OGS_OK);
@@ -965,7 +965,7 @@ bool smf_nsmf_handle_update_sm_context(
                     SmContextUpdateData->up_cnx_state;
 
                 r = smf_sbi_discover_and_send(
-                        OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, NULL,
+                        OpenAPI_service_name_nsmf_pdusession, NULL,
                         smf_nsmf_pdusession_build_hsmf_update_data,
                         sess, stream, SMF_UPDATE_STATE_ACTIVATING, NULL);
                 ogs_expect(r == OGS_OK);
@@ -1676,7 +1676,7 @@ bool smf_nsmf_handle_create_data_in_hsmf(
     smf_metrics_inst_by_slice_add(&sess->serving_plmn_id, &sess->s_nssai,
             SMF_METR_CTR_SM_PDUSESSIONCREATIONREQ, 1);
 
-    r = smf_sbi_discover_and_send(OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
+    r = smf_sbi_discover_and_send(OpenAPI_service_name_nudm_sdm, NULL,
             smf_nudm_sdm_build_get,
             sess, stream, 0, (char *)OGS_SBI_RESOURCE_NAME_SM_DATA);
     ogs_expect(r == OGS_OK);

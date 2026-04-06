@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_context_retrieve_data_s OpenAPI_sm_context_retrieve_data_t;
 #include "mme_capabilities.h"
 #include "plmn_id.h"
 #include "sm_context_type.h"
@@ -20,15 +21,19 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_context_retrieve_data_s OpenAPI_sm_context_retrieve_data_t;
-typedef struct OpenAPI_sm_context_retrieve_data_s {
+struct OpenAPI_sm_context_retrieve_data_s {
     struct OpenAPI_mme_capabilities_s *target_mme_cap;
     OpenAPI_sm_context_type_e sm_context_type;
     struct OpenAPI_plmn_id_s *serving_network;
     OpenAPI_list_t *not_to_transfer_ebi_list;
     bool is_ran_unchanged_ind;
     int ran_unchanged_ind;
-} OpenAPI_sm_context_retrieve_data_t;
+    bool is_hrsbo_support_ind;
+    int hrsbo_support_ind;
+    bool is_ismf_lom_support_ind;
+    int ismf_lom_support_ind;
+    OpenAPI_list_t *stored_offload_ids;
+};
 
 OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_create(
     OpenAPI_mme_capabilities_t *target_mme_cap,
@@ -36,7 +41,12 @@ OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_create(
     OpenAPI_plmn_id_t *serving_network,
     OpenAPI_list_t *not_to_transfer_ebi_list,
     bool is_ran_unchanged_ind,
-    int ran_unchanged_ind
+    int ran_unchanged_ind,
+    bool is_hrsbo_support_ind,
+    int hrsbo_support_ind,
+    bool is_ismf_lom_support_ind,
+    int ismf_lom_support_ind,
+    OpenAPI_list_t *stored_offload_ids
 );
 void OpenAPI_sm_context_retrieve_data_free(OpenAPI_sm_context_retrieve_data_t *sm_context_retrieve_data);
 OpenAPI_sm_context_retrieve_data_t *OpenAPI_sm_context_retrieve_data_parseFromJSON(cJSON *sm_context_retrieve_dataJSON);

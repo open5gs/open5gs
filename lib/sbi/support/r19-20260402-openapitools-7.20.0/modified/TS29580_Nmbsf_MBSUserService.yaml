@@ -1,0 +1,443 @@
+openapi: 3.0.0
+
+info:
+  title: nmbsf-mbs-us
+  version: 1.2.0
+  description: |
+    API for MBS User Service.
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.580 V19.4.0; 5G System; Multicast/Broadcast Service Function Services.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.580/'
+
+servers:
+  - url: '{apiRoot}/nmbsf-mbs-us/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+#When the Nmbsf_MBSUserService API is consumed by a trusted or internal AF, then the
+#"oAuth2ClientCredentials" property shall contain an array of scopes including the API level
+#"nmbsf-mbs-us" scope as the only scope.
+
+
+paths:
+  /mbs-user-services:
+    get:
+      summary: Retrieve all the active MBS User Service(s) managed by the MBSF.
+      tags:
+        - MBS User Services (Collection)
+      operationId: RetrieveMBSUserServices
+      responses:
+        '200':
+          description: >
+            OK. All the active MBS User Services managed by the MBSF are returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MBSUserService'
+                minItems: 0
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request the creation of a new MBS User Service.
+      tags:
+        - MBS User Services (Collection)
+      operationId: CreateMBSUserService
+      requestBody:
+        description: >
+          Contains the parameters to request the creation of a new MBS User Service at the MBSF.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MBSUserService'
+      responses:
+        '201':
+          description: >
+            Created. A new MBS User Service is successfully created and a representation of the
+            created Individual MBS User Service resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSUserService'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nmbsf-mbs-us/v1/mbs-user-services/{mbsUserServId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+  /mbs-user-services/{mbsUserServId}:
+    parameters:
+      - name: mbsUserServId
+        in: path
+        description: Identifier of the Individual MBS User Service resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual MBS User Service resource.
+      tags:
+        - Individual MBS User Service (Document)
+      operationId: RetrieveIndMBSUserService
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual MBS User Service resource is successfully returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSUserService'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual MBS User Service resource.
+      tags:
+        - Individual MBS User Service (Document)
+      operationId: UpdateIndMBSUserService
+      requestBody:
+        description: >
+          Contains the updated representation of the Individual MBS User Service resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MBSUserService'
+      responses:
+        '200':
+          description: >
+            OK. The concerned Individual MBS User Service resource is successfully updated and a
+            representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSUserService'
+        '204':
+          description: >
+            No Content. The concerned Individual MBS User Service resource is successfully updated
+            and no content is returned in the response body.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual MBS User Service resource.
+      tags:
+        - Individual MBS User Service (Document)
+      operationId: ModifyIndMBSUserService
+      requestBody:
+        description: >
+          Contains the parameters to request the modification of the Individual MBS User Service
+          resource.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/MBSUserServicePatch'
+      responses:
+        '200':
+          description: >
+            OK. The concerned Individual MBS User Service resource is successfully modified and a
+            representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSUserService'
+        '204':
+          description: >
+            No Content. The concerned Individual MBS User Service resource is successfully modified
+            and no content is returned in the response body.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual MBS User Service resource.
+      tags:
+        - Individual MBS User Service (Document)
+      operationId: DeleteIndMBSUserService
+      responses:
+        '204':
+          description: >
+            No Content. The concerned Individual MBS User Service resource is successfully deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUri}'
+          scopes: {}
+      description: >
+        When the Nmbsf_MBSUserService API is consumed by a trusted or internal AF, then
+        'nmbsf-mbs-us' shall be used as the scope (i.e. within the "scopes" property) and
+        '{nrfApiRoot}/oauth2/token' shall be used as the URI to retrieve the token within the
+        "tokenUrl" property (i.e., instead of 'tokenUri').
+
+#
+# STRUCTURED DATA TYPES
+#
+  schemas:
+    MBSUserService:
+      description: Represents the parameters of an MBS User Service.
+      type: object
+      properties:
+        extServiceIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+        servType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsServiceType'
+        servClass:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        servAnnModes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceAnnouncementMode'
+          minItems: 1
+        servNameDescs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceNameDescription'
+          minItems: 1
+        mainServLang:
+          type: string
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - extServiceIds
+        - servType
+        - servClass
+        - servAnnModes
+        - servNameDescs
+
+    ServiceNameDescription:
+      description: >
+        Represents a set of per language service name and/or service description.
+      type: object
+      properties:
+        servName:
+          type: string
+        servDescrip:
+          type: string
+        language:
+          type: string
+      required:
+        - language
+      anyOf:
+        - required: [servName]
+        - required: [servDescrip]
+
+    MBSUserServicePatch:
+      description: >
+        Represents the requested modifications to the parameters of an MBS User Service.
+      type: object
+      properties:
+        extServiceIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+        servClass:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        servAnnModes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceAnnouncementMode'
+          minItems: 1
+        servNameDescs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceNameDescription'
+          minItems: 1
+        mainServLang:
+          type: string
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+    ServiceAnnouncementMode:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - VIA_MBS_5
+        - VIA_MBS_DISTRIBUTION_SESSION
+        - PASSED_BACK
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the service announcement mode.  
+#        Possible values are:
+#        - VIA_MBS_5: Indicates the MBS User Service Announcement compiled by the MBSF is advertised
+#          to the MBSF Client at reference point MBS-5.
+#        - VIA_MBS_DISTRIBUTION_SESSION: Indicates the MBS User Service Announcement compiled by
+#          the MBSF is advertised to the MBSF Client via the MBS Distribution Session at reference
+#          point MBS-4-MC.
+#        - PASSED_BACK: Indicates the MBS User Service Announcement compiled by the MBSF is passed
+#          back to the MBS Application Provider by the MBSF, and then advertised to the MBSF Client
+#          via application-private means at reference point MBS-8.

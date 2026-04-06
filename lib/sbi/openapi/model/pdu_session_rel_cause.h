@@ -1,7 +1,7 @@
 /*
  * pdu_session_rel_cause.h
  *
- * 
+ * Contains the SMF PDU Session release cause.
  */
 
 #ifndef _OpenAPI_pdu_session_rel_cause_H_

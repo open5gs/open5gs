@@ -6,7 +6,9 @@
 
 OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_create(
     OpenAPI_ext_snssai_t *s_nssai,
-    OpenAPI_list_t *dnn_smf_info_list
+    OpenAPI_list_t *dnn_smf_info_list,
+    bool is_dnn_smf_info_list_id,
+    int dnn_smf_info_list_id
 )
 {
     OpenAPI_snssai_smf_info_item_t *snssai_smf_info_item_local_var = ogs_malloc(sizeof(OpenAPI_snssai_smf_info_item_t));
@@ -14,6 +16,8 @@ OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_create(
 
     snssai_smf_info_item_local_var->s_nssai = s_nssai;
     snssai_smf_info_item_local_var->dnn_smf_info_list = dnn_smf_info_list;
+    snssai_smf_info_item_local_var->is_dnn_smf_info_list_id = is_dnn_smf_info_list_id;
+    snssai_smf_info_item_local_var->dnn_smf_info_list_id = dnn_smf_info_list_id;
 
     return snssai_smf_info_item_local_var;
 }
@@ -65,10 +69,7 @@ cJSON *OpenAPI_snssai_smf_info_item_convertToJSON(OpenAPI_snssai_smf_info_item_t
         goto end;
     }
 
-    if (!snssai_smf_info_item->dnn_smf_info_list) {
-        ogs_error("OpenAPI_snssai_smf_info_item_convertToJSON() failed [dnn_smf_info_list]");
-        return NULL;
-    }
+    if (snssai_smf_info_item->dnn_smf_info_list) {
     cJSON *dnn_smf_info_listList = cJSON_AddArrayToObject(item, "dnnSmfInfoList");
     if (dnn_smf_info_listList == NULL) {
         ogs_error("OpenAPI_snssai_smf_info_item_convertToJSON() failed [dnn_smf_info_list]");
@@ -81,6 +82,14 @@ cJSON *OpenAPI_snssai_smf_info_item_convertToJSON(OpenAPI_snssai_smf_info_item_t
             goto end;
         }
         cJSON_AddItemToArray(dnn_smf_info_listList, itemLocal);
+    }
+    }
+
+    if (snssai_smf_info_item->is_dnn_smf_info_list_id) {
+    if (cJSON_AddNumberToObject(item, "dnnSmfInfoListId", snssai_smf_info_item->dnn_smf_info_list_id) == NULL) {
+        ogs_error("OpenAPI_snssai_smf_info_item_convertToJSON() failed [dnn_smf_info_list_id]");
+        goto end;
+    }
     }
 
 end:
@@ -95,6 +104,7 @@ OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_parseFromJSON(cJSON
     OpenAPI_ext_snssai_t *s_nssai_local_nonprim = NULL;
     cJSON *dnn_smf_info_list = NULL;
     OpenAPI_list_t *dnn_smf_info_listList = NULL;
+    cJSON *dnn_smf_info_list_id = NULL;
     s_nssai = cJSON_GetObjectItemCaseSensitive(snssai_smf_info_itemJSON, "sNssai");
     if (!s_nssai) {
         ogs_error("OpenAPI_snssai_smf_info_item_parseFromJSON() failed [s_nssai]");
@@ -107,10 +117,7 @@ OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_parseFromJSON(cJSON
     }
 
     dnn_smf_info_list = cJSON_GetObjectItemCaseSensitive(snssai_smf_info_itemJSON, "dnnSmfInfoList");
-    if (!dnn_smf_info_list) {
-        ogs_error("OpenAPI_snssai_smf_info_item_parseFromJSON() failed [dnn_smf_info_list]");
-        goto end;
-    }
+    if (dnn_smf_info_list) {
         cJSON *dnn_smf_info_list_local = NULL;
         if (!cJSON_IsArray(dnn_smf_info_list)) {
             ogs_error("OpenAPI_snssai_smf_info_item_parseFromJSON() failed [dnn_smf_info_list]");
@@ -131,10 +138,21 @@ OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_parseFromJSON(cJSON
             }
             OpenAPI_list_add(dnn_smf_info_listList, dnn_smf_info_listItem);
         }
+    }
+
+    dnn_smf_info_list_id = cJSON_GetObjectItemCaseSensitive(snssai_smf_info_itemJSON, "dnnSmfInfoListId");
+    if (dnn_smf_info_list_id) {
+    if (!cJSON_IsNumber(dnn_smf_info_list_id)) {
+        ogs_error("OpenAPI_snssai_smf_info_item_parseFromJSON() failed [dnn_smf_info_list_id]");
+        goto end;
+    }
+    }
 
     snssai_smf_info_item_local_var = OpenAPI_snssai_smf_info_item_create (
         s_nssai_local_nonprim,
-        dnn_smf_info_listList
+        dnn_smf_info_list ? dnn_smf_info_listList : NULL,
+        dnn_smf_info_list_id ? true : false,
+        dnn_smf_info_list_id ? dnn_smf_info_list_id->valuedouble : 0
     );
 
     return snssai_smf_info_item_local_var;

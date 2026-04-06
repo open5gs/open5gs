@@ -1,7 +1,7 @@
 /*
  * mps_action.h
  *
- * 
+ * Indicates whether it is an invocation, a revocation or an invocation with authorization of the MPS for DTS or Messaging service. 
  */
 
 #ifndef _OpenAPI_mps_action_H_
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_mps_action_NULL = 0, OpenAPI_mps_action_DISABLE_MPS_FOR_DTS, OpenAPI_mps_action_ENABLE_MPS_FOR_DTS, OpenAPI_mps_action_AUTHORIZE_AND_ENABLE_MPS_FOR_DTS } OpenAPI_mps_action_e;
+typedef enum { OpenAPI_mps_action_NULL = 0, OpenAPI_mps_action_DISABLE_MPS_FOR_DTS, OpenAPI_mps_action_ENABLE_MPS_FOR_DTS, OpenAPI_mps_action_AUTHORIZE_AND_ENABLE_MPS_FOR_DTS, OpenAPI_mps_action_AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING, OpenAPI_mps_action_DISABLE_MPS_FOR_MESSAGING_FOR_AF_SIGNALLING, OpenAPI_mps_action_ENABLE_MPS_FOR_MESSAGING_FOR_AF_SIGNALLING } OpenAPI_mps_action_e;
 
 char* OpenAPI_mps_action_ToString(OpenAPI_mps_action_e mps_action);
 

@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ebi_arp_mapping_s OpenAPI_ebi_arp_mapping_t;
 #include "arp.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ebi_arp_mapping_s OpenAPI_ebi_arp_mapping_t;
-typedef struct OpenAPI_ebi_arp_mapping_s {
+struct OpenAPI_ebi_arp_mapping_s {
     int eps_bearer_id;
     struct OpenAPI_arp_s *arp;
-} OpenAPI_ebi_arp_mapping_t;
+};
 
 OpenAPI_ebi_arp_mapping_t *OpenAPI_ebi_arp_mapping_create(
     int eps_bearer_id,

@@ -12,7 +12,9 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_immediate_mdt_conf_s OpenAPI_immediate_mdt_conf_t;
 #include "area_scope.h"
+#include "bluetooth_measurement.h"
 #include "collection_period_rmm_lte_mdt.h"
 #include "collection_period_rmm_nr_mdt.h"
 #include "job_type.h"
@@ -26,13 +28,13 @@
 #include "report_interval_nr_mdt.h"
 #include "reporting_trigger.h"
 #include "sensor_measurement.h"
+#include "wlan_measurement.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_immediate_mdt_conf_s OpenAPI_immediate_mdt_conf_t;
-typedef struct OpenAPI_immediate_mdt_conf_s {
+struct OpenAPI_immediate_mdt_conf_s {
     OpenAPI_job_type_e job_type;
     OpenAPI_list_t *measurement_lte_list;
     OpenAPI_list_t *measurement_nr_list;
@@ -56,7 +58,14 @@ typedef struct OpenAPI_immediate_mdt_conf_s {
     OpenAPI_list_t *add_positioning_method_list;
     OpenAPI_list_t *mdt_allowed_plmn_id_list;
     OpenAPI_list_t *sensor_measurement_list;
-} OpenAPI_immediate_mdt_conf_t;
+    OpenAPI_list_t *sensor_measurement_lte_list;
+    bool is_event_threshold_sinr_nr;
+    int event_threshold_sinr_nr;
+    struct OpenAPI_bluetooth_measurement_s *bluetooth_measurement_nr;
+    struct OpenAPI_bluetooth_measurement_s *bluetooth_measurement_lte;
+    struct OpenAPI_wlan_measurement_s *wlan_measurement_nr;
+    struct OpenAPI_wlan_measurement_s *wlan_measurement_lte;
+};
 
 OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_create(
     OpenAPI_job_type_e job_type,
@@ -81,7 +90,14 @@ OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_create(
     OpenAPI_positioning_method_mdt_e positioning_method,
     OpenAPI_list_t *add_positioning_method_list,
     OpenAPI_list_t *mdt_allowed_plmn_id_list,
-    OpenAPI_list_t *sensor_measurement_list
+    OpenAPI_list_t *sensor_measurement_list,
+    OpenAPI_list_t *sensor_measurement_lte_list,
+    bool is_event_threshold_sinr_nr,
+    int event_threshold_sinr_nr,
+    OpenAPI_bluetooth_measurement_t *bluetooth_measurement_nr,
+    OpenAPI_bluetooth_measurement_t *bluetooth_measurement_lte,
+    OpenAPI_wlan_measurement_t *wlan_measurement_nr,
+    OpenAPI_wlan_measurement_t *wlan_measurement_lte
 );
 void OpenAPI_immediate_mdt_conf_free(OpenAPI_immediate_mdt_conf_t *immediate_mdt_conf);
 OpenAPI_immediate_mdt_conf_t *OpenAPI_immediate_mdt_conf_parseFromJSON(cJSON *immediate_mdt_confJSON);

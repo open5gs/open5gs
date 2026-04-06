@@ -1,0 +1,131 @@
+openapi: 3.0.0
+
+info:
+  title: Nnef_SMService
+  version: 1.2.0
+  description: |
+    Nnef SMService Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.541 V19.3.0; 5G System; Session Management Services for Non-IP Data Delivery (NIDD)
+    and Short Message Services (SMS); Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.541/
+
+servers:
+  - url: '{apiRoot}/nnef-smservice/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nnef-smservice
+
+paths:
+  /sm-contexts/{supi}/sendsms:
+    post:
+      summary: Send SMS payload for a given UE
+      operationId: SendSMS
+      tags:
+        - Send MO SMS message and the delivery report
+      parameters:
+        - name: supi
+          in: path
+          required: true
+          description: Subscription Permanent Identifier (SUPI)
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/related:  # message with a binary body part
+            schema:
+              type: object
+              properties:
+                jsonData:
+                  $ref: 'TS29577_Nipsmgw_SMService.yaml#/components/schemas/SmsData'
+                binaryPayload:
+                  type: string
+                  format: binary
+            encoding:
+              jsonData:
+                contentType: application/json
+              binaryPayload:
+                contentType: application/vnd.3gpp.sms
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string
+        required: true
+      responses:
+        '200':
+          description: sending delivery report
+          content:
+            multipart/related:  # message with a binary body part
+              schema:
+                type: object
+                properties:
+                  jsonData:
+                    $ref: 'TS29577_Nipsmgw_SMService.yaml#/components/schemas/SmsDeliveryData'
+                  binaryPayload:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType: application/json
+                binaryPayload:
+                  contentType: application/vnd.3gpp.sms
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nnef-smcontext: Access to the Nnef_SMContext API
+
+# schemas:
+
+# COMPLEX TYPES:
+
+
+
+# SIMPLE TYPES:
+
+
+
+# ENUMS:

@@ -1,0 +1,81 @@
+openapi: 3.0.1
+info:
+  title: PM control NRM 
+  version: 19.2.0
+  description: >-
+    OAS 3.0.1 definition of the PM control NRM fragment
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.623; Generic NRM,PM control NRM
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.623/
+paths: {}
+components:
+  schemas:
+  #-------- Definition of types for name-containments ------
+    SubNetwork-ncO-PmControlNrm:
+      type: object
+      properties:
+        PerfMetricJob:
+          $ref: '#/components/schemas/PerfMetricJob-Multiple'
+    ManagedElement-PmControlNrm:
+      type: object
+      properties:
+        PerfMetricJob:
+          $ref: '#/components/schemas/PerfMetricJob-Multiple'   
+   #-------Definition of generic IOCs ----------#  
+  
+#-------- Definition of types-----------------------------------------------------
+
+
+#-------- Definition of concrete IOCs --------------------------------------------                          
+    PerfMetricJob-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              not:
+                required: [ conditionMonitorRef, schedulerRef ]
+              properties:
+                administrativeState:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/AdministrativeState'
+                operationalState:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/OperationalState'
+                jobId:
+                  type: string
+                performanceMetrics:
+                  type: array
+                  uniqueItems: true
+                  items:
+                    type: string
+                  minItems: 1
+                granularityPeriod:
+                  type: integer
+                  minimum: 1
+                objectInstances:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+                rootObjectInstances:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+                conditionMonitorRef:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                schedulerRef:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                reportingCtrl:
+                  $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ReportingCtrl'
+                _linkToFiles:
+                  type: string  
+            Files:
+              $ref: 'TS28623_FileManagementNrm.yaml#/components/schemas/Files-Multiple'
+
+#-------- Definition of YAML arrays for name-contained IOCs ----------------------
+    PerfMetricJob-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/PerfMetricJob-Single'
+
+#-------- Definitions in TS 28.623 for TS 28.532 ---------------------------------
+    resources-pmControlNrm:
+      oneOf:
+       - $ref: '#/components/schemas/PerfMetricJob-Single'

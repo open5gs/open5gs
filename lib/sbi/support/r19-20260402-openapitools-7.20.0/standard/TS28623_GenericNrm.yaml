@@ -1,0 +1,727 @@
+openapi: 3.0.1
+info:
+  title: Generic NRM
+  version: 19.7.0
+  description: >-
+    OAS 3.0.1 definition of the Generic NRM
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.623; Generic NRM
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.623/
+paths: {}
+components:
+  schemas:
+
+#-------- Definition of types-----------------------------------------------------
+
+
+    VnfParameters:
+      description: ->
+        This <<dataType>> represents the parameter set of the VNF instance(s) corresponding to an NE.
+      type: object
+      properties:
+        vnfInstanceId:
+          type: string
+        vnfdId:
+          type: string
+        flavourId:
+          type: string
+        autoScalable:
+          type: boolean
+          default: FALSE
+    PeeParameters:
+      description: ->
+        This <<dataType>> represents the parameter list for the control and monitoring of power, energy and environmental parameters.
+      type: object
+      properties:
+        siteIdentification:
+          type: string
+        siteLatitude:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Latitude'
+        siteLongitude:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Longitude'
+        siteAltitude:
+          type: number
+          format: float
+        siteDescription:
+          type: string  
+        equipmentType:
+          type: string
+        environmentType:
+          type: string
+        powerInterface:
+          type: string
+    TransportProtocol:
+      anyOf:
+        - type: string
+          enum:
+            - TCP
+        - type: string
+    SupportedPerfMetricGroup:
+      type: object
+      properties:
+        performanceMetrics:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+          readOnly: true 
+          minItems: 1 
+        granularityPeriods:
+          type: array
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 1
+          readOnly: true  
+        reportingMethods:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+             - FILE_BASED_LOC_SET_BY_PRODUCER
+             - FILE_BASED_LOC_SET_BY_CONSUMER
+             - STREAM_BASED
+            readOnly: true               
+        reportingPeriods:
+          type: array
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 1
+          readOnly: true  
+    ReportingCtrl:
+      oneOf:
+        - type: object
+          properties:
+            fileReportingPeriod:
+              type: integer
+        - type: object
+          properties:
+            fileReportingPeriod:
+              type: integer
+            notificationRecipientAddress:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/Uri'            
+        - type: object
+          properties:
+            fileReportingPeriod:
+              type: integer
+            fileLocation:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/Uri'
+        - type: object
+          properties:
+            streamTarget:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/Uri'
+    ProcessMonitor:
+      description: >-
+        This data type is the "ProcessMonitor" data type without specialisations.
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        status:
+          type: string
+          enum:
+            - NOT_STARTED
+            - RUNNING
+            - FINSHED
+            - FAILED
+            - PARTIALLY_FAILED
+            - CANCELLING
+            - CANCELLED
+          readOnly: true            
+        progressPercentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+          readOnly: true          
+        progressStateInfo:
+          type: string
+          readOnly: true
+        resultStateInfo:
+          type: string
+          readOnly: true
+        startTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+        endTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+        timer:
+          type: integer
+    AreaScope:
+      allOf:
+      - type: array
+        items:
+          $ref: 'TS28541_NrNrm.yaml#/components/schemas/PlmnInfoList'
+        maxItems: 16384
+      - oneOf:
+        - type: array
+          items:
+            $ref: '#/components/schemas/EutraCellId'
+          minItems: 1
+          maxItems: 32
+        - type: object
+          properties: 
+            nrCellId:
+              type: array
+              items:
+                $ref: '#/components/schemas/NrCellId'
+              minItems: 1
+              maxItems: 32
+            nPNIdentityList:
+              type: array
+              items:
+                $ref: '#/components/schemas/NpnId-Type'
+        - type: object
+          properties: 
+            tacList:
+              type: array
+              items:
+                $ref: '#/components/schemas/Tac'
+              minItems: 1
+              maxItems: 8
+            cAGIdList:
+              type: array
+              items:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/CagId'
+              maxItems: 256
+        - type: object
+          properties: 
+            taList:
+              type: array
+              items:
+                $ref: '#/components/schemas/Tai'
+              minItems: 1
+              maxItems: 8
+            nPNIdentityList:
+              type: array
+              items:
+                $ref: '#/components/schemas/NpnId-Type'
+        - type: object
+          properties: 
+            nTNGeoAreaList:
+              type: array
+              items:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+              minItems: 1
+              maxItems: 8
+
+        - type: array
+          items:
+            $ref: '#/components/schemas/NpnId-Type'
+          minItems: 1   
+    Tai:
+      type: object
+      properties:
+        mcc:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mcc'
+        mnc:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mnc'
+        tac:
+          $ref: '#/components/schemas/Tac'
+    Tac:
+      type: string 
+      pattern: '(^[A-Fa-f0-9]{4}$)|(^[A-Fa-f0-9]{6}$)'   
+    EutraCellId:
+      type: string
+      pattern: '^[A-Fa-f0-9]{7}$'
+    NrCellId:
+      type: string
+      pattern: '^[A-Fa-f0-9]{9}$'
+    IpAddr:
+      oneOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/Ipv4Addr'
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/Ipv6Addr'
+
+    SchedulingTime:
+      oneOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow'
+        - type: object
+          properties:
+            timeIntervals:
+              type: array
+              uniqueItems: true
+              items:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeInterval'
+        - type: object
+          properties:
+            timeIntervals:
+              type: array
+              uniqueItems: true
+              items:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeInterval'
+            daysOfWeek:
+              type: array
+              uniqueItems: true
+              items:
+                type: string
+                enum:
+                  - MONDAY
+                  - TUESDAY
+                  - WEDNESDAY
+                  - THURSDAY
+                  - FRIDAY
+                  - SATURDAY
+                  - SUNDAY
+                minItems: 1
+                maxItems: 7
+        - type: object
+          properties:
+            timeIntervals:
+              type: array
+              uniqueItems: true
+              items:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeInterval'
+            daysOfMonth:
+              type: array
+              uniqueItems: true
+              items:
+                type: integer
+                minimum: 0
+                maximum: 31
+    NpnId-Type:
+      type: object
+      properties:
+        plmnId:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+        cAGIdList:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/CagId'
+          maxItems: 256  
+        nIDList:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/Nid'
+          maxItems: 16
+      oneOf:
+        - required: [plmnId, cAGIdList]
+        - required: [plmnId, nIDList]
+
+#-------- Definition of abstract IOC Top -----------------------------------------
+
+    Top-Attr:
+      #  This definition will be deprecated, when all occurances of Top-Attr
+      #  are replaced by Top.
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+        objectClass:
+          type: string
+        objectInstance:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        VsDataContainer:
+          $ref: '#/components/schemas/VsDataContainer-Multiple'
+      required:
+        - id
+    Top:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+        objectClass:
+          type: string
+        objectInstance:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        VsDataContainer:
+          $ref: '#/components/schemas/VsDataContainer-Multiple'
+      required:
+        - id
+
+#-------- Definition of IOCs with new name-containments defined in other TS ------
+
+    SubNetwork-Attr:
+      type: object
+      properties:
+        dnPrefix:
+          type: string
+        userLabel:
+          type: string
+        userDefinedNetworkType:
+          type: string
+        setOfMcc:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/Mcc'
+          readOnly: true
+          minItems: 1
+        priorityLabel:
+          type: integer
+          readOnly: true
+        supportedPerfMetricGroups:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/SupportedPerfMetricGroup'
+        supportedTraceMetrics:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+    ManagedElement-Attr:
+      type: object
+      properties:
+        dnPrefix:
+          type: string
+        managedElementTypeList:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        userLabel:
+          type: string
+        locationName:
+          type: string
+        managedBy:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+        vendorName:
+          type: string
+          readOnly: true
+        userDefinedState:
+          type: string
+        swVersion:
+          type: string
+          readOnly: true
+        priorityLabel:
+          type: integer
+        supportedPerfMetricGroups:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/SupportedPerfMetricGroup'
+        supportedTraceMetrics:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+          readOnly: true  
+
+    SubNetwork-ncO:
+      type: object
+      properties:
+        SubNetwork:
+          $ref: '#/components/schemas/SubNetwork-Multiple'
+        ManagedElement:
+          $ref: '#/components/schemas/ManagedElement-Multiple'
+        ManagementNode:
+          $ref: '#/components/schemas/ManagementNode-Multiple'
+        MnsAgent:
+          $ref: '#/components/schemas/MnsAgent-Multiple'
+        MeContext:
+          $ref: '#/components/schemas/MeContext-Multiple'
+        AlarmList:
+          $ref: 'TS28111_FaultNrm.yaml#/components/schemas/AlarmList-Single'
+        Scheduler:
+          $ref: '#/components/schemas/Scheduler-Multiple'
+        ConditionMonitor:
+          $ref: '#/components/schemas/ConditionMonitor-Multiple'
+        SupportedNotifications:
+          $ref: '#/components/schemas/SupportedNotifications-Single'
+
+
+    ManagedElement-ncO:
+      type: object
+      properties:
+        MnsAgent:
+          $ref: '#/components/schemas/MnsAgent-Multiple'
+        AlarmList:
+          $ref: 'TS28111_FaultNrm.yaml#/components/schemas/AlarmList-Single'
+        Scheduler:
+          $ref: '#/components/schemas/Scheduler-Multiple'
+        ConditionMonitor:
+          $ref: '#/components/schemas/ConditionMonitor-Multiple'
+        SupportedNotifications:  
+          $ref: '#/components/schemas/SupportedNotifications-Single'
+
+
+#-------- Definition of abstract IOCs --------------------------------------------
+
+    ManagedFunction-Attr:
+      type: object
+      properties:
+        userLabel:
+          type: string
+        vnfParametersList:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/VnfParameters'
+        peeParametersList:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/PeeParameters'
+        priorityLabel:
+          type: integer
+        supportedPerfMetricGroups:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/SupportedPerfMetricGroup'
+        supportedTraceMetrics:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+    EP_RP-Attr:
+      type: object
+      properties:
+        userLabel:
+          type: string
+        farEndEntity:
+          type: string
+          readOnly: true
+        supportedPerfMetricGroups:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/SupportedPerfMetricGroup'
+
+    ManagedFunction-ncO:
+      type: object
+      properties:
+        PerfMetricJob:
+          $ref: 'TS28623_PmControlNrm.yaml#/components/schemas/PerfMetricJob-Multiple'
+        ThresholdMonitor:
+          $ref: 'TS28623_ThresholdMonitorNrm.yaml#/components/schemas/ThresholdMonitor-Multiple'
+        TraceJob:
+          $ref: 'TS28623_TraceControlNrm.yaml#/components/schemas/TraceJob-Multiple'
+
+#-------- Definition of concrete IOCs --------------------------------------------
+
+    VsDataContainer-Single:
+      type: object
+      properties:
+        id:
+          type: string
+        attributes:
+          type: object
+          properties:
+            vsDataType:
+              type: string
+              readOnly: true
+            vsDataFormatVersion:
+              type: string
+              readOnly: true
+            vsData:
+              nullable: true
+        VsDataContainer:
+          $ref: '#/components/schemas/VsDataContainer-Multiple'
+
+    ManagementNode-Single:
+      allOf:
+        - $ref: '#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                userLabel:
+                  type: string
+                managedElements:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+                vendorName:
+                  type: string
+                  readOnly: true
+                userDefinedState:
+                  type: string
+                locationName:
+                  type: string
+                  readOnly: true
+                swVersion:
+                  type: string
+                  readOnly: true
+            MnsAgent:
+              $ref: '#/components/schemas/MnsAgent-Multiple'
+    MnsAgent-Single:
+      allOf:
+        - $ref: '#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                systemDN:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+    MeContext-Single:
+      allOf:
+        - $ref: '#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                dnPrefix:
+                  type: string
+                  readOnly: true
+    Scheduler-Single:
+      allOf:
+        - $ref: '#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                schedulingTimes:
+                  type: array
+                  uniqueItems: true
+                  items:
+                    $ref: '#/components/schemas/SchedulingTime'
+                  minItems: 1
+                schedulerStatus:
+                  type: boolean
+                  readOnly: true
+    ConditionMonitor-Single:
+      allOf:
+        - $ref: '#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                condition:
+                  type: string
+                conditionStatus:
+                  type: boolean
+                  readOnly: true
+
+    SupportedNotifications-Single:
+      allOf:
+        - $ref: '#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                notificationTypes:
+                  type: array
+                  uniqueItems: true
+                  items:
+                    $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationType'
+                notificationProtocols:
+                  type: array
+                  uniqueItems: true
+                  items:
+                    type: string
+                    enum:
+                      - HTTP
+                      - HTTP_VES_ENCAPS
+                    minItems: 1
+                  readOnly: true  
+
+
+    SubNetwork-Single:
+      allOf:
+        - $ref: '#/components/schemas/Top' 
+        - $ref: '#/components/schemas/SubNetwork-Attr'
+        - $ref: '#/components/schemas/SubNetwork-ncO'
+        - $ref: '#/components/schemas/SubNetwork-Multiple'
+        - $ref: '#/components/schemas/ManagedElement-Multiple'
+        - $ref: 'TS28623_FileManagementNrm.yaml#/components/schemas/SubNetwork-ncO-FileManagementNrm'
+        - $ref: 'TS28623_PmControlNrm.yaml#/components/schemas/SubNetwork-ncO-PmControlNrm'
+        - $ref: 'TS28623_SubscriptionControlNrm.yaml#/components/schemas/SubNetwork-ncO-SubscriptionControlNrm'
+        - $ref: 'TS28623_ThresholdMonitorNrm.yaml#/components/schemas/SubNetwork-ncO-ThresholdMonitorNrm'
+        - $ref: 'TS28623_TraceControlNrm.yaml#/components/schemas/SubNetwork-ncO-TraceControlNrm'                
+        - $ref: 'TS28623_QoEMeasurementCollectionNrm.yaml#/components/schemas/SubNetwork-ncO-QoEMeasurementCollectionNrm'                    
+        - $ref: 'TS28623_ManagementDataCollectionNrm.yaml#/components/schemas/SubNetwork-ncO-ManagementDataCollectionNrm'
+        - $ref: 'TS28623_MnSRegistryNrm.yaml#/components/schemas/SubNetwork-ncO-MnSRegistryNrm'           
+        - $ref: 'TS28104_MdaNrm.yaml#/components/schemas/SubNetwork-ncO-MdaNrm'
+        - $ref: 'TS28105_AiMlNrm.yaml#/components/schemas/SubNetwork-ncO-AiMlNrm'
+        - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/SubNetwork-ncO-IntentNrm'
+        - $ref: 'TS28317_RanScNrm.yaml#/components/schemas/SubNetwork-ncO-RanScNrm'
+        - $ref: 'TS28536_CoslaNrm.yaml#/components/schemas/SubNetwork-ncO-CoslaNrm'
+        - $ref: 'TS28538_EdgeNrm.yaml#/components/schemas/SubNetwork-ncO-EdgeNrm'
+        - $ref: 'TS28541_SliceNrm.yaml#/components/schemas/SubNetwork-ncO-SliceNrm'
+        - $ref: 'TS28541_NrNrm.yaml#/components/schemas/SubNetwork-ncO-NrNrm'
+        - $ref: 'TS28541_5GcNrm.yaml#/components/schemas/SubNetwork-ncO-5GcNrm'
+        - $ref: 'TS28318_DsoNrm.yaml#/components/schemas/SubNetwork-ncO-DsoNrm'
+        - $ref: 'TS28310_EnergyInformationNrm.yaml#/components/schemas/SubNetwork-ncO-EnergyInformationNrm'    
+        - $ref: 'TS28623_ExternalDataMgmtNrm.yaml#/components/schemas/SubNetwork-ncO-ExternalDataMgmtNrm'
+        - $ref: 'TS28561_NdtNrm.yaml#/components/schemas/SubNetwork-ncO-NDTNrm'
+        - $ref: 'TS28567_CclNrm.yaml#/components/schemas/SubNetwork-ncO-CCLNrm'
+    ManagedElement-Single:
+      allOf:
+        - $ref: '#/components/schemas/Top'
+        - $ref: '#/components/schemas/ManagedElement-Attr'
+        - $ref: '#/components/schemas/ManagedElement-ncO'
+        - $ref: 'TS28623_FileManagementNrm.yaml#/components/schemas/ManagedElement-ncO-FileManagementNrm'
+        - $ref: 'TS28623_PmControlNrm.yaml#/components/schemas/ManagedElement-PmControlNrm'
+        - $ref: 'TS28623_SubscriptionControlNrm.yaml#/components/schemas/ManagedElement-ncO-SubscriptionControlNrm'
+        - $ref: 'TS28623_ThresholdMonitorNrm.yaml#/components/schemas/ManagedElement-ncO-ThresholdMonitorNrm'
+        - $ref: 'TS28623_TraceControlNrm.yaml#/components/schemas/SubNetwork-ncO-TraceControlNrm'                            
+        - $ref: 'TS28623_QoEMeasurementCollectionNrm.yaml#/components/schemas/ManagedElement-ncO-QoEMeasurementCollectionNrm'                             
+        - $ref: 'TS28104_MdaNrm.yaml#/components/schemas/ManagedElement-ncO-MdaNrm'
+        - $ref: 'TS28105_AiMlNrm.yaml#/components/schemas/ManagedElement-ncO-AiMlNrm'
+        - $ref: 'TS28536_CoslaNrm.yaml#/components/schemas/ManagedElement-ncO-CoslaNrm'
+        - $ref: 'TS28541_NrNrm.yaml#/components/schemas/ManagedElement-ncO-NrNrm'
+        - $ref: 'TS28541_5GcNrm.yaml#/components/schemas/ManagedElement-ncO-5GcNrm'
+
+    NrmRoot:
+      oneOf:
+        - type: object
+          properties:
+            SubNetwork:
+              $ref: '#/components/schemas/SubNetwork-Multiple'
+        - type: object
+          properties:
+            ManagedElement:
+              $ref: '#/components/schemas/ManagedElement-Multiple'
+
+#-------- Definition of YAML arrays for name-contained IOCs ----------------------
+
+    VsDataContainer-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/VsDataContainer-Single'
+    ManagementNode-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ManagementNode-Single'
+    MnsAgent-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/MnsAgent-Single'
+    MeContext-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/MeContext-Single'
+    Scheduler-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/Scheduler-Single'
+    ConditionMonitor-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ConditionMonitor-Single'
+    SubNetwork-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/SubNetwork-Single'
+    ManagedElement-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ManagedElement-Single'
+
+
+#-------- Definitions in TS 28.623 for TS 28.532 ---------------------------------
+
+    resources-genericNrm:
+      oneOf:
+       - $ref: '#/components/schemas/NrmRoot'
+       - $ref: '#/components/schemas/VsDataContainer-Single'
+       - $ref: '#/components/schemas/ManagementNode-Single'
+       - $ref: '#/components/schemas/MnsAgent-Single'
+       - $ref: '#/components/schemas/MeContext-Single'
+       - $ref: '#/components/schemas/Scheduler-Single'
+       - $ref: '#/components/schemas/ConditionMonitor-Single'
+       - $ref: '#/components/schemas/SupportedNotifications-Single' 
+       - $ref: '#/components/schemas/SubNetwork-Single'
+       - $ref: '#/components/schemas/ManagedElement-Single'

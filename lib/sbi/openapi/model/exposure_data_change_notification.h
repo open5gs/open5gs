@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_exposure_data_change_notification_s OpenAPI_exposure_data_change_notification_t;
 #include "access_and_mobility_data.h"
 #include "pdu_session_management_data.h"
 
@@ -19,19 +20,20 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_exposure_data_change_notification_s OpenAPI_exposure_data_change_notification_t;
-typedef struct OpenAPI_exposure_data_change_notification_s {
+struct OpenAPI_exposure_data_change_notification_s {
     char *ue_id;
     struct OpenAPI_access_and_mobility_data_s *access_and_mobility_data;
     OpenAPI_list_t *pdu_session_management_data;
     OpenAPI_list_t *del_resources;
-} OpenAPI_exposure_data_change_notification_t;
+    char *notif_id;
+};
 
 OpenAPI_exposure_data_change_notification_t *OpenAPI_exposure_data_change_notification_create(
     char *ue_id,
     OpenAPI_access_and_mobility_data_t *access_and_mobility_data,
     OpenAPI_list_t *pdu_session_management_data,
-    OpenAPI_list_t *del_resources
+    OpenAPI_list_t *del_resources,
+    char *notif_id
 );
 void OpenAPI_exposure_data_change_notification_free(OpenAPI_exposure_data_change_notification_t *exposure_data_change_notification);
 OpenAPI_exposure_data_change_notification_t *OpenAPI_exposure_data_change_notification_parseFromJSON(cJSON *exposure_data_change_notificationJSON);

@@ -1,0 +1,890 @@
+openapi: 3.0.0
+
+info:
+  title: 'UPF Event Exposure Service'
+  version: 1.2.1
+  description: |
+    UPF Event Exposure Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.564 V19.6.0; 5G System; User Plane Function Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.564/
+
+servers:
+  - url: '{apiRoot}/nupf-ee/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - nupf-ee
+
+paths:
+  /ee-subscriptions:
+    post:
+      summary: Nupf_EventExposure Subscribe service Operation
+      operationId: CreateSubscription
+      tags:
+        - Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEventSubscription'
+      responses:
+        '201':
+          description: Successful creation of an UPF Event Subscription
+          headers:
+            Location:
+              description: >
+                'Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/nupf-ee/<apiVersion>/ee-subscriptions/{subscriptionId}'
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedEventSubscription'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        eeNotification:
+          '{eventNotificationUri}':
+          # The URI in {eventNotificationUri} is provided via N4 interface during provisioning of Session Reporting Rule or in the Nupf_EventExposure Subscribe request.
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ExtNotificationData'
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull
+                '307':
+                  description: Temporary Redirect
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+                  headers:
+                    Location:
+                      description: >
+                        'The URI pointing to the resource located on the redirect target NF service
+                        consumer'
+                      required: true
+                      schema:
+                        type: string
+                '308':
+                  description: Permanent Redirect
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+                  headers:
+                    Location:
+                      description: >
+                        'The URI pointing to the resource located on the redirect target NF service
+                        consumer'
+                      required: true
+                      schema:
+                        type: string
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /ee-subscriptions/{subscriptionId}:
+    patch:
+      summary: Nupf_EventExposure Subscribe Modify service Operation
+      operationId: ModifySubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Unique ID of the subscription to be modified
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '204':
+          description: Successful response
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Nupf_EventExposure UnSubscribe service Operation
+      operationId: DeleteSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Unique ID of the subscription to be deleted
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Subsription deleted successfully
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nupf-ee: Access to the Nupf_EventExposure API
+
+  schemas:
+    # API specific definitions
+
+# STRUCTURED DATA TYPES
+
+    NotificationData:
+      description: the list of NotificationItems
+      type: object
+      required:
+        - notificationItems
+      properties:
+        notificationItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationItem'
+          minItems: 1
+        correlationId:
+          type: string
+        achievedSampRatio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SamplingRatio'
+        eventNotifyUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+
+    NotificationItem:
+      description: represents a report on one subscribed event
+      type: object
+      required:
+        - eventType
+        - timeStamp
+      anyOf:
+        - required: [ ueIpv4Addr ]
+        - required: [ ueIpv6Prefix ]
+        - required: [ ueMacAddr ]
+      properties:
+        eventType:
+          $ref: '#/components/schemas/EventType'
+        ueIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ueIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        ueMacAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        timeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        startTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        qosMonitoringMeasurement:
+          $ref: '#/components/schemas/ExtQosMonitoringMeasurement'
+        redQosMonitoringMeasurement:
+          $ref: '#/components/schemas/ExtQosMonitoringMeasurement'
+        tscMngtInfo:
+          $ref: '#/components/schemas/TscManagementInfo'
+        userDataUsageMeasurements:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserDataUsageMeasurements'
+          minItems: 1
+        ueNatMappingInfo:
+          $ref: '#/components/schemas/UeNatMappingInfo'
+        handlingOfPayloadHeaderInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/HandlingOfPayloadHeader'
+          minItems: 1
+        terminationCause:
+          $ref: '#/components/schemas/TerminationCause'
+        skippedReportInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkipReportingCondition'
+          minItems: 1
+
+
+
+
+    UpfEventSubscription:
+      description: UPF Event Subscription
+      type: object
+      properties:
+        eventList:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpfEvent'
+          minItems: 1
+        eventNotifyUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifyCorrelationId:
+          type: string
+        eventReportingMode:
+          $ref: '#/components/schemas/UpfEventMode'
+        nfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        ueIpAddress:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        anyUe:
+          type: boolean
+          default: false
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        bundlingAllowed:
+          type: boolean
+          enum:
+           - true
+        bundleId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        bundledEventNotifyUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+      required:
+        - eventList
+        - eventNotifyUri
+        - notifyCorrelationId
+        - eventReportingMode
+        - nfId
+
+    UpfEventMode:
+      description: UPF Event Mode
+      type: object
+      properties:
+        trigger:
+          $ref: '#/components/schemas/UpfEventTrigger'
+        maxReports:
+          type: integer
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        repPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        sampRatio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SamplingRatio'
+        partitioningCriteria:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PartitioningCriteria'
+          minItems: 1
+        notifFlag:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NotificationFlag'
+        mutingExcInstructions:
+          writeOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MutingExceptionInstructions'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/MutingExceptionInstructions'
+        mutingNotSettings:
+          readOnly: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MutingNotificationsSettings'
+#          allOf:
+#            - $ref: 'TS29571_CommonData.yaml#/components/schemas/MutingNotificationsSettings'
+        subTerminationReportInd:
+          type: boolean
+          enum:
+            - true
+      required:
+        - trigger
+
+    UpfEvent:
+      description: UPF Event
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/EventType'
+        immediateFlag:
+          type: boolean
+          default: false
+        measurementTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeasurementType'
+          minItems: 1
+        appIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+          minItems: 1
+        trafficFilters:
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/FlowInformation'
+          minItems: 1        
+        granularityOfMeasurement:
+          $ref: '#/components/schemas/GranularityOfMeasurement'
+        reportingSuggestionInfo:
+          $ref: '#/components/schemas/ReportingSuggestionInformation'
+        remoteIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        remoteIpv6Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        remotePortNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint16'
+        ipDomain:
+          type: string
+        remainingDataReports:
+          $ref: '#/components/schemas/RemainingDataReports'
+        skipReportingInstruction:
+          $ref: '#/components/schemas/SkipReportingInstruction'
+        inclRatType:
+          type: boolean
+          enum:
+            - true
+        ratTypeList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+          minItems: 1
+      required:
+        - type
+
+    CreateEventSubscription:
+      description: Data within UPF Create Event Subscription Request
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/UpfEventSubscription'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - subscription
+
+    CreatedEventSubscription:
+      description: Data within UPF Create Event Subscription Response
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/UpfEventSubscription'
+        subscriptionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        reportList:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationItem'
+          minItems: 1
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - subscription
+        - subscriptionId
+
+    ReportingSuggestionInformation:
+      description: Reporting Suggestion Information
+      type: object
+      properties:
+        reportingUrgency:
+          $ref: '#/components/schemas/ReportingUrgency'
+        reportingTimeInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+      required:
+        - reportingUrgency
+
+    QosMonitoringMeasurement:
+      description: QoS Monitoring Measurement information
+      type: object
+      properties:
+        dlPacketDelay:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        ulPacketDelay:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        rtrPacketDelay:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        measureFailure:
+          type: boolean
+          enum:
+           - true
+        dlAveThroughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        ulAveThroughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        dlCongestion:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        ulCongestion:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        defaultQosFlowInd:
+          type: boolean
+          default: false
+        dlAvailableBitrate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        ulAvailableBitrate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+
+
+
+    TscManagementInfo:
+      description: TSC Management Information
+      type: object
+      properties:
+        pmics:
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/PortManagementContainer'
+          minItems: 1
+        umic:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/BridgeManagementContainer'
+
+    UserDataUsageMeasurements:
+      description: >
+        User Data Usage Measurements either for the PDU session, or the app-id, or the data flow
+      type: object
+      properties:
+        appId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        flowInfo:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/FlowInformation'
+        volumeMeasurement:
+          $ref: '#/components/schemas/VolumeMeasurement'
+        throughputMeasurement:
+          $ref: '#/components/schemas/ThroughputMeasurement'
+        applicationRelatedInformation:
+          $ref: '#/components/schemas/ApplicationRelatedInformation'
+        throughputStatisticsMeasurement:
+          $ref: '#/components/schemas/ThroughputStatisticsMeasurement'
+
+    VolumeMeasurement:
+      description: Volume Measurement information
+      type: object
+      properties:
+        totalVolume:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TrafficVolume'
+        ulVolume:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TrafficVolume'
+        dlVolume:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TrafficVolume'
+        totalNbOfPackets:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+        ulNbOfPackets:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+        dlNbOfPackets:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+
+    ThroughputMeasurement:
+      description: Throughput Measurement information 
+      type: object
+      properties:
+        ulThroughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        dlThroughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        ulPacketThroughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketRate'
+        dlPacketThroughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketRate'
+
+    ApplicationRelatedInformation:
+      description: Application Related Information
+      type: object
+      properties:
+        urls:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+        domainInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DomainInformation'
+          minItems: 1
+        noApplRelatedInfoDet:
+          type: boolean
+          enum:
+            - true
+
+
+    ThroughputStatisticsMeasurement:
+      description: Throughput Statistics Measurement
+      type: object
+      properties:
+        ulAverageThroughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        dlAverageThroughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        ulPeakThroughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        dlPeakThroughPut:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        ulAveragePacketThroughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketRate'
+        dlAveragePacketThroughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketRate'
+        ulPeakPacketThroughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketRate'
+        dlPeakPacketThroughput:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketRate'
+
+    DomainInformation:
+      description: Domain Information
+      type: object
+      properties:
+        domainName:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        domainNameProtocol:
+          $ref: '#/components/schemas/DnProtocol'
+      required:
+        - domainName
+
+    UeNatMappingInfo:
+      description: UE NAT Mapping Information
+      type: object
+      properties:
+        natMappingList:
+          type: array
+          items:
+            $ref: '#/components/schemas/NatMapping'
+      required:
+        - natMappingList
+
+    NatMapping:
+      description: NAT Mapping
+      type: object
+      properties:
+        ipv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv6Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        portNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint16'
+        transportProtocol:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TransportProtocol'
+        remotePortNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint16'
+      required:
+        - portNumber
+      anyOf:
+        - required: [ ipv4Addr ]
+        - required: [ ipv6Addr ]
+
+
+    HandlingOfPayloadHeader:
+      description: Handling of Payload Header status
+      type: object
+      properties:
+        headerInfo:
+          type: string
+        headerValueBefore:
+          type: string
+        headerAction:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/HeaderHandlingAction'
+        headerValueAfter:
+          type: string
+      required:
+        - headerInfo
+        - headerAction
+
+    SkipReportingInstruction:
+      description: Skip Reporting Instruction Information
+      type: object
+      properties:
+        skipReportCond:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkipReportingCondition'
+          minItems: 1  
+        validityTimes:
+          type: array
+          items:
+            $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/RecurTime'
+          minItems: 1
+        thresholdCond:
+          $ref: '#/components/schemas/ThresholdCond'
+      required:
+        - skipReportCond
+
+    ThresholdCond:
+      description: Instructions of use of a set of Thresholds
+      type: object
+      properties:
+        thresholdTrafficVolume:
+          $ref: '#/components/schemas/VolumeMeasurement'
+        thresholdThroughput:
+          $ref: '#/components/schemas/ThroughputMeasurement'
+
+    ExtNotificationData:
+      oneOf:
+      - $ref: '#/components/schemas/NotificationData'
+      - type: array
+        items:
+          $ref: '#/components/schemas/NotificationData'
+        minItems: 2
+
+    RedTransmissionInfo:
+      description: Redundant transmission info when redundant N3/N9 is used
+      type: object
+      properties:
+        localFteid:
+          $ref: '#/components/schemas/Fteid'
+        networkInsToLocal:
+          $ref: '#/components/schemas/NetworkInstance'
+        remoteFteid:
+          $ref: '#/components/schemas/Fteid'
+        networkInsToRemote:
+          $ref: '#/components/schemas/NetworkInstance'
+
+
+# ENUMS
+
+    EventType:
+      description: Event Type
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - QOS_MONITORING
+        - USER_DATA_USAGE_MEASURES
+        - USER_DATA_USAGE_TRENDS
+        - TSC_MNGT_INFO
+        - UE_NAT_MAPPING_INFO
+        - HANDLING_OF_PAYLOAD_HEADERS_INFO
+        - SUBSCRIPTION_TERMINATION
+#        - type: string
+#
+    UpfEventTrigger:
+      description: Upf Event Trigger
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - ONE_TIME
+        - PERIODIC
+        - CONTINUOUS
+#        - type: string
+#
+#
+    MeasurementType:
+      description: Measurement Type
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - VOLUME_MEASUREMENT
+        - THROUGHPUT_MEASUREMENT
+        - APPLICATION_RELATED_INFO
+#        - type: string
+#
+    GranularityOfMeasurement:
+      description: Granularity Of Measurement
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - PER_APPLICATION
+        - PER_SESSION
+        - PER_FLOW
+#        - type: string
+#
+    DnProtocol:
+      description: Domain Name Protocol
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - DNS_QNAME
+        - TLS_SNI
+        - TLS_SAN
+        - TLS_SCN
+#        - type: string
+#
+    ReportingUrgency:
+      description: Reporting Urgency
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - DELAY_TOLERANT
+        - NON_DELAY_TOLERANT
+#        - type: string
+#
+    TerminationCause:
+      description: the reason to terminate the subscription
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - N4_SESSION_RELEASE
+#        - type: string
+#
+    RemainingDataReports:
+      description: indication on how to handle the data collected by the source UPF
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - DISCARD
+        - SEND
+#        - type: string
+#
+    SkipReportingCondition:
+      description: Conditions for which the UPF can skip sending the event report
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - SKIP_NULL_REPORT
+      - SKIP_OUTSIDE_VALIDITY_TIME
+      - SKIP_BELOW_THRESHOLDS_REPORT
+#        - type: string
+#
+    ExtQosMonitoringMeasurement:
+      allOf:
+        - $ref: '#/components/schemas/QosMonitoringMeasurement'
+        - $ref: '#/components/schemas/RedTransmissionInfo'
+      description: >
+        The ExtQosMonitoringMeasurement contains Qos Monitoring Measurement and, for a PDU session
+        with redundant transmission, the GTP-U path information for which QoS was measured.
+
+
+#
+# SIMPLE DATA TYPES
+#
+    Fteid:
+      description: Fully Qualified TEID
+      type: string
+      format: byte
+
+    NetworkInstance:
+      description: Information identifying a domain
+      type: string
+      format: byte

@@ -1,7 +1,7 @@
 /*
  * release_cause.h
  *
- * 
+ * The cause for triggering the release.
  */
 
 #ifndef _OpenAPI_release_cause_H_

@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_trigger_s OpenAPI_trigger_t;
 #include "trigger_category.h"
 #include "trigger_type.h"
 
@@ -19,10 +20,9 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_trigger_s OpenAPI_trigger_t;
-typedef struct OpenAPI_trigger_s {
-    struct OpenAPI_trigger_type_s *trigger_type;
-    struct OpenAPI_trigger_category_s *trigger_category;
+struct OpenAPI_trigger_s {
+    OpenAPI_trigger_type_e trigger_type;
+    OpenAPI_trigger_category_e trigger_category;
     bool is_time_limit;
     int time_limit;
     bool is_volume_limit;
@@ -34,11 +34,11 @@ typedef struct OpenAPI_trigger_s {
     bool is_max_number_ofccc;
     int max_number_ofccc;
     char *tariff_time_change;
-} OpenAPI_trigger_t;
+};
 
 OpenAPI_trigger_t *OpenAPI_trigger_create(
-    OpenAPI_trigger_type_t *trigger_type,
-    OpenAPI_trigger_category_t *trigger_category,
+    OpenAPI_trigger_type_e trigger_type,
+    OpenAPI_trigger_category_e trigger_category,
     bool is_time_limit,
     int time_limit,
     bool is_volume_limit,

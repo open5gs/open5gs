@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_failed_modification_info_s OpenAPI_failed_modification_info_t;
 #include "n32f_error_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_failed_modification_info_s OpenAPI_failed_modification_info_t;
-typedef struct OpenAPI_failed_modification_info_s {
+struct OpenAPI_failed_modification_info_s {
     char *ipx_id;
     OpenAPI_n32f_error_type_e n32f_error_type;
-} OpenAPI_failed_modification_info_t;
+};
 
 OpenAPI_failed_modification_info_t *OpenAPI_failed_modification_info_create(
     char *ipx_id,

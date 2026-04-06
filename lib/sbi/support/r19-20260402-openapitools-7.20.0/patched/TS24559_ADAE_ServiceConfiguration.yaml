@@ -1,0 +1,784 @@
+openapi: 3.0.0
+
+info:
+  title: ADAE_ServiceConfiguration
+  version: 1.1.0
+  description: |
+    API for ADAE service configuration.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.559 V19.4.0 Application Data Analytics Enablement Service; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/24_series/24.559/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/adae-sc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+paths:
+  /application-performance:
+    post:
+      description: >
+        Creates a new individual VAL performance analytics event subscription.
+      operationId: VALPerformanceSubscription
+      tags:
+        - VAL performance event subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS29549_SS_ADAE_VALPerformanceAnalytics.yaml#/components/schemas/AppPerfSub'
+      callbacks:
+        notificationUri:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: 'TS29549_SS_ADAE_VALPerformanceAnalytics.yaml#/components/schemas/AppPerfNotif'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: VAL performance event subscription resource created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29549_SS_ADAE_VALPerformanceAnalytics.yaml#/components/schemas/AppPerfSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /application-performance/{appPerfId}:
+    delete:
+      description: Deletes an individual VAL performance event subscription.
+      operationId: DeleteIndValPerfEventSubsc
+      tags:
+        - Individual VAL performance event subscription
+      parameters:
+        - name: appPerfId
+          in: path
+          description: Identifier of an individual VAL performance event subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            The individual VAL performance subscription matching the appPerfId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /ue2ue-session-performance/fetch:
+    post:
+      description: >
+        Obtain the UE-to-UE session performance analytics.
+      operationId: FetchUe2UeSessionPerformance
+      tags:
+        - Fetch UE-to-UE session performance analytics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ue2UePerfReq'
+      responses:
+        '200':
+          description: >
+            Successful case. The UE-to-UE session performance information is returned in
+            the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ue2UePerfResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /edge-load:
+    post:
+      description: >
+        Creates a new individual edge load data collection event subscription.
+      operationId: EdgeLoadDataCollectionSubscription
+      tags:
+        - Edge load data collection event subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS29549_SS_ADAE_EdgeLoadAnalytics.yaml#/components/schemas/EdgeSub'
+      callbacks:
+        notificationUri:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: 'TS29549_SS_ADAE_EdgeLoadAnalytics.yaml#/components/schemas/EdgeNotif'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: Edge load data collection event subscription resource created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29549_SS_ADAE_EdgeLoadAnalytics.yaml#/components/schemas/EdgeSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /edge-load/{edgeLdId}:
+    delete:
+      description: Deletes an individual edge load data collection event subscription.
+      operationId: DeleteIndEdgeLdDataCollectEventSubsc
+      tags:
+        - Individual edge load data collection event subscription
+      parameters:
+        - name: edgeLdId
+          in: path
+          description: Identifier of an individual edge load data collection event subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            The individual edge load data collection subscription matching the edgeLdId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /service-experience/pull:
+    post:
+      description: >
+        ADAE server pulls service experience report from the ADAE client.
+      operationId: PullSrvExpReport
+      tags:
+        - Pull service experienec report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PullSrvExpInfo'
+      responses:
+        '200':
+          description: >
+            Successful case. The ADAE client provides service experience reporting information
+            to the ADAE server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SrvExpInfoRep'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /collision-detection:
+    post:
+      description: >
+        Creates an individual collision detection analytics subscription.
+      operationId: CollisionDetAnalyticsSubsc
+      tags:
+        - Collision detection analytics subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS29549_SS_ADAE_CollisionDetectionAnalytics.yaml#/components/schemas/CollisionDetectionSub'
+      callbacks:
+        notificationUri:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: 'TS29549_SS_ADAE_CollisionDetectionAnalytics.yaml#/components/schemas/CollisionDetectionNotif'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: Collision detection analytics subscription resource created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29549_SS_ADAE_CollisionDetectionAnalytics.yaml#/components/schemas/CollisionDetectionSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /collision-detection/{collisionDetectionId}:
+    delete:
+      description: Removes the individual collision detection analytics subscription.
+      operationId: DeleteIndCollisionDetAnalyticsSubsc
+      tags:
+        - Individual collision detection analytics subscription
+      parameters:
+        - name: collisionDetectionId
+          in: path
+          description: Identifier of an individual collision detection analytics subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            The Individual collision detection analytics subscription matching the
+            collisionDetectionId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /ue-group-loc-analytics:
+    post:
+      description: >
+        Creates an individual location-related UE group analytics subscription.
+      operationId: LocRelUeGroupSubscription
+      tags:
+        - Location-related UE group analytics subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS29549_SS_ADAE_LocationRelatedUeGroupAnalytics.yaml#/components/schemas/LocRelUeGroupSub'
+      callbacks:
+        notificationUri:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: 'TS29549_SS_ADAE_LocationRelatedUeGroupAnalytics.yaml#/components/schemas/LocRelUeGroupNotif'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: >
+            The location-related UE group analytics subscription resource created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29549_SS_ADAE_LocationRelatedUeGroupAnalytics.yaml#/components/schemas/LocRelUeGroupSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /ue-group-loc-analytics/{ueGroupLocId}:
+    delete:
+      description: Deletes the individual location-related UE group analytics subscription.
+      operationId: DeleteIndLocRelUeGroupSubsc
+      tags:
+        - Individual location-related UE group analytics subscription
+      parameters:
+        - name: ueGroupLocId
+          in: path
+          description: Identifier of an individual location-related UE group analytics subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            The individual location-related UE group analytics subscription matching the
+            ueGroupLocId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    Ue2UePerfReq:
+      description: ADAES requests ADAEC for the UE-to-UE session performance analytics.
+      type: object
+      properties:
+        serverId:
+          type: string
+          description: String identifying the ADAE server
+        analyticsId:
+          type: string
+          description: String identifying the UE-to-UE session analytics
+        valUeIds:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: >
+            One or more VAL UE IDs whose UE-to-UE session performance is requested.
+        pc5Qos:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pc5QoSPara'
+        reportConfig:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        repThresholds:
+          description: >
+            Identifies reporting threshold corresponding to the analytics.
+          type: array
+          items:
+            $ref: '#/components/schemas/Ue2UeRepThreshold'
+          minItems: 1
+        dataAbstractReq:
+          description: >
+            Indicates whether the data abstraction is required (true) or not (false).
+          type: boolean
+          default: false
+        dataCollectReq:
+          $ref: '#/components/schemas/DataCollectReq'
+        area:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea'
+        timeWindow:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - serverId
+        - analyticsId
+        - valUeIds
+        - pc5Qos
+
+    Ue2UePerfResp:
+      description: >
+        ADAEC responds to ADAES with the UE-to-UE session performance analytics information.
+      type: object
+      properties:
+        dataOutputs:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: >
+            UE-to-UE session performance analytics for prediction or statistics.
+        valUeIds:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: >
+            One or more VAL UEs whose UE-to-UE session performance has been requested.
+        analyticsId:
+          type: string
+          description: String identifying the UE-to-UE session analytics
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - dataOutputs
+        - valUeIds
+
+    Ue2UeRepThreshold:
+      description: Identifies reporting threshold corresponding to the analytics.
+      type: object
+      properties:
+        thrName:
+          $ref: 'TS29549_SS_ADAE_Ue2UePerformanceAnalytics.yaml#/components/schemas/U2UAnalytics'
+        thrValue:
+          description: Indicates the value for the analytics threshold.
+          type: string
+        thrMatchDirect:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/MatchingDirection'
+      required:
+        - thrName
+        - thrValue
+        - thrMatchDirect
+
+    DataCollectReq:
+      description: Contains data collection requirements.
+      type: object
+      properties:
+        dataFormat:
+          description: Indicates the format of the requested data.
+          type: string
+        repPeriod:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        abstractLevel:
+          description: Indicates the desired level of abstraction of the requested data.
+          type: string
+        accuracyLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - dataFormat
+
+    PullSrvExpInfo:
+      description: Contains VAL server and service identities.
+      type: object
+      properties:
+        valServerId:
+          type: string
+          description: String identifying the VAL server the service experience report applies.
+        valServiceId:
+          type: string
+          description: Identity of the VAL service.
+      required:
+        - valServerId
+
+    SrvExpInfoRep:
+      description: Allows ADAEC to provide the service experience report to the ADAES.
+      type: object
+      properties:
+        valUeId:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        valServerId:
+          type: string
+          description: String identifying the VAL server the service experience report applies.
+        valServiceId:
+          type: string
+          description: String identifying the VAL service
+        timeStamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        valSrvExpRep:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+      required:
+        - valUeId
+        - valServerId
+
+# Simple data types and Enumerations

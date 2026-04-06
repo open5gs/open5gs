@@ -1,7 +1,7 @@
 /*
  * network_perf_type.h
  *
- * Possible values are: - GNB_ACTIVE_RATIO: Indicates that the network performance requirement is gNodeB active (i.e. up and running) rate. Indicates the ratio of gNB active (i.e. up and running) number to the total number of gNB - GNB_COMPUTING_USAGE: Indicates gNodeB computing resource usage. - GNB_MEMORY_USAGE: Indicates gNodeB memory usage. - GNB_DISK_USAGE: Indicates gNodeB disk usage. - NUM_OF_UE: Indicates number of UEs. - SESS_SUCC_RATIO: Indicates ratio of successful setup of PDU sessions to total PDU session setup attempts. - HO_SUCC_RATIO: Indicates Ratio of successful handovers to the total handover attempts.  
+ * 
  */
 
 #ifndef _OpenAPI_network_perf_type_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "network_perf_type_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_network_perf_type_s OpenAPI_network_perf_type_t;
-typedef struct OpenAPI_network_perf_type_s {
-} OpenAPI_network_perf_type_t;
+typedef enum { OpenAPI_network_perf_type_NULL = 0, OpenAPI_network_perf_type_GNB_ACTIVE_RATIO, OpenAPI_network_perf_type_GNB_COMPUTING_USAGE, OpenAPI_network_perf_type_GNB_MEMORY_USAGE, OpenAPI_network_perf_type_GNB_DISK_USAGE, OpenAPI_network_perf_type_GNB_RSC_USAGE_OVERALL_TRAFFIC, OpenAPI_network_perf_type_GNB_RSC_USAGE_GBR_TRAFFIC, OpenAPI_network_perf_type_GNB_RSC_USAGE_DELAY_CRIT_GBR_TRAFFIC, OpenAPI_network_perf_type_NUM_OF_UE, OpenAPI_network_perf_type_SESS_SUCC_RATIO, OpenAPI_network_perf_type_HO_SUCC_RATIO } OpenAPI_network_perf_type_e;
 
-OpenAPI_network_perf_type_t *OpenAPI_network_perf_type_create(
-);
-void OpenAPI_network_perf_type_free(OpenAPI_network_perf_type_t *network_perf_type);
-OpenAPI_network_perf_type_t *OpenAPI_network_perf_type_parseFromJSON(cJSON *network_perf_typeJSON);
-cJSON *OpenAPI_network_perf_type_convertToJSON(OpenAPI_network_perf_type_t *network_perf_type);
-OpenAPI_network_perf_type_t *OpenAPI_network_perf_type_copy(OpenAPI_network_perf_type_t *dst, OpenAPI_network_perf_type_t *src);
+char* OpenAPI_network_perf_type_ToString(OpenAPI_network_perf_type_e network_perf_type);
+
+OpenAPI_network_perf_type_e OpenAPI_network_perf_type_FromString(char* network_perf_type);
 
 #ifdef __cplusplus
 }

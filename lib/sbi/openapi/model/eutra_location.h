@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_eutra_location_s OpenAPI_eutra_location_t;
 #include "ecgi.h"
 #include "global_ran_node_id.h"
 #include "tai.h"
@@ -20,8 +21,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_eutra_location_s OpenAPI_eutra_location_t;
-typedef struct OpenAPI_eutra_location_s {
+struct OpenAPI_eutra_location_s {
     struct OpenAPI_tai_s *tai;
     bool is_ignore_tai;
     int ignore_tai;
@@ -35,7 +35,7 @@ typedef struct OpenAPI_eutra_location_s {
     char *geodetic_information;
     struct OpenAPI_global_ran_node_id_s *global_ngenb_id;
     struct OpenAPI_global_ran_node_id_s *global_enb_id;
-} OpenAPI_eutra_location_t;
+};
 
 OpenAPI_eutra_location_t *OpenAPI_eutra_location_create(
     OpenAPI_tai_t *tai,

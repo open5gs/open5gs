@@ -1,7 +1,7 @@
 /*
  * qos_notification_control_info.h
  *
- * Indicates whether the QoS targets for a GRB flow are not guaranteed or guaranteed again.
+ * Indicates whether the QoS targets for a GRB flow are not guaranteed or guaranteed again. 
  */
 
 #ifndef _OpenAPI_qos_notification_control_info_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_qos_notification_control_info_s OpenAPI_qos_notification_control_info_t;
 #include "flows.h"
 #include "qos_notif_type.h"
 
@@ -19,17 +20,20 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_qos_notification_control_info_s OpenAPI_qos_notification_control_info_t;
-typedef struct OpenAPI_qos_notification_control_info_s {
+struct OpenAPI_qos_notification_control_info_s {
     OpenAPI_qos_notif_type_e notif_type;
     OpenAPI_list_t *flows;
     char *alt_ser_req;
-} OpenAPI_qos_notification_control_info_t;
+    bool is_alt_ser_req_not_supp_ind;
+    int alt_ser_req_not_supp_ind;
+};
 
 OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_create(
     OpenAPI_qos_notif_type_e notif_type,
     OpenAPI_list_t *flows,
-    char *alt_ser_req
+    char *alt_ser_req,
+    bool is_alt_ser_req_not_supp_ind,
+    int alt_ser_req_not_supp_ind
 );
 void OpenAPI_qos_notification_control_info_free(OpenAPI_qos_notification_control_info_t *qos_notification_control_info);
 OpenAPI_qos_notification_control_info_t *OpenAPI_qos_notification_control_info_parseFromJSON(cJSON *qos_notification_control_infoJSON);

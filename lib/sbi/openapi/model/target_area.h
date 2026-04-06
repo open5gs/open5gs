@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_target_area_s OpenAPI_target_area_t;
 #include "tai.h"
 #include "tai_range.h"
 
@@ -19,13 +20,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_target_area_s OpenAPI_target_area_t;
-typedef struct OpenAPI_target_area_s {
+struct OpenAPI_target_area_s {
     OpenAPI_list_t *ta_list;
     OpenAPI_list_t *tai_range_list;
     bool is_any_ta;
     int any_ta;
-} OpenAPI_target_area_t;
+};
 
 OpenAPI_target_area_t *OpenAPI_target_area_create(
     OpenAPI_list_t *ta_list,

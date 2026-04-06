@@ -10,7 +10,11 @@ OpenAPI_am_requested_value_rep_t *OpenAPI_am_requested_value_rep_create(
     OpenAPI_list_t *access_types,
     OpenAPI_list_t *rat_types,
     OpenAPI_list_t *allowed_snssais,
-    OpenAPI_list_t *n3g_allowed_snssais
+    OpenAPI_list_t *n3g_allowed_snssais,
+    OpenAPI_list_t* part_allowed_nssai,
+    OpenAPI_list_t* snssais_part_rejected,
+    OpenAPI_list_t *rejected_snssais,
+    OpenAPI_list_t *pending_nssai
 )
 {
     OpenAPI_am_requested_value_rep_t *am_requested_value_rep_local_var = ogs_malloc(sizeof(OpenAPI_am_requested_value_rep_t));
@@ -22,6 +26,10 @@ OpenAPI_am_requested_value_rep_t *OpenAPI_am_requested_value_rep_create(
     am_requested_value_rep_local_var->rat_types = rat_types;
     am_requested_value_rep_local_var->allowed_snssais = allowed_snssais;
     am_requested_value_rep_local_var->n3g_allowed_snssais = n3g_allowed_snssais;
+    am_requested_value_rep_local_var->part_allowed_nssai = part_allowed_nssai;
+    am_requested_value_rep_local_var->snssais_part_rejected = snssais_part_rejected;
+    am_requested_value_rep_local_var->rejected_snssais = rejected_snssais;
+    am_requested_value_rep_local_var->pending_nssai = pending_nssai;
 
     return am_requested_value_rep_local_var;
 }
@@ -68,6 +76,40 @@ void OpenAPI_am_requested_value_rep_free(OpenAPI_am_requested_value_rep_t *am_re
         }
         OpenAPI_list_free(am_requested_value_rep->n3g_allowed_snssais);
         am_requested_value_rep->n3g_allowed_snssais = NULL;
+    }
+    if (am_requested_value_rep->part_allowed_nssai) {
+        OpenAPI_list_for_each(am_requested_value_rep->part_allowed_nssai, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_partially_allowed_snssai_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(am_requested_value_rep->part_allowed_nssai);
+        am_requested_value_rep->part_allowed_nssai = NULL;
+    }
+    if (am_requested_value_rep->snssais_part_rejected) {
+        OpenAPI_list_for_each(am_requested_value_rep->snssais_part_rejected, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_snssai_part_rejected_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(am_requested_value_rep->snssais_part_rejected);
+        am_requested_value_rep->snssais_part_rejected = NULL;
+    }
+    if (am_requested_value_rep->rejected_snssais) {
+        OpenAPI_list_for_each(am_requested_value_rep->rejected_snssais, node) {
+            OpenAPI_snssai_free(node->data);
+        }
+        OpenAPI_list_free(am_requested_value_rep->rejected_snssais);
+        am_requested_value_rep->rejected_snssais = NULL;
+    }
+    if (am_requested_value_rep->pending_nssai) {
+        OpenAPI_list_for_each(am_requested_value_rep->pending_nssai, node) {
+            OpenAPI_snssai_free(node->data);
+        }
+        OpenAPI_list_free(am_requested_value_rep->pending_nssai);
+        am_requested_value_rep->pending_nssai = NULL;
     }
     ogs_free(am_requested_value_rep);
 }
@@ -186,6 +228,98 @@ cJSON *OpenAPI_am_requested_value_rep_convertToJSON(OpenAPI_am_requested_value_r
     }
     }
 
+    if (am_requested_value_rep->part_allowed_nssai) {
+    cJSON *part_allowed_nssai = cJSON_AddObjectToObject(item, "partAllowedNssai");
+    if (part_allowed_nssai == NULL) {
+        ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [part_allowed_nssai]");
+        goto end;
+    }
+    cJSON *localMapObject = part_allowed_nssai;
+    if (am_requested_value_rep->part_allowed_nssai) {
+        OpenAPI_list_for_each(am_requested_value_rep->part_allowed_nssai, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [part_allowed_nssai]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [part_allowed_nssai]");
+                goto end;
+            }
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_partially_allowed_snssai_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [inner]");
+                goto end;
+            }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        }
+    }
+    }
+
+    if (am_requested_value_rep->snssais_part_rejected) {
+    cJSON *snssais_part_rejected = cJSON_AddObjectToObject(item, "snssaisPartRejected");
+    if (snssais_part_rejected == NULL) {
+        ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [snssais_part_rejected]");
+        goto end;
+    }
+    cJSON *localMapObject = snssais_part_rejected;
+    if (am_requested_value_rep->snssais_part_rejected) {
+        OpenAPI_list_for_each(am_requested_value_rep->snssais_part_rejected, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            if (localKeyValue == NULL) {
+                ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [snssais_part_rejected]");
+                goto end;
+            }
+            if (localKeyValue->key == NULL) {
+                ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [snssais_part_rejected]");
+                goto end;
+            }
+            cJSON *itemLocal = localKeyValue->value ?
+                OpenAPI_snssai_part_rejected_convertToJSON(localKeyValue->value) :
+                cJSON_CreateNull();
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [inner]");
+                goto end;
+            }
+            cJSON_AddItemToObject(localMapObject, localKeyValue->key, itemLocal);
+        }
+    }
+    }
+
+    if (am_requested_value_rep->rejected_snssais) {
+    cJSON *rejected_snssaisList = cJSON_AddArrayToObject(item, "rejectedSnssais");
+    if (rejected_snssaisList == NULL) {
+        ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [rejected_snssais]");
+        goto end;
+    }
+    OpenAPI_list_for_each(am_requested_value_rep->rejected_snssais, node) {
+        cJSON *itemLocal = OpenAPI_snssai_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [rejected_snssais]");
+            goto end;
+        }
+        cJSON_AddItemToArray(rejected_snssaisList, itemLocal);
+    }
+    }
+
+    if (am_requested_value_rep->pending_nssai) {
+    cJSON *pending_nssaiList = cJSON_AddArrayToObject(item, "pendingNssai");
+    if (pending_nssaiList == NULL) {
+        ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [pending_nssai]");
+        goto end;
+    }
+    OpenAPI_list_for_each(am_requested_value_rep->pending_nssai, node) {
+        cJSON *itemLocal = OpenAPI_snssai_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_am_requested_value_rep_convertToJSON() failed [pending_nssai]");
+            goto end;
+        }
+        cJSON_AddItemToArray(pending_nssaiList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -206,6 +340,14 @@ OpenAPI_am_requested_value_rep_t *OpenAPI_am_requested_value_rep_parseFromJSON(c
     OpenAPI_list_t *allowed_snssaisList = NULL;
     cJSON *n3g_allowed_snssais = NULL;
     OpenAPI_list_t *n3g_allowed_snssaisList = NULL;
+    cJSON *part_allowed_nssai = NULL;
+    OpenAPI_list_t *part_allowed_nssaiList = NULL;
+    cJSON *snssais_part_rejected = NULL;
+    OpenAPI_list_t *snssais_part_rejectedList = NULL;
+    cJSON *rejected_snssais = NULL;
+    OpenAPI_list_t *rejected_snssaisList = NULL;
+    cJSON *pending_nssai = NULL;
+    OpenAPI_list_t *pending_nssaiList = NULL;
     user_loc = cJSON_GetObjectItemCaseSensitive(am_requested_value_repJSON, "userLoc");
     if (user_loc) {
     user_loc_local_nonprim = OpenAPI_user_location_parseFromJSON(user_loc);
@@ -349,13 +491,117 @@ OpenAPI_am_requested_value_rep_t *OpenAPI_am_requested_value_rep_parseFromJSON(c
         }
     }
 
+    part_allowed_nssai = cJSON_GetObjectItemCaseSensitive(am_requested_value_repJSON, "partAllowedNssai");
+    if (part_allowed_nssai) {
+        cJSON *part_allowed_nssai_local_map = NULL;
+        if (!cJSON_IsObject(part_allowed_nssai) && !cJSON_IsNull(part_allowed_nssai)) {
+            ogs_error("OpenAPI_am_requested_value_rep_parseFromJSON() failed [part_allowed_nssai]");
+            goto end;
+        }
+        if (cJSON_IsObject(part_allowed_nssai)) {
+            part_allowed_nssaiList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(part_allowed_nssai_local_map, part_allowed_nssai) {
+                cJSON *localMapObject = part_allowed_nssai_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_partially_allowed_snssai_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_am_requested_value_rep_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(part_allowed_nssaiList, localMapKeyPair);
+            }
+        }
+    }
+
+    snssais_part_rejected = cJSON_GetObjectItemCaseSensitive(am_requested_value_repJSON, "snssaisPartRejected");
+    if (snssais_part_rejected) {
+        cJSON *snssais_part_rejected_local_map = NULL;
+        if (!cJSON_IsObject(snssais_part_rejected) && !cJSON_IsNull(snssais_part_rejected)) {
+            ogs_error("OpenAPI_am_requested_value_rep_parseFromJSON() failed [snssais_part_rejected]");
+            goto end;
+        }
+        if (cJSON_IsObject(snssais_part_rejected)) {
+            snssais_part_rejectedList = OpenAPI_list_create();
+            OpenAPI_map_t *localMapKeyPair = NULL;
+            cJSON_ArrayForEach(snssais_part_rejected_local_map, snssais_part_rejected) {
+                cJSON *localMapObject = snssais_part_rejected_local_map;
+                if (cJSON_IsObject(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(
+                        ogs_strdup(localMapObject->string), OpenAPI_snssai_part_rejected_parseFromJSON(localMapObject));
+                } else if (cJSON_IsNull(localMapObject)) {
+                    localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
+                } else {
+                    ogs_error("OpenAPI_am_requested_value_rep_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                OpenAPI_list_add(snssais_part_rejectedList, localMapKeyPair);
+            }
+        }
+    }
+
+    rejected_snssais = cJSON_GetObjectItemCaseSensitive(am_requested_value_repJSON, "rejectedSnssais");
+    if (rejected_snssais) {
+        cJSON *rejected_snssais_local = NULL;
+        if (!cJSON_IsArray(rejected_snssais)) {
+            ogs_error("OpenAPI_am_requested_value_rep_parseFromJSON() failed [rejected_snssais]");
+            goto end;
+        }
+
+        rejected_snssaisList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(rejected_snssais_local, rejected_snssais) {
+            if (!cJSON_IsObject(rejected_snssais_local)) {
+                ogs_error("OpenAPI_am_requested_value_rep_parseFromJSON() failed [rejected_snssais]");
+                goto end;
+            }
+            OpenAPI_snssai_t *rejected_snssaisItem = OpenAPI_snssai_parseFromJSON(rejected_snssais_local);
+            if (!rejected_snssaisItem) {
+                ogs_error("No rejected_snssaisItem");
+                goto end;
+            }
+            OpenAPI_list_add(rejected_snssaisList, rejected_snssaisItem);
+        }
+    }
+
+    pending_nssai = cJSON_GetObjectItemCaseSensitive(am_requested_value_repJSON, "pendingNssai");
+    if (pending_nssai) {
+        cJSON *pending_nssai_local = NULL;
+        if (!cJSON_IsArray(pending_nssai)) {
+            ogs_error("OpenAPI_am_requested_value_rep_parseFromJSON() failed [pending_nssai]");
+            goto end;
+        }
+
+        pending_nssaiList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(pending_nssai_local, pending_nssai) {
+            if (!cJSON_IsObject(pending_nssai_local)) {
+                ogs_error("OpenAPI_am_requested_value_rep_parseFromJSON() failed [pending_nssai]");
+                goto end;
+            }
+            OpenAPI_snssai_t *pending_nssaiItem = OpenAPI_snssai_parseFromJSON(pending_nssai_local);
+            if (!pending_nssaiItem) {
+                ogs_error("No pending_nssaiItem");
+                goto end;
+            }
+            OpenAPI_list_add(pending_nssaiList, pending_nssaiItem);
+        }
+    }
+
     am_requested_value_rep_local_var = OpenAPI_am_requested_value_rep_create (
         user_loc ? user_loc_local_nonprim : NULL,
         pra_statuses ? pra_statusesList : NULL,
         access_types ? access_typesList : NULL,
         rat_types ? rat_typesList : NULL,
         allowed_snssais ? allowed_snssaisList : NULL,
-        n3g_allowed_snssais ? n3g_allowed_snssaisList : NULL
+        n3g_allowed_snssais ? n3g_allowed_snssaisList : NULL,
+        part_allowed_nssai ? part_allowed_nssaiList : NULL,
+        snssais_part_rejected ? snssais_part_rejectedList : NULL,
+        rejected_snssais ? rejected_snssaisList : NULL,
+        pending_nssai ? pending_nssaiList : NULL
     );
 
     return am_requested_value_rep_local_var;
@@ -366,7 +612,7 @@ end:
     }
     if (pra_statusesList) {
         OpenAPI_list_for_each(pra_statusesList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_presence_info_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
@@ -395,6 +641,40 @@ end:
         }
         OpenAPI_list_free(n3g_allowed_snssaisList);
         n3g_allowed_snssaisList = NULL;
+    }
+    if (part_allowed_nssaiList) {
+        OpenAPI_list_for_each(part_allowed_nssaiList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_partially_allowed_snssai_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(part_allowed_nssaiList);
+        part_allowed_nssaiList = NULL;
+    }
+    if (snssais_part_rejectedList) {
+        OpenAPI_list_for_each(snssais_part_rejectedList, node) {
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+            ogs_free(localKeyValue->key);
+            OpenAPI_snssai_part_rejected_free(localKeyValue->value);
+            OpenAPI_map_free(localKeyValue);
+        }
+        OpenAPI_list_free(snssais_part_rejectedList);
+        snssais_part_rejectedList = NULL;
+    }
+    if (rejected_snssaisList) {
+        OpenAPI_list_for_each(rejected_snssaisList, node) {
+            OpenAPI_snssai_free(node->data);
+        }
+        OpenAPI_list_free(rejected_snssaisList);
+        rejected_snssaisList = NULL;
+    }
+    if (pending_nssaiList) {
+        OpenAPI_list_for_each(pending_nssaiList, node) {
+            OpenAPI_snssai_free(node->data);
+        }
+        OpenAPI_list_free(pending_nssaiList);
+        pending_nssaiList = NULL;
     }
     return NULL;
 }

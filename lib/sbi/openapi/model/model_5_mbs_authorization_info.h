@@ -1,7 +1,7 @@
 /*
  * model_5_mbs_authorization_info.h
  *
- * 
+ * Contains 5MBS Session Authorization Information
  */
 
 #ifndef _OpenAPI_model_5_mbs_authorization_info_H_
@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_model_5_mbs_authorization_info_s OpenAPI_model_5_mbs_authorization_info_t;
 #include "mbs_session_id.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_model_5_mbs_authorization_info_s OpenAPI_model_5_mbs_authorization_info_t;
-typedef struct OpenAPI_model_5_mbs_authorization_info_s {
+struct OpenAPI_model_5_mbs_authorization_info_s {
     OpenAPI_list_t *_5mbs_session_ids;
-} OpenAPI_model_5_mbs_authorization_info_t;
+};
 
 OpenAPI_model_5_mbs_authorization_info_t *OpenAPI_model_5_mbs_authorization_info_create(
     OpenAPI_list_t *_5mbs_session_ids

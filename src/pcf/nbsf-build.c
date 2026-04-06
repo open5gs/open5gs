@@ -45,7 +45,8 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT;
+    message.h.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nbsf_management);
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_PCF_BINDINGS;
@@ -70,13 +71,13 @@ ogs_sbi_request_t *pcf_nbsf_management_build_register(
 
     requester_nf_type = NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance);
     ogs_assert(requester_nf_type);
-    nf_instance = ogs_sbi_nf_instance_find_by_service_type(
-                    OGS_SBI_SERVICE_TYPE_NPCF_POLICYAUTHORIZATION,
+    nf_instance = ogs_sbi_nf_instance_find_by_service(
+                    OpenAPI_service_name_npcf_policyauthorization,
                     requester_nf_type);
     ogs_assert(nf_instance);
 
     nf_service = ogs_sbi_nf_service_find_by_name(
-            nf_instance, (char *)OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION);
+            nf_instance, OpenAPI_service_name_npcf_policyauthorization);
     if (!nf_service) {
         ogs_error("No NF-Service");
         goto end;

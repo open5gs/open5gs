@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_key_amf_s OpenAPI_key_amf_t;
 #include "key_amf_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_key_amf_s OpenAPI_key_amf_t;
-typedef struct OpenAPI_key_amf_s {
+struct OpenAPI_key_amf_s {
     OpenAPI_key_amf_type_e key_type;
     char *key_val;
-} OpenAPI_key_amf_t;
+};
 
 OpenAPI_key_amf_t *OpenAPI_key_amf_create(
     OpenAPI_key_amf_type_e key_type,

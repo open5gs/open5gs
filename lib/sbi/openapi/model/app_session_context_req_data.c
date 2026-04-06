@@ -9,6 +9,10 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_cre
     char *af_charg_id,
     OpenAPI_af_requested_data_e af_req_data,
     OpenAPI_af_routing_requirement_t *af_rout_req,
+    bool is_af_sfc_req_null,
+    OpenAPI_af_sfc_requirement_t *af_sfc_req,
+    bool is_af_hdr_req_null,
+    OpenAPI_af_header_handling_control_info_t *af_hdr_req,
     char *asp_id,
     char *bdt_ref_id,
     char *dnn,
@@ -16,11 +20,16 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_cre
     char *mcptt_id,
     char *mc_video_id,
     OpenAPI_list_t* med_components,
+    char *multi_modal_id,
     char *ip_domain,
     OpenAPI_mps_action_e mps_action,
     char *mps_id,
     char *mcs_id,
     OpenAPI_preemption_control_information_e preempt_control_info,
+    bool is_qos_duration,
+    int qos_duration,
+    bool is_qos_inact_int,
+    int qos_inact_int,
     OpenAPI_reserv_priority_e res_prio,
     OpenAPI_service_info_status_e serv_inf_status,
     char *notif_uri,
@@ -36,7 +45,9 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_cre
     char *ue_mac,
     OpenAPI_bridge_management_container_t *tsn_bridge_man_cont,
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt,
-    OpenAPI_list_t *tsn_port_man_cont_nwtts
+    OpenAPI_list_t *tsn_port_man_cont_nwtts,
+    char *tsc_notif_uri,
+    char *tsc_notif_corre_id
 )
 {
     OpenAPI_app_session_context_req_data_t *app_session_context_req_data_local_var = ogs_malloc(sizeof(OpenAPI_app_session_context_req_data_t));
@@ -46,6 +57,10 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_cre
     app_session_context_req_data_local_var->af_charg_id = af_charg_id;
     app_session_context_req_data_local_var->af_req_data = af_req_data;
     app_session_context_req_data_local_var->af_rout_req = af_rout_req;
+    app_session_context_req_data_local_var->is_af_sfc_req_null = is_af_sfc_req_null;
+    app_session_context_req_data_local_var->af_sfc_req = af_sfc_req;
+    app_session_context_req_data_local_var->is_af_hdr_req_null = is_af_hdr_req_null;
+    app_session_context_req_data_local_var->af_hdr_req = af_hdr_req;
     app_session_context_req_data_local_var->asp_id = asp_id;
     app_session_context_req_data_local_var->bdt_ref_id = bdt_ref_id;
     app_session_context_req_data_local_var->dnn = dnn;
@@ -53,11 +68,16 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_cre
     app_session_context_req_data_local_var->mcptt_id = mcptt_id;
     app_session_context_req_data_local_var->mc_video_id = mc_video_id;
     app_session_context_req_data_local_var->med_components = med_components;
+    app_session_context_req_data_local_var->multi_modal_id = multi_modal_id;
     app_session_context_req_data_local_var->ip_domain = ip_domain;
     app_session_context_req_data_local_var->mps_action = mps_action;
     app_session_context_req_data_local_var->mps_id = mps_id;
     app_session_context_req_data_local_var->mcs_id = mcs_id;
     app_session_context_req_data_local_var->preempt_control_info = preempt_control_info;
+    app_session_context_req_data_local_var->is_qos_duration = is_qos_duration;
+    app_session_context_req_data_local_var->qos_duration = qos_duration;
+    app_session_context_req_data_local_var->is_qos_inact_int = is_qos_inact_int;
+    app_session_context_req_data_local_var->qos_inact_int = qos_inact_int;
     app_session_context_req_data_local_var->res_prio = res_prio;
     app_session_context_req_data_local_var->serv_inf_status = serv_inf_status;
     app_session_context_req_data_local_var->notif_uri = notif_uri;
@@ -74,6 +94,8 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_cre
     app_session_context_req_data_local_var->tsn_bridge_man_cont = tsn_bridge_man_cont;
     app_session_context_req_data_local_var->tsn_port_man_cont_dstt = tsn_port_man_cont_dstt;
     app_session_context_req_data_local_var->tsn_port_man_cont_nwtts = tsn_port_man_cont_nwtts;
+    app_session_context_req_data_local_var->tsc_notif_uri = tsc_notif_uri;
+    app_session_context_req_data_local_var->tsc_notif_corre_id = tsc_notif_corre_id;
 
     return app_session_context_req_data_local_var;
 }
@@ -96,6 +118,14 @@ void OpenAPI_app_session_context_req_data_free(OpenAPI_app_session_context_req_d
     if (app_session_context_req_data->af_rout_req) {
         OpenAPI_af_routing_requirement_free(app_session_context_req_data->af_rout_req);
         app_session_context_req_data->af_rout_req = NULL;
+    }
+    if (app_session_context_req_data->af_sfc_req) {
+        OpenAPI_af_sfc_requirement_free(app_session_context_req_data->af_sfc_req);
+        app_session_context_req_data->af_sfc_req = NULL;
+    }
+    if (app_session_context_req_data->af_hdr_req) {
+        OpenAPI_af_header_handling_control_info_free(app_session_context_req_data->af_hdr_req);
+        app_session_context_req_data->af_hdr_req = NULL;
     }
     if (app_session_context_req_data->asp_id) {
         ogs_free(app_session_context_req_data->asp_id);
@@ -130,6 +160,10 @@ void OpenAPI_app_session_context_req_data_free(OpenAPI_app_session_context_req_d
         }
         OpenAPI_list_free(app_session_context_req_data->med_components);
         app_session_context_req_data->med_components = NULL;
+    }
+    if (app_session_context_req_data->multi_modal_id) {
+        ogs_free(app_session_context_req_data->multi_modal_id);
+        app_session_context_req_data->multi_modal_id = NULL;
     }
     if (app_session_context_req_data->ip_domain) {
         ogs_free(app_session_context_req_data->ip_domain);
@@ -198,6 +232,14 @@ void OpenAPI_app_session_context_req_data_free(OpenAPI_app_session_context_req_d
         OpenAPI_list_free(app_session_context_req_data->tsn_port_man_cont_nwtts);
         app_session_context_req_data->tsn_port_man_cont_nwtts = NULL;
     }
+    if (app_session_context_req_data->tsc_notif_uri) {
+        ogs_free(app_session_context_req_data->tsc_notif_uri);
+        app_session_context_req_data->tsc_notif_uri = NULL;
+    }
+    if (app_session_context_req_data->tsc_notif_corre_id) {
+        ogs_free(app_session_context_req_data->tsc_notif_corre_id);
+        app_session_context_req_data->tsc_notif_corre_id = NULL;
+    }
     ogs_free(app_session_context_req_data);
 }
 
@@ -244,6 +286,42 @@ cJSON *OpenAPI_app_session_context_req_data_convertToJSON(OpenAPI_app_session_co
         ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [af_rout_req]");
         goto end;
     }
+    }
+
+    if (app_session_context_req_data->af_sfc_req) {
+    cJSON *af_sfc_req_local_JSON = OpenAPI_af_sfc_requirement_convertToJSON(app_session_context_req_data->af_sfc_req);
+    if (af_sfc_req_local_JSON == NULL) {
+        ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [af_sfc_req]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "afSfcReq", af_sfc_req_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [af_sfc_req]");
+        goto end;
+    }
+    } else if (app_session_context_req_data->is_af_sfc_req_null) {
+        if (cJSON_AddNullToObject(item, "afSfcReq") == NULL) {
+            ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [af_sfc_req]");
+            goto end;
+        }
+    }
+
+    if (app_session_context_req_data->af_hdr_req) {
+    cJSON *af_hdr_req_local_JSON = OpenAPI_af_header_handling_control_info_convertToJSON(app_session_context_req_data->af_hdr_req);
+    if (af_hdr_req_local_JSON == NULL) {
+        ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [af_hdr_req]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "afHdrReq", af_hdr_req_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [af_hdr_req]");
+        goto end;
+    }
+    } else if (app_session_context_req_data->is_af_hdr_req_null) {
+        if (cJSON_AddNullToObject(item, "afHdrReq") == NULL) {
+            ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [af_hdr_req]");
+            goto end;
+        }
     }
 
     if (app_session_context_req_data->asp_id) {
@@ -324,6 +402,13 @@ cJSON *OpenAPI_app_session_context_req_data_convertToJSON(OpenAPI_app_session_co
     }
     }
 
+    if (app_session_context_req_data->multi_modal_id) {
+    if (cJSON_AddStringToObject(item, "multiModalId", app_session_context_req_data->multi_modal_id) == NULL) {
+        ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [multi_modal_id]");
+        goto end;
+    }
+    }
+
     if (app_session_context_req_data->ip_domain) {
     if (cJSON_AddStringToObject(item, "ipDomain", app_session_context_req_data->ip_domain) == NULL) {
         ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [ip_domain]");
@@ -355,6 +440,20 @@ cJSON *OpenAPI_app_session_context_req_data_convertToJSON(OpenAPI_app_session_co
     if (app_session_context_req_data->preempt_control_info != OpenAPI_preemption_control_information_NULL) {
     if (cJSON_AddStringToObject(item, "preemptControlInfo", OpenAPI_preemption_control_information_ToString(app_session_context_req_data->preempt_control_info)) == NULL) {
         ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [preempt_control_info]");
+        goto end;
+    }
+    }
+
+    if (app_session_context_req_data->is_qos_duration) {
+    if (cJSON_AddNumberToObject(item, "qosDuration", app_session_context_req_data->qos_duration) == NULL) {
+        ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [qos_duration]");
+        goto end;
+    }
+    }
+
+    if (app_session_context_req_data->is_qos_inact_int) {
+    if (cJSON_AddNumberToObject(item, "qosInactInt", app_session_context_req_data->qos_inact_int) == NULL) {
+        ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [qos_inact_int]");
         goto end;
     }
     }
@@ -502,6 +601,20 @@ cJSON *OpenAPI_app_session_context_req_data_convertToJSON(OpenAPI_app_session_co
     }
     }
 
+    if (app_session_context_req_data->tsc_notif_uri) {
+    if (cJSON_AddStringToObject(item, "tscNotifUri", app_session_context_req_data->tsc_notif_uri) == NULL) {
+        ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [tsc_notif_uri]");
+        goto end;
+    }
+    }
+
+    if (app_session_context_req_data->tsc_notif_corre_id) {
+    if (cJSON_AddStringToObject(item, "tscNotifCorreId", app_session_context_req_data->tsc_notif_corre_id) == NULL) {
+        ogs_error("OpenAPI_app_session_context_req_data_convertToJSON() failed [tsc_notif_corre_id]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -516,6 +629,10 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
     OpenAPI_af_requested_data_e af_req_dataVariable = 0;
     cJSON *af_rout_req = NULL;
     OpenAPI_af_routing_requirement_t *af_rout_req_local_nonprim = NULL;
+    cJSON *af_sfc_req = NULL;
+    OpenAPI_af_sfc_requirement_t *af_sfc_req_local_nonprim = NULL;
+    cJSON *af_hdr_req = NULL;
+    OpenAPI_af_header_handling_control_info_t *af_hdr_req_local_nonprim = NULL;
     cJSON *asp_id = NULL;
     cJSON *bdt_ref_id = NULL;
     cJSON *dnn = NULL;
@@ -525,6 +642,7 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
     cJSON *mc_video_id = NULL;
     cJSON *med_components = NULL;
     OpenAPI_list_t *med_componentsList = NULL;
+    cJSON *multi_modal_id = NULL;
     cJSON *ip_domain = NULL;
     cJSON *mps_action = NULL;
     OpenAPI_mps_action_e mps_actionVariable = 0;
@@ -532,6 +650,8 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
     cJSON *mcs_id = NULL;
     cJSON *preempt_control_info = NULL;
     OpenAPI_preemption_control_information_e preempt_control_infoVariable = 0;
+    cJSON *qos_duration = NULL;
+    cJSON *qos_inact_int = NULL;
     cJSON *res_prio = NULL;
     OpenAPI_reserv_priority_e res_prioVariable = 0;
     cJSON *serv_inf_status = NULL;
@@ -555,6 +675,8 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
     OpenAPI_port_management_container_t *tsn_port_man_cont_dstt_local_nonprim = NULL;
     cJSON *tsn_port_man_cont_nwtts = NULL;
     OpenAPI_list_t *tsn_port_man_cont_nwttsList = NULL;
+    cJSON *tsc_notif_uri = NULL;
+    cJSON *tsc_notif_corre_id = NULL;
     af_app_id = cJSON_GetObjectItemCaseSensitive(app_session_context_req_dataJSON, "afAppId");
     if (af_app_id) {
     if (!cJSON_IsString(af_app_id) && !cJSON_IsNull(af_app_id)) {
@@ -586,6 +708,28 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
     if (!af_rout_req_local_nonprim) {
         ogs_error("OpenAPI_af_routing_requirement_parseFromJSON failed [af_rout_req]");
         goto end;
+    }
+    }
+
+    af_sfc_req = cJSON_GetObjectItemCaseSensitive(app_session_context_req_dataJSON, "afSfcReq");
+    if (af_sfc_req) {
+    if (!cJSON_IsNull(af_sfc_req)) {
+    af_sfc_req_local_nonprim = OpenAPI_af_sfc_requirement_parseFromJSON(af_sfc_req);
+    if (!af_sfc_req_local_nonprim) {
+        ogs_error("OpenAPI_af_sfc_requirement_parseFromJSON failed [af_sfc_req]");
+        goto end;
+    }
+    }
+    }
+
+    af_hdr_req = cJSON_GetObjectItemCaseSensitive(app_session_context_req_dataJSON, "afHdrReq");
+    if (af_hdr_req) {
+    if (!cJSON_IsNull(af_hdr_req)) {
+    af_hdr_req_local_nonprim = OpenAPI_af_header_handling_control_info_parseFromJSON(af_hdr_req);
+    if (!af_hdr_req_local_nonprim) {
+        ogs_error("OpenAPI_af_header_handling_control_info_parseFromJSON failed [af_hdr_req]");
+        goto end;
+    }
     }
     }
 
@@ -664,6 +808,14 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
         }
     }
 
+    multi_modal_id = cJSON_GetObjectItemCaseSensitive(app_session_context_req_dataJSON, "multiModalId");
+    if (multi_modal_id) {
+    if (!cJSON_IsString(multi_modal_id) && !cJSON_IsNull(multi_modal_id)) {
+        ogs_error("OpenAPI_app_session_context_req_data_parseFromJSON() failed [multi_modal_id]");
+        goto end;
+    }
+    }
+
     ip_domain = cJSON_GetObjectItemCaseSensitive(app_session_context_req_dataJSON, "ipDomain");
     if (ip_domain) {
     if (!cJSON_IsString(ip_domain) && !cJSON_IsNull(ip_domain)) {
@@ -704,6 +856,22 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
         goto end;
     }
     preempt_control_infoVariable = OpenAPI_preemption_control_information_FromString(preempt_control_info->valuestring);
+    }
+
+    qos_duration = cJSON_GetObjectItemCaseSensitive(app_session_context_req_dataJSON, "qosDuration");
+    if (qos_duration) {
+    if (!cJSON_IsNumber(qos_duration)) {
+        ogs_error("OpenAPI_app_session_context_req_data_parseFromJSON() failed [qos_duration]");
+        goto end;
+    }
+    }
+
+    qos_inact_int = cJSON_GetObjectItemCaseSensitive(app_session_context_req_dataJSON, "qosInactInt");
+    if (qos_inact_int) {
+    if (!cJSON_IsNumber(qos_inact_int)) {
+        ogs_error("OpenAPI_app_session_context_req_data_parseFromJSON() failed [qos_inact_int]");
+        goto end;
+    }
     }
 
     res_prio = cJSON_GetObjectItemCaseSensitive(app_session_context_req_dataJSON, "resPrio");
@@ -860,11 +1028,31 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
         }
     }
 
+    tsc_notif_uri = cJSON_GetObjectItemCaseSensitive(app_session_context_req_dataJSON, "tscNotifUri");
+    if (tsc_notif_uri) {
+    if (!cJSON_IsString(tsc_notif_uri) && !cJSON_IsNull(tsc_notif_uri)) {
+        ogs_error("OpenAPI_app_session_context_req_data_parseFromJSON() failed [tsc_notif_uri]");
+        goto end;
+    }
+    }
+
+    tsc_notif_corre_id = cJSON_GetObjectItemCaseSensitive(app_session_context_req_dataJSON, "tscNotifCorreId");
+    if (tsc_notif_corre_id) {
+    if (!cJSON_IsString(tsc_notif_corre_id) && !cJSON_IsNull(tsc_notif_corre_id)) {
+        ogs_error("OpenAPI_app_session_context_req_data_parseFromJSON() failed [tsc_notif_corre_id]");
+        goto end;
+    }
+    }
+
     app_session_context_req_data_local_var = OpenAPI_app_session_context_req_data_create (
         af_app_id && !cJSON_IsNull(af_app_id) ? ogs_strdup(af_app_id->valuestring) : NULL,
         af_charg_id && !cJSON_IsNull(af_charg_id) ? ogs_strdup(af_charg_id->valuestring) : NULL,
         af_req_data ? af_req_dataVariable : 0,
         af_rout_req ? af_rout_req_local_nonprim : NULL,
+        af_sfc_req && cJSON_IsNull(af_sfc_req) ? true : false,
+        af_sfc_req ? af_sfc_req_local_nonprim : NULL,
+        af_hdr_req && cJSON_IsNull(af_hdr_req) ? true : false,
+        af_hdr_req ? af_hdr_req_local_nonprim : NULL,
         asp_id && !cJSON_IsNull(asp_id) ? ogs_strdup(asp_id->valuestring) : NULL,
         bdt_ref_id && !cJSON_IsNull(bdt_ref_id) ? ogs_strdup(bdt_ref_id->valuestring) : NULL,
         dnn && !cJSON_IsNull(dnn) ? ogs_strdup(dnn->valuestring) : NULL,
@@ -872,11 +1060,16 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
         mcptt_id && !cJSON_IsNull(mcptt_id) ? ogs_strdup(mcptt_id->valuestring) : NULL,
         mc_video_id && !cJSON_IsNull(mc_video_id) ? ogs_strdup(mc_video_id->valuestring) : NULL,
         med_components ? med_componentsList : NULL,
+        multi_modal_id && !cJSON_IsNull(multi_modal_id) ? ogs_strdup(multi_modal_id->valuestring) : NULL,
         ip_domain && !cJSON_IsNull(ip_domain) ? ogs_strdup(ip_domain->valuestring) : NULL,
         mps_action ? mps_actionVariable : 0,
         mps_id && !cJSON_IsNull(mps_id) ? ogs_strdup(mps_id->valuestring) : NULL,
         mcs_id && !cJSON_IsNull(mcs_id) ? ogs_strdup(mcs_id->valuestring) : NULL,
         preempt_control_info ? preempt_control_infoVariable : 0,
+        qos_duration ? true : false,
+        qos_duration ? qos_duration->valuedouble : 0,
+        qos_inact_int ? true : false,
+        qos_inact_int ? qos_inact_int->valuedouble : 0,
         res_prio ? res_prioVariable : 0,
         serv_inf_status ? serv_inf_statusVariable : 0,
         ogs_strdup(notif_uri->valuestring),
@@ -892,7 +1085,9 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
         ue_mac && !cJSON_IsNull(ue_mac) ? ogs_strdup(ue_mac->valuestring) : NULL,
         tsn_bridge_man_cont ? tsn_bridge_man_cont_local_nonprim : NULL,
         tsn_port_man_cont_dstt ? tsn_port_man_cont_dstt_local_nonprim : NULL,
-        tsn_port_man_cont_nwtts ? tsn_port_man_cont_nwttsList : NULL
+        tsn_port_man_cont_nwtts ? tsn_port_man_cont_nwttsList : NULL,
+        tsc_notif_uri && !cJSON_IsNull(tsc_notif_uri) ? ogs_strdup(tsc_notif_uri->valuestring) : NULL,
+        tsc_notif_corre_id && !cJSON_IsNull(tsc_notif_corre_id) ? ogs_strdup(tsc_notif_corre_id->valuestring) : NULL
     );
 
     return app_session_context_req_data_local_var;
@@ -901,13 +1096,21 @@ end:
         OpenAPI_af_routing_requirement_free(af_rout_req_local_nonprim);
         af_rout_req_local_nonprim = NULL;
     }
+    if (af_sfc_req_local_nonprim) {
+        OpenAPI_af_sfc_requirement_free(af_sfc_req_local_nonprim);
+        af_sfc_req_local_nonprim = NULL;
+    }
+    if (af_hdr_req_local_nonprim) {
+        OpenAPI_af_header_handling_control_info_free(af_hdr_req_local_nonprim);
+        af_hdr_req_local_nonprim = NULL;
+    }
     if (ev_subsc_local_nonprim) {
         OpenAPI_events_subsc_req_data_free(ev_subsc_local_nonprim);
         ev_subsc_local_nonprim = NULL;
     }
     if (med_componentsList) {
         OpenAPI_list_for_each(med_componentsList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
             OpenAPI_media_component_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);

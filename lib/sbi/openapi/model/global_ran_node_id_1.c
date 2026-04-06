@@ -5,7 +5,7 @@
 #include "global_ran_node_id_1.h"
 
 OpenAPI_global_ran_node_id_1_t *OpenAPI_global_ran_node_id_1_create(
-    OpenAPI_plmn_id_1_t *plmn_id,
+    OpenAPI_plmn_id_t *plmn_id,
     char *n3_iwf_id,
     OpenAPI_gnb_id_t *g_nb_id,
     char *nge_nb_id,
@@ -38,7 +38,7 @@ void OpenAPI_global_ran_node_id_1_free(OpenAPI_global_ran_node_id_1_t *global_ra
         return;
     }
     if (global_ran_node_id_1->plmn_id) {
-        OpenAPI_plmn_id_1_free(global_ran_node_id_1->plmn_id);
+        OpenAPI_plmn_id_free(global_ran_node_id_1->plmn_id);
         global_ran_node_id_1->plmn_id = NULL;
     }
     if (global_ran_node_id_1->n3_iwf_id) {
@@ -87,7 +87,7 @@ cJSON *OpenAPI_global_ran_node_id_1_convertToJSON(OpenAPI_global_ran_node_id_1_t
         ogs_error("OpenAPI_global_ran_node_id_1_convertToJSON() failed [plmn_id]");
         return NULL;
     }
-    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_1_convertToJSON(global_ran_node_id_1->plmn_id);
+    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(global_ran_node_id_1->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_global_ran_node_id_1_convertToJSON() failed [plmn_id]");
         goto end;
@@ -162,7 +162,7 @@ OpenAPI_global_ran_node_id_1_t *OpenAPI_global_ran_node_id_1_parseFromJSON(cJSON
     OpenAPI_global_ran_node_id_1_t *global_ran_node_id_1_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *plmn_id = NULL;
-    OpenAPI_plmn_id_1_t *plmn_id_local_nonprim = NULL;
+    OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
     cJSON *n3_iwf_id = NULL;
     cJSON *g_nb_id = NULL;
     OpenAPI_gnb_id_t *g_nb_id_local_nonprim = NULL;
@@ -176,9 +176,9 @@ OpenAPI_global_ran_node_id_1_t *OpenAPI_global_ran_node_id_1_parseFromJSON(cJSON
         ogs_error("OpenAPI_global_ran_node_id_1_parseFromJSON() failed [plmn_id]");
         goto end;
     }
-    plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
+    plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
     if (!plmn_id_local_nonprim) {
-        ogs_error("OpenAPI_plmn_id_1_parseFromJSON failed [plmn_id]");
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
         goto end;
     }
 
@@ -253,7 +253,7 @@ OpenAPI_global_ran_node_id_1_t *OpenAPI_global_ran_node_id_1_parseFromJSON(cJSON
     return global_ran_node_id_1_local_var;
 end:
     if (plmn_id_local_nonprim) {
-        OpenAPI_plmn_id_1_free(plmn_id_local_nonprim);
+        OpenAPI_plmn_id_free(plmn_id_local_nonprim);
         plmn_id_local_nonprim = NULL;
     }
     if (g_nb_id_local_nonprim) {

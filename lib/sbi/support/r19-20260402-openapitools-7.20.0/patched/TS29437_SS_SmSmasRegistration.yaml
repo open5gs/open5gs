@@ -1,0 +1,349 @@
+openapi: 3.0.0
+
+info:
+  title: SMAS Registration Service
+  version: 1.0.0
+  description: |
+    SM Server SMAS Registration Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.437 V19.0.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Metaverse Enablement Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.437/
+
+servers:
+  - url: '{apiRoot}/ssm-smasr/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /registrations:
+    post:
+      summary: Request the creation of a SMAS Registration.
+      operationId: CreateSMASReg
+      tags:
+        - SMAS Registrations (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SMASReg'
+      responses:
+        '201':
+          description: >
+            Created. The SMAS Registration is successfully created and a representation of
+            the created Individual SMAS Registration resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SMASReg'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual SMAS Registration resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /registrations/{regId}:
+    parameters:
+      - name: regId
+        in: path
+        description: >
+          Represents the identifier of the Individual SMAS Registration resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual SMAS Registration resource.
+      operationId: GetIndSMASReg
+      tags:
+        - Individual SMAS Registration (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual SMAS Registration resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SMASReg'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual SMAS Registration resource.
+      operationId: UpdateIndSMASReg
+      tags:
+        - Individual SMAS Registration (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SMASReg'
+      responses:
+        '200':
+          description: >
+            OK. The Individual SMAS Registration resource is successfully updated and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SMASReg'
+        '204':
+          description: >
+            No Content. The Individual SMAS Registration resource is successfully updated
+            and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual SMAS Registration resource.
+      operationId: ModifyIndSMASReg
+      tags:
+        - Individual SMAS Registration (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/SMASRegPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual SMAS Registration resource is successfully modified and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SMASReg'
+        '204':
+          description: >
+            No Content. The Individual SMAS Registration resource is successfully modified and
+            no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual SMAS Registration resource.
+      operationId: DeleteIndSMASReg
+      tags:
+        - Individual SMAS Registration (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual SMAS Registration resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    SMASReg:
+      description: Represents an SMAS Registration.
+      type: object
+      properties:
+        profile:
+          $ref: '#/components/schemas/SMASProfile'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - profile
+
+    SMASRegPatch:
+      description: >
+        Represents the requested modifications to an SMAS Registration.
+      type: object
+      properties:
+        profile:
+          $ref: '#/components/schemas/SMASProfile'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTimeRm'
+
+    SMASProfile:
+      description: Represents the SMAS Profile.
+      type: object
+      properties:
+        smasInfo:
+          $ref: '#/components/schemas/SMASInfo'
+        spatMapInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpatialMapInfo'
+          minItems: 1
+      required:
+        - smasInfo
+        - spatMapInfoList
+
+    SMASInfo:
+      description: Represents the SMAS information.
+      type: object
+      properties:
+        endpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        availPeriod:
+          $ref: 'TS29549_SS_Events.yaml#/components/schemas/TimeReqs'
+        availLoc:
+          $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+      anyOf:
+        - required: [endpoint]
+        - required: [availPeriod]
+        - required: [availLoc]
+
+    SpatialMapInfo:
+      description: Represents the the spatial map related information.
+      type: object
+      properties:
+        mapId:
+          $ref: 'TS29437_SS_SmManagement.yaml#/components/schemas/SpatialMapId'
+        covArea:
+          $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+      required:
+        - mapId
+        - covArea
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+#
+# Data types describing alternative data types or combinations of data types:
+#

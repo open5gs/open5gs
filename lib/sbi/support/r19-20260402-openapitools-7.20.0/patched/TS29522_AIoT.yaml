@@ -1,0 +1,413 @@
+openapi: 3.0.0
+
+info:
+  title: 3gpp-aiot
+  version: 1.0.1
+  description: |
+    API for UE Address service.
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.522 V19.6.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/3gpp-aiot/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+paths:
+  /request-inv:
+    post:
+      summary: Request to perform an AIoT Inventory operation.
+      operationId: InventoryRequest
+      tags:
+        - AIoT Inventory Request (custom operation without associated resources)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InventoryReq'
+      responses:
+        '200':
+          description: >
+            OK. The AIoT Inventory request is successfully received and processed, and
+            AIoT Inventory related information is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        AIoTOperationsNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AIoTNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The AIoT Operations Notification is successfully received and
+                    acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /request-cmd:
+    post:
+      summary: Request to perform an AIoT Command operation.
+      operationId: CommandRequest
+      tags:
+        - AIoT Command Request (custom operation without associated resources)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommandReq'
+      responses:
+        '200':
+          description: >
+            OK. The AIoT Command request is successfully received and processed, and
+            AIoT Command related information is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        AIoTOperationsNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AIoTNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The AIoT Operations Notification is successfully received and
+                    acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas: 
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    InventoryReq:
+      description: Represents the AIoT Inventory request.
+      type: object
+      properties:
+        afId:
+          type: string
+        extTargetArea:
+          $ref: '#/components/schemas/ExtTargetArea'
+        targetDevices:
+          $ref: 'TS29569_Naiotf_AIoT.yaml#/components/schemas/AIoTDevices'
+        numDevices:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        timeInterval:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        devLocReqInd:
+          type: boolean
+          enum:
+            - true
+          description: >
+            Indicates that the location information of the target AIoT Device(s) is requested.
+            "true" indicates that the location information of the target AIoT Device(s) is
+            requested.
+            When present, this attribute shall be set to "true". The presence of this attribute set
+            to the value "false" is forbidden.
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - afId
+        - notifUri
+      anyOf:
+        - required: [extTargetArea]
+        - required: [targetDevices]
+
+    InventoryResp:
+      description: Represents the AIoT Inventory response.
+      type: object
+      properties:
+        afTransId:
+          type: string
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - afTransId
+
+    CommandReq:
+      description: Represents the AIoT Command request.
+      type: object
+      properties:
+        afId:
+          type: string
+        commandType:
+          $ref: '#/components/schemas/CommandType'
+        extTargetArea:
+          $ref: '#/components/schemas/ExtTargetArea'
+        targetDevices:
+          $ref: 'TS29569_Naiotf_AIoT.yaml#/components/schemas/AIoTDevices'
+        numDevices:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        msgSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        offset:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        length:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        data:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+        devLocReqInd:
+          type: boolean
+          enum:
+            - true
+          description: >
+            Indicates that the location information of the target AIoT Device(s) is requested.
+            "true" indicates that the location information of the target AIoT Device(s) is
+            requested.
+            When present, this attribute shall be set to "true". The presence of this attribute set
+            to the value "false" is forbidden.
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - afId
+        - commandType
+        - notifUri
+      anyOf:
+        - required: [extTargetArea]
+        - required: [targetDevices]
+
+    CommandResp:
+      description: Represents the AIoT Command response.
+      type: object
+      properties:
+        afTransId:
+          type: string
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - afTransId
+
+    AIoTNotif:
+      description: Represents the AIoT Operations Notification.
+      type: object
+      properties:
+        afTransId:
+          type: string
+        devicesRepData:
+          type: array
+          items:
+            $ref: 'TS29569_Naiotf_AIoT.yaml#/components/schemas/DevicesRepInfo'
+          minItems: 1
+        lastRepInd:
+          type: boolean
+          default: false
+          description: >
+            Indicates that this is the last reporting from the NEF for the AIoT service operation
+            identified by the afTransId attribute.
+            This attribute shall be present only when this is the last reporting from the NEF for
+            the AIoT service operation identified by the afTransId attribute.
+            When present, this attribute shall be set to true. The presence of this attribute set to
+            the value false is forbidden.
+        failCause:
+          $ref: 'TS29569_Naiotf_AIoT.yaml#/components/schemas/FailureCause'
+      required:
+        - afTransId
+      allOf:
+        - anyOf:
+          - required: [devicesRepData]
+          - required: [lastRepInd]
+          - required: [failCause]
+        - not:
+            required: [devicesRepData, failCause]
+
+    ExtTargetArea:
+      description: Represents the External Target Area for AIoT.
+      type: object
+      properties:
+        extAreaIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtAreaId'
+          minItems: 1
+        geographicAreas:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+        civicAddresses:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CivicAddress'
+          minItems: 1
+      oneOf:
+        - required: [extAreaIds]
+        - required: [geographicAreas]
+        - required: [civicAddresses]
+
+
+#
+# SIMPLE DATA TYPES
+#
+
+    ExtAreaId:
+      description: Represents the External Area Identifier for AIoT.
+      type: string
+
+#
+# ENUMERATIONS
+#
+
+    CommandType:
+      anyOf:
+      - type: string
+        enum:
+          - READ
+          - WRITE
+          - PERMANENT_DISABLE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the type of AIoT Command.  
+        Possible values are:
+          - READ: Indicates that the AIoT Command is Read (i.e., retrieve information).
+          - WRITE: Indicates that the AIoT Command is Write (i.e., provision information).
+          - PERMANENT_DISABLE: Indicates that the AIoT Command is Permanent Disable (i.e., disable
+            the capability to transmit information).
+
+#
+# Data types describing alternative data types or combinations of data types
+#

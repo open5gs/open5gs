@@ -12,25 +12,34 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nf_profile_s OpenAPI_nf_profile_t;
 #include "aanf_info.h"
+#include "adm_info.h"
+#include "adrf_info.h"
+#include "aiotf_info.h"
 #include "amf_info.h"
 #include "ausf_info.h"
 #include "bsf_info.h"
 #include "chf_info.h"
 #include "collocated_nf_instance.h"
 #include "dccf_info.h"
+#include "dcsf_info.h"
 #include "default_notification_subscription.h"
 #include "easdf_info.h"
 #include "ext_snssai.h"
 #include "gmlc_info.h"
 #include "hss_info.h"
+#include "imsas_info.h"
 #include "iwmsc_info.h"
 #include "lmf_info.h"
 #include "mb_smf_info.h"
 #include "mb_upf_info.h"
+#include "mf_info.h"
 #include "mfaf_info.h"
 #include "mnpf_info.h"
 #include "model_5_g_ddnmf_info.h"
+#include "mrf_info.h"
+#include "mrfp_info.h"
 #include "nef_info.h"
 #include "nf_service.h"
 #include "nf_status.h"
@@ -38,6 +47,7 @@
 #include "nrf_info.h"
 #include "nsacf_info.h"
 #include "nssaaf_info.h"
+#include "nssf_info.h"
 #include "nwdaf_info.h"
 #include "object.h"
 #include "pcf_info.h"
@@ -45,9 +55,12 @@
 #include "plmn_id.h"
 #include "plmn_id_nid.h"
 #include "plmn_snssai.h"
+#include "rule_set.h"
 #include "scp_info.h"
+#include "selection_conditions.h"
 #include "sepp_info.h"
 #include "smf_info.h"
+#include "smsf_info.h"
 #include "trust_af_info.h"
 #include "tsctsf_info.h"
 #include "udm_info.h"
@@ -60,8 +73,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nf_profile_s OpenAPI_nf_profile_t;
-typedef struct OpenAPI_nf_profile_s {
+struct OpenAPI_nf_profile_s {
     char *nf_instance_id;
     char *nf_instance_name;
     OpenAPI_nf_type_e nf_type;
@@ -83,6 +95,7 @@ typedef struct OpenAPI_nf_profile_s {
     OpenAPI_list_t *allowed_nf_types;
     OpenAPI_list_t *allowed_nf_domains;
     OpenAPI_list_t *allowed_nssais;
+    OpenAPI_list_t* allowed_rule_set;
     bool is_priority;
     int priority;
     bool is_capacity;
@@ -91,6 +104,7 @@ typedef struct OpenAPI_nf_profile_s {
     int load;
     char *load_time_stamp;
     char *locality;
+    OpenAPI_list_t* ext_locality;
     struct OpenAPI_udr_info_s *udr_info;
     OpenAPI_list_t* udr_info_list;
     struct OpenAPI_udm_info_s *udm_info;
@@ -125,6 +139,8 @@ typedef struct OpenAPI_nf_profile_s {
     OpenAPI_list_t* nf_service_list;
     bool is_nf_profile_changes_support_ind;
     int nf_profile_changes_support_ind;
+    bool is_nf_profile_partial_update_changes_support_ind;
+    int nf_profile_partial_update_changes_support_ind;
     bool is_nf_profile_changes_ind;
     int nf_profile_changes_ind;
     OpenAPI_list_t *default_notification_subscriptions;
@@ -157,7 +173,27 @@ typedef struct OpenAPI_nf_profile_s {
     OpenAPI_list_t *hni_list;
     struct OpenAPI_iwmsc_info_s *iwmsc_info;
     struct OpenAPI_mnpf_info_s *mnpf_info;
-} OpenAPI_nf_profile_t;
+    struct OpenAPI_smsf_info_s *smsf_info;
+    OpenAPI_list_t* dcsf_info_list;
+    OpenAPI_list_t* mrf_info_list;
+    OpenAPI_list_t* mrfp_info_list;
+    OpenAPI_list_t* mf_info_list;
+    OpenAPI_list_t* adrf_info_list;
+    struct OpenAPI_selection_conditions_s *selection_conditions;
+    bool is_canary_release;
+    int canary_release;
+    bool is_exclusive_canary_release_selection;
+    int exclusive_canary_release_selection;
+    char *shared_profile_data_id;
+    char *shutdown_time;
+    OpenAPI_list_t *supported_rcfs;
+    bool is_canary_precedence_over_preferred;
+    int canary_precedence_over_preferred;
+    struct OpenAPI_imsas_info_s *imsas_info;
+    OpenAPI_list_t* aiotf_info_list;
+    struct OpenAPI_nssf_info_s *nssf_info;
+    struct OpenAPI_adm_info_s *adm_info;
+};
 
 OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     char *nf_instance_id,
@@ -181,6 +217,7 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     OpenAPI_list_t *allowed_nf_types,
     OpenAPI_list_t *allowed_nf_domains,
     OpenAPI_list_t *allowed_nssais,
+    OpenAPI_list_t* allowed_rule_set,
     bool is_priority,
     int priority,
     bool is_capacity,
@@ -189,6 +226,7 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     int load,
     char *load_time_stamp,
     char *locality,
+    OpenAPI_list_t* ext_locality,
     OpenAPI_udr_info_t *udr_info,
     OpenAPI_list_t* udr_info_list,
     OpenAPI_udm_info_t *udm_info,
@@ -223,6 +261,8 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     OpenAPI_list_t* nf_service_list,
     bool is_nf_profile_changes_support_ind,
     int nf_profile_changes_support_ind,
+    bool is_nf_profile_partial_update_changes_support_ind,
+    int nf_profile_partial_update_changes_support_ind,
     bool is_nf_profile_changes_ind,
     int nf_profile_changes_ind,
     OpenAPI_list_t *default_notification_subscriptions,
@@ -254,7 +294,27 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     OpenAPI_nssaaf_info_t *nssaaf_info,
     OpenAPI_list_t *hni_list,
     OpenAPI_iwmsc_info_t *iwmsc_info,
-    OpenAPI_mnpf_info_t *mnpf_info
+    OpenAPI_mnpf_info_t *mnpf_info,
+    OpenAPI_smsf_info_t *smsf_info,
+    OpenAPI_list_t* dcsf_info_list,
+    OpenAPI_list_t* mrf_info_list,
+    OpenAPI_list_t* mrfp_info_list,
+    OpenAPI_list_t* mf_info_list,
+    OpenAPI_list_t* adrf_info_list,
+    OpenAPI_selection_conditions_t *selection_conditions,
+    bool is_canary_release,
+    int canary_release,
+    bool is_exclusive_canary_release_selection,
+    int exclusive_canary_release_selection,
+    char *shared_profile_data_id,
+    char *shutdown_time,
+    OpenAPI_list_t *supported_rcfs,
+    bool is_canary_precedence_over_preferred,
+    int canary_precedence_over_preferred,
+    OpenAPI_imsas_info_t *imsas_info,
+    OpenAPI_list_t* aiotf_info_list,
+    OpenAPI_nssf_info_t *nssf_info,
+    OpenAPI_adm_info_t *adm_info
 );
 void OpenAPI_nf_profile_free(OpenAPI_nf_profile_t *nf_profile);
 OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON);

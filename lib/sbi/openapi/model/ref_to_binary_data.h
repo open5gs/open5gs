@@ -12,15 +12,15 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ref_to_binary_data_s OpenAPI_ref_to_binary_data_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ref_to_binary_data_s OpenAPI_ref_to_binary_data_t;
-typedef struct OpenAPI_ref_to_binary_data_s {
+struct OpenAPI_ref_to_binary_data_s {
     char *content_id;
-} OpenAPI_ref_to_binary_data_t;
+};
 
 OpenAPI_ref_to_binary_data_t *OpenAPI_ref_to_binary_data_create(
     char *content_id

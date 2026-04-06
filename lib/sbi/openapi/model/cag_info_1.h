@@ -1,7 +1,7 @@
 /*
  * cag_info_1.h
  *
- * 
+ * contains CAG IDs.
  */
 
 #ifndef _OpenAPI_cag_info_1_H_
@@ -12,22 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_cag_info_1_s OpenAPI_cag_info_1_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_cag_info_1_s OpenAPI_cag_info_1_t;
-typedef struct OpenAPI_cag_info_1_s {
-    OpenAPI_list_t *allowed_cag_list;
-    bool is_cag_only_indicator;
-    int cag_only_indicator;
-} OpenAPI_cag_info_1_t;
+struct OpenAPI_cag_info_1_s {
+    OpenAPI_list_t *cag_list;
+};
 
 OpenAPI_cag_info_1_t *OpenAPI_cag_info_1_create(
-    OpenAPI_list_t *allowed_cag_list,
-    bool is_cag_only_indicator,
-    int cag_only_indicator
+    OpenAPI_list_t *cag_list
 );
 void OpenAPI_cag_info_1_free(OpenAPI_cag_info_1_t *cag_info_1);
 OpenAPI_cag_info_1_t *OpenAPI_cag_info_1_parseFromJSON(cJSON *cag_info_1JSON);

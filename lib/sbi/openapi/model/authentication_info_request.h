@@ -12,14 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_authentication_info_request_s OpenAPI_authentication_info_request_t;
 #include "resynchronization_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_authentication_info_request_s OpenAPI_authentication_info_request_t;
-typedef struct OpenAPI_authentication_info_request_s {
+struct OpenAPI_authentication_info_request_s {
     char *supported_features;
     char *serving_network_name;
     struct OpenAPI_resynchronization_info_s *resynchronization_info;
@@ -31,7 +31,9 @@ typedef struct OpenAPI_authentication_info_request_s {
     int nswo_ind;
     bool is_disaster_roaming_ind;
     int disaster_roaming_ind;
-} OpenAPI_authentication_info_request_t;
+    bool is_aun3_ind;
+    int aun3_ind;
+};
 
 OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_create(
     char *supported_features,
@@ -44,7 +46,9 @@ OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_creat
     bool is_nswo_ind,
     int nswo_ind,
     bool is_disaster_roaming_ind,
-    int disaster_roaming_ind
+    int disaster_roaming_ind,
+    bool is_aun3_ind,
+    int aun3_ind
 );
 void OpenAPI_authentication_info_request_free(OpenAPI_authentication_info_request_t *authentication_info_request);
 OpenAPI_authentication_info_request_t *OpenAPI_authentication_info_request_parseFromJSON(cJSON *authentication_info_requestJSON);

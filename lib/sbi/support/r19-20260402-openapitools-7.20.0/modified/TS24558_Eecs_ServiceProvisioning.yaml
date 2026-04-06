@@ -1,0 +1,716 @@
+openapi: 3.0.0
+
+info:
+  title: Eecs_ServiceProvisioning
+  version: "1.2.0"
+  description: |
+    API for ECS Service Provisioning.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 24.558 V19.5.0 Enabling Edge Applications; Protocol specification.
+  url: https://www.3gpp.org/ftp/Specs/archive/24_series/24.558/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/eecs-serviceprovisioning/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.558
+
+paths:
+
+  /subscriptions:
+    post:
+      description: >
+        Creates a new subscription in ECS in order to be notified of provisioning data
+        changes of interest.
+      operationId: CreateServProvSub
+      tags:
+        - Service Provisioning Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ECSServProvSubscription'
+      callbacks:
+        notificationDestination:
+          '{request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ServProvNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: >
+            Individual ECS Service Provisioning Subscription resource created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ECSServProvSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    put:
+      description: >
+        Updates an existing individual service provisioning subscription identified
+        by the subscriptionId.
+      operationId: UpdateIndServProvSub
+      tags:
+        - Individual Service Provisioning Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifies an individual service provisioning subscription.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to replace the existing subscription.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ECSServProvSubscription'
+      responses:
+        '200':
+          description: >
+            OK (The individual service provisioning subscription matching the subscriptionId
+            was modified successfully).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ECSServProvSubscription'
+        '204':
+          description: Successful case. No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      description: >
+        Deletes an existing individual service provisioning subscription identified by
+        the subscriptionId.
+      operationId: DeleteIndServProvSub
+      tags:
+        - Individual Service Provisioning Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifies an individual service provisioning subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            The individual service provisioning subscription matching the subscriptionId is
+            deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      description: >
+        Partially updates an existing individual service provisioning subscription identified
+        by the subscriptionId.
+      operationId: ModifyIndServProvSub
+      tags:
+        - Individual Service Provisioning Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifies an individual service provisioning subscription.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to replace the existing subscription.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/ECSServProvSubscriptionPatch'
+      responses:
+        '200':
+          description: >
+            OK (The individual service provisioning subscription matching the subscriptionId
+            was modified successfully).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ECSServProvSubscription'
+        '204':
+          description: Successful case. No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /request:
+    post:
+      summary: Request service provisioning information.
+      operationId: RequestServProv
+      tags:
+        - Request Service Provisioning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ECSServProvReq'
+      responses:
+        '200':
+          description: >
+            OK (The requested service provisioning information was returned successfully).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ECSServProvResp'
+        '204':
+          description: >
+            No Content (The requested service provisioning information does not exist).
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+    ECSServProvReq:
+      description: ECS service provisioning request information.
+      type: object
+      properties:
+        eecId:
+          type: string
+          description: Represents a unique identifier of the EEC.
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        acProfs:
+          type: array
+          items:
+            $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACProfile'
+          description: Information about services the EEC wants to connect to.
+        appInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationInfo'
+          minItems: 1
+          description: Information about the list of services the EEC wants to connect.
+        eecSvcContSupp:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          description: >
+            Indicates if the EEC supports service continuity or not, also indicates which
+            ACR scenarios are supported by the EEC.
+        connInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnectivityInfo'
+          description: List of connectivity information for the UE.
+        locInf:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        ecspIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Indicates to the ECS which EES providers are preferred by the EEC.
+        predictExpTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        satelliteId:
+          type: string
+          description: Represents the satellite identifier serving UE in current location.
+        minSatelliteAccessTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        tunnel_Info:
+          $ref: 'TS29558_Eecs_TargetEESDiscovery.yaml#/components/schemas/TunnelInfo'
+      required:
+        - eecId
+
+    ECSServProvResp:
+      description: ECS service provisioning response information.
+      type: object
+      properties:
+        ednCnfgInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/EDNConfigInfo'
+          minItems: 1
+          description: List of EDN configuration information.
+        redirectedECS:
+          type: array
+          items:
+            $ref: '#/components/schemas/ECSRedirectInfo'
+          minItems: 1
+          description: List of redirected ECS information.
+      required:
+        - ednCnfgInfo
+
+    ECSServProvSubscription:
+      description: Represents an individual service provisioning subscription resource.
+      type: object
+      properties:
+        eecId:
+          type: string
+          description: Represents a unique identifier of the EEC.
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        acProfs:
+          type: array
+          items:
+            $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACProfile'
+          description: Information about services the EEC wants to connect to.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        eecSvcContSupp:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          description: >
+            Indicates if the EEC supports service continuity or not, also indicates which
+            ACR scenarios are supported by the EEC.
+        connInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnectivityInfo'
+          description: List of connectivity information for the UE.
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        requestTestNotification:
+          type: boolean
+          description: >
+            Set to true by Subscriber to request the ECS to send a test notification. Set to
+            false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        ecspIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Indicates to the ECS which EES providers are preferred by the EEC.
+        eecTriggerRequest:
+          type: boolean
+          description: >
+            Indicates to the ECS, whether the application triggering is required by the EEC.
+            Default value false indicates the application triggering is not required.
+        eecTriggerPortInfo:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - eecId
+
+    ServProvNotification:
+      description: Represents notification information of a service provisioning Event.
+      type: object
+      properties:
+        subId:
+          type: string
+          description: >
+            Identifier of the individual service provisioning subscription for which the service
+            provisioning notification is delivered.
+        ednCnfgInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/EDNConfigInfo'
+          minItems: 1
+          description: List of EDN configuration information.
+        redirectedECS:
+          type: array
+          items:
+            $ref: '#/components/schemas/ECSRedirectInfo'
+          minItems: 1
+          description: List of redirected ECS information.
+      required:
+        - subId
+        - ednCnfgInfo
+
+    ConnectivityInfo:
+      description: Represents the connectivity information for the UE.
+      type: object
+      properties:
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        ssId:
+          type: string
+          description: Identifies the SSID of the access point to which the UE is attached.
+
+    ApplicationInfo:
+      description: Represents the services the EEC wants to connect.
+      type: object
+      properties:
+        acProf:
+            $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACProfile'
+        appGroupProfile:
+            $ref: '#/components/schemas/AppGroupProfile'
+      required:
+        - acProf
+
+    AppGroupProfile:
+      description: Represents the application group profile for common EAS.
+      type: object
+      properties:
+        appGrpId:
+          type: string
+          description: >
+            Represents the application group that uniquely identifies
+            the group of UEs using the same application.
+        e2eRespTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        easId:
+          type: string
+          description: Represents the application identifier of the EAS.
+        expectedSvcArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+      required:
+        - appGrpId
+        - easId
+
+    EDNConfigInfo:
+      description: Represents the EDN configuration information.
+      type: object
+      properties:
+        ednConInfo:
+          $ref: '#/components/schemas/EDNConInfo'
+        eess:
+          type: array
+          items:
+            $ref: '#/components/schemas/EESInfo'
+          minItems: 1
+          description: Contains the list of EESs of the EDN.
+        lifeTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - ednConInfo
+        - eess
+
+    ECSRedirectInfo:
+      description: >
+        Represents ECS information where the EEC shall redirect the ECS Service
+        Provisioning request.
+      type: object
+      properties:
+        ecsEndPt:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+      required:
+        - ecsEndPt
+
+    EDNConInfo:
+      description: Represents an EDN connection information.
+      type: object
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        ednTopoSrvArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+
+    EESInfo:
+      description: Represents EES information.
+      type: object
+      properties:
+        eesId:
+          type: string
+          description: Identity of the EES.
+        endPt:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        easIds:
+          type: array
+          items:
+            type: string
+          description: >
+            Application identities of the Edge Application Servers registered
+            with the EES.
+        appGroupIdList:
+          type: array
+          items:
+            type: string
+          description: List of Application Group IDs associated with EAS.
+        ecspInfo:
+          type: string
+          description: Represents an ECSP Information.
+        svcArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        dnais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          description: Represents list of Data network access identifiers.
+        eesSvcContSupp:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          description: >
+            Indicates if the EES supports service continuity or not, also indicates which ACR
+            scenarios are supported by the EES.
+        eecRegConf:
+          type: boolean
+          description: >
+            Indicates whether the EEC is required to register on the EES to use edge services
+            or not.
+        easInstInfos:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/EASInstantiationInfo'
+          minItems: 1
+          description: >
+            The EAS instantiation status per EASID (e.g. instantiated, instantiable but not be
+            instantiated yet).
+        eesAuthMethods:
+          type: array
+          items:
+            $ref: '#/components/schemas/EesAuthMethod'
+          minItems: 1
+          description: >
+            Indicates the authentication methods supported by the EES.
+        easBundleInfos:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASBundleInfo'
+          minItems: 1
+          description: List of EAS bundles to which the EAS belongs.
+        easBundleDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/EASBundleDetail'
+          minItems: 1
+        satelliteId:
+          type: string
+          description: Represents the satellite identifier where the EES is deployed.
+      required:
+        - eesId
+        - eecRegConf
+
+    EASBundleDetail:
+      description: Represents details of EAS Bundle.
+      type: object
+      properties:
+        easId:
+          type: string
+          description: >
+            Application identity of the Edge Application Servers registered with the EES.
+        easBundleInfos:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASBundleInfo'
+          minItems: 1
+          description: List of EAS bundles to which the EAS belongs.
+      required:
+        - easId
+        - easBundleInfos
+
+    EesAuthMethod:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - TLS_CLIENT_SERVER_CERTIFICATE
+        - TLS_WITH_AKMA
+        - TLS_WITH_GBA
+        - SERVER_SIDE_CERTIFICATE_BASED
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration and is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the Authentication methods supported by EES.  
+#        Possible values are:
+#        - TLS_CLIENT_SERVER_CERTIFICATE: Represents TLS with client server certificate
+#          authentication.
+#        - TLS_WITH_AKMA: Represents TLS with AKMA authentication.
+#        - TLS_WITH_GBA: Represents TLS with GBA authentication.
+#        - SERVER_SIDE_CERTIFICATE_BASED: Represents server side certification only.
+#
+    ECSServProvSubscriptionPatch:
+      description: >
+        Represents modifications to an individual service provisioning subscription resource.
+      type: object
+      properties:
+        acProfs:
+          type: array
+          items:
+            $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACProfile'
+          description: Information about services the EEC wants to connect to.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        eecSvcContSupp:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          description: >
+            Indicates which ACR scenarios are supported by the EEC.
+        connInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConnectivityInfo'
+          description: List of connectivity information for the UE.

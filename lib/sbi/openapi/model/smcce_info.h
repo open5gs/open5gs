@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_smcce_info_s OpenAPI_smcce_info_t;
 #include "smcce_ue_list.h"
 #include "snssai.h"
 
@@ -19,12 +20,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_smcce_info_s OpenAPI_smcce_info_t;
-typedef struct OpenAPI_smcce_info_s {
+struct OpenAPI_smcce_info_s {
     char *dnn;
     struct OpenAPI_snssai_s *snssai;
     struct OpenAPI_smcce_ue_list_s *smcce_ue_list;
-} OpenAPI_smcce_info_t;
+};
 
 OpenAPI_smcce_info_t *OpenAPI_smcce_info_create(
     char *dnn,

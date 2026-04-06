@@ -5,7 +5,7 @@
 #include "no_profile_match_info.h"
 
 OpenAPI_no_profile_match_info_t *OpenAPI_no_profile_match_info_create(
-    OpenAPI_no_profile_match_reason_t *reason,
+    OpenAPI_no_profile_match_reason_e reason,
     OpenAPI_list_t *query_param_combination_list
 )
 {
@@ -24,10 +24,6 @@ void OpenAPI_no_profile_match_info_free(OpenAPI_no_profile_match_info_t *no_prof
 
     if (NULL == no_profile_match_info) {
         return;
-    }
-    if (no_profile_match_info->reason) {
-        OpenAPI_no_profile_match_reason_free(no_profile_match_info->reason);
-        no_profile_match_info->reason = NULL;
     }
     if (no_profile_match_info->query_param_combination_list) {
         OpenAPI_list_for_each(no_profile_match_info->query_param_combination_list, node) {
@@ -50,17 +46,11 @@ cJSON *OpenAPI_no_profile_match_info_convertToJSON(OpenAPI_no_profile_match_info
     }
 
     item = cJSON_CreateObject();
-    if (!no_profile_match_info->reason) {
+    if (no_profile_match_info->reason == OpenAPI_no_profile_match_reason_NULL) {
         ogs_error("OpenAPI_no_profile_match_info_convertToJSON() failed [reason]");
         return NULL;
     }
-    cJSON *reason_local_JSON = OpenAPI_no_profile_match_reason_convertToJSON(no_profile_match_info->reason);
-    if (reason_local_JSON == NULL) {
-        ogs_error("OpenAPI_no_profile_match_info_convertToJSON() failed [reason]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "reason", reason_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "reason", OpenAPI_no_profile_match_reason_ToString(no_profile_match_info->reason)) == NULL) {
         ogs_error("OpenAPI_no_profile_match_info_convertToJSON() failed [reason]");
         goto end;
     }
@@ -90,7 +80,7 @@ OpenAPI_no_profile_match_info_t *OpenAPI_no_profile_match_info_parseFromJSON(cJS
     OpenAPI_no_profile_match_info_t *no_profile_match_info_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *reason = NULL;
-    OpenAPI_no_profile_match_reason_t *reason_local_nonprim = NULL;
+    OpenAPI_no_profile_match_reason_e reasonVariable = 0;
     cJSON *query_param_combination_list = NULL;
     OpenAPI_list_t *query_param_combination_listList = NULL;
     reason = cJSON_GetObjectItemCaseSensitive(no_profile_match_infoJSON, "reason");
@@ -98,11 +88,11 @@ OpenAPI_no_profile_match_info_t *OpenAPI_no_profile_match_info_parseFromJSON(cJS
         ogs_error("OpenAPI_no_profile_match_info_parseFromJSON() failed [reason]");
         goto end;
     }
-    reason_local_nonprim = OpenAPI_no_profile_match_reason_parseFromJSON(reason);
-    if (!reason_local_nonprim) {
-        ogs_error("OpenAPI_no_profile_match_reason_parseFromJSON failed [reason]");
+    if (!cJSON_IsString(reason)) {
+        ogs_error("OpenAPI_no_profile_match_info_parseFromJSON() failed [reason]");
         goto end;
     }
+    reasonVariable = OpenAPI_no_profile_match_reason_FromString(reason->valuestring);
 
     query_param_combination_list = cJSON_GetObjectItemCaseSensitive(no_profile_match_infoJSON, "queryParamCombinationList");
     if (query_param_combination_list) {
@@ -129,16 +119,12 @@ OpenAPI_no_profile_match_info_t *OpenAPI_no_profile_match_info_parseFromJSON(cJS
     }
 
     no_profile_match_info_local_var = OpenAPI_no_profile_match_info_create (
-        reason_local_nonprim,
+        reasonVariable,
         query_param_combination_list ? query_param_combination_listList : NULL
     );
 
     return no_profile_match_info_local_var;
 end:
-    if (reason_local_nonprim) {
-        OpenAPI_no_profile_match_reason_free(reason_local_nonprim);
-        reason_local_nonprim = NULL;
-    }
     if (query_param_combination_listList) {
         OpenAPI_list_for_each(query_param_combination_listList, node) {
             OpenAPI_query_param_combination_free(node->data);

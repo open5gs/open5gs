@@ -14,7 +14,11 @@ OpenAPI_nrf_info_served_pcscf_info_list_value_value_t *OpenAPI_nrf_info_served_p
     OpenAPI_list_t *mw_ipv4_addresses,
     OpenAPI_list_t *mw_ipv6_addresses,
     OpenAPI_list_t *served_ipv4_address_ranges,
-    OpenAPI_list_t *served_ipv6_prefix_ranges
+    OpenAPI_list_t *served_ipv6_prefix_ranges,
+    OpenAPI_list_t *supi_ranges,
+    OpenAPI_list_t *gpsi_ranges,
+    char *group_id,
+    OpenAPI_list_t *serving_plmns
 )
 {
     OpenAPI_nrf_info_served_pcscf_info_list_value_value_t *nrf_info_served_pcscf_info_list_value_value_local_var = ogs_malloc(sizeof(OpenAPI_nrf_info_served_pcscf_info_list_value_value_t));
@@ -30,6 +34,10 @@ OpenAPI_nrf_info_served_pcscf_info_list_value_value_t *OpenAPI_nrf_info_served_p
     nrf_info_served_pcscf_info_list_value_value_local_var->mw_ipv6_addresses = mw_ipv6_addresses;
     nrf_info_served_pcscf_info_list_value_value_local_var->served_ipv4_address_ranges = served_ipv4_address_ranges;
     nrf_info_served_pcscf_info_list_value_value_local_var->served_ipv6_prefix_ranges = served_ipv6_prefix_ranges;
+    nrf_info_served_pcscf_info_list_value_value_local_var->supi_ranges = supi_ranges;
+    nrf_info_served_pcscf_info_list_value_value_local_var->gpsi_ranges = gpsi_ranges;
+    nrf_info_served_pcscf_info_list_value_value_local_var->group_id = group_id;
+    nrf_info_served_pcscf_info_list_value_value_local_var->serving_plmns = serving_plmns;
 
     return nrf_info_served_pcscf_info_list_value_value_local_var;
 }
@@ -101,6 +109,31 @@ void OpenAPI_nrf_info_served_pcscf_info_list_value_value_free(OpenAPI_nrf_info_s
         }
         OpenAPI_list_free(nrf_info_served_pcscf_info_list_value_value->served_ipv6_prefix_ranges);
         nrf_info_served_pcscf_info_list_value_value->served_ipv6_prefix_ranges = NULL;
+    }
+    if (nrf_info_served_pcscf_info_list_value_value->supi_ranges) {
+        OpenAPI_list_for_each(nrf_info_served_pcscf_info_list_value_value->supi_ranges, node) {
+            OpenAPI_supi_range_free(node->data);
+        }
+        OpenAPI_list_free(nrf_info_served_pcscf_info_list_value_value->supi_ranges);
+        nrf_info_served_pcscf_info_list_value_value->supi_ranges = NULL;
+    }
+    if (nrf_info_served_pcscf_info_list_value_value->gpsi_ranges) {
+        OpenAPI_list_for_each(nrf_info_served_pcscf_info_list_value_value->gpsi_ranges, node) {
+            OpenAPI_identity_range_free(node->data);
+        }
+        OpenAPI_list_free(nrf_info_served_pcscf_info_list_value_value->gpsi_ranges);
+        nrf_info_served_pcscf_info_list_value_value->gpsi_ranges = NULL;
+    }
+    if (nrf_info_served_pcscf_info_list_value_value->group_id) {
+        ogs_free(nrf_info_served_pcscf_info_list_value_value->group_id);
+        nrf_info_served_pcscf_info_list_value_value->group_id = NULL;
+    }
+    if (nrf_info_served_pcscf_info_list_value_value->serving_plmns) {
+        OpenAPI_list_for_each(nrf_info_served_pcscf_info_list_value_value->serving_plmns, node) {
+            OpenAPI_plmn_id_free(node->data);
+        }
+        OpenAPI_list_free(nrf_info_served_pcscf_info_list_value_value->serving_plmns);
+        nrf_info_served_pcscf_info_list_value_value->serving_plmns = NULL;
     }
     ogs_free(nrf_info_served_pcscf_info_list_value_value);
 }
@@ -246,6 +279,61 @@ cJSON *OpenAPI_nrf_info_served_pcscf_info_list_value_value_convertToJSON(OpenAPI
     }
     }
 
+    if (nrf_info_served_pcscf_info_list_value_value->supi_ranges) {
+    cJSON *supi_rangesList = cJSON_AddArrayToObject(item, "supiRanges");
+    if (supi_rangesList == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_convertToJSON() failed [supi_ranges]");
+        goto end;
+    }
+    OpenAPI_list_for_each(nrf_info_served_pcscf_info_list_value_value->supi_ranges, node) {
+        cJSON *itemLocal = OpenAPI_supi_range_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_convertToJSON() failed [supi_ranges]");
+            goto end;
+        }
+        cJSON_AddItemToArray(supi_rangesList, itemLocal);
+    }
+    }
+
+    if (nrf_info_served_pcscf_info_list_value_value->gpsi_ranges) {
+    cJSON *gpsi_rangesList = cJSON_AddArrayToObject(item, "gpsiRanges");
+    if (gpsi_rangesList == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_convertToJSON() failed [gpsi_ranges]");
+        goto end;
+    }
+    OpenAPI_list_for_each(nrf_info_served_pcscf_info_list_value_value->gpsi_ranges, node) {
+        cJSON *itemLocal = OpenAPI_identity_range_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_convertToJSON() failed [gpsi_ranges]");
+            goto end;
+        }
+        cJSON_AddItemToArray(gpsi_rangesList, itemLocal);
+    }
+    }
+
+    if (nrf_info_served_pcscf_info_list_value_value->group_id) {
+    if (cJSON_AddStringToObject(item, "groupId", nrf_info_served_pcscf_info_list_value_value->group_id) == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_convertToJSON() failed [group_id]");
+        goto end;
+    }
+    }
+
+    if (nrf_info_served_pcscf_info_list_value_value->serving_plmns) {
+    cJSON *serving_plmnsList = cJSON_AddArrayToObject(item, "servingPlmns");
+    if (serving_plmnsList == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_convertToJSON() failed [serving_plmns]");
+        goto end;
+    }
+    OpenAPI_list_for_each(nrf_info_served_pcscf_info_list_value_value->serving_plmns, node) {
+        cJSON *itemLocal = OpenAPI_plmn_id_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_convertToJSON() failed [serving_plmns]");
+            goto end;
+        }
+        cJSON_AddItemToArray(serving_plmnsList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -272,6 +360,13 @@ OpenAPI_nrf_info_served_pcscf_info_list_value_value_t *OpenAPI_nrf_info_served_p
     OpenAPI_list_t *served_ipv4_address_rangesList = NULL;
     cJSON *served_ipv6_prefix_ranges = NULL;
     OpenAPI_list_t *served_ipv6_prefix_rangesList = NULL;
+    cJSON *supi_ranges = NULL;
+    OpenAPI_list_t *supi_rangesList = NULL;
+    cJSON *gpsi_ranges = NULL;
+    OpenAPI_list_t *gpsi_rangesList = NULL;
+    cJSON *group_id = NULL;
+    cJSON *serving_plmns = NULL;
+    OpenAPI_list_t *serving_plmnsList = NULL;
     access_type = cJSON_GetObjectItemCaseSensitive(nrf_info_served_pcscf_info_list_value_valueJSON, "accessType");
     if (access_type) {
         cJSON *access_type_local = NULL;
@@ -471,6 +566,86 @@ OpenAPI_nrf_info_served_pcscf_info_list_value_value_t *OpenAPI_nrf_info_served_p
         }
     }
 
+    supi_ranges = cJSON_GetObjectItemCaseSensitive(nrf_info_served_pcscf_info_list_value_valueJSON, "supiRanges");
+    if (supi_ranges) {
+        cJSON *supi_ranges_local = NULL;
+        if (!cJSON_IsArray(supi_ranges)) {
+            ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_parseFromJSON() failed [supi_ranges]");
+            goto end;
+        }
+
+        supi_rangesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(supi_ranges_local, supi_ranges) {
+            if (!cJSON_IsObject(supi_ranges_local)) {
+                ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_parseFromJSON() failed [supi_ranges]");
+                goto end;
+            }
+            OpenAPI_supi_range_t *supi_rangesItem = OpenAPI_supi_range_parseFromJSON(supi_ranges_local);
+            if (!supi_rangesItem) {
+                ogs_error("No supi_rangesItem");
+                goto end;
+            }
+            OpenAPI_list_add(supi_rangesList, supi_rangesItem);
+        }
+    }
+
+    gpsi_ranges = cJSON_GetObjectItemCaseSensitive(nrf_info_served_pcscf_info_list_value_valueJSON, "gpsiRanges");
+    if (gpsi_ranges) {
+        cJSON *gpsi_ranges_local = NULL;
+        if (!cJSON_IsArray(gpsi_ranges)) {
+            ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_parseFromJSON() failed [gpsi_ranges]");
+            goto end;
+        }
+
+        gpsi_rangesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(gpsi_ranges_local, gpsi_ranges) {
+            if (!cJSON_IsObject(gpsi_ranges_local)) {
+                ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_parseFromJSON() failed [gpsi_ranges]");
+                goto end;
+            }
+            OpenAPI_identity_range_t *gpsi_rangesItem = OpenAPI_identity_range_parseFromJSON(gpsi_ranges_local);
+            if (!gpsi_rangesItem) {
+                ogs_error("No gpsi_rangesItem");
+                goto end;
+            }
+            OpenAPI_list_add(gpsi_rangesList, gpsi_rangesItem);
+        }
+    }
+
+    group_id = cJSON_GetObjectItemCaseSensitive(nrf_info_served_pcscf_info_list_value_valueJSON, "groupId");
+    if (group_id) {
+    if (!cJSON_IsString(group_id) && !cJSON_IsNull(group_id)) {
+        ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_parseFromJSON() failed [group_id]");
+        goto end;
+    }
+    }
+
+    serving_plmns = cJSON_GetObjectItemCaseSensitive(nrf_info_served_pcscf_info_list_value_valueJSON, "servingPlmns");
+    if (serving_plmns) {
+        cJSON *serving_plmns_local = NULL;
+        if (!cJSON_IsArray(serving_plmns)) {
+            ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_parseFromJSON() failed [serving_plmns]");
+            goto end;
+        }
+
+        serving_plmnsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(serving_plmns_local, serving_plmns) {
+            if (!cJSON_IsObject(serving_plmns_local)) {
+                ogs_error("OpenAPI_nrf_info_served_pcscf_info_list_value_value_parseFromJSON() failed [serving_plmns]");
+                goto end;
+            }
+            OpenAPI_plmn_id_t *serving_plmnsItem = OpenAPI_plmn_id_parseFromJSON(serving_plmns_local);
+            if (!serving_plmnsItem) {
+                ogs_error("No serving_plmnsItem");
+                goto end;
+            }
+            OpenAPI_list_add(serving_plmnsList, serving_plmnsItem);
+        }
+    }
+
     nrf_info_served_pcscf_info_list_value_value_local_var = OpenAPI_nrf_info_served_pcscf_info_list_value_value_create (
         access_type ? access_typeList : NULL,
         dnn_list ? dnn_listList : NULL,
@@ -481,7 +656,11 @@ OpenAPI_nrf_info_served_pcscf_info_list_value_value_t *OpenAPI_nrf_info_served_p
         mw_ipv4_addresses ? mw_ipv4_addressesList : NULL,
         mw_ipv6_addresses ? mw_ipv6_addressesList : NULL,
         served_ipv4_address_ranges ? served_ipv4_address_rangesList : NULL,
-        served_ipv6_prefix_ranges ? served_ipv6_prefix_rangesList : NULL
+        served_ipv6_prefix_ranges ? served_ipv6_prefix_rangesList : NULL,
+        supi_ranges ? supi_rangesList : NULL,
+        gpsi_ranges ? gpsi_rangesList : NULL,
+        group_id && !cJSON_IsNull(group_id) ? ogs_strdup(group_id->valuestring) : NULL,
+        serving_plmns ? serving_plmnsList : NULL
     );
 
     return nrf_info_served_pcscf_info_list_value_value_local_var;
@@ -538,6 +717,27 @@ end:
         }
         OpenAPI_list_free(served_ipv6_prefix_rangesList);
         served_ipv6_prefix_rangesList = NULL;
+    }
+    if (supi_rangesList) {
+        OpenAPI_list_for_each(supi_rangesList, node) {
+            OpenAPI_supi_range_free(node->data);
+        }
+        OpenAPI_list_free(supi_rangesList);
+        supi_rangesList = NULL;
+    }
+    if (gpsi_rangesList) {
+        OpenAPI_list_for_each(gpsi_rangesList, node) {
+            OpenAPI_identity_range_free(node->data);
+        }
+        OpenAPI_list_free(gpsi_rangesList);
+        gpsi_rangesList = NULL;
+    }
+    if (serving_plmnsList) {
+        OpenAPI_list_for_each(serving_plmnsList, node) {
+            OpenAPI_plmn_id_free(node->data);
+        }
+        OpenAPI_list_free(serving_plmnsList);
+        serving_plmnsList = NULL;
     }
     return NULL;
 }

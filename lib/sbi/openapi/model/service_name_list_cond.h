@@ -12,21 +12,22 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_service_name_list_cond_s OpenAPI_service_name_list_cond_t;
+#include "service_name.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_service_name_list_cond_s OpenAPI_service_name_list_cond_t;
 typedef enum { OpenAPI_service_name_list_cond_CONDITIONTYPE_NULL = 0, OpenAPI_service_name_list_cond_CONDITIONTYPE_SERVICE_NAME_LIST_COND } OpenAPI_service_name_list_cond_condition_type_e;
 
 char* OpenAPI_service_name_list_cond_condition_type_ToString(OpenAPI_service_name_list_cond_condition_type_e condition_type);
 
 OpenAPI_service_name_list_cond_condition_type_e OpenAPI_service_name_list_cond_condition_type_FromString(char* condition_type);
-typedef struct OpenAPI_service_name_list_cond_s {
+struct OpenAPI_service_name_list_cond_s {
     OpenAPI_service_name_list_cond_condition_type_e condition_type;
     OpenAPI_list_t *service_name_list;
-} OpenAPI_service_name_list_cond_t;
+};
 
 OpenAPI_service_name_list_cond_t *OpenAPI_service_name_list_cond_create(
     OpenAPI_service_name_list_cond_condition_type_e condition_type,

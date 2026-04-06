@@ -1,0 +1,149 @@
+openapi: 3.0.0
+
+info:
+  title: SM Server SM Data Source Discovery
+  version: 1.0.1
+  description: |
+    API for SM Server SM Data Source Discovery.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.437 V19.1.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Metaverse Enablement Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.437/
+
+servers:
+  - url: '{apiRoot}/ssm-dsdisc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /datasource-profiles:
+    get:
+      summary: Retrieve Spatial Map data source profiles information.
+      operationId: GetSpatialMapDataSourceDIscovery
+      tags:
+        - Spatial Maps Data Source Profiles (Collection)
+      parameters:
+        - name: area-int
+          in: query
+          description: Contains the three-dimensional area or localization information.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+        - name: end-point
+          in: query
+          description: >
+            Contains the end point information where the Spatial Map data source sends the SM data.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        - name: ds-disc-fltr
+          in: query
+          description: Contains the set of characteristics related to Spatial Map data sources.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SMDataSourceDiscFilter'
+        - name: supp-feats
+          in: query
+          description: >
+            Contains the list of supported feature(s) among the ones defined in clause 6.2.4.8.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            OK. The requested SM data source information shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SMDataSourceDiscResp'
+        '307':  
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    SMDataSourceDiscFilter:
+      description: Represents the SM data source discovery filters.
+      type: object
+      properties:
+        smInfoDets:
+          type: array
+          items:
+            $ref: 'TS24550_SS_SmDataSourceRegistration.yaml#/components/schemas/SpatialMapInfoDetails'
+          minItems: 1
+      required:
+        - smInfoDets
+
+    SMDataSourceDiscResp:
+      description: >
+        Represents the SM data source discovery response.
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: 'TS24550_SS_SmDataSourceRegistration.yaml#/components/schemas/DataSourceProfile'
+          minItems: 0
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - results
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+# Data types describing alternative data types or combinations of data types:
+#

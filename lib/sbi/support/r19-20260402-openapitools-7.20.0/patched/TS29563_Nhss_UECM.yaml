@@ -1,0 +1,269 @@
+openapi: 3.0.0
+
+info:
+  version: '1.3.0'
+  title: 'Nhss_UECM'
+  description: |
+    HSS UE Context Management.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.563 HSS Services for Interworking With UDM, version 19.3.0
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.563/'
+
+servers:
+  - url: '{apiRoot}/nhss-uecm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - oAuth2ClientCredentials:
+    - nhss-uecm
+  - {}
+
+paths:
+  /deregister-sn:
+    post:
+      summary: MME/SGSN Deregistration
+      operationId: DeregisterSN
+      tags:
+        - MME/SGSN Deregistration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeregistrationRequest'
+        required: true
+      responses:
+        '204':
+          description: No content
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+  /imei-update:
+    post:
+      summary: IMEI Update
+      operationId: IMEIUpdate
+      tags:
+        - IMEI Update
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImeiUpdateInfo'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImeiUpdateResponse'
+        '204':
+          description: No content
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+  /roaming-status-update:
+    post:
+      summary: Roaming Status Update
+      operationId: RoamingStatusUpdate
+      tags:
+        - Roaming Status Update
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoamingStatusUpdateInfo'
+        required: true
+      responses:
+        '204':
+          description: No content
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nhss-uecm: Access to the nhss-uecm API
+
+  schemas:
+
+# STRUCTURED TYPES:
+
+    DeregistrationRequest:
+      description: >
+        It represents the request body of the deregistration request sent by UDM to HSS and contains
+        the IMSI of the UE, the deregistration reason, etc.
+      type: object
+      required:
+        - imsi
+        - deregReason
+      properties:
+        imsi:
+          type: string
+          pattern: '^[0-9]{5,15}$'
+        deregReason:
+          $ref: '#/components/schemas/DeregistrationReason'
+        guami:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+
+    ImeiUpdateInfo:
+      description: >
+        It represents the request body of the IMEI update request sent by UDM to HSS,
+        and contains the IMSI of the UE and the new IMEI(SV)
+      type: object
+      required:
+        - imsi
+      oneOf:
+        - required: [ imei ]
+        - required: [ imeisv ]
+      properties:
+        imsi:
+          type: string
+          pattern: '^[0-9]{5,15}$'
+        imei:
+          type: string
+          pattern: '^[0-9]{14,15}$'
+        imeisv:
+          type: string
+          pattern: '^[0-9]{16}$'
+
+    ImeiUpdateResponse:
+      description: >
+        It represents the response body of the IMEI update request sent by UDM to HSS,
+        and contains the previous IMEI(SV) stored by HSS
+      type: object
+      anyOf:
+        - required: [ previousImei ]
+        - required: [ previousImeisv ]
+      properties:
+        previousImei:
+          type: string
+          pattern: '^[0-9]{14,15}$'
+        previousImeisv:
+          type: string
+          pattern: '^[0-9]{16}$'
+
+    RoamingStatusUpdateInfo:
+      description: >
+        It represents the request body of the Roaming Status Update request sent by UDM to HSS,
+        and contains the IMSI of the UE and the new PLMN-ID
+      type: object
+      required:
+        - imsi
+        - plmnId
+      properties:
+        imsi:
+          type: string
+          pattern: '^[0-9]{5,15}$'
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+
+# SIMPLE TYPES:
+
+
+# ENUMS:
+
+    DeregistrationReason:
+      description: The reason that triggers that the serving node needs to be deregistered by HSS
+      anyOf:
+        - type: string
+          enum:
+            - UE_INITIAL_AND_SINGLE_REGISTRATION
+            - UE_INITIAL_AND_DUAL_REGISTRATION
+            - EPS_TO_5GS_MOBILITY
+            - EPS_TO_5GS_MOBILITY_WITHOUT_N26_IWK
+        - type: string

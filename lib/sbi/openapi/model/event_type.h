@@ -1,7 +1,7 @@
 /*
  * event_type.h
  *
- * 
+ * Event Type
  */
 
 #ifndef _OpenAPI_event_type_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "event_type_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_event_type_s OpenAPI_event_type_t;
-typedef struct OpenAPI_event_type_s {
-} OpenAPI_event_type_t;
+typedef enum { OpenAPI_event_type_NULL = 0, OpenAPI_event_type_QOS_MONITORING, OpenAPI_event_type_USER_DATA_USAGE_MEASURES, OpenAPI_event_type_USER_DATA_USAGE_TRENDS, OpenAPI_event_type_TSC_MNGT_INFO, OpenAPI_event_type_UE_NAT_MAPPING_INFO, OpenAPI_event_type_HANDLING_OF_PAYLOAD_HEADERS_INFO, OpenAPI_event_type_SUBSCRIPTION_TERMINATION } OpenAPI_event_type_e;
 
-OpenAPI_event_type_t *OpenAPI_event_type_create(
-);
-void OpenAPI_event_type_free(OpenAPI_event_type_t *event_type);
-OpenAPI_event_type_t *OpenAPI_event_type_parseFromJSON(cJSON *event_typeJSON);
-cJSON *OpenAPI_event_type_convertToJSON(OpenAPI_event_type_t *event_type);
-OpenAPI_event_type_t *OpenAPI_event_type_copy(OpenAPI_event_type_t *dst, OpenAPI_event_type_t *src);
+char* OpenAPI_event_type_ToString(OpenAPI_event_type_e event_type);
+
+OpenAPI_event_type_e OpenAPI_event_type_FromString(char* event_type);
 
 #ifdef __cplusplus
 }

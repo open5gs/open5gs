@@ -5,7 +5,7 @@
 #include "amf_event_mode.h"
 
 OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_create(
-    OpenAPI_amf_event_trigger_t *trigger,
+    OpenAPI_amf_event_trigger_e trigger,
     bool is_max_reports,
     int max_reports,
     char *expiry,
@@ -14,7 +14,10 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_create(
     bool is_samp_ratio,
     int samp_ratio,
     OpenAPI_list_t *partitioning_criteria,
-    OpenAPI_notification_flag_e notif_flag
+    OpenAPI_notification_flag_e notif_flag,
+    OpenAPI_muting_exception_instructions_t *muting_exc_instructions,
+    OpenAPI_muting_notifications_settings_t *muting_not_settings,
+    OpenAPI_list_t *var_rep_period_info
 )
 {
     OpenAPI_amf_event_mode_t *amf_event_mode_local_var = ogs_malloc(sizeof(OpenAPI_amf_event_mode_t));
@@ -30,6 +33,9 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_create(
     amf_event_mode_local_var->samp_ratio = samp_ratio;
     amf_event_mode_local_var->partitioning_criteria = partitioning_criteria;
     amf_event_mode_local_var->notif_flag = notif_flag;
+    amf_event_mode_local_var->muting_exc_instructions = muting_exc_instructions;
+    amf_event_mode_local_var->muting_not_settings = muting_not_settings;
+    amf_event_mode_local_var->var_rep_period_info = var_rep_period_info;
 
     return amf_event_mode_local_var;
 }
@@ -41,10 +47,6 @@ void OpenAPI_amf_event_mode_free(OpenAPI_amf_event_mode_t *amf_event_mode)
     if (NULL == amf_event_mode) {
         return;
     }
-    if (amf_event_mode->trigger) {
-        OpenAPI_amf_event_trigger_free(amf_event_mode->trigger);
-        amf_event_mode->trigger = NULL;
-    }
     if (amf_event_mode->expiry) {
         ogs_free(amf_event_mode->expiry);
         amf_event_mode->expiry = NULL;
@@ -52,6 +54,21 @@ void OpenAPI_amf_event_mode_free(OpenAPI_amf_event_mode_t *amf_event_mode)
     if (amf_event_mode->partitioning_criteria) {
         OpenAPI_list_free(amf_event_mode->partitioning_criteria);
         amf_event_mode->partitioning_criteria = NULL;
+    }
+    if (amf_event_mode->muting_exc_instructions) {
+        OpenAPI_muting_exception_instructions_free(amf_event_mode->muting_exc_instructions);
+        amf_event_mode->muting_exc_instructions = NULL;
+    }
+    if (amf_event_mode->muting_not_settings) {
+        OpenAPI_muting_notifications_settings_free(amf_event_mode->muting_not_settings);
+        amf_event_mode->muting_not_settings = NULL;
+    }
+    if (amf_event_mode->var_rep_period_info) {
+        OpenAPI_list_for_each(amf_event_mode->var_rep_period_info, node) {
+            OpenAPI_var_rep_period_free(node->data);
+        }
+        OpenAPI_list_free(amf_event_mode->var_rep_period_info);
+        amf_event_mode->var_rep_period_info = NULL;
     }
     ogs_free(amf_event_mode);
 }
@@ -67,17 +84,11 @@ cJSON *OpenAPI_amf_event_mode_convertToJSON(OpenAPI_amf_event_mode_t *amf_event_
     }
 
     item = cJSON_CreateObject();
-    if (!amf_event_mode->trigger) {
+    if (amf_event_mode->trigger == OpenAPI_amf_event_trigger_NULL) {
         ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [trigger]");
         return NULL;
     }
-    cJSON *trigger_local_JSON = OpenAPI_amf_event_trigger_convertToJSON(amf_event_mode->trigger);
-    if (trigger_local_JSON == NULL) {
-        ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [trigger]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "trigger", trigger_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "trigger", OpenAPI_amf_event_trigger_ToString(amf_event_mode->trigger)) == NULL) {
         ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [trigger]");
         goto end;
     }
@@ -131,6 +142,48 @@ cJSON *OpenAPI_amf_event_mode_convertToJSON(OpenAPI_amf_event_mode_t *amf_event_
     }
     }
 
+    if (amf_event_mode->muting_exc_instructions) {
+    cJSON *muting_exc_instructions_local_JSON = OpenAPI_muting_exception_instructions_convertToJSON(amf_event_mode->muting_exc_instructions);
+    if (muting_exc_instructions_local_JSON == NULL) {
+        ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [muting_exc_instructions]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "mutingExcInstructions", muting_exc_instructions_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [muting_exc_instructions]");
+        goto end;
+    }
+    }
+
+    if (amf_event_mode->muting_not_settings) {
+    cJSON *muting_not_settings_local_JSON = OpenAPI_muting_notifications_settings_convertToJSON(amf_event_mode->muting_not_settings);
+    if (muting_not_settings_local_JSON == NULL) {
+        ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [muting_not_settings]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "mutingNotSettings", muting_not_settings_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [muting_not_settings]");
+        goto end;
+    }
+    }
+
+    if (amf_event_mode->var_rep_period_info) {
+    cJSON *var_rep_period_infoList = cJSON_AddArrayToObject(item, "varRepPeriodInfo");
+    if (var_rep_period_infoList == NULL) {
+        ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [var_rep_period_info]");
+        goto end;
+    }
+    OpenAPI_list_for_each(amf_event_mode->var_rep_period_info, node) {
+        cJSON *itemLocal = OpenAPI_var_rep_period_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_amf_event_mode_convertToJSON() failed [var_rep_period_info]");
+            goto end;
+        }
+        cJSON_AddItemToArray(var_rep_period_infoList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -140,7 +193,7 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
     OpenAPI_amf_event_mode_t *amf_event_mode_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *trigger = NULL;
-    OpenAPI_amf_event_trigger_t *trigger_local_nonprim = NULL;
+    OpenAPI_amf_event_trigger_e triggerVariable = 0;
     cJSON *max_reports = NULL;
     cJSON *expiry = NULL;
     cJSON *rep_period = NULL;
@@ -149,16 +202,22 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
     OpenAPI_list_t *partitioning_criteriaList = NULL;
     cJSON *notif_flag = NULL;
     OpenAPI_notification_flag_e notif_flagVariable = 0;
+    cJSON *muting_exc_instructions = NULL;
+    OpenAPI_muting_exception_instructions_t *muting_exc_instructions_local_nonprim = NULL;
+    cJSON *muting_not_settings = NULL;
+    OpenAPI_muting_notifications_settings_t *muting_not_settings_local_nonprim = NULL;
+    cJSON *var_rep_period_info = NULL;
+    OpenAPI_list_t *var_rep_period_infoList = NULL;
     trigger = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "trigger");
     if (!trigger) {
         ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [trigger]");
         goto end;
     }
-    trigger_local_nonprim = OpenAPI_amf_event_trigger_parseFromJSON(trigger);
-    if (!trigger_local_nonprim) {
-        ogs_error("OpenAPI_amf_event_trigger_parseFromJSON failed [trigger]");
+    if (!cJSON_IsString(trigger)) {
+        ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [trigger]");
         goto end;
     }
+    triggerVariable = OpenAPI_amf_event_trigger_FromString(trigger->valuestring);
 
     max_reports = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "maxReports");
     if (max_reports) {
@@ -231,8 +290,50 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
     notif_flagVariable = OpenAPI_notification_flag_FromString(notif_flag->valuestring);
     }
 
+    muting_exc_instructions = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "mutingExcInstructions");
+    if (muting_exc_instructions) {
+    muting_exc_instructions_local_nonprim = OpenAPI_muting_exception_instructions_parseFromJSON(muting_exc_instructions);
+    if (!muting_exc_instructions_local_nonprim) {
+        ogs_error("OpenAPI_muting_exception_instructions_parseFromJSON failed [muting_exc_instructions]");
+        goto end;
+    }
+    }
+
+    muting_not_settings = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "mutingNotSettings");
+    if (muting_not_settings) {
+    muting_not_settings_local_nonprim = OpenAPI_muting_notifications_settings_parseFromJSON(muting_not_settings);
+    if (!muting_not_settings_local_nonprim) {
+        ogs_error("OpenAPI_muting_notifications_settings_parseFromJSON failed [muting_not_settings]");
+        goto end;
+    }
+    }
+
+    var_rep_period_info = cJSON_GetObjectItemCaseSensitive(amf_event_modeJSON, "varRepPeriodInfo");
+    if (var_rep_period_info) {
+        cJSON *var_rep_period_info_local = NULL;
+        if (!cJSON_IsArray(var_rep_period_info)) {
+            ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [var_rep_period_info]");
+            goto end;
+        }
+
+        var_rep_period_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(var_rep_period_info_local, var_rep_period_info) {
+            if (!cJSON_IsObject(var_rep_period_info_local)) {
+                ogs_error("OpenAPI_amf_event_mode_parseFromJSON() failed [var_rep_period_info]");
+                goto end;
+            }
+            OpenAPI_var_rep_period_t *var_rep_period_infoItem = OpenAPI_var_rep_period_parseFromJSON(var_rep_period_info_local);
+            if (!var_rep_period_infoItem) {
+                ogs_error("No var_rep_period_infoItem");
+                goto end;
+            }
+            OpenAPI_list_add(var_rep_period_infoList, var_rep_period_infoItem);
+        }
+    }
+
     amf_event_mode_local_var = OpenAPI_amf_event_mode_create (
-        trigger_local_nonprim,
+        triggerVariable,
         max_reports ? true : false,
         max_reports ? max_reports->valuedouble : 0,
         expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
@@ -241,18 +342,32 @@ OpenAPI_amf_event_mode_t *OpenAPI_amf_event_mode_parseFromJSON(cJSON *amf_event_
         samp_ratio ? true : false,
         samp_ratio ? samp_ratio->valuedouble : 0,
         partitioning_criteria ? partitioning_criteriaList : NULL,
-        notif_flag ? notif_flagVariable : 0
+        notif_flag ? notif_flagVariable : 0,
+        muting_exc_instructions ? muting_exc_instructions_local_nonprim : NULL,
+        muting_not_settings ? muting_not_settings_local_nonprim : NULL,
+        var_rep_period_info ? var_rep_period_infoList : NULL
     );
 
     return amf_event_mode_local_var;
 end:
-    if (trigger_local_nonprim) {
-        OpenAPI_amf_event_trigger_free(trigger_local_nonprim);
-        trigger_local_nonprim = NULL;
-    }
     if (partitioning_criteriaList) {
         OpenAPI_list_free(partitioning_criteriaList);
         partitioning_criteriaList = NULL;
+    }
+    if (muting_exc_instructions_local_nonprim) {
+        OpenAPI_muting_exception_instructions_free(muting_exc_instructions_local_nonprim);
+        muting_exc_instructions_local_nonprim = NULL;
+    }
+    if (muting_not_settings_local_nonprim) {
+        OpenAPI_muting_notifications_settings_free(muting_not_settings_local_nonprim);
+        muting_not_settings_local_nonprim = NULL;
+    }
+    if (var_rep_period_infoList) {
+        OpenAPI_list_for_each(var_rep_period_infoList, node) {
+            OpenAPI_var_rep_period_free(node->data);
+        }
+        OpenAPI_list_free(var_rep_period_infoList);
+        var_rep_period_infoList = NULL;
     }
     return NULL;
 }

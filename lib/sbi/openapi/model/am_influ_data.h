@@ -1,7 +1,7 @@
 /*
  * am_influ_data.h
  *
- * Represents the AM Influence Data.
+ * 
  */
 
 #ifndef _OpenAPI_am_influ_data_H_
@@ -12,22 +12,25 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_am_influ_data_s OpenAPI_am_influ_data_t;
 #include "am_influ_event.h"
 #include "dnn_snssai_information.h"
+#include "plmn_id.h"
 #include "service_area_coverage_info.h"
+#include "slice_repl_req_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_am_influ_data_s OpenAPI_am_influ_data_t;
-typedef struct OpenAPI_am_influ_data_s {
+struct OpenAPI_am_influ_data_s {
     OpenAPI_list_t *app_ids;
     OpenAPI_list_t *dnn_snssai_infos;
     char *inter_group_id;
     char *supi;
     bool is_any_ue_ind;
     int any_ue_ind;
+    OpenAPI_list_t *roam_ue_plmn_ids;
     bool is_policy_duration;
     int policy_duration;
     OpenAPI_list_t *ev_subs;
@@ -37,10 +40,11 @@ typedef struct OpenAPI_am_influ_data_s {
     bool is_thru_req;
     int thru_req;
     OpenAPI_list_t *cov_req;
+    struct OpenAPI_slice_repl_req_info_s *af_slice_repl_req_info;
     char *supported_features;
     char *res_uri;
     OpenAPI_list_t *reset_ids;
-} OpenAPI_am_influ_data_t;
+};
 
 OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_create(
     OpenAPI_list_t *app_ids,
@@ -49,6 +53,7 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_create(
     char *supi,
     bool is_any_ue_ind,
     int any_ue_ind,
+    OpenAPI_list_t *roam_ue_plmn_ids,
     bool is_policy_duration,
     int policy_duration,
     OpenAPI_list_t *ev_subs,
@@ -58,6 +63,7 @@ OpenAPI_am_influ_data_t *OpenAPI_am_influ_data_create(
     bool is_thru_req,
     int thru_req,
     OpenAPI_list_t *cov_req,
+    OpenAPI_slice_repl_req_info_t *af_slice_repl_req_info,
     char *supported_features,
     char *res_uri,
     OpenAPI_list_t *reset_ids

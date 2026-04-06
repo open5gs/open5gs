@@ -12,7 +12,7 @@ OpenAPI_dispersion_collection_t *OpenAPI_dispersion_collection_create(
     OpenAPI_list_t *app_volumes,
     bool is_disper_amount,
     int disper_amount,
-    OpenAPI_dispersion_class_t *disper_class,
+    OpenAPI_dispersion_class_e disper_class,
     bool is_usage_rank,
     int usage_rank,
     bool is_percentile_rank,
@@ -81,10 +81,6 @@ void OpenAPI_dispersion_collection_free(OpenAPI_dispersion_collection_t *dispers
         }
         OpenAPI_list_free(dispersion_collection->app_volumes);
         dispersion_collection->app_volumes = NULL;
-    }
-    if (dispersion_collection->disper_class) {
-        OpenAPI_dispersion_class_free(dispersion_collection->disper_class);
-        dispersion_collection->disper_class = NULL;
     }
     ogs_free(dispersion_collection);
 }
@@ -177,14 +173,8 @@ cJSON *OpenAPI_dispersion_collection_convertToJSON(OpenAPI_dispersion_collection
     }
     }
 
-    if (dispersion_collection->disper_class) {
-    cJSON *disper_class_local_JSON = OpenAPI_dispersion_class_convertToJSON(dispersion_collection->disper_class);
-    if (disper_class_local_JSON == NULL) {
-        ogs_error("OpenAPI_dispersion_collection_convertToJSON() failed [disper_class]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "disperClass", disper_class_local_JSON);
-    if (item->child == NULL) {
+    if (dispersion_collection->disper_class != OpenAPI_dispersion_class_NULL) {
+    if (cJSON_AddStringToObject(item, "disperClass", OpenAPI_dispersion_class_ToString(dispersion_collection->disper_class)) == NULL) {
         ogs_error("OpenAPI_dispersion_collection_convertToJSON() failed [disper_class]");
         goto end;
     }
@@ -238,7 +228,7 @@ OpenAPI_dispersion_collection_t *OpenAPI_dispersion_collection_parseFromJSON(cJS
     OpenAPI_list_t *app_volumesList = NULL;
     cJSON *disper_amount = NULL;
     cJSON *disper_class = NULL;
-    OpenAPI_dispersion_class_t *disper_class_local_nonprim = NULL;
+    OpenAPI_dispersion_class_e disper_classVariable = 0;
     cJSON *usage_rank = NULL;
     cJSON *percentile_rank = NULL;
     cJSON *ue_ratio = NULL;
@@ -337,11 +327,11 @@ OpenAPI_dispersion_collection_t *OpenAPI_dispersion_collection_parseFromJSON(cJS
 
     disper_class = cJSON_GetObjectItemCaseSensitive(dispersion_collectionJSON, "disperClass");
     if (disper_class) {
-    disper_class_local_nonprim = OpenAPI_dispersion_class_parseFromJSON(disper_class);
-    if (!disper_class_local_nonprim) {
-        ogs_error("OpenAPI_dispersion_class_parseFromJSON failed [disper_class]");
+    if (!cJSON_IsString(disper_class)) {
+        ogs_error("OpenAPI_dispersion_collection_parseFromJSON() failed [disper_class]");
         goto end;
     }
+    disper_classVariable = OpenAPI_dispersion_class_FromString(disper_class->valuestring);
     }
 
     usage_rank = cJSON_GetObjectItemCaseSensitive(dispersion_collectionJSON, "usageRank");
@@ -384,7 +374,7 @@ OpenAPI_dispersion_collection_t *OpenAPI_dispersion_collection_parseFromJSON(cJS
         app_volumes ? app_volumesList : NULL,
         disper_amount ? true : false,
         disper_amount ? disper_amount->valuedouble : 0,
-        disper_class ? disper_class_local_nonprim : NULL,
+        disper_class ? disper_classVariable : 0,
         usage_rank ? true : false,
         usage_rank ? usage_rank->valuedouble : 0,
         percentile_rank ? true : false,
@@ -425,10 +415,6 @@ end:
         }
         OpenAPI_list_free(app_volumesList);
         app_volumesList = NULL;
-    }
-    if (disper_class_local_nonprim) {
-        OpenAPI_dispersion_class_free(disper_class_local_nonprim);
-        disper_class_local_nonprim = NULL;
     }
     return NULL;
 }

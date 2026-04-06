@@ -9,7 +9,8 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_create(
     OpenAPI_list_t *ipv4_endpoint_addresses,
     OpenAPI_list_t *ipv6_endpoint_addresses,
     char *endpoint_fqdn,
-    char *network_instance
+    char *network_instance,
+    OpenAPI_list_t *port_range_list
 )
 {
     OpenAPI_interface_upf_info_item_t *interface_upf_info_item_local_var = ogs_malloc(sizeof(OpenAPI_interface_upf_info_item_t));
@@ -20,6 +21,7 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_create(
     interface_upf_info_item_local_var->ipv6_endpoint_addresses = ipv6_endpoint_addresses;
     interface_upf_info_item_local_var->endpoint_fqdn = endpoint_fqdn;
     interface_upf_info_item_local_var->network_instance = network_instance;
+    interface_upf_info_item_local_var->port_range_list = port_range_list;
 
     return interface_upf_info_item_local_var;
 }
@@ -52,6 +54,13 @@ void OpenAPI_interface_upf_info_item_free(OpenAPI_interface_upf_info_item_t *int
     if (interface_upf_info_item->network_instance) {
         ogs_free(interface_upf_info_item->network_instance);
         interface_upf_info_item->network_instance = NULL;
+    }
+    if (interface_upf_info_item->port_range_list) {
+        OpenAPI_list_for_each(interface_upf_info_item->port_range_list, node) {
+            OpenAPI_port_range_free(node->data);
+        }
+        OpenAPI_list_free(interface_upf_info_item->port_range_list);
+        interface_upf_info_item->port_range_list = NULL;
     }
     ogs_free(interface_upf_info_item);
 }
@@ -118,6 +127,22 @@ cJSON *OpenAPI_interface_upf_info_item_convertToJSON(OpenAPI_interface_upf_info_
     }
     }
 
+    if (interface_upf_info_item->port_range_list) {
+    cJSON *port_range_listList = cJSON_AddArrayToObject(item, "portRangeList");
+    if (port_range_listList == NULL) {
+        ogs_error("OpenAPI_interface_upf_info_item_convertToJSON() failed [port_range_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(interface_upf_info_item->port_range_list, node) {
+        cJSON *itemLocal = OpenAPI_port_range_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_interface_upf_info_item_convertToJSON() failed [port_range_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(port_range_listList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -134,6 +159,8 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
     OpenAPI_list_t *ipv6_endpoint_addressesList = NULL;
     cJSON *endpoint_fqdn = NULL;
     cJSON *network_instance = NULL;
+    cJSON *port_range_list = NULL;
+    OpenAPI_list_t *port_range_listList = NULL;
     interface_type = cJSON_GetObjectItemCaseSensitive(interface_upf_info_itemJSON, "interfaceType");
     if (!interface_type) {
         ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [interface_type]");
@@ -203,12 +230,37 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON
     }
     }
 
+    port_range_list = cJSON_GetObjectItemCaseSensitive(interface_upf_info_itemJSON, "portRangeList");
+    if (port_range_list) {
+        cJSON *port_range_list_local = NULL;
+        if (!cJSON_IsArray(port_range_list)) {
+            ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [port_range_list]");
+            goto end;
+        }
+
+        port_range_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(port_range_list_local, port_range_list) {
+            if (!cJSON_IsObject(port_range_list_local)) {
+                ogs_error("OpenAPI_interface_upf_info_item_parseFromJSON() failed [port_range_list]");
+                goto end;
+            }
+            OpenAPI_port_range_t *port_range_listItem = OpenAPI_port_range_parseFromJSON(port_range_list_local);
+            if (!port_range_listItem) {
+                ogs_error("No port_range_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(port_range_listList, port_range_listItem);
+        }
+    }
+
     interface_upf_info_item_local_var = OpenAPI_interface_upf_info_item_create (
         interface_typeVariable,
         ipv4_endpoint_addresses ? ipv4_endpoint_addressesList : NULL,
         ipv6_endpoint_addresses ? ipv6_endpoint_addressesList : NULL,
         endpoint_fqdn && !cJSON_IsNull(endpoint_fqdn) ? ogs_strdup(endpoint_fqdn->valuestring) : NULL,
-        network_instance && !cJSON_IsNull(network_instance) ? ogs_strdup(network_instance->valuestring) : NULL
+        network_instance && !cJSON_IsNull(network_instance) ? ogs_strdup(network_instance->valuestring) : NULL,
+        port_range_list ? port_range_listList : NULL
     );
 
     return interface_upf_info_item_local_var;
@@ -226,6 +278,13 @@ end:
         }
         OpenAPI_list_free(ipv6_endpoint_addressesList);
         ipv6_endpoint_addressesList = NULL;
+    }
+    if (port_range_listList) {
+        OpenAPI_list_for_each(port_range_listList, node) {
+            OpenAPI_port_range_free(node->data);
+        }
+        OpenAPI_list_free(port_range_listList);
+        port_range_listList = NULL;
     }
     return NULL;
 }

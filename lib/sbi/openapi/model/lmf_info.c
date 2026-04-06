@@ -12,7 +12,16 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_create(
     OpenAPI_list_t *serving_rat_types,
     OpenAPI_list_t *tai_list,
     OpenAPI_list_t *tai_range_list,
-    OpenAPI_list_t *supported_gad_shapes
+    OpenAPI_list_t *supported_gad_shapes,
+    OpenAPI_pru_existence_info_t *pru_existence_info,
+    bool is_pru_support_ind,
+    int pru_support_ind,
+    bool is_rangingslpos_support_ind,
+    int rangingslpos_support_ind,
+    bool is_up_positioning_ind,
+    int up_positioning_ind,
+    bool is_aiml_pos_ind,
+    int aiml_pos_ind
 )
 {
     OpenAPI_lmf_info_t *lmf_info_local_var = ogs_malloc(sizeof(OpenAPI_lmf_info_t));
@@ -26,6 +35,15 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_create(
     lmf_info_local_var->tai_list = tai_list;
     lmf_info_local_var->tai_range_list = tai_range_list;
     lmf_info_local_var->supported_gad_shapes = supported_gad_shapes;
+    lmf_info_local_var->pru_existence_info = pru_existence_info;
+    lmf_info_local_var->is_pru_support_ind = is_pru_support_ind;
+    lmf_info_local_var->pru_support_ind = pru_support_ind;
+    lmf_info_local_var->is_rangingslpos_support_ind = is_rangingslpos_support_ind;
+    lmf_info_local_var->rangingslpos_support_ind = rangingslpos_support_ind;
+    lmf_info_local_var->is_up_positioning_ind = is_up_positioning_ind;
+    lmf_info_local_var->up_positioning_ind = up_positioning_ind;
+    lmf_info_local_var->is_aiml_pos_ind = is_aiml_pos_ind;
+    lmf_info_local_var->aiml_pos_ind = aiml_pos_ind;
 
     return lmf_info_local_var;
 }
@@ -38,9 +56,6 @@ void OpenAPI_lmf_info_free(OpenAPI_lmf_info_t *lmf_info)
         return;
     }
     if (lmf_info->serving_client_types) {
-        OpenAPI_list_for_each(lmf_info->serving_client_types, node) {
-            OpenAPI_external_client_type_free(node->data);
-        }
         OpenAPI_list_free(lmf_info->serving_client_types);
         lmf_info->serving_client_types = NULL;
     }
@@ -75,11 +90,12 @@ void OpenAPI_lmf_info_free(OpenAPI_lmf_info_t *lmf_info)
         lmf_info->tai_range_list = NULL;
     }
     if (lmf_info->supported_gad_shapes) {
-        OpenAPI_list_for_each(lmf_info->supported_gad_shapes, node) {
-            OpenAPI_supported_gad_shapes_free(node->data);
-        }
         OpenAPI_list_free(lmf_info->supported_gad_shapes);
         lmf_info->supported_gad_shapes = NULL;
+    }
+    if (lmf_info->pru_existence_info) {
+        OpenAPI_pru_existence_info_free(lmf_info->pru_existence_info);
+        lmf_info->pru_existence_info = NULL;
     }
     ogs_free(lmf_info);
 }
@@ -95,19 +111,17 @@ cJSON *OpenAPI_lmf_info_convertToJSON(OpenAPI_lmf_info_t *lmf_info)
     }
 
     item = cJSON_CreateObject();
-    if (lmf_info->serving_client_types) {
+    if (lmf_info->serving_client_types != OpenAPI_external_client_type_NULL) {
     cJSON *serving_client_typesList = cJSON_AddArrayToObject(item, "servingClientTypes");
     if (serving_client_typesList == NULL) {
         ogs_error("OpenAPI_lmf_info_convertToJSON() failed [serving_client_types]");
         goto end;
     }
     OpenAPI_list_for_each(lmf_info->serving_client_types, node) {
-        cJSON *itemLocal = OpenAPI_external_client_type_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        if (cJSON_AddStringToObject(serving_client_typesList, "", OpenAPI_external_client_type_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_lmf_info_convertToJSON() failed [serving_client_types]");
             goto end;
         }
-        cJSON_AddItemToArray(serving_client_typesList, itemLocal);
     }
     }
 
@@ -192,19 +206,58 @@ cJSON *OpenAPI_lmf_info_convertToJSON(OpenAPI_lmf_info_t *lmf_info)
     }
     }
 
-    if (lmf_info->supported_gad_shapes) {
+    if (lmf_info->supported_gad_shapes != OpenAPI_supported_gad_shapes_NULL) {
     cJSON *supported_gad_shapesList = cJSON_AddArrayToObject(item, "supportedGADShapes");
     if (supported_gad_shapesList == NULL) {
         ogs_error("OpenAPI_lmf_info_convertToJSON() failed [supported_gad_shapes]");
         goto end;
     }
     OpenAPI_list_for_each(lmf_info->supported_gad_shapes, node) {
-        cJSON *itemLocal = OpenAPI_supported_gad_shapes_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        if (cJSON_AddStringToObject(supported_gad_shapesList, "", OpenAPI_supported_gad_shapes_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_lmf_info_convertToJSON() failed [supported_gad_shapes]");
             goto end;
         }
-        cJSON_AddItemToArray(supported_gad_shapesList, itemLocal);
+    }
+    }
+
+    if (lmf_info->pru_existence_info) {
+    cJSON *pru_existence_info_local_JSON = OpenAPI_pru_existence_info_convertToJSON(lmf_info->pru_existence_info);
+    if (pru_existence_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_lmf_info_convertToJSON() failed [pru_existence_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pruExistenceInfo", pru_existence_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_lmf_info_convertToJSON() failed [pru_existence_info]");
+        goto end;
+    }
+    }
+
+    if (lmf_info->is_pru_support_ind) {
+    if (cJSON_AddBoolToObject(item, "pruSupportInd", lmf_info->pru_support_ind) == NULL) {
+        ogs_error("OpenAPI_lmf_info_convertToJSON() failed [pru_support_ind]");
+        goto end;
+    }
+    }
+
+    if (lmf_info->is_rangingslpos_support_ind) {
+    if (cJSON_AddBoolToObject(item, "rangingslposSupportInd", lmf_info->rangingslpos_support_ind) == NULL) {
+        ogs_error("OpenAPI_lmf_info_convertToJSON() failed [rangingslpos_support_ind]");
+        goto end;
+    }
+    }
+
+    if (lmf_info->is_up_positioning_ind) {
+    if (cJSON_AddBoolToObject(item, "upPositioningInd", lmf_info->up_positioning_ind) == NULL) {
+        ogs_error("OpenAPI_lmf_info_convertToJSON() failed [up_positioning_ind]");
+        goto end;
+    }
+    }
+
+    if (lmf_info->is_aiml_pos_ind) {
+    if (cJSON_AddBoolToObject(item, "aimlPosInd", lmf_info->aiml_pos_ind) == NULL) {
+        ogs_error("OpenAPI_lmf_info_convertToJSON() failed [aiml_pos_ind]");
+        goto end;
     }
     }
 
@@ -231,6 +284,12 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
     OpenAPI_list_t *tai_range_listList = NULL;
     cJSON *supported_gad_shapes = NULL;
     OpenAPI_list_t *supported_gad_shapesList = NULL;
+    cJSON *pru_existence_info = NULL;
+    OpenAPI_pru_existence_info_t *pru_existence_info_local_nonprim = NULL;
+    cJSON *pru_support_ind = NULL;
+    cJSON *rangingslpos_support_ind = NULL;
+    cJSON *up_positioning_ind = NULL;
+    cJSON *aiml_pos_ind = NULL;
     serving_client_types = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "servingClientTypes");
     if (serving_client_types) {
         cJSON *serving_client_types_local = NULL;
@@ -242,16 +301,22 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
         serving_client_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(serving_client_types_local, serving_client_types) {
-            if (!cJSON_IsObject(serving_client_types_local)) {
+            OpenAPI_external_client_type_e localEnum = OpenAPI_external_client_type_NULL;
+            if (!cJSON_IsString(serving_client_types_local)) {
                 ogs_error("OpenAPI_lmf_info_parseFromJSON() failed [serving_client_types]");
                 goto end;
             }
-            OpenAPI_external_client_type_t *serving_client_typesItem = OpenAPI_external_client_type_parseFromJSON(serving_client_types_local);
-            if (!serving_client_typesItem) {
-                ogs_error("No serving_client_typesItem");
-                goto end;
+            localEnum = OpenAPI_external_client_type_FromString(serving_client_types_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"serving_client_types\" is not supported. Ignoring it ...",
+                         serving_client_types_local->valuestring);
+            } else {
+                OpenAPI_list_add(serving_client_typesList, (void *)localEnum);
             }
-            OpenAPI_list_add(serving_client_typesList, serving_client_typesItem);
+        }
+        if (serving_client_typesList->count == 0) {
+            ogs_error("OpenAPI_lmf_info_parseFromJSON() failed: Expected serving_client_typesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -412,17 +477,64 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
         supported_gad_shapesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(supported_gad_shapes_local, supported_gad_shapes) {
-            if (!cJSON_IsObject(supported_gad_shapes_local)) {
+            OpenAPI_supported_gad_shapes_e localEnum = OpenAPI_supported_gad_shapes_NULL;
+            if (!cJSON_IsString(supported_gad_shapes_local)) {
                 ogs_error("OpenAPI_lmf_info_parseFromJSON() failed [supported_gad_shapes]");
                 goto end;
             }
-            OpenAPI_supported_gad_shapes_t *supported_gad_shapesItem = OpenAPI_supported_gad_shapes_parseFromJSON(supported_gad_shapes_local);
-            if (!supported_gad_shapesItem) {
-                ogs_error("No supported_gad_shapesItem");
-                goto end;
+            localEnum = OpenAPI_supported_gad_shapes_FromString(supported_gad_shapes_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"supported_gad_shapes\" is not supported. Ignoring it ...",
+                         supported_gad_shapes_local->valuestring);
+            } else {
+                OpenAPI_list_add(supported_gad_shapesList, (void *)localEnum);
             }
-            OpenAPI_list_add(supported_gad_shapesList, supported_gad_shapesItem);
         }
+        if (supported_gad_shapesList->count == 0) {
+            ogs_error("OpenAPI_lmf_info_parseFromJSON() failed: Expected supported_gad_shapesList to not be empty (after ignoring unsupported enum values).");
+            goto end;
+        }
+    }
+
+    pru_existence_info = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "pruExistenceInfo");
+    if (pru_existence_info) {
+    pru_existence_info_local_nonprim = OpenAPI_pru_existence_info_parseFromJSON(pru_existence_info);
+    if (!pru_existence_info_local_nonprim) {
+        ogs_error("OpenAPI_pru_existence_info_parseFromJSON failed [pru_existence_info]");
+        goto end;
+    }
+    }
+
+    pru_support_ind = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "pruSupportInd");
+    if (pru_support_ind) {
+    if (!cJSON_IsBool(pru_support_ind)) {
+        ogs_error("OpenAPI_lmf_info_parseFromJSON() failed [pru_support_ind]");
+        goto end;
+    }
+    }
+
+    rangingslpos_support_ind = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "rangingslposSupportInd");
+    if (rangingslpos_support_ind) {
+    if (!cJSON_IsBool(rangingslpos_support_ind)) {
+        ogs_error("OpenAPI_lmf_info_parseFromJSON() failed [rangingslpos_support_ind]");
+        goto end;
+    }
+    }
+
+    up_positioning_ind = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "upPositioningInd");
+    if (up_positioning_ind) {
+    if (!cJSON_IsBool(up_positioning_ind)) {
+        ogs_error("OpenAPI_lmf_info_parseFromJSON() failed [up_positioning_ind]");
+        goto end;
+    }
+    }
+
+    aiml_pos_ind = cJSON_GetObjectItemCaseSensitive(lmf_infoJSON, "aimlPosInd");
+    if (aiml_pos_ind) {
+    if (!cJSON_IsBool(aiml_pos_ind)) {
+        ogs_error("OpenAPI_lmf_info_parseFromJSON() failed [aiml_pos_ind]");
+        goto end;
+    }
     }
 
     lmf_info_local_var = OpenAPI_lmf_info_create (
@@ -433,15 +545,21 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON)
         serving_rat_types ? serving_rat_typesList : NULL,
         tai_list ? tai_listList : NULL,
         tai_range_list ? tai_range_listList : NULL,
-        supported_gad_shapes ? supported_gad_shapesList : NULL
+        supported_gad_shapes ? supported_gad_shapesList : NULL,
+        pru_existence_info ? pru_existence_info_local_nonprim : NULL,
+        pru_support_ind ? true : false,
+        pru_support_ind ? pru_support_ind->valueint : 0,
+        rangingslpos_support_ind ? true : false,
+        rangingslpos_support_ind ? rangingslpos_support_ind->valueint : 0,
+        up_positioning_ind ? true : false,
+        up_positioning_ind ? up_positioning_ind->valueint : 0,
+        aiml_pos_ind ? true : false,
+        aiml_pos_ind ? aiml_pos_ind->valueint : 0
     );
 
     return lmf_info_local_var;
 end:
     if (serving_client_typesList) {
-        OpenAPI_list_for_each(serving_client_typesList, node) {
-            OpenAPI_external_client_type_free(node->data);
-        }
         OpenAPI_list_free(serving_client_typesList);
         serving_client_typesList = NULL;
     }
@@ -472,11 +590,12 @@ end:
         tai_range_listList = NULL;
     }
     if (supported_gad_shapesList) {
-        OpenAPI_list_for_each(supported_gad_shapesList, node) {
-            OpenAPI_supported_gad_shapes_free(node->data);
-        }
         OpenAPI_list_free(supported_gad_shapesList);
         supported_gad_shapesList = NULL;
+    }
+    if (pru_existence_info_local_nonprim) {
+        OpenAPI_pru_existence_info_free(pru_existence_info_local_nonprim);
+        pru_existence_info_local_nonprim = NULL;
     }
     return NULL;
 }

@@ -10,9 +10,13 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_create(
     OpenAPI_list_t *monitored_resource_uris,
     OpenAPI_list_t *mon_res_items,
     OpenAPI_list_t *excluded_res_items,
+    bool is_imm_rep,
+    int imm_rep,
+    OpenAPI_list_t *imm_reports,
     char *expiry,
     char *supported_features,
-    OpenAPI_list_t *reset_ids
+    OpenAPI_list_t *reset_ids,
+    char *subs_id
 )
 {
     OpenAPI_policy_data_subscription_t *policy_data_subscription_local_var = ogs_malloc(sizeof(OpenAPI_policy_data_subscription_t));
@@ -23,9 +27,13 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_create(
     policy_data_subscription_local_var->monitored_resource_uris = monitored_resource_uris;
     policy_data_subscription_local_var->mon_res_items = mon_res_items;
     policy_data_subscription_local_var->excluded_res_items = excluded_res_items;
+    policy_data_subscription_local_var->is_imm_rep = is_imm_rep;
+    policy_data_subscription_local_var->imm_rep = imm_rep;
+    policy_data_subscription_local_var->imm_reports = imm_reports;
     policy_data_subscription_local_var->expiry = expiry;
     policy_data_subscription_local_var->supported_features = supported_features;
     policy_data_subscription_local_var->reset_ids = reset_ids;
+    policy_data_subscription_local_var->subs_id = subs_id;
 
     return policy_data_subscription_local_var;
 }
@@ -66,6 +74,13 @@ void OpenAPI_policy_data_subscription_free(OpenAPI_policy_data_subscription_t *p
         OpenAPI_list_free(policy_data_subscription->excluded_res_items);
         policy_data_subscription->excluded_res_items = NULL;
     }
+    if (policy_data_subscription->imm_reports) {
+        OpenAPI_list_for_each(policy_data_subscription->imm_reports, node) {
+            OpenAPI_policy_data_change_notification_free(node->data);
+        }
+        OpenAPI_list_free(policy_data_subscription->imm_reports);
+        policy_data_subscription->imm_reports = NULL;
+    }
     if (policy_data_subscription->expiry) {
         ogs_free(policy_data_subscription->expiry);
         policy_data_subscription->expiry = NULL;
@@ -80,6 +95,10 @@ void OpenAPI_policy_data_subscription_free(OpenAPI_policy_data_subscription_t *p
         }
         OpenAPI_list_free(policy_data_subscription->reset_ids);
         policy_data_subscription->reset_ids = NULL;
+    }
+    if (policy_data_subscription->subs_id) {
+        ogs_free(policy_data_subscription->subs_id);
+        policy_data_subscription->subs_id = NULL;
     }
     ogs_free(policy_data_subscription);
 }
@@ -159,6 +178,29 @@ cJSON *OpenAPI_policy_data_subscription_convertToJSON(OpenAPI_policy_data_subscr
     }
     }
 
+    if (policy_data_subscription->is_imm_rep) {
+    if (cJSON_AddBoolToObject(item, "immRep", policy_data_subscription->imm_rep) == NULL) {
+        ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [imm_rep]");
+        goto end;
+    }
+    }
+
+    if (policy_data_subscription->imm_reports) {
+    cJSON *imm_reportsList = cJSON_AddArrayToObject(item, "immReports");
+    if (imm_reportsList == NULL) {
+        ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [imm_reports]");
+        goto end;
+    }
+    OpenAPI_list_for_each(policy_data_subscription->imm_reports, node) {
+        cJSON *itemLocal = OpenAPI_policy_data_change_notification_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [imm_reports]");
+            goto end;
+        }
+        cJSON_AddItemToArray(imm_reportsList, itemLocal);
+    }
+    }
+
     if (policy_data_subscription->expiry) {
     if (cJSON_AddStringToObject(item, "expiry", policy_data_subscription->expiry) == NULL) {
         ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [expiry]");
@@ -187,6 +229,13 @@ cJSON *OpenAPI_policy_data_subscription_convertToJSON(OpenAPI_policy_data_subscr
     }
     }
 
+    if (policy_data_subscription->subs_id) {
+    if (cJSON_AddStringToObject(item, "subsId", policy_data_subscription->subs_id) == NULL) {
+        ogs_error("OpenAPI_policy_data_subscription_convertToJSON() failed [subs_id]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -203,10 +252,14 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
     OpenAPI_list_t *mon_res_itemsList = NULL;
     cJSON *excluded_res_items = NULL;
     OpenAPI_list_t *excluded_res_itemsList = NULL;
+    cJSON *imm_rep = NULL;
+    cJSON *imm_reports = NULL;
+    OpenAPI_list_t *imm_reportsList = NULL;
     cJSON *expiry = NULL;
     cJSON *supported_features = NULL;
     cJSON *reset_ids = NULL;
     OpenAPI_list_t *reset_idsList = NULL;
+    cJSON *subs_id = NULL;
     notification_uri = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "notificationUri");
     if (!notification_uri) {
         ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [notification_uri]");
@@ -296,6 +349,38 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
         }
     }
 
+    imm_rep = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "immRep");
+    if (imm_rep) {
+    if (!cJSON_IsBool(imm_rep)) {
+        ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [imm_rep]");
+        goto end;
+    }
+    }
+
+    imm_reports = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "immReports");
+    if (imm_reports) {
+        cJSON *imm_reports_local = NULL;
+        if (!cJSON_IsArray(imm_reports)) {
+            ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [imm_reports]");
+            goto end;
+        }
+
+        imm_reportsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(imm_reports_local, imm_reports) {
+            if (!cJSON_IsObject(imm_reports_local)) {
+                ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [imm_reports]");
+                goto end;
+            }
+            OpenAPI_policy_data_change_notification_t *imm_reportsItem = OpenAPI_policy_data_change_notification_parseFromJSON(imm_reports_local);
+            if (!imm_reportsItem) {
+                ogs_error("No imm_reportsItem");
+                goto end;
+            }
+            OpenAPI_list_add(imm_reportsList, imm_reportsItem);
+        }
+    }
+
     expiry = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "expiry");
     if (expiry) {
     if (!cJSON_IsString(expiry) && !cJSON_IsNull(expiry)) {
@@ -333,15 +418,27 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJS
         }
     }
 
+    subs_id = cJSON_GetObjectItemCaseSensitive(policy_data_subscriptionJSON, "subsId");
+    if (subs_id) {
+    if (!cJSON_IsString(subs_id) && !cJSON_IsNull(subs_id)) {
+        ogs_error("OpenAPI_policy_data_subscription_parseFromJSON() failed [subs_id]");
+        goto end;
+    }
+    }
+
     policy_data_subscription_local_var = OpenAPI_policy_data_subscription_create (
         ogs_strdup(notification_uri->valuestring),
         notif_id && !cJSON_IsNull(notif_id) ? ogs_strdup(notif_id->valuestring) : NULL,
         monitored_resource_urisList,
         mon_res_items ? mon_res_itemsList : NULL,
         excluded_res_items ? excluded_res_itemsList : NULL,
+        imm_rep ? true : false,
+        imm_rep ? imm_rep->valueint : 0,
+        imm_reports ? imm_reportsList : NULL,
         expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
-        reset_ids ? reset_idsList : NULL
+        reset_ids ? reset_idsList : NULL,
+        subs_id && !cJSON_IsNull(subs_id) ? ogs_strdup(subs_id->valuestring) : NULL
     );
 
     return policy_data_subscription_local_var;
@@ -366,6 +463,13 @@ end:
         }
         OpenAPI_list_free(excluded_res_itemsList);
         excluded_res_itemsList = NULL;
+    }
+    if (imm_reportsList) {
+        OpenAPI_list_for_each(imm_reportsList, node) {
+            OpenAPI_policy_data_change_notification_free(node->data);
+        }
+        OpenAPI_list_free(imm_reportsList);
+        imm_reportsList = NULL;
     }
     if (reset_idsList) {
         OpenAPI_list_for_each(reset_idsList, node) {

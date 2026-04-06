@@ -1,0 +1,814 @@
+openapi: 3.0.0
+
+info:
+  title: CAPIF_Publish_Service_API
+  description: |
+    API for publishing service APIs.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.4.0"
+
+externalDocs:
+  description: 3GPP TS 29.222 V19.5.0 Common API Framework for 3GPP Northbound APIs
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.222/
+
+servers:
+  - url: '{apiRoot}/published-apis/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.222.
+
+paths:
+# APF published API
+  /{apfId}/service-apis:
+    post:
+      description: Publish a new API.
+      operationId: CreateAPFPubAPIs
+      tags:
+        - APF published APIs (Collection)
+      parameters:
+        - name: apfId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceAPIDescription'
+      responses:
+        '201':
+          description: >
+            Service API published successfully The URI of the created resource
+            shall be returned in the "Location" HTTP header.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAPIDescription'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure 
+                {apiRoot}/published-apis/v1/{apfId}/service-apis/{serviceApiId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    get:
+      description: Retrieve all published APIs.
+      operationId: GetAPFPubAPIs
+      tags:
+        - APF published APIs (Collection)
+      parameters:
+        - name: apfId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >
+            Definition of all service API(s) published by the API publishing function.
+            If an empty array is provided, it indicates that there is no active published API at the
+            CCF.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceAPIDescription'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+# Individual APF published API
+  /{apfId}/service-apis/{serviceApiId}:
+    get:
+      description: Retrieve a published service API.
+      operationId: GetIndAPFPubAPI
+      tags:
+        - Individual APF published API (Document)
+      parameters:
+        - name: serviceApiId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: apfId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Definition of all service API(s) published by the API publishing function.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAPIDescription'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      description: Update a published service API.
+      operationId: UpdateIndAPFPubAPI
+      tags:
+        - Individual APF published API (Document)
+      parameters:
+        - name: serviceApiId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: apfId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceAPIDescription'
+      responses:
+        '200':
+          description: Definition of service API updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAPIDescription'
+        '204':
+          description: No Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      description: Modify an existing published service API.
+      operationId: ModifyIndAPFPubAPI
+      tags:
+        - Individual APF published API (Document)
+      parameters:
+        - name: serviceApiId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: apfId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/ServiceAPIDescriptionPatch'
+      responses:
+        '200':
+          description: >
+            The definition of the service API is modified successfully and a
+            representation of the updated service API is returned in the request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceAPIDescription'
+        '204':
+          description: No Content. The definition of the service API is modified successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      description: Unpublish a published service API.
+      operationId: DeleteIndAPFPubAPI
+      tags:
+        - Individual APF published API (Document)
+      parameters:
+        - name: serviceApiId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: apfId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The individual published service API matching the serviceAPiId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+# Components
+
+components:
+  schemas:
+# Data Type for representations
+    ServiceAPIDescription:
+      type: object
+      description: Represents the description of a service API as published by the APF.
+      properties:
+        apiName:
+          type: string
+          description: >
+             Contains the API name set to the value of the "<apiName>" placeholder of the API URI as
+             defined in clause 5.2.4 of 3GPP TS 29.122 [14].
+        apiId:
+          type: string
+          description: >
+            API identifier assigned by the CAPIF core function to the published service API.
+            Shall not be present in the HTTP POST request from the API publishing function
+            to the CAPIF core function. Shall be present in the HTTP POST response from the
+            CAPIF core function to the API publishing function and in the HTTP GET response
+            from the CAPIF core function to the API invoker (discovery API).
+        apiStatus:
+          $ref: '#/components/schemas/ApiStatus'
+        aefProfiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AefProfile'
+          minItems: 1
+          description: >
+            AEF profile information, which includes the exposed API details (e.g. protocol).
+        description:
+          type: string
+          description: Text description of the API
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        shareableInfo:
+          $ref: '#/components/schemas/ShareableInformation'
+        serviceAPICategory:
+          type: string
+          description: The service API category to which the service API belongs to.
+        apiSuppFeats:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        pubApiPath:
+          $ref: '#/components/schemas/PublishedApiPath'
+        ccfId:
+          type: string
+          description: CAPIF core function identifier.
+        apiProvName:
+          type: string
+          description: Represents the API provider name.
+        netSliceInfo:
+          type: array
+          items:
+            $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+          minItems: 1
+          description: Represents the applicable network slice identifiers.
+      required:
+        - apiName
+
+    InterfaceDescription:
+      type: object
+      description: Represents the description of an API's interface.
+      properties:
+        ipv4Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv6Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv6Addr'
+        fqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        port:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        apiPrefix:
+          type: string
+          description: >
+            A string representing a sequence of path segments that starts with the slash character.
+        securityMethods:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityMethod'
+          minItems: 1
+          description: >
+            Security methods supported by the interface, it take precedence over
+            the security methods provided in AefProfile, for this specific interface.
+        grantTypes:
+          type: array
+          items:
+            $ref: 'TS29222_CAPIF_Security_API.yaml#/components/schemas/OAuthGrantType'
+          minItems: 1
+      oneOf:
+        - required: [ipv4Addr]
+        - required: [ipv6Addr]
+        - required: [fqdn]
+
+    AefProfile:
+      type: object
+      description: Represents the AEF profile data.
+      properties:
+        aefId:
+          type: string
+          description: Identifier of the API exposing function
+        versions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Version'
+          minItems: 1
+          description: API version
+        protocol:
+          $ref: '#/components/schemas/Protocol'
+        dataFormat:
+          $ref: '#/components/schemas/DataFormat'
+        securityMethods:
+          type: array
+          items:
+            $ref: '#/components/schemas/SecurityMethod'
+          minItems: 1
+          description: Security methods supported by the AEF
+        grantTypes:
+          type: array
+          items:
+            $ref: 'TS29222_CAPIF_Security_API.yaml#/components/schemas/OAuthGrantType'
+          minItems: 1
+        domainName:
+          type: string
+          description: Domain to which API belongs to
+        interfaceDescriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterfaceDescription'
+          minItems: 1
+          description: Interface details
+        aefLocation:
+          $ref: '#/components/schemas/AefLocation'
+        serviceKpis:
+          $ref: '#/components/schemas/ServiceKpis'
+        ueIpRange:
+          $ref: '#/components/schemas/IpAddrRange'
+      required:
+        - aefId
+        - versions
+      oneOf:
+        - required: [domainName]
+        - required: [interfaceDescriptions]
+
+    Resource:
+      type: object
+      description: Represents the API resource data.
+      properties:
+        resourceName:
+          type: string
+          description: Resource name
+        commType:
+          $ref: '#/components/schemas/CommunicationType'
+        uri:
+          type: string
+          description: >
+            Relative URI of the API resource, it is set as {apiSpecificSuffixes} part
+            of the URI structure as defined in clause 5.2.4 of 3GPP TS 29.122.
+        custOpName:
+          type: string
+          description: >
+            it is set as {custOpName} part of the URI structure for a custom operation
+            associated with a resource as defined in clause 5.2.4 of 3GPP TS 29.122.
+        custOperations:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomOperation'
+          minItems: 1
+          description: >
+            Custom operations associated with this resource.
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Operation'
+          minItems: 1
+          description: >
+            Supported HTTP methods for the API resource. Only applicable when the
+            protocol in AefProfile indicates HTTP.
+        description:
+          type: string
+          description: Text description of the API resource
+      required:
+        - resourceName
+        - commType
+        - uri
+
+    CustomOperation:
+      type: object
+      description: Represents the description of a custom operation.
+      properties:
+        commType:
+          $ref: '#/components/schemas/CommunicationType'
+        custOpName:
+          type: string
+          description: >
+            it is set as {custOpName} part of the URI structure for a custom operation
+            without resource association as defined in clause 5.2.4 of 3GPP TS 29.122.
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Operation'
+          minItems: 1
+          description: >
+            Supported HTTP methods for the API resource. Only applicable when the
+            protocol in AefProfile indicates HTTP.
+        description:
+          type: string
+          description: Text description of the custom operation
+      required:
+        - commType
+        - custOpName
+
+    Version:
+      type: object
+      description: Represents the API version information.
+      properties:
+        apiVersion:
+          type: string
+          description: API major version in URI (e.g. v1)
+        expiry:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Resource'
+          minItems: 1
+          description: Resources supported by the API.
+        custOperations:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomOperation'
+          minItems: 1
+          description: Custom operations without resource association.
+      required:
+        - apiVersion
+
+
+    ShareableInformation:
+      type: object
+      description: >
+        Indicates whether the service API and/or the service API category can be shared
+        to the list of CAPIF provider domains.
+      properties:
+        isShareable:
+          type: boolean
+          description: >
+            Indicates whether the service API and/or the service API category can be shared to the
+            list of CAPIF provider domain information.
+            true indicates that the service API and/or the service API category can be shared to the
+            list of CAPIF provider domain information.
+            false indicates that the service API and/or the service API category can not be shared
+            to the list of CAPIF provider domain information.
+        capifProvDoms:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: >
+            List of CAPIF provider domains to which the service API information to be shared.
+      required:
+        - isShareable
+
+    PublishedApiPath:
+      type: object
+      description: Represents the published API path within the same CAPIF provider domain.
+      properties:
+        ccfIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: A list of CCF identifiers where the service API is already published.
+
+    AefLocation:
+      description: >
+        Represents the location information (e.g. civic address, GPS coordinates, data center ID)
+        where the AEF providing the service API is located.
+      type: object
+      properties:
+        civicAddr:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CivicAddress'
+        geoArea:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        dcId:
+          type: string
+          description: >
+            Identifies the data center where the AEF providing the service API is located.
+
+    ServiceAPIDescriptionPatch:
+      type: object
+      description: >
+        Represents the parameters to request the modification of an APF published API resource.
+      properties:
+        apiStatus:
+          $ref: '#/components/schemas/ApiStatus'
+        aefProfiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AefProfile'
+          description: AEF profile information, which includes the exposed API details.
+          minItems: 1
+        description:
+          type: string
+          description: Text description of the API
+        shareableInfo:
+          $ref: '#/components/schemas/ShareableInformation'
+        serviceAPICategory:
+          type: string
+          description: The service API category to which the service API belongs to.
+        apiSuppFeats:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        pubApiPath:
+          $ref: '#/components/schemas/PublishedApiPath'
+        ccfId:
+          type: string
+          description: CAPIF core function identifier.
+
+    ApiStatus:
+      type: object
+      description: >
+        Represents the API status.
+      properties:
+        aefIds:
+          type: array
+          items:
+            type: string
+          description: >
+            Indicates the list of AEF ID(s) where the API is active.
+            If an empty array is provided, it indicates that the API is inactive in all AEF(s). 
+      required:
+        - aefIds
+
+    ServiceKpis:
+      type: object
+      description: >
+        Represents information about the service characteristics provided by a service API.
+      properties:
+        maxReqRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxRestime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        availability:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avalComp:
+          type: string
+          pattern: '^\d+(\.\d+)? (kFLOPS|MFLOPS|GFLOPS|TFLOPS|PFLOPS|EFLOPS|ZFLOPS)$'
+          description: >
+            The maximum compute resource available in FLOPS for the API Invoker.
+        avalGraComp:
+          type: string
+          pattern: '^\d+(\.\d+)? (kFLOPS|MFLOPS|GFLOPS|TFLOPS|PFLOPS|EFLOPS|ZFLOPS)$'
+          description: >
+            The maximum graphical compute resource in FLOPS available for the API Invoker.
+        avalMem:
+          type: string
+          pattern: '^\d+(\.\d+)? (KB|MB|GB|TB|PB|EB|ZB|YB)$'
+          description: >
+            The maximum memory resource available for the API Invoker.
+        avalStor:
+          type: string
+          pattern: '^\d+(\.\d+)? (KB|MB|GB|TB|PB|EB|ZB|YB)$'
+          description: >
+            The maximum storage resource available for the API Invoker.
+        conBand:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+
+    IpAddrRange:
+      description: Represents the list of public IP ranges
+      type: object
+      properties:
+        ueIpv4AddrRanges:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4AddressRange'
+          description: Represents the IPv4 Address ranges of the UE(s).
+          minItems: 1
+        ueIpv6AddrRanges:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6AddressRange'
+          description: Represents the Ipv6 Address ranges of the UE(s).
+          minItems: 1
+      anyOf:
+        - required: [ueIpv4AddrRanges]
+        - required: [ueIpv6AddrRanges]
+
+    Protocol:
+      anyOf:
+      - type: string
+        enum:
+          - HTTP_1_1
+          - HTTP_2
+          - MQTT
+          - WEBSOCKET
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Indicates a protocol and protocol version used by the API.  
+        Possible values are:
+        - HTTP_1_1: Indicates that the protocol is HTTP version 1.1.
+        - HTTP_2: Indicates that the protocol is HTTP version 2.
+        - MQTT: Indicates that the protocol is Message Queuing Telemetry Transport.
+        - WEBSOCKET: Indicates that the protocol is Websocket.
+
+    CommunicationType:
+      anyOf:
+      - type: string
+        enum:
+          - REQUEST_RESPONSE
+          - SUBSCRIBE_NOTIFY
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Indicates a communication type of the resource or the custom operation.  
+        Possible values are:
+        - REQUEST_RESPONSE: The communication is of the type request-response.
+        - SUBSCRIBE_NOTIFY: The communication is of the type subscribe-notify.
+
+    DataFormat:
+      anyOf:
+      - type: string
+        enum:
+          - JSON
+          - XML
+          - PROTOBUF3
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Indicates a data format.  
+        Possible values are:
+        - JSON: Indicates that the data format is JSON.
+        - XML: Indicates that the data format is Extensible Markup Language.
+        - PROTOBUF3: Indicates that the data format is Protocol buffers version 3.
+
+    SecurityMethod:
+      anyOf:
+      - type: string
+        enum:
+          - PSK
+          - PKI
+          - OAUTH
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Indicates the security method.  
+        Possible values are:
+        - PSK: Security method 1 (Using TLS-PSK) as described in 3GPP TS 33.122.
+        - PKI: Security method 2 (Using PKI) as described in 3GPP TS 33.122.
+        - OAUTH: Security method 3 (TLS with OAuth token) as described in 3GPP TS 33.122.
+
+    Operation:
+      anyOf:
+      - type: string
+        enum:
+          - GET
+          - POST
+          - PUT
+          - PATCH
+          - DELETE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Indicates an HTTP method.  
+        Possible values are:
+        - GET: HTTP GET method.
+        - POST: HTTP POST method.
+        - PUT: HTTP PUT method.
+        - PATCH: HTTP PATCH method.
+        - DELETE: HTTP DELETE method.

@@ -12,23 +12,30 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_in_area_filter_s OpenAPI_ue_in_area_filter_t;
+#include "lcs_broadcast_assistance_types_data.h"
 #include "ue_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_in_area_filter_s OpenAPI_ue_in_area_filter_t;
-typedef struct OpenAPI_ue_in_area_filter_s {
-    struct OpenAPI_ue_type_s *ue_type;
+struct OpenAPI_ue_in_area_filter_s {
+    OpenAPI_ue_type_e ue_type;
     bool is_aerial_srv_dnn_ind;
     int aerial_srv_dnn_ind;
-} OpenAPI_ue_in_area_filter_t;
+    bool is_ue_id_omit_ind;
+    int ue_id_omit_ind;
+    struct OpenAPI_lcs_broadcast_assistance_types_data_s *lcs_broadcasting_assistance_data_type;
+};
 
 OpenAPI_ue_in_area_filter_t *OpenAPI_ue_in_area_filter_create(
-    OpenAPI_ue_type_t *ue_type,
+    OpenAPI_ue_type_e ue_type,
     bool is_aerial_srv_dnn_ind,
-    int aerial_srv_dnn_ind
+    int aerial_srv_dnn_ind,
+    bool is_ue_id_omit_ind,
+    int ue_id_omit_ind,
+    OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_broadcasting_assistance_data_type
 );
 void OpenAPI_ue_in_area_filter_free(OpenAPI_ue_in_area_filter_t *ue_in_area_filter);
 OpenAPI_ue_in_area_filter_t *OpenAPI_ue_in_area_filter_parseFromJSON(cJSON *ue_in_area_filterJSON);

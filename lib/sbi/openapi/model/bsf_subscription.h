@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_bsf_subscription_s OpenAPI_bsf_subscription_t;
 #include "bsf_event.h"
 #include "snssai_dnn_pair.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_bsf_subscription_s OpenAPI_bsf_subscription_t;
-typedef struct OpenAPI_bsf_subscription_s {
+struct OpenAPI_bsf_subscription_s {
     OpenAPI_list_t *events;
     char *notif_uri;
     char *notif_corre_id;
@@ -28,8 +28,9 @@ typedef struct OpenAPI_bsf_subscription_s {
     char *gpsi;
     struct OpenAPI_snssai_dnn_pair_s *snssai_dnn_pairs;
     OpenAPI_list_t *add_snssai_dnn_pairs;
+    char *expiry;
     char *supp_feat;
-} OpenAPI_bsf_subscription_t;
+};
 
 OpenAPI_bsf_subscription_t *OpenAPI_bsf_subscription_create(
     OpenAPI_list_t *events,
@@ -39,6 +40,7 @@ OpenAPI_bsf_subscription_t *OpenAPI_bsf_subscription_create(
     char *gpsi,
     OpenAPI_snssai_dnn_pair_t *snssai_dnn_pairs,
     OpenAPI_list_t *add_snssai_dnn_pairs,
+    char *expiry,
     char *supp_feat
 );
 void OpenAPI_bsf_subscription_free(OpenAPI_bsf_subscription_t *bsf_subscription);

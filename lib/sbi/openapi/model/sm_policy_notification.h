@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_policy_notification_s OpenAPI_sm_policy_notification_t;
 #include "sm_policy_decision.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_policy_notification_s OpenAPI_sm_policy_notification_t;
-typedef struct OpenAPI_sm_policy_notification_s {
+struct OpenAPI_sm_policy_notification_s {
     char *resource_uri;
     struct OpenAPI_sm_policy_decision_s *sm_policy_decision;
-} OpenAPI_sm_policy_notification_t;
+};
 
 OpenAPI_sm_policy_notification_t *OpenAPI_sm_policy_notification_create(
     char *resource_uri,

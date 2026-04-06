@@ -1,7 +1,7 @@
 /*
  * location_area.h
  *
- * 
+ * Contains Location Area
  */
 
 #ifndef _OpenAPI_location_area_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_location_area_s OpenAPI_location_area_t;
 #include "civic_address.h"
 #include "geographic_area.h"
 #include "network_area_info_1.h"
@@ -21,13 +22,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_location_area_s OpenAPI_location_area_t;
-typedef struct OpenAPI_location_area_s {
+struct OpenAPI_location_area_s {
     OpenAPI_list_t *geographic_areas;
     OpenAPI_list_t *civic_addresses;
     struct OpenAPI_network_area_info_1_s *nw_area_info;
     struct OpenAPI_umt_time_s *umt_time;
-} OpenAPI_location_area_t;
+};
 
 OpenAPI_location_area_t *OpenAPI_location_area_create(
     OpenAPI_list_t *geographic_areas,

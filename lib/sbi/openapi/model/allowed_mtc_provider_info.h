@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_allowed_mtc_provider_info_s OpenAPI_allowed_mtc_provider_info_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_allowed_mtc_provider_info_s OpenAPI_allowed_mtc_provider_info_t;
-typedef struct OpenAPI_allowed_mtc_provider_info_s {
+struct OpenAPI_allowed_mtc_provider_info_s {
     char *mtc_provider_information;
     char *af_id;
-} OpenAPI_allowed_mtc_provider_info_t;
+};
 
 OpenAPI_allowed_mtc_provider_info_t *OpenAPI_allowed_mtc_provider_info_create(
     char *mtc_provider_information,

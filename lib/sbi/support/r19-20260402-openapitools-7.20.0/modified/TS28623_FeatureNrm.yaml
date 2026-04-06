@@ -1,0 +1,43 @@
+openapi: 3.0.1
+info:
+  title: NRM Feautres 
+  version: 19.6.0
+  description: >-
+    OAS 3.0.1 definition of the Features of NRM
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.623; Generic NRM, NRM Features
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.623/
+paths: {}
+components:
+  schemas:
+#----- Definitions in TS 28.623 for TS 28.532 --------------------------#
+    resources-feature:
+      anyOf:
+        - $ref: 'TS28104_MdaNrm.yaml#/components/schemas/resources-mdaNrm'
+        - $ref: 'TS28105_AiMlNrm.yaml#/components/schemas/resources-AiMlNrm'
+        - $ref: 'TS28111_FaultNrm.yaml#/components/schemas/resources-faultNrm'
+        - $ref: 'TS28312_IntentNrm.yaml#/components/schemas/resources-intentNrm'
+        - $ref: 'TS28317_RanScNrm.yaml#/components/schemas/resources-RanScNrm'
+        - $ref: 'TS28318_DsoNrm.yaml#/components/schemas/resources-DSORecovery'
+        - $ref: 'TS28319_MsacNrm.yaml#/components/schemas/resources-msacNrm'
+        - $ref: 'TS28536_CoslaNrm.yaml#/components/schemas/resources-coslaNrm'
+        - $ref: 'TS28567_CclNrm.yaml#/components/schemas/resources-CCLNrm'        
+        - $ref: 'TS28538_EdgeNrm.yaml#/components/schemas/resources-edgeNrm'
+        - $ref: 'TS28541_NrNrm.yaml#/components/schemas/resources-nrNrm'
+        - $ref: 'TS28541_5GcNrm.yaml#/components/schemas/resources-5gcNrm'
+        - $ref: 'TS28541_SliceNrm.yaml#/components/schemas/resources-sliceNrm'
+        - $ref: 'TS28561_NdtNrm.yaml#/components/schemas/resources-ndtNrm'
+        - $ref: 'TS28623_FileManagementNrm.yaml#/components/schemas/resources-fileMgmtNrm'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/resources-genericNrm'
+        - $ref: 'TS28623_ManagementDataCollectionNrm.yaml#/components/schemas/resources-mgmtDataCollectionNrm'
+        - $ref: 'TS28623_MnSRegistryNrm.yaml#/components/schemas/resources-mnSRegistryNrm'
+        - $ref: 'TS28623_PmControlNrm.yaml#/components/schemas/resources-pmControlNrm'
+        - $ref: 'TS28623_QoEMeasurementCollectionNrm.yaml#/components/schemas/resources-qoEMeasuremetCollectionNrm'
+        - $ref: 'TS28623_SubscriptionControlNrm.yaml#/components/schemas/resources-subscriptionControlNrm'
+        - $ref: 'TS28623_ThresholdMonitorNrm.yaml#/components/schemas/resources-thresholdMonitorNrm'
+        - $ref: 'TS28623_TraceControlNrm.yaml#/components/schemas/resources-traceControlNrm'
+        - $ref: 'TS28310_EnergyInformationNrm.yaml#/components/schemas/resources-energyInformationNrm'
+        - $ref: 'TS28623_ExternalDataMgmtNrm.yaml#/components/schemas/resources-externalDataMgmtNrm'
+#----- Definitions in TS 28.623 for TS 28.532 --------------------------#   

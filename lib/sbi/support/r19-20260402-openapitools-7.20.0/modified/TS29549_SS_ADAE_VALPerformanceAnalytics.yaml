@@ -1,0 +1,536 @@
+openapi: 3.0.0
+
+info:
+  title: SS_ADAE_VALPerformanceAnalytics
+  description: |
+    API for ADAE VAL performance analytics service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.1.0"
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-adae-pa/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /application-performance:
+    post:
+      description: Creates a new individual VAL performance event subscription.
+      operationId: CreateIndValPerfEventSubsc
+      tags:
+        - VAL performance event subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppPerfSub'
+      callbacks:
+        paNotification:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AppPerfNotif'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: VAL performance event subscription resource created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppPerfSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /application-performance/{appPerfId}:
+    get:
+      description: Retrieves an individual VAL performance event subscription.
+      operationId: ReadIndValPerfEventSubsc
+      tags:
+        - Individual VAL performance event subscription (Document)
+      parameters:
+        - name: appPerfId
+          in: path
+          description: Identifier of an individual VAL performance event subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >
+            The individual VAL performance subscription matching the appPerfId is retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppPerfSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      description: Deletes an individual VAL performance event subscription.
+      operationId: DeleteIndValPerfEventSubsc
+      tags:
+        - Individual VAL performance event subscription (Document)
+      parameters:
+        - name: appPerfId
+          in: path
+          description: Identifier of an individual VAL performance event subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            The individual VAL performance subscription matching the appPerfId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    AppPerfSub:
+      description: Represents an individual VAL performance event subscription resource.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        analyticsType:
+          $ref: '#/components/schemas/AnalyticsType'
+        analyticsId:
+          $ref: '#/components/schemas/AnalyticsIdVpa'
+        valServiceId:
+          type: string
+        valUeIds:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: >
+            One or more VAL UE IDs whose analytics or data collection are subject to subcription.
+        valServerId:
+          type: string
+          description: Identity of the VAL server
+        dataProdProfile:
+          $ref: '#/components/schemas/ProdProfileInfo'
+        clientAppData:
+          $ref: '#/components/schemas/ClientApplicationData'
+        confLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        area:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        repThrs:
+          type: array
+          items:
+            $ref: '#/components/schemas/PerfThreshold'
+          minItems: 1
+        timeValidity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        repReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        expReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - notifUri
+        - analyticsType
+        - valServiceId
+
+    AppPerfNotif:
+      description: Represents notification of the VAL performance event.
+      type: object
+      properties:
+        analyticsOutput:
+          $ref: '#/components/schemas/AnalyticsOutput'
+        output:
+          type: string
+          description: Provided output for analytics.
+        valServerId:
+          type: string
+          description: VAL Server identifier.
+        valUeIds:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: List of VAL UE identifiers.
+        area:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        confLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        timeHorizon:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+      required:
+        - valServerId
+#      oneOf:
+#        - required: [output]
+#        - required: [analyticsOutput]
+#
+    ProdProfileInfo:
+      description: Represents capability of the data producer.
+      type: object
+      properties:
+        prodId:
+          type: string
+          description: Identity of the data producer.
+        prodType:
+          $ref: '#/components/schemas/ProducerType'
+        dataType:
+          $ref: '#/components/schemas/ProducerData'
+        prodRole:
+          $ref: '#/components/schemas/ProducerRole'
+        origProdIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: >
+            Identifies the identity of the original data producers.
+        dataFresh:
+          type: integer
+          description: Duration of elapsed time in seconds.
+        producerCap:
+          $ref: '#/components/schemas/ProducerCap'
+      required:
+        - prodId
+        - prodType
+        - dataType
+
+    ProducerCap:
+      description: Represents capability of the data producer.
+      type: object
+      properties:
+        durationTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        anonymization:
+          type: boolean
+          description: >
+            Set to true if anonymization is supported. Set to false or omitted otherwise.
+        dataRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        schedule:
+          $ref: 'TS29122_CpProvisioning.yaml#/components/schemas/ScheduledCommunicationTime'
+
+    AnalyticsType:
+      description: Represents type of requested analytics.
+      type: object
+      properties:
+        category:
+          $ref: '#/components/schemas/AnalyticsCategory'
+      required:
+        - category
+
+    PerfData:
+      description: Represents the performance data.
+      type: object
+      properties:
+        rtt:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avgDataRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxDataRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        jitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        qoeMos:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        qoeStalEvent:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        qoeStalRatio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        qosProfileLoad:
+          type: integer
+          minimum: -100
+          maximum: 100
+        valTrafLoad:
+          type: integer
+          minimum: -100
+          maximum: 100
+        valSesPerfChange:
+          type: integer
+          minimum: -100
+          maximum: 100
+      anyOf:
+        - required: [rtt]
+        - required: [avgDataRate]
+        - required: [maxDataRate]
+        - required: [jitter]
+        - required: [qoeMos]
+        - required: [qoeStalEvent]
+        - required: [qoeStalRatio]
+        - required: [qosProfileLoad]
+        - required: [valTrafLoad]
+        - required: [valSesPerfChange]
+
+    PerfThreshold:
+      description: >
+        Represents the performance threshold.
+      type: object
+      properties:
+        value:
+          $ref: '#/components/schemas/PerfData'
+        thrDirect:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/MatchingDirection'
+      required:
+        - value
+        - thrDirect
+
+    ClientApplicationData:
+      description: >
+        Represents the ADAE client application data.
+      type: object
+      properties:
+        ueRoute:
+          $ref: 'TS29257_UAE_ChangeUSSManagement.yaml#/components/schemas/UasRoute'
+        sesSched:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ScheduledCommunicationTime'
+          minItems: 1
+      anyOf:
+        - required: [ueRoute]
+        - required: [sesSched]
+
+    AnalyticsOutput:
+      description: >
+        Represents the VAL performance analytics output.
+      type: object
+      properties:
+        analyticsId:
+          $ref: '#/components/schemas/AnalyticsIdVpa'
+        valServ:
+          $ref: '#/components/schemas/PerfData'
+        valSess:
+          $ref: '#/components/schemas/PerfData'
+      required:
+        - analyticsId
+
+# Simple data types and Enumerations
+
+    AnalyticsCategory:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - PREDICTIVE
+        - STATISTICS
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the type of the analytics.  
+#        Possible values are:
+#        - PREDICTIVE: The event for the analytics is for predictive analytics.
+#        - STATISTICS: The event for analytics is for statistics analytics.
+#
+    ProducerType:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - ADAE_CLIENT
+        - A_DCCF
+        - VAL_SERVER
+        - SEAL_SERVER
+        - SEAL_CLIENT
+        - EES
+        - EAS
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the type of the data producer.  
+#        Possible values are:
+#        - ADAE_CLIENT: The data producer is ADAE client.
+#        - A_DCCF: The data producer is A-DCCF.
+#        - VAL_SERVER: The data producer is VAL server.
+#        - SEAL_SERVER: The data producer is SEAL server.
+#        - SEAL_CLIENT: The data producer is SEAL client.
+#        - EES: The data producer is EES.
+#        - EAS: The data producer is EAS.
+#
+    ProducerData:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - PERFORMANCE_INDICATOR
+        - REPRODUCER_USAGE_DATA
+        - SERVER_LOAD_DATA
+        - APPLICATION_PERFORMANCE
+        - EDGE_LOAD
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the data type of the data producer.  
+#        Possible values are:
+#        - PERFORMANCE_INDICATOR: The data type of the data producer is
+#          performance indictor.
+#        - REPRODUCER_USAGE_DATA: The data type of the data producer is
+#          reproducer usage data.
+#        - SERVER_LOAD_DATA: The data type of the data producer is
+#          server load data.
+#        - APPLICATION_PERFORMANCE: The data type of the data producer is
+#          application performance.
+#        - EDGE_LOAD: The data type of the data producer is
+#          edge load.
+#
+    ProducerRole:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - GENERATING_ENTITY
+        - ORIGINAL_PRODUCER
+        - RESPOSITORY
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the role of the data producer.  
+#        Possible values are:
+#        - GENERATING_ENTITY: The role of the data producer is generating entity.
+#        - ORIGINAL_PRODUCER: The role of the data producer is origina producer.
+#        - RESPOSITORY: The role of the data producer is repository.
+#
+    AnalyticsIdVpa:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - VAL_SERVER_PERF
+        - VAL_SESSION_PERF
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: |
+#        Represents the analytics identifier for VAL performance analytics.  
+#        Possible values are:
+#        - VAL_SERVER_PERF: Indicates that requested analytics is VAL server performance analytics.
+#        - VAL_SESSION_PERF: Indicates that requested analytics is VAL session performance analytics.

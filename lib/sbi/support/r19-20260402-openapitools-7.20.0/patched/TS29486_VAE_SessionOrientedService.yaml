@@ -1,0 +1,332 @@
+openapi: 3.0.0
+
+info:
+  version: 1.1.0
+  title: VAE_SessionOrientedService
+  description: |
+    API for VAE_SessionOrientedService  
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.486 V18.3.0 V2X Application Enabler (VAE) Services
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.486/'
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/vae-session-Oriented-service/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+paths:
+  /subscriptions:
+    post:
+      summary: VAE_SessionOrientedService resource create service Operation
+      tags:
+        - session oriented service subscriptions collection (Document)
+      operationId: Create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionOrientedData'
+        required: true
+      responses:
+        '201':
+          description: Session Oriented Service Subscription Resource Created
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionOrientedData'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        NotifyResutOfSessionOrientedService:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Notification'
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /subscriptions/{subscriptionId}:
+    get:
+      summary: VAE Session Oriented Service Subscription resource read service Operation
+      tags:
+        - Individual Session Oriented Service Subscription (Document)
+      operationId: ReadSessionOrientedServiceSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifier of an Session Oriented Service Subscription resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionOrientedData'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Updates/replaces an existing subscription resource
+      tags:
+        - VAE Session Oriented Service Subscription resource put service Operation
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifier of an Session Oriented Service Subscription resource
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to update/replace the existing subscription
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionOrientedData'
+      responses:
+        '200':
+          description: OK (Successful update of the subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionOrientedData'
+        '204':
+          description: No Content (Successful update of the subscription)
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: VAE Session Oriented Service Subscription resource delete service Operation
+      tags:
+        - Individual Session Oriented Service Subscription (Document)
+      operationId: DeleteSessionOrientedServiceSubscription
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          description: Unique ID of the Session Oriented Service Subscription n to be deleted
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The subscription was terminated successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows: 
+        clientCredentials: 
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    SessionOrientedData:
+      description: >
+        Represents data to trigger establishment or update of session-oriented service.
+      type: object
+      properties:
+        ueId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xUeId'
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        serviceId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xServiceId'
+        appSerId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/AppServerId'
+        appQosReq:
+          $ref: '#/components/schemas/AppplicationQosRequirement'
+        requestTestNotification:
+          type: boolean
+          description: >
+            Set to true by the service consumer to request the VAE server to send a test
+            notification as defined in clause 6.3.5.3. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ueId
+        - notifUri
+        - serviceId
+        - appSerId
+
+    Notification:
+      description: >
+        Represents the result of the establishment or update of the session-oriented service.
+      type: object
+      properties:
+        resourceUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        action:
+          $ref: '#/components/schemas/Action'
+        result:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/Result'
+      required:
+        - resourceUri
+        - action
+        - result
+
+    AppplicationQosRequirement:
+      description: Represents application layer QoS requirement.
+      type: object
+      properties:
+        pqi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5Qi'
+        resourceType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/QosResourceType'
+        priorityLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        packetDelayBudget:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudget'
+        packetErrorRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketErrRate'
+        averagingWindow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AverWindow'
+        maxDataBurstVol:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExtMaxDataBurstVol'
+        not:
+          required: [pqi, resourceType, packetDelayBudget, packetErrorRate]
+
+# Simple data types and Enumerations
+    Action:
+      description: Indicate the action to the session-oriented service.
+      anyOf:
+      - type: string
+        enum:
+          - ESTABLISHMENT
+          - UPDATE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration and is not used to encode
+          content defined in the present version of this API.

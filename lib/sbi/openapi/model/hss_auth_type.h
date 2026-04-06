@@ -1,7 +1,7 @@
 /*
  * hss_auth_type.h
  *
- * 
+ * Indicates the authentication method.
  */
 
 #ifndef _OpenAPI_hss_auth_type_H_

@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_smf_subscription_item_s OpenAPI_smf_subscription_item_t;
 #include "context_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_smf_subscription_item_s OpenAPI_smf_subscription_item_t;
-typedef struct OpenAPI_smf_subscription_item_s {
+struct OpenAPI_smf_subscription_item_s {
     char *smf_instance_id;
     char *subscription_id;
     struct OpenAPI_context_info_s *context_info;
-} OpenAPI_smf_subscription_item_t;
+};
 
 OpenAPI_smf_subscription_item_t *OpenAPI_smf_subscription_item_create(
     char *smf_instance_id,

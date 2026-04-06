@@ -159,7 +159,7 @@ int amf_nnssf_nsselection_handle_get(
         param.nrf_uri = sess->nssf.nrf_uri;
 
         r = amf_sess_sbi_discover_and_send(
-                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option,
+                OpenAPI_service_name_nsmf_pdusession, discovery_option,
                 amf_nsmf_pdusession_build_create_sm_context,
                 ran_ue, sess, AMF_CREATE_SM_CONTEXT_NO_STATE, &param);
         ogs_expect(r == OGS_OK);
@@ -208,7 +208,7 @@ int amf_nnssf_nsselection_handle_get(
 
         r = amf_sess_sbi_discover_by_nsi(
                 ran_ue, sess,
-                OGS_SBI_SERVICE_TYPE_NSMF_PDUSESSION, discovery_option, state);
+                OpenAPI_service_name_nsmf_pdusession, discovery_option, state);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     }

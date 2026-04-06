@@ -1,7 +1,7 @@
 /*
  * smf_registration.h
  *
- * 
+ * This datatype contains a complete set of mandatory information relevant to an SMF  serving the UE. 
  */
 
 #ifndef _OpenAPI_smf_registration_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_smf_registration_s OpenAPI_smf_registration_t;
 #include "context_info.h"
 #include "ip_address.h"
 #include "plmn_id.h"
@@ -22,8 +23,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_smf_registration_s OpenAPI_smf_registration_t;
-typedef struct OpenAPI_smf_registration_s {
+struct OpenAPI_smf_registration_s {
     char *smf_instance_id;
     char *smf_set_id;
     char *supported_features;
@@ -48,7 +48,13 @@ typedef struct OpenAPI_smf_registration_s {
     bool is_udr_restart_ind;
     int udr_restart_ind;
     char *last_synchronization_time;
-} OpenAPI_smf_registration_t;
+    bool is_pdu_session_re_activation_required;
+    int pdu_session_re_activation_required;
+    char *stale_check_callback_uri;
+    char *udm_stale_check_callback_uri;
+    bool is_wildcard_ind;
+    int wildcard_ind;
+};
 
 OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
     char *smf_instance_id,
@@ -74,7 +80,13 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
     OpenAPI_list_t *reset_ids,
     bool is_udr_restart_ind,
     int udr_restart_ind,
-    char *last_synchronization_time
+    char *last_synchronization_time,
+    bool is_pdu_session_re_activation_required,
+    int pdu_session_re_activation_required,
+    char *stale_check_callback_uri,
+    char *udm_stale_check_callback_uri,
+    bool is_wildcard_ind,
+    int wildcard_ind
 );
 void OpenAPI_smf_registration_free(OpenAPI_smf_registration_t *smf_registration);
 OpenAPI_smf_registration_t *OpenAPI_smf_registration_parseFromJSON(cJSON *smf_registrationJSON);

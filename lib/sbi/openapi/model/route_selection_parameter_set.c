@@ -10,7 +10,8 @@ OpenAPI_route_selection_parameter_set_t *OpenAPI_route_selection_parameter_set_c
     bool is_precedence,
     int precedence,
     OpenAPI_list_t *spatial_validity_areas,
-    OpenAPI_list_t *spatial_validity_tais
+    OpenAPI_list_t *spatial_validity_tais,
+    OpenAPI_pdu_session_type_e pdu_sess_type
 )
 {
     OpenAPI_route_selection_parameter_set_t *route_selection_parameter_set_local_var = ogs_malloc(sizeof(OpenAPI_route_selection_parameter_set_t));
@@ -22,6 +23,7 @@ OpenAPI_route_selection_parameter_set_t *OpenAPI_route_selection_parameter_set_c
     route_selection_parameter_set_local_var->precedence = precedence;
     route_selection_parameter_set_local_var->spatial_validity_areas = spatial_validity_areas;
     route_selection_parameter_set_local_var->spatial_validity_tais = spatial_validity_tais;
+    route_selection_parameter_set_local_var->pdu_sess_type = pdu_sess_type;
 
     return route_selection_parameter_set_local_var;
 }
@@ -128,6 +130,13 @@ cJSON *OpenAPI_route_selection_parameter_set_convertToJSON(OpenAPI_route_selecti
     }
     }
 
+    if (route_selection_parameter_set->pdu_sess_type != OpenAPI_pdu_session_type_NULL) {
+    if (cJSON_AddStringToObject(item, "pduSessType", OpenAPI_pdu_session_type_ToString(route_selection_parameter_set->pdu_sess_type)) == NULL) {
+        ogs_error("OpenAPI_route_selection_parameter_set_convertToJSON() failed [pdu_sess_type]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -144,6 +153,8 @@ OpenAPI_route_selection_parameter_set_t *OpenAPI_route_selection_parameter_set_p
     OpenAPI_list_t *spatial_validity_areasList = NULL;
     cJSON *spatial_validity_tais = NULL;
     OpenAPI_list_t *spatial_validity_taisList = NULL;
+    cJSON *pdu_sess_type = NULL;
+    OpenAPI_pdu_session_type_e pdu_sess_typeVariable = 0;
     dnn = cJSON_GetObjectItemCaseSensitive(route_selection_parameter_setJSON, "dnn");
     if (dnn) {
     if (!cJSON_IsString(dnn) && !cJSON_IsNull(dnn)) {
@@ -217,13 +228,23 @@ OpenAPI_route_selection_parameter_set_t *OpenAPI_route_selection_parameter_set_p
         }
     }
 
+    pdu_sess_type = cJSON_GetObjectItemCaseSensitive(route_selection_parameter_setJSON, "pduSessType");
+    if (pdu_sess_type) {
+    if (!cJSON_IsString(pdu_sess_type)) {
+        ogs_error("OpenAPI_route_selection_parameter_set_parseFromJSON() failed [pdu_sess_type]");
+        goto end;
+    }
+    pdu_sess_typeVariable = OpenAPI_pdu_session_type_FromString(pdu_sess_type->valuestring);
+    }
+
     route_selection_parameter_set_local_var = OpenAPI_route_selection_parameter_set_create (
         dnn && !cJSON_IsNull(dnn) ? ogs_strdup(dnn->valuestring) : NULL,
         snssai ? snssai_local_nonprim : NULL,
         precedence ? true : false,
         precedence ? precedence->valuedouble : 0,
         spatial_validity_areas ? spatial_validity_areasList : NULL,
-        spatial_validity_tais ? spatial_validity_taisList : NULL
+        spatial_validity_tais ? spatial_validity_taisList : NULL,
+        pdu_sess_type ? pdu_sess_typeVariable : 0
     );
 
     return route_selection_parameter_set_local_var;

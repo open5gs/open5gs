@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_authentication_info_result_s OpenAPI_authentication_info_result_t;
 #include "auth_type.h"
 #include "authentication_vector.h"
 #include "server_addressing_info.h"
@@ -20,8 +21,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_authentication_info_result_s OpenAPI_authentication_info_result_t;
-typedef struct OpenAPI_authentication_info_result_s {
+struct OpenAPI_authentication_info_result_s {
     OpenAPI_auth_type_e auth_type;
     char *supported_features;
     struct OpenAPI_authentication_vector_s *authentication_vector;
@@ -32,7 +32,9 @@ typedef struct OpenAPI_authentication_info_result_s {
     int auth_aaa;
     char *routing_id;
     OpenAPI_list_t *pvs_info;
-} OpenAPI_authentication_info_result_t;
+    bool is_msk_ind;
+    int msk_ind;
+};
 
 OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_create(
     OpenAPI_auth_type_e auth_type,
@@ -44,7 +46,9 @@ OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_create(
     bool is_auth_aaa,
     int auth_aaa,
     char *routing_id,
-    OpenAPI_list_t *pvs_info
+    OpenAPI_list_t *pvs_info,
+    bool is_msk_ind,
+    int msk_ind
 );
 void OpenAPI_authentication_info_result_free(OpenAPI_authentication_info_result_t *authentication_info_result);
 OpenAPI_authentication_info_result_t *OpenAPI_authentication_info_result_parseFromJSON(cJSON *authentication_info_resultJSON);

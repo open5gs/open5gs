@@ -1,0 +1,397 @@
+openapi: 3.0.0
+
+info:
+  title: SEALDD Server Data Delivery Context Relocation
+  version: 1.1.0
+  description: |
+    SEALDD Server Data Delivery Context Relocation.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.548 V19.5.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    SEAL Data Delivery (SEALDD) Server Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.548/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/sdd-ddc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /contexts:
+    get:
+      summary: Pull the DD context from the SEALDD Server.
+      operationId: PullDdContext
+      tags:
+        - DD Contexts (Collection)
+      parameters:
+        - name: sealdd-pol-ind
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+            description: >
+              Indicates whether the configured SEALDD Policy(ies), if any, is/are requested and
+              shall hence be provided in addition to the DD Context.
+              true indicates that the configured SEALDD Policy(ies) is/are requested.
+              false indicates that the configured SEALDD Policy(ies) is/are not requested.
+              The default value when this query parameter is omitted is false.
+        - name: supp-feats
+          in: query
+          description: Contains the list of supported features.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Successful case. The requested DD context is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DdContextResp'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Push the DD context to the SEALDD Server.
+      tags:
+        - DD Contexts (Collection)
+      requestBody:
+        description: >
+          Represents the DD context to be pushed to the
+          SEALDD Server.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DdContextPushReq'
+      responses:
+        '201':
+          description: >
+            Created. Successful case. The DD context is successfully pushed to the SEALDD Server and
+            the related information is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DdContextResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /inform:
+    post:
+      summary: Inform the SEALDD Server on ACR event(s).
+      operationId: InformAcrEvent
+      tags:
+        - Inform ACR Events Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InformACREvent'
+      responses:
+        '204':
+          description: >
+            No Content. The ACR event information is successfully received and processed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        ACREventNotif:
+          '{$request.body#/notifUri}/inform-acr':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AcrEventNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The ACR Event Notification is successfully received and
+                    acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    DdContext:
+      description: Represents the DD context.
+      type: object
+      properties:
+        uuContext:
+          $ref: '#/components/schemas/SddUuContext'
+        sContext:
+          $ref: '#/components/schemas/SddSContext'
+        trLayerContext:
+          $ref: '#/components/schemas/TranspLayerContext'
+      required:
+       - uuContext
+       - sContext
+
+    TranspLayerContext:
+      description: Represents the transport layer context.
+      type: object
+      properties:
+        transProtoc:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/TransportProtocol'
+      required:
+       - transProtoc
+
+    DdContextPushReq:
+      description: Represents the DD context push request.
+      type: object
+      properties:
+        ddContext:
+          $ref: '#/components/schemas/DdContext'
+        breakpointInfo:
+          $ref: '#/components/schemas/ContentBreakpoint'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+       - ddContext
+
+    DdContextResp:
+      description: Represents the DD context push response.
+      type: object
+      properties:
+        ddContext:
+          $ref: '#/components/schemas/DdContext'
+        endPoint:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ConnInfo'
+        policies:
+          type: array
+          items:
+            $ref: 'TS29548_SDD_PolicyConfiguration.yaml#/components/schemas/PolicyConfig'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    SddUuContext:
+      description: Represents the context related to the SEALDD-UU connection.
+      type: object
+      properties:
+        sddFlowId:
+          type: string
+        valServiceId:
+          type: string
+          description: Contains the identifier of the VAL service.
+        valServerId:
+          type: string
+          description: Contains the identifier of the VAL Server.
+        valServEndPoint:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ConnInfo'
+        ddClientConnInfo:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ConnInfo'
+        ddServConnInfo:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ConnInfo'
+        valTgtUe:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        comLifetime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        valUsersBdw:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ValUsersBdw'
+        pendingTimer:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+      required:
+       - sddFlowId
+       - valServEndPoint
+
+    SddSContext:
+      description: Represents the context related to the SEALDD-S connection.
+      type: object
+      properties:
+        valServerId:
+          type: string
+          description: Contains the identifier of the VAL Server.
+        valServiceId:
+          type: string
+          description: Contains the identifier of the VAL service.
+        valTargetId:
+          $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        valServerConnInfo:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ConnInfo'
+        ddServerConnInfo:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ConnInfo'
+        qosInfo:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/QosInfo'
+        valServerBdw:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ValServBdw'
+        valUsersBdw:
+          $ref: 'TS29548_SDD_Transmission.yaml#/components/schemas/ValUsersBdw'
+      required:
+       - valServerId
+       - valServerConnInfo
+
+    ContentBreakpoint:
+      description: >
+        Represents the content breakpoint information.
+      type: object
+      properties:
+        seqNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      anyOf:
+        - required: [seqNum]
+
+    InformACREvent:
+      description: Represents the ACR event information.
+      type: object
+      properties:
+        valServerId:
+          type: string
+        valServiceId:
+          type: string
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+       - valServerId
+
+    AcrEventNotif:
+      description: Represents the ACR Event Notification.
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/FlowTransResult'
+      required:
+       - result
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    FlowTransResult:
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+      - SUCCESS
+      - FAILURE
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future extensions to the enumeration
+#            and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the SEALDD flow transfer result.  
+#        Possible values are:
+#        - SUCCESS: Indicates that the flow transfer was successful.
+#        - FAILURE: Indicates that the flow transfer was failed.
+#
+#
+# Data types describing alternative data types or combinations of data types:
+#

@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_secondary_rat_usage_report_s OpenAPI_secondary_rat_usage_report_t;
 #include "qos_flow_usage_report.h"
 #include "rat_type.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_secondary_rat_usage_report_s OpenAPI_secondary_rat_usage_report_t;
-typedef struct OpenAPI_secondary_rat_usage_report_s {
+struct OpenAPI_secondary_rat_usage_report_s {
     OpenAPI_rat_type_e secondary_rat_type;
     OpenAPI_list_t *qos_flows_usage_data;
-} OpenAPI_secondary_rat_usage_report_t;
+};
 
 OpenAPI_secondary_rat_usage_report_t *OpenAPI_secondary_rat_usage_report_create(
     OpenAPI_rat_type_e secondary_rat_type,

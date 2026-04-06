@@ -1,7 +1,7 @@
 /*
  * sm_subs_data.h
  *
- * 
+ * Session Management Subscription Data
  */
 
 #ifndef _OpenAPI_sm_subs_data_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sm_subs_data_s OpenAPI_sm_subs_data_t;
 #include "extended_sm_subs_data.h"
 #include "session_management_subscription_data.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sm_subs_data_s OpenAPI_sm_subs_data_t;
-typedef struct OpenAPI_sm_subs_data_s {
+struct OpenAPI_sm_subs_data_s {
     OpenAPI_list_t *session_management_subscription_data_list;
     struct OpenAPI_extended_sm_subs_data_s *extended_sm_subs_data;
-} OpenAPI_sm_subs_data_t;
+};
 
 OpenAPI_sm_subs_data_t *OpenAPI_sm_subs_data_create(
     OpenAPI_list_t *session_management_subscription_data_list,

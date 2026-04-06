@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_user_identifier_s OpenAPI_user_identifier_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_user_identifier_s OpenAPI_user_identifier_t;
-typedef struct OpenAPI_user_identifier_s {
+struct OpenAPI_user_identifier_s {
     char *supi;
     char *gpsi;
     char *validity_time;
-} OpenAPI_user_identifier_t;
+};
 
 OpenAPI_user_identifier_t *OpenAPI_user_identifier_create(
     char *supi,

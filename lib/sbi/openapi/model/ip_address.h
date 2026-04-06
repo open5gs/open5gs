@@ -1,7 +1,7 @@
 /*
  * ip_address.h
  *
- * 
+ * IP Address
  */
 
 #ifndef _OpenAPI_ip_address_H_
@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ip_address_s OpenAPI_ip_address_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ip_address_s OpenAPI_ip_address_t;
-typedef struct OpenAPI_ip_address_s {
+struct OpenAPI_ip_address_s {
     char *ipv4_addr;
     char *ipv6_addr;
     char *ipv6_prefix;
-} OpenAPI_ip_address_t;
+};
 
 OpenAPI_ip_address_t *OpenAPI_ip_address_create(
     char *ipv4_addr,

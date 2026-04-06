@@ -1,7 +1,7 @@
 /*
  * requested_qos_monitoring_parameter.h
  *
- * 
+ * Indicates the requested QoS monitoring parameters to be measured.
  */
 
 #ifndef _OpenAPI_requested_qos_monitoring_parameter_H_
@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_requested_qos_monitoring_parameter_NULL = 0, OpenAPI_requested_qos_monitoring_parameter_DOWNLINK, OpenAPI_requested_qos_monitoring_parameter_UPLINK, OpenAPI_requested_qos_monitoring_parameter_ROUND_TRIP } OpenAPI_requested_qos_monitoring_parameter_e;
+typedef enum { OpenAPI_requested_qos_monitoring_parameter_NULL = 0, OpenAPI_requested_qos_monitoring_parameter_DOWNLINK, OpenAPI_requested_qos_monitoring_parameter_UPLINK, OpenAPI_requested_qos_monitoring_parameter_ROUND_TRIP, OpenAPI_requested_qos_monitoring_parameter_DOWNLINK_DATA_RATE, OpenAPI_requested_qos_monitoring_parameter_UPLINK_DATA_RATE, OpenAPI_requested_qos_monitoring_parameter_DOWNLINK_CONGESTION, OpenAPI_requested_qos_monitoring_parameter_UPLINK_CONGESTION, OpenAPI_requested_qos_monitoring_parameter_DOWNLINK_AVAILABLE_BITRATE, OpenAPI_requested_qos_monitoring_parameter_UPLINK_AVAILABLE_BITRATE } OpenAPI_requested_qos_monitoring_parameter_e;
 
 char* OpenAPI_requested_qos_monitoring_parameter_ToString(OpenAPI_requested_qos_monitoring_parameter_e requested_qos_monitoring_parameter);
 

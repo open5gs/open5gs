@@ -47,7 +47,15 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
     int onboarding_ind,
     OpenAPI_aerial_ue_indication_e aerial_ue_ind,
     bool is_subscribed_max_ipv6_prefix_size,
-    int subscribed_max_ipv6_prefix_size
+    int subscribed_max_ipv6_prefix_size,
+    bool is_hr_sbo_authorized,
+    int hr_sbo_authorized,
+    OpenAPI_list_t *required_upf_function_list,
+    OpenAPI_list_t *pref_upf_function_list,
+    OpenAPI_list_t *vlan_tag_allowed,
+    OpenAPI_list_t *vlan_tag_handling_info,
+    bool is_local_offloading_mngt_ind,
+    int local_offloading_mngt_ind
 )
 {
     OpenAPI_dnn_configuration_t *dnn_configuration_local_var = ogs_malloc(sizeof(OpenAPI_dnn_configuration_t));
@@ -96,6 +104,14 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
     dnn_configuration_local_var->aerial_ue_ind = aerial_ue_ind;
     dnn_configuration_local_var->is_subscribed_max_ipv6_prefix_size = is_subscribed_max_ipv6_prefix_size;
     dnn_configuration_local_var->subscribed_max_ipv6_prefix_size = subscribed_max_ipv6_prefix_size;
+    dnn_configuration_local_var->is_hr_sbo_authorized = is_hr_sbo_authorized;
+    dnn_configuration_local_var->hr_sbo_authorized = hr_sbo_authorized;
+    dnn_configuration_local_var->required_upf_function_list = required_upf_function_list;
+    dnn_configuration_local_var->pref_upf_function_list = pref_upf_function_list;
+    dnn_configuration_local_var->vlan_tag_allowed = vlan_tag_allowed;
+    dnn_configuration_local_var->vlan_tag_handling_info = vlan_tag_handling_info;
+    dnn_configuration_local_var->is_local_offloading_mngt_ind = is_local_offloading_mngt_ind;
+    dnn_configuration_local_var->local_offloading_mngt_ind = local_offloading_mngt_ind;
 
     return dnn_configuration_local_var;
 }
@@ -212,6 +228,34 @@ void OpenAPI_dnn_configuration_free(OpenAPI_dnn_configuration_t *dnn_configurati
         }
         OpenAPI_list_free(dnn_configuration->additional_shared_ecs_addr_config_info_ids);
         dnn_configuration->additional_shared_ecs_addr_config_info_ids = NULL;
+    }
+    if (dnn_configuration->required_upf_function_list) {
+        OpenAPI_list_for_each(dnn_configuration->required_upf_function_list, node) {
+            OpenAPI_upf_functionality_data_free(node->data);
+        }
+        OpenAPI_list_free(dnn_configuration->required_upf_function_list);
+        dnn_configuration->required_upf_function_list = NULL;
+    }
+    if (dnn_configuration->pref_upf_function_list) {
+        OpenAPI_list_for_each(dnn_configuration->pref_upf_function_list, node) {
+            OpenAPI_upf_functionality_data_with_priority_free(node->data);
+        }
+        OpenAPI_list_free(dnn_configuration->pref_upf_function_list);
+        dnn_configuration->pref_upf_function_list = NULL;
+    }
+    if (dnn_configuration->vlan_tag_allowed) {
+        OpenAPI_list_for_each(dnn_configuration->vlan_tag_allowed, node) {
+            OpenAPI_vlan_tag_value_free(node->data);
+        }
+        OpenAPI_list_free(dnn_configuration->vlan_tag_allowed);
+        dnn_configuration->vlan_tag_allowed = NULL;
+    }
+    if (dnn_configuration->vlan_tag_handling_info) {
+        OpenAPI_list_for_each(dnn_configuration->vlan_tag_handling_info, node) {
+            OpenAPI_vlan_tag_handling_free(node->data);
+        }
+        OpenAPI_list_free(dnn_configuration->vlan_tag_handling_info);
+        dnn_configuration->vlan_tag_handling_info = NULL;
     }
     ogs_free(dnn_configuration);
 }
@@ -585,6 +629,84 @@ cJSON *OpenAPI_dnn_configuration_convertToJSON(OpenAPI_dnn_configuration_t *dnn_
     }
     }
 
+    if (dnn_configuration->is_hr_sbo_authorized) {
+    if (cJSON_AddBoolToObject(item, "hrSboAuthorized", dnn_configuration->hr_sbo_authorized) == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [hr_sbo_authorized]");
+        goto end;
+    }
+    }
+
+    if (dnn_configuration->required_upf_function_list) {
+    cJSON *required_upf_function_listList = cJSON_AddArrayToObject(item, "requiredUpfFunctionList");
+    if (required_upf_function_listList == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [required_upf_function_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(dnn_configuration->required_upf_function_list, node) {
+        cJSON *itemLocal = OpenAPI_upf_functionality_data_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [required_upf_function_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(required_upf_function_listList, itemLocal);
+    }
+    }
+
+    if (dnn_configuration->pref_upf_function_list) {
+    cJSON *pref_upf_function_listList = cJSON_AddArrayToObject(item, "prefUpfFunctionList");
+    if (pref_upf_function_listList == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [pref_upf_function_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(dnn_configuration->pref_upf_function_list, node) {
+        cJSON *itemLocal = OpenAPI_upf_functionality_data_with_priority_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [pref_upf_function_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(pref_upf_function_listList, itemLocal);
+    }
+    }
+
+    if (dnn_configuration->vlan_tag_allowed) {
+    cJSON *vlan_tag_allowedList = cJSON_AddArrayToObject(item, "vlanTagAllowed");
+    if (vlan_tag_allowedList == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [vlan_tag_allowed]");
+        goto end;
+    }
+    OpenAPI_list_for_each(dnn_configuration->vlan_tag_allowed, node) {
+        cJSON *itemLocal = OpenAPI_vlan_tag_value_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [vlan_tag_allowed]");
+            goto end;
+        }
+        cJSON_AddItemToArray(vlan_tag_allowedList, itemLocal);
+    }
+    }
+
+    if (dnn_configuration->vlan_tag_handling_info) {
+    cJSON *vlan_tag_handling_infoList = cJSON_AddArrayToObject(item, "vlanTagHandlingInfo");
+    if (vlan_tag_handling_infoList == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [vlan_tag_handling_info]");
+        goto end;
+    }
+    OpenAPI_list_for_each(dnn_configuration->vlan_tag_handling_info, node) {
+        cJSON *itemLocal = OpenAPI_vlan_tag_handling_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [vlan_tag_handling_info]");
+            goto end;
+        }
+        cJSON_AddItemToArray(vlan_tag_handling_infoList, itemLocal);
+    }
+    }
+
+    if (dnn_configuration->is_local_offloading_mngt_ind) {
+    if (cJSON_AddBoolToObject(item, "localOffloadingMngtInd", dnn_configuration->local_offloading_mngt_ind) == NULL) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [local_offloading_mngt_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -645,6 +767,16 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
     cJSON *aerial_ue_ind = NULL;
     OpenAPI_aerial_ue_indication_e aerial_ue_indVariable = 0;
     cJSON *subscribed_max_ipv6_prefix_size = NULL;
+    cJSON *hr_sbo_authorized = NULL;
+    cJSON *required_upf_function_list = NULL;
+    OpenAPI_list_t *required_upf_function_listList = NULL;
+    cJSON *pref_upf_function_list = NULL;
+    OpenAPI_list_t *pref_upf_function_listList = NULL;
+    cJSON *vlan_tag_allowed = NULL;
+    OpenAPI_list_t *vlan_tag_allowedList = NULL;
+    cJSON *vlan_tag_handling_info = NULL;
+    OpenAPI_list_t *vlan_tag_handling_infoList = NULL;
+    cJSON *local_offloading_mngt_ind = NULL;
     pdu_session_types = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "pduSessionTypes");
     if (!pdu_session_types) {
         ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [pdu_session_types]");
@@ -1021,6 +1153,118 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
     }
     }
 
+    hr_sbo_authorized = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "hrSboAuthorized");
+    if (hr_sbo_authorized) {
+    if (!cJSON_IsBool(hr_sbo_authorized)) {
+        ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [hr_sbo_authorized]");
+        goto end;
+    }
+    }
+
+    required_upf_function_list = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "requiredUpfFunctionList");
+    if (required_upf_function_list) {
+        cJSON *required_upf_function_list_local = NULL;
+        if (!cJSON_IsArray(required_upf_function_list)) {
+            ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [required_upf_function_list]");
+            goto end;
+        }
+
+        required_upf_function_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(required_upf_function_list_local, required_upf_function_list) {
+            if (!cJSON_IsObject(required_upf_function_list_local)) {
+                ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [required_upf_function_list]");
+                goto end;
+            }
+            OpenAPI_upf_functionality_data_t *required_upf_function_listItem = OpenAPI_upf_functionality_data_parseFromJSON(required_upf_function_list_local);
+            if (!required_upf_function_listItem) {
+                ogs_error("No required_upf_function_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(required_upf_function_listList, required_upf_function_listItem);
+        }
+    }
+
+    pref_upf_function_list = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "prefUpfFunctionList");
+    if (pref_upf_function_list) {
+        cJSON *pref_upf_function_list_local = NULL;
+        if (!cJSON_IsArray(pref_upf_function_list)) {
+            ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [pref_upf_function_list]");
+            goto end;
+        }
+
+        pref_upf_function_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(pref_upf_function_list_local, pref_upf_function_list) {
+            if (!cJSON_IsObject(pref_upf_function_list_local)) {
+                ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [pref_upf_function_list]");
+                goto end;
+            }
+            OpenAPI_upf_functionality_data_with_priority_t *pref_upf_function_listItem = OpenAPI_upf_functionality_data_with_priority_parseFromJSON(pref_upf_function_list_local);
+            if (!pref_upf_function_listItem) {
+                ogs_error("No pref_upf_function_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(pref_upf_function_listList, pref_upf_function_listItem);
+        }
+    }
+
+    vlan_tag_allowed = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "vlanTagAllowed");
+    if (vlan_tag_allowed) {
+        cJSON *vlan_tag_allowed_local = NULL;
+        if (!cJSON_IsArray(vlan_tag_allowed)) {
+            ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [vlan_tag_allowed]");
+            goto end;
+        }
+
+        vlan_tag_allowedList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(vlan_tag_allowed_local, vlan_tag_allowed) {
+            if (!cJSON_IsObject(vlan_tag_allowed_local)) {
+                ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [vlan_tag_allowed]");
+                goto end;
+            }
+            OpenAPI_vlan_tag_value_t *vlan_tag_allowedItem = OpenAPI_vlan_tag_value_parseFromJSON(vlan_tag_allowed_local);
+            if (!vlan_tag_allowedItem) {
+                ogs_error("No vlan_tag_allowedItem");
+                goto end;
+            }
+            OpenAPI_list_add(vlan_tag_allowedList, vlan_tag_allowedItem);
+        }
+    }
+
+    vlan_tag_handling_info = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "vlanTagHandlingInfo");
+    if (vlan_tag_handling_info) {
+        cJSON *vlan_tag_handling_info_local = NULL;
+        if (!cJSON_IsArray(vlan_tag_handling_info)) {
+            ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [vlan_tag_handling_info]");
+            goto end;
+        }
+
+        vlan_tag_handling_infoList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(vlan_tag_handling_info_local, vlan_tag_handling_info) {
+            if (!cJSON_IsObject(vlan_tag_handling_info_local)) {
+                ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [vlan_tag_handling_info]");
+                goto end;
+            }
+            OpenAPI_vlan_tag_handling_t *vlan_tag_handling_infoItem = OpenAPI_vlan_tag_handling_parseFromJSON(vlan_tag_handling_info_local);
+            if (!vlan_tag_handling_infoItem) {
+                ogs_error("No vlan_tag_handling_infoItem");
+                goto end;
+            }
+            OpenAPI_list_add(vlan_tag_handling_infoList, vlan_tag_handling_infoItem);
+        }
+    }
+
+    local_offloading_mngt_ind = cJSON_GetObjectItemCaseSensitive(dnn_configurationJSON, "localOffloadingMngtInd");
+    if (local_offloading_mngt_ind) {
+    if (!cJSON_IsBool(local_offloading_mngt_ind)) {
+        ogs_error("OpenAPI_dnn_configuration_parseFromJSON() failed [local_offloading_mngt_ind]");
+        goto end;
+    }
+    }
+
     dnn_configuration_local_var = OpenAPI_dnn_configuration_create (
         pdu_session_types_local_nonprim,
         ssc_modes_local_nonprim,
@@ -1064,7 +1308,15 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
         onboarding_ind ? onboarding_ind->valueint : 0,
         aerial_ue_ind ? aerial_ue_indVariable : 0,
         subscribed_max_ipv6_prefix_size ? true : false,
-        subscribed_max_ipv6_prefix_size ? subscribed_max_ipv6_prefix_size->valuedouble : 0
+        subscribed_max_ipv6_prefix_size ? subscribed_max_ipv6_prefix_size->valuedouble : 0,
+        hr_sbo_authorized ? true : false,
+        hr_sbo_authorized ? hr_sbo_authorized->valueint : 0,
+        required_upf_function_list ? required_upf_function_listList : NULL,
+        pref_upf_function_list ? pref_upf_function_listList : NULL,
+        vlan_tag_allowed ? vlan_tag_allowedList : NULL,
+        vlan_tag_handling_info ? vlan_tag_handling_infoList : NULL,
+        local_offloading_mngt_ind ? true : false,
+        local_offloading_mngt_ind ? local_offloading_mngt_ind->valueint : 0
     );
 
     return dnn_configuration_local_var;
@@ -1154,6 +1406,34 @@ end:
         }
         OpenAPI_list_free(additional_shared_ecs_addr_config_info_idsList);
         additional_shared_ecs_addr_config_info_idsList = NULL;
+    }
+    if (required_upf_function_listList) {
+        OpenAPI_list_for_each(required_upf_function_listList, node) {
+            OpenAPI_upf_functionality_data_free(node->data);
+        }
+        OpenAPI_list_free(required_upf_function_listList);
+        required_upf_function_listList = NULL;
+    }
+    if (pref_upf_function_listList) {
+        OpenAPI_list_for_each(pref_upf_function_listList, node) {
+            OpenAPI_upf_functionality_data_with_priority_free(node->data);
+        }
+        OpenAPI_list_free(pref_upf_function_listList);
+        pref_upf_function_listList = NULL;
+    }
+    if (vlan_tag_allowedList) {
+        OpenAPI_list_for_each(vlan_tag_allowedList, node) {
+            OpenAPI_vlan_tag_value_free(node->data);
+        }
+        OpenAPI_list_free(vlan_tag_allowedList);
+        vlan_tag_allowedList = NULL;
+    }
+    if (vlan_tag_handling_infoList) {
+        OpenAPI_list_for_each(vlan_tag_handling_infoList, node) {
+            OpenAPI_vlan_tag_handling_free(node->data);
+        }
+        OpenAPI_list_free(vlan_tag_handling_infoList);
+        vlan_tag_handling_infoList = NULL;
     }
     return NULL;
 }

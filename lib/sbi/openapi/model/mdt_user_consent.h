@@ -1,7 +1,7 @@
 /*
  * mdt_user_consent.h
  *
- * 
+ * Indicates the user has given his consent for MDT activation. 
  */
 
 #ifndef _OpenAPI_mdt_user_consent_H_

@@ -1,7 +1,7 @@
 /*
  * external_unrelated_class.h
  *
- * 
+ * Contains External Unrelated Class
  */
 
 #ifndef _OpenAPI_external_unrelated_class_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_external_unrelated_class_s OpenAPI_external_unrelated_class_t;
 #include "af_external.h"
 #include "lcs_client_external.h"
 #include "lcs_client_group_external.h"
@@ -20,12 +21,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_external_unrelated_class_s OpenAPI_external_unrelated_class_t;
-typedef struct OpenAPI_external_unrelated_class_s {
+struct OpenAPI_external_unrelated_class_s {
     OpenAPI_list_t *lcs_client_externals;
     OpenAPI_list_t *af_externals;
     OpenAPI_list_t *lcs_client_group_externals;
-} OpenAPI_external_unrelated_class_t;
+};
 
 OpenAPI_external_unrelated_class_t *OpenAPI_external_unrelated_class_create(
     OpenAPI_list_t *lcs_client_externals,

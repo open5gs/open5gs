@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_qos_flow_tunnel_s OpenAPI_qos_flow_tunnel_t;
 #include "tunnel_info.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_qos_flow_tunnel_s OpenAPI_qos_flow_tunnel_t;
-typedef struct OpenAPI_qos_flow_tunnel_s {
+struct OpenAPI_qos_flow_tunnel_s {
     OpenAPI_list_t *qfi_list;
     struct OpenAPI_tunnel_info_s *tunnel_info;
-} OpenAPI_qos_flow_tunnel_t;
+};
 
 OpenAPI_qos_flow_tunnel_t *OpenAPI_qos_flow_tunnel_create(
     OpenAPI_list_t *qfi_list,

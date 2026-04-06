@@ -1,7 +1,7 @@
 /*
  * uuaa_mm_status.h
  *
- * 
+ * Indicates the UUAA-MM status
  */
 
 #ifndef _OpenAPI_uuaa_mm_status_H_

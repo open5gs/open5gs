@@ -1,0 +1,714 @@
+openapi: 3.0.0
+
+info:
+  title: EES EAS Registration_API
+  description: |
+    API for EAS Registration.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: 1.2.0
+
+externalDocs:
+  description: >
+    3GPP TS 29.558 V19.5.0 Enabling Edge Applications;
+    Application Programming Interface (API) specification; Stage 3
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.558/
+
+servers:
+  - url: '{apiRoot}/eees-easregistration/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.558.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /registrations:
+    post:
+      summary: Creates a new Individual EAS Registration resource
+      operationId: CreateEASRegistration
+      tags:
+        - EAS Registrations (Collection)
+      description: Registers a new EAS at an EES.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EASRegistration'
+      responses:
+        '201':
+          description: >
+            Created. The EAS information is registered successfully at the EES.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EASRegistration'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /registrations/{registrationId}:
+    get:
+      summary: Retrieve an existing Individual EAS Registration resource.
+      operationId: ReadIndEASRegistration
+      tags:
+        - Individual EAS Registration (Document)
+      description: Retrieve an Individual EAS registration resource.
+      parameters:
+        - name: registrationId
+          in: path
+          description: Represents the identifier of the Individual EAS Registration resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. The requested Individual EAS Registration resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EASRegistration'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update an existing Individual EAS Registration resource.
+      operationId: UpdateIndEASRegistration
+      tags:
+        - Individual EAS Registration (Document)
+      description: Fully replace an existing EAS Registration resource.
+      parameters:
+        - name: registrationId
+          in: path
+          description: Represents the identifier of the Individual EAS Registration resource.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EASRegistration'
+      responses:
+        '200':
+          description: >
+            OK. The Individual EAS Registration resource is successfully updated and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EASRegistration'
+        '204':
+          description: >
+            No Content. The Individual EAS Registration resource is successfully updated and no
+            content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify an existing Individual EAS Registration resource.
+      operationId: ModifyIndEASRegistration
+      tags:
+        - Individual EAS Registration (Document)
+      description: Partially update an existing EAS Registration resource.
+      parameters:
+        - name: registrationId
+          in: path
+          description: Represents the identifier of the Individual EAS Registration resource..
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Partial update of an existing EAS registration resource.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/EASRegistrationPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual EAS Registration resource is successfully modified and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EASRegistration'
+        '204':
+          description: >
+             No Content. The Individual EAS Registration resource is successfully modified and no
+             content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an existing Individual EAS Registration resource.
+      operationId: DeleteIndEASRegistration
+      tags:
+        - Individual EAS Registration (Document)
+      description: Delete an existing EAS registration at EES.
+      parameters:
+        - name: registrationId
+          in: path
+          description: Represents the identifier of the Individual EAS Registration resource..
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The individual EAS registration is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    EASRegistration:
+      type: object
+      description: Represents an EAS registration information.
+      properties:
+        easProf:
+          $ref: '#/components/schemas/EASProfile'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - easProf
+
+    EASProfile:
+      type: object
+      description: Represents the EAS profile information.
+      properties:
+        easId:
+          type: string
+          description: Identifier of the EAS.
+        endPt:
+          $ref: '#/components/schemas/EndPoint'
+        allowedPlmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        allowedPlmnIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+          minItems: 1
+        easBdlInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/EASBundleInfo'
+          minItems: 1
+        acIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Identities of application clients that are served by the EAS.
+        provId:
+          type: string
+          description: Identifier of the ASP that provides the EAS.
+        type:
+          $ref: '#/components/schemas/EASCategory'
+        flexEasType:
+          type: string
+          description: The EAS type with flexible value set.
+        scheds:
+          type: array
+          items:
+            $ref: 'TS29122_CpProvisioning.yaml#/components/schemas/ScheduledCommunicationTime'
+          minItems: 1
+          description: The availability schedule of the EAS.
+        svcArea:
+          $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+        svcKpi:
+          $ref: '#/components/schemas/EASServiceKPI'
+        permLvl:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionLevel'
+          minItems: 1
+          description: level of service permissions supported by the EAS.
+        easFeats:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Service specific features supported by EAS.
+        appLocs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteToLocation'
+          minItems: 1
+          description: List of DNAI(s) and the N6 traffic information associated with the EAS.
+        svcContSupp:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          minItems: 1
+          description: The ACR scenarios supported by the EAS for service continuity.
+        svcContSuppExt1:
+          type: array
+          items:
+            $ref: '#/components/schemas/EASBundleInfo'
+          minItems: 1
+          description: >
+            Represents the information related to the EAS ability to handle
+            bundled EAS coordinated ACRs.
+            This attribute may be present only when the "svcContSupp" attribute is also present.
+            When this attribute is present, it indicates that the EAS (identified
+            by the "easId" attribute) is able to handle bundled by the "easId" coordinated ACRs and
+            contains the information of the EAS bundle(s) for which the EAS is able to handle
+            bundled EAS coordinated ACRs.
+        transContSupp:
+          $ref: '#/components/schemas/TransContSuppDetails'
+        avlRep:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        status:
+          type: string
+          description: EAS status information.
+        statusVal:
+          $ref: '#/components/schemas/EASStatus'
+        genCtxDur:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        easSyncSupp:
+          type: boolean
+          default: false
+          description: >
+            Set to true to indicate that content synchronization between EASs is
+            supported.
+            Set to false to indicate that content synchronization between EASs is
+            not supported.
+            The default value when this attribute is omitted is false.
+        assoDevList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssociatedDevice'
+          minItems: 1
+      required:
+        - easId
+        - endPt
+      allOf:
+        - not:
+            required: [ type, flexEasType ]
+        - not:
+            required: [ status, statusVal ]
+
+    EASRegistrationPatch:
+      type: object
+      description: >
+        Represents the requested modification to an
+        EAS registration information.
+      properties:
+        easProf:
+          $ref: '#/components/schemas/EASProfile'
+        expTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTimeRm'
+
+    EASServiceKPI:
+      type: object
+      description: Represents the EAS service KPI information.
+      properties:
+        maxReqRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        maxRespTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avail:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avlComp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avlGraComp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avlMem:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avlStrg:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        connBand:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+
+    EASBundleInfo:
+      type: object
+      description: Represents the EAS bundle information.
+      properties:
+        bdlType:
+          $ref: '#/components/schemas/BdlType'
+        bdlId:
+          type: string
+          description: Indicates a bundle ID.
+        easIdsList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        easBdlReqs:
+          $ref: '#/components/schemas/EASBdlReqs'
+        mainEasId:
+          type: string
+      required:
+        - bdlType
+      anyOf:
+        - required: [bdlId]
+        - required: [easIdsList]
+
+    EASBdlReqs:
+      type: object
+      description: Represents the EAS bundle requirements.
+      properties:
+        coordinatedEasDisc:
+          type: boolean
+          default: false
+          description: >
+            Set to true to indicate that coordianted EAS discovery is required.
+            Set to false to indicate that coordianted EAS discovery is not required.
+            The default value when this attribute is omitted is false.
+        coordinatedAcr:
+          $ref: '#/components/schemas/CoordinatedAcrReqs'
+        affinity:
+          $ref: '#/components/schemas/Affinity'
+
+    CoordinatedAcrReqs:
+      type: object
+      description: >
+        Represents the coordinated ACR related requirements for an EAS bundle.
+      properties:
+        coordinatedAcrInd:
+          type: boolean
+          default: false
+          description: >
+            Set to true to indicate that coordianted ACR is required.
+            Set to false to indicate that coordianted ACR is not required.
+        failureAction:
+          $ref: '#/components/schemas/FailureAction'
+      required:
+        - coordinatedAcrInd
+
+    EndPoint:
+      type: object
+      description: Represents the end point information.
+      properties:
+        fqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        ipv4Addrs:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+          description: IPv4 addresses of the edge server.
+        ipv6Addrs:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+          description: IPv6 addresses of the edge server.
+        uri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+      oneOf:
+        - required: [uri]
+        - required: [fqdn]
+        - required: [ipv4Addrs]
+        - required: [ipv6Addrs]
+
+    AssociatedDevice:
+      type: object
+      description: Represents the associated device along with the UE.
+      properties:
+        devInfo:
+          type: string
+        devType:
+          $ref: '#/components/schemas/DeviceType'
+      anyOf:
+        - required: [devInfo]
+        - required: [devType]
+
+    PermissionLevel:
+      anyOf:
+      - type: string
+        enum:
+          - TRIAL
+          - GOLD
+          - SILVER
+          - OTHER
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Indicates the level of service permissions.  
+        Possible values are:
+        - TRIAL: Level of service permission supported is TRIAL.
+        - GOLD: Level of service permission supported is GOLD.
+        - SILVER: Level of service permission supported is SILVER.
+        - OTHER: Any other level of service permissions supported.
+
+    EASCategory:
+      anyOf:
+      - type: string
+        enum:
+          - UAS
+          - V2X
+          - APP_ENABLER
+          - OTHER
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Indicates the category or type of the EAS.  
+        Possible values are:
+        - UAS: Indicates that the EAS category is for UAS services.
+        - V2X: Indicates that the EAS category is for V2X services.
+        - APP_ENABLER: Indicates that the EAS category is for Application Enabler (e.g., SEAL)
+          services.
+        - OTHER: Indicates any other EAS category.
+
+    TransContSuppDetails:
+      type: object
+      description: >
+        Represents the detailed information about the EAS (e.g. SEALDD Server) capability for
+        seamless transport layer service continuity.
+      properties:
+        transProtocs:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransportProtocol'
+          minItems: 1
+          description: >
+            Indicates the transport layer protocols supported for EAS context transfer using
+            the seamless transport layer service continuity capability.
+      required:
+        - transProtocs
+
+    TransportProtocol:
+      anyOf:
+      - type: string
+        enum:
+          - QUIC
+          - TCP
+          - TCP_TLS
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Indicates the transport layer protocol.  
+        Possible values are:
+        - QUIC: Indicates the QUIC protocol.
+        - TCP: Indicates the Transmission Control (TCP) Protocol.
+        - TCP_TLS: Indicates the Transmission Control Protocol (TCP) with Transport Layer Security
+          (TLS) protocol.
+
+    BdlType:
+      anyOf:
+      - type: string
+        enum:
+          - DIRECT
+          - PROXY
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the EAS Bundle type.  
+        Possible values are:
+        - DIRECT: Indicates that the EAS Bundle type is direct bundle.
+        - PROXY: Indicates that the EAS Bundle type is proxy bundle.
+
+    Affinity:
+      anyOf:
+      - type: string
+        enum:
+          - STRONG
+          - PREFERRED
+          - WEAK
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the affinity requirements of an EAS bundle.  
+        Possible values are:
+        - STRONG: Indicates that the affinity is strong, i.e., all the EASs of the bundle shall be
+          in the same EDN.
+        - PREFERRED: Indicates that the affinity is preferred, i.e., it is preferred to have all the
+          EASs of the bundle in the same EDN, but it is not essential.
+        - WEAK: Indicates that the affinity is weak, i.e., it is not essential to have all the EASs
+          of the bundle in the same EDN.
+
+    FailureAction:
+      anyOf:
+      - type: string
+        enum:
+          - CANCEL
+          - PROCEED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the EAS bundle related failure action during ACR.  
+        Possible values are:
+        - CANCEL: Indicates that ACR shall be cancelled for the other EAS(s) of the bundle for which
+          ACR is not failed.
+        - PROCEED: Indicates that ACR shall proceed for the other EAS(s) of the bundle for which
+          ACR is not failed.
+
+    EASStatus:
+      anyOf:
+      - type: string
+        enum:
+          - ENABLED
+          - DISABLED
+          - OVERLOAD_WARNING
+          - OTHER
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the EAS status.  
+        Possible values are:
+        - ENABLED: Indicates that the EAS status is enabled
+        - DISABLED: Indicates that the EAS status is disabled
+        - OVERLOAD_WARNING: Indicates that the EAS status is overload warning.
+        - OTHER: Indicates the EAS status is another status.
+
+    DeviceType:
+      anyOf:
+      - type: string
+        enum:
+          - HAPTIC_DEVICE
+          - JOY_STICK
+          - OTHER
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration and
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the device type.  
+        Possible values are:
+        - HAPTIC_DEVICE: Indicates that the device type is haptic device.
+        - JOY_STICK: Indicates that the device type is joy stick
+        - OTHER: Indicates any other device type.

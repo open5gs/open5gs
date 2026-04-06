@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_loss_connectivity_cfg_1_s OpenAPI_loss_connectivity_cfg_1_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_loss_connectivity_cfg_1_s OpenAPI_loss_connectivity_cfg_1_t;
-typedef struct OpenAPI_loss_connectivity_cfg_1_s {
+struct OpenAPI_loss_connectivity_cfg_1_s {
     bool is_max_detection_time;
     int max_detection_time;
-} OpenAPI_loss_connectivity_cfg_1_t;
+};
 
 OpenAPI_loss_connectivity_cfg_1_t *OpenAPI_loss_connectivity_cfg_1_create(
     bool is_max_detection_time,

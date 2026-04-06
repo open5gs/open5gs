@@ -7,7 +7,7 @@
 OpenAPI_smf_registration_modification_t *OpenAPI_smf_registration_modification_create(
     char *smf_instance_id,
     char *smf_set_id,
-    OpenAPI_fqdn_rm_t *pgw_fqdn
+    char *pgw_fqdn
 )
 {
     OpenAPI_smf_registration_modification_t *smf_registration_modification_local_var = ogs_malloc(sizeof(OpenAPI_smf_registration_modification_t));
@@ -36,7 +36,7 @@ void OpenAPI_smf_registration_modification_free(OpenAPI_smf_registration_modific
         smf_registration_modification->smf_set_id = NULL;
     }
     if (smf_registration_modification->pgw_fqdn) {
-        OpenAPI_fqdn_rm_free(smf_registration_modification->pgw_fqdn);
+        ogs_free(smf_registration_modification->pgw_fqdn);
         smf_registration_modification->pgw_fqdn = NULL;
     }
     ogs_free(smf_registration_modification);
@@ -70,13 +70,7 @@ cJSON *OpenAPI_smf_registration_modification_convertToJSON(OpenAPI_smf_registrat
     }
 
     if (smf_registration_modification->pgw_fqdn) {
-    cJSON *pgw_fqdn_local_JSON = OpenAPI_fqdn_rm_convertToJSON(smf_registration_modification->pgw_fqdn);
-    if (pgw_fqdn_local_JSON == NULL) {
-        ogs_error("OpenAPI_smf_registration_modification_convertToJSON() failed [pgw_fqdn]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "pgwFqdn", pgw_fqdn_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "pgwFqdn", smf_registration_modification->pgw_fqdn) == NULL) {
         ogs_error("OpenAPI_smf_registration_modification_convertToJSON() failed [pgw_fqdn]");
         goto end;
     }
@@ -93,7 +87,6 @@ OpenAPI_smf_registration_modification_t *OpenAPI_smf_registration_modification_p
     cJSON *smf_instance_id = NULL;
     cJSON *smf_set_id = NULL;
     cJSON *pgw_fqdn = NULL;
-    OpenAPI_fqdn_rm_t *pgw_fqdn_local_nonprim = NULL;
     smf_instance_id = cJSON_GetObjectItemCaseSensitive(smf_registration_modificationJSON, "smfInstanceId");
     if (!smf_instance_id) {
         ogs_error("OpenAPI_smf_registration_modification_parseFromJSON() failed [smf_instance_id]");
@@ -114,9 +107,8 @@ OpenAPI_smf_registration_modification_t *OpenAPI_smf_registration_modification_p
 
     pgw_fqdn = cJSON_GetObjectItemCaseSensitive(smf_registration_modificationJSON, "pgwFqdn");
     if (pgw_fqdn) {
-    pgw_fqdn_local_nonprim = OpenAPI_fqdn_rm_parseFromJSON(pgw_fqdn);
-    if (!pgw_fqdn_local_nonprim) {
-        ogs_error("OpenAPI_fqdn_rm_parseFromJSON failed [pgw_fqdn]");
+    if (!cJSON_IsString(pgw_fqdn) && !cJSON_IsNull(pgw_fqdn)) {
+        ogs_error("OpenAPI_smf_registration_modification_parseFromJSON() failed [pgw_fqdn]");
         goto end;
     }
     }
@@ -124,15 +116,11 @@ OpenAPI_smf_registration_modification_t *OpenAPI_smf_registration_modification_p
     smf_registration_modification_local_var = OpenAPI_smf_registration_modification_create (
         ogs_strdup(smf_instance_id->valuestring),
         smf_set_id && !cJSON_IsNull(smf_set_id) ? ogs_strdup(smf_set_id->valuestring) : NULL,
-        pgw_fqdn ? pgw_fqdn_local_nonprim : NULL
+        pgw_fqdn && !cJSON_IsNull(pgw_fqdn) ? ogs_strdup(pgw_fqdn->valuestring) : NULL
     );
 
     return smf_registration_modification_local_var;
 end:
-    if (pgw_fqdn_local_nonprim) {
-        OpenAPI_fqdn_rm_free(pgw_fqdn_local_nonprim);
-        pgw_fqdn_local_nonprim = NULL;
-    }
     return NULL;
 }
 

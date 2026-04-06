@@ -26,7 +26,7 @@ void pcf_nnrf_handle_nf_discover(
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_pool_id_t sbi_object_id = OGS_INVALID_POOL_ID;
-    ogs_sbi_service_type_e service_type = OGS_SBI_SERVICE_TYPE_NULL;
+    OpenAPI_service_name_e service_name = OpenAPI_service_name_NULL;
     ogs_sbi_discovery_option_t *discovery_option = NULL;
 
     pcf_ue_sm_t *pcf_ue_sm = NULL;
@@ -41,9 +41,9 @@ void pcf_nnrf_handle_nf_discover(
     ogs_assert(xact);
     sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
-    service_type = xact->service_type;
-    ogs_assert(service_type);
-    target_nf_type = ogs_sbi_service_type_to_nf_type(service_type);
+    service_name = xact->service_name;
+    ogs_assert(service_name);
+    target_nf_type = ogs_sbi_service_name_to_nf_type(service_name);
     ogs_assert(target_nf_type);
     requester_nf_type = xact->requester_nf_type;
     ogs_assert(requester_nf_type);
@@ -59,6 +59,14 @@ void pcf_nnrf_handle_nf_discover(
         ogs_error("No SearchResult");
         return;
     }
+    if (!SearchResult->validity_period) {
+        ogs_error("No SearchResult->validity_period");
+        return;
+    }
+    if (!SearchResult->nf_instances) {
+        ogs_error("No SearchResult->nf_instances");
+        return;
+    }
 
     if (sbi_object->type == OGS_SBI_OBJ_UE_TYPE) {
         pcf_ue_am = pcf_ue_am_find_by_id(sbi_object_id);
@@ -70,7 +78,7 @@ void pcf_nnrf_handle_nf_discover(
         ogs_assert(pcf_ue_sm);
     } else {
         ogs_fatal("(NF discover) Not implemented [%s:%d]",
-            ogs_sbi_service_type_to_name(service_type), sbi_object->type);
+            OpenAPI_service_name_ToString(service_name), sbi_object->type);
         ogs_assert_if_reached();
     }
 
@@ -83,11 +91,11 @@ void pcf_nnrf_handle_nf_discover(
                     pcf_ue_am ? pcf_ue_am->supi : "Unknown",
                     pcf_ue_sm ? pcf_ue_sm->supi : "Unknown",
                     sess ? sess->psi : 0,
-                    ogs_sbi_service_type_to_name(service_type),
+                    OpenAPI_service_name_ToString(service_name),
                     OpenAPI_nf_type_ToString(requester_nf_type));
 
         /* If BSF is not reachable, we ignore NBSF_MANAGMENT service */
-        if (service_type == OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT) {
+        if (service_name == OpenAPI_service_name_nbsf_management) {
             ogs_sbi_stream_t *stream = NULL;
 
             ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
@@ -105,7 +113,7 @@ void pcf_nnrf_handle_nf_discover(
     }
 
     OGS_SBI_SETUP_NF_INSTANCE(
-            sbi_object->service_type_array[service_type], nf_instance);
+            sbi_object->service_name_array[service_name], nf_instance);
 
     ogs_assert(xact->request);
     ogs_expect(true == pcf_sbi_send_request(nf_instance, xact));

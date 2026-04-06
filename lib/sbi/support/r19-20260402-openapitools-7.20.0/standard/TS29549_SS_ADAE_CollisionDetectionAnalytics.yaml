@@ -1,0 +1,520 @@
+openapi: 3.0.0
+
+info:
+  title: SS_ADAE_CollisionDetectionAnalytics
+  version: 1.0.1
+  description: |
+    API for ADAE Collision Detection Analytics service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V19.6.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-adae-cda/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /subscriptions:
+    post:
+      summary: Create an "Individual Collision Detection Analytics Subscription" resource.
+      operationId: SubscribeCollisionDetectionAnalytics
+      tags:
+        - Location Related UE Group Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollisionDetectionSub'
+      responses:
+        '201':
+          description: >
+            Subscription to the collision detection analytics is created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollisionDetectionSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created individual resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        NotifyCollisionDetectionEvent:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/CollisionDetectionNotif'
+              responses:
+                '204':
+                  description: The notification is successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of an Individual Collision Detection Analytics Subscription.
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Read the "Individual Collision Detection Analytics Subscription" resource.
+      operationId: ReadCollisionDetectionSubscription
+      tags:
+        - Individual Collision Detection Analytics Subscription (Document)
+      responses:
+        '200':
+          description: >
+            The requested "Individual Collision Detection Analytics Subscription"
+            resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollisionDetectionSub'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      description: Update the "Individual Collision Detection Analytics Subscription" resource.
+      operationId: UpdateCollisionDetectionSubscription
+      tags:
+        - Individual Collision Detection Analytics Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollisionDetectionSub'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Collision Detection Analytics Subscription resource
+            is successfully updated, and representation of updated resource is
+            returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollisionDetectionSub'
+        '204':
+          description: >
+            No Content. The Individual Collision Detection Analytics Subscription resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      description: Modify the "Individual Collision Detection Analytics Subscription" resource.
+      operationId: ModifyCollisionDetectionSubscription
+      tags:
+        - Individual Collision Detection Analytics Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/CollisionDetectionSubPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Collision Detection Analytics Subscription resource is 
+            successfully modified, and representation of the modified resource is returned
+            in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollisionDetectionSub'
+        '204':
+          description: >
+            No Content. The Individual Collision Detection Analytics Subscription resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Remove the "Individual Collision Detection Analytics Subscription" resource.
+      operationId: RemoveCollisionDetectionSubscription
+      tags:
+        - Individual Collision Detection Analytics Subscription (Document)
+      responses:
+        '204':
+          description: >
+            The "Individual Collision Detection Analytics Subscription" resource
+            matching the subscriptionId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    CollisionDetectionSub:
+      description: >
+        Represents the collision detection analytics subscription.
+      type: object
+      properties:
+        analyticsType:
+          $ref: 'TS29549_SS_ADAE_VALPerformanceAnalytics.yaml#/components/schemas/AnalyticsType'
+        analyticsId:
+          $ref: '#/components/schemas/AnalyticsIdCda'
+        analyticsFilt:
+          $ref: '#/components/schemas/CollisionDetectionFilter'
+        colDetCriteria:
+          $ref: '#/components/schemas/CollisionDetectionCriteria'
+
+        confLevel:
+          type: integer
+          minimum: 0
+          maximum: 100
+        repReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        timeInterval:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - analyticsType
+        - notifUri
+
+    CollisionDetectionSubPatch:
+      description: >
+        Represents the collision detection analytics subscription modification request.
+      type: object
+      properties:
+        analyticsFilt:
+          $ref: '#/components/schemas/CollisionDetectionFilter'
+        colDetCriteria:
+          $ref: '#/components/schemas/CollisionDetectionCriteria'
+        confLevel:
+          type: integer
+          minimum: 0
+          maximum: 100
+        repReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        timeInterval:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+
+    CollisionDetectionNotif:
+      description: >
+        Represents the collision detection analytics notification.
+      type: object
+      properties:
+        analyticsId:
+          $ref: '#/components/schemas/AnalyticsIdCda'
+        targetOther:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetOtherUesAnalytics'
+          minItems: 1
+        anyInLoc:
+          type: array
+          items:
+            $ref: '#/components/schemas/TargetToAnyUeLocAnalytics'
+          minItems: 1
+      required:
+        - analyticsId
+
+
+    CollisionDetectionFilter:
+      description: >
+        Represent the the collision detection analytics filtering information.
+      type: object
+      properties:
+        trgToOther:
+          $ref: '#/components/schemas/TargetOtherUesFilter'
+        targetToAnyUeLoc:
+          $ref: '#/components/schemas/TargetToAnyUeLocFilter'
+      oneOf:
+        - required: [trgToOther]
+        - required: [targetToAnyUeLoc]
+
+    CollisionDetectionCriteria:
+      description: >
+        Represents the collision detection criteria.
+      type: object
+      properties:
+        distance:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+      oneOf:
+        - required: [distance]
+
+    TargetOtherUesFilter:
+      description: >
+        Represent the analytics filter between any VAL UEs within the given location.
+      type: object
+      properties:
+        trgValServerId:
+          type: string
+        targetUes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        otherUes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        area:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+      required:
+        - targetUes
+
+    TargetToAnyUeLocFilter:
+      description: >
+        Represent the analytics filter between sets of target and other UEs within a location.
+      type: object
+      properties:
+        trgValServerId:
+          type: string
+        area:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+      required:
+        - area
+
+    TargetOtherUesAnalytics:
+      description: >
+        Represents the output for collision detection analytics between the sets
+        of target and other VAL UEs.
+      type: object
+      properties:
+        targetUe:
+          type: string
+        otherUe:
+          type: string
+        colTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        location:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        targetUeVel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        otherUeVel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        targetUeDir:
+          $ref: '#/components/schemas/Direction'
+        otherUeDir:
+          $ref: '#/components/schemas/Direction'
+        confLevel:
+          type: integer
+          minimum: 0
+          maximum: 100
+      required:
+        - targetUe
+        - otherUe
+        - colTime
+        - location
+
+    TargetToAnyUeLocAnalytics:
+      description: >
+        Represents the output for collision detection analytics between
+        any VAL UEs within given location.
+      type: object
+      properties:
+        ues:
+          type: array
+          items:
+            type: string
+          minItems: 2
+          maxItems: 2
+        colTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        location:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        confLevel:
+          type: integer
+          minimum: 0
+          maximum: 100
+      required:
+        - ues
+        - colTime
+        - location
+
+    Direction:
+      description: Represents the direction.
+      type: object
+      properties:
+        azimuthDirection:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/Angle'
+        elevationDirection:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/Angle'
+      required:
+        - azimuthDirection
+        - elevationDirection
+
+# Simple data types and Enumerations
+
+    AnalyticsIdCda:
+      anyOf:
+      - type: string
+        enum:
+           - TARGET_WITH_OTHER_UES
+           - ANY_UES_IN_LOC
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration and is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents the analytic IDs for Collision Detection Analytics.  
+        Possible values are:
+        - TARGET_WITH_OTHER_UES: Indicates that the requested analytics is collision
+          detection between the sets of target and other VAL UEs within a location.
+        - ANY_UES_IN_LOC: Indicates that the requested analytics is collision detection
+          between any VAL UEs within given location.

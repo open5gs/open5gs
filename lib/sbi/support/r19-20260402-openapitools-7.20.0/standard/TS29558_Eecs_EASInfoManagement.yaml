@@ -1,0 +1,464 @@
+openapi: 3.0.0
+
+info:
+  title: EAS Information Management
+  version: 1.1.0
+  description: |
+    EAS Information Management Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.558 V19.5.0; Enabling Edge Applications;
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.558/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/eecs-eim/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+paths:
+  /bindings:
+    get:
+      summary: Get EAS information.
+      operationId: GetEASInfo
+      tags:
+        - Get EAS information
+      parameters:
+        - name: requestor-id
+          in: query
+          description: Represents the Identifier of the service consumer.
+          required: true
+          schema:
+            type: string
+        - name: app-group-id
+          in: query
+          description: Represents the Application group identifier.
+          required: true
+          schema:
+            type: string
+        - name: eas-id
+          in: query
+          description: EAS Identifier.
+          required: true
+          schema:
+            type: string
+        - name: eas-bdl-id-list
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        - name: eas-bdl-id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: main-eas-id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: supp-feats
+          in: query
+          description: Contains the list of supported feature(s).
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: OK. Resource representation is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonEASBindResp'
+        '204':
+          description: >
+            No Content. There is no Common EAS Binding Information corresponding to the received
+            query parameters.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request to store the Common EAS information.
+      operationId: StoreEasInfo
+      tags:
+        - Store EAS Information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommonEASBindReq'
+      responses:
+        '201':
+          description: >
+            Created. The Common EAS Binding information is successfully stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonEASBindResp'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Common EAS Binding information resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          description: >
+            Forbidden. There is an existing Common EAS information stored.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsEIMExt'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /bindings/{bindingId}:
+    parameters:
+      - name: bindingId
+        in: path
+        description: _Represents the identifier of the Individual Common EAS Binding resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an Individual Common EAS Binding resource.
+      operationId: GetIndCommonEasBinding
+      tags:
+        - Individual Common EAS Binding (Document)
+      responses:
+        '200':
+          description: The requested Individual Common EAS Binding resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonEASBindResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update an existing Individual Common EAS Binding resource.
+      operationId: UpdateCommonEasBinding
+      tags:
+        - Individual Common EAS Binding (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommonEASBinding'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Common EAS Binding Instance is successfully updated and a
+            representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonEASBinding'
+        '204':
+          description: >
+            No Content. The Individual Common EAS Binding Instance is successfully
+            updated and no content is returned in the response body
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Common EAS Binding resource.
+      operationId: ModifyIndCommonEasBinding
+      tags:
+        - Individual Common EAS Binding (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/CommonEASBindingPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Common EAS Binding resource is successfully modified
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommonEASBinding'
+        '204':
+          description: >
+            No Content. The Individual Common EAS Binding resource is successfully
+            modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an existing Individual Common EAS Binding resource.
+      operationId: DeleteEasInfo
+      tags:
+        - Individual Common EAS Binding (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Common EAS Binding resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    CommonEASBindReq:
+      description: >
+        Represents the information elements for the Common EAS information
+      type: object
+      properties:
+        requestorId:
+          type: string
+        binding:
+          $ref: '#/components/schemas/CommonEASBinding'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - requestorId
+        - binding
+
+    CommonEASBindResp:
+      description: >
+        Represents the response information elements for the Common EAS information.
+      type: object
+      properties:
+        binding:
+          $ref: '#/components/schemas/CommonEASBinding'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - binding
+
+    CommonEASBinding:
+      description: Represents the common EAS Binding information.
+      type: object
+      properties:
+        appGroupId:
+          type: string
+        easId:
+          type: string
+        easEndpoints:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minItems: 1
+        assocEasEndpoints:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minItems: 1
+        eesEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        ednInfo:
+          $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/EDNInfo'
+        easSvcKpi:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASServiceKPI'
+        commEasBdlInfo:
+          $ref: '#/components/schemas/CommEasBdlInfo'
+      required:
+        - appGroupId
+        - easId
+        - easEndpoints
+
+    CommEasBdlInfo:
+      description: Represents the common EAS bundle information.
+      type: object
+      properties:
+        easIdsList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        easEndpoints:
+          type: object
+          additionalProperties:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minProperties: 1
+          description: >
+            Contains the list of the endpoint(s) of the EAS(s) constituting the EAS bundle where the
+            common EAS resides.
+            The key of the map shall be set to the identifier or the EAS (among the ones provided
+            within the "easIdsList" attribute) for which the endpoint information provided in the
+            map value is related..
+        mainEasId:
+          type: string
+        bdlId:
+          type: string
+      required:
+        - easIdsList
+        - easEndpoints
+      not:
+        required: [mainEasId, bdlId]
+
+    CommonEASBindingPatch:
+      description: Represents the requested modification to the common EAS Binding information.
+      type: object
+      properties:
+        easEndpoints:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minItems: 1
+        assocEasEndpoints:
+          type: array
+          items:
+            $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+          minItems: 1
+        eesEndpoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        ednInfo:
+          $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/EDNInfo'
+        commEasBdlInfo:
+          $ref: '#/components/schemas/CommEasBdlInfo'
+
+    ProblemDetailsEIMExt:
+      description: >
+        Extends ProblemDetails to also include existing common EAS binding information for the
+        application group.
+      allOf:
+      - $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+      - $ref: '#/components/schemas/CommonEASBinding'

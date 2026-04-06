@@ -1,7 +1,7 @@
 /*
  * policy_decision_failure_code.h
  *
- * 
+ * Indicates the type of the failed policy decision and/or condition data.
  */
 
 #ifndef _OpenAPI_policy_decision_failure_code_H_

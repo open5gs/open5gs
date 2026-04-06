@@ -7,6 +7,8 @@
 OpenAPI_status_info_t *OpenAPI_status_info_create(
     OpenAPI_resource_status_e resource_status,
     OpenAPI_cause_e cause,
+    bool is_remote_error,
+    int remote_error,
     OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para,
     OpenAPI_access_type_e an_type
 )
@@ -16,6 +18,8 @@ OpenAPI_status_info_t *OpenAPI_status_info_create(
 
     status_info_local_var->resource_status = resource_status;
     status_info_local_var->cause = cause;
+    status_info_local_var->is_remote_error = is_remote_error;
+    status_info_local_var->remote_error = remote_error;
     status_info_local_var->cn_assisted_ran_para = cn_assisted_ran_para;
     status_info_local_var->an_type = an_type;
 
@@ -63,6 +67,13 @@ cJSON *OpenAPI_status_info_convertToJSON(OpenAPI_status_info_t *status_info)
     }
     }
 
+    if (status_info->is_remote_error) {
+    if (cJSON_AddBoolToObject(item, "remoteError", status_info->remote_error) == NULL) {
+        ogs_error("OpenAPI_status_info_convertToJSON() failed [remote_error]");
+        goto end;
+    }
+    }
+
     if (status_info->cn_assisted_ran_para) {
     cJSON *cn_assisted_ran_para_local_JSON = OpenAPI_cn_assisted_ran_para_convertToJSON(status_info->cn_assisted_ran_para);
     if (cn_assisted_ran_para_local_JSON == NULL) {
@@ -95,6 +106,7 @@ OpenAPI_status_info_t *OpenAPI_status_info_parseFromJSON(cJSON *status_infoJSON)
     OpenAPI_resource_status_e resource_statusVariable = 0;
     cJSON *cause = NULL;
     OpenAPI_cause_e causeVariable = 0;
+    cJSON *remote_error = NULL;
     cJSON *cn_assisted_ran_para = NULL;
     OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para_local_nonprim = NULL;
     cJSON *an_type = NULL;
@@ -119,6 +131,14 @@ OpenAPI_status_info_t *OpenAPI_status_info_parseFromJSON(cJSON *status_infoJSON)
     causeVariable = OpenAPI_cause_FromString(cause->valuestring);
     }
 
+    remote_error = cJSON_GetObjectItemCaseSensitive(status_infoJSON, "remoteError");
+    if (remote_error) {
+    if (!cJSON_IsBool(remote_error)) {
+        ogs_error("OpenAPI_status_info_parseFromJSON() failed [remote_error]");
+        goto end;
+    }
+    }
+
     cn_assisted_ran_para = cJSON_GetObjectItemCaseSensitive(status_infoJSON, "cnAssistedRanPara");
     if (cn_assisted_ran_para) {
     cn_assisted_ran_para_local_nonprim = OpenAPI_cn_assisted_ran_para_parseFromJSON(cn_assisted_ran_para);
@@ -140,6 +160,8 @@ OpenAPI_status_info_t *OpenAPI_status_info_parseFromJSON(cJSON *status_infoJSON)
     status_info_local_var = OpenAPI_status_info_create (
         resource_statusVariable,
         cause ? causeVariable : 0,
+        remote_error ? true : false,
+        remote_error ? remote_error->valueint : 0,
         cn_assisted_ran_para ? cn_assisted_ran_para_local_nonprim : NULL,
         an_type ? an_typeVariable : 0
     );

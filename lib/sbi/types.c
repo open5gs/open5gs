@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -19,101 +19,151 @@
 
 #include "ogs-sbi.h"
 
-struct service_desc_s {
-    OpenAPI_nf_type_e nf_type;
-    const char *service_name;
+static const struct {
+    const char *name;
+    int service_name_id;
+} service_name_map[] = {
+    { OGS_SBI_SERVICE_NAME_NAMF_CALLBACK,
+        OGS_SBI_SERVICE_NAME_ID_NAMF_CALLBACK },
+    { OGS_SBI_SERVICE_NAME_NSMF_CALLBACK,
+        OGS_SBI_SERVICE_NAME_ID_NSMF_CALLBACK },
+    { OGS_SBI_SERVICE_NAME_N32C_HANDSHAKE,
+        OGS_SBI_SERVICE_NAME_ID_N32C_HANDSHAKE },
 };
 
-static struct service_desc_s service_desc[] = {
-    { OpenAPI_nf_type_NULL, NULL },
-    { OpenAPI_nf_type_NRF, OGS_SBI_SERVICE_NAME_NNRF_NFM },
-    { OpenAPI_nf_type_NRF, OGS_SBI_SERVICE_NAME_NNRF_DISC },
-    { OpenAPI_nf_type_NRF, OGS_SBI_SERVICE_NAME_NNRF_OAUTH2 },
-    { OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_SDM },
-    { OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_UECM },
-    { OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_UEAU },
-    { OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_EE },
-    { OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_PP },
-    { OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_NIDDAU },
-    { OpenAPI_nf_type_UDM, OGS_SBI_SERVICE_NAME_NUDM_MT },
-    { OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_COMM },
-    { OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_EVTS },
-    { OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_MT },
-    { OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_LOC },
-    { OpenAPI_nf_type_AMF, OGS_SBI_SERVICE_NAME_NAMF_OAM },
-    { OpenAPI_nf_type_SMF, OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION },
-    { OpenAPI_nf_type_SMF, OGS_SBI_SERVICE_NAME_NSMF_EVENT_EXPOSURE },
-    { OpenAPI_nf_type_SMF, OGS_SBI_SERVICE_NAME_NSMF_NIDD },
-    { OpenAPI_nf_type_AUSF, OGS_SBI_SERVICE_NAME_NAUSF_AUTH },
-    { OpenAPI_nf_type_AUSF, OGS_SBI_SERVICE_NAME_NAUSF_SORPROTECTION },
-    { OpenAPI_nf_type_AUSF, OGS_SBI_SERVICE_NAME_NAUSF_UPUPROTECTION },
-    { OpenAPI_nf_type_NEF, OGS_SBI_SERVICE_NAME_NNEF_PFDMANAGEMENT },
-    { OpenAPI_nf_type_NEF, OGS_SBI_SERVICE_NAME_NNEF_SMCONTEXT },
-    { OpenAPI_nf_type_NEF, OGS_SBI_SERVICE_NAME_NNEF_EVENTEXPOSURE },
-    { OpenAPI_nf_type_PCF, OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL },
-    { OpenAPI_nf_type_PCF, OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL },
-    { OpenAPI_nf_type_PCF, OGS_SBI_SERVICE_NAME_NPCF_POLICYAUTHORIZATION },
-    { OpenAPI_nf_type_PCF, OGS_SBI_SERVICE_NAME_NPCF_BDTPOLICYCONTROL },
-    { OpenAPI_nf_type_PCF, OGS_SBI_SERVICE_NAME_NPCF_EVENTEXPOSURE },
-    { OpenAPI_nf_type_PCF, OGS_SBI_SERVICE_NAME_NPCF_UE_POLICY_CONTROL },
-    { OpenAPI_nf_type_SMSF, OGS_SBI_SERVICE_NAME_NSMSF_SMS },
-    { OpenAPI_nf_type_NSSF, OGS_SBI_SERVICE_NAME_NNSSF_NSSELECTION },
-    { OpenAPI_nf_type_NSSF, OGS_SBI_SERVICE_NAME_NNSSF_NSSAIAVAILABILITY },
-    { OpenAPI_nf_type_UDR, OGS_SBI_SERVICE_NAME_NUDR_DR },
-    { OpenAPI_nf_type_UDR, OGS_SBI_SERVICE_NAME_NUDR_GROUP_ID_MAP },
-    { OpenAPI_nf_type_LMF, OGS_SBI_SERVICE_NAME_NLMF_LOC },
-    { OpenAPI_nf_type_5G_EIR, OGS_SBI_SERVICE_NAME_N5G_EIR_EIC },
-    { OpenAPI_nf_type_BSF, OGS_SBI_SERVICE_NAME_NBSF_MANAGEMENT },
-    { OpenAPI_nf_type_CHF, OGS_SBI_SERVICE_NAME_NCHF_SPENDINGLIMITCONTROL },
-    { OpenAPI_nf_type_CHF, OGS_SBI_SERVICE_NAME_NCHF_CONVERGEDCHARGING },
-    { OpenAPI_nf_type_CHF, OGS_SBI_SERVICE_NAME_NCHF_OFFLINEONLYCHARGING },
-    { OpenAPI_nf_type_NWDAF, OGS_SBI_SERVICE_NAME_NNWDAF_EVENTSSUBSCRIPTION },
-    { OpenAPI_nf_type_NWDAF, OGS_SBI_SERVICE_NAME_NNWDAF_ANALYTICSINFO },
-    { OpenAPI_nf_type_GMLC, OGS_SBI_SERVICE_NAME_NGMLC_LOC },
-    { OpenAPI_nf_type_UCMF, OGS_SBI_SERVICE_NAME_NUCMF_PROVISIONING },
-    { OpenAPI_nf_type_UCMF, OGS_SBI_SERVICE_NAME_NUCMF_UECAPABILITYMANAGEMENT },
-    { OpenAPI_nf_type_HSS, OGS_SBI_SERVICE_NAME_NHSS_SDM },
-    { OpenAPI_nf_type_HSS, OGS_SBI_SERVICE_NAME_NHSS_UECM },
-    { OpenAPI_nf_type_HSS, OGS_SBI_SERVICE_NAME_NHSS_UEAU },
-    { OpenAPI_nf_type_HSS, OGS_SBI_SERVICE_NAME_NHSS_EE },
-    { OpenAPI_nf_type_HSS, OGS_SBI_SERVICE_NAME_NHSS_IMS_SDM },
-    { OpenAPI_nf_type_HSS, OGS_SBI_SERVICE_NAME_NHSS_IMS_UECM },
-    { OpenAPI_nf_type_HSS, OGS_SBI_SERVICE_NAME_NHSS_IMS_UEAU },
-    { OpenAPI_nf_type_SEPP, OGS_SBI_SERVICE_NAME_NSEPP_TELESCOPIC },
-    { OpenAPI_nf_type_SOR_AF, OGS_SBI_SERVICE_NAME_NSORAF_SOR },
-    { OpenAPI_nf_type_SPAF, OGS_SBI_SERVICE_NAME_NSPAF_SECURED_PACKET },
-    { OpenAPI_nf_type_UDSF, OGS_SBI_SERVICE_NAME_NUDSF_DR },
-    { OpenAPI_nf_type_NSSAAF, OGS_SBI_SERVICE_NAME_NNSSAAF_NSSAA },
-};
-
-OpenAPI_nf_type_e ogs_sbi_service_type_to_nf_type(ogs_sbi_service_type_e type)
+int ogs_sbi_service_name_id_from_string(const char *service_name)
 {
-    ogs_assert(type > OGS_SBI_SERVICE_TYPE_NULL &&
-                type < OGS_SBI_MAX_NUM_OF_SERVICE_TYPE);
-    return service_desc[type].nf_type;
-}
-
-const char *ogs_sbi_service_type_to_name(ogs_sbi_service_type_e type)
-{
-    ogs_assert(type > OGS_SBI_SERVICE_TYPE_NULL &&
-                type < OGS_SBI_MAX_NUM_OF_SERVICE_TYPE);
-    ogs_assert(service_desc[type].service_name);
-    return service_desc[type].service_name;
-}
-
-ogs_sbi_service_type_e ogs_sbi_service_type_from_name(const char *name)
-{
+    OpenAPI_service_name_e parsed = OpenAPI_service_name_NULL;
+    const char *canonical = NULL;
     int i;
 
-    ogs_assert(name);
+    ogs_assert(service_name);
 
-    for (i = 0; i < OGS_SBI_MAX_NUM_OF_SERVICE_TYPE; i++) {
-        if (service_desc[i].service_name &&
-            strcmp(name, service_desc[i].service_name) == 0)
-            return (ogs_sbi_service_type_e)i;
+    for (i = 0; i < OGS_ARRAY_SIZE(service_name_map); i++) {
+        if (!strcmp(service_name, service_name_map[i].name))
+            return service_name_map[i].service_name_id;
     }
 
-    return OGS_SBI_SERVICE_TYPE_NULL;
+    parsed = OpenAPI_service_name_FromString((char *)service_name);
+    canonical = OpenAPI_service_name_ToString(parsed);
+
+    if (!canonical || strcmp(service_name, canonical) != 0)
+        return OpenAPI_service_name_NULL;
+
+    return parsed;
+}
+
+static OpenAPI_nf_type_e nf_type_from_special_prefix(const char *prefix)
+{
+    ogs_assert(prefix);
+
+    if (strcmp(prefix, "nsoraf") == 0)
+        return OpenAPI_nf_type_SOR_AF;
+    if (strcmp(prefix, "n5gddnmf") == 0)
+        return OpenAPI_nf_type__5G_DDNMF;
+    if (strcmp(prefix, "nmbsmf") == 0)
+        return OpenAPI_nf_type_MB_SMF;
+    if (strcmp(prefix, "nbsp") == 0)
+        return OpenAPI_nf_type_GBA_BSF;
+    if (strcmp(prefix, "niwmsc") == 0)
+        return OpenAPI_nf_type_SMS_IWMSC;
+
+    return OpenAPI_nf_type_NULL;
+}
+
+static OpenAPI_nf_type_e nf_type_from_prefix(const char *prefix)
+{
+    OpenAPI_nf_type_e nf_type;
+    char normalized[32];
+    int i, j = 0;
+
+    ogs_assert(prefix);
+
+    /*
+     * Generic normalization:
+     *
+     *   nnrf      -> NRF
+     *   nudm      -> UDM
+     *   namf      -> AMF
+     *   n5g-eir   -> 5G_EIR
+     *   nnssaaf   -> NSSAAF
+     *
+     * Rules:
+     *  - remove leading 'n'
+     *  - convert to upper-case
+     *  - convert '-' to '_'
+     */
+    i = 0;
+    if (prefix[0] == 'n' || prefix[0] == 'N')
+        i++;
+
+    while (prefix[i] && j < (int)sizeof(normalized) - 1) {
+        char c = prefix[i++];
+
+        if (c == '-')
+            normalized[j++] = '_';
+        else
+            normalized[j++] = toupper((unsigned char)c);
+    }
+    normalized[j] = '\0';
+
+    for (nf_type = OpenAPI_nf_type_NULL + 1;
+            nf_type <= OpenAPI_nf_type_PANF;
+            nf_type++) {
+        const char *name = OpenAPI_nf_type_ToString(nf_type);
+
+        if (!name)
+            continue;
+
+        if (strcmp(normalized, name) == 0)
+            return nf_type;
+    }
+
+    return nf_type_from_special_prefix(prefix);
+}
+
+OpenAPI_nf_type_e ogs_sbi_service_name_to_nf_type(
+        OpenAPI_service_name_e service_name)
+{
+    const char *name;
+    const char *p;
+    char prefix[32];
+    size_t len;
+    OpenAPI_nf_type_e nf_type;
+
+    name = OpenAPI_service_name_ToString(service_name);
+    if (!name)
+        return OpenAPI_nf_type_NULL;
+
+    if (strcmp(name, "NULL") == 0 || strcmp(name, "Unknown") == 0)
+        return OpenAPI_nf_type_NULL;
+
+    /*
+     * Try each hyphen-delimited prefix progressively.
+     *
+     * Examples:
+     *   nnrf-nfm          -> "nnrf"
+     *   namf-comm         -> "namf"
+     *   n5g-eir-eic       -> "n5g", then "n5g-eir"
+     *   niwmsc-smservice  -> "niwmsc"
+     */
+    for (p = name; *p; p++) {
+        if (*p != '-')
+            continue;
+
+        len = p - name;
+        if (len == 0 || len >= sizeof(prefix))
+            continue;
+
+        memcpy(prefix, name, len);
+        prefix[len] = '\0';
+
+        nf_type = nf_type_from_prefix(prefix);
+        if (nf_type != OpenAPI_nf_type_NULL)
+            return nf_type;
+    }
+
+    return OpenAPI_nf_type_NULL;
 }
 
 struct app_error_desc_s {

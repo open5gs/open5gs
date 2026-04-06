@@ -1,7 +1,7 @@
 /*
  * expected_analytics_type.h
  *
- * Possible values are: - MOBILITY: Mobility related abnormal behaviour analytics is expected by the consumer. - COMMUN: Communication related abnormal behaviour analytics is expected by the consumer. - MOBILITY_AND_COMMUN: Both mobility and communication related abnormal behaviour analytics is expected by the consumer. 
+ * 
  */
 
 #ifndef _OpenAPI_expected_analytics_type_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "expected_analytics_type_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_expected_analytics_type_s OpenAPI_expected_analytics_type_t;
-typedef struct OpenAPI_expected_analytics_type_s {
-} OpenAPI_expected_analytics_type_t;
+typedef enum { OpenAPI_expected_analytics_type_NULL = 0, OpenAPI_expected_analytics_type_MOBILITY, OpenAPI_expected_analytics_type_COMMUN, OpenAPI_expected_analytics_type_MOBILITY_AND_COMMUN } OpenAPI_expected_analytics_type_e;
 
-OpenAPI_expected_analytics_type_t *OpenAPI_expected_analytics_type_create(
-);
-void OpenAPI_expected_analytics_type_free(OpenAPI_expected_analytics_type_t *expected_analytics_type);
-OpenAPI_expected_analytics_type_t *OpenAPI_expected_analytics_type_parseFromJSON(cJSON *expected_analytics_typeJSON);
-cJSON *OpenAPI_expected_analytics_type_convertToJSON(OpenAPI_expected_analytics_type_t *expected_analytics_type);
-OpenAPI_expected_analytics_type_t *OpenAPI_expected_analytics_type_copy(OpenAPI_expected_analytics_type_t *dst, OpenAPI_expected_analytics_type_t *src);
+char* OpenAPI_expected_analytics_type_ToString(OpenAPI_expected_analytics_type_e expected_analytics_type);
+
+OpenAPI_expected_analytics_type_e OpenAPI_expected_analytics_type_FromString(char* expected_analytics_type);
 
 #ifdef __cplusplus
 }

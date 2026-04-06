@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_smf_subscription_info_s OpenAPI_smf_subscription_info_t;
 #include "smf_subscription_item.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_smf_subscription_info_s OpenAPI_smf_subscription_info_t;
-typedef struct OpenAPI_smf_subscription_info_s {
+struct OpenAPI_smf_subscription_info_s {
     OpenAPI_list_t *smf_subscription_list;
-} OpenAPI_smf_subscription_info_t;
+};
 
 OpenAPI_smf_subscription_info_t *OpenAPI_smf_subscription_info_create(
     OpenAPI_list_t *smf_subscription_list

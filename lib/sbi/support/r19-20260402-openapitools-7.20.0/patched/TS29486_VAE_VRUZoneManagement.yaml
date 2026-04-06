@@ -1,0 +1,527 @@
+openapi: 3.0.0
+
+info:
+  title: VAE Server VRU Zone Management Service
+  version: 1.0.0
+  description: |
+    VAE Server VRU Zone Management Service.  
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.486 V18.3.0 V2X Application Enabler (VAE) Services
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.486/'
+
+servers:
+  - url: '{apiRoot}/vae-vzm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Request the creation of a VRU Zone Management Subscription.
+      operationId: CreateVRUZoneMngtSubsc
+      tags:
+        - VRU Zone Management Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VRUZoneMngtSubsc'
+      responses:
+        '201':
+          description: >
+            Created. The VRU Zone Management Subscription is successfully created and a
+            representation of the created Individual VRU Zone Management Subscription resource
+            shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VRUZoneMngtSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual VRU Zone Management Subscription
+                resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        EnterLeaveNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EnterLeaveNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The VRU Zone Management Enter/Leave notification is successfully
+                    received and acknowledged, and no content is returned in the response body.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of the Individual VRU Zone Management Subscription
+          resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual VRU Zone Management Subscription resource.
+      operationId: GetIndVRUZoneMngtSubsc
+      tags:
+        - Individual VRU Zone Management Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual VRU Zone Management Subscription resource shall be
+            returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VRUZoneMngtSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual VRU Zone Management Subscription resource.
+      operationId: UpdateIndVRUZoneMngtSubsc
+      tags:
+        - Individual VRU Zone Management Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VRUZoneMngtSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual VRU Zone Management Subscription resource is successfully updated
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VRUZoneMngtSubsc'
+        '204':
+          description: >
+            No Content. The Individual VRU Zone Management Subscription resource is successfully
+            updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual VRU Zone Management Subscription resource.
+      operationId: ModifyIndVRUZoneMngtSubsc
+      tags:
+        - Individual VRU Zone Management Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/VRUZoneMngtSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual VRU Zone Management Subscription resource is successfully modified
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VRUZoneMngtSubsc'
+        '204':
+          description: >
+            No Content. The Individual VRU Zone Management Subscription resource is successfully
+            modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual VRU Zone Management Subscription resource.
+      operationId: DeleteIndVRUZoneMngtSubsc
+      tags:
+        - Individual VRU Zone Management Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual VRU Zone Management Subscription resource is successfully
+            deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    VRUZoneMngtSubsc:
+      description: >
+        Represents a VRU Zone Management Subscription.
+      type: object
+      properties:
+        requestorId:
+          type: string
+        ueIdsList:
+          type: array
+          items:
+            $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xUeId'
+          minItems: 1
+        vruZoneInfo:
+          $ref: '#/components/schemas/VRUZoneInfo'
+        vruAppReqs:
+          $ref: '#/components/schemas/VRUAppReqs'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        vruZoneId:
+          type: string
+        areaOfInterest:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        timeValidity:
+          $ref: '#/components/schemas/TimeValidity'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - requestorId
+        - notifUri
+        - vruZoneInfo
+        - vruAppReqs
+
+    VRUZoneMngtSubscPatch:
+      description: >
+        Represents the requested modifications to a VRU Zone Management Subscription.
+      type: object
+      properties:
+        ueIdsList:
+          type: array
+          items:
+            $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xUeId'
+          minItems: 1
+          nullable: true
+        vruZoneInfo:
+          $ref: '#/components/schemas/VRUZoneInfo'
+        vruAppReqs:
+          $ref: '#/components/schemas/VRUAppReqs'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        areaOfInterest:
+          $ref: '#/components/schemas/GeographicAreaRm'
+        timeValidity:
+          $ref: '#/components/schemas/TimeValidity'
+
+    EnterLeaveNotif:
+      description: >
+        Represents a VRU Zone Management Enter/Leave Notification.
+      type: object
+      properties:
+        groupId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xGroupId'
+        ueId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xUeId'
+        vruZoneInfo:
+          $ref: '#/components/schemas/VRUZoneInfo'
+        vruZoneId:
+          type: string
+        enterLeaveInfo:
+          $ref: '#/components/schemas/EnterLeaveInfo'
+        mobilityInfo:
+          $ref: '#/components/schemas/MobilityInfo'
+      required:
+        - vruZoneInfo
+        - vruZoneId
+        - enterLeaveInfo
+      oneOf:
+        - required: [groupId]
+        - required: [ueId]
+
+    VRUZoneInfo:
+      description: >
+        Represents VRU zone related information.
+      type: object
+      properties:
+        ueTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/UEType'
+          minItems: 1
+        zoneType:
+          $ref: '#/components/schemas/VRUZoneType'
+      required:
+        - ueTypes
+        - zoneType
+
+    VRUAppReqs:
+      description: >
+        Represents VRU application requirements.
+      type: object
+      properties:
+        supportedMsgs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MsgType'
+          minItems: 1
+        appQosReq:
+          $ref: 'TS29486_VAE_SessionOrientedService.yaml#/components/schemas/AppplicationQosRequirement'
+      anyOf:
+        - required: [supportedMsgs]
+        - required: [appQosReq]
+
+    TimeValidity:
+      description: >
+        Represents the time validity information.
+      type: object
+      properties:
+        startTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        endTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      anyOf:
+        - required: [startTime]
+        - required: [endTime]
+
+    EnterLeaveInfo:
+      description: >
+        Represents the information related to a V2X UE or a V2X group entering/leaving a VRU
+        zone.
+      type: object
+      properties:
+        time:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+      required:
+        - time
+
+    MobilityInfo:
+      description: >
+        Represents mobility information.
+      type: object
+      properties:
+        speed:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        direction:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/Direction'
+      anyOf:
+        - required: [speed]
+        - required: [direction]
+
+    GeographicAreaRm:
+      description: Geographic area specified by different shape.
+      nullable: true
+      anyOf:
+        - $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/Point'
+        - $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/PointUncertaintyCircle'
+        - $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/PointUncertaintyEllipse'
+        - $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/Polygon'
+        - $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/PointAltitude'
+        - $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/PointAltitudeUncertainty'
+        - $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/EllipsoidArc'
+
+    UEType:
+      anyOf:
+        - type: string
+          enum:
+          - V2X
+          - PEDESTRIAN
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the type of UE(s) to be considered.  
+        Possible values are:
+        - V2X: Indicates V2X UE(s).
+        - PEDESTRIAN: Indicates pedestrian UE(s).
+
+    VRUZoneType:
+      anyOf:
+        - type: string
+          enum:
+          - STATIC
+          - DYNAMIC
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the VRU zone type.  
+        Possible values are:
+        - STATIC: Indicates that the VRU zone is static.
+        - DYNAMIC: Indicates that the VRU zone is dynamic.
+
+    MsgType:
+      anyOf:
+        - type: string
+          enum:
+          - VAM
+          - CAM
+          - DENM
+          - BSM
+          - CPM
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the message type.  
+        Possible values are:
+        - VAM: Indicates that the message type is VAM.
+        - CAM: Indicates that the message type is CAM.
+        - DENM: Indicates that the message type is DENM.
+        - BSM: Indicates that the message type is BSM.
+        - CPM: Indicates that the message type is CPM.

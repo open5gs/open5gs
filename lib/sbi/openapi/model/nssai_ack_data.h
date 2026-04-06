@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nssai_ack_data_s OpenAPI_nssai_ack_data_t;
 #include "ue_update_status.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nssai_ack_data_s OpenAPI_nssai_ack_data_t;
-typedef struct OpenAPI_nssai_ack_data_s {
+struct OpenAPI_nssai_ack_data_s {
     char *provisioning_time;
     OpenAPI_ue_update_status_e ue_update_status;
-} OpenAPI_nssai_ack_data_t;
+};
 
 OpenAPI_nssai_ack_data_t *OpenAPI_nssai_ack_data_create(
     char *provisioning_time,

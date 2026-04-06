@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sec_negotiate_req_data_s OpenAPI_sec_negotiate_req_data_t;
 #include "intended_n32_purpose.h"
 #include "plmn_id.h"
 #include "plmn_id_nid.h"
@@ -21,9 +22,9 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sec_negotiate_req_data_s OpenAPI_sec_negotiate_req_data_t;
-typedef struct OpenAPI_sec_negotiate_req_data_s {
+struct OpenAPI_sec_negotiate_req_data_s {
     char *sender;
+    char *n32_handshake_id;
     OpenAPI_list_t *supported_sec_capability_list;
     bool is__3_gpp_sbi_target_api_root_supported;
     int _3_gpp_sbi_target_api_root_supported;
@@ -33,10 +34,15 @@ typedef struct OpenAPI_sec_negotiate_req_data_s {
     struct OpenAPI_plmn_id_nid_s *target_snpn_id;
     OpenAPI_list_t *intended_usage_purpose;
     char *supported_features;
-} OpenAPI_sec_negotiate_req_data_t;
+    char *sender_n32f_fqdn;
+    OpenAPI_list_t *sender_n32f_port_list;
+    bool is_n32_keepalive_timer;
+    int n32_keepalive_timer;
+};
 
 OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_create(
     char *sender,
+    char *n32_handshake_id,
     OpenAPI_list_t *supported_sec_capability_list,
     bool is__3_gpp_sbi_target_api_root_supported,
     int _3_gpp_sbi_target_api_root_supported,
@@ -45,7 +51,11 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_create(
     OpenAPI_plmn_id_t *target_plmn_id,
     OpenAPI_plmn_id_nid_t *target_snpn_id,
     OpenAPI_list_t *intended_usage_purpose,
-    char *supported_features
+    char *supported_features,
+    char *sender_n32f_fqdn,
+    OpenAPI_list_t *sender_n32f_port_list,
+    bool is_n32_keepalive_timer,
+    int n32_keepalive_timer
 );
 void OpenAPI_sec_negotiate_req_data_free(OpenAPI_sec_negotiate_req_data_t *sec_negotiate_req_data);
 OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_parseFromJSON(cJSON *sec_negotiate_req_dataJSON);

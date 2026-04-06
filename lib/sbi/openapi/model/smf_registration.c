@@ -28,7 +28,13 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
     OpenAPI_list_t *reset_ids,
     bool is_udr_restart_ind,
     int udr_restart_ind,
-    char *last_synchronization_time
+    char *last_synchronization_time,
+    bool is_pdu_session_re_activation_required,
+    int pdu_session_re_activation_required,
+    char *stale_check_callback_uri,
+    char *udm_stale_check_callback_uri,
+    bool is_wildcard_ind,
+    int wildcard_ind
 )
 {
     OpenAPI_smf_registration_t *smf_registration_local_var = ogs_malloc(sizeof(OpenAPI_smf_registration_t));
@@ -58,6 +64,12 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_create(
     smf_registration_local_var->is_udr_restart_ind = is_udr_restart_ind;
     smf_registration_local_var->udr_restart_ind = udr_restart_ind;
     smf_registration_local_var->last_synchronization_time = last_synchronization_time;
+    smf_registration_local_var->is_pdu_session_re_activation_required = is_pdu_session_re_activation_required;
+    smf_registration_local_var->pdu_session_re_activation_required = pdu_session_re_activation_required;
+    smf_registration_local_var->stale_check_callback_uri = stale_check_callback_uri;
+    smf_registration_local_var->udm_stale_check_callback_uri = udm_stale_check_callback_uri;
+    smf_registration_local_var->is_wildcard_ind = is_wildcard_ind;
+    smf_registration_local_var->wildcard_ind = wildcard_ind;
 
     return smf_registration_local_var;
 }
@@ -135,6 +147,14 @@ void OpenAPI_smf_registration_free(OpenAPI_smf_registration_t *smf_registration)
     if (smf_registration->last_synchronization_time) {
         ogs_free(smf_registration->last_synchronization_time);
         smf_registration->last_synchronization_time = NULL;
+    }
+    if (smf_registration->stale_check_callback_uri) {
+        ogs_free(smf_registration->stale_check_callback_uri);
+        smf_registration->stale_check_callback_uri = NULL;
+    }
+    if (smf_registration->udm_stale_check_callback_uri) {
+        ogs_free(smf_registration->udm_stale_check_callback_uri);
+        smf_registration->udm_stale_check_callback_uri = NULL;
     }
     ogs_free(smf_registration);
 }
@@ -332,6 +352,34 @@ cJSON *OpenAPI_smf_registration_convertToJSON(OpenAPI_smf_registration_t *smf_re
     }
     }
 
+    if (smf_registration->is_pdu_session_re_activation_required) {
+    if (cJSON_AddBoolToObject(item, "pduSessionReActivationRequired", smf_registration->pdu_session_re_activation_required) == NULL) {
+        ogs_error("OpenAPI_smf_registration_convertToJSON() failed [pdu_session_re_activation_required]");
+        goto end;
+    }
+    }
+
+    if (smf_registration->stale_check_callback_uri) {
+    if (cJSON_AddStringToObject(item, "staleCheckCallbackUri", smf_registration->stale_check_callback_uri) == NULL) {
+        ogs_error("OpenAPI_smf_registration_convertToJSON() failed [stale_check_callback_uri]");
+        goto end;
+    }
+    }
+
+    if (smf_registration->udm_stale_check_callback_uri) {
+    if (cJSON_AddStringToObject(item, "udmStaleCheckCallbackUri", smf_registration->udm_stale_check_callback_uri) == NULL) {
+        ogs_error("OpenAPI_smf_registration_convertToJSON() failed [udm_stale_check_callback_uri]");
+        goto end;
+    }
+    }
+
+    if (smf_registration->is_wildcard_ind) {
+    if (cJSON_AddBoolToObject(item, "wildcardInd", smf_registration->wildcard_ind) == NULL) {
+        ogs_error("OpenAPI_smf_registration_convertToJSON() failed [wildcard_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -367,6 +415,10 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_parseFromJSON(cJSON *smf_re
     OpenAPI_list_t *reset_idsList = NULL;
     cJSON *udr_restart_ind = NULL;
     cJSON *last_synchronization_time = NULL;
+    cJSON *pdu_session_re_activation_required = NULL;
+    cJSON *stale_check_callback_uri = NULL;
+    cJSON *udm_stale_check_callback_uri = NULL;
+    cJSON *wildcard_ind = NULL;
     smf_instance_id = cJSON_GetObjectItemCaseSensitive(smf_registrationJSON, "smfInstanceId");
     if (!smf_instance_id) {
         ogs_error("OpenAPI_smf_registration_parseFromJSON() failed [smf_instance_id]");
@@ -561,6 +613,38 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_parseFromJSON(cJSON *smf_re
     }
     }
 
+    pdu_session_re_activation_required = cJSON_GetObjectItemCaseSensitive(smf_registrationJSON, "pduSessionReActivationRequired");
+    if (pdu_session_re_activation_required) {
+    if (!cJSON_IsBool(pdu_session_re_activation_required)) {
+        ogs_error("OpenAPI_smf_registration_parseFromJSON() failed [pdu_session_re_activation_required]");
+        goto end;
+    }
+    }
+
+    stale_check_callback_uri = cJSON_GetObjectItemCaseSensitive(smf_registrationJSON, "staleCheckCallbackUri");
+    if (stale_check_callback_uri) {
+    if (!cJSON_IsString(stale_check_callback_uri) && !cJSON_IsNull(stale_check_callback_uri)) {
+        ogs_error("OpenAPI_smf_registration_parseFromJSON() failed [stale_check_callback_uri]");
+        goto end;
+    }
+    }
+
+    udm_stale_check_callback_uri = cJSON_GetObjectItemCaseSensitive(smf_registrationJSON, "udmStaleCheckCallbackUri");
+    if (udm_stale_check_callback_uri) {
+    if (!cJSON_IsString(udm_stale_check_callback_uri) && !cJSON_IsNull(udm_stale_check_callback_uri)) {
+        ogs_error("OpenAPI_smf_registration_parseFromJSON() failed [udm_stale_check_callback_uri]");
+        goto end;
+    }
+    }
+
+    wildcard_ind = cJSON_GetObjectItemCaseSensitive(smf_registrationJSON, "wildcardInd");
+    if (wildcard_ind) {
+    if (!cJSON_IsBool(wildcard_ind)) {
+        ogs_error("OpenAPI_smf_registration_parseFromJSON() failed [wildcard_ind]");
+        goto end;
+    }
+    }
+
     smf_registration_local_var = OpenAPI_smf_registration_create (
         ogs_strdup(smf_instance_id->valuestring),
         smf_set_id && !cJSON_IsNull(smf_set_id) ? ogs_strdup(smf_set_id->valuestring) : NULL,
@@ -586,7 +670,13 @@ OpenAPI_smf_registration_t *OpenAPI_smf_registration_parseFromJSON(cJSON *smf_re
         reset_ids ? reset_idsList : NULL,
         udr_restart_ind ? true : false,
         udr_restart_ind ? udr_restart_ind->valueint : 0,
-        last_synchronization_time && !cJSON_IsNull(last_synchronization_time) ? ogs_strdup(last_synchronization_time->valuestring) : NULL
+        last_synchronization_time && !cJSON_IsNull(last_synchronization_time) ? ogs_strdup(last_synchronization_time->valuestring) : NULL,
+        pdu_session_re_activation_required ? true : false,
+        pdu_session_re_activation_required ? pdu_session_re_activation_required->valueint : 0,
+        stale_check_callback_uri && !cJSON_IsNull(stale_check_callback_uri) ? ogs_strdup(stale_check_callback_uri->valuestring) : NULL,
+        udm_stale_check_callback_uri && !cJSON_IsNull(udm_stale_check_callback_uri) ? ogs_strdup(udm_stale_check_callback_uri->valuestring) : NULL,
+        wildcard_ind ? true : false,
+        wildcard_ind ? wildcard_ind->valueint : 0
     );
 
     return smf_registration_local_var;

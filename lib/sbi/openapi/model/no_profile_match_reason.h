@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "no_profile_match_reason_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_no_profile_match_reason_s OpenAPI_no_profile_match_reason_t;
-typedef struct OpenAPI_no_profile_match_reason_s {
-} OpenAPI_no_profile_match_reason_t;
+typedef enum { OpenAPI_no_profile_match_reason_NULL = 0, OpenAPI_no_profile_match_reason_REQUESTER_PLMN_NOT_ALLOWED, OpenAPI_no_profile_match_reason_TARGET_NF_SUSPENDED, OpenAPI_no_profile_match_reason_TARGET_NF_UNDISCOVERABLE, OpenAPI_no_profile_match_reason_QUERY_PARAMS_COMBINATION_NO_MATCH, OpenAPI_no_profile_match_reason_TARGET_NF_TYPE_NOT_SUPPORTED, OpenAPI_no_profile_match_reason_UNSPECIFIED } OpenAPI_no_profile_match_reason_e;
 
-OpenAPI_no_profile_match_reason_t *OpenAPI_no_profile_match_reason_create(
-);
-void OpenAPI_no_profile_match_reason_free(OpenAPI_no_profile_match_reason_t *no_profile_match_reason);
-OpenAPI_no_profile_match_reason_t *OpenAPI_no_profile_match_reason_parseFromJSON(cJSON *no_profile_match_reasonJSON);
-cJSON *OpenAPI_no_profile_match_reason_convertToJSON(OpenAPI_no_profile_match_reason_t *no_profile_match_reason);
-OpenAPI_no_profile_match_reason_t *OpenAPI_no_profile_match_reason_copy(OpenAPI_no_profile_match_reason_t *dst, OpenAPI_no_profile_match_reason_t *src);
+char* OpenAPI_no_profile_match_reason_ToString(OpenAPI_no_profile_match_reason_e no_profile_match_reason);
+
+OpenAPI_no_profile_match_reason_e OpenAPI_no_profile_match_reason_FromString(char* no_profile_match_reason);
 
 #ifdef __cplusplus
 }

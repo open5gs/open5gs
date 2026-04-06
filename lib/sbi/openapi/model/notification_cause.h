@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_notification_cause_NULL = 0, OpenAPI_notification_cause_QOS_FULFILLED, OpenAPI_notification_cause_QOS_NOT_FULFILLED, OpenAPI_notification_cause_UP_SEC_FULFILLED, OpenAPI_notification_cause_UP_SEC_NOT_FULFILLED } OpenAPI_notification_cause_e;
+typedef enum { OpenAPI_notification_cause_NULL = 0, OpenAPI_notification_cause_QOS_FULFILLED, OpenAPI_notification_cause_QOS_NOT_FULFILLED, OpenAPI_notification_cause_QOS_NOT_FULFILLED_DL, OpenAPI_notification_cause_QOS_NOT_FULFILLED_UL, OpenAPI_notification_cause_UP_SEC_FULFILLED, OpenAPI_notification_cause_UP_SEC_NOT_FULFILLED } OpenAPI_notification_cause_e;
 
 char* OpenAPI_notification_cause_ToString(OpenAPI_notification_cause_e notification_cause);
 

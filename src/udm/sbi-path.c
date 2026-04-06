@@ -37,18 +37,18 @@ int udm_sbi_open(void)
     ogs_sbi_nf_instance_add_allowed_nf_type(nf_instance, OpenAPI_nf_type_AUSF);
 
     /* Build NF service information. It will be transmitted to NRF. */
-    if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NUDM_UEAU)) {
+    if (ogs_sbi_nf_service_is_available(OpenAPI_service_name_nudm_ueau)) {
         service = ogs_sbi_nf_service_build_default(
-                    nf_instance, OGS_SBI_SERVICE_NAME_NUDM_UEAU);
+                    nf_instance, OpenAPI_service_name_nudm_ueau);
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_AUSF);
     }
 
-    if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NUDM_UECM)) {
+    if (ogs_sbi_nf_service_is_available(OpenAPI_service_name_nudm_uecm)) {
         service = ogs_sbi_nf_service_build_default(
-                    nf_instance, OGS_SBI_SERVICE_NAME_NUDM_UECM);
+                    nf_instance, OpenAPI_service_name_nudm_uecm);
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V1, OGS_SBI_API_V1_0_0, NULL);
@@ -56,9 +56,9 @@ int udm_sbi_open(void)
         ogs_sbi_nf_service_add_allowed_nf_type(service, OpenAPI_nf_type_SMF);
     }
 
-    if (ogs_sbi_nf_service_is_available(OGS_SBI_SERVICE_NAME_NUDM_SDM)) {
+    if (ogs_sbi_nf_service_is_available(OpenAPI_service_name_nudm_sdm)) {
         service = ogs_sbi_nf_service_build_default(
-                    nf_instance, OGS_SBI_SERVICE_NAME_NUDM_SDM);
+                    nf_instance, OpenAPI_service_name_nudm_sdm);
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(
                     service, OGS_SBI_API_V2, OGS_SBI_API_V2_0_0, NULL);
@@ -72,9 +72,10 @@ int udm_sbi_open(void)
         ogs_sbi_nf_fsm_init(nf_instance);
 
     /* Setup Subscription-Data */
-    ogs_sbi_subscription_spec_add(OpenAPI_nf_type_SEPP, NULL);
     ogs_sbi_subscription_spec_add(
-            OpenAPI_nf_type_NULL, OGS_SBI_SERVICE_NAME_NUDR_DR);
+            OpenAPI_nf_type_SEPP, OpenAPI_service_name_NULL);
+    ogs_sbi_subscription_spec_add(
+            OpenAPI_nf_type_NULL, OpenAPI_service_name_nudr_dr);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
@@ -99,7 +100,7 @@ bool udm_sbi_send_request(
 static int udm_sbi_discover_and_send(
         ogs_pool_id_t sbi_object_id,
         ogs_sbi_object_t *sbi_object,
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_build_f build,
         void *context, ogs_sbi_stream_t *stream, int state, void *data)
@@ -107,7 +108,7 @@ static int udm_sbi_discover_and_send(
     ogs_sbi_xact_t *xact = NULL;
     int r;
 
-    ogs_assert(service_type);
+    ogs_assert(service_name);
     ogs_assert(sbi_object);
     ogs_assert(stream);
     ogs_assert(build);
@@ -116,7 +117,7 @@ static int udm_sbi_discover_and_send(
             sbi_object_id <= OGS_MAX_POOL_ID);
 
     xact = ogs_sbi_xact_add(
-            sbi_object_id, sbi_object, service_type, discovery_option,
+            sbi_object_id, sbi_object, service_name, discovery_option,
             (ogs_sbi_build_f)build, context, data);
     if (!xact) {
         ogs_error("udm_sbi_discover_and_send() failed");
@@ -142,7 +143,7 @@ static int udm_sbi_discover_and_send(
 }
 
 int udm_ue_sbi_discover_and_send(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(udm_ue_t *udm_ue, void *data),
         udm_ue_t *udm_ue, ogs_sbi_stream_t *stream, int state, void *data)
@@ -152,7 +153,7 @@ int udm_ue_sbi_discover_and_send(
     ogs_assert(udm_ue->id >= OGS_MIN_POOL_ID && udm_ue->id <= OGS_MAX_POOL_ID);
 
     r = udm_sbi_discover_and_send(
-            udm_ue->id, &udm_ue->sbi, service_type, discovery_option,
+            udm_ue->id, &udm_ue->sbi, service_name, discovery_option,
             (ogs_sbi_build_f)build, udm_ue, stream, state, data);
     if (r != OGS_OK) {
         ogs_error("udm_ue_sbi_discover_and_send() failed");
@@ -167,7 +168,7 @@ int udm_ue_sbi_discover_and_send(
 }
 
 int udm_sess_sbi_discover_and_send(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(udm_sess_t *sess, void *data),
         udm_sess_t *sess, ogs_sbi_stream_t *stream, int state, void *data)
@@ -177,7 +178,7 @@ int udm_sess_sbi_discover_and_send(
     ogs_assert(sess->id >= OGS_MIN_POOL_ID && sess->id <= OGS_MAX_POOL_ID);
 
     r = udm_sbi_discover_and_send(
-            sess->id, &sess->sbi, service_type, discovery_option,
+            sess->id, &sess->sbi, service_name, discovery_option,
             (ogs_sbi_build_f)build, sess, stream, state, data);
     if (r != OGS_OK) {
         ogs_error("udm_sess_sbi_discover_and_send() failed");

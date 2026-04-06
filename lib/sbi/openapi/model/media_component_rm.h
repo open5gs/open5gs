@@ -1,7 +1,7 @@
 /*
  * media_component_rm.h
  *
- * This data type is defined in the same way as the MediaComponent data type, but with the OpenAPI nullable property set to true.
+ * This data type is defined in the same way as the MediaComponent data type, but with the  OpenAPI nullable property set to true. 
  */
 
 #ifndef _OpenAPI_media_component_rm_H_
@@ -12,27 +12,38 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_media_component_rm_s OpenAPI_media_component_rm_t;
+#include "af_header_handling_control_info.h"
 #include "af_routing_requirement_rm.h"
+#include "af_sfc_requirement.h"
 #include "alternative_service_requirements_data.h"
 #include "flow_status.h"
 #include "media_sub_component_rm.h"
 #include "media_type.h"
-#include "preemption_capability_rm.h"
-#include "preemption_vulnerability_rm.h"
+#include "on_path_n6_sig_info.h"
+#include "pdu_set_qos_para_rm.h"
+#include "preemption_capability.h"
+#include "preemption_vulnerability.h"
 #include "priority_sharing_indicator.h"
+#include "protocol_description_rm.h"
 #include "reserv_priority.h"
+#include "rtt_flow_reference_rm.h"
 #include "tscai_input_container.h"
 #include "tsn_qos_container_rm.h"
+#include "uplink_downlink_support.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_media_component_rm_s OpenAPI_media_component_rm_t;
-typedef struct OpenAPI_media_component_rm_s {
+struct OpenAPI_media_component_rm_s {
     char *af_app_id;
     bool is_af_rout_req_null;
     struct OpenAPI_af_routing_requirement_rm_s *af_rout_req;
+    bool is_af_sfc_req_null;
+    struct OpenAPI_af_sfc_requirement_s *af_sfc_req;
+    bool is_af_hdr_req_null;
+    struct OpenAPI_af_header_handling_control_info_s *af_hdr_req;
     bool is_qos_reference_null;
     char *qos_reference;
     bool is_alt_ser_reqs_null;
@@ -78,8 +89,8 @@ typedef struct OpenAPI_media_component_rm_s {
     char *mir_bw_dl;
     bool is_mir_bw_ul_null;
     char *mir_bw_ul;
-    struct OpenAPI_preemption_capability_rm_s *preempt_cap;
-    struct OpenAPI_preemption_vulnerability_rm_s *preempt_vuln;
+    OpenAPI_preemption_capability_e preempt_cap;
+    OpenAPI_preemption_vulnerability_e preempt_vuln;
     OpenAPI_priority_sharing_indicator_e prio_sharing_ind;
     OpenAPI_reserv_priority_e res_prio;
     bool is_rr_bw_null;
@@ -100,12 +111,53 @@ typedef struct OpenAPI_media_component_rm_s {
     struct OpenAPI_tscai_input_container_s *tscai_input_ul;
     bool is_tscai_time_dom;
     int tscai_time_dom;
-} OpenAPI_media_component_rm_t;
+    bool is_cap_bat_adaptation;
+    int cap_bat_adaptation;
+    bool is_r_t_latency_ind_null;
+    bool is_r_t_latency_ind;
+    int r_t_latency_ind;
+    bool is_pdb_null;
+    bool is_pdb;
+    int pdb;
+    bool is_r_t_latency_ind_corre_id_null;
+    struct OpenAPI_rtt_flow_reference_rm_s *r_t_latency_ind_corre_id;
+    bool is_pdu_set_qos_dl_null;
+    struct OpenAPI_pdu_set_qos_para_rm_s *pdu_set_qos_dl;
+    bool is_pdu_set_qos_ul_null;
+    struct OpenAPI_pdu_set_qos_para_rm_s *pdu_set_qos_ul;
+    bool is_proto_desc_dl_null;
+    struct OpenAPI_protocol_description_rm_s *proto_desc_dl;
+    bool is_proto_desc_ul_null;
+    struct OpenAPI_protocol_description_rm_s *proto_desc_ul;
+    bool is_period_ul;
+    int period_ul;
+    bool is_period_dl;
+    int period_dl;
+    OpenAPI_uplink_downlink_support_e l4s_ind;
+    bool is_dat_burst_size_ind_null;
+    bool is_dat_burst_size_ind;
+    int dat_burst_size_ind;
+    bool is_timeto_next_burst_ind_null;
+    bool is_timeto_next_burst_ind;
+    int timeto_next_burst_ind;
+    bool is_on_path_n6_sig_info_null;
+    struct OpenAPI_on_path_n6_sig_info_s *on_path_n6_sig_info;
+    bool is_exp_tran_ind_null;
+    bool is_exp_tran_ind;
+    int exp_tran_ind;
+    bool is_ul_br_rec_ind_null;
+    bool is_ul_br_rec_ind;
+    int ul_br_rec_ind;
+};
 
 OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
     char *af_app_id,
     bool is_af_rout_req_null,
     OpenAPI_af_routing_requirement_rm_t *af_rout_req,
+    bool is_af_sfc_req_null,
+    OpenAPI_af_sfc_requirement_t *af_sfc_req,
+    bool is_af_hdr_req_null,
+    OpenAPI_af_header_handling_control_info_t *af_hdr_req,
     bool is_qos_reference_null,
     char *qos_reference,
     bool is_alt_ser_reqs_null,
@@ -151,8 +203,8 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
     char *mir_bw_dl,
     bool is_mir_bw_ul_null,
     char *mir_bw_ul,
-    OpenAPI_preemption_capability_rm_t *preempt_cap,
-    OpenAPI_preemption_vulnerability_rm_t *preempt_vuln,
+    OpenAPI_preemption_capability_e preempt_cap,
+    OpenAPI_preemption_vulnerability_e preempt_vuln,
     OpenAPI_priority_sharing_indicator_e prio_sharing_ind,
     OpenAPI_reserv_priority_e res_prio,
     bool is_rr_bw_null,
@@ -172,7 +224,44 @@ OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_create(
     bool is_tscai_input_ul_null,
     OpenAPI_tscai_input_container_t *tscai_input_ul,
     bool is_tscai_time_dom,
-    int tscai_time_dom
+    int tscai_time_dom,
+    bool is_cap_bat_adaptation,
+    int cap_bat_adaptation,
+    bool is_r_t_latency_ind_null,
+    bool is_r_t_latency_ind,
+    int r_t_latency_ind,
+    bool is_pdb_null,
+    bool is_pdb,
+    int pdb,
+    bool is_r_t_latency_ind_corre_id_null,
+    OpenAPI_rtt_flow_reference_rm_t *r_t_latency_ind_corre_id,
+    bool is_pdu_set_qos_dl_null,
+    OpenAPI_pdu_set_qos_para_rm_t *pdu_set_qos_dl,
+    bool is_pdu_set_qos_ul_null,
+    OpenAPI_pdu_set_qos_para_rm_t *pdu_set_qos_ul,
+    bool is_proto_desc_dl_null,
+    OpenAPI_protocol_description_rm_t *proto_desc_dl,
+    bool is_proto_desc_ul_null,
+    OpenAPI_protocol_description_rm_t *proto_desc_ul,
+    bool is_period_ul,
+    int period_ul,
+    bool is_period_dl,
+    int period_dl,
+    OpenAPI_uplink_downlink_support_e l4s_ind,
+    bool is_dat_burst_size_ind_null,
+    bool is_dat_burst_size_ind,
+    int dat_burst_size_ind,
+    bool is_timeto_next_burst_ind_null,
+    bool is_timeto_next_burst_ind,
+    int timeto_next_burst_ind,
+    bool is_on_path_n6_sig_info_null,
+    OpenAPI_on_path_n6_sig_info_t *on_path_n6_sig_info,
+    bool is_exp_tran_ind_null,
+    bool is_exp_tran_ind,
+    int exp_tran_ind,
+    bool is_ul_br_rec_ind_null,
+    bool is_ul_br_rec_ind,
+    int ul_br_rec_ind
 );
 void OpenAPI_media_component_rm_free(OpenAPI_media_component_rm_t *media_component_rm);
 OpenAPI_media_component_rm_t *OpenAPI_media_component_rm_parseFromJSON(cJSON *media_component_rmJSON);

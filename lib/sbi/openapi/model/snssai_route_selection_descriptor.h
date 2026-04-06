@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_snssai_route_selection_descriptor_s OpenAPI_snssai_route_selection_descriptor_t;
 #include "dnn_route_selection_descriptor.h"
 #include "snssai.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_snssai_route_selection_descriptor_s OpenAPI_snssai_route_selection_descriptor_t;
-typedef struct OpenAPI_snssai_route_selection_descriptor_s {
+struct OpenAPI_snssai_route_selection_descriptor_s {
     struct OpenAPI_snssai_s *snssai;
     OpenAPI_list_t *dnn_route_sel_descs;
-} OpenAPI_snssai_route_selection_descriptor_t;
+};
 
 OpenAPI_snssai_route_selection_descriptor_t *OpenAPI_snssai_route_selection_descriptor_create(
     OpenAPI_snssai_t *snssai,

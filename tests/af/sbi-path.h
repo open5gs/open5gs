@@ -33,7 +33,7 @@ void af_sbi_close(void);
 bool af_sbi_send_request(
         ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
 void af_sbi_discover_and_send(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(af_sess_t *sess, void *data),
         af_sess_t *sess, void *data);

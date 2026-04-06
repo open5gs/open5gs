@@ -6,7 +6,7 @@
 
 char* OpenAPI_lcs_client_class_ToString(OpenAPI_lcs_client_class_e lcs_client_class)
 {
-    const char *lcs_client_classArray[] =  { "NULL", "BROADCAST_SERVICE", "OM_IN_HPLMN", "OM_IN_VPLMN", "ANONYMOUS_LOCATION_SERVICE", "SPECIFIC_SERVICE" };
+    const char *lcs_client_classArray[] =  { "NULL", "BROADCAST_SERVICE", "OM_IN_HPLMN", "OM_IN_VPLMN", "ANONYMOUS_LOCATION_SERVICE", "SPECIFIC_SERVICE", "NWDAF_IN_HPLMN", "NWDAF_IN_VPLMN" };
     size_t sizeofArray = sizeof(lcs_client_classArray) / sizeof(lcs_client_classArray[0]);
     if (lcs_client_class < sizeofArray)
         return (char *)lcs_client_classArray[lcs_client_class];
@@ -17,7 +17,7 @@ char* OpenAPI_lcs_client_class_ToString(OpenAPI_lcs_client_class_e lcs_client_cl
 OpenAPI_lcs_client_class_e OpenAPI_lcs_client_class_FromString(char* lcs_client_class)
 {
     int stringToReturn = 0;
-    const char *lcs_client_classArray[] =  { "NULL", "BROADCAST_SERVICE", "OM_IN_HPLMN", "OM_IN_VPLMN", "ANONYMOUS_LOCATION_SERVICE", "SPECIFIC_SERVICE" };
+    const char *lcs_client_classArray[] =  { "NULL", "BROADCAST_SERVICE", "OM_IN_HPLMN", "OM_IN_VPLMN", "ANONYMOUS_LOCATION_SERVICE", "SPECIFIC_SERVICE", "NWDAF_IN_HPLMN", "NWDAF_IN_VPLMN" };
     size_t sizeofArray = sizeof(lcs_client_classArray) / sizeof(lcs_client_classArray[0]);
     while (stringToReturn < sizeofArray) {
         if (strcmp(lcs_client_class, lcs_client_classArray[stringToReturn]) == 0) {

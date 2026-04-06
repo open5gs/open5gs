@@ -11,7 +11,9 @@ OpenAPI_communication_characteristics_af_t *OpenAPI_communication_characteristic
     bool is_maximum_response_time,
     int maximum_response_time,
     bool is_maximum_latency,
-    int maximum_latency
+    int maximum_latency,
+    bool is_eps_applied_ind,
+    int eps_applied_ind
 )
 {
     OpenAPI_communication_characteristics_af_t *communication_characteristics_af_local_var = ogs_malloc(sizeof(OpenAPI_communication_characteristics_af_t));
@@ -24,6 +26,8 @@ OpenAPI_communication_characteristics_af_t *OpenAPI_communication_characteristic
     communication_characteristics_af_local_var->maximum_response_time = maximum_response_time;
     communication_characteristics_af_local_var->is_maximum_latency = is_maximum_latency;
     communication_characteristics_af_local_var->maximum_latency = maximum_latency;
+    communication_characteristics_af_local_var->is_eps_applied_ind = is_eps_applied_ind;
+    communication_characteristics_af_local_var->eps_applied_ind = eps_applied_ind;
 
     return communication_characteristics_af_local_var;
 }
@@ -75,6 +79,13 @@ cJSON *OpenAPI_communication_characteristics_af_convertToJSON(OpenAPI_communicat
     }
     }
 
+    if (communication_characteristics_af->is_eps_applied_ind) {
+    if (cJSON_AddBoolToObject(item, "epsAppliedInd", communication_characteristics_af->eps_applied_ind) == NULL) {
+        ogs_error("OpenAPI_communication_characteristics_af_convertToJSON() failed [eps_applied_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -86,6 +97,7 @@ OpenAPI_communication_characteristics_af_t *OpenAPI_communication_characteristic
     cJSON *pp_dl_packet_count = NULL;
     cJSON *maximum_response_time = NULL;
     cJSON *maximum_latency = NULL;
+    cJSON *eps_applied_ind = NULL;
     pp_dl_packet_count = cJSON_GetObjectItemCaseSensitive(communication_characteristics_afJSON, "ppDlPacketCount");
     if (pp_dl_packet_count) {
     if (!cJSON_IsNull(pp_dl_packet_count)) {
@@ -112,6 +124,14 @@ OpenAPI_communication_characteristics_af_t *OpenAPI_communication_characteristic
     }
     }
 
+    eps_applied_ind = cJSON_GetObjectItemCaseSensitive(communication_characteristics_afJSON, "epsAppliedInd");
+    if (eps_applied_ind) {
+    if (!cJSON_IsBool(eps_applied_ind)) {
+        ogs_error("OpenAPI_communication_characteristics_af_parseFromJSON() failed [eps_applied_ind]");
+        goto end;
+    }
+    }
+
     communication_characteristics_af_local_var = OpenAPI_communication_characteristics_af_create (
         pp_dl_packet_count && cJSON_IsNull(pp_dl_packet_count) ? true : false,
         pp_dl_packet_count ? true : false,
@@ -119,7 +139,9 @@ OpenAPI_communication_characteristics_af_t *OpenAPI_communication_characteristic
         maximum_response_time ? true : false,
         maximum_response_time ? maximum_response_time->valuedouble : 0,
         maximum_latency ? true : false,
-        maximum_latency ? maximum_latency->valuedouble : 0
+        maximum_latency ? maximum_latency->valuedouble : 0,
+        eps_applied_ind ? true : false,
+        eps_applied_ind ? eps_applied_ind->valueint : 0
     );
 
     return communication_characteristics_af_local_var;

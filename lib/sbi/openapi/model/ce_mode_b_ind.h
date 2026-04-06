@@ -12,15 +12,15 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ce_mode_b_ind_s OpenAPI_ce_mode_b_ind_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ce_mode_b_ind_s OpenAPI_ce_mode_b_ind_t;
-typedef struct OpenAPI_ce_mode_b_ind_s {
+struct OpenAPI_ce_mode_b_ind_s {
     int ce_mode_b_support_ind;
-} OpenAPI_ce_mode_b_ind_t;
+};
 
 OpenAPI_ce_mode_b_ind_t *OpenAPI_ce_mode_b_ind_create(
     int ce_mode_b_support_ind

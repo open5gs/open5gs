@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_initiated_resource_request_s OpenAPI_ue_initiated_resource_request_t;
 #include "packet_filter_info.h"
 #include "requested_qos.h"
 #include "rule_operation.h"
@@ -20,15 +21,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_initiated_resource_request_s OpenAPI_ue_initiated_resource_request_t;
-typedef struct OpenAPI_ue_initiated_resource_request_s {
+struct OpenAPI_ue_initiated_resource_request_s {
     char *pcc_rule_id;
     OpenAPI_rule_operation_e rule_op;
     bool is_precedence;
     int precedence;
     OpenAPI_list_t *pack_filt_info;
     struct OpenAPI_requested_qos_s *req_qos;
-} OpenAPI_ue_initiated_resource_request_t;
+};
 
 OpenAPI_ue_initiated_resource_request_t *OpenAPI_ue_initiated_resource_request_create(
     char *pcc_rule_id,

@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pc5_qos_flow_item_s OpenAPI_pc5_qos_flow_item_t;
 #include "pc5_flow_bit_rates.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pc5_qos_flow_item_s OpenAPI_pc5_qos_flow_item_t;
-typedef struct OpenAPI_pc5_qos_flow_item_s {
+struct OpenAPI_pc5_qos_flow_item_s {
     int pqi;
     struct OpenAPI_pc5_flow_bit_rates_s *pc5_flow_bit_rates;
     bool is_range;
     int range;
-} OpenAPI_pc5_qos_flow_item_t;
+};
 
 OpenAPI_pc5_qos_flow_item_t *OpenAPI_pc5_qos_flow_item_create(
     int pqi,

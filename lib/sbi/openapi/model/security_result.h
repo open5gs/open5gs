@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_security_result_s OpenAPI_security_result_t;
 #include "protection_result.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_security_result_s OpenAPI_security_result_t;
-typedef struct OpenAPI_security_result_s {
+struct OpenAPI_security_result_s {
     OpenAPI_protection_result_e integrity_protection_result;
     OpenAPI_protection_result_e confidentiality_protection_result;
-} OpenAPI_security_result_t;
+};
 
 OpenAPI_security_result_t *OpenAPI_security_result_create(
     OpenAPI_protection_result_e integrity_protection_result,

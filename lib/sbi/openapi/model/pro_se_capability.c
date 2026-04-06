@@ -16,7 +16,25 @@ OpenAPI_pro_se_capability_t *OpenAPI_pro_se_capability_create(
     bool is_prose_l2_remote_ue,
     int prose_l2_remote_ue,
     bool is_prose_l3_remote_ue,
-    int prose_l3_remote_ue
+    int prose_l3_remote_ue,
+    bool is_prose_l2_ueto_ue_relay,
+    int prose_l2_ueto_ue_relay,
+    bool is_prose_l3_ueto_ue_relay,
+    int prose_l3_ueto_ue_relay,
+    bool is_prose_l2_end_ue,
+    int prose_l2_end_ue,
+    bool is_prose_l3_end_ue,
+    int prose_l3_end_ue,
+    bool is_prose_l3_interm_relay,
+    int prose_l3_interm_relay,
+    bool is_prose_l3_multihop_remote,
+    int prose_l3_multihop_remote,
+    bool is_prose_l3_net_multihop_relay,
+    int prose_l3_net_multihop_relay,
+    bool is_prose_l3_ue_multihop_relay,
+    int prose_l3_ue_multihop_relay,
+    bool is_prose_l3_end_ue_multihop,
+    int prose_l3_end_ue_multihop
 )
 {
     OpenAPI_pro_se_capability_t *pro_se_capability_local_var = ogs_malloc(sizeof(OpenAPI_pro_se_capability_t));
@@ -34,6 +52,24 @@ OpenAPI_pro_se_capability_t *OpenAPI_pro_se_capability_create(
     pro_se_capability_local_var->prose_l2_remote_ue = prose_l2_remote_ue;
     pro_se_capability_local_var->is_prose_l3_remote_ue = is_prose_l3_remote_ue;
     pro_se_capability_local_var->prose_l3_remote_ue = prose_l3_remote_ue;
+    pro_se_capability_local_var->is_prose_l2_ueto_ue_relay = is_prose_l2_ueto_ue_relay;
+    pro_se_capability_local_var->prose_l2_ueto_ue_relay = prose_l2_ueto_ue_relay;
+    pro_se_capability_local_var->is_prose_l3_ueto_ue_relay = is_prose_l3_ueto_ue_relay;
+    pro_se_capability_local_var->prose_l3_ueto_ue_relay = prose_l3_ueto_ue_relay;
+    pro_se_capability_local_var->is_prose_l2_end_ue = is_prose_l2_end_ue;
+    pro_se_capability_local_var->prose_l2_end_ue = prose_l2_end_ue;
+    pro_se_capability_local_var->is_prose_l3_end_ue = is_prose_l3_end_ue;
+    pro_se_capability_local_var->prose_l3_end_ue = prose_l3_end_ue;
+    pro_se_capability_local_var->is_prose_l3_interm_relay = is_prose_l3_interm_relay;
+    pro_se_capability_local_var->prose_l3_interm_relay = prose_l3_interm_relay;
+    pro_se_capability_local_var->is_prose_l3_multihop_remote = is_prose_l3_multihop_remote;
+    pro_se_capability_local_var->prose_l3_multihop_remote = prose_l3_multihop_remote;
+    pro_se_capability_local_var->is_prose_l3_net_multihop_relay = is_prose_l3_net_multihop_relay;
+    pro_se_capability_local_var->prose_l3_net_multihop_relay = prose_l3_net_multihop_relay;
+    pro_se_capability_local_var->is_prose_l3_ue_multihop_relay = is_prose_l3_ue_multihop_relay;
+    pro_se_capability_local_var->prose_l3_ue_multihop_relay = prose_l3_ue_multihop_relay;
+    pro_se_capability_local_var->is_prose_l3_end_ue_multihop = is_prose_l3_end_ue_multihop;
+    pro_se_capability_local_var->prose_l3_end_ue_multihop = prose_l3_end_ue_multihop;
 
     return pro_se_capability_local_var;
 }
@@ -101,6 +137,69 @@ cJSON *OpenAPI_pro_se_capability_convertToJSON(OpenAPI_pro_se_capability_t *pro_
     }
     }
 
+    if (pro_se_capability->is_prose_l2_ueto_ue_relay) {
+    if (cJSON_AddBoolToObject(item, "proseL2UetoUeRelay", pro_se_capability->prose_l2_ueto_ue_relay) == NULL) {
+        ogs_error("OpenAPI_pro_se_capability_convertToJSON() failed [prose_l2_ueto_ue_relay]");
+        goto end;
+    }
+    }
+
+    if (pro_se_capability->is_prose_l3_ueto_ue_relay) {
+    if (cJSON_AddBoolToObject(item, "proseL3UetoUeRelay", pro_se_capability->prose_l3_ueto_ue_relay) == NULL) {
+        ogs_error("OpenAPI_pro_se_capability_convertToJSON() failed [prose_l3_ueto_ue_relay]");
+        goto end;
+    }
+    }
+
+    if (pro_se_capability->is_prose_l2_end_ue) {
+    if (cJSON_AddBoolToObject(item, "proseL2EndUe", pro_se_capability->prose_l2_end_ue) == NULL) {
+        ogs_error("OpenAPI_pro_se_capability_convertToJSON() failed [prose_l2_end_ue]");
+        goto end;
+    }
+    }
+
+    if (pro_se_capability->is_prose_l3_end_ue) {
+    if (cJSON_AddBoolToObject(item, "proseL3EndUe", pro_se_capability->prose_l3_end_ue) == NULL) {
+        ogs_error("OpenAPI_pro_se_capability_convertToJSON() failed [prose_l3_end_ue]");
+        goto end;
+    }
+    }
+
+    if (pro_se_capability->is_prose_l3_interm_relay) {
+    if (cJSON_AddBoolToObject(item, "proseL3IntermRelay", pro_se_capability->prose_l3_interm_relay) == NULL) {
+        ogs_error("OpenAPI_pro_se_capability_convertToJSON() failed [prose_l3_interm_relay]");
+        goto end;
+    }
+    }
+
+    if (pro_se_capability->is_prose_l3_multihop_remote) {
+    if (cJSON_AddBoolToObject(item, "proseL3MultihopRemote", pro_se_capability->prose_l3_multihop_remote) == NULL) {
+        ogs_error("OpenAPI_pro_se_capability_convertToJSON() failed [prose_l3_multihop_remote]");
+        goto end;
+    }
+    }
+
+    if (pro_se_capability->is_prose_l3_net_multihop_relay) {
+    if (cJSON_AddBoolToObject(item, "proseL3NetMultihopRelay", pro_se_capability->prose_l3_net_multihop_relay) == NULL) {
+        ogs_error("OpenAPI_pro_se_capability_convertToJSON() failed [prose_l3_net_multihop_relay]");
+        goto end;
+    }
+    }
+
+    if (pro_se_capability->is_prose_l3_ue_multihop_relay) {
+    if (cJSON_AddBoolToObject(item, "proseL3UeMultihopRelay", pro_se_capability->prose_l3_ue_multihop_relay) == NULL) {
+        ogs_error("OpenAPI_pro_se_capability_convertToJSON() failed [prose_l3_ue_multihop_relay]");
+        goto end;
+    }
+    }
+
+    if (pro_se_capability->is_prose_l3_end_ue_multihop) {
+    if (cJSON_AddBoolToObject(item, "proseL3EndUeMultihop", pro_se_capability->prose_l3_end_ue_multihop) == NULL) {
+        ogs_error("OpenAPI_pro_se_capability_convertToJSON() failed [prose_l3_end_ue_multihop]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -115,6 +214,15 @@ OpenAPI_pro_se_capability_t *OpenAPI_pro_se_capability_parseFromJSON(cJSON *pro_
     cJSON *prose_l3_ueto_network_relay = NULL;
     cJSON *prose_l2_remote_ue = NULL;
     cJSON *prose_l3_remote_ue = NULL;
+    cJSON *prose_l2_ueto_ue_relay = NULL;
+    cJSON *prose_l3_ueto_ue_relay = NULL;
+    cJSON *prose_l2_end_ue = NULL;
+    cJSON *prose_l3_end_ue = NULL;
+    cJSON *prose_l3_interm_relay = NULL;
+    cJSON *prose_l3_multihop_remote = NULL;
+    cJSON *prose_l3_net_multihop_relay = NULL;
+    cJSON *prose_l3_ue_multihop_relay = NULL;
+    cJSON *prose_l3_end_ue_multihop = NULL;
     prose_direct_discovey = cJSON_GetObjectItemCaseSensitive(pro_se_capabilityJSON, "proseDirectDiscovey");
     if (prose_direct_discovey) {
     if (!cJSON_IsBool(prose_direct_discovey)) {
@@ -163,6 +271,78 @@ OpenAPI_pro_se_capability_t *OpenAPI_pro_se_capability_parseFromJSON(cJSON *pro_
     }
     }
 
+    prose_l2_ueto_ue_relay = cJSON_GetObjectItemCaseSensitive(pro_se_capabilityJSON, "proseL2UetoUeRelay");
+    if (prose_l2_ueto_ue_relay) {
+    if (!cJSON_IsBool(prose_l2_ueto_ue_relay)) {
+        ogs_error("OpenAPI_pro_se_capability_parseFromJSON() failed [prose_l2_ueto_ue_relay]");
+        goto end;
+    }
+    }
+
+    prose_l3_ueto_ue_relay = cJSON_GetObjectItemCaseSensitive(pro_se_capabilityJSON, "proseL3UetoUeRelay");
+    if (prose_l3_ueto_ue_relay) {
+    if (!cJSON_IsBool(prose_l3_ueto_ue_relay)) {
+        ogs_error("OpenAPI_pro_se_capability_parseFromJSON() failed [prose_l3_ueto_ue_relay]");
+        goto end;
+    }
+    }
+
+    prose_l2_end_ue = cJSON_GetObjectItemCaseSensitive(pro_se_capabilityJSON, "proseL2EndUe");
+    if (prose_l2_end_ue) {
+    if (!cJSON_IsBool(prose_l2_end_ue)) {
+        ogs_error("OpenAPI_pro_se_capability_parseFromJSON() failed [prose_l2_end_ue]");
+        goto end;
+    }
+    }
+
+    prose_l3_end_ue = cJSON_GetObjectItemCaseSensitive(pro_se_capabilityJSON, "proseL3EndUe");
+    if (prose_l3_end_ue) {
+    if (!cJSON_IsBool(prose_l3_end_ue)) {
+        ogs_error("OpenAPI_pro_se_capability_parseFromJSON() failed [prose_l3_end_ue]");
+        goto end;
+    }
+    }
+
+    prose_l3_interm_relay = cJSON_GetObjectItemCaseSensitive(pro_se_capabilityJSON, "proseL3IntermRelay");
+    if (prose_l3_interm_relay) {
+    if (!cJSON_IsBool(prose_l3_interm_relay)) {
+        ogs_error("OpenAPI_pro_se_capability_parseFromJSON() failed [prose_l3_interm_relay]");
+        goto end;
+    }
+    }
+
+    prose_l3_multihop_remote = cJSON_GetObjectItemCaseSensitive(pro_se_capabilityJSON, "proseL3MultihopRemote");
+    if (prose_l3_multihop_remote) {
+    if (!cJSON_IsBool(prose_l3_multihop_remote)) {
+        ogs_error("OpenAPI_pro_se_capability_parseFromJSON() failed [prose_l3_multihop_remote]");
+        goto end;
+    }
+    }
+
+    prose_l3_net_multihop_relay = cJSON_GetObjectItemCaseSensitive(pro_se_capabilityJSON, "proseL3NetMultihopRelay");
+    if (prose_l3_net_multihop_relay) {
+    if (!cJSON_IsBool(prose_l3_net_multihop_relay)) {
+        ogs_error("OpenAPI_pro_se_capability_parseFromJSON() failed [prose_l3_net_multihop_relay]");
+        goto end;
+    }
+    }
+
+    prose_l3_ue_multihop_relay = cJSON_GetObjectItemCaseSensitive(pro_se_capabilityJSON, "proseL3UeMultihopRelay");
+    if (prose_l3_ue_multihop_relay) {
+    if (!cJSON_IsBool(prose_l3_ue_multihop_relay)) {
+        ogs_error("OpenAPI_pro_se_capability_parseFromJSON() failed [prose_l3_ue_multihop_relay]");
+        goto end;
+    }
+    }
+
+    prose_l3_end_ue_multihop = cJSON_GetObjectItemCaseSensitive(pro_se_capabilityJSON, "proseL3EndUeMultihop");
+    if (prose_l3_end_ue_multihop) {
+    if (!cJSON_IsBool(prose_l3_end_ue_multihop)) {
+        ogs_error("OpenAPI_pro_se_capability_parseFromJSON() failed [prose_l3_end_ue_multihop]");
+        goto end;
+    }
+    }
+
     pro_se_capability_local_var = OpenAPI_pro_se_capability_create (
         prose_direct_discovey ? true : false,
         prose_direct_discovey ? prose_direct_discovey->valueint : 0,
@@ -175,7 +355,25 @@ OpenAPI_pro_se_capability_t *OpenAPI_pro_se_capability_parseFromJSON(cJSON *pro_
         prose_l2_remote_ue ? true : false,
         prose_l2_remote_ue ? prose_l2_remote_ue->valueint : 0,
         prose_l3_remote_ue ? true : false,
-        prose_l3_remote_ue ? prose_l3_remote_ue->valueint : 0
+        prose_l3_remote_ue ? prose_l3_remote_ue->valueint : 0,
+        prose_l2_ueto_ue_relay ? true : false,
+        prose_l2_ueto_ue_relay ? prose_l2_ueto_ue_relay->valueint : 0,
+        prose_l3_ueto_ue_relay ? true : false,
+        prose_l3_ueto_ue_relay ? prose_l3_ueto_ue_relay->valueint : 0,
+        prose_l2_end_ue ? true : false,
+        prose_l2_end_ue ? prose_l2_end_ue->valueint : 0,
+        prose_l3_end_ue ? true : false,
+        prose_l3_end_ue ? prose_l3_end_ue->valueint : 0,
+        prose_l3_interm_relay ? true : false,
+        prose_l3_interm_relay ? prose_l3_interm_relay->valueint : 0,
+        prose_l3_multihop_remote ? true : false,
+        prose_l3_multihop_remote ? prose_l3_multihop_remote->valueint : 0,
+        prose_l3_net_multihop_relay ? true : false,
+        prose_l3_net_multihop_relay ? prose_l3_net_multihop_relay->valueint : 0,
+        prose_l3_ue_multihop_relay ? true : false,
+        prose_l3_ue_multihop_relay ? prose_l3_ue_multihop_relay->valueint : 0,
+        prose_l3_end_ue_multihop ? true : false,
+        prose_l3_end_ue_multihop ? prose_l3_end_ue_multihop->valueint : 0
     );
 
     return pro_se_capability_local_var;

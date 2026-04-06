@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_geo_service_area_1_s OpenAPI_geo_service_area_1_t;
 #include "civic_address.h"
 #include "geographic_area.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_geo_service_area_1_s OpenAPI_geo_service_area_1_t;
-typedef struct OpenAPI_geo_service_area_1_s {
+struct OpenAPI_geo_service_area_1_s {
     OpenAPI_list_t *geographic_area_list;
     OpenAPI_list_t *civic_address_list;
-} OpenAPI_geo_service_area_1_t;
+};
 
 OpenAPI_geo_service_area_1_t *OpenAPI_geo_service_area_1_create(
     OpenAPI_list_t *geographic_area_list,

@@ -12,27 +12,32 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_vsmf_update_data_s OpenAPI_vsmf_update_data_t;
 #include "ambr.h"
 #include "arp.h"
 #include "cause.h"
 #include "ebi_arp_mapping.h"
 #include "eps_bearer_info.h"
 #include "eps_pdn_cnx_info.h"
+#include "hrsbo_info_from_hplmn.h"
+#include "local_offloading_mgt_info_to_ismf.h"
 #include "ma_release_indication.h"
 #include "n4_information.h"
+#include "pending_update_info.h"
 #include "qos_flow_add_modify_request_item.h"
 #include "qos_flow_release_request_item.h"
 #include "qos_monitoring_info.h"
 #include "ref_to_binary_data.h"
 #include "request_indication.h"
+#include "snssai.h"
 #include "tunnel_info.h"
+#include "uli_change_granularity.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_vsmf_update_data_s OpenAPI_vsmf_update_data_t;
-typedef struct OpenAPI_vsmf_update_data_s {
+struct OpenAPI_vsmf_update_data_s {
     OpenAPI_request_indication_e request_indication;
     struct OpenAPI_ambr_s *session_ambr;
     OpenAPI_list_t *qos_flows_add_mod_request_list;
@@ -71,7 +76,17 @@ typedef struct OpenAPI_vsmf_update_data_s {
     int n9_data_forwarding_ind;
     bool is_n9_inactivity_timer;
     int n9_inactivity_timer;
-} OpenAPI_vsmf_update_data_t;
+    struct OpenAPI_hrsbo_info_from_hplmn_s *hrsbo_info;
+    struct OpenAPI_local_offloading_mgt_info_to_ismf_s *local_offload_mgt_info;
+    struct OpenAPI_snssai_s *alt_hplmn_snssai;
+    bool is_pdu_session_retain_ind;
+    int pdu_session_retain_ind;
+    OpenAPI_list_t *pending_update_info_list;
+    bool is_net_loc_info_req_ind;
+    int net_loc_info_req_ind;
+    OpenAPI_uli_change_granularity_e uli_change_granularity;
+    char *service_level_aa_container;
+};
 
 OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_create(
     OpenAPI_request_indication_e request_indication,
@@ -111,7 +126,17 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_create(
     bool is_n9_data_forwarding_ind,
     int n9_data_forwarding_ind,
     bool is_n9_inactivity_timer,
-    int n9_inactivity_timer
+    int n9_inactivity_timer,
+    OpenAPI_hrsbo_info_from_hplmn_t *hrsbo_info,
+    OpenAPI_local_offloading_mgt_info_to_ismf_t *local_offload_mgt_info,
+    OpenAPI_snssai_t *alt_hplmn_snssai,
+    bool is_pdu_session_retain_ind,
+    int pdu_session_retain_ind,
+    OpenAPI_list_t *pending_update_info_list,
+    bool is_net_loc_info_req_ind,
+    int net_loc_info_req_ind,
+    OpenAPI_uli_change_granularity_e uli_change_granularity,
+    char *service_level_aa_container
 );
 void OpenAPI_vsmf_update_data_free(OpenAPI_vsmf_update_data_t *vsmf_update_data);
 OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_update_dataJSON);

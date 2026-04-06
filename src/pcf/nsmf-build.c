@@ -44,7 +44,8 @@ ogs_sbi_request_t *pcf_nsmf_callback_build_smpolicycontrol_update(
     }
 
     memset(&header, 0, sizeof(header));
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NPCF_SMPOLICYCONTROL;
+    header.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_npcf_smpolicycontrol);
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_SM_POLICIES;
     header.resource.component[1] = sess->sm_policy_id;

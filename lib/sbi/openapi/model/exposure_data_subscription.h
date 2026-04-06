@@ -12,26 +12,35 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_exposure_data_subscription_s OpenAPI_exposure_data_subscription_t;
+#include "exposure_data_change_notification.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_exposure_data_subscription_s OpenAPI_exposure_data_subscription_t;
-typedef struct OpenAPI_exposure_data_subscription_s {
+struct OpenAPI_exposure_data_subscription_s {
     char *notification_uri;
+    char *notif_id;
     OpenAPI_list_t *monitored_resource_uris;
     char *expiry;
     char *supported_features;
     OpenAPI_list_t *reset_ids;
-} OpenAPI_exposure_data_subscription_t;
+    bool is_imm_rep;
+    int imm_rep;
+    OpenAPI_list_t *imm_reports;
+};
 
 OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_create(
     char *notification_uri,
+    char *notif_id,
     OpenAPI_list_t *monitored_resource_uris,
     char *expiry,
     char *supported_features,
-    OpenAPI_list_t *reset_ids
+    OpenAPI_list_t *reset_ids,
+    bool is_imm_rep,
+    int imm_rep,
+    OpenAPI_list_t *imm_reports
 );
 void OpenAPI_exposure_data_subscription_free(OpenAPI_exposure_data_subscription_t *exposure_data_subscription);
 OpenAPI_exposure_data_subscription_t *OpenAPI_exposure_data_subscription_parseFromJSON(cJSON *exposure_data_subscriptionJSON);

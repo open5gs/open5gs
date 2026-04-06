@@ -6,7 +6,7 @@
 
 OpenAPI_tmgi_1_t *OpenAPI_tmgi_1_create(
     char *mbs_service_id,
-    OpenAPI_plmn_id_1_t *plmn_id
+    OpenAPI_plmn_id_t *plmn_id
 )
 {
     OpenAPI_tmgi_1_t *tmgi_1_local_var = ogs_malloc(sizeof(OpenAPI_tmgi_1_t));
@@ -30,7 +30,7 @@ void OpenAPI_tmgi_1_free(OpenAPI_tmgi_1_t *tmgi_1)
         tmgi_1->mbs_service_id = NULL;
     }
     if (tmgi_1->plmn_id) {
-        OpenAPI_plmn_id_1_free(tmgi_1->plmn_id);
+        OpenAPI_plmn_id_free(tmgi_1->plmn_id);
         tmgi_1->plmn_id = NULL;
     }
     ogs_free(tmgi_1);
@@ -60,7 +60,7 @@ cJSON *OpenAPI_tmgi_1_convertToJSON(OpenAPI_tmgi_1_t *tmgi_1)
         ogs_error("OpenAPI_tmgi_1_convertToJSON() failed [plmn_id]");
         return NULL;
     }
-    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_1_convertToJSON(tmgi_1->plmn_id);
+    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(tmgi_1->plmn_id);
     if (plmn_id_local_JSON == NULL) {
         ogs_error("OpenAPI_tmgi_1_convertToJSON() failed [plmn_id]");
         goto end;
@@ -81,7 +81,7 @@ OpenAPI_tmgi_1_t *OpenAPI_tmgi_1_parseFromJSON(cJSON *tmgi_1JSON)
     OpenAPI_lnode_t *node = NULL;
     cJSON *mbs_service_id = NULL;
     cJSON *plmn_id = NULL;
-    OpenAPI_plmn_id_1_t *plmn_id_local_nonprim = NULL;
+    OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
     mbs_service_id = cJSON_GetObjectItemCaseSensitive(tmgi_1JSON, "mbsServiceId");
     if (!mbs_service_id) {
         ogs_error("OpenAPI_tmgi_1_parseFromJSON() failed [mbs_service_id]");
@@ -97,9 +97,9 @@ OpenAPI_tmgi_1_t *OpenAPI_tmgi_1_parseFromJSON(cJSON *tmgi_1JSON)
         ogs_error("OpenAPI_tmgi_1_parseFromJSON() failed [plmn_id]");
         goto end;
     }
-    plmn_id_local_nonprim = OpenAPI_plmn_id_1_parseFromJSON(plmn_id);
+    plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
     if (!plmn_id_local_nonprim) {
-        ogs_error("OpenAPI_plmn_id_1_parseFromJSON failed [plmn_id]");
+        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
         goto end;
     }
 
@@ -111,7 +111,7 @@ OpenAPI_tmgi_1_t *OpenAPI_tmgi_1_parseFromJSON(cJSON *tmgi_1JSON)
     return tmgi_1_local_var;
 end:
     if (plmn_id_local_nonprim) {
-        OpenAPI_plmn_id_1_free(plmn_id_local_nonprim);
+        OpenAPI_plmn_id_free(plmn_id_local_nonprim);
         plmn_id_local_nonprim = NULL;
     }
     return NULL;

@@ -1,0 +1,675 @@
+openapi: 3.0.0
+
+info:
+  title: Nnsacf_NSAC
+  version: 1.2.0
+  description: |
+    Nnsacf_NSAC Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.536 V19.3.0; 5G System; Network Slice Admission Control Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.536/
+
+servers:
+  - url: '{apiRoot}/nnsacf-nsac/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nnsacf-nsac
+
+paths:
+  /slices/ues:
+    post:
+      summary: Network Slice Admission Control on the Number of UEs
+      operationId: NumOfUEsUpdate
+      tags:
+        - slice collection
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nnsacf-nsac
+        - oAuth2ClientCredentials:
+          - nnsacf-nsac
+          - nnsacf-nsac:slice-ues
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UeACRequestData'
+        required: true
+      responses:
+        '200':
+          description: Partial successful ACU operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeACResponseData'
+        '204':
+          description: Successful ACU operation
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          description: Unsucessful ACU operation - Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          description: Unsuccessful ACU operation – Slice Not Subject to NSAC
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '404':
+          description: Unsuccessful ACU operation – Slice Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+      callbacks:
+        eacNotification:
+          '{$request.body#/eacNotificationUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EacNotification'
+              responses:
+                '204':
+                  description: slice re-authentication notification response
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  description: Unexpected error
+
+  /slices/pdus:
+    post:
+      summary: Network Slice Admission Control on the number of PDU Sessions
+      operationId: NumOfPDUsUpdate
+      tags:
+        - slice collection
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nnsacf-nsac
+        - oAuth2ClientCredentials:
+          - nnsacf-nsac
+          - nnsacf-nsac:slice-pdus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PduACRequestData'
+        required: true
+      responses:
+        '200':
+          description: Partial successful ACU operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PduACResponseData'
+        '204':
+          description: Successful ACU operation
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          description: Unsucessful ACU operation - Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          description: Unsuccessful ACU operation – Slice Not Subject to NSAC
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '404':
+          description: Unsuccessful ACU operation – Slice Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+
+  /slices/local-configs/update:
+    post:
+      summary: >
+        Network Slice Admission Control update of the local maximum number of registered UEs and/or 
+        PDU sessions of the network slice at NSACF.
+      operationId: LocalNumberUpdate
+      tags:
+        - slice collection
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nnsacf-nsac
+        - oAuth2ClientCredentials:
+          - nnsacf-nsac
+          - nnsacf-nsac:local-configs-update
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ACUpdateData'
+        required: true
+      responses:
+        '204':
+          description: Successful ACU operation
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+
+  /slices/roaming-quotas/query:
+    post:
+      summary: >
+        Network Slice Admission Control fetching of the maximum number of registered UEs and/or
+        number of PDU sessions of the network slice at NSACF.
+      operationId: QuotaUpdate
+      tags:
+        - slice collection
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nnsacf-nsac
+        - oAuth2ClientCredentials:
+          - nnsacf-nsac
+          - nnsacf-nsac:roaming-quotas-query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuotaUpdateRequestData'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuotaUpdateResponseData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nnsacf-nsac: Access to the Nnsacf_NSAC API
+            nnsacf-nsac:slice-ues: >
+              Access to service operations applying to the collection of slice subject to NSAC for
+              UEs
+            nnsacf-nsac:slice-pdus: >
+              Access to service operations applying to the collection of slice subject to NSAC for
+              PDU sessions
+            nnsacf-nsac:local-configs-update: >
+              Access to the NSAC update of the local maximum number of registered UEs and/or 
+              PDU sessions of the network slice at NSACF
+            nnsacf-nsac:roaming-quotas-query: >
+              Access to request the maximum number of registered UEs and/or PDU sessions of a 
+              network slice for inbound roamers for VPLMN NSAC admission mode
+
+
+  schemas:
+
+    #
+    # STRUCTURED DATA TYPES:
+    #
+
+    UeACRequestData:
+      description: Contains input data for NSAC procedure related to the number of UEs per slice.
+      type: object
+      properties:
+        ueACRequestInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeACRequestInfo'
+          minItems: 1
+        nfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        nfType:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/NFType'
+        eacNotificationUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        nsacServiceArea:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NsacSai'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ueACRequestInfo
+        - nfId
+
+    UeACRequestInfo:
+      description: Contains one item of a UE and associated NSAC action.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        anType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        acuOperationList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AcuOperationItem'
+          minItems: 1
+        additionalAnType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+      required:
+        - supi
+        - anType
+        - acuOperationList
+
+    UeACResponseData:
+      description: Contains response data of NSAC procedure for controlling the number of UEs.
+      type: object
+      properties:
+        acuFailureList:
+          description: A map (list of key-value pairs) where the key of the map shall be UE's supi
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/AcuFailureItem'
+            minItems: 1
+          minProperties: 1
+        ueAdmissionList:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeAdmissionValue'
+          minItems: 1
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    AcuOperationItem:
+      description: >
+        Contains an operation item for NSAC procedure, indicating an S-NSSAI subject to NSAC 
+        and the associated operation.
+      type: object
+      properties:
+        updateFlag:
+          $ref: '#/components/schemas/AcuFlag'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        plmnIdNid:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        ueRegInd:
+          type: boolean
+          enum:
+           - true
+        servingPlmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        nsacMode:
+          $ref: '#/components/schemas/NsacAdmissionMode'
+        numberExceedInfo:
+          $ref: '#/components/schemas/QuotaExceedIndication'
+      required:
+        - updateFlag
+        - snssai
+
+    AcuFailureItem:
+      description: >
+        Contains a failure item which indicates the failed S-NSSAI and the failure reason.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        reason:
+          $ref: '#/components/schemas/AcuFailureReason'
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        plmnIdNid:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        pduSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+      required:
+        - snssai
+        - reason
+
+    EacNotification:
+      description: Contains notification for EAC mode configuration.
+      type: object
+      properties:
+        eacModeList:
+          description: >
+            A map (list of key-value pairs) where Snssai converted to a string serves as key
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/EACMode'
+          minProperties: 1
+        plmnIdNid:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+
+    PduACRequestData:
+      description: Contains input data for NSAC procedure related to the number of PDUs per slice.
+      type: object
+      properties:
+        pduACRequestInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/PduACRequestInfo'
+          minItems: 1
+        nfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        pgwFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        nsacServiceArea:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NsacSai'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - pduACRequestInfo
+
+    PduACRequestInfo:
+      description: Contains one item of a PDU session and associated NSAC action.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        anType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        pduSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        acuOperationList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AcuOperationItem'
+          minItems: 1
+          maxItems: 2
+        additionalAnType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+      required:
+        - supi
+        - anType
+        - pduSessionId
+        - acuOperationList
+
+    PduACResponseData:
+      description: >
+        Contains response data of NSAC procedure for controlling the number of PDU sessions.
+      type: object
+      properties:
+        acuFailureList:
+          description: A map (list of key-value pairs) where the key of the map shall be UE's supi
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/AcuFailureItem'
+            minItems: 1
+            maxItems: 2
+          minProperties: 1
+        pduAdmissionList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PduAdmissionValue'
+          minItems: 1
+        ueAdmissionList:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeAdmissionValue'
+          minItems: 1
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    UeAdmissionValue:
+      description: Contains the local maximum number of UEs.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        maxNumUes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        ueAdmissionThreshold:
+          type: integer
+          minimum: 0
+          maximum: 100
+      required:
+        - snssai
+
+    PduAdmissionValue:
+      description: Contains the local maximum number of PDUs.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        maxNumPdus:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - snssai
+        - maxNumPdus
+
+    ACUpdateData:
+      description: >
+        Contains input data for NSAC procedure to update the local maximum number of 
+        registered UEs and the local maximum number of PDU sessions.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        maxUesNumber:
+          type: integer
+        maxPdusNumber:
+          type: integer
+      required:
+        - snssai
+
+    QuotaUpdateRequestData:
+      description: >
+        Contains Input data for NSAC procedure to fetch the maximum number of registered UEs 
+        and/or the maximum number of PDU sessions.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        quotaType:
+          $ref: '#/components/schemas/SliceQuotaType'
+      required:
+        - snssai
+        - plmnId
+        - quotaType
+
+    QuotaUpdateResponseData:
+      description: >
+        Contains response data for NSAC procedure to update the maximum number of registered 
+        UEs and/or the maximum number of PDU sessions.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        maxUesNumber:
+          type: integer
+        maxPdusNumber:
+          type: integer
+      required:
+        - snssai
+
+
+    #
+    # SIMPLE DATA TYPES
+    #
+
+
+    #
+    # ENUMERATIONS
+    #
+
+    EACMode:
+      description: EAC mode.
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - ACTIVE
+        - DEACTIVE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#
+    AcuFlag:
+      description: Update Flag of ACU operation.
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - INCREASE
+        - DECREASE
+        - UPDATE
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#
+    AcuFailureReason:
+      description: Failure Reason of ACU operation to an S-NSSAI.
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - SLICE_NOT_FOUND
+        - EXCEED_MAX_UE_NUM
+        - EXCEED_MAX_UE_NUM_3GPP
+        - EXCEED_MAX_UE_NUM_N3GPP
+        - EXCEED_MAX_PDU_NUM
+        - EXCEED_MAX_PDU_NUM_3GPP
+        - EXCEED_MAX_PDU_NUM_N3GPP
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#
+    SliceQuotaType:
+      description: Slice quota type.
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - MAX_UE_NUM
+        - MAX_PDU_NUM
+        - BOTH
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#
+    NsacAdmissionMode:
+      description: Indicates the NSAC admission mode applied in roaming case.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - VPLMN_ADMISSION
+        - VPLMN_WITH_HPLMN_ASSISTANCE
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future
+#            extensions to the enumeration but is not used to encode
+#            content defined in the present version of this API.
+#
+    QuotaExceedIndication:
+      description: >
+        Indicates which quota (e.g. local maximum number of UEs / local maximum number of PDU
+        sessions) is exceeded.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - EXCEED_MAX_UE_NUM
+        - EXCEED_MAX_PDU_NUM
+        - EXCEED_MAX_UE_AND_PDU_NUM
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future
+#            extensions to the enumeration but is not used to encode
+#            content defined in the present version of this API.

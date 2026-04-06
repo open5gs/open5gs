@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_differentiation_info_s OpenAPI_ue_differentiation_info_t;
 #include "battery_indication.h"
 #include "periodic_communication_indicator.h"
 #include "scheduled_communication_time.h"
@@ -22,8 +23,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_differentiation_info_s OpenAPI_ue_differentiation_info_t;
-typedef struct OpenAPI_ue_differentiation_info_s {
+struct OpenAPI_ue_differentiation_info_s {
     OpenAPI_periodic_communication_indicator_e periodic_com_ind;
     bool is_periodic_time;
     int periodic_time;
@@ -32,7 +32,7 @@ typedef struct OpenAPI_ue_differentiation_info_s {
     OpenAPI_traffic_profile_e traffic_profile;
     struct OpenAPI_battery_indication_s *battery_ind;
     char *validity_time;
-} OpenAPI_ue_differentiation_info_t;
+};
 
 OpenAPI_ue_differentiation_info_t *OpenAPI_ue_differentiation_info_create(
     OpenAPI_periodic_communication_indicator_e periodic_com_ind,

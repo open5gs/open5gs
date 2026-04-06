@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_inter_freq_target_info_1_s OpenAPI_inter_freq_target_info_1_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_inter_freq_target_info_1_s OpenAPI_inter_freq_target_info_1_t;
-typedef struct OpenAPI_inter_freq_target_info_1_s {
+struct OpenAPI_inter_freq_target_info_1_s {
     int dl_carrier_freq;
     OpenAPI_list_t *cell_id_list;
-} OpenAPI_inter_freq_target_info_1_t;
+};
 
 OpenAPI_inter_freq_target_info_1_t *OpenAPI_inter_freq_target_info_1_create(
     int dl_carrier_freq,

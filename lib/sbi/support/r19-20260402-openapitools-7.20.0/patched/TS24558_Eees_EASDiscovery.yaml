@@ -1,0 +1,759 @@
+openapi: 3.0.0
+
+info:
+  title: Eees_EASDiscovery
+  description: |
+    API for EAS Discovery.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: "1.2.0"
+
+externalDocs:
+  description: >
+    3GPP TS 24.558 V19.5.0 Enabling Edge Applications; Protocol specification.
+  url: https://www.3gpp.org/ftp/Specs/archive/24_series/24.558/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/eees-easdiscovery/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.558.
+
+paths:
+
+  /subscriptions:
+    post:
+      description: Creates a new individual EAS discovery subscription.
+      operationId: CreateEASDiscSub
+      tags:
+        - EAS Discovery Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EasDiscoverySubscription'
+      responses:
+        '201':
+          description: >
+            Created. A new Individual EAS Discovery Subscription resource was successfully
+            created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EasDiscoverySubscription'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        notificationDestination:
+          '{request.body#/notificationDestination}':
+            post:
+              requestBody: 
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EasDiscoveryNotification'
+              responses:
+                '204':
+                  description: No Content (The receipt of the Notification is acknowledged).
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    put:
+      description: >
+        Updates an existing individual EAS discovery subscription identified by the subscriptionId.
+      operationId: UpdateIndEASDiscSub
+      tags:
+        - Individual EAS Discovery Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifies an individual EAS discovery subscription resource.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to replace the existing subscription.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EasDiscoverySubscription'
+      responses:
+        '200':
+          description: >
+            OK. The individual EAS discovery subscription resource was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EasDiscoverySubscription'
+        '204':
+          description: No Content (updated successfully).
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      description: >
+        Deletes an existing individual EAS discovery subscription identified by the subscriptionId.
+      operationId: DeleteIndEASDiscSub
+      tags:
+        - Individual EAS Discovery Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifies an individual EAS discovery subscription resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            An individual EAS discovery subscription resource deleted successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      description: >
+        Partial update an existing EAS Discovery Subscription resource identified by a
+        subscriptionId.
+      operationId: ModifyIndEASDiscSub
+      tags:
+        - Individual EAS Discovery Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifies an individual EAS discovery subscription resource.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to replace the existing subscription.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/EasDiscoverySubscriptionPatch'
+      responses:
+        '200':
+          description: >
+            OK (An individual EAS discovery subscription resource updated successfully).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EasDiscoverySubscription'
+        '204':
+          description: No Content (modified successfully).
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /eas-profiles/request-discovery:
+    post:
+      description: >
+        Provides EAS information requested by the service consumer (i.e. EEC, EAS or EES).
+      operationId: GetEASDiscInfo
+      tags:
+        - EAS Profiles (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EasDiscoveryReq'
+      responses:
+        '200':
+          description: >
+            OK (The requested EAS discovery information was returned successfully).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EasDiscoveryResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+    EasDiscoveryReq:
+      description: EAS discovery request information.
+      type: object
+      properties:
+        requestorId:
+          $ref: '#/components/schemas/RequestorId'
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        easDiscoveryFilter:
+          $ref: '#/components/schemas/EasDiscoveryFilter'
+        eecSvcContinuity:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          description: >
+            Indicates if the EEC supports service continuity or not, also indicates which ACR
+            scenarios are supported by the EEC.
+        eesSvcContinuity:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          description: >
+            Indicates if the EES supports service continuity or not, also indicates which ACR
+            scenarios are supported by the EES.
+        easSvcContinuity:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          description: >
+            Indicates if the EAS supports service continuity or not, also indicates which ACR
+            scenarios are supported by the EAS.
+        locInf:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        easTDnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        easSelSupInd:
+          type: boolean
+          description: >
+            Indicates if the EEC requires the EAS selection support from the EES (e.g., for
+            constrained device). The true value indicate the EAS selection is required from the
+            EES. The default value false indicates the EAS selection is not required from the EES.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        easIntTrigSup:
+          type: boolean
+          description: >
+            Indicates to the EES whether the EAS instantiation triggering should be performed for
+            the current request. The default value false indicates the EAS instantiation triggering
+            should not be performed. The true value indicate the EAS instantiation triggering should
+            be performed.
+        predictExpTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        servingPLMNInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        svcContinuityPlanInd:
+          type: boolean
+          description: >
+            Indicates to the EES whether the EAS discovery request is triggered as part of service
+            continuity planning. The default value false indicates this request is not part of
+            service continuity planning. The true value indicate this request is part of
+            service continuity planning.
+        appGrpUeIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+          description: Contains a list of UE identifier(s) in the application group.
+        tunnel_Info:
+          $ref: 'TS29558_Eecs_TargetEESDiscovery.yaml#/components/schemas/TunnelInfo'
+      required:
+        - requestorId
+
+    EasDiscoveryResp:
+      description: EAS discovery response.
+      type: object
+      properties:
+        discoveredEas:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscoveredEas'
+          description: List of EAS discovery information.
+        easInstInfos:
+          type: object
+          additionalProperties:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/EASInstantiationInfo'
+          minProperties: 1
+          description: >
+            Contains the EAS instantiation information for each discovered EAS returned within
+            the discoveredEas attribute.
+        edgeLoadAnalytics:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/EdgeLoadAnalytic'
+          minProperties: 1
+          description: >
+            Contains the statistical analytics data and predictive analytics data for each
+            discovered application server. The key of the map shall be the EAS ID to which
+            the provided analytics data within the map value relates.
+      required:
+        - discoveredEas
+
+    EasDiscoverySubscription:
+      description: Represents an Individual EAS Discovery Subscription resource.
+      type: object
+      properties:
+        eecId:
+          type: string
+          description: Represents a unique identifier of the EEC.
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        easEventType:
+          $ref: '#/components/schemas/EASDiscEventIDs'
+        easDiscoveryFilter:
+          $ref: '#/components/schemas/EasDiscoveryFilter'
+        easDynInfoFilter:
+          $ref: '#/components/schemas/EasDynamicInfoFilter'
+        easSvcContinuity:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          description: >
+            Indicates if the EEC supports service continuity or not, also indicates which ACR
+            scenarios are supported by the EEC.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        requestTestNotification:
+          type: boolean
+          description: >
+            Set to true by Subscriber to request the EES to send a test notification. Set to false
+            or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        easIntTrigSup:
+          type: boolean
+          description: >
+            Indicates to the EES whether the EAS instantiation triggering should be performed for
+            the current request. The default value false indicates the EAS instantiation triggering
+            should not be performed. The true value indicate the EAS instantiation triggering should
+            be performed.
+        eecTriggerRequest:
+          type: boolean
+          description: >
+            Indicates to the EES whether the application triggering is required by the EEC.
+            Default value false indicates the application triggering is not required. The true value
+            indicate the application triggering is required.
+        eecTriggerPortInfo:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+      required:
+        - eecId
+        - easEventType
+
+    EasDiscoveryNotification:
+      description: Notification of EAS discovery information.
+      type: object
+      properties:
+        subId:
+          type: string
+          description: >
+            Identifier of the individual service provisioning subscription for which the service
+            provisioning notification is delivered.
+        eventType:
+          $ref: '#/components/schemas/EASDiscEventIDs'
+        discoveredEas:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscoveredEas'
+          minItems: 1
+          description: List of EAS discovery information.
+        easInstInfos:
+          type: object
+          additionalProperties:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/EASInstantiationInfo'
+          minProperties: 1
+          description: >
+            Contains the EAS instantiation information for each discovered EAS returned within
+            the "discoveredEas" attribute. The key of the map shall be the EAS ID to which the
+            provided instantiation information within the map value relates.
+        edgeLoadAnalytics:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/EdgeLoadAnalytic'
+          minProperties: 1
+          description: >
+            Contains the statistical analytics data and predictive analytics data for each
+            discovered application server. The key of the map shall be the EAS ID to which
+            the provided analytics data within the map value relates.
+      required:
+        - subId
+        - eventType
+        - discoveredEas
+
+    EasDiscoveryFilter:
+      description: Represents the EAS characteristics.
+      type: object
+      properties:
+        acChars:
+          type: array
+          items:
+            $ref: '#/components/schemas/ACCharacteristics'
+          minItems: 1
+          description: AC description for which an EAS is needed.
+        appGroupProfile:
+            $ref: 'TS24558_Eecs_ServiceProvisioning.yaml#/components/schemas/AppGroupProfile'
+        easChars:
+          type: array
+          items:
+            $ref: '#/components/schemas/EasCharacteristics'
+          minItems: 1
+          description: Required EAS chararcteristics.
+
+    EasCharacteristics:
+      description: Represents the EAS chararcteristics.
+      type: object
+      properties:
+        easId:
+          type: string
+          description: EAS application identifier.
+        appGrpId:
+          type: string
+          description: >
+            Application group identifier, identifying a group of UEs using the same
+            application service.
+        easSyncInd:
+          type: boolean
+          description: >
+            Indicates whether the content synchronization between the EASs is required. The
+            default value false indicates the EAS synchronization is not required. The true
+            value indicate the EAS synchronization is required.
+        easProvId:
+          type: string
+          description: EAS provider identifier.
+        stdEasType:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASCategory'
+        easType:
+          type: string
+          description: EAS type with the flexible value set.
+        easSched:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        svcArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        easSvcContinuity:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          description: >
+            Indicates if the EEC supports service continuity or not, also indicates which ACR
+            scenarios are supported by the EEC.
+        svcPermLevel:
+          type: string
+          description: Service permissions level.
+        svcFeats:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Service features.
+        easBundleInfo:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASBundleInfo'
+      not:
+        required: [stdEasType, easType]
+
+    DiscoveredEas:
+      description: Represents an EAS discovery information.
+      type: object
+      properties:
+        eas:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EASProfile'
+        eesEndPt:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        lifeTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        trafficInfluenceInd:
+          type: boolean
+          description: >
+            Set to true to indicate the traffic influence is performed on the EAS. Set to
+            false or omitted otherwise.
+      required:
+        - eas
+
+    EasDynamicInfoFilter:
+      description: Represents EAS dynamic information changes filter.
+      type: object
+      properties:
+        dynInfoFilter:
+          type: array
+          items:
+            $ref: '#/components/schemas/EasDynamicInfoFilterData'
+          minItems: 1
+          description: List of EAS dynamic information required by the EEC per EAS.
+      required:
+        - dynInfoFilter
+
+    EasDynamicInfoFilterData:
+      description: Represents an EAS dynamic information.
+      type: object
+      properties:
+        eecId:
+          type: string
+          description: The application identifier of the EAS, e.g. FQDN, URI.
+        easStatus:
+          type: boolean
+          description: Notify whether the EAS status is changed or not.
+        easAcIds:
+          type: boolean
+          description: Notify whether the list of AC identifiers changed or not.
+        easDesc:
+          type: boolean
+          description: Notify whether the EAS description is changed or not.
+        easPt:
+          type: boolean
+          description: Notify whether the EAS endpoint is changed or not.
+        easEndPoint:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'
+        easFeature:
+          type: boolean
+          description: Notify whether the EAS feature is changed or not.
+        easSchedule:
+          type: boolean
+          description: Notify whether the EAS schedule is changed or not.
+        svcArea:
+          type: boolean
+          description: Notify whether the EAS service area is changed or not.
+        svcKpi:
+          type: boolean
+          description: Notify whether the EAS KPIs is changed or not.
+        svcCont:
+          type: boolean
+          description: Notify whether the EAS supported ACR changed or not.
+      required:
+        - eecId
+
+    ACCharacteristics:
+      description: Represents EAS dynamic information changes filter.
+      type: object
+      properties:
+        acProf:
+          $ref: 'TS24558_Eees_EECRegistration.yaml#/components/schemas/ACProfile'
+      required:
+        - acProf
+
+    EASDiscEventIDs:
+      anyOf:
+      - type: string
+        enum:
+          - EAS_AVAILABILITY_CHANGE
+          - EAS_DYNAMIC_INFO_CHANGE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represents the EAS Discovery Subscription events.
+        Possible values are
+        - EAS_AVAILABILITY_CHANGE: Represents the EAS availability change event.
+        - EAS_DYNAMIC_INFO_CHANGE: Represents the EAS dynamic information change event.
+
+    EasDiscoverySubscriptionPatch:
+      description: Represents an Individual EAS Discovery Subscription resource.
+      type: object
+      properties:
+        easDiscoveryFilter:
+          $ref: '#/components/schemas/EasDiscoveryFilter'
+        easDynInfoFilter:
+          $ref: '#/components/schemas/EasDynamicInfoFilter'
+        easSvcContinuity:
+          type: array
+          items:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ACRScenario'
+          description: >
+            Indicates if the EEC supports service continuity or not, also indicates which ACR
+            scenarios are supported by the EEC.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        easEventType:
+          $ref: '#/components/schemas/EASDiscEventIDs'
+
+    RequestorId:
+      description: Represents identifier of the requestor.
+      type: object
+      properties:
+        eesId:
+          type: string
+          description: The identifier of the EES (e.g. S-EES).
+        easId:
+          type: string
+          description: The application identifier of the EAS (e.g. S-EAS), e.g. FQDN, URI.
+        eecId:
+          type: string
+          description: The identifier of the EEC.
+      oneOf:
+        - required: [eesId]
+        - required: [easId]
+        - required: [eecId]
+
+    EdgeLoadAnalytic:
+      description: >
+        Contains the statistical analytics data and predictive analytics data for each
+        discovered application server.
+      type: object
+      properties:
+        easId:
+          type: string
+          description: The application identifier of the EAS, e.g. FQDN, URI.
+        predictData:
+          $ref: '#/components/schemas/PredictiveData'
+        statisticData:
+          $ref: '#/components/schemas/StatisticalData'
+      required:
+        - easId
+
+    PredictiveData:
+      description: >
+        Contains the predictive analytics data for each discovered EAS service status change.
+      type: object
+      properties:
+        scheds:
+          type: array
+          items:
+            $ref: 'TS29122_CpProvisioning.yaml#/components/schemas/ScheduledCommunicationTime'
+          description: >
+            Indicates the schedule of the EAS.
+          minItems: 1
+        status:
+          type: string
+          description: >
+            Indicates the EAS status (e.g. enabled, disabled, overload warning etc.).
+
+    StatisticalData:
+      description: >
+        Contains the statistical analytics data (e.g. number of times the client received
+        expected performance from the EAS).
+      type: object
+      properties:
+        numRecPerf:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'

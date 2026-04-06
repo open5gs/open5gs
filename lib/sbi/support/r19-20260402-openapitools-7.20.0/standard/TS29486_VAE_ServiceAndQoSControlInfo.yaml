@@ -1,0 +1,557 @@
+openapi: 3.0.0
+
+info:
+  title: VAE Server Service And QoS Control Info Service
+  version: 1.0.0
+  description: |
+    VAE Server Service And QoS Control Info Service.  
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.486 V18.3.0 V2X Application Enabler (VAE) Services
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.486/'
+
+servers:
+  - url: '{apiRoot}/vae-sqci/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Request the creation of a Service Adaptation And QoS Control Subscription.
+      operationId: CreateServAdaptQoSCtrlSubsc
+      tags:
+        - Service Adaptation And QoS Control Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServAdaptQoSCtrlSubsc'
+      responses:
+        '201':
+          description: >
+            Created. The Service Adaptation And QoS Control Subscription is successfully created
+            and a representation of the created Individual Service Adaptation And QoS Control
+            Subscription resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServAdaptQoSCtrlSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Service Adaptation And QoS Control
+                Subscription resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        ServReqQoSAdaptNotif:
+          '{$request.body#/notifUri}/req-qos-adapt':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AdaptNotif'
+              responses:
+                '200':
+                  description: >
+                    OK. The Service Requirements And QoS Adaptation notification is successfully
+                    received and acknowledged, and the acknowledgment related information shall be
+                    returned in the response body.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/AdaptNotifResp'
+                '204':
+                  description: >
+                    No Content. The Service Requirements And QoS Adaptation notification is
+                    successfully received and acknowledged, and no content is returned in the
+                    response body.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+        QoSChangeNotif:
+          '{$request.body#/notifUri}/qos-change':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/QoSChangeNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The QoS Change notification is successfully received and
+                    acknowledged, and no content is returned in the response body.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of the Individual Service Adaptation And QoS Control
+          Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Service Adaptation And QoS Control Subscription resource.
+      operationId: GetIndServAdaptQoSCtrlSubsc
+      tags:
+        - Individual Service Adaptation And QoS Control Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Service Adaptation And QoS Control Subscription resource
+            shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServAdaptQoSCtrlSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Service Adaptation And QoS Control Subscription resource.
+      operationId: UpdateIndServAdaptQoSCtrlSubsc
+      tags:
+        - Individual Service Adaptation And QoS Control Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServAdaptQoSCtrlSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Service Adaptation And QoS Control Subscription resource is
+            successfully updated and a representation of the updated resource shall be returned in
+            the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServAdaptQoSCtrlSubsc'
+        '204':
+          description: >
+            No Content. The Individual Service Adaptation And QoS Control Subscription resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Service Adaptation And QoS Control Subscription resource.
+      operationId: ModifyIndServAdaptQoSCtrlSubsc
+      tags:
+        - Individual Service Adaptation And QoS Control Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/ServAdaptQoSCtrlSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Service Adaptation And QoS Control Subscription resource is
+            successfully modified and a representation of the updated resource shall be returned in
+            the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServAdaptQoSCtrlSubsc'
+        '204':
+          description: >
+            No Content. The Individual Service Adaptation And QoS Control Subscription resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Service Adaptation And QoS Control Subscription resource.
+      operationId: DeleteIndServAdaptQoSCtrlSubsc
+      tags:
+        - Individual Service Adaptation And QoS Control Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Service Adaptation And QoS Control Subscription resource is
+            successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    ServAdaptQoSCtrlSubsc:
+      description: >
+        Represents a Service Adaptation And QoS Control Subscription.
+      type: object
+      properties:
+        subscTarget:
+          $ref: '#/components/schemas/V2xTarget'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - subscTarget
+        - notifUri
+
+    ServAdaptQoSCtrlSubscPatch:
+      description: >
+        Represents the requested modifications to a Service Adaptation And QoS Control subscription.
+      type: object
+      properties:
+        subscTarget:
+          $ref: '#/components/schemas/V2xTarget'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    AdaptNotif:
+      description: >
+        Represents a Service Requirements And QoS Adaptation Notification.
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+        adaptReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdaptReport'
+          minItems: 1
+      required:
+        - subscriptionId
+        - adaptReports
+
+    AdaptNotifResp:
+      description: >
+        Represents the Service Requirements And QoS Adaptation Notification acknowledgment related
+        information.
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/AckResult'
+        adaptFeedbacks:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdaptFeedback'
+          minItems: 1
+      required:
+        - result
+
+    AdaptReport:
+      description: >
+        Represents a Service Requirements And QoS Adaptation report.
+      type: object
+      properties:
+        ueIdsList:
+          type: array
+          items:
+            $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xUeId'
+          minItems: 1
+        serviceId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xServiceId'
+        qosChangeInfo:
+          $ref: '#/components/schemas/QoSChangeInfo'
+      required:
+        - qosChangeInfo
+
+    AdaptFeedback:
+      description: >
+        Represents the feedback to a Service Requirements And QoS Adaptation report.
+      type: object
+      properties:
+        ueIdsList:
+          type: array
+          items:
+            $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xUeId'
+          minItems: 1
+        serviceId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xServiceId'
+      required:
+        - ueIdsList
+
+    QoSChangeInfo:
+      description: >
+        Represents the QoS change related information.
+      type: object
+      properties:
+        loa:
+          $ref: '#/components/schemas/LoA'
+      anyOf:
+        - required: [loa]
+
+    QoSChangeNotif:
+      description: >
+        Represents a QoS Change Notification.
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/QoSChangeReport'
+          minItems: 1
+      required:
+        - subscriptionId
+
+    QoSChangeReport:
+      description: >
+        Represents a QoS Change report.
+      type: object
+      properties:
+        ueIdsList:
+          type: array
+          items:
+            $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xUeId'
+          minItems: 1
+        serviceId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xServiceId'
+      anyOf:
+        - required: [ueIdsList]
+        - required: [serviceId]
+
+    V2xTarget:
+      description: >
+        Represents the targeted V2X entity.
+      type: object
+      properties:
+        groupId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xGroupId'
+        serviceId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xServiceId'
+        ueId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xUeId'
+      oneOf:
+        - required: [groupId]
+        - required: [serviceId]
+        - required: [ueId]
+
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+    AckResult:
+      anyOf:
+        - type: string
+          enum:
+          - POSITIVE
+          - NEGATIVE
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the acknowledgement result.  
+        Possible values are:
+        - POSITIVE: Indicates that the acknowledgement is positive.
+        - NEGATIVE: Indicates that the acknowledgement is negative.
+
+    LoA:
+      anyOf:
+        - type: string
+          enum:
+          - 0_NO_AUTOMATION
+          - 1_DRIVER_ASSISTANCE
+          - 2_PARTIAL_AUTOMATION
+          - 3_CONDITIONAL_AUTOMATION
+          - 4_HIGH_AUTOMATION
+          - 5_FULL_AUTOMATION
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the Level of Automation (LoA).  
+        Possible values are:
+        - 0_NO_AUTOMATION: Indicates that the LoA is 0, i.e., No Automation.
+        - 1_DRIVER_ASSISTANCE: Indicates that the LoA is 1, i.e., Driver Assistance.
+        - 2_PARTIAL_AUTOMATION: Indicates that the LoA is 2, i.e., Partial Automation.
+        - 3_CONDITIONAL_AUTOMATION: Indicates that the LoA is 3, i.e., Conditional Automation.
+        - 4_HIGH_AUTOMATION: Indicates that the LoA is 4, i.e., High Automation.
+        - 5_FULL_AUTOMATION: Indicates that the LoA is 5, i.e., Full Automation.

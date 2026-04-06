@@ -26,6 +26,8 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
     OpenAPI_plmn_id_t *selected_plmn_id,
     bool is_iab_node_ind,
     int iab_node_ind,
+    bool is_mbsr_node_ind,
+    int mbsr_node_ind,
     OpenAPI_ce_mode_b_ind_t *ce_mode_b_ind,
     OpenAPI_lte_m_ind_t *lte_m_ind,
     bool is_authenticated_ind,
@@ -57,6 +59,8 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
     registration_context_container_local_var->selected_plmn_id = selected_plmn_id;
     registration_context_container_local_var->is_iab_node_ind = is_iab_node_ind;
     registration_context_container_local_var->iab_node_ind = iab_node_ind;
+    registration_context_container_local_var->is_mbsr_node_ind = is_mbsr_node_ind;
+    registration_context_container_local_var->mbsr_node_ind = mbsr_node_ind;
     registration_context_container_local_var->ce_mode_b_ind = ce_mode_b_ind;
     registration_context_container_local_var->lte_m_ind = lte_m_ind;
     registration_context_container_local_var->is_authenticated_ind = is_authenticated_ind;
@@ -351,6 +355,13 @@ cJSON *OpenAPI_registration_context_container_convertToJSON(OpenAPI_registration
     }
     }
 
+    if (registration_context_container->is_mbsr_node_ind) {
+    if (cJSON_AddBoolToObject(item, "mbsrNodeInd", registration_context_container->mbsr_node_ind) == NULL) {
+        ogs_error("OpenAPI_registration_context_container_convertToJSON() failed [mbsr_node_ind]");
+        goto end;
+    }
+    }
+
     if (registration_context_container->ce_mode_b_ind) {
     cJSON *ce_mode_b_ind_local_JSON = OpenAPI_ce_mode_b_ind_convertToJSON(registration_context_container->ce_mode_b_ind);
     if (ce_mode_b_ind_local_JSON == NULL) {
@@ -432,6 +443,7 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
     cJSON *selected_plmn_id = NULL;
     OpenAPI_plmn_id_t *selected_plmn_id_local_nonprim = NULL;
     cJSON *iab_node_ind = NULL;
+    cJSON *mbsr_node_ind = NULL;
     cJSON *ce_mode_b_ind = NULL;
     OpenAPI_ce_mode_b_ind_t *ce_mode_b_ind_local_nonprim = NULL;
     cJSON *lte_m_ind = NULL;
@@ -649,6 +661,14 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
     }
     }
 
+    mbsr_node_ind = cJSON_GetObjectItemCaseSensitive(registration_context_containerJSON, "mbsrNodeInd");
+    if (mbsr_node_ind) {
+    if (!cJSON_IsBool(mbsr_node_ind)) {
+        ogs_error("OpenAPI_registration_context_container_parseFromJSON() failed [mbsr_node_ind]");
+        goto end;
+    }
+    }
+
     ce_mode_b_ind = cJSON_GetObjectItemCaseSensitive(registration_context_containerJSON, "ceModeBInd");
     if (ce_mode_b_ind) {
     ce_mode_b_ind_local_nonprim = OpenAPI_ce_mode_b_ind_parseFromJSON(ce_mode_b_ind);
@@ -707,6 +727,8 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
         selected_plmn_id ? selected_plmn_id_local_nonprim : NULL,
         iab_node_ind ? true : false,
         iab_node_ind ? iab_node_ind->valueint : 0,
+        mbsr_node_ind ? true : false,
+        mbsr_node_ind ? mbsr_node_ind->valueint : 0,
         ce_mode_b_ind ? ce_mode_b_ind_local_nonprim : NULL,
         lte_m_ind ? lte_m_ind_local_nonprim : NULL,
         authenticated_ind ? true : false,

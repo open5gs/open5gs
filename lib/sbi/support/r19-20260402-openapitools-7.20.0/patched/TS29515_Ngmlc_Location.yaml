@@ -1,0 +1,1232 @@
+openapi: 3.0.0
+info:
+  version: '1.3.0'
+  title: 'Ngmlc_Location'
+  description: |
+    GMLC Location Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.515 V19.5.0; 5G System; Gateway Mobile Location Services; Stage 3
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.515/'
+
+servers:
+  - url: '{apiRoot}/ngmlc-loc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - ngmlc-loc
+
+paths:
+  /provide-location:
+    post:
+      summary: Request Location of an UE
+      operationId: RequestLocation
+      tags:
+        - Request Location
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - ngmlc-loc
+        - oAuth2ClientCredentials:
+          - ngmlc-loc
+          - ngmlc-loc:provide-location:invoke
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputData'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationDataExt'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        EventNotify:
+          '{$request.body#/hgmlcCallBackUri}':
+            post:
+              requestBody:
+                description: UE Event Notification
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EventNotifyDataExt'
+              responses:
+                '204':
+                  description: Expected response to a valid notification
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                '504':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+        EventNotifyNf:
+          '{$request.body#/eventNotificationUri}':
+            post:
+              requestBody:
+                description: UE Event Notification
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EventNotifyDataExt'
+              responses:
+                '204':
+                  description: Expected response to a valid notification
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                '504':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /cancel-location:
+    post:
+      summary: request cancellation of periodic or triggered location
+      operationId: CancelLocation
+      tags:
+        - Cancel Location
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - ngmlc-loc
+        - oAuth2ClientCredentials:
+          - ngmlc-loc
+          - ngmlc-loc:cancel-location:invoke
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelLocData'
+        required: true
+      responses:
+        '204':
+          description: Expected response to a successful cancellation
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /location-update:
+    post:
+      summary: update UE location information
+      operationId: UpdateLocation
+      tags:
+        - Update Location
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - ngmlc-loc
+        - oAuth2ClientCredentials:
+          - ngmlc-loc
+          - ngmlc-loc:location-update:invoke
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocUpdateData'
+        required: true
+      responses:
+        '204':
+          description: Expected response to successful location context transfer
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /loc-update-subs:
+    post:
+      summary: subscribe to notifications of UE location information
+      operationId: LocationUpdateSubcribe
+      tags:
+        - UE location information Subscription creation
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - ngmlc-loc
+        - oAuth2ClientCredentials:
+          - ngmlc-loc
+          - ngmlc-loc:loc-update-subs:invoke
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocUpdateSubs'
+        required: true
+      responses:
+        '204':
+          description: Expected response to successful UE location information subscription
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        LocationUpdateNotify:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                description: Location Update Notification
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/LocUpdateNotification'
+              responses:
+                '204':
+                  description: Expected response to a valid notification
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                '504':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /perform-privacy-check-id-mapping:
+    post:
+      summary: Privacy Check Id Mapping for Ranging SL Positioing Service
+      operationId: PrivacyCheckIdMapping
+      tags:
+        - Privacy Check Id Mapping
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - ngmlc-loc
+        - oAuth2ClientCredentials:
+          - ngmlc-loc
+          - ngmlc-loc:perform-privacy-check-id-mapping:invoke
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrivacyCheckIdMappingReqData'
+        required: true
+      responses:
+        '200':
+          description: Successful result for Privacy Check Id Mapping
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivacyCheckIdMappingRespData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            ngmlc-loc: Access to the Ngmlc_Location API
+            ngmlc-loc:provide-location:invoke: Access to invoke Provide Location
+            ngmlc-loc:cancel-location:invoke: Access to invoke Cancel Location
+            ngmlc-loc:location-update:invoke: Access to invoke Location update
+            ngmlc-loc:loc-update-subs:invoke: Access to invoke Location update subscribe
+            ngmlc-loc:perform-privacy-check-id-mapping:invoke: Access to invoke Privacy Check Id Mapping
+
+
+  schemas:
+#
+# COMPLEX TYPES
+#
+    InputData:
+      description: Contains the input parameters in ProvideLocation service operation
+      type: object
+      required:
+        - externalClientType
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        appLayerId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationlayerId'
+        extGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExternalGroupId'
+        intGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        externalClientType:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/ExternalClientType'
+        locationQoS:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocationQoS'
+        supportedGADShapes:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/SupportedGADShapes'
+          minItems: 1
+        serviceIdentity:
+          $ref: '#/components/schemas/ServiceIdentity'
+        serviceCoverage:
+          type: array
+          items:
+            $ref: '#/components/schemas/E164CountryCodeOfGeographicArea'
+          minItems: 1
+        ldrType:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LdrType'
+        periodicEventInfo:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/PeriodicEventInfo'
+        areaEventInfo:
+          $ref: '#/components/schemas/AreaEventInfoExt'
+        motionEventInfo:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/MotionEventInfo'
+        ldrReference:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LdrReference'
+        hgmlcCallBackUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        eventNotificationUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        externalClientIdentification:
+          $ref: '#/components/schemas/ExternalClientIdentification'
+        afId:
+          type: string
+        uePrivacyRequirements:
+          $ref: '#/components/schemas/UePrivacyRequirements'
+        lcsServiceType:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LcsServiceType'
+        velocityRequested:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/VelocityRequested'
+        priority:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LcsPriority'
+        locationTypeRequested:
+          $ref: '#/components/schemas/LocationTypeRequested'
+        maximumAgeOfLocationEstimate:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/AgeOfLocationEstimate'
+        amfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AmfId'
+        codeWord:
+          $ref: '#/components/schemas/CodeWord'
+        scheduledLocTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        reliableLocReq:
+          type: boolean
+          default: false
+        servingLmfId:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LMFIdentification'
+        lpHapType:
+          $ref: 'TS29518_Namf_Location.yaml#/components/schemas/LpHapType'
+        evtRptExpectedArea:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        reportingInd:
+          allOf:
+            - $ref: '#/components/schemas/ReportingInd'
+          default: INSIDE_REPORTING
+        integrityRequirements:
+          $ref: '#/components/schemas/IntegrityRequirements'
+        upLocRepInfoAf:
+          $ref: '#/components/schemas/UpLocRepInfoAf'
+        requestedRangingSlResult:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/RangingSlResult'
+          minItems: 1
+        relatedUes:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedUe'
+          minItems: 1
+        mappedQoSEps:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/MappedLocationQoSEps'
+        coordinateID:
+          type: integer
+        mbsrPosInd:
+          type: boolean
+          enum:
+            - true
+        mwabInd:
+          type: boolean
+          enum:
+            - true
+
+    LocationDataExt:
+      description: Extended Location Data for UEs
+      allOf:
+        - $ref: '#/components/schemas/LocationData'
+        - $ref: '#/components/schemas/AddLocationDatas'
+
+
+
+    LocationData:
+      description: Contains the response parameters in ProvideLocation service operation
+      type: object
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        locationEstimate:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        civicAddress:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CivicAddress'
+        localLocationEstimate:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocalArea'
+        ageOfLocationEstimate:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/AgeOfLocationEstimate'
+        timestampOfLocationEstimate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        positioningDataList:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/PositioningMethodAndUsage'
+          minItems: 1
+        gnssPositioningDataList:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GnssPositioningMethodAndUsage'
+          minItems: 1
+        accuracyFulfilmentIndicator:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/AccuracyFulfilmentIndicator'
+        ueVelocity:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/VelocityEstimate'
+        ldrReference:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LdrReference'
+        altitude:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/Altitude'
+        servingLMFIdentification:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LMFIdentification'
+        locationPrivacyVerResult:
+          $ref: 'TS29518_Namf_Location.yaml#/components/schemas/LocationPrivacyVerResult'
+        successType:
+          $ref: '#/components/schemas/SuccessType'
+        achievedQos:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/MinorLocationQoS'
+        directReportInd:
+          type: boolean
+          default: false
+        acceptedPeriodicEventInfo:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/PeriodicEventInfo'
+        haGnssMetrics:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/HighAccuracyGnssMetrics'
+        losNlosMeasureInd:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LosNlosMeasureInd'
+        indoorOutdoorInd:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/IndoorOutdoorInd'
+        relatedApplicationlayerId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationlayerId'
+        distanceDirection:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/RangeDirection'
+        2dRelativeLocation:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/2DRelativeLocation'
+        3dRelativeLocation:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/3DRelativeLocation'
+        relativeVelocity:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/VelocityEstimate'
+        integrityResult:
+          $ref: '#/components/schemas/IntegrityResult'
+
+    CancelLocData:
+      description: Contains the input parameters in CancelLocation service operation
+      type: object
+      required:
+        - hgmlcCallBackUri
+        - ldrReference
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        extGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExternalGroupId'
+        intGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        hgmlcCallBackUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        ldrReference:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LdrReference'
+        lmfIdentification:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LMFIdentification'
+        amfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AmfId'
+        nrppaPeriodicInd:
+          type: boolean
+          enum:
+            - true
+
+    LocUpdateData:
+      description: Contains the input parameters in LocationUpdate service operation
+      type: object
+      required:
+        - locationRequestType
+        - locationEstimate
+        - ageOfLocationEstimate
+        - accuracyFulfilmentIndicator
+        - lcsQosClass
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        pseudonymIndicator:
+          $ref: '#/components/schemas/PseudonymIndicator'
+        locationRequestType:
+          $ref: '#/components/schemas/LocationRequestType'
+        locationEstimate:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        ageOfLocationEstimate:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/AgeOfLocationEstimate'
+        timestampOfLocationEstimate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        accuracyFulfilmentIndicator:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/AccuracyFulfilmentIndicator'
+        civicAddress:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CivicAddress'
+        lcsQosClass:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LcsQosClass'
+        externalClientIdentification:
+          $ref: '#/components/schemas/ExternalClientIdentification'
+        afId:
+          type: string
+        gmlcNumber:
+          type: string
+          pattern: '^[0-9]{5,15}$'
+        lcsServiceType:
+          $ref: '#/components/schemas/LcsServiceTypeId'
+
+    EventNotifyData:
+      description: >
+        Contains the input parameters for the target UE in EventNotify Notification 
+        service operation
+      type: object
+      required:
+        - eventNotifyDataType
+        - ldrReference
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        ldrReference:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LdrReference'
+        eventNotifyDataType:
+          $ref: '#/components/schemas/EventNotifyDataType'
+        locationEstimate:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        civicAddress:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CivicAddress'
+        localLocationEstimate:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocalArea'
+        ageOfLocationEstimate:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/AgeOfLocationEstimate'
+        timestampOfLocationEstimate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        positioningDataList:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/PositioningMethodAndUsage'
+          minItems: 1
+        gnssPositioningDataList:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GnssPositioningMethodAndUsage'
+          minItems: 1
+        lmfIdentification:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LMFIdentification'
+        amfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AmfId'
+        terminationCause:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/TerminationCause'
+        velocityEstimate:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/VelocityEstimate'
+        altitude:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/Altitude'
+        targetNode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        accuracyFulfilmentIndicator:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/AccuracyFulfilmentIndicator'
+        failureCause:
+          $ref: '#/components/schemas/FailureCause'
+        achievedQos:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/MinorLocationQoS'
+        haGnssMetrics:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/HighAccuracyGnssMetrics'
+        losNlosMeasureInd:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LosNlosMeasureInd'
+        upLocRepStatAf:
+          type: integer
+        indoorOutdoorInd:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/IndoorOutdoorInd'
+        relatedApplicationlayerId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationlayerId'
+        distanceDirection:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/RangeDirection'
+        2dRelativeLocation:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/2DRelativeLocation'
+        3dRelativeLocation:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/3DRelativeLocation'
+        relativeVelocity:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/VelocityEstimate'
+        integrityResult:
+          $ref: '#/components/schemas/IntegrityResult'
+        nrppaPeriodicInd:
+          type: boolean
+          enum:
+            - true
+
+    UePrivacyRequirements:
+      description: >
+        UE privacy requirements from (H)GMLC to the serving AMF or VGMLC(in the roaming case) 
+        for the target UE
+      type: object
+      properties:
+        lcsServiceAuthInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/LcsServiceAuth'
+        codeWordCheck:
+          type: boolean
+
+    LocUpdateNotification:
+      description: Location Update Notification
+      type: object
+      required:
+        - locationRequestType
+        - locationEstimate
+        - ageOfLocationEstimate
+        - accuracyFulfilmentIndicator
+        - lcsQosClass
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        locationRequestType:
+          $ref: '#/components/schemas/LocationRequestType'
+        locationEstimate:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        ageOfLocationEstimate:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/AgeOfLocationEstimate'
+        timestampOfLocationEstimate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        accuracyFulfilmentIndicator:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/AccuracyFulfilmentIndicator'
+        civicAddress:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CivicAddress'
+        lcsQosClass:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LcsQosClass'
+        afId:
+          type: string
+        serviceIdentity:
+          $ref: '#/components/schemas/ServiceIdentity'
+
+    LocUpdateSubs:
+      description: UE location information subscription
+      type: object
+      required:
+        - nfInstanceId
+        - notifURI
+      properties:
+        nfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        notifURI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+
+    EventNotifyDataExt:
+      description: Extended Event Notify Data for UEs of a target group
+      allOf:
+        - $ref: '#/components/schemas/EventNotifyData'
+        - $ref: '#/components/schemas/EventNotifyDataAdditionalInfo'
+
+    EventNotifyDataAdditionalInfo:
+      description: Additional information to Event Notify Data
+      type: object
+      properties:
+        addEventDataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventNotifyData'
+          minItems: 1
+
+    AreaEventInfoAddition:
+      description: Additional information for Extended Area event information
+      type: object
+      properties:
+        geoAreaList:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+        ignoreAreaDefInd:
+          type: boolean
+          default: false
+        additionalCheckInd:
+          type: boolean
+          default: false
+
+    AreaEventInfoExt:
+      description: Extended Area Event Information
+      allOf:
+        - $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/AreaEventInfo'
+        - $ref: '#/components/schemas/AreaEventInfoAddition'
+    IntegrityRequirements:
+      description: integrity requirements.
+      type: object
+      properties:
+        timeToAlert:
+          $ref: '#/components/schemas/TimeToAlert'
+        targetIntegrityRisk:
+          $ref: '#/components/schemas/TargetIntegrityRisk'
+        alertLimit:
+          $ref: '#/components/schemas/AlertLimit'
+
+    AlertLimit:
+      description: Alert Limit.
+      type: object
+      required:
+        - horizontalProtectionLevel
+      properties:
+        horizontalProtectionLevel:
+          $ref: '#/components/schemas/HorizontalProtectionLevel'
+        verticalProtectionLevel:
+          $ref: '#/components/schemas/VerticalProtectionLevel'
+
+    UpLocRepInfoAf:
+      description: Information for the location reporting over user plane
+      type: object
+      properties:
+        upLocRepAfInd:
+          type: boolean
+          enum:
+            - true
+        upLocRepAddrAf:
+          $ref: '#/components/schemas/UpLocRepAddrAf'
+        upCumEvtRptCriteria:
+          $ref: '#/components/schemas/UpCumEvtRptCriteria'
+
+    UpCumEvtRptCriteria:
+      description: Criteria for sending cumulative events reports over control plane
+      type: object
+      properties:
+        evtRptTimeCriteria:
+          type: integer
+        evtRptCountCriteria:
+          type: integer
+
+    RelatedUe:
+      description: Related UE Information
+      type: object
+      required:
+        - relatedUeType
+      properties:
+        appLayerId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationlayerId'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        relatedUeType:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/RelatedUeType'
+
+    PrivacyCheckIdMappingReqData:
+      description: Privacy Check Id Mapping Request Data
+      type: object
+      properties:
+        gpsiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+        appLayerIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationlayerId'
+          minItems: 1
+        externalClientId:
+          $ref: '#/components/schemas/ExternalClientIdentification'
+        afId:
+          type: string
+
+    PrivacyCheckIdMappingRespData:
+      description: Privacy Check Id Mapping Response Data
+      type: object
+      properties:
+        appLayerIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationlayerId'
+          minItems: 1
+        gpsiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+
+    IntegrityProtectionLevel:
+      description: Integrity Protection Level.
+      type: object
+      required:
+        - horizontalProtectionLevel
+      properties:
+        horizontalProtectionLevel:
+          $ref: '#/components/schemas/HorizontalProtectionLevel'
+        verticalProtectionLevel:
+          $ref: '#/components/schemas/VerticalProtectionLevel'
+
+    IntegrityResult:
+      description: Integrity Result.
+      type: object
+      properties:
+        computingEntity:
+          $ref: '#/components/schemas/IntegrityComputingEntity'
+        protectionLevel:
+          $ref: '#/components/schemas/IntegrityProtectionLevel'
+        integrityReqMetInd:
+          type: boolean
+        achievedTir:
+          $ref: '#/components/schemas/TargetIntegrityRisk'
+
+    UpLocRepAddrAf:
+      description: Represents the user plane addressing information.
+      type: object
+      properties:
+        ipv4Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+        ipv6Addrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+        fqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+      anyOf:
+      - required: [ ipv4Addrs ]
+      - required: [ ipv6Addrs ]
+      - required: [ fqdn ]
+
+    AddLocationDatas:
+      description: Contains one or more LocationData
+      type: array
+      items:
+        $ref: '#/components/schemas/LocationData'
+      minItems: 1
+
+#
+# SIMPLE TYPES
+#
+    ServiceIdentity:
+      description: Contains the service identity
+      type: string
+    ExternalClientIdentification:
+      description: Contains the external client identification
+      type: string
+    CodeWord:
+      description: Contains the codeword
+      type: string
+    E164CountryCodeOfGeographicArea:
+      description: Contains the E.164 country codes for geographic areas
+      type: string
+    LcsServiceTypeId:
+      description: LCS Service Type Id.
+      type: integer
+      minimum: 0
+      maximum: 127
+    TimeToAlert:
+      description: Contains the time-to-alert
+      type: integer
+      minimum: 1
+      maximum: 300
+    TargetIntegrityRisk:
+      description: Contains the target integrity risk
+      type: integer
+      minimum: 10
+      maximum: 90
+    HorizontalProtectionLevel:
+      description: Contains the Horizontal Protection Level
+      type: integer
+      minimum: 0
+      maximum: 50000
+    VerticalProtectionLevel:
+      description: Contains the Vertical Protection Level
+      type: integer
+      minimum: 0
+      maximum: 50000
+#
+# ENUMS
+#
+    PseudonymIndicator:
+      anyOf:
+        - type: string
+          enum:
+            - PSEUDONYM_REQUESTED
+            - PSEUDONYM_NOT_REQUESTED
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+      description: |
+        It defines if a pseudonym is requested.
+        Possible values are:
+        - PSEUDONYM_REQUESTED: Pseudonym is requested.
+        - PSEUDONYM_NOT_REQUESTED: Pseudonym is not requested.
+
+    LocationRequestType:
+      anyOf:
+        - type: string
+          enum:
+            - NI_LR
+            - MT_LR
+            - MO_LR
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+      description: |
+        It indicates the location request type.
+        Possible values are:
+        - NI_LR: Network induced location request.
+        - MT_LR: Mobile terminated location request.
+        - MO_LR: Mobile originated location request.
+
+    LocationTypeRequested:
+      anyOf:
+        - type: string
+          enum:
+            - CURRENT_LOCATION
+            - CURRENT_OR_LAST_KNOWN_LOCATION
+            - INITIAL_LOCATION
+            - NOTIFICATION_VERIFICATION_ONLY
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+      description: |
+        Contains the location type requested by the LCS client.
+        Possible values are:
+        - CURRENT_LOCATION: Requesting the current location of the target UE.
+        - CURRENT_OR_LAST_KNOWN_LOCATION: Requesting the current or last known location.
+        - INITIAL_LOCATION: Requesting the initial location of the target UE.
+        - NOTIFICATION_VERIFICATION_ONLY: Requesting notification verification only.
+
+    EventNotifyDataType:
+      anyOf:
+        - type: string
+          enum:
+            - UE_AVAILABLE
+            - PERIODIC
+            - ENTERING_INTO_AREA
+            - LEAVING_FROM_AREA
+            - BEING_INSIDE_AREA
+            - MOTION
+            - MAXIMUM_INTERVAL_EXPIRATION_EVENT
+            - LOCATION_CANCELLATION_EVENT
+            - ACTIVATION_OF_DEFERRED_LOCATION
+            - UE_MOBILITY_FOR_DEFERRED_LOCATION
+            - 5GC_MT_LR
+            - DIRECT_REPORT_EVENT
+            - CUMULATIVE_EVENT_REPORT
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+      description: |
+        Contains the type of event that triggers event notification.
+        Possible values are:
+        - UE_AVAILABLE: UE available event.
+        - PERIODIC: Periodic event.
+        - ENTERING_INTO_AREA: Entering area event.
+        - LEAVING_FROM_AREA: Leaving area event.
+        - BEING_INSIDE_AREA: Being inside area event.
+        - MOTION: Motion event.
+        - MAXIMUM_INTERVAL_EXPIRATION_EVENT: Expiration of maximum reporting interval event.
+        - LOCATION_CANCELLATION_EVENT: Cancellation of location reporting event.
+        - ACTIVATION_OF_DEFERRED_LOCATION: Deferred location request activated.
+        - UE_MOBILITY_FOR_DEFERRED_LOCATION: Mobility of the target UE to a different NF.
+        - 5GC_MT_LR: Report of immediate 5GC MT location.
+        - DIRECT_REPORT_EVENT: Direct location reporting event.
+        - CUMULATIVE_EVENT_REPORT: Cumulative event report for events reported.
+
+    FailureCause:
+      anyOf:
+        - type: string
+          enum:
+            - POSITIONING_DENIED
+            - UNSUPPORTED_BY_UE
+            - NOT_REGISTED_UE
+            - UNSPECIFIED
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+      description: |
+        Positioning failure cause.
+        Possible values are:
+        - POSITIONING_DENIED: Positioning is denied.
+        - UNSUPPORTED_BY_UE: Positioning is not supported by UE.
+        - NOT_REGISTED_UE: UE doesn't register.
+        - UNSPECIFIED: Unspecified.
+
+    SuccessType:
+      anyOf:
+        - type: string
+          enum:
+            - SUCCESS_COMPLETELY
+            - SUCCESS_PARTIALLY
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+      description: |
+        Success Type to indicate full or partial success.
+        Possible values are:
+        - SUCCESS_COMPLETELY: It is completely successful.
+        - SUCCESS_PARTIALLY: It is partially successful.
+
+    ReportingInd:
+      anyOf:
+        - type: string
+          enum:
+            - INSIDE_REPORTING
+            - OUTSIDE_REPORTING
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+      description: |
+        Indicates whether the UE is allowed to generate and send the event report inside or outside
+        the event report allowed(expected) area.
+        Possible values are:
+        - INSIDE_REPORTING: Reporting when UE is inside the event report allowed/expected area.
+        - OUTSIDE_REPORTING: Reporting when UE is outside the event report allowed/expected area.
+
+    IntegrityComputingEntity:
+      anyOf:
+        - type: string
+          enum:
+            - UE
+            - LMF
+            - BOTH
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+      description: |
+        Integrity Computing Entity.
+        Possible values are:
+        - UE: The integrity result was calculated (and determined) by UE.
+        - LMF: The integrity result was calculated (and determined) by LMF.
+        - BOTH: The integrity result was calculated (and determined) by both UE and LMF.

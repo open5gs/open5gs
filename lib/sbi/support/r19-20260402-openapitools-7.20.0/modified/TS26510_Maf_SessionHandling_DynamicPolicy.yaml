@@ -1,0 +1,353 @@
+openapi: 3.0.0
+info:
+  title: Maf_SessionHandling_DynamicPolicy
+  version: 1.1.0
+  description: |
+    Media Delivery: Dynamic Policy API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Maf_SessionHandling_DynamicPolicies
+    description: 'Media Delivery: Dynamic Policy API'
+
+externalDocs:
+  description: 'TS 26.510 V19.0.0; Media Delivery; Interactions and APIs for media session handling'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.510/'
+
+servers:
+  - url: '{apiRoot}/3gpp-maf-session-handling/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 26.510 clause 7.1.3.
+
+security:
+  - {}
+  - OAuth2: []
+
+paths:
+  /provisioning-sessions/{provisioningSessionId}/dynamic-policies:
+    parameters:
+      - name: provisioningSessionId
+        description: 'A valid Provisioning Session identifier'
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+    post:
+      operationId: createDynamicPolicy
+      summary: 'Create (and optionally upload) a new Dynamic Policy resource'
+      security:
+        - OAuth2:
+          - dynamic-policy_create
+      requestBody:
+        description: 'An optional JSON representation of a Dynamic Policy resource'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DynamicPolicy'
+      responses:
+        '201': # OK
+          description: 'Dynamic Policy Resource Created'
+          headers:
+            Location:
+              description: 'The URL of the newly created Dynamic Policy resource'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicPolicy'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden: The client is authorized to invoke the operation, but lacks the required permission
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+ 
+  /provisioning-sessions/{provisioningSessionId}/dynamic-policies/{dynamicPolicyId}:
+    parameters:
+      - name: provisioningSessionId
+        description: 'A valid Provisioning Session identifier'
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+      - name: dynamicPolicyId
+        description: 'The resource identifier of a Dynamic Policy resource'
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+    get:
+      operationId: retrieveDynamicPolicy
+      summary: 'Retrieve an existing Dynamic Policy resource'
+      security:
+        - OAuth2:
+          - dynamic-policy_retrieve
+      responses:
+        '200': # OK
+          description: 'Success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicPolicy'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI too long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    put:
+      operationId: replaceDynamicPolicy
+      summary: 'Replace an existing Dynamic Policy resource'
+      security:
+        - OAuth2:
+          - dynamic-policy_replace
+      requestBody:
+        description: 'A replacement JSON representation of a Dynamic Policy resource'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DynamicPolicy'
+      responses:
+        '200': # OK
+          description: 'Dynamic Policy Replaced'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicPolicy'
+        '204': # No Content
+          description: 'Dynamic Policy Unchanged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    patch:
+      operationId: patchDynamicPolicy
+      summary: 'Patch an existing Dynamic Policy resource'
+      security:
+        - OAuth2:
+          - dynamic-policy_patch
+      requestBody:
+        description: 'A JSON patch to a Dynamic Policy resource'
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/DynamicPolicy'
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/DynamicPolicy'
+      responses:
+        '200': # OK
+          description: 'Dynamic Policy Patched'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DynamicPolicy'
+        '204': # No Content
+          description: 'Dynamic Policy Unchanged'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default' 
+    delete:
+      operationId: destroyDynamicPolicy
+      summary: 'Destroy an existing Dynamic Policy resource'
+      security:
+        - OAuth2:
+          - dynamic-policy_destroy
+      responses:
+        '204': # No Content
+          description: 'Dynamic Policy Destroyed'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '404': # Not Found
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '410': # Gone: Resource no longer exists
+          $ref: 'TS29571_CommonData.yaml#/components/responses/410'
+        '413': # Payload Too Large: No request body allowed for this operation
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            dynamic-policy_create: Create a Dynamic Policy resource
+            dynamic-policy_retrieve: Retrieve a Dynamic Policy resource
+            dynamic-policy_replace: Replace a Dynamic Policy resource
+            dynamic-policy_patch: Patch a Dynamic Policy resource
+            dynamic-policy_destroy: Destroy a Dynamic Policy resource
+        authorizationCode:
+          authorizationUrl: '{authorizationUrl}'
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            dynamic-policy_create: Create a Dynamic Policy resource
+            dynamic-policy_retrieve: Retrieve a Dynamic Policy resource
+            dynamic-policy_replace: Replace a Dynamic Policy resource
+            dynamic-policy_patch: Patch a Dynamic Policy resource
+            dynamic-policy_destroy: Destroy a Dynamic Policy resource
+
+  schemas:
+    DynamicPolicy:
+      description: "A representation of a Dynamic Policy resource."
+      type: object
+      required:
+        - dynamicPolicyId
+        - provisioningSessionId
+        - sessionId
+        - policyTemplateId
+        - applicationFlowBindings
+        - qosEnforcement
+      properties:
+        dynamicPolicyId:
+          readOnly: true
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+#          allOf:
+#            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        provisioningSessionId:
+          readOnly: true
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+#          allOf:
+#            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        sessionId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/MediaDeliverySessionId'
+        policyTemplateId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        sliceInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dataNetworkName:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        location:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/TypedLocation'
+        applicationFlowBindings:
+          type: array
+          items: 
+            $ref: '#/components/schemas/ApplicationFlowBinding'
+          minItems: 1
+        bdtSpecification:
+          $ref: '#/components/schemas/ClientBdtSpecification'
+        qosEnforcement:
+          readOnly: true
+          type: boolean
+        l4SEnabled:
+          readOnly: true
+          type: boolean
+        qoSMonitoringEnabled:
+          readOnly: true
+          type: boolean
+        qoSMonitoringResults:
+          readOnly: true
+          $ref: 'TS29122_AsSessionWithQoS.yaml#/components/schemas/QosMonitoringReport'
+
+    ApplicationFlowBinding:
+      description: "A binding between an Application Flow and its QoS requirements provided by the Media Client."
+      type: object
+      required:
+        - componentReference
+      properties:
+        componentReference:
+          type: string
+          minLength: 1
+        applicationFlowDescription:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ApplicationFlowDescription'
+        qosSpecification:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ClientPolicySpecification'
+
+    ClientBdtSpecification:
+      description: "A client-facing set of Background Data Transfer bids/grants."
+      type: object
+      required:
+        - windows
+      properties:
+        estimatedDataTransferVolume:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThreshold'
+        windows:
+          type: array
+          minItems: 1
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/BdtWindow'

@@ -131,7 +131,7 @@ bool nssf_nnrf_nsselection_handle_get_from_amf_or_vnssf(
             if (nsi->tai_presence) param.tai = &nsi->tai;
 
             r = nssf_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NNSSF_NSSELECTION, h_discovery_option,
+                    OpenAPI_service_name_nnssf_nsselection, h_discovery_option,
                     nssf_nnssf_nsselection_build_get,
                     home, stream, &param);
             ogs_expect(r == OGS_OK);

@@ -11,7 +11,9 @@ OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_create(
     bool is_sur_time_in_num_msg,
     int sur_time_in_num_msg,
     bool is_sur_time_in_time,
-    int sur_time_in_time
+    int sur_time_in_time,
+    OpenAPI_time_window_t *burst_arrival_time_wnd,
+    OpenAPI_periodicity_range_t *periodicity_range
 )
 {
     OpenAPI_tscai_input_container_t *tscai_input_container_local_var = ogs_malloc(sizeof(OpenAPI_tscai_input_container_t));
@@ -24,6 +26,8 @@ OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_create(
     tscai_input_container_local_var->sur_time_in_num_msg = sur_time_in_num_msg;
     tscai_input_container_local_var->is_sur_time_in_time = is_sur_time_in_time;
     tscai_input_container_local_var->sur_time_in_time = sur_time_in_time;
+    tscai_input_container_local_var->burst_arrival_time_wnd = burst_arrival_time_wnd;
+    tscai_input_container_local_var->periodicity_range = periodicity_range;
 
     return tscai_input_container_local_var;
 }
@@ -38,6 +42,14 @@ void OpenAPI_tscai_input_container_free(OpenAPI_tscai_input_container_t *tscai_i
     if (tscai_input_container->burst_arrival_time) {
         ogs_free(tscai_input_container->burst_arrival_time);
         tscai_input_container->burst_arrival_time = NULL;
+    }
+    if (tscai_input_container->burst_arrival_time_wnd) {
+        OpenAPI_time_window_free(tscai_input_container->burst_arrival_time_wnd);
+        tscai_input_container->burst_arrival_time_wnd = NULL;
+    }
+    if (tscai_input_container->periodicity_range) {
+        OpenAPI_periodicity_range_free(tscai_input_container->periodicity_range);
+        tscai_input_container->periodicity_range = NULL;
     }
     ogs_free(tscai_input_container);
 }
@@ -81,6 +93,32 @@ cJSON *OpenAPI_tscai_input_container_convertToJSON(OpenAPI_tscai_input_container
     }
     }
 
+    if (tscai_input_container->burst_arrival_time_wnd) {
+    cJSON *burst_arrival_time_wnd_local_JSON = OpenAPI_time_window_convertToJSON(tscai_input_container->burst_arrival_time_wnd);
+    if (burst_arrival_time_wnd_local_JSON == NULL) {
+        ogs_error("OpenAPI_tscai_input_container_convertToJSON() failed [burst_arrival_time_wnd]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "burstArrivalTimeWnd", burst_arrival_time_wnd_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_tscai_input_container_convertToJSON() failed [burst_arrival_time_wnd]");
+        goto end;
+    }
+    }
+
+    if (tscai_input_container->periodicity_range) {
+    cJSON *periodicity_range_local_JSON = OpenAPI_periodicity_range_convertToJSON(tscai_input_container->periodicity_range);
+    if (periodicity_range_local_JSON == NULL) {
+        ogs_error("OpenAPI_tscai_input_container_convertToJSON() failed [periodicity_range]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "periodicityRange", periodicity_range_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_tscai_input_container_convertToJSON() failed [periodicity_range]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -93,6 +131,10 @@ OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_parseFromJSON(cJS
     cJSON *burst_arrival_time = NULL;
     cJSON *sur_time_in_num_msg = NULL;
     cJSON *sur_time_in_time = NULL;
+    cJSON *burst_arrival_time_wnd = NULL;
+    OpenAPI_time_window_t *burst_arrival_time_wnd_local_nonprim = NULL;
+    cJSON *periodicity_range = NULL;
+    OpenAPI_periodicity_range_t *periodicity_range_local_nonprim = NULL;
     periodicity = cJSON_GetObjectItemCaseSensitive(tscai_input_containerJSON, "periodicity");
     if (periodicity) {
     if (!cJSON_IsNumber(periodicity)) {
@@ -125,6 +167,24 @@ OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_parseFromJSON(cJS
     }
     }
 
+    burst_arrival_time_wnd = cJSON_GetObjectItemCaseSensitive(tscai_input_containerJSON, "burstArrivalTimeWnd");
+    if (burst_arrival_time_wnd) {
+    burst_arrival_time_wnd_local_nonprim = OpenAPI_time_window_parseFromJSON(burst_arrival_time_wnd);
+    if (!burst_arrival_time_wnd_local_nonprim) {
+        ogs_error("OpenAPI_time_window_parseFromJSON failed [burst_arrival_time_wnd]");
+        goto end;
+    }
+    }
+
+    periodicity_range = cJSON_GetObjectItemCaseSensitive(tscai_input_containerJSON, "periodicityRange");
+    if (periodicity_range) {
+    periodicity_range_local_nonprim = OpenAPI_periodicity_range_parseFromJSON(periodicity_range);
+    if (!periodicity_range_local_nonprim) {
+        ogs_error("OpenAPI_periodicity_range_parseFromJSON failed [periodicity_range]");
+        goto end;
+    }
+    }
+
     tscai_input_container_local_var = OpenAPI_tscai_input_container_create (
         periodicity ? true : false,
         periodicity ? periodicity->valuedouble : 0,
@@ -132,11 +192,21 @@ OpenAPI_tscai_input_container_t *OpenAPI_tscai_input_container_parseFromJSON(cJS
         sur_time_in_num_msg ? true : false,
         sur_time_in_num_msg ? sur_time_in_num_msg->valuedouble : 0,
         sur_time_in_time ? true : false,
-        sur_time_in_time ? sur_time_in_time->valuedouble : 0
+        sur_time_in_time ? sur_time_in_time->valuedouble : 0,
+        burst_arrival_time_wnd ? burst_arrival_time_wnd_local_nonprim : NULL,
+        periodicity_range ? periodicity_range_local_nonprim : NULL
     );
 
     return tscai_input_container_local_var;
 end:
+    if (burst_arrival_time_wnd_local_nonprim) {
+        OpenAPI_time_window_free(burst_arrival_time_wnd_local_nonprim);
+        burst_arrival_time_wnd_local_nonprim = NULL;
+    }
+    if (periodicity_range_local_nonprim) {
+        OpenAPI_periodicity_range_free(periodicity_range_local_nonprim);
+        periodicity_range_local_nonprim = NULL;
+    }
     return NULL;
 }
 

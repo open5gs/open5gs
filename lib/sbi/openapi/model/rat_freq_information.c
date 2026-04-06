@@ -13,7 +13,7 @@ OpenAPI_rat_freq_information_t *OpenAPI_rat_freq_information_create(
     int freq,
     OpenAPI_rat_type_e rat_type,
     OpenAPI_threshold_level_t *svc_exp_threshold,
-    OpenAPI_matching_direction_t *matching_dir
+    OpenAPI_matching_direction_e matching_dir
 )
 {
     OpenAPI_rat_freq_information_t *rat_freq_information_local_var = ogs_malloc(sizeof(OpenAPI_rat_freq_information_t));
@@ -42,10 +42,6 @@ void OpenAPI_rat_freq_information_free(OpenAPI_rat_freq_information_t *rat_freq_
     if (rat_freq_information->svc_exp_threshold) {
         OpenAPI_threshold_level_free(rat_freq_information->svc_exp_threshold);
         rat_freq_information->svc_exp_threshold = NULL;
-    }
-    if (rat_freq_information->matching_dir) {
-        OpenAPI_matching_direction_free(rat_freq_information->matching_dir);
-        rat_freq_information->matching_dir = NULL;
     }
     ogs_free(rat_freq_information);
 }
@@ -102,14 +98,8 @@ cJSON *OpenAPI_rat_freq_information_convertToJSON(OpenAPI_rat_freq_information_t
     }
     }
 
-    if (rat_freq_information->matching_dir) {
-    cJSON *matching_dir_local_JSON = OpenAPI_matching_direction_convertToJSON(rat_freq_information->matching_dir);
-    if (matching_dir_local_JSON == NULL) {
-        ogs_error("OpenAPI_rat_freq_information_convertToJSON() failed [matching_dir]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "matchingDir", matching_dir_local_JSON);
-    if (item->child == NULL) {
+    if (rat_freq_information->matching_dir != OpenAPI_matching_direction_NULL) {
+    if (cJSON_AddStringToObject(item, "matchingDir", OpenAPI_matching_direction_ToString(rat_freq_information->matching_dir)) == NULL) {
         ogs_error("OpenAPI_rat_freq_information_convertToJSON() failed [matching_dir]");
         goto end;
     }
@@ -131,7 +121,7 @@ OpenAPI_rat_freq_information_t *OpenAPI_rat_freq_information_parseFromJSON(cJSON
     cJSON *svc_exp_threshold = NULL;
     OpenAPI_threshold_level_t *svc_exp_threshold_local_nonprim = NULL;
     cJSON *matching_dir = NULL;
-    OpenAPI_matching_direction_t *matching_dir_local_nonprim = NULL;
+    OpenAPI_matching_direction_e matching_dirVariable = 0;
     all_freq = cJSON_GetObjectItemCaseSensitive(rat_freq_informationJSON, "allFreq");
     if (all_freq) {
     if (!cJSON_IsBool(all_freq)) {
@@ -176,11 +166,11 @@ OpenAPI_rat_freq_information_t *OpenAPI_rat_freq_information_parseFromJSON(cJSON
 
     matching_dir = cJSON_GetObjectItemCaseSensitive(rat_freq_informationJSON, "matchingDir");
     if (matching_dir) {
-    matching_dir_local_nonprim = OpenAPI_matching_direction_parseFromJSON(matching_dir);
-    if (!matching_dir_local_nonprim) {
-        ogs_error("OpenAPI_matching_direction_parseFromJSON failed [matching_dir]");
+    if (!cJSON_IsString(matching_dir)) {
+        ogs_error("OpenAPI_rat_freq_information_parseFromJSON() failed [matching_dir]");
         goto end;
     }
+    matching_dirVariable = OpenAPI_matching_direction_FromString(matching_dir->valuestring);
     }
 
     rat_freq_information_local_var = OpenAPI_rat_freq_information_create (
@@ -192,7 +182,7 @@ OpenAPI_rat_freq_information_t *OpenAPI_rat_freq_information_parseFromJSON(cJSON
         freq ? freq->valuedouble : 0,
         rat_type ? rat_typeVariable : 0,
         svc_exp_threshold ? svc_exp_threshold_local_nonprim : NULL,
-        matching_dir ? matching_dir_local_nonprim : NULL
+        matching_dir ? matching_dirVariable : 0
     );
 
     return rat_freq_information_local_var;
@@ -200,10 +190,6 @@ end:
     if (svc_exp_threshold_local_nonprim) {
         OpenAPI_threshold_level_free(svc_exp_threshold_local_nonprim);
         svc_exp_threshold_local_nonprim = NULL;
-    }
-    if (matching_dir_local_nonprim) {
-        OpenAPI_matching_direction_free(matching_dir_local_nonprim);
-        matching_dir_local_nonprim = NULL;
     }
     return NULL;
 }

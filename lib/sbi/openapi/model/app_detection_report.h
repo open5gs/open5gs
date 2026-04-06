@@ -1,7 +1,7 @@
 /*
  * app_detection_report.h
  *
- * Indicates the start or stop of the detected application traffic and the application identifier of the detected application traffic.
+ * Indicates the start or stop of the detected application traffic and the application identifier of the detected application traffic. 
  */
 
 #ifndef _OpenAPI_app_detection_report_H_
@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_app_detection_report_s OpenAPI_app_detection_report_t;
 #include "app_detection_notif_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_app_detection_report_s OpenAPI_app_detection_report_t;
-typedef struct OpenAPI_app_detection_report_s {
+struct OpenAPI_app_detection_report_s {
     OpenAPI_app_detection_notif_type_e ad_notif_type;
     char *af_app_id;
-} OpenAPI_app_detection_report_t;
+};
 
 OpenAPI_app_detection_report_t *OpenAPI_app_detection_report_create(
     OpenAPI_app_detection_notif_type_e ad_notif_type,

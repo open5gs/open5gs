@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_confirmation_data_response_s OpenAPI_confirmation_data_response_t;
 #include "auth_result.h"
 #include "server_addressing_info.h"
 
@@ -19,13 +20,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_confirmation_data_response_s OpenAPI_confirmation_data_response_t;
-typedef struct OpenAPI_confirmation_data_response_s {
+struct OpenAPI_confirmation_data_response_s {
     OpenAPI_auth_result_e auth_result;
     char *supi;
     char *kseaf;
     OpenAPI_list_t *pvs_info;
-} OpenAPI_confirmation_data_response_t;
+};
 
 OpenAPI_confirmation_data_response_t *OpenAPI_confirmation_data_response_create(
     OpenAPI_auth_result_e auth_result,

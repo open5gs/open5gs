@@ -1,7 +1,7 @@
 /*
  * network_area_info_1.h
  *
- * Describes a network area information in which the NF service consumer requests the number of UEs.
+ * Describes a network area information in which the NF service consumer requests the number of UEs. 
  */
 
 #ifndef _OpenAPI_network_area_info_1_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_network_area_info_1_s OpenAPI_network_area_info_1_t;
 #include "ecgi.h"
 #include "global_ran_node_id.h"
 #include "ncgi.h"
@@ -21,13 +22,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_network_area_info_1_s OpenAPI_network_area_info_1_t;
-typedef struct OpenAPI_network_area_info_1_s {
+struct OpenAPI_network_area_info_1_s {
     OpenAPI_list_t *ecgis;
     OpenAPI_list_t *ncgis;
     OpenAPI_list_t *g_ran_node_ids;
     OpenAPI_list_t *tais;
-} OpenAPI_network_area_info_1_t;
+};
 
 OpenAPI_network_area_info_1_t *OpenAPI_network_area_info_1_create(
     OpenAPI_list_t *ecgis,

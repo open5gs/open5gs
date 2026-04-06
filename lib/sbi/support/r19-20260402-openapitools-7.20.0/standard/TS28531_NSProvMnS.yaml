@@ -1,0 +1,82 @@
+openapi: 3.0.1
+info:
+  title: Network Slice Provisioning MnS
+  version: 18.6.0
+  description: >-
+    OAS 3.0.1 definition of the Network Slice Provisioning MnS
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.531; Provisioning
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.531/
+servers:
+  - url: '{MnSRoot}/NSProvMnS/{MnSVersion}'
+    variables:
+      MnSRoot:
+        description: See clause 4.4.2 of TS 32.158
+        default: http://example.com/3GPPManagement
+      MnSVersion:
+        description: Version number of the OpenAPI definition
+        default: XXX
+paths:
+  /ServiceProfiles:
+   post:
+    summary: Create a ServiceProfile
+    description: To create a ServiceProfile resource to represent network slice related requirements.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+              $ref: '#/components/schemas/ServiceProfile-Type'
+    responses:
+        '201':
+          description: Success case ("201 Created"). The representation of the newly created ServiceProfile resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceProfileId-Type'
+        default:
+          description: Error case.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponseDefault'
+
+  /ServiceProfiles/{ServiceProfileId}:
+   delete:
+    summary: Delete a ServiceProfile
+    description: To delete a ServiceProfile resource to represent network slice related requirements.
+    parameters:
+      - name: ServiceProfileId
+        in: path
+        description: Identifies an individual ServiceProfille.
+        required: true
+        schema:
+          $ref: '#/components/schemas/ServiceProfileId-Type'
+      - name: networkSliceDN
+        in: query
+        description: Identifies the DN of NetworkSlice MOI uniquely identifying the network slice instance
+        required: true
+        schema:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'  
+    responses:
+      '204':
+        description: >-
+          Success case ("204 No Content").
+          The ServiceProfile resource has been deleted. The response message body is absent.
+      default:
+        description: Error case.
+        content:
+          application/json:
+            schema:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/ErrorResponseDefault'
+components:
+  schemas:
+    uri-Type:
+      description: Resource URI
+      type: string
+    ServiceProfileId-Type:
+       $ref: '#/components/schemas/uri-Type'
+    ServiceProfile-Type:
+       $ref: 'TS28541_SliceNrm.yaml#/components/schemas/ServiceProfile'     

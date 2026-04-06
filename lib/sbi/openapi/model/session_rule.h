@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_session_rule_s OpenAPI_session_rule_t;
 #include "ambr.h"
 #include "authorized_default_qos.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_session_rule_s OpenAPI_session_rule_t;
-typedef struct OpenAPI_session_rule_s {
+struct OpenAPI_session_rule_s {
     struct OpenAPI_ambr_s *auth_sess_ambr;
     struct OpenAPI_authorized_default_qos_s *auth_def_qos;
     char *sess_rule_id;
@@ -30,7 +30,7 @@ typedef struct OpenAPI_session_rule_s {
     char *ref_um_n3g_data;
     bool is_ref_cond_data_null;
     char *ref_cond_data;
-} OpenAPI_session_rule_t;
+};
 
 OpenAPI_session_rule_t *OpenAPI_session_rule_create(
     OpenAPI_ambr_t *auth_sess_ambr,

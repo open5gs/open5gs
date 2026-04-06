@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_context_transfer_200_response_s OpenAPI_ue_context_transfer_200_response_t;
 #include "ue_context_transfer_rsp_data.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_context_transfer_200_response_s OpenAPI_ue_context_transfer_200_response_t;
-typedef struct OpenAPI_ue_context_transfer_200_response_s {
+struct OpenAPI_ue_context_transfer_200_response_s {
     struct OpenAPI_ue_context_transfer_rsp_data_s *json_data;
     OpenAPI_binary_t* binary_data_n2_information;
     OpenAPI_binary_t* binary_data_n2_information_ext1;
     OpenAPI_binary_t* binary_data_n2_information_ext2;
-} OpenAPI_ue_context_transfer_200_response_t;
+};
 
 OpenAPI_ue_context_transfer_200_response_t *OpenAPI_ue_context_transfer_200_response_create(
     OpenAPI_ue_context_transfer_rsp_data_t *json_data,

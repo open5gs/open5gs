@@ -8,20 +8,30 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_create(
     bool is_any_slice,
     int any_slice,
     OpenAPI_list_t *app_ids,
+    OpenAPI_list_t *deviations,
     OpenAPI_list_t *dnns,
     OpenAPI_list_t *dnais,
-    OpenAPI_nwdaf_event_t *event,
+    OpenAPI_nwdaf_event_e event,
     OpenAPI_event_reporting_requirement_t *extra_report_req,
     OpenAPI_list_t *ladn_dnns,
     bool is_load_level_threshold,
     int load_level_threshold,
-    OpenAPI_notification_method_t *notification_method,
-    OpenAPI_matching_direction_t *matching_dir,
+    OpenAPI_notification_method_e notification_method,
+    OpenAPI_matching_direction_e matching_dir,
     OpenAPI_list_t *nf_load_lvl_thds,
     OpenAPI_list_t *nf_instance_ids,
     OpenAPI_list_t *nf_set_ids,
     OpenAPI_list_t *nf_types,
     OpenAPI_network_area_info_t *network_area,
+    bool is_location_null,
+    OpenAPI_geo_location_t *location,
+    bool is_temporal_gran_size,
+    int temporal_gran_size,
+    bool is_spatial_gran_size_ta,
+    int spatial_gran_size_ta,
+    bool is_spatial_gran_size_cell,
+    int spatial_gran_size_cell,
+    OpenAPI_list_t *fine_gran_areas,
     OpenAPI_list_t *visited_areas,
     bool is_max_top_app_ul_nbr,
     int max_top_app_ul_nbr,
@@ -32,15 +42,20 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_create(
     OpenAPI_qos_requirement_t *qos_requ,
     OpenAPI_list_t *qos_flow_ret_thds,
     OpenAPI_list_t *ran_ue_throu_thds,
+    OpenAPI_list_t *e2e_delay_thds,
     bool is_repetition_period,
     int repetition_period,
     OpenAPI_list_t *snssaia,
     OpenAPI_target_ue_information_t *tgt_ue,
+    OpenAPI_roaming_info_t *roaming_info,
     OpenAPI_list_t *cong_thresholds,
     OpenAPI_list_t *nw_perf_requs,
+    OpenAPI_list_t *ue_comm_reqs,
+    OpenAPI_list_t *ue_mobility_reqs,
+    OpenAPI_user_data_con_order_crit_e user_data_con_order_cri,
     OpenAPI_list_t *bw_requs,
     OpenAPI_list_t *excep_requs,
-    OpenAPI_expected_analytics_type_t *expt_ana_type,
+    OpenAPI_expected_analytics_type_e expt_ana_type,
     OpenAPI_expected_ue_behaviour_data_t *expt_ue_behav,
     OpenAPI_list_t *rat_freqs,
     OpenAPI_list_t *list_of_ana_subsets,
@@ -49,7 +64,25 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_create(
     OpenAPI_list_t *wlan_reqs,
     OpenAPI_upf_information_t *upf_info,
     OpenAPI_list_t *app_server_addrs,
-    OpenAPI_list_t *dn_perf_reqs
+    OpenAPI_list_t *dn_perf_reqs,
+    OpenAPI_list_t *pdu_ses_infos,
+    char *use_case_cxt,
+    OpenAPI_list_t *pdu_ses_traf_reqs,
+    OpenAPI_list_t *loc_acc_reqs,
+    OpenAPI_loc_info_granularity_e loc_granularity,
+    OpenAPI_location_orientation_e loc_orientation,
+    OpenAPI_list_t *data_vl_trns_tm_rqs,
+    OpenAPI_accuracy_req_t *accu_req,
+    bool is_pause_flg,
+    int pause_flg,
+    bool is_resume_flg,
+    int resume_flg,
+    OpenAPI_list_t *mov_behav_reqs,
+    OpenAPI_list_t *rel_prox_reqs,
+    OpenAPI_analytics_feedback_info_t *feedback,
+    OpenAPI_list_t *sig_storm_reqs,
+    OpenAPI_list_t *qos_pol_assist_reqs,
+    OpenAPI_list_t *last_ue_locs
 )
 {
     OpenAPI_event_subscription_t *event_subscription_local_var = ogs_malloc(sizeof(OpenAPI_event_subscription_t));
@@ -58,6 +91,7 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_create(
     event_subscription_local_var->is_any_slice = is_any_slice;
     event_subscription_local_var->any_slice = any_slice;
     event_subscription_local_var->app_ids = app_ids;
+    event_subscription_local_var->deviations = deviations;
     event_subscription_local_var->dnns = dnns;
     event_subscription_local_var->dnais = dnais;
     event_subscription_local_var->event = event;
@@ -72,6 +106,15 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_create(
     event_subscription_local_var->nf_set_ids = nf_set_ids;
     event_subscription_local_var->nf_types = nf_types;
     event_subscription_local_var->network_area = network_area;
+    event_subscription_local_var->is_location_null = is_location_null;
+    event_subscription_local_var->location = location;
+    event_subscription_local_var->is_temporal_gran_size = is_temporal_gran_size;
+    event_subscription_local_var->temporal_gran_size = temporal_gran_size;
+    event_subscription_local_var->is_spatial_gran_size_ta = is_spatial_gran_size_ta;
+    event_subscription_local_var->spatial_gran_size_ta = spatial_gran_size_ta;
+    event_subscription_local_var->is_spatial_gran_size_cell = is_spatial_gran_size_cell;
+    event_subscription_local_var->spatial_gran_size_cell = spatial_gran_size_cell;
+    event_subscription_local_var->fine_gran_areas = fine_gran_areas;
     event_subscription_local_var->visited_areas = visited_areas;
     event_subscription_local_var->is_max_top_app_ul_nbr = is_max_top_app_ul_nbr;
     event_subscription_local_var->max_top_app_ul_nbr = max_top_app_ul_nbr;
@@ -82,12 +125,17 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_create(
     event_subscription_local_var->qos_requ = qos_requ;
     event_subscription_local_var->qos_flow_ret_thds = qos_flow_ret_thds;
     event_subscription_local_var->ran_ue_throu_thds = ran_ue_throu_thds;
+    event_subscription_local_var->e2e_delay_thds = e2e_delay_thds;
     event_subscription_local_var->is_repetition_period = is_repetition_period;
     event_subscription_local_var->repetition_period = repetition_period;
     event_subscription_local_var->snssaia = snssaia;
     event_subscription_local_var->tgt_ue = tgt_ue;
+    event_subscription_local_var->roaming_info = roaming_info;
     event_subscription_local_var->cong_thresholds = cong_thresholds;
     event_subscription_local_var->nw_perf_requs = nw_perf_requs;
+    event_subscription_local_var->ue_comm_reqs = ue_comm_reqs;
+    event_subscription_local_var->ue_mobility_reqs = ue_mobility_reqs;
+    event_subscription_local_var->user_data_con_order_cri = user_data_con_order_cri;
     event_subscription_local_var->bw_requs = bw_requs;
     event_subscription_local_var->excep_requs = excep_requs;
     event_subscription_local_var->expt_ana_type = expt_ana_type;
@@ -100,6 +148,24 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_create(
     event_subscription_local_var->upf_info = upf_info;
     event_subscription_local_var->app_server_addrs = app_server_addrs;
     event_subscription_local_var->dn_perf_reqs = dn_perf_reqs;
+    event_subscription_local_var->pdu_ses_infos = pdu_ses_infos;
+    event_subscription_local_var->use_case_cxt = use_case_cxt;
+    event_subscription_local_var->pdu_ses_traf_reqs = pdu_ses_traf_reqs;
+    event_subscription_local_var->loc_acc_reqs = loc_acc_reqs;
+    event_subscription_local_var->loc_granularity = loc_granularity;
+    event_subscription_local_var->loc_orientation = loc_orientation;
+    event_subscription_local_var->data_vl_trns_tm_rqs = data_vl_trns_tm_rqs;
+    event_subscription_local_var->accu_req = accu_req;
+    event_subscription_local_var->is_pause_flg = is_pause_flg;
+    event_subscription_local_var->pause_flg = pause_flg;
+    event_subscription_local_var->is_resume_flg = is_resume_flg;
+    event_subscription_local_var->resume_flg = resume_flg;
+    event_subscription_local_var->mov_behav_reqs = mov_behav_reqs;
+    event_subscription_local_var->rel_prox_reqs = rel_prox_reqs;
+    event_subscription_local_var->feedback = feedback;
+    event_subscription_local_var->sig_storm_reqs = sig_storm_reqs;
+    event_subscription_local_var->qos_pol_assist_reqs = qos_pol_assist_reqs;
+    event_subscription_local_var->last_ue_locs = last_ue_locs;
 
     return event_subscription_local_var;
 }
@@ -118,6 +184,13 @@ void OpenAPI_event_subscription_free(OpenAPI_event_subscription_t *event_subscri
         OpenAPI_list_free(event_subscription->app_ids);
         event_subscription->app_ids = NULL;
     }
+    if (event_subscription->deviations) {
+        OpenAPI_list_for_each(event_subscription->deviations, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->deviations);
+        event_subscription->deviations = NULL;
+    }
     if (event_subscription->dnns) {
         OpenAPI_list_for_each(event_subscription->dnns, node) {
             ogs_free(node->data);
@@ -132,10 +205,6 @@ void OpenAPI_event_subscription_free(OpenAPI_event_subscription_t *event_subscri
         OpenAPI_list_free(event_subscription->dnais);
         event_subscription->dnais = NULL;
     }
-    if (event_subscription->event) {
-        OpenAPI_nwdaf_event_free(event_subscription->event);
-        event_subscription->event = NULL;
-    }
     if (event_subscription->extra_report_req) {
         OpenAPI_event_reporting_requirement_free(event_subscription->extra_report_req);
         event_subscription->extra_report_req = NULL;
@@ -146,14 +215,6 @@ void OpenAPI_event_subscription_free(OpenAPI_event_subscription_t *event_subscri
         }
         OpenAPI_list_free(event_subscription->ladn_dnns);
         event_subscription->ladn_dnns = NULL;
-    }
-    if (event_subscription->notification_method) {
-        OpenAPI_notification_method_free(event_subscription->notification_method);
-        event_subscription->notification_method = NULL;
-    }
-    if (event_subscription->matching_dir) {
-        OpenAPI_matching_direction_free(event_subscription->matching_dir);
-        event_subscription->matching_dir = NULL;
     }
     if (event_subscription->nf_load_lvl_thds) {
         OpenAPI_list_for_each(event_subscription->nf_load_lvl_thds, node) {
@@ -183,6 +244,17 @@ void OpenAPI_event_subscription_free(OpenAPI_event_subscription_t *event_subscri
     if (event_subscription->network_area) {
         OpenAPI_network_area_info_free(event_subscription->network_area);
         event_subscription->network_area = NULL;
+    }
+    if (event_subscription->location) {
+        OpenAPI_geo_location_free(event_subscription->location);
+        event_subscription->location = NULL;
+    }
+    if (event_subscription->fine_gran_areas) {
+        OpenAPI_list_for_each(event_subscription->fine_gran_areas, node) {
+            OpenAPI_geographical_area_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->fine_gran_areas);
+        event_subscription->fine_gran_areas = NULL;
     }
     if (event_subscription->visited_areas) {
         OpenAPI_list_for_each(event_subscription->visited_areas, node) {
@@ -223,6 +295,13 @@ void OpenAPI_event_subscription_free(OpenAPI_event_subscription_t *event_subscri
         OpenAPI_list_free(event_subscription->ran_ue_throu_thds);
         event_subscription->ran_ue_throu_thds = NULL;
     }
+    if (event_subscription->e2e_delay_thds) {
+        OpenAPI_list_for_each(event_subscription->e2e_delay_thds, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->e2e_delay_thds);
+        event_subscription->e2e_delay_thds = NULL;
+    }
     if (event_subscription->snssaia) {
         OpenAPI_list_for_each(event_subscription->snssaia, node) {
             OpenAPI_snssai_free(node->data);
@@ -233,6 +312,10 @@ void OpenAPI_event_subscription_free(OpenAPI_event_subscription_t *event_subscri
     if (event_subscription->tgt_ue) {
         OpenAPI_target_ue_information_free(event_subscription->tgt_ue);
         event_subscription->tgt_ue = NULL;
+    }
+    if (event_subscription->roaming_info) {
+        OpenAPI_roaming_info_free(event_subscription->roaming_info);
+        event_subscription->roaming_info = NULL;
     }
     if (event_subscription->cong_thresholds) {
         OpenAPI_list_for_each(event_subscription->cong_thresholds, node) {
@@ -248,6 +331,20 @@ void OpenAPI_event_subscription_free(OpenAPI_event_subscription_t *event_subscri
         OpenAPI_list_free(event_subscription->nw_perf_requs);
         event_subscription->nw_perf_requs = NULL;
     }
+    if (event_subscription->ue_comm_reqs) {
+        OpenAPI_list_for_each(event_subscription->ue_comm_reqs, node) {
+            OpenAPI_ue_comm_req_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->ue_comm_reqs);
+        event_subscription->ue_comm_reqs = NULL;
+    }
+    if (event_subscription->ue_mobility_reqs) {
+        OpenAPI_list_for_each(event_subscription->ue_mobility_reqs, node) {
+            OpenAPI_ue_mobility_req_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->ue_mobility_reqs);
+        event_subscription->ue_mobility_reqs = NULL;
+    }
     if (event_subscription->bw_requs) {
         OpenAPI_list_for_each(event_subscription->bw_requs, node) {
             OpenAPI_bw_requirement_free(node->data);
@@ -262,10 +359,6 @@ void OpenAPI_event_subscription_free(OpenAPI_event_subscription_t *event_subscri
         OpenAPI_list_free(event_subscription->excep_requs);
         event_subscription->excep_requs = NULL;
     }
-    if (event_subscription->expt_ana_type) {
-        OpenAPI_expected_analytics_type_free(event_subscription->expt_ana_type);
-        event_subscription->expt_ana_type = NULL;
-    }
     if (event_subscription->expt_ue_behav) {
         OpenAPI_expected_ue_behaviour_data_free(event_subscription->expt_ue_behav);
         event_subscription->expt_ue_behav = NULL;
@@ -278,9 +371,6 @@ void OpenAPI_event_subscription_free(OpenAPI_event_subscription_t *event_subscri
         event_subscription->rat_freqs = NULL;
     }
     if (event_subscription->list_of_ana_subsets) {
-        OpenAPI_list_for_each(event_subscription->list_of_ana_subsets, node) {
-            OpenAPI_analytics_subset_free(node->data);
-        }
         OpenAPI_list_free(event_subscription->list_of_ana_subsets);
         event_subscription->list_of_ana_subsets = NULL;
     }
@@ -323,6 +413,81 @@ void OpenAPI_event_subscription_free(OpenAPI_event_subscription_t *event_subscri
         OpenAPI_list_free(event_subscription->dn_perf_reqs);
         event_subscription->dn_perf_reqs = NULL;
     }
+    if (event_subscription->pdu_ses_infos) {
+        OpenAPI_list_for_each(event_subscription->pdu_ses_infos, node) {
+            OpenAPI_pdu_session_info_1_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->pdu_ses_infos);
+        event_subscription->pdu_ses_infos = NULL;
+    }
+    if (event_subscription->use_case_cxt) {
+        ogs_free(event_subscription->use_case_cxt);
+        event_subscription->use_case_cxt = NULL;
+    }
+    if (event_subscription->pdu_ses_traf_reqs) {
+        OpenAPI_list_for_each(event_subscription->pdu_ses_traf_reqs, node) {
+            OpenAPI_pdu_ses_traffic_req_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->pdu_ses_traf_reqs);
+        event_subscription->pdu_ses_traf_reqs = NULL;
+    }
+    if (event_subscription->loc_acc_reqs) {
+        OpenAPI_list_for_each(event_subscription->loc_acc_reqs, node) {
+            OpenAPI_loc_accuracy_req_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->loc_acc_reqs);
+        event_subscription->loc_acc_reqs = NULL;
+    }
+    if (event_subscription->data_vl_trns_tm_rqs) {
+        OpenAPI_list_for_each(event_subscription->data_vl_trns_tm_rqs, node) {
+            OpenAPI_e2e_data_vol_trans_time_req_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->data_vl_trns_tm_rqs);
+        event_subscription->data_vl_trns_tm_rqs = NULL;
+    }
+    if (event_subscription->accu_req) {
+        OpenAPI_accuracy_req_free(event_subscription->accu_req);
+        event_subscription->accu_req = NULL;
+    }
+    if (event_subscription->mov_behav_reqs) {
+        OpenAPI_list_for_each(event_subscription->mov_behav_reqs, node) {
+            OpenAPI_mov_behav_req_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->mov_behav_reqs);
+        event_subscription->mov_behav_reqs = NULL;
+    }
+    if (event_subscription->rel_prox_reqs) {
+        OpenAPI_list_for_each(event_subscription->rel_prox_reqs, node) {
+            OpenAPI_rel_prox_req_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->rel_prox_reqs);
+        event_subscription->rel_prox_reqs = NULL;
+    }
+    if (event_subscription->feedback) {
+        OpenAPI_analytics_feedback_info_free(event_subscription->feedback);
+        event_subscription->feedback = NULL;
+    }
+    if (event_subscription->sig_storm_reqs) {
+        OpenAPI_list_for_each(event_subscription->sig_storm_reqs, node) {
+            OpenAPI_signal_storm_req_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->sig_storm_reqs);
+        event_subscription->sig_storm_reqs = NULL;
+    }
+    if (event_subscription->qos_pol_assist_reqs) {
+        OpenAPI_list_for_each(event_subscription->qos_pol_assist_reqs, node) {
+            OpenAPI_qos_policy_assist_req_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->qos_pol_assist_reqs);
+        event_subscription->qos_pol_assist_reqs = NULL;
+    }
+    if (event_subscription->last_ue_locs) {
+        OpenAPI_list_for_each(event_subscription->last_ue_locs, node) {
+            OpenAPI_timestamped_location_free(node->data);
+        }
+        OpenAPI_list_free(event_subscription->last_ue_locs);
+        event_subscription->last_ue_locs = NULL;
+    }
     ogs_free(event_subscription);
 }
 
@@ -358,6 +523,24 @@ cJSON *OpenAPI_event_subscription_convertToJSON(OpenAPI_event_subscription_t *ev
     }
     }
 
+    if (event_subscription->deviations) {
+    cJSON *deviationsList = cJSON_AddArrayToObject(item, "deviations");
+    if (deviationsList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [deviations]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->deviations, node) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [deviations]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(deviationsList, "", *(double *)node->data) == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [deviations]");
+            goto end;
+        }
+    }
+    }
+
     if (event_subscription->dnns) {
     cJSON *dnnsList = cJSON_AddArrayToObject(item, "dnns");
     if (dnnsList == NULL) {
@@ -386,17 +569,11 @@ cJSON *OpenAPI_event_subscription_convertToJSON(OpenAPI_event_subscription_t *ev
     }
     }
 
-    if (!event_subscription->event) {
+    if (event_subscription->event == OpenAPI_nwdaf_event_NULL) {
         ogs_error("OpenAPI_event_subscription_convertToJSON() failed [event]");
         return NULL;
     }
-    cJSON *event_local_JSON = OpenAPI_nwdaf_event_convertToJSON(event_subscription->event);
-    if (event_local_JSON == NULL) {
-        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [event]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "event", event_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "event", OpenAPI_nwdaf_event_ToString(event_subscription->event)) == NULL) {
         ogs_error("OpenAPI_event_subscription_convertToJSON() failed [event]");
         goto end;
     }
@@ -435,27 +612,15 @@ cJSON *OpenAPI_event_subscription_convertToJSON(OpenAPI_event_subscription_t *ev
     }
     }
 
-    if (event_subscription->notification_method) {
-    cJSON *notification_method_local_JSON = OpenAPI_notification_method_convertToJSON(event_subscription->notification_method);
-    if (notification_method_local_JSON == NULL) {
-        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [notification_method]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "notificationMethod", notification_method_local_JSON);
-    if (item->child == NULL) {
+    if (event_subscription->notification_method != OpenAPI_notification_method_NULL) {
+    if (cJSON_AddStringToObject(item, "notificationMethod", OpenAPI_notification_method_ToString(event_subscription->notification_method)) == NULL) {
         ogs_error("OpenAPI_event_subscription_convertToJSON() failed [notification_method]");
         goto end;
     }
     }
 
-    if (event_subscription->matching_dir) {
-    cJSON *matching_dir_local_JSON = OpenAPI_matching_direction_convertToJSON(event_subscription->matching_dir);
-    if (matching_dir_local_JSON == NULL) {
-        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [matching_dir]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "matchingDir", matching_dir_local_JSON);
-    if (item->child == NULL) {
+    if (event_subscription->matching_dir != OpenAPI_matching_direction_NULL) {
+    if (cJSON_AddStringToObject(item, "matchingDir", OpenAPI_matching_direction_ToString(event_subscription->matching_dir)) == NULL) {
         ogs_error("OpenAPI_event_subscription_convertToJSON() failed [matching_dir]");
         goto end;
     }
@@ -529,6 +694,61 @@ cJSON *OpenAPI_event_subscription_convertToJSON(OpenAPI_event_subscription_t *ev
     if (item->child == NULL) {
         ogs_error("OpenAPI_event_subscription_convertToJSON() failed [network_area]");
         goto end;
+    }
+    }
+
+    if (event_subscription->location) {
+    cJSON *location_local_JSON = OpenAPI_geo_location_convertToJSON(event_subscription->location);
+    if (location_local_JSON == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [location]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "location", location_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [location]");
+        goto end;
+    }
+    } else if (event_subscription->is_location_null) {
+        if (cJSON_AddNullToObject(item, "location") == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [location]");
+            goto end;
+        }
+    }
+
+    if (event_subscription->is_temporal_gran_size) {
+    if (cJSON_AddNumberToObject(item, "temporalGranSize", event_subscription->temporal_gran_size) == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [temporal_gran_size]");
+        goto end;
+    }
+    }
+
+    if (event_subscription->is_spatial_gran_size_ta) {
+    if (cJSON_AddNumberToObject(item, "spatialGranSizeTa", event_subscription->spatial_gran_size_ta) == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [spatial_gran_size_ta]");
+        goto end;
+    }
+    }
+
+    if (event_subscription->is_spatial_gran_size_cell) {
+    if (cJSON_AddNumberToObject(item, "spatialGranSizeCell", event_subscription->spatial_gran_size_cell) == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [spatial_gran_size_cell]");
+        goto end;
+    }
+    }
+
+    if (event_subscription->fine_gran_areas) {
+    cJSON *fine_gran_areasList = cJSON_AddArrayToObject(item, "fineGranAreas");
+    if (fine_gran_areasList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [fine_gran_areas]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->fine_gran_areas, node) {
+        cJSON *itemLocal = OpenAPI_geographical_area_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [fine_gran_areas]");
+            goto end;
+        }
+        cJSON_AddItemToArray(fine_gran_areasList, itemLocal);
     }
     }
 
@@ -639,6 +859,24 @@ cJSON *OpenAPI_event_subscription_convertToJSON(OpenAPI_event_subscription_t *ev
     }
     }
 
+    if (event_subscription->e2e_delay_thds) {
+    cJSON *e2e_delay_thdsList = cJSON_AddArrayToObject(item, "e2eDelayThds");
+    if (e2e_delay_thdsList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [e2e_delay_thds]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->e2e_delay_thds, node) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [e2e_delay_thds]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(e2e_delay_thdsList, "", *(double *)node->data) == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [e2e_delay_thds]");
+            goto end;
+        }
+    }
+    }
+
     if (event_subscription->is_repetition_period) {
     if (cJSON_AddNumberToObject(item, "repetitionPeriod", event_subscription->repetition_period) == NULL) {
         ogs_error("OpenAPI_event_subscription_convertToJSON() failed [repetition_period]");
@@ -675,6 +913,19 @@ cJSON *OpenAPI_event_subscription_convertToJSON(OpenAPI_event_subscription_t *ev
     }
     }
 
+    if (event_subscription->roaming_info) {
+    cJSON *roaming_info_local_JSON = OpenAPI_roaming_info_convertToJSON(event_subscription->roaming_info);
+    if (roaming_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [roaming_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "roamingInfo", roaming_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [roaming_info]");
+        goto end;
+    }
+    }
+
     if (event_subscription->cong_thresholds) {
     cJSON *cong_thresholdsList = cJSON_AddArrayToObject(item, "congThresholds");
     if (cong_thresholdsList == NULL) {
@@ -704,6 +955,45 @@ cJSON *OpenAPI_event_subscription_convertToJSON(OpenAPI_event_subscription_t *ev
             goto end;
         }
         cJSON_AddItemToArray(nw_perf_requsList, itemLocal);
+    }
+    }
+
+    if (event_subscription->ue_comm_reqs) {
+    cJSON *ue_comm_reqsList = cJSON_AddArrayToObject(item, "ueCommReqs");
+    if (ue_comm_reqsList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [ue_comm_reqs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->ue_comm_reqs, node) {
+        cJSON *itemLocal = OpenAPI_ue_comm_req_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [ue_comm_reqs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(ue_comm_reqsList, itemLocal);
+    }
+    }
+
+    if (event_subscription->ue_mobility_reqs) {
+    cJSON *ue_mobility_reqsList = cJSON_AddArrayToObject(item, "ueMobilityReqs");
+    if (ue_mobility_reqsList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [ue_mobility_reqs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->ue_mobility_reqs, node) {
+        cJSON *itemLocal = OpenAPI_ue_mobility_req_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [ue_mobility_reqs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(ue_mobility_reqsList, itemLocal);
+    }
+    }
+
+    if (event_subscription->user_data_con_order_cri != OpenAPI_user_data_con_order_crit_NULL) {
+    if (cJSON_AddStringToObject(item, "userDataConOrderCri", OpenAPI_user_data_con_order_crit_ToString(event_subscription->user_data_con_order_cri)) == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [user_data_con_order_cri]");
+        goto end;
     }
     }
 
@@ -739,14 +1029,8 @@ cJSON *OpenAPI_event_subscription_convertToJSON(OpenAPI_event_subscription_t *ev
     }
     }
 
-    if (event_subscription->expt_ana_type) {
-    cJSON *expt_ana_type_local_JSON = OpenAPI_expected_analytics_type_convertToJSON(event_subscription->expt_ana_type);
-    if (expt_ana_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [expt_ana_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "exptAnaType", expt_ana_type_local_JSON);
-    if (item->child == NULL) {
+    if (event_subscription->expt_ana_type != OpenAPI_expected_analytics_type_NULL) {
+    if (cJSON_AddStringToObject(item, "exptAnaType", OpenAPI_expected_analytics_type_ToString(event_subscription->expt_ana_type)) == NULL) {
         ogs_error("OpenAPI_event_subscription_convertToJSON() failed [expt_ana_type]");
         goto end;
     }
@@ -781,19 +1065,17 @@ cJSON *OpenAPI_event_subscription_convertToJSON(OpenAPI_event_subscription_t *ev
     }
     }
 
-    if (event_subscription->list_of_ana_subsets) {
+    if (event_subscription->list_of_ana_subsets != OpenAPI_analytics_subset_NULL) {
     cJSON *list_of_ana_subsetsList = cJSON_AddArrayToObject(item, "listOfAnaSubsets");
     if (list_of_ana_subsetsList == NULL) {
         ogs_error("OpenAPI_event_subscription_convertToJSON() failed [list_of_ana_subsets]");
         goto end;
     }
     OpenAPI_list_for_each(event_subscription->list_of_ana_subsets, node) {
-        cJSON *itemLocal = OpenAPI_analytics_subset_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        if (cJSON_AddStringToObject(list_of_ana_subsetsList, "", OpenAPI_analytics_subset_ToString((intptr_t)node->data)) == NULL) {
             ogs_error("OpenAPI_event_subscription_convertToJSON() failed [list_of_ana_subsets]");
             goto end;
         }
-        cJSON_AddItemToArray(list_of_ana_subsetsList, itemLocal);
     }
     }
 
@@ -890,6 +1172,211 @@ cJSON *OpenAPI_event_subscription_convertToJSON(OpenAPI_event_subscription_t *ev
     }
     }
 
+    if (event_subscription->pdu_ses_infos) {
+    cJSON *pdu_ses_infosList = cJSON_AddArrayToObject(item, "pduSesInfos");
+    if (pdu_ses_infosList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [pdu_ses_infos]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->pdu_ses_infos, node) {
+        cJSON *itemLocal = OpenAPI_pdu_session_info_1_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [pdu_ses_infos]");
+            goto end;
+        }
+        cJSON_AddItemToArray(pdu_ses_infosList, itemLocal);
+    }
+    }
+
+    if (event_subscription->use_case_cxt) {
+    if (cJSON_AddStringToObject(item, "useCaseCxt", event_subscription->use_case_cxt) == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [use_case_cxt]");
+        goto end;
+    }
+    }
+
+    if (event_subscription->pdu_ses_traf_reqs) {
+    cJSON *pdu_ses_traf_reqsList = cJSON_AddArrayToObject(item, "pduSesTrafReqs");
+    if (pdu_ses_traf_reqsList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [pdu_ses_traf_reqs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->pdu_ses_traf_reqs, node) {
+        cJSON *itemLocal = OpenAPI_pdu_ses_traffic_req_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [pdu_ses_traf_reqs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(pdu_ses_traf_reqsList, itemLocal);
+    }
+    }
+
+    if (event_subscription->loc_acc_reqs) {
+    cJSON *loc_acc_reqsList = cJSON_AddArrayToObject(item, "locAccReqs");
+    if (loc_acc_reqsList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [loc_acc_reqs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->loc_acc_reqs, node) {
+        cJSON *itemLocal = OpenAPI_loc_accuracy_req_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [loc_acc_reqs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(loc_acc_reqsList, itemLocal);
+    }
+    }
+
+    if (event_subscription->loc_granularity != OpenAPI_loc_info_granularity_NULL) {
+    if (cJSON_AddStringToObject(item, "locGranularity", OpenAPI_loc_info_granularity_ToString(event_subscription->loc_granularity)) == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [loc_granularity]");
+        goto end;
+    }
+    }
+
+    if (event_subscription->loc_orientation != OpenAPI_location_orientation_NULL) {
+    if (cJSON_AddStringToObject(item, "locOrientation", OpenAPI_location_orientation_ToString(event_subscription->loc_orientation)) == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [loc_orientation]");
+        goto end;
+    }
+    }
+
+    if (event_subscription->data_vl_trns_tm_rqs) {
+    cJSON *data_vl_trns_tm_rqsList = cJSON_AddArrayToObject(item, "dataVlTrnsTmRqs");
+    if (data_vl_trns_tm_rqsList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [data_vl_trns_tm_rqs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->data_vl_trns_tm_rqs, node) {
+        cJSON *itemLocal = OpenAPI_e2e_data_vol_trans_time_req_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [data_vl_trns_tm_rqs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(data_vl_trns_tm_rqsList, itemLocal);
+    }
+    }
+
+    if (event_subscription->accu_req) {
+    cJSON *accu_req_local_JSON = OpenAPI_accuracy_req_convertToJSON(event_subscription->accu_req);
+    if (accu_req_local_JSON == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [accu_req]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "accuReq", accu_req_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [accu_req]");
+        goto end;
+    }
+    }
+
+    if (event_subscription->is_pause_flg) {
+    if (cJSON_AddBoolToObject(item, "pauseFlg", event_subscription->pause_flg) == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [pause_flg]");
+        goto end;
+    }
+    }
+
+    if (event_subscription->is_resume_flg) {
+    if (cJSON_AddBoolToObject(item, "resumeFlg", event_subscription->resume_flg) == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [resume_flg]");
+        goto end;
+    }
+    }
+
+    if (event_subscription->mov_behav_reqs) {
+    cJSON *mov_behav_reqsList = cJSON_AddArrayToObject(item, "movBehavReqs");
+    if (mov_behav_reqsList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [mov_behav_reqs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->mov_behav_reqs, node) {
+        cJSON *itemLocal = OpenAPI_mov_behav_req_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [mov_behav_reqs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(mov_behav_reqsList, itemLocal);
+    }
+    }
+
+    if (event_subscription->rel_prox_reqs) {
+    cJSON *rel_prox_reqsList = cJSON_AddArrayToObject(item, "relProxReqs");
+    if (rel_prox_reqsList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [rel_prox_reqs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->rel_prox_reqs, node) {
+        cJSON *itemLocal = OpenAPI_rel_prox_req_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [rel_prox_reqs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(rel_prox_reqsList, itemLocal);
+    }
+    }
+
+    if (event_subscription->feedback) {
+    cJSON *feedback_local_JSON = OpenAPI_analytics_feedback_info_convertToJSON(event_subscription->feedback);
+    if (feedback_local_JSON == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [feedback]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "feedback", feedback_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [feedback]");
+        goto end;
+    }
+    }
+
+    if (event_subscription->sig_storm_reqs) {
+    cJSON *sig_storm_reqsList = cJSON_AddArrayToObject(item, "sigStormReqs");
+    if (sig_storm_reqsList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [sig_storm_reqs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->sig_storm_reqs, node) {
+        cJSON *itemLocal = OpenAPI_signal_storm_req_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [sig_storm_reqs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(sig_storm_reqsList, itemLocal);
+    }
+    }
+
+    if (event_subscription->qos_pol_assist_reqs) {
+    cJSON *qos_pol_assist_reqsList = cJSON_AddArrayToObject(item, "qosPolAssistReqs");
+    if (qos_pol_assist_reqsList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [qos_pol_assist_reqs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->qos_pol_assist_reqs, node) {
+        cJSON *itemLocal = OpenAPI_qos_policy_assist_req_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [qos_pol_assist_reqs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(qos_pol_assist_reqsList, itemLocal);
+    }
+    }
+
+    if (event_subscription->last_ue_locs) {
+    cJSON *last_ue_locsList = cJSON_AddArrayToObject(item, "lastUeLocs");
+    if (last_ue_locsList == NULL) {
+        ogs_error("OpenAPI_event_subscription_convertToJSON() failed [last_ue_locs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(event_subscription->last_ue_locs, node) {
+        cJSON *itemLocal = OpenAPI_timestamped_location_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_event_subscription_convertToJSON() failed [last_ue_locs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(last_ue_locsList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -901,21 +1388,23 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
     cJSON *any_slice = NULL;
     cJSON *app_ids = NULL;
     OpenAPI_list_t *app_idsList = NULL;
+    cJSON *deviations = NULL;
+    OpenAPI_list_t *deviationsList = NULL;
     cJSON *dnns = NULL;
     OpenAPI_list_t *dnnsList = NULL;
     cJSON *dnais = NULL;
     OpenAPI_list_t *dnaisList = NULL;
     cJSON *event = NULL;
-    OpenAPI_nwdaf_event_t *event_local_nonprim = NULL;
+    OpenAPI_nwdaf_event_e eventVariable = 0;
     cJSON *extra_report_req = NULL;
     OpenAPI_event_reporting_requirement_t *extra_report_req_local_nonprim = NULL;
     cJSON *ladn_dnns = NULL;
     OpenAPI_list_t *ladn_dnnsList = NULL;
     cJSON *load_level_threshold = NULL;
     cJSON *notification_method = NULL;
-    OpenAPI_notification_method_t *notification_method_local_nonprim = NULL;
+    OpenAPI_notification_method_e notification_methodVariable = 0;
     cJSON *matching_dir = NULL;
-    OpenAPI_matching_direction_t *matching_dir_local_nonprim = NULL;
+    OpenAPI_matching_direction_e matching_dirVariable = 0;
     cJSON *nf_load_lvl_thds = NULL;
     OpenAPI_list_t *nf_load_lvl_thdsList = NULL;
     cJSON *nf_instance_ids = NULL;
@@ -926,6 +1415,13 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
     OpenAPI_list_t *nf_typesList = NULL;
     cJSON *network_area = NULL;
     OpenAPI_network_area_info_t *network_area_local_nonprim = NULL;
+    cJSON *location = NULL;
+    OpenAPI_geo_location_t *location_local_nonprim = NULL;
+    cJSON *temporal_gran_size = NULL;
+    cJSON *spatial_gran_size_ta = NULL;
+    cJSON *spatial_gran_size_cell = NULL;
+    cJSON *fine_gran_areas = NULL;
+    OpenAPI_list_t *fine_gran_areasList = NULL;
     cJSON *visited_areas = NULL;
     OpenAPI_list_t *visited_areasList = NULL;
     cJSON *max_top_app_ul_nbr = NULL;
@@ -940,21 +1436,31 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
     OpenAPI_list_t *qos_flow_ret_thdsList = NULL;
     cJSON *ran_ue_throu_thds = NULL;
     OpenAPI_list_t *ran_ue_throu_thdsList = NULL;
+    cJSON *e2e_delay_thds = NULL;
+    OpenAPI_list_t *e2e_delay_thdsList = NULL;
     cJSON *repetition_period = NULL;
     cJSON *snssaia = NULL;
     OpenAPI_list_t *snssaiaList = NULL;
     cJSON *tgt_ue = NULL;
     OpenAPI_target_ue_information_t *tgt_ue_local_nonprim = NULL;
+    cJSON *roaming_info = NULL;
+    OpenAPI_roaming_info_t *roaming_info_local_nonprim = NULL;
     cJSON *cong_thresholds = NULL;
     OpenAPI_list_t *cong_thresholdsList = NULL;
     cJSON *nw_perf_requs = NULL;
     OpenAPI_list_t *nw_perf_requsList = NULL;
+    cJSON *ue_comm_reqs = NULL;
+    OpenAPI_list_t *ue_comm_reqsList = NULL;
+    cJSON *ue_mobility_reqs = NULL;
+    OpenAPI_list_t *ue_mobility_reqsList = NULL;
+    cJSON *user_data_con_order_cri = NULL;
+    OpenAPI_user_data_con_order_crit_e user_data_con_order_criVariable = 0;
     cJSON *bw_requs = NULL;
     OpenAPI_list_t *bw_requsList = NULL;
     cJSON *excep_requs = NULL;
     OpenAPI_list_t *excep_requsList = NULL;
     cJSON *expt_ana_type = NULL;
-    OpenAPI_expected_analytics_type_t *expt_ana_type_local_nonprim = NULL;
+    OpenAPI_expected_analytics_type_e expt_ana_typeVariable = 0;
     cJSON *expt_ue_behav = NULL;
     OpenAPI_expected_ue_behaviour_data_t *expt_ue_behav_local_nonprim = NULL;
     cJSON *rat_freqs = NULL;
@@ -973,6 +1479,35 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
     OpenAPI_list_t *app_server_addrsList = NULL;
     cJSON *dn_perf_reqs = NULL;
     OpenAPI_list_t *dn_perf_reqsList = NULL;
+    cJSON *pdu_ses_infos = NULL;
+    OpenAPI_list_t *pdu_ses_infosList = NULL;
+    cJSON *use_case_cxt = NULL;
+    cJSON *pdu_ses_traf_reqs = NULL;
+    OpenAPI_list_t *pdu_ses_traf_reqsList = NULL;
+    cJSON *loc_acc_reqs = NULL;
+    OpenAPI_list_t *loc_acc_reqsList = NULL;
+    cJSON *loc_granularity = NULL;
+    OpenAPI_loc_info_granularity_e loc_granularityVariable = 0;
+    cJSON *loc_orientation = NULL;
+    OpenAPI_location_orientation_e loc_orientationVariable = 0;
+    cJSON *data_vl_trns_tm_rqs = NULL;
+    OpenAPI_list_t *data_vl_trns_tm_rqsList = NULL;
+    cJSON *accu_req = NULL;
+    OpenAPI_accuracy_req_t *accu_req_local_nonprim = NULL;
+    cJSON *pause_flg = NULL;
+    cJSON *resume_flg = NULL;
+    cJSON *mov_behav_reqs = NULL;
+    OpenAPI_list_t *mov_behav_reqsList = NULL;
+    cJSON *rel_prox_reqs = NULL;
+    OpenAPI_list_t *rel_prox_reqsList = NULL;
+    cJSON *feedback = NULL;
+    OpenAPI_analytics_feedback_info_t *feedback_local_nonprim = NULL;
+    cJSON *sig_storm_reqs = NULL;
+    OpenAPI_list_t *sig_storm_reqsList = NULL;
+    cJSON *qos_pol_assist_reqs = NULL;
+    OpenAPI_list_t *qos_pol_assist_reqsList = NULL;
+    cJSON *last_ue_locs = NULL;
+    OpenAPI_list_t *last_ue_locsList = NULL;
     any_slice = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "anySlice");
     if (any_slice) {
     if (!cJSON_IsBool(any_slice)) {
@@ -999,6 +1534,33 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
                 goto end;
             }
             OpenAPI_list_add(app_idsList, ogs_strdup(app_ids_local->valuestring));
+        }
+    }
+
+    deviations = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "deviations");
+    if (deviations) {
+        cJSON *deviations_local = NULL;
+        if (!cJSON_IsArray(deviations)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [deviations]");
+            goto end;
+        }
+
+        deviationsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(deviations_local, deviations) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsNumber(deviations_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [deviations]");
+                goto end;
+            }
+            localDouble = (double *)ogs_calloc(1, sizeof(double));
+            if (!localDouble) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [deviations]");
+                goto end;
+            }
+            *localDouble = deviations_local->valuedouble;
+            OpenAPI_list_add(deviationsList, localDouble);
         }
     }
 
@@ -1049,11 +1611,11 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
         ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [event]");
         goto end;
     }
-    event_local_nonprim = OpenAPI_nwdaf_event_parseFromJSON(event);
-    if (!event_local_nonprim) {
-        ogs_error("OpenAPI_nwdaf_event_parseFromJSON failed [event]");
+    if (!cJSON_IsString(event)) {
+        ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [event]");
         goto end;
     }
+    eventVariable = OpenAPI_nwdaf_event_FromString(event->valuestring);
 
     extra_report_req = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "extraReportReq");
     if (extra_report_req) {
@@ -1095,20 +1657,20 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
 
     notification_method = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "notificationMethod");
     if (notification_method) {
-    notification_method_local_nonprim = OpenAPI_notification_method_parseFromJSON(notification_method);
-    if (!notification_method_local_nonprim) {
-        ogs_error("OpenAPI_notification_method_parseFromJSON failed [notification_method]");
+    if (!cJSON_IsString(notification_method)) {
+        ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [notification_method]");
         goto end;
     }
+    notification_methodVariable = OpenAPI_notification_method_FromString(notification_method->valuestring);
     }
 
     matching_dir = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "matchingDir");
     if (matching_dir) {
-    matching_dir_local_nonprim = OpenAPI_matching_direction_parseFromJSON(matching_dir);
-    if (!matching_dir_local_nonprim) {
-        ogs_error("OpenAPI_matching_direction_parseFromJSON failed [matching_dir]");
+    if (!cJSON_IsString(matching_dir)) {
+        ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [matching_dir]");
         goto end;
     }
+    matching_dirVariable = OpenAPI_matching_direction_FromString(matching_dir->valuestring);
     }
 
     nf_load_lvl_thds = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "nfLoadLvlThds");
@@ -1214,6 +1776,65 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
         ogs_error("OpenAPI_network_area_info_parseFromJSON failed [network_area]");
         goto end;
     }
+    }
+
+    location = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "location");
+    if (location) {
+    if (!cJSON_IsNull(location)) {
+    location_local_nonprim = OpenAPI_geo_location_parseFromJSON(location);
+    if (!location_local_nonprim) {
+        ogs_error("OpenAPI_geo_location_parseFromJSON failed [location]");
+        goto end;
+    }
+    }
+    }
+
+    temporal_gran_size = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "temporalGranSize");
+    if (temporal_gran_size) {
+    if (!cJSON_IsNumber(temporal_gran_size)) {
+        ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [temporal_gran_size]");
+        goto end;
+    }
+    }
+
+    spatial_gran_size_ta = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "spatialGranSizeTa");
+    if (spatial_gran_size_ta) {
+    if (!cJSON_IsNumber(spatial_gran_size_ta)) {
+        ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [spatial_gran_size_ta]");
+        goto end;
+    }
+    }
+
+    spatial_gran_size_cell = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "spatialGranSizeCell");
+    if (spatial_gran_size_cell) {
+    if (!cJSON_IsNumber(spatial_gran_size_cell)) {
+        ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [spatial_gran_size_cell]");
+        goto end;
+    }
+    }
+
+    fine_gran_areas = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "fineGranAreas");
+    if (fine_gran_areas) {
+        cJSON *fine_gran_areas_local = NULL;
+        if (!cJSON_IsArray(fine_gran_areas)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [fine_gran_areas]");
+            goto end;
+        }
+
+        fine_gran_areasList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(fine_gran_areas_local, fine_gran_areas) {
+            if (!cJSON_IsObject(fine_gran_areas_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [fine_gran_areas]");
+                goto end;
+            }
+            OpenAPI_geographical_area_t *fine_gran_areasItem = OpenAPI_geographical_area_parseFromJSON(fine_gran_areas_local);
+            if (!fine_gran_areasItem) {
+                ogs_error("No fine_gran_areasItem");
+                goto end;
+            }
+            OpenAPI_list_add(fine_gran_areasList, fine_gran_areasItem);
+        }
     }
 
     visited_areas = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "visitedAreas");
@@ -1361,6 +1982,33 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
         }
     }
 
+    e2e_delay_thds = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "e2eDelayThds");
+    if (e2e_delay_thds) {
+        cJSON *e2e_delay_thds_local = NULL;
+        if (!cJSON_IsArray(e2e_delay_thds)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [e2e_delay_thds]");
+            goto end;
+        }
+
+        e2e_delay_thdsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(e2e_delay_thds_local, e2e_delay_thds) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsNumber(e2e_delay_thds_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [e2e_delay_thds]");
+                goto end;
+            }
+            localDouble = (double *)ogs_calloc(1, sizeof(double));
+            if (!localDouble) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [e2e_delay_thds]");
+                goto end;
+            }
+            *localDouble = e2e_delay_thds_local->valuedouble;
+            OpenAPI_list_add(e2e_delay_thdsList, localDouble);
+        }
+    }
+
     repetition_period = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "repetitionPeriod");
     if (repetition_period) {
     if (!cJSON_IsNumber(repetition_period)) {
@@ -1398,6 +2046,15 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
     tgt_ue_local_nonprim = OpenAPI_target_ue_information_parseFromJSON(tgt_ue);
     if (!tgt_ue_local_nonprim) {
         ogs_error("OpenAPI_target_ue_information_parseFromJSON failed [tgt_ue]");
+        goto end;
+    }
+    }
+
+    roaming_info = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "roamingInfo");
+    if (roaming_info) {
+    roaming_info_local_nonprim = OpenAPI_roaming_info_parseFromJSON(roaming_info);
+    if (!roaming_info_local_nonprim) {
+        ogs_error("OpenAPI_roaming_info_parseFromJSON failed [roaming_info]");
         goto end;
     }
     }
@@ -1450,6 +2107,63 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
         }
     }
 
+    ue_comm_reqs = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "ueCommReqs");
+    if (ue_comm_reqs) {
+        cJSON *ue_comm_reqs_local = NULL;
+        if (!cJSON_IsArray(ue_comm_reqs)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [ue_comm_reqs]");
+            goto end;
+        }
+
+        ue_comm_reqsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(ue_comm_reqs_local, ue_comm_reqs) {
+            if (!cJSON_IsObject(ue_comm_reqs_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [ue_comm_reqs]");
+                goto end;
+            }
+            OpenAPI_ue_comm_req_t *ue_comm_reqsItem = OpenAPI_ue_comm_req_parseFromJSON(ue_comm_reqs_local);
+            if (!ue_comm_reqsItem) {
+                ogs_error("No ue_comm_reqsItem");
+                goto end;
+            }
+            OpenAPI_list_add(ue_comm_reqsList, ue_comm_reqsItem);
+        }
+    }
+
+    ue_mobility_reqs = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "ueMobilityReqs");
+    if (ue_mobility_reqs) {
+        cJSON *ue_mobility_reqs_local = NULL;
+        if (!cJSON_IsArray(ue_mobility_reqs)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [ue_mobility_reqs]");
+            goto end;
+        }
+
+        ue_mobility_reqsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(ue_mobility_reqs_local, ue_mobility_reqs) {
+            if (!cJSON_IsObject(ue_mobility_reqs_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [ue_mobility_reqs]");
+                goto end;
+            }
+            OpenAPI_ue_mobility_req_t *ue_mobility_reqsItem = OpenAPI_ue_mobility_req_parseFromJSON(ue_mobility_reqs_local);
+            if (!ue_mobility_reqsItem) {
+                ogs_error("No ue_mobility_reqsItem");
+                goto end;
+            }
+            OpenAPI_list_add(ue_mobility_reqsList, ue_mobility_reqsItem);
+        }
+    }
+
+    user_data_con_order_cri = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "userDataConOrderCri");
+    if (user_data_con_order_cri) {
+    if (!cJSON_IsString(user_data_con_order_cri)) {
+        ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [user_data_con_order_cri]");
+        goto end;
+    }
+    user_data_con_order_criVariable = OpenAPI_user_data_con_order_crit_FromString(user_data_con_order_cri->valuestring);
+    }
+
     bw_requs = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "bwRequs");
     if (bw_requs) {
         cJSON *bw_requs_local = NULL;
@@ -1500,11 +2214,11 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
 
     expt_ana_type = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "exptAnaType");
     if (expt_ana_type) {
-    expt_ana_type_local_nonprim = OpenAPI_expected_analytics_type_parseFromJSON(expt_ana_type);
-    if (!expt_ana_type_local_nonprim) {
-        ogs_error("OpenAPI_expected_analytics_type_parseFromJSON failed [expt_ana_type]");
+    if (!cJSON_IsString(expt_ana_type)) {
+        ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [expt_ana_type]");
         goto end;
     }
+    expt_ana_typeVariable = OpenAPI_expected_analytics_type_FromString(expt_ana_type->valuestring);
     }
 
     expt_ue_behav = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "exptUeBehav");
@@ -1551,16 +2265,22 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
         list_of_ana_subsetsList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(list_of_ana_subsets_local, list_of_ana_subsets) {
-            if (!cJSON_IsObject(list_of_ana_subsets_local)) {
+            OpenAPI_analytics_subset_e localEnum = OpenAPI_analytics_subset_NULL;
+            if (!cJSON_IsString(list_of_ana_subsets_local)) {
                 ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [list_of_ana_subsets]");
                 goto end;
             }
-            OpenAPI_analytics_subset_t *list_of_ana_subsetsItem = OpenAPI_analytics_subset_parseFromJSON(list_of_ana_subsets_local);
-            if (!list_of_ana_subsetsItem) {
-                ogs_error("No list_of_ana_subsetsItem");
-                goto end;
+            localEnum = OpenAPI_analytics_subset_FromString(list_of_ana_subsets_local->valuestring);
+            if (!localEnum) {
+                ogs_info("Enum value \"%s\" for field \"list_of_ana_subsets\" is not supported. Ignoring it ...",
+                         list_of_ana_subsets_local->valuestring);
+            } else {
+                OpenAPI_list_add(list_of_ana_subsetsList, (void *)localEnum);
             }
-            OpenAPI_list_add(list_of_ana_subsetsList, list_of_ana_subsetsItem);
+        }
+        if (list_of_ana_subsetsList->count == 0) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed: Expected list_of_ana_subsetsList to not be empty (after ignoring unsupported enum values).");
+            goto end;
         }
     }
 
@@ -1693,24 +2413,310 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
         }
     }
 
+    pdu_ses_infos = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "pduSesInfos");
+    if (pdu_ses_infos) {
+        cJSON *pdu_ses_infos_local = NULL;
+        if (!cJSON_IsArray(pdu_ses_infos)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [pdu_ses_infos]");
+            goto end;
+        }
+
+        pdu_ses_infosList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(pdu_ses_infos_local, pdu_ses_infos) {
+            if (!cJSON_IsObject(pdu_ses_infos_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [pdu_ses_infos]");
+                goto end;
+            }
+            OpenAPI_pdu_session_info_1_t *pdu_ses_infosItem = OpenAPI_pdu_session_info_1_parseFromJSON(pdu_ses_infos_local);
+            if (!pdu_ses_infosItem) {
+                ogs_error("No pdu_ses_infosItem");
+                goto end;
+            }
+            OpenAPI_list_add(pdu_ses_infosList, pdu_ses_infosItem);
+        }
+    }
+
+    use_case_cxt = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "useCaseCxt");
+    if (use_case_cxt) {
+    if (!cJSON_IsString(use_case_cxt) && !cJSON_IsNull(use_case_cxt)) {
+        ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [use_case_cxt]");
+        goto end;
+    }
+    }
+
+    pdu_ses_traf_reqs = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "pduSesTrafReqs");
+    if (pdu_ses_traf_reqs) {
+        cJSON *pdu_ses_traf_reqs_local = NULL;
+        if (!cJSON_IsArray(pdu_ses_traf_reqs)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [pdu_ses_traf_reqs]");
+            goto end;
+        }
+
+        pdu_ses_traf_reqsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(pdu_ses_traf_reqs_local, pdu_ses_traf_reqs) {
+            if (!cJSON_IsObject(pdu_ses_traf_reqs_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [pdu_ses_traf_reqs]");
+                goto end;
+            }
+            OpenAPI_pdu_ses_traffic_req_t *pdu_ses_traf_reqsItem = OpenAPI_pdu_ses_traffic_req_parseFromJSON(pdu_ses_traf_reqs_local);
+            if (!pdu_ses_traf_reqsItem) {
+                ogs_error("No pdu_ses_traf_reqsItem");
+                goto end;
+            }
+            OpenAPI_list_add(pdu_ses_traf_reqsList, pdu_ses_traf_reqsItem);
+        }
+    }
+
+    loc_acc_reqs = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "locAccReqs");
+    if (loc_acc_reqs) {
+        cJSON *loc_acc_reqs_local = NULL;
+        if (!cJSON_IsArray(loc_acc_reqs)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [loc_acc_reqs]");
+            goto end;
+        }
+
+        loc_acc_reqsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(loc_acc_reqs_local, loc_acc_reqs) {
+            if (!cJSON_IsObject(loc_acc_reqs_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [loc_acc_reqs]");
+                goto end;
+            }
+            OpenAPI_loc_accuracy_req_t *loc_acc_reqsItem = OpenAPI_loc_accuracy_req_parseFromJSON(loc_acc_reqs_local);
+            if (!loc_acc_reqsItem) {
+                ogs_error("No loc_acc_reqsItem");
+                goto end;
+            }
+            OpenAPI_list_add(loc_acc_reqsList, loc_acc_reqsItem);
+        }
+    }
+
+    loc_granularity = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "locGranularity");
+    if (loc_granularity) {
+    if (!cJSON_IsString(loc_granularity)) {
+        ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [loc_granularity]");
+        goto end;
+    }
+    loc_granularityVariable = OpenAPI_loc_info_granularity_FromString(loc_granularity->valuestring);
+    }
+
+    loc_orientation = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "locOrientation");
+    if (loc_orientation) {
+    if (!cJSON_IsString(loc_orientation)) {
+        ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [loc_orientation]");
+        goto end;
+    }
+    loc_orientationVariable = OpenAPI_location_orientation_FromString(loc_orientation->valuestring);
+    }
+
+    data_vl_trns_tm_rqs = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "dataVlTrnsTmRqs");
+    if (data_vl_trns_tm_rqs) {
+        cJSON *data_vl_trns_tm_rqs_local = NULL;
+        if (!cJSON_IsArray(data_vl_trns_tm_rqs)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [data_vl_trns_tm_rqs]");
+            goto end;
+        }
+
+        data_vl_trns_tm_rqsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(data_vl_trns_tm_rqs_local, data_vl_trns_tm_rqs) {
+            if (!cJSON_IsObject(data_vl_trns_tm_rqs_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [data_vl_trns_tm_rqs]");
+                goto end;
+            }
+            OpenAPI_e2e_data_vol_trans_time_req_t *data_vl_trns_tm_rqsItem = OpenAPI_e2e_data_vol_trans_time_req_parseFromJSON(data_vl_trns_tm_rqs_local);
+            if (!data_vl_trns_tm_rqsItem) {
+                ogs_error("No data_vl_trns_tm_rqsItem");
+                goto end;
+            }
+            OpenAPI_list_add(data_vl_trns_tm_rqsList, data_vl_trns_tm_rqsItem);
+        }
+    }
+
+    accu_req = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "accuReq");
+    if (accu_req) {
+    accu_req_local_nonprim = OpenAPI_accuracy_req_parseFromJSON(accu_req);
+    if (!accu_req_local_nonprim) {
+        ogs_error("OpenAPI_accuracy_req_parseFromJSON failed [accu_req]");
+        goto end;
+    }
+    }
+
+    pause_flg = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "pauseFlg");
+    if (pause_flg) {
+    if (!cJSON_IsBool(pause_flg)) {
+        ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [pause_flg]");
+        goto end;
+    }
+    }
+
+    resume_flg = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "resumeFlg");
+    if (resume_flg) {
+    if (!cJSON_IsBool(resume_flg)) {
+        ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [resume_flg]");
+        goto end;
+    }
+    }
+
+    mov_behav_reqs = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "movBehavReqs");
+    if (mov_behav_reqs) {
+        cJSON *mov_behav_reqs_local = NULL;
+        if (!cJSON_IsArray(mov_behav_reqs)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [mov_behav_reqs]");
+            goto end;
+        }
+
+        mov_behav_reqsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(mov_behav_reqs_local, mov_behav_reqs) {
+            if (!cJSON_IsObject(mov_behav_reqs_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [mov_behav_reqs]");
+                goto end;
+            }
+            OpenAPI_mov_behav_req_t *mov_behav_reqsItem = OpenAPI_mov_behav_req_parseFromJSON(mov_behav_reqs_local);
+            if (!mov_behav_reqsItem) {
+                ogs_error("No mov_behav_reqsItem");
+                goto end;
+            }
+            OpenAPI_list_add(mov_behav_reqsList, mov_behav_reqsItem);
+        }
+    }
+
+    rel_prox_reqs = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "relProxReqs");
+    if (rel_prox_reqs) {
+        cJSON *rel_prox_reqs_local = NULL;
+        if (!cJSON_IsArray(rel_prox_reqs)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [rel_prox_reqs]");
+            goto end;
+        }
+
+        rel_prox_reqsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(rel_prox_reqs_local, rel_prox_reqs) {
+            if (!cJSON_IsObject(rel_prox_reqs_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [rel_prox_reqs]");
+                goto end;
+            }
+            OpenAPI_rel_prox_req_t *rel_prox_reqsItem = OpenAPI_rel_prox_req_parseFromJSON(rel_prox_reqs_local);
+            if (!rel_prox_reqsItem) {
+                ogs_error("No rel_prox_reqsItem");
+                goto end;
+            }
+            OpenAPI_list_add(rel_prox_reqsList, rel_prox_reqsItem);
+        }
+    }
+
+    feedback = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "feedback");
+    if (feedback) {
+    feedback_local_nonprim = OpenAPI_analytics_feedback_info_parseFromJSON(feedback);
+    if (!feedback_local_nonprim) {
+        ogs_error("OpenAPI_analytics_feedback_info_parseFromJSON failed [feedback]");
+        goto end;
+    }
+    }
+
+    sig_storm_reqs = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "sigStormReqs");
+    if (sig_storm_reqs) {
+        cJSON *sig_storm_reqs_local = NULL;
+        if (!cJSON_IsArray(sig_storm_reqs)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [sig_storm_reqs]");
+            goto end;
+        }
+
+        sig_storm_reqsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(sig_storm_reqs_local, sig_storm_reqs) {
+            if (!cJSON_IsObject(sig_storm_reqs_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [sig_storm_reqs]");
+                goto end;
+            }
+            OpenAPI_signal_storm_req_t *sig_storm_reqsItem = OpenAPI_signal_storm_req_parseFromJSON(sig_storm_reqs_local);
+            if (!sig_storm_reqsItem) {
+                ogs_error("No sig_storm_reqsItem");
+                goto end;
+            }
+            OpenAPI_list_add(sig_storm_reqsList, sig_storm_reqsItem);
+        }
+    }
+
+    qos_pol_assist_reqs = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "qosPolAssistReqs");
+    if (qos_pol_assist_reqs) {
+        cJSON *qos_pol_assist_reqs_local = NULL;
+        if (!cJSON_IsArray(qos_pol_assist_reqs)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [qos_pol_assist_reqs]");
+            goto end;
+        }
+
+        qos_pol_assist_reqsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(qos_pol_assist_reqs_local, qos_pol_assist_reqs) {
+            if (!cJSON_IsObject(qos_pol_assist_reqs_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [qos_pol_assist_reqs]");
+                goto end;
+            }
+            OpenAPI_qos_policy_assist_req_t *qos_pol_assist_reqsItem = OpenAPI_qos_policy_assist_req_parseFromJSON(qos_pol_assist_reqs_local);
+            if (!qos_pol_assist_reqsItem) {
+                ogs_error("No qos_pol_assist_reqsItem");
+                goto end;
+            }
+            OpenAPI_list_add(qos_pol_assist_reqsList, qos_pol_assist_reqsItem);
+        }
+    }
+
+    last_ue_locs = cJSON_GetObjectItemCaseSensitive(event_subscriptionJSON, "lastUeLocs");
+    if (last_ue_locs) {
+        cJSON *last_ue_locs_local = NULL;
+        if (!cJSON_IsArray(last_ue_locs)) {
+            ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [last_ue_locs]");
+            goto end;
+        }
+
+        last_ue_locsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(last_ue_locs_local, last_ue_locs) {
+            if (!cJSON_IsObject(last_ue_locs_local)) {
+                ogs_error("OpenAPI_event_subscription_parseFromJSON() failed [last_ue_locs]");
+                goto end;
+            }
+            OpenAPI_timestamped_location_t *last_ue_locsItem = OpenAPI_timestamped_location_parseFromJSON(last_ue_locs_local);
+            if (!last_ue_locsItem) {
+                ogs_error("No last_ue_locsItem");
+                goto end;
+            }
+            OpenAPI_list_add(last_ue_locsList, last_ue_locsItem);
+        }
+    }
+
     event_subscription_local_var = OpenAPI_event_subscription_create (
         any_slice ? true : false,
         any_slice ? any_slice->valueint : 0,
         app_ids ? app_idsList : NULL,
+        deviations ? deviationsList : NULL,
         dnns ? dnnsList : NULL,
         dnais ? dnaisList : NULL,
-        event_local_nonprim,
+        eventVariable,
         extra_report_req ? extra_report_req_local_nonprim : NULL,
         ladn_dnns ? ladn_dnnsList : NULL,
         load_level_threshold ? true : false,
         load_level_threshold ? load_level_threshold->valuedouble : 0,
-        notification_method ? notification_method_local_nonprim : NULL,
-        matching_dir ? matching_dir_local_nonprim : NULL,
+        notification_method ? notification_methodVariable : 0,
+        matching_dir ? matching_dirVariable : 0,
         nf_load_lvl_thds ? nf_load_lvl_thdsList : NULL,
         nf_instance_ids ? nf_instance_idsList : NULL,
         nf_set_ids ? nf_set_idsList : NULL,
         nf_types ? nf_typesList : NULL,
         network_area ? network_area_local_nonprim : NULL,
+        location && cJSON_IsNull(location) ? true : false,
+        location ? location_local_nonprim : NULL,
+        temporal_gran_size ? true : false,
+        temporal_gran_size ? temporal_gran_size->valuedouble : 0,
+        spatial_gran_size_ta ? true : false,
+        spatial_gran_size_ta ? spatial_gran_size_ta->valuedouble : 0,
+        spatial_gran_size_cell ? true : false,
+        spatial_gran_size_cell ? spatial_gran_size_cell->valuedouble : 0,
+        fine_gran_areas ? fine_gran_areasList : NULL,
         visited_areas ? visited_areasList : NULL,
         max_top_app_ul_nbr ? true : false,
         max_top_app_ul_nbr ? max_top_app_ul_nbr->valuedouble : 0,
@@ -1721,15 +2727,20 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
         qos_requ ? qos_requ_local_nonprim : NULL,
         qos_flow_ret_thds ? qos_flow_ret_thdsList : NULL,
         ran_ue_throu_thds ? ran_ue_throu_thdsList : NULL,
+        e2e_delay_thds ? e2e_delay_thdsList : NULL,
         repetition_period ? true : false,
         repetition_period ? repetition_period->valuedouble : 0,
         snssaia ? snssaiaList : NULL,
         tgt_ue ? tgt_ue_local_nonprim : NULL,
+        roaming_info ? roaming_info_local_nonprim : NULL,
         cong_thresholds ? cong_thresholdsList : NULL,
         nw_perf_requs ? nw_perf_requsList : NULL,
+        ue_comm_reqs ? ue_comm_reqsList : NULL,
+        ue_mobility_reqs ? ue_mobility_reqsList : NULL,
+        user_data_con_order_cri ? user_data_con_order_criVariable : 0,
         bw_requs ? bw_requsList : NULL,
         excep_requs ? excep_requsList : NULL,
-        expt_ana_type ? expt_ana_type_local_nonprim : NULL,
+        expt_ana_type ? expt_ana_typeVariable : 0,
         expt_ue_behav ? expt_ue_behav_local_nonprim : NULL,
         rat_freqs ? rat_freqsList : NULL,
         list_of_ana_subsets ? list_of_ana_subsetsList : NULL,
@@ -1738,7 +2749,25 @@ OpenAPI_event_subscription_t *OpenAPI_event_subscription_parseFromJSON(cJSON *ev
         wlan_reqs ? wlan_reqsList : NULL,
         upf_info ? upf_info_local_nonprim : NULL,
         app_server_addrs ? app_server_addrsList : NULL,
-        dn_perf_reqs ? dn_perf_reqsList : NULL
+        dn_perf_reqs ? dn_perf_reqsList : NULL,
+        pdu_ses_infos ? pdu_ses_infosList : NULL,
+        use_case_cxt && !cJSON_IsNull(use_case_cxt) ? ogs_strdup(use_case_cxt->valuestring) : NULL,
+        pdu_ses_traf_reqs ? pdu_ses_traf_reqsList : NULL,
+        loc_acc_reqs ? loc_acc_reqsList : NULL,
+        loc_granularity ? loc_granularityVariable : 0,
+        loc_orientation ? loc_orientationVariable : 0,
+        data_vl_trns_tm_rqs ? data_vl_trns_tm_rqsList : NULL,
+        accu_req ? accu_req_local_nonprim : NULL,
+        pause_flg ? true : false,
+        pause_flg ? pause_flg->valueint : 0,
+        resume_flg ? true : false,
+        resume_flg ? resume_flg->valueint : 0,
+        mov_behav_reqs ? mov_behav_reqsList : NULL,
+        rel_prox_reqs ? rel_prox_reqsList : NULL,
+        feedback ? feedback_local_nonprim : NULL,
+        sig_storm_reqs ? sig_storm_reqsList : NULL,
+        qos_pol_assist_reqs ? qos_pol_assist_reqsList : NULL,
+        last_ue_locs ? last_ue_locsList : NULL
     );
 
     return event_subscription_local_var;
@@ -1749,6 +2778,13 @@ end:
         }
         OpenAPI_list_free(app_idsList);
         app_idsList = NULL;
+    }
+    if (deviationsList) {
+        OpenAPI_list_for_each(deviationsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(deviationsList);
+        deviationsList = NULL;
     }
     if (dnnsList) {
         OpenAPI_list_for_each(dnnsList, node) {
@@ -1764,10 +2800,6 @@ end:
         OpenAPI_list_free(dnaisList);
         dnaisList = NULL;
     }
-    if (event_local_nonprim) {
-        OpenAPI_nwdaf_event_free(event_local_nonprim);
-        event_local_nonprim = NULL;
-    }
     if (extra_report_req_local_nonprim) {
         OpenAPI_event_reporting_requirement_free(extra_report_req_local_nonprim);
         extra_report_req_local_nonprim = NULL;
@@ -1778,14 +2810,6 @@ end:
         }
         OpenAPI_list_free(ladn_dnnsList);
         ladn_dnnsList = NULL;
-    }
-    if (notification_method_local_nonprim) {
-        OpenAPI_notification_method_free(notification_method_local_nonprim);
-        notification_method_local_nonprim = NULL;
-    }
-    if (matching_dir_local_nonprim) {
-        OpenAPI_matching_direction_free(matching_dir_local_nonprim);
-        matching_dir_local_nonprim = NULL;
     }
     if (nf_load_lvl_thdsList) {
         OpenAPI_list_for_each(nf_load_lvl_thdsList, node) {
@@ -1815,6 +2839,17 @@ end:
     if (network_area_local_nonprim) {
         OpenAPI_network_area_info_free(network_area_local_nonprim);
         network_area_local_nonprim = NULL;
+    }
+    if (location_local_nonprim) {
+        OpenAPI_geo_location_free(location_local_nonprim);
+        location_local_nonprim = NULL;
+    }
+    if (fine_gran_areasList) {
+        OpenAPI_list_for_each(fine_gran_areasList, node) {
+            OpenAPI_geographical_area_free(node->data);
+        }
+        OpenAPI_list_free(fine_gran_areasList);
+        fine_gran_areasList = NULL;
     }
     if (visited_areasList) {
         OpenAPI_list_for_each(visited_areasList, node) {
@@ -1855,6 +2890,13 @@ end:
         OpenAPI_list_free(ran_ue_throu_thdsList);
         ran_ue_throu_thdsList = NULL;
     }
+    if (e2e_delay_thdsList) {
+        OpenAPI_list_for_each(e2e_delay_thdsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(e2e_delay_thdsList);
+        e2e_delay_thdsList = NULL;
+    }
     if (snssaiaList) {
         OpenAPI_list_for_each(snssaiaList, node) {
             OpenAPI_snssai_free(node->data);
@@ -1865,6 +2907,10 @@ end:
     if (tgt_ue_local_nonprim) {
         OpenAPI_target_ue_information_free(tgt_ue_local_nonprim);
         tgt_ue_local_nonprim = NULL;
+    }
+    if (roaming_info_local_nonprim) {
+        OpenAPI_roaming_info_free(roaming_info_local_nonprim);
+        roaming_info_local_nonprim = NULL;
     }
     if (cong_thresholdsList) {
         OpenAPI_list_for_each(cong_thresholdsList, node) {
@@ -1880,6 +2926,20 @@ end:
         OpenAPI_list_free(nw_perf_requsList);
         nw_perf_requsList = NULL;
     }
+    if (ue_comm_reqsList) {
+        OpenAPI_list_for_each(ue_comm_reqsList, node) {
+            OpenAPI_ue_comm_req_free(node->data);
+        }
+        OpenAPI_list_free(ue_comm_reqsList);
+        ue_comm_reqsList = NULL;
+    }
+    if (ue_mobility_reqsList) {
+        OpenAPI_list_for_each(ue_mobility_reqsList, node) {
+            OpenAPI_ue_mobility_req_free(node->data);
+        }
+        OpenAPI_list_free(ue_mobility_reqsList);
+        ue_mobility_reqsList = NULL;
+    }
     if (bw_requsList) {
         OpenAPI_list_for_each(bw_requsList, node) {
             OpenAPI_bw_requirement_free(node->data);
@@ -1894,10 +2954,6 @@ end:
         OpenAPI_list_free(excep_requsList);
         excep_requsList = NULL;
     }
-    if (expt_ana_type_local_nonprim) {
-        OpenAPI_expected_analytics_type_free(expt_ana_type_local_nonprim);
-        expt_ana_type_local_nonprim = NULL;
-    }
     if (expt_ue_behav_local_nonprim) {
         OpenAPI_expected_ue_behaviour_data_free(expt_ue_behav_local_nonprim);
         expt_ue_behav_local_nonprim = NULL;
@@ -1910,9 +2966,6 @@ end:
         rat_freqsList = NULL;
     }
     if (list_of_ana_subsetsList) {
-        OpenAPI_list_for_each(list_of_ana_subsetsList, node) {
-            OpenAPI_analytics_subset_free(node->data);
-        }
         OpenAPI_list_free(list_of_ana_subsetsList);
         list_of_ana_subsetsList = NULL;
     }
@@ -1954,6 +3007,77 @@ end:
         }
         OpenAPI_list_free(dn_perf_reqsList);
         dn_perf_reqsList = NULL;
+    }
+    if (pdu_ses_infosList) {
+        OpenAPI_list_for_each(pdu_ses_infosList, node) {
+            OpenAPI_pdu_session_info_1_free(node->data);
+        }
+        OpenAPI_list_free(pdu_ses_infosList);
+        pdu_ses_infosList = NULL;
+    }
+    if (pdu_ses_traf_reqsList) {
+        OpenAPI_list_for_each(pdu_ses_traf_reqsList, node) {
+            OpenAPI_pdu_ses_traffic_req_free(node->data);
+        }
+        OpenAPI_list_free(pdu_ses_traf_reqsList);
+        pdu_ses_traf_reqsList = NULL;
+    }
+    if (loc_acc_reqsList) {
+        OpenAPI_list_for_each(loc_acc_reqsList, node) {
+            OpenAPI_loc_accuracy_req_free(node->data);
+        }
+        OpenAPI_list_free(loc_acc_reqsList);
+        loc_acc_reqsList = NULL;
+    }
+    if (data_vl_trns_tm_rqsList) {
+        OpenAPI_list_for_each(data_vl_trns_tm_rqsList, node) {
+            OpenAPI_e2e_data_vol_trans_time_req_free(node->data);
+        }
+        OpenAPI_list_free(data_vl_trns_tm_rqsList);
+        data_vl_trns_tm_rqsList = NULL;
+    }
+    if (accu_req_local_nonprim) {
+        OpenAPI_accuracy_req_free(accu_req_local_nonprim);
+        accu_req_local_nonprim = NULL;
+    }
+    if (mov_behav_reqsList) {
+        OpenAPI_list_for_each(mov_behav_reqsList, node) {
+            OpenAPI_mov_behav_req_free(node->data);
+        }
+        OpenAPI_list_free(mov_behav_reqsList);
+        mov_behav_reqsList = NULL;
+    }
+    if (rel_prox_reqsList) {
+        OpenAPI_list_for_each(rel_prox_reqsList, node) {
+            OpenAPI_rel_prox_req_free(node->data);
+        }
+        OpenAPI_list_free(rel_prox_reqsList);
+        rel_prox_reqsList = NULL;
+    }
+    if (feedback_local_nonprim) {
+        OpenAPI_analytics_feedback_info_free(feedback_local_nonprim);
+        feedback_local_nonprim = NULL;
+    }
+    if (sig_storm_reqsList) {
+        OpenAPI_list_for_each(sig_storm_reqsList, node) {
+            OpenAPI_signal_storm_req_free(node->data);
+        }
+        OpenAPI_list_free(sig_storm_reqsList);
+        sig_storm_reqsList = NULL;
+    }
+    if (qos_pol_assist_reqsList) {
+        OpenAPI_list_for_each(qos_pol_assist_reqsList, node) {
+            OpenAPI_qos_policy_assist_req_free(node->data);
+        }
+        OpenAPI_list_free(qos_pol_assist_reqsList);
+        qos_pol_assist_reqsList = NULL;
+    }
+    if (last_ue_locsList) {
+        OpenAPI_list_for_each(last_ue_locsList, node) {
+            OpenAPI_timestamped_location_free(node->data);
+        }
+        OpenAPI_list_free(last_ue_locsList);
+        last_ue_locsList = NULL;
     }
     return NULL;
 }

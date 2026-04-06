@@ -1,7 +1,7 @@
 /*
  * ue_reachable_ind.h
  *
- * 
+ * UE Reachable Indication
  */
 
 #ifndef _OpenAPI_ue_reachable_ind_H_

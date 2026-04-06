@@ -33,7 +33,7 @@ bool ogs_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
     }
 
     rc = ogs_sbi_send_request_to_nrf(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            OpenAPI_service_name_nnrf_nfm, NULL,
             ogs_sbi_client_handler, request, nf_instance);
     ogs_expect(rc == true);
 
@@ -56,7 +56,7 @@ bool ogs_nnrf_nfm_send_nf_update(ogs_sbi_nf_instance_t *nf_instance)
     }
 
     rc = ogs_sbi_send_request_to_nrf(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            OpenAPI_service_name_nnrf_nfm, NULL,
             ogs_sbi_client_handler, request, nf_instance);
     ogs_expect(rc == true);
 
@@ -79,7 +79,7 @@ bool ogs_nnrf_nfm_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance)
     }
 
     rc = ogs_sbi_send_request_to_nrf(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            OpenAPI_service_name_nnrf_nfm, NULL,
             ogs_sbi_client_handler, request, nf_instance);
     ogs_expect(rc == true);
 
@@ -91,7 +91,7 @@ bool ogs_nnrf_nfm_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance)
 bool ogs_nnrf_nfm_send_nf_status_subscribe(
         OpenAPI_nf_type_e req_nf_type, char *req_nf_instance_id,
         OpenAPI_nf_type_e subscr_cond_nf_type,
-        char *subscr_cond_service_name)
+        OpenAPI_service_name_e subscr_cond_service_name)
 {
     bool rc;
     ogs_sbi_request_t *request = NULL;
@@ -110,8 +110,7 @@ bool ogs_nnrf_nfm_send_nf_status_subscribe(
     if (subscr_cond_nf_type)
         subscription_data->subscr_cond.nf_type = subscr_cond_nf_type;
     else if (subscr_cond_service_name)
-        subscription_data->subscr_cond.service_name =
-            ogs_strdup(subscr_cond_service_name);
+        subscription_data->subscr_cond.service_name = subscr_cond_service_name;
     else {
         ogs_fatal("SubscrCond must be 'oneOf'.");
         ogs_assert_if_reached();
@@ -124,7 +123,7 @@ bool ogs_nnrf_nfm_send_nf_status_subscribe(
     }
 
     rc = ogs_sbi_send_request_to_nrf(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            OpenAPI_service_name_nnrf_nfm, NULL,
             ogs_sbi_client_handler, request, subscription_data);
     ogs_expect(rc == true);
 
@@ -148,7 +147,7 @@ bool ogs_nnrf_nfm_send_nf_status_update(
     }
 
     rc = ogs_sbi_send_request_to_nrf(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            OpenAPI_service_name_nnrf_nfm, NULL,
             ogs_sbi_client_handler, request, subscription_data);
     ogs_expect(rc == true);
 
@@ -172,7 +171,7 @@ bool ogs_nnrf_nfm_send_nf_status_unsubscribe(
     }
 
     rc = ogs_sbi_send_request_to_nrf(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            OpenAPI_service_name_nnrf_nfm, NULL,
             ogs_sbi_client_handler, request, subscription_data);
     ogs_expect(rc == true);
 
@@ -193,7 +192,7 @@ bool ogs_nnrf_nfm_send_nf_list_retrieve(void)
     }
 
     rc = ogs_sbi_send_request_to_nrf(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            OpenAPI_service_name_nnrf_nfm, NULL,
             ogs_sbi_client_handler, request, ogs_sbi_self()->nf_instance);
     ogs_expect(rc == true);
 
@@ -214,7 +213,7 @@ bool ogs_nnrf_nfm_send_nf_profile_get(char *nf_instance_id)
     }
 
     rc = ogs_sbi_send_request_to_nrf(
-            OGS_SBI_SERVICE_TYPE_NNRF_NFM, NULL,
+            OpenAPI_service_name_nnrf_nfm, NULL,
             ogs_sbi_client_handler, request, ogs_sbi_self()->nf_instance);
     ogs_expect(rc == true);
 

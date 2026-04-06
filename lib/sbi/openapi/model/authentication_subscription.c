@@ -22,7 +22,11 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_creat
     char *supi,
     bool is_akma_allowed,
     int akma_allowed,
-    char *routing_id
+    char *routing_id,
+    bool is_nswo_allowed,
+    int nswo_allowed,
+    bool is__5g_key_hierar_supp,
+    int _5g_key_hierar_supp
 )
 {
     OpenAPI_authentication_subscription_t *authentication_subscription_local_var = ogs_malloc(sizeof(OpenAPI_authentication_subscription_t));
@@ -46,6 +50,10 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_creat
     authentication_subscription_local_var->is_akma_allowed = is_akma_allowed;
     authentication_subscription_local_var->akma_allowed = akma_allowed;
     authentication_subscription_local_var->routing_id = routing_id;
+    authentication_subscription_local_var->is_nswo_allowed = is_nswo_allowed;
+    authentication_subscription_local_var->nswo_allowed = nswo_allowed;
+    authentication_subscription_local_var->is__5g_key_hierar_supp = is__5g_key_hierar_supp;
+    authentication_subscription_local_var->_5g_key_hierar_supp = _5g_key_hierar_supp;
 
     return authentication_subscription_local_var;
 }
@@ -224,6 +232,20 @@ cJSON *OpenAPI_authentication_subscription_convertToJSON(OpenAPI_authentication_
     }
     }
 
+    if (authentication_subscription->is_nswo_allowed) {
+    if (cJSON_AddBoolToObject(item, "nswoAllowed", authentication_subscription->nswo_allowed) == NULL) {
+        ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [nswo_allowed]");
+        goto end;
+    }
+    }
+
+    if (authentication_subscription->is__5g_key_hierar_supp) {
+    if (cJSON_AddBoolToObject(item, "5gKeyHierarSupp", authentication_subscription->_5g_key_hierar_supp) == NULL) {
+        ogs_error("OpenAPI_authentication_subscription_convertToJSON() failed [_5g_key_hierar_supp]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -250,6 +272,8 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
     cJSON *supi = NULL;
     cJSON *akma_allowed = NULL;
     cJSON *routing_id = NULL;
+    cJSON *nswo_allowed = NULL;
+    cJSON *_5g_key_hierar_supp = NULL;
     authentication_method = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "authenticationMethod");
     if (!authentication_method) {
         ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [authentication_method]");
@@ -375,6 +399,22 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
     }
     }
 
+    nswo_allowed = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "nswoAllowed");
+    if (nswo_allowed) {
+    if (!cJSON_IsBool(nswo_allowed)) {
+        ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [nswo_allowed]");
+        goto end;
+    }
+    }
+
+    _5g_key_hierar_supp = cJSON_GetObjectItemCaseSensitive(authentication_subscriptionJSON, "5gKeyHierarSupp");
+    if (_5g_key_hierar_supp) {
+    if (!cJSON_IsBool(_5g_key_hierar_supp)) {
+        ogs_error("OpenAPI_authentication_subscription_parseFromJSON() failed [_5g_key_hierar_supp]");
+        goto end;
+    }
+    }
+
     authentication_subscription_local_var = OpenAPI_authentication_subscription_create (
         authentication_methodVariable,
         enc_permanent_key && !cJSON_IsNull(enc_permanent_key) ? ogs_strdup(enc_permanent_key->valuestring) : NULL,
@@ -393,7 +433,11 @@ OpenAPI_authentication_subscription_t *OpenAPI_authentication_subscription_parse
         supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
         akma_allowed ? true : false,
         akma_allowed ? akma_allowed->valueint : 0,
-        routing_id && !cJSON_IsNull(routing_id) ? ogs_strdup(routing_id->valuestring) : NULL
+        routing_id && !cJSON_IsNull(routing_id) ? ogs_strdup(routing_id->valuestring) : NULL,
+        nswo_allowed ? true : false,
+        nswo_allowed ? nswo_allowed->valueint : 0,
+        _5g_key_hierar_supp ? true : false,
+        _5g_key_hierar_supp ? _5g_key_hierar_supp->valueint : 0
     );
 
     return authentication_subscription_local_var;

@@ -1,7 +1,7 @@
 /*
  * amf_non3_gpp_access_registration_modification.h
  *
- * 
+ * This data type contains attributes of AmfNon3GppAccessRegistration that can be modified using PATCH. 
  */
 
 #ifndef _OpenAPI_amf_non3_gpp_access_registration_modification_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_amf_non3_gpp_access_registration_modification_s OpenAPI_amf_non3_gpp_access_registration_modification_t;
 #include "backup_amf_info.h"
 #include "guami.h"
 #include "ims_vo_ps.h"
@@ -20,15 +21,14 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_amf_non3_gpp_access_registration_modification_s OpenAPI_amf_non3_gpp_access_registration_modification_t;
-typedef struct OpenAPI_amf_non3_gpp_access_registration_modification_s {
+struct OpenAPI_amf_non3_gpp_access_registration_modification_s {
     struct OpenAPI_guami_s *guami;
     bool is_purge_flag;
     int purge_flag;
     char *pei;
     OpenAPI_ims_vo_ps_e ims_vo_ps;
     OpenAPI_list_t *backup_amf_info;
-} OpenAPI_amf_non3_gpp_access_registration_modification_t;
+};
 
 OpenAPI_amf_non3_gpp_access_registration_modification_t *OpenAPI_amf_non3_gpp_access_registration_modification_create(
     OpenAPI_guami_t *guami,

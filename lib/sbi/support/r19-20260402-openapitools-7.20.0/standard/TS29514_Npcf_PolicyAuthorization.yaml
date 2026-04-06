@@ -1,0 +1,3292 @@
+openapi: 3.0.0
+
+info:
+  title: Npcf_PolicyAuthorization Service API
+  version: 1.4.1
+  description: |
+    PCF Policy Authorization Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.514 V19.6.0; 5G System; Policy Authorization Service; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.514/'
+
+servers:
+  - url: '{apiRoot}/npcf-policyauthorization/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - npcf-policyauthorization
+
+paths:
+  /app-sessions:
+    post:
+      summary: Creates a new Individual Application Session Context resource
+      operationId: PostAppSessions
+      tags:
+        - Application Sessions (Collection)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - npcf-policyauthorization
+        - oAuth2ClientCredentials:
+          - npcf-policyauthorization
+          - npcf-policyauthorization:policy-auth-mgmt
+      requestBody:
+        description: Contains the information for the creation the resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppSessionContext'
+      responses:
+        '201':
+          description: Successful creation of the resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppSessionContext'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created individual application session context resource,
+                according to the structure
+                {apiRoot}/npcf-policyauthorization/v1/app-sessions/{appSessionId}
+                or the URI of the created events subscription sub-resource,
+                according to the structure
+                {apiRoot}/npcf-policyauthorization/v1/app-sessions/{appSessionId}
+                /events-subscription
+              required: true
+              schema:
+                type: string
+        '303':
+          description: >
+            See Other. The result of the HTTP POST request would be equivalent to the existing
+            Application Session Context.
+          headers:
+            Location:
+              description: >
+                Contains the URI of the existing individual Application Session Context resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ExtendedProblemDetails'
+          headers:
+            Retry-After:
+              description: >
+                Indicates the time the AF has to wait before making a new request. It can be a
+                non-negative integer (decimal number) indicating the number of seconds the AF
+                has to wait before making a new request or an HTTP-date after which the AF can
+                retry a new request.
+              schema:
+                anyOf:
+                  - type: integer
+                  - type: string
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        terminationRequest:
+          '{$request.body#/ascReqData/notifUri}/terminate':
+            post:
+              requestBody:
+                description: >
+                  Request of the termination of the Individual Application Session Context.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/TerminationInfo'
+              responses:
+                '204':
+                  description: The receipt of the notification is acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+        eventNotification:
+          '{$request.body#/ascReqData/evSubsc/notifUri}/notify':
+            post:
+              requestBody:
+                description: Notification of an event occurrence in the PCF.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EventsNotification'
+              responses:
+                '204':
+                  description: The receipt of the notification is acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+        detected5GsBridgeForPduSession:
+          '{$request.body#/ascReqData/evSubsc/notifUri}/new-bridge':
+            post:
+              requestBody:
+                description: Notification of a new TSC user plane node detected in the PCF.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/PduSessionTsnBridge'
+              responses:
+                '204':
+                  description: The receipt of the notification is acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+        eventNotificationPduSession:
+          '{$request.body#/ascReqData/evSubsc/notifUri}/pdu-session':
+            post:
+              requestBody:
+                description: Notification of PDU session established or terminated.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/PduSessionEventNotification'
+              responses:
+                '204':
+                  description: The receipt of the notification is acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /app-sessions/pcscf-restoration:
+    post:
+      summary: "Indicates P-CSCF restoration and does not create an Individual Application Session Context"
+      operationId: PcscfRestoration
+      tags:
+        - PCSCF Restoration Indication
+      requestBody:
+        description: PCSCF Restoration Indication.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PcscfRestorationRequestData'
+      responses:
+        '204':
+          description: The deletion is confirmed without returning additional data.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /app-sessions/{appSessionId}:
+    get:
+      summary: "Reads an existing Individual Application Session Context"
+      operationId: GetAppSession
+      tags:
+        - Individual Application Session Context (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - npcf-policyauthorization
+        - oAuth2ClientCredentials:
+          - npcf-policyauthorization
+          - npcf-policyauthorization:policy-auth-mgmt
+      parameters:
+        - name: appSessionId
+          description: String identifying the resource.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A representation of the resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppSessionContext'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: "Modifies an existing Individual Application Session Context"
+      operationId: ModAppSession
+      tags:
+        - Individual Application Session Context (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - npcf-policyauthorization
+        - oAuth2ClientCredentials:
+          - npcf-policyauthorization
+          - npcf-policyauthorization:policy-auth-mgmt
+      parameters:
+        - name: appSessionId
+          description: String identifying the resource.
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Modification of the resource.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/AppSessionContextUpdateDataPatch'
+      responses:
+        '200':
+          description: >
+            Successful modification of the resource and a representation of that resource is
+            returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppSessionContext'
+        '204':
+          description: The successful modification.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          description: Forbidden
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ExtendedProblemDetails'
+          headers:
+            Retry-After:
+              description: >
+                Indicates the time the AF has to wait before making a new request. It can be a
+                non-negative integer (decimal number) indicating the number of seconds the AF has
+                to wait before making a new request or an HTTP-date after which the AF can retry
+                a new request.
+              schema:
+                anyOf:
+                  - type: integer
+                  - type: string
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        eventNotification:
+          '{$request.body#/ascReqData/evSubsc/notifUri}/notify':
+            post:
+              requestBody:
+                description: Notification of an event occurrence in the PCF.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EventsNotification'
+              responses:
+                '204':
+                  description: The receipt of the notification is acknowledged
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /app-sessions/{appSessionId}/delete:
+    post:
+      summary: "Deletes an existing Individual Application Session Context"
+      operationId: DeleteAppSession
+      tags:
+        - Individual Application Session Context (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - npcf-policyauthorization
+        - oAuth2ClientCredentials:
+          - npcf-policyauthorization
+          - npcf-policyauthorization:policy-auth-mgmt
+      parameters:
+        - name: appSessionId
+          description: String identifying the Individual Application Session Context resource.
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: >
+          Deletion of the Individual Application Session Context resource, req notification.
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventsSubscReqData'
+      responses:
+        '200':
+          description: The deletion of the resource is confirmed and a resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppSessionContext'
+        '204':
+          description: The deletion is confirmed without returning additional data.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /app-sessions/{appSessionId}/events-subscription:
+    put:
+      summary: "creates or modifies an Events Subscription subresource"
+      operationId: updateEventsSubsc
+      tags:
+        - Events Subscription (Document)
+      parameters:
+        - name: appSessionId
+          description: String identifying the Events Subscription resource.
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Creation or modification of an Events Subscription resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventsSubscReqData'
+      responses:
+        '201':
+          description: >
+            The creation of the Events Subscription resource is confirmed and its representation is
+            returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsSubscPutData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Events Subscription resource,
+                according to the structure
+                {apiRoot}/npcf-policyauthorization/v1/app-sessions/{appSessionId}/
+                events-subscription
+              required: true
+              schema:
+                type: string
+        '200':
+          description: >
+            The modification of the Events Subscription resource is confirmed its representation is
+            returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsSubscPutData'
+        '204':
+          description: >
+            The modification of the Events Subscription subresource is confirmed without returning
+            additional data.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        eventNotification:
+          '{$request.body#/notifUri}/notify':
+            post:
+              requestBody:
+                description: >
+                  Contains the information for the notification of an event occurrence in the PCF.
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EventsNotification'
+              responses:
+                '204':
+                  description: The receipt of the notification is acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: deletes the Events Subscription subresource
+      operationId: DeleteEventsSubsc
+      tags:
+        - Events Subscription (Document)
+      parameters:
+        - name: appSessionId
+          description: String identifying the Individual Application Session Context resource.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            The deletion of the of the Events Subscription sub-resource is confirmed without
+            returning additional data.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npcf-policyauthorization: Access to the Npcf_PolicyAuthorization API
+            npcf-policyauthorization:policy-auth-mgmt: >
+              Access to service operations applying to PCF Policy Authorization for creation,
+              updation, deletion, retrieval.
+
+  schemas:
+
+    AppSessionContext:
+      description: Represents an Individual Application Session Context resource.
+      type: object
+      properties:
+        ascReqData:
+          $ref: '#/components/schemas/AppSessionContextReqData'
+        ascRespData:
+          $ref: '#/components/schemas/AppSessionContextRespData'
+        evsNotif:
+          $ref: '#/components/schemas/EventsNotification'
+
+    AppSessionContextReqData:
+      description: Identifies the service requirements of an Individual Application Session Context.
+      type: object
+      required:
+        - notifUri
+        - suppFeat
+      oneOf:
+        - required: [ueIpv4]
+        - required: [ueIpv6]
+        - required: [ueMac]
+      properties:
+        afAppId:
+          $ref: '#/components/schemas/AfAppId'
+        afChargId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationChargingId'
+        afReqData:
+          $ref: '#/components/schemas/AfRequestedData'
+        afRoutReq:
+          $ref: '#/components/schemas/AfRoutingRequirement'
+        afSfcReq:
+          $ref: '#/components/schemas/AfSfcRequirement'
+        afHdrReq:
+          $ref: '#/components/schemas/AfHeaderHandlingControlInfo'
+        aspId:
+          $ref: '#/components/schemas/AspId'
+        bdtRefId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/BdtReferenceId'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        evSubsc:
+          $ref: '#/components/schemas/EventsSubscReqData'
+        mcpttId:
+          description: Indication of MCPTT service request.
+          type: string
+        mcVideoId:
+          description: Indication of MCVideo service request.
+          type: string
+        medComponents:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MediaComponent'
+          minProperties: 1
+          description: >
+            Contains media component information. The key of the map is the medCompN attribute.
+        multiModalId:
+          $ref: '#/components/schemas/MultiModalId'
+        ipDomain:
+          type: string
+        mpsAction:
+          $ref: '#/components/schemas/MpsAction'
+        mpsId:
+          description: Indication of MPS service request.
+          type: string
+        mcsId:
+          description: Indication of MCS service request.
+          type: string
+        preemptControlInfo:
+          $ref: '#/components/schemas/PreemptionControlInformation'
+        qosDuration:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        qosInactInt:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        resPrio:
+          $ref: '#/components/schemas/ReservPriority'
+        servInfStatus:
+          $ref: '#/components/schemas/ServiceInfoStatus'
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        servUrn:
+          $ref: '#/components/schemas/ServiceUrn'
+        sliceInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        sponId:
+          $ref: '#/components/schemas/SponId'
+        sponStatus:
+          $ref: '#/components/schemas/SponsoringStatus'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        ueIpv4:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ueIpv6:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        ueMac:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        tsnBridgeManCont:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/BridgeManagementContainer'
+        tsnPortManContDstt:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/PortManagementContainer'
+        tsnPortManContNwtts:
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/PortManagementContainer'
+          minItems: 1
+        tscNotifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        tscNotifCorreId:
+          type: string
+          description: >
+            Correlation identifier for TSC management information notifications.
+
+    AppSessionContextRespData:
+      description: >
+        Describes the authorization data of an Individual Application Session Context created by
+        the PCF.
+      type: object
+      properties:
+        servAuthInfo:
+          $ref: '#/components/schemas/ServAuthInfo'
+        directNotifReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/DirectNotificationReport'
+          minItems: 1
+          description: >
+            QoS monitoring parameter(s) that cannot be directly notified for the indicated flows.
+        ueIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeIdentityInfo'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    AppSessionContextUpdateDataPatch:
+      description: >
+        Identifies the modifications to an Individual Application Session Context and/or the
+        modifications to the sub-resource Events Subscription.
+      type: object
+      properties:
+        ascReqData:
+          $ref: '#/components/schemas/AppSessionContextUpdateData'
+
+    AppSessionContextUpdateData:
+      description: >
+        Identifies the modifications to the "ascReqData" property of an Individual Application
+        Session Context which may include the modifications to the sub-resource Events Subscription.
+      type: object
+      properties:
+        afAppId:
+          $ref: '#/components/schemas/AfAppId'
+        afRoutReq:
+          $ref: '#/components/schemas/AfRoutingRequirementRm'
+        afSfcReq:
+          $ref: '#/components/schemas/AfSfcRequirement'
+        afHdrReq:
+          $ref: '#/components/schemas/AfHeaderHandlingControlInfo'
+        aspId:
+          $ref: '#/components/schemas/AspId'
+        bdtRefId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/BdtReferenceId'
+        evSubsc:
+          $ref: '#/components/schemas/EventsSubscReqDataRm'
+        mcpttId:
+          description: Indication of MCPTT service request.
+          type: string
+        mcVideoId:
+          description: Indication of modification of MCVideo service.
+          type: string
+        medComponents:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MediaComponentRm'
+          minProperties: 1
+          description: >
+            Contains media component information. The key of the map is the medCompN attribute.
+        mpsAction:
+          $ref: '#/components/schemas/MpsAction'
+        mpsId:
+          description: Indication of MPS service request.
+          type: string
+        mcsId:
+          description: Indication of MCS service request.
+          type: string
+        preemptControlInfo:
+          $ref: '#/components/schemas/PreemptionControlInformationRm'
+        qosDuration:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        qosInactInt:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        resPrio:
+          $ref: '#/components/schemas/ReservPriority'
+        servInfStatus:
+          $ref: '#/components/schemas/ServiceInfoStatus'
+        sipForkInd:
+          $ref: '#/components/schemas/SipForkingIndication'
+        sponId:
+          $ref: '#/components/schemas/SponId'
+        sponStatus:
+          $ref: '#/components/schemas/SponsoringStatus'
+        tsnBridgeManCont:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/BridgeManagementContainer'
+        tsnPortManContDstt:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/PortManagementContainer'
+        tsnPortManContNwtts:
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/PortManagementContainer'
+          minItems: 1
+        tscNotifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        tscNotifCorreId:
+          type: string
+          description: >
+            Correlation identifier for TSC management information notifications.
+
+    EventsSubscReqData:
+      description: Identifies the events the application subscribes to.
+      type: object
+      required:
+        - events
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/AfEventSubscription'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        reqQosMonParams:
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/RequestedQosMonitoringParameter'
+          minItems: 1
+        qosMon:
+          $ref: '#/components/schemas/QosMonitoringInformation'
+        qosMonDatRate:
+          $ref: '#/components/schemas/QosMonitoringInformation'
+        pdvReqMonParams:
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/RequestedQosMonitoringParameter'
+          minItems: 1
+        pdvMon:
+          $ref: '#/components/schemas/QosMonitoringInformation'
+        congestMon:
+          $ref: '#/components/schemas/QosMonitoringInformation'
+        rttMon:
+          $ref: '#/components/schemas/QosMonitoringInformation'
+        avlBitRateMon:
+          $ref: '#/components/schemas/QosMonitoringInformation'
+        rttFlowRef:
+          $ref: '#/components/schemas/RttFlowReference'
+        reqAnis: 
+          type: array
+          items:
+            $ref: '#/components/schemas/RequiredAccessInfo'
+          minItems: 1
+        usgThres:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThreshold'
+        notifCorreId:
+          type: string
+        afAppIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/AfAppId'
+          minItems: 1
+        directNotifInd:
+          type: boolean
+          description: >
+            Indicates whether the direct event notification is requested (true) or not (false) for
+            the provided QoS monitoring parameters.
+            Default value is false.
+        avrgWndw:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AverWindow'
+
+    EventsSubscReqDataRm:
+      description: >
+        This data type is defined in the same way as the EventsSubscReqData data type, but with
+        the OpenAPI nullable property set to true.
+      type: object
+      required:
+        - events
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/AfEventSubscription'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        reqQosMonParams:
+          type: array
+          nullable: true
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/RequestedQosMonitoringParameter'
+          minItems: 1
+        qosMon:
+          $ref: '#/components/schemas/QosMonitoringInformationRm'
+        qosMonDatRate:
+          $ref: '#/components/schemas/QosMonitoringInformationRm'
+        pdvReqMonParams:
+          type: array
+          nullable: true
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/RequestedQosMonitoringParameter'
+          minItems: 1
+        pdvMon:
+          $ref: '#/components/schemas/QosMonitoringInformationRm'
+        congestMon:
+          $ref: '#/components/schemas/QosMonitoringInformationRm'
+        rttMon:
+          $ref: '#/components/schemas/QosMonitoringInformationRm'
+        rttFlowRef:
+          $ref: '#/components/schemas/RttFlowReferenceRm'
+        avlBitRateMon:
+          $ref: '#/components/schemas/QosMonitoringInformationRm'
+        reqAnis:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequiredAccessInfo'
+          minItems: 1
+        usgThres:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThresholdRm'
+        notifCorreId:
+          type: string
+        directNotifInd:
+          type: boolean
+          nullable: true
+          description: >
+            Indicates whether the direct event notification is requested (true) or not (false) for
+            the provided and/or previously provided QoS monitoring parameters.
+        avrgWndw:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AverWindowRm'
+      nullable: true
+
+    MediaComponent:
+      description: Identifies a media component.
+      type: object
+      required:
+        - medCompN
+      allOf:
+        - not: 
+            required: [altSerReqs,altSerReqsData]
+        - not: 
+            required: [qosReference,altSerReqsData]
+      properties:
+        afAppId:
+          $ref: '#/components/schemas/AfAppId'
+        afRoutReq:
+          $ref: '#/components/schemas/AfRoutingRequirement'
+        afSfcReq:
+          $ref: '#/components/schemas/AfSfcRequirement'
+        afHdrReq:
+          $ref: '#/components/schemas/AfHeaderHandlingControlInfo'
+        qosReference:
+          type: string
+        disUeNotif:
+          type: boolean
+        altSerReqs:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        altSerReqsData:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlternativeServiceRequirementsData'
+          minItems: 1
+          description: >
+            Contains alternative service requirements that include individual QoS parameter sets.
+        contVer:
+          $ref: '#/components/schemas/ContentVersion'
+        codecs:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodecData'
+          minItems: 1
+          maxItems: 2
+        desMaxLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        desMaxLoss:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        flusId:
+          type: string
+        fStatus:
+          $ref: '#/components/schemas/FlowStatus'
+        marBwDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        marBwUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxPacketLossRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRateRm'
+        maxPacketLossRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRateRm'
+        maxSuppBwDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxSuppBwUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        medCompN:
+          type: integer
+        medSubComps:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MediaSubComponent'
+          minProperties: 1
+          description: >
+            Contains the requested bitrate and filters for the set of service data flows identified
+            by their common flow identifier. The key of the map is the fNum attribute.
+        medType:
+          $ref: '#/components/schemas/MediaType'
+        minDesBwDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        minDesBwUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        mirBwDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        mirBwUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        preemptCap:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PreemptionCapability'
+        preemptVuln:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PreemptionVulnerability'
+        prioSharingInd:
+          $ref: '#/components/schemas/PrioritySharingIndicator'
+        resPrio:
+          $ref: '#/components/schemas/ReservPriority'
+        rrBw:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        rsBw:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        sharingKeyDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        sharingKeyUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        tsnQos:
+          $ref: '#/components/schemas/TsnQosContainer'
+        tscaiInputDl:
+          $ref: '#/components/schemas/TscaiInputContainer'
+        tscaiInputUl:
+          $ref: '#/components/schemas/TscaiInputContainer'
+        tscaiTimeDom:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        capBatAdaptation:
+          type: boolean
+          description: >
+            Indicates the capability for AF to adjust the burst sending time, when it is supported
+            and set to "true".
+        rTLatencyInd:
+          type: boolean
+          description: >
+            Indicates the service data flow needs to meet the Round-Trip (RT) latency requirement of
+            the service, when it is included and set to "true".
+        pdb:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudget'
+        rTLatencyIndCorreId:
+          $ref: '#/components/schemas/RttFlowReference'
+        pduSetQosDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSetQosPara'
+        pduSetQosUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSetQosPara'
+        protoDescDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProtocolDescription'
+        protoDescUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProtocolDescription'
+        periodUl:
+          $ref: '#/components/schemas/DurationMilliSec'
+        periodDl:
+          $ref: '#/components/schemas/DurationMilliSec'
+        l4sInd:
+          $ref: '#/components/schemas/UplinkDownlinkSupport'
+        datBurstSizeInd:
+          type: boolean
+          description: >
+            Indicates the Data Burst Size marking for the DL service data flow is supported if
+            present and set to "true". The default value is "false" if omitted.
+        timetoNextBurstInd:
+          type: boolean
+          description: >
+            Indicates the Time to Next Burst for the DL service data flow is supported, when it is
+            included and set to "true". The default value is "false" if omitted.
+        onPathN6SigInfo:
+          $ref: '#/components/schemas/OnPathN6SigInfo'
+        expTranInd:
+          type: boolean
+          description: >
+            Expedited Transfer Indication for the downlink traffic to enable expedited data transfer
+            with reflective QoS for the Non-GBR service data flow. "true": the expedited data
+            transfer of larger payload for XR application is enabled in the flow. "false": the
+            expedited data transfer of larger payload for XR application is not enabled in the flow.
+            The default value is "false" if omitted.
+        ulBrRecInd:
+          type: boolean
+          description: >
+            Indicates whether the RAN-controlled UL Bitrate Recommendation Indication is supported
+            for the corresponding service data flow or not.
+            - Set to "true": the RAN-controlled UL Bitrate Recommendation Indication is supported.
+            - Set to "false": the RAN-controlled UL Bitrate Recommendation Indication is not
+              supported 
+            - The default value "false" is used if this attribute is omitted. 
+
+    MediaComponentRm:
+      description: >
+        This data type is defined in the same way as the MediaComponent data type, but with the 
+        OpenAPI nullable property set to true.
+      type: object
+      required:
+        - medCompN
+      not: 
+        required: [altSerReqs,altSerReqsData]
+      properties:
+        afAppId:
+          $ref: '#/components/schemas/AfAppId'
+        afRoutReq:
+          $ref: '#/components/schemas/AfRoutingRequirementRm'
+        afSfcReq:
+          $ref: '#/components/schemas/AfSfcRequirement'
+        afHdrReq:
+          $ref: '#/components/schemas/AfHeaderHandlingControlInfo'
+        qosReference:
+          type: string
+          nullable: true
+        altSerReqs:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          nullable: true
+        altSerReqsData:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlternativeServiceRequirementsData'
+          minItems: 1
+          description: >
+            Contains removable alternative service requirements that include individual QoS
+            parameter sets.
+          nullable: true
+        disUeNotif:
+          type: boolean
+        contVer:
+          $ref: '#/components/schemas/ContentVersion'
+        codecs:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodecData'
+          minItems: 1
+          maxItems: 2
+        desMaxLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/FloatRm'
+        desMaxLoss:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/FloatRm'
+        flusId:
+          type: string
+          nullable: true
+        fStatus:
+          $ref: '#/components/schemas/FlowStatus'
+        marBwDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        marBwUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        maxPacketLossRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRateRm'
+        maxPacketLossRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRateRm'
+        maxSuppBwDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        maxSuppBwUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        medCompN:
+          type: integer
+        medSubComps:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MediaSubComponentRm'
+          minProperties: 1
+          description: >
+            Contains the requested bitrate and filters for the set of service data flows identified
+            by their common flow identifier. The key of the map is the fNum attribute.
+        medType:
+          $ref: '#/components/schemas/MediaType'
+        minDesBwDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        minDesBwUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        mirBwDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        mirBwUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        preemptCap:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PreemptionCapabilityRm'
+        preemptVuln:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PreemptionVulnerabilityRm'
+        prioSharingInd:
+          $ref: '#/components/schemas/PrioritySharingIndicator'
+        resPrio:
+          $ref: '#/components/schemas/ReservPriority'
+        rrBw:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        rsBw:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        sharingKeyDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32Rm'
+        sharingKeyUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32Rm'
+        tsnQos:
+          $ref: '#/components/schemas/TsnQosContainerRm'
+        tscaiInputDl:
+          $ref: '#/components/schemas/TscaiInputContainer'
+        tscaiInputUl:
+          $ref: '#/components/schemas/TscaiInputContainer'
+        tscaiTimeDom:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        capBatAdaptation:
+          type: boolean
+          description: >
+            Indicates the capability for AF to adjust the burst sending time, when it is supported
+            and set to "true". The default value is "false" if omitted.
+        rTLatencyInd:
+          type: boolean
+          nullable: true
+          description: >
+            Indicates the service data flow needs to meet the Round-Trip (RT) latency requirement of
+            the service, when it is included and set to "true". The default value is "false" if
+            omitted.
+        pdb:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudgetRm'
+        rTLatencyIndCorreId:
+          $ref: '#/components/schemas/RttFlowReferenceRm'
+        pduSetQosDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSetQosParaRm'
+        pduSetQosUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSetQosParaRm'
+        protoDescDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProtocolDescriptionRm'
+        protoDescUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProtocolDescriptionRm'
+        periodUl:
+          $ref: '#/components/schemas/DurationMilliSecRm'
+        periodDl:
+          $ref: '#/components/schemas/DurationMilliSecRm'
+        l4sInd:
+          $ref: '#/components/schemas/UplinkDownlinkSupport'
+        datBurstSizeInd:
+          type: boolean
+          nullable: true
+          description: >
+            Indicates the Data Burst Size marking for the DL service data flow is supported if
+            present and set to "true".
+        timetoNextBurstInd:
+          type: boolean
+          nullable: true
+          description: >
+            Indicates the Time to Next Burst for the DL service data flow is supported, when it is
+            included and set to "true".
+        onPathN6SigInfo:
+          $ref: '#/components/schemas/OnPathN6SigInfo'
+        expTranInd:
+          type: boolean
+          nullable: true
+          description: >
+            Expedited Transfer Indication for the downlink traffic to enable expedited data transfer
+            with reflective QoS for the Non-GBR service data flow. "true": the expedited data
+            transfer of larger payload for XR application is enabled in the flow. "false":
+            the expedited data transfer of larger payload for XR application is not enabled in the
+            flow.
+        ulBrRecInd:
+          type: boolean
+          nullable: true
+          description: >
+            Indicates whether the RAN-controlled UL Bitrate Recommendation indication is supported
+            for the corresponding service data flow or not.
+            - Set to "true": the RAN-controlled UL Bitrate Recommendation Indication is supported.
+            - Set to "false": the RAN-controlled UL Bitrate Recommendation Indication is not
+              supported. 
+      nullable: true
+
+    MediaSubComponent:
+      description: Identifies a media subcomponent.
+      type: object
+      required:
+        - fNum
+      properties:
+        afSigProtocol:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/AfSigProtocol'
+        ethfDescs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EthFlowDescription'
+          minItems: 1
+          maxItems: 2
+        fNum:
+          type: integer
+        fDescs:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlowDescription'
+          minItems: 1
+          maxItems: 2
+        addInfoFlowDescs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddFlowDescriptionInfo'
+          minItems: 1
+          maxItems: 2
+          description: >
+            Represents additional flow description information (flow label and IPsec SPI)
+            per Uplink and/or Downlink IP flows.
+        fStatus:
+          $ref: '#/components/schemas/FlowStatus'
+        marBwDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        marBwUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        tosTrCl:
+          $ref: '#/components/schemas/TosTrafficClass'
+        flowUsage:
+          $ref: '#/components/schemas/FlowUsage'
+        evSubsc:
+          $ref: '#/components/schemas/EventsSubscReqData'
+        mpxMediaUlInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/MpxMediaInfo'
+          minItems: 1
+          description: (S)RTP Multiplexed media identification information for the Uplink IP flow.
+        mpxMediaDlInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/MpxMediaInfo'
+          minItems: 1
+          description: (S)RTP Multiplexed media identification information for the Downlink IP flow.
+
+    MediaSubComponentRm:
+      description: >
+        This data type is defined in the same way as the MediaSubComponent data type, but with the
+        OpenAPI nullable property set to true. Removable attributes marBwDl and marBwUl are defined
+        with the corresponding removable data type.
+      type: object
+      required:
+        - fNum
+      properties:
+        afSigProtocol:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/AfSigProtocol'
+        ethfDescs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EthFlowDescription'
+          minItems: 1
+          maxItems: 2
+          nullable: true
+        fNum:
+          type: integer
+        fDescs:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlowDescription'
+          minItems: 1
+          maxItems: 2
+          nullable: true
+        addInfoFlowDescs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddFlowDescriptionInfo'
+          minItems: 1
+          maxItems: 2
+          nullable: true
+          description: >
+            Represents additional flow description information (flow label and IPsec SPI)
+            per Uplink and/or Downlink IP flows.
+        fStatus:
+          $ref: '#/components/schemas/FlowStatus'
+        marBwDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        marBwUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        tosTrCl:
+          $ref: '#/components/schemas/TosTrafficClassRm'
+        flowUsage:
+          $ref: '#/components/schemas/FlowUsage'
+        evSubsc:
+          $ref: '#/components/schemas/EventsSubscReqDataRm'
+        mpxMediaUlInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/MpxMediaInfo'
+          minItems: 1
+          description: (S)RTP Multiplexed media identification information for the Uplink IP flow.
+          nullable: true
+        mpxMediaDlInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/MpxMediaInfo'
+          minItems: 1
+          description: (S)RTP Multiplexed media identification information for the Downlink IP flow.
+          nullable: true
+      nullable: true
+
+    EventsNotification:
+      description: Describes the notification of a matched event.
+      type: object
+      required:
+        - evSubsUri
+        - evNotifs
+      properties:
+        adReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppDetectionReport'
+          minItems: 1
+          description: Includes the detected application report.
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        addAccessInfo:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/AdditionalAccessInfo'
+        relAccessInfo:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/AdditionalAccessInfo'
+        anChargAddr:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/AccNetChargingAddress'
+        anChargIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccessNetChargingIdentifier'
+          minItems: 1
+        anGwAddr:
+          $ref: '#/components/schemas/AnGwAddress'
+        l4sReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/L4sSupport'
+          minItems: 1
+        evSubsUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        evNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AfEventNotification'
+          minItems: 1
+        failedResourcAllocReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourcesAllocationInfo'
+          minItems: 1
+        succResourcAllocReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourcesAllocationInfo'
+          minItems: 1
+        noNetLocSupp:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/NetLocAccessSupport'
+        outOfCredReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/OutOfCreditInformation'
+          minItems: 1
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        qncReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosNotificationControlInfo'
+          minItems: 1
+        qosMonReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosMonitoringReport'
+          minItems: 1
+        qosMonDatRateReps:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosMonitoringReport'
+          minItems: 1
+        pdvMonReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/PdvMonitoringReport'
+          minItems: 1
+        congestReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosMonitoringReport'
+          minItems: 1
+        rttMonReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosMonitoringReport'
+          minItems: 1
+        qosMonCapRepos:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CapabilityReport'
+          minProperties: 1
+          description: >
+            Contains the QoS monitoring is supported or not. It shall be present when
+            the notified event is "QOS_MON_CAP_REPO". The key of the map is the attribute
+            "capType".
+        ranNasRelCauses:
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/RanNasRelCause'
+          minItems: 1
+          description: Contains the RAN and/or NAS release cause.
+        ratType: 
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        satBackhaulCategory: 
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SatelliteBackhaulCategory'
+        ueLoc:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueLocTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        usgRep:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/AccumulatedUsage'
+        urspEnfRep:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/UrspEnforcementInfo'
+        sscMode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SscMode'
+        ueReqDnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        ueReqPduSessionType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+        tsnBridgeManCont:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/BridgeManagementContainer'
+        tsnPortManContDstt: 
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/PortManagementContainer'
+        tsnPortManContNwtts: 
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/PortManagementContainer'
+          minItems: 1
+        ipv4AddrList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4AddrMask'
+          minItems: 1
+        ipv6PrefixList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+          minItems: 1
+        batOffsetInfo:
+          $ref: '#/components/schemas/BatOffsetInfo'
+        ueReachStatus:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/UeReachabilityStatus'
+        retryAfter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        servSatId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SatelliteId'
+        rateLimitRepo:
+          $ref: '#/components/schemas/RateLimitRepo'
+        dnaiChgType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DnaiChangeType'
+        sourceDnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        targetDnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        sessionRecovStatus:
+            $ref: '#/components/schemas/PcSessionRecoveryStatus'
+
+    AfEventSubscription:
+      description: Describes the event information delivered in the subscription.
+      type: object
+      required:
+        - event
+      properties:
+        event:
+          $ref: '#/components/schemas/AfEvent'
+        notifMethod:
+          $ref: '#/components/schemas/AfNotifMethod'
+        repPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        waitTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        qosMonParamType:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/QosMonitoringParamType'
+        capTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotifCapType'
+          minItems: 1
+          description: >
+            Contains the type(s) of QoS Monitoring capability report is applied.
+
+    AfEventNotification:
+      description: Describes the event information delivered in the notification.
+      type: object
+      required:
+        - event
+      properties:
+        event:
+          $ref: '#/components/schemas/AfEvent'
+        flows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flows'
+          minItems: 1
+        retryAfter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+
+    TerminationInfo:
+      description: >
+        Indicates the cause for requesting the deletion of the Individual Application Session
+        Context resource.
+      type: object
+      required:
+        - termCause
+        - resUri
+      properties:
+        termCause:
+          $ref: '#/components/schemas/TerminationCause'
+        resUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+
+    AfRoutingRequirement:
+      description: Describes AF requirements on routing traffic.
+      type: object
+      properties:
+        appReloc:
+          type: boolean
+        routeToLocs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteToLocation'
+          minItems: 1
+        spVal:
+          $ref: '#/components/schemas/SpatialValidity'
+        tempVals:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemporalValidity'
+          minItems: 1
+        upPathChgSub:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/UpPathChgEvent'
+        outcomeSub:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/TraffRouteReqOutcomeEvent'
+        simConnFailSub:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/SimConnFailEvent'
+        addrPreserInd:
+          type: boolean
+        simConnInd:
+          type: boolean
+          description: >
+            Indicates whether simultaneous connectivity should be temporarily maintained for the
+            source and target PSA.
+        simConnTerm:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        easIpReplaceInfos:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/EasIpReplacementInfo'
+          minItems: 1
+          description: Contains EAS IP replacement information.
+        easRedisInd:
+          type: boolean
+          description: Indicates the EAS rediscovery is required.
+        maxAllowedUpLat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        tfcCorreInfo:
+          $ref: 'TS29519_Application_Data.yaml#/components/schemas/TrafficCorrelationInfo'
+        candDnaiInd:
+          type: boolean
+          description: Indicates whether candidate DNAI(s) are requested to be reported.
+        n6DelayInd:
+          type: boolean
+          description: >
+            Indication of whether the N6 delay measurement is requested to be considered or not.
+            The N6 delay measurement is requested to be considered if it is set to true.
+            The N6 delay measurement is not requested to be considered if it is set to false.
+            The default value is false.
+
+    AfSfcRequirement:
+      description: Describes AF requirements on steering traffic to N6-LAN.
+      type: object
+      properties:
+        sfcIdDl:
+          type: string
+          description: Reference to a pre-configured SFC for downlink traffic.
+          nullable: true
+        sfcIdUl:
+          type: string
+          description: Reference to a pre-configured SFC for uplink traffic.
+          nullable: true
+        spVal:
+          $ref: '#/components/schemas/SpatialValidityRm'
+        metadata:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Metadata'
+      nullable: true
+
+    SpatialValidity:
+      description: Describes explicitly the route to an Application location.
+      type: object
+      required:
+        - presenceInfoList
+      properties:
+        presenceInfoList:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 1
+          description: >
+            Defines the presence information provisioned by the AF. The praId attribute within the
+            PresenceInfo data type is the key of the map.
+
+    SpatialValidityRm:
+      description: >
+        This data type is defined in the same way as the SpatialValidity data type, but with the
+        OpenAPI nullable property set to true.
+      type: object
+      required:
+        - presenceInfoList
+      properties:
+        presenceInfoList:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 1
+          description: >
+            Defines the presence information provisioned by the AF. The praId attribute within the 
+            PresenceInfo data type is the key of the map.
+      nullable: true
+
+    AfRoutingRequirementRm:
+      description: >
+        This data type is defined in the same way as the AfRoutingRequirement data type, but with
+        the OpenAPI nullable property set to true and the spVal and tempVals attributes defined as
+        removable.
+      type: object
+      properties:
+        appReloc:
+          type: boolean
+        routeToLocs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteToLocation'
+          minItems: 1
+          nullable: true
+        spVal:
+          $ref: '#/components/schemas/SpatialValidityRm'
+        tempVals:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemporalValidity'
+          minItems: 1
+          nullable: true
+        upPathChgSub:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/UpPathChgEvent'
+        simConnFailSub:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/SimConnFailEvent'
+        addrPreserInd:
+          type: boolean
+          nullable: true
+        simConnInd:
+          type: boolean
+          nullable: true
+          description: >
+            Indicates whether simultaneous connectivity should be temporarily maintained for the
+            source and target PSA.
+        simConnTerm:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        easIpReplaceInfos:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/EasIpReplacementInfo'
+          minItems: 1
+          description: Contains EAS IP replacement information.
+          nullable: true
+        easRedisInd:
+          type: boolean
+          description: Indicates the EAS rediscovery is required.
+        maxAllowedUpLat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UintegerRm'
+        tfcCorreInfo:
+          $ref: 'TS29519_Application_Data.yaml#/components/schemas/TrafficCorrelationInfo'
+        candDnaiInd:
+          type: boolean
+          description: Indicates whether candidate DNAI(s) are requested to be reported.
+        n6DelayInd:
+          type: boolean
+          description: >
+            Indication of whether the N6 delay measurement is requested to be considered or not.
+            The N6 delay measurement is requested to be considered if it is set to true.
+            The N6 delay measurement is not requested to be considered if it is set to false.
+          nullable: true
+      nullable: true
+
+    AnGwAddress:
+      description: Describes the address of the access network gateway control node.
+      type: object
+      anyOf:
+        - required: [anGwIpv4Addr]
+        - required: [anGwIpv6Addr]
+      properties:
+        anGwIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        anGwIpv6Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+
+    Flows:
+      description: Identifies the flows.
+      type: object
+      required:
+        - medCompN
+      properties:
+        contVers:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentVersion'
+          minItems: 1
+        fNums:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+        medCompN:
+          type: integer
+
+    EthFlowDescription:
+      description: Identifies an Ethernet flow.
+      type: object
+      required:
+        - ethType
+      properties:
+        destMacAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        ethType:
+          type: string
+        fDesc:
+          $ref: '#/components/schemas/FlowDescription'
+        fDir:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/FlowDirection'
+        sourceMacAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        vlanTags:
+          type: array
+          items: 
+            type: string
+          minItems: 1
+          maxItems: 2
+        srcMacAddrEnd:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        destMacAddrEnd:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+
+    ResourcesAllocationInfo:
+      description: Describes the status of the PCC rule(s) related to certain media components.
+      type: object
+      properties:
+        mcResourcStatus:
+          $ref: '#/components/schemas/MediaComponentResourcesStatus'
+        flows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flows'
+          minItems: 1
+        altSerReq:
+          type: string
+          description: >
+            Indicates whether NG-RAN supports alternative QoS parameters. The default value false
+            shall apply if the attribute is not present. It shall be set to false to indicate that
+            the lowest priority alternative QoS profile could not be fulfilled.
+
+    TemporalValidity:
+      description: Indicates the time interval(s) during which the AF request is to be applied.
+      type: object
+      properties:
+        startTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        stopTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+
+    QosNotificationControlInfo:
+      description: >
+        Indicates whether the QoS targets for a GRB flow are not guaranteed or guaranteed again.
+      type: object
+      required:
+        - notifType
+      properties:
+        notifType:
+          $ref: '#/components/schemas/QosNotifType'
+        flows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flows'
+          minItems: 1
+        altSerReq:
+          type: string
+          description: >
+            Indicates the alternative service requirement NG-RAN can guarantee. When it is omitted
+            and the notifType attribute is set to NOT_GUAARANTEED it indicates that the lowest
+            priority alternative alternative service requirement could not be fulfilled by NG-RAN.
+        altSerReqNotSuppInd:
+          type: boolean
+          description: >
+            When present and set to true it indicates that Alternative Service Requirements are not 
+            supported by NG-RAN.
+
+    AcceptableServiceInfo:
+      description: Indicates the maximum bandwidth that shall be authorized by the PCF.
+      type: object
+      properties:
+        accBwMedComps:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MediaComponent'
+          description: >
+            Indicates the maximum QoS parameters that shall be authorized by the PCF for
+            each media component of the map. The key of the map is the media component number.
+          minProperties: 1
+        marBwUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        marBwDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        mirBwUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        mirBwDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        tsnQos:
+          $ref: '#/components/schemas/TsnQosContainer'
+        addAccQosCombs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AcceptableServiceInfo'
+          minItems: 1
+          description: Contains additional combinations of acceptable service information.
+
+    UeIdentityInfo:
+      description: Represents 5GS-Level UE identities.
+      type: object
+      anyOf:
+        - required: [gpsi]
+        - required: [pei]
+        - required: [supi]
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+
+    AccessNetChargingIdentifier:
+      description: Describes the access network charging identifier.
+      type: object
+      oneOf:
+        - required: [accNetChaIdValue]
+        - required: [accNetChargIdString]
+      properties:
+        accNetChaIdValue:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ChargingId'
+        accNetChargIdString:
+          type: string
+          description: A character string containing the access network charging identifier.
+        flows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flows'
+          minItems: 1
+
+    OutOfCreditInformation:
+      description: >
+        Indicates the SDFs without available credit and the corresponding termination action.
+      type: object
+      required:
+        - finUnitAct
+      properties:
+        finUnitAct:
+          $ref: 'TS32291_Nchf_ConvergedCharging.yaml#/components/schemas/FinalUnitAction'
+        flows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flows'
+          minItems: 1
+
+    QosMonitoringInformation:
+      description: >
+        Indicates the QoS Monitoring information to report, i.e. UL and/or DL and or
+        round trip delay.
+      type: object
+      properties:
+        repThreshDl:
+          type: integer
+        repThreshUl:
+          type: integer
+        repThreshRp:
+          type: integer
+        repThreshDatRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        repThreshDatRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        conThreshDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        conThreshUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        avlBitrateUlThrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+          minItems: 1
+          description: Indicates a list of thresholds for uplink available bitrate reporting.
+        avlBitrateDlThrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+          minItems: 1
+          description: Indicates a list of thresholds for downlink available bitrate reporting.
+
+    PduSessionTsnBridge:
+      description: >
+        Contains the new TSC user plane node information and may contain the DS-TT port and/or
+        NW-TT port management information.
+      type: object
+      required:
+        - tsnBridgeInfo
+      properties:
+        tsnBridgeInfo: 
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/TsnBridgeInfo'
+        tsnBridgeManCont: 
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/BridgeManagementContainer'
+        tsnPortManContDstt: 
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/PortManagementContainer'
+        tsnPortManContNwtts: 
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/PortManagementContainer'
+          minItems: 1
+        ueIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        ipDomain:
+          type: string
+          description: IPv4 address domain identifier.
+        ueIpv6AddrPrefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+
+    QosMonitoringInformationRm:
+      description: >
+        This data type is defined in the same way as the QosMonitoringInformation data type, but
+        with the OpenAPI nullable property set to true.
+      type: object
+      properties:
+        repThreshDl:
+          type: integer
+          nullable: true
+        repThreshUl:
+          type: integer
+          nullable: true
+        repThreshRp:
+          type: integer
+          nullable: true
+        repThreshDatRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        repThreshDatRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        conThreshDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UintegerRm'
+        conThreshUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UintegerRm'
+        avlBitrateUlThrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+          minItems: 1
+        avlBitrateDlThrs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+          minItems: 1
+      nullable: true
+
+    PcscfRestorationRequestData:
+      description: Indicates P-CSCF restoration.
+      type: object
+      oneOf:
+        - required: [ueIpv4]
+        - required: [ueIpv6]
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        ipDomain:
+          type: string
+        sliceInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        ueIpv4:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ueIpv6:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+
+    QosMonitoringReport:
+      description: QoS Monitoring reporting information.
+      type: object
+      properties:
+        flows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flows'
+          minItems: 1
+        ulDelays:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+        dlDelays:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+        rtDelays:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+        pdmf:
+          type: boolean
+          description: Represents the packet delay measurement failure indicator.
+        ulConInfo:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+        dlConInfo:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+        ulDataRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        dlDataRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+
+    TsnQosContainer:
+      description: Indicates TSC Traffic QoS.
+      type: object
+      properties:
+        maxTscBurstSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExtMaxDataBurstVol'
+        maxTscBurstSizeSmall:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MaxDataBurstVol'
+        tscPackDelay:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudget'
+        maxPer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketErrRate'
+        tscPrioLevel:
+          $ref: '#/components/schemas/TscPriorityLevel'
+      not: 
+        required: [maxTscBurstSize, maxTscBurstSizeSmall]
+
+    TsnQosContainerRm:
+      description: Indicates removable TSC Traffic QoS.
+      type: object
+      properties:
+        maxTscBurstSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExtMaxDataBurstVolRm'
+        maxTscBurstSizeSmall:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MaxDataBurstVolRm'
+        tscPackDelay:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudgetRm'
+        maxPer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketErrRateRm'
+        tscPrioLevel:
+          $ref: '#/components/schemas/TscPriorityLevelRm'
+      nullable: true
+      not: 
+        required: [maxTscBurstSize, maxTscBurstSizeSmall]
+
+    TscaiInputContainer:
+      description: Indicates TSC Traffic pattern.
+      type: object
+      properties:
+        periodicity:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        burstArrivalTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        surTimeInNumMsg:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        surTimeInTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        burstArrivalTimeWnd:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        periodicityRange:
+          $ref: '#/components/schemas/PeriodicityRange'
+      nullable: true
+
+    AppDetectionReport:
+      description: >
+        Indicates the start or stop of the detected application traffic and the application
+        identifier of the detected application traffic.
+      type: object
+      required:
+        - adNotifType
+        - afAppId
+      properties:
+        adNotifType:
+          $ref: '#/components/schemas/AppDetectionNotifType'
+        afAppId:
+          $ref: '#/components/schemas/AfAppId'
+
+    PduSessionEventNotification:
+      description: >
+        Indicates PDU session related events information.
+      type: object
+      required:
+        - evNotif
+      properties:
+        evNotif:
+          $ref: '#/components/schemas/AfEventNotification'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        ueIpv4:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ueIpv6:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        ueMac:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        status:
+          $ref: '#/components/schemas/PduSessionStatus'
+        pcfInfo:
+          $ref: '#/components/schemas/PcfAddressingInfo'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+
+    PcfAddressingInfo:
+      description: Contains PCF address information.
+      type: object
+      properties:
+        pcfFqdn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Fqdn'
+        pcfIpEndPoints:
+          type: array
+          items:
+            $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/IpEndPoint'
+          minItems: 1
+          description: IP end points of the PCF hosting the Npcf_PolicyAuthorization service.
+        bindingInfo:
+          type: string
+          description: contains the binding indications of the PCF.
+
+    AlternativeServiceRequirementsData:
+      description: Contains an alternative QoS related parameter set.
+      type: object
+      required:
+        - altQosParamSetRef
+      properties:
+        altQosParamSetRef:
+          type: string
+          description: Reference to this alternative QoS related parameter set.
+        gbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        gbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        pdb:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudget'
+        per:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketErrRate'
+        averWindow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AverWindow'
+        maxDataBurstVol:
+          $ref: '#/components/schemas/MaxDataBurstVol'
+        pduSetQosDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSetQosParaRm'
+        pduSetQosUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSetQosParaRm'
+
+    EventsSubscPutData:
+      description: >
+        Identifies the events the application subscribes to within an Events Subscription
+        sub-resource data. It may contain the notification of the already met events.
+      anyOf:
+        - $ref: '#/components/schemas/EventsSubscReqData'
+        - $ref: '#/components/schemas/EventsNotification'
+
+    PeriodicityRange:
+      description: >
+        Contains the acceptable range (which is formulated as lower bound and upper bound of
+        the periodicity of the start twobursts in reference to the external GM) or
+        acceptable periodicity value(s) (which is formulated as a list of values for
+        the periodicity).
+      type: object
+      oneOf:
+        - required: [lowerBound, upperBound]
+        - required: [periodicVals]
+      properties:
+        lowerBound:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        upperBound:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        periodicVals:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+          minItems: 1
+        addPeriodicVals:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+          minItems: 1
+
+    BatOffsetInfo:
+      description: >
+        Indicates the offset of the BAT and the optionally adjusted periodicity.
+      type: object
+      required:
+        - ranBatOffsetNotif
+      properties:
+        ranBatOffsetNotif:
+          type: integer
+          description: >
+            Indicates the BAT offset of the arrival time of the data burst in units
+            of milliseconds.
+        adjPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        flows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flows'
+          minItems: 1
+          description: >
+            Identification of the flows. If no flows are provided, the BAT offset applies
+            for all flows of the AF session.
+
+    PdvMonitoringReport:
+      description: Packet Delay Variation reporting information.
+      type: object
+      properties:
+        flows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flows'
+          minItems: 1
+          description: Identification of the flows.
+        ulPdv:
+          type: integer
+          description: Uplink packet delay variation in units of milliseconds.
+        dlPdv:
+          type: integer
+          description: Downlink packet delay variation in units of milliseconds.
+        rtPdv:
+          type: integer
+          description: Round trip packet delay variation in units of milliseconds.
+
+    AddFlowDescriptionInfo:
+      description: Contains additional flow description information.
+      type: object
+      properties:
+        spi:
+          type: string
+          description: >
+            4-octet string representing the security parameter index of the IPSec packet
+            in hexadecimal representation.
+        flowLabel:
+          type: string
+          description: >
+            3-octet string representing the IPv6 flow label header field in hexadecimal
+            representation.
+        flowDir:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/FlowDirection'
+
+    L4sSupport:
+      description: >
+        Indicates whether the ECN marking for L4S support is not available or available
+        again in 5GS.
+      type: object
+      required:
+        - notifType
+      properties:
+        notifType:
+          $ref: '#/components/schemas/L4sNotifType'
+        flows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flows'
+          minItems: 1
+
+    DirectNotificationReport:
+      description: >
+        Represents the QoS monitoring parameters that cannot be directly notified for
+        the indicated flows.
+      type: object
+      required:
+        - qosMonParamType
+      properties:
+        qosMonParamType:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/QosMonitoringParamType'
+        flows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flows'
+          minItems: 1
+
+    RttFlowReference:
+      description: >
+        Contains the shared key with the media subcomponent that shares the subscription to 
+        round trip time measurements in the complementary direction.
+      type: object
+      required:
+        - sharedKey
+      properties:
+        flowDir:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/FlowDirection'
+        sharedKey:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+
+    RttFlowReferenceRm:
+      description: >
+        It is defined as the RttFlowRerence data type but with the OpenAPI nullable true property.
+      type: object
+      required:
+        - sharedKey
+      properties:
+        flowDir:
+          $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/FlowDirection'
+        sharedKey:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+      nullable: true
+
+    CapabilityReport:
+      description: Contains capability support information.
+      type: object
+      properties:
+        capReport:
+          $ref: '#/components/schemas/NotifCap'
+        capType:
+          $ref: '#/components/schemas/NotifCapType'
+      required:
+        - capReport
+        - capType
+
+    AfHeaderHandlingControlInfo:
+      description: Describes AF requirements on handling of payload headers.
+      type: object
+      required:
+        - hDetectionReference
+      properties:
+        hDetectionReference:
+          description: Indication of header detection reference.
+          type: string
+        hDetectionSuppInfo:
+          description: Indication of transparent dynamic information.
+          type: string
+          nullable: true
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UriRm'
+        notifId:
+          type: string
+          nullable: true
+        spVal:
+          $ref: '#/components/schemas/SpatialValidityRm'
+        tempVals:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemporalValidity'
+          minItems: 1
+          nullable: true
+        hHndlgUl:
+          type: array
+          items:
+            $ref: '#/components/schemas/HeaderHandlingActionRequest'
+          minItems: 1
+          nullable: true
+          description: >
+            Contains the list of header handling action request parameters in the uplink
+            direction.
+        hHndlgDl:
+          type: array
+          items:
+            $ref: '#/components/schemas/HeaderHandlingActionRequest'
+          minItems: 1
+          nullable: true
+          description: >
+            Contains the list of header handling action request parameters in the downlink
+            direction.
+      nullable: true
+
+    HeaderHandlingActionRequest:
+      description: >
+        Represents the header handling action request.
+      properties:
+        hHndlgCtrlRef:
+            type: string
+        hHndlgAction:
+          type: array
+          items:
+            $ref: '#/components/schemas/HeaderHandlingAction'
+          minItems: 1
+        hInfo:
+          type: string
+        hVal:
+          type: string
+        hHndlgCond:
+            $ref: '#/components/schemas/HeaderHandlingCond'
+        hHndlgRep:
+            $ref: '#/components/schemas/HeaderHandlingReporting'
+
+    OnPathN6SigInfo:
+      description: >
+        Represents the on path N6 signaling information.
+      nullable: true
+      properties:
+        onPathN6Method:
+          $ref: '#/components/schemas/OnPathN6Method'
+        asProxyAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+      required:
+        - onPathN6Method
+
+    HeaderHandlingReporting:
+      description: >
+        Indicates that reporting is requested for the performed Header Handling Action.
+      properties:
+        notifFlag:
+          type: boolean
+          description: >
+            Indicates whether reporting is requested for the performed Header Handling Action.
+            True indicates a reporting is requested.
+            False indicates a reporting is not requested.
+        repSuggInfo:
+          $ref: 'TS29564_Nupf_EventExposure.yaml#/components/schemas/ReportingSuggestionInformation'
+        oneTimeInd:
+          type: boolean
+          description: >
+            Indicates whether the reporting of a first occurrence of the action per packet flow
+            is enough.
+            True indicates that the reporting applies to the first occurrence.
+            False indicates that the reporting applies to all occurrences.
+
+    RateLimitRepo:
+      description: >
+        Contains the rate limit information for the non-GRB flows.
+      properties:
+        rateLimitRepoUl:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+          minItems: 1
+          description: >
+            Indicates the maximum uplink data rate authorized for the non-GBR service data flow(s)
+            as indicated in the attribute "flows". If no flows are provided, the maximum data rate
+            applies for all the flows.
+        rateLimitRepoDl:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+          minItems: 1
+          description: >
+            Indicates the maximum downlink data rate authorized for the non-GBR service data flow(s)
+            as indicated in the attribute "flows". If no flows are provided, the maximum data rate
+            applies for all the flows.
+        flows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flows'
+          minItems: 1
+          description: Identifications of the non-GBR service data flows.
+
+    MpxMediaInfo:
+      description: Contains the (S)RTP Multiplexed Media Identification Information.
+      type: object
+      properties:
+        ssrcId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        payloadType:
+          type: integer
+          minimum: 0
+          maximum: 127
+        identificationTag:
+          type: string
+        rtpSdesHdrExtId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        rtcpPacketType:
+          type: integer
+          minimum: 0
+          maximum: 255
+      anyOf:
+        - required: [ ssrcId ]
+        - required: [ payloadType ]
+        - required: [ identificationTag ]
+        - required: [ rtcpPacketType ]
+        - required: [ identificationTag, rtpSdesHdrExtId ]
+
+
+#
+# EXTENDED PROBLEMDETAILS
+#
+    ExtendedProblemDetails:
+      description: Extends ProblemDetails to also include the acceptable service info.
+      allOf:
+        - $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        - type: object
+          properties:
+            acceptableServInfo:
+              $ref: '#/components/schemas/AcceptableServiceInfo'
+
+#
+# SIMPLE DATA TYPES
+#
+    AfAppId:
+      description: Contains an AF application identifier.
+      type: string
+    AspId:
+      description: Contains an identity of an application service provider.
+      type: string
+    CodecData:
+      description: Contains codec related information.
+      type: string
+    ContentVersion:
+      description: Represents the content version of some content.
+      type: integer
+    FlowDescription:
+      description: Defines a packet filter of an IP flow.
+      type: string
+    SponId:
+      description: Contains an identity of a sponsor.
+      type: string
+    ServiceUrn:
+      description: Contains values of the service URN and may include subservices.
+      type: string
+    TosTrafficClass:
+      description: >
+        2-octet string, where each octet is encoded in hexadecimal representation. The first octet
+        contains the IPv4 Type-of-Service or the IPv6 Traffic-Class field and the second octet
+        contains the ToS/Traffic Class mask field.
+      type: string
+    TosTrafficClassRm:
+      description: >
+        This data type is defined in the same way as the TosTrafficClass data type, but with the
+        OpenAPI nullable property set to true.
+      type: string
+      nullable: true
+    MultiModalId:
+      description: >
+        This data type contains a multi-modal service identifier.
+      type: string
+    TscPriorityLevel:
+      description: Represents the priority level of TSC Flows.
+      type: integer
+      minimum: 1
+      maximum: 8
+    TscPriorityLevelRm:
+      description: >
+        This data type is defined in the same way as the TscPriorityLevel data type, but with the
+        OpenAPI nullable property set to true.
+      type: integer
+      minimum: 1
+      maximum: 8
+      nullable: true
+
+    DurationMilliSec:
+      description: Indicates the time interval in units of milliseconds.
+      type: integer
+
+    DurationMilliSecRm:
+      description: >
+        This data type is defined in the same way as the "DurationMillisec" data type, but with the
+        OpenAPI nullable property set to true.
+      type: integer
+
+    MaxDataBurstVol:
+      type: integer
+      minimum: 1
+      maximum: 2000000
+      nullable: true
+      description: Unsigned integer indicating Maximum Data Burst Volume value.
+#
+# ENUMERATIONS DATA TYPES
+#
+    MediaType:
+      description: Indicates the media type of a media component.
+      anyOf:
+        - type: string
+          enum:
+            - AUDIO
+            - VIDEO
+            - DATA
+            - APPLICATION
+            - CONTROL
+            - TEXT
+            - MESSAGE
+            - OTHER
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+
+    MpsAction:
+      description: >
+        Indicates whether it is an invocation, a revocation or an invocation with authorization of
+        the MPS for DTS or Messaging service.
+      anyOf:
+        - type: string
+          enum:
+            - DISABLE_MPS_FOR_DTS
+            - ENABLE_MPS_FOR_DTS
+            - AUTHORIZE_AND_ENABLE_MPS_FOR_DTS
+            - AUTHORIZE_AND_ENABLE_MPS_FOR_AF_SIGNALLING
+            - DISABLE_MPS_FOR_MESSAGING_FOR_AF_SIGNALLING
+            - ENABLE_MPS_FOR_MESSAGING_FOR_AF_SIGNALLING
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+
+    ReservPriority:
+      description: Indicates the reservation priority.
+      anyOf:
+        - type: string
+          enum:
+            - PRIO_1
+            - PRIO_2
+            - PRIO_3
+            - PRIO_4
+            - PRIO_5
+            - PRIO_6
+            - PRIO_7
+            - PRIO_8
+            - PRIO_9
+            - PRIO_10
+            - PRIO_11
+            - PRIO_12
+            - PRIO_13
+            - PRIO_14
+            - PRIO_15
+            - PRIO_16
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+
+    ServAuthInfo:
+      description: Indicates the result of the Policy Authorization service request from the AF.
+      anyOf:
+      - type: string
+        enum:
+          - TP_NOT_KNOWN
+          - TP_EXPIRED
+          - TP_NOT_YET_OCURRED
+          - ROUT_REQ_NOT_AUTHORIZED
+          - DIRECT_NOTIF_NOT_POSSIBLE
+          - MPX_MEDIA_NOT_SUPPORTED_IN_UE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    SponsoringStatus:
+      description: Indicates whether sponsored data connectivity is enabled or disabled/not enabled.
+      anyOf:
+      - type: string
+        enum:
+          - SPONSOR_DISABLED
+          - SPONSOR_ENABLED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    AfEvent:
+      description: Represents an event to notify to the AF.
+      anyOf:
+      - type: string
+        enum:
+          - ACCESS_TYPE_CHANGE
+          - ANI_REPORT
+          - APP_DETECTION
+          - CHARGING_CORRELATION
+          - EPS_FALLBACK
+          - EXTRA_UE_ADDR
+          - FAILED_QOS_UPDATE
+          - FAILED_RESOURCES_ALLOCATION
+          - OUT_OF_CREDIT
+          - PDU_SESSION_STATUS
+          - PLMN_CHG
+          - QOS_MONITORING
+          - QOS_MON_CAP_REPO
+          - QOS_NOTIF
+          - RAN_NAS_CAUSE
+          - REALLOCATION_OF_CREDIT
+          - SAT_CATEGORY_CHG
+          - SUCCESSFUL_QOS_UPDATE
+          - SUCCESSFUL_RESOURCES_ALLOCATION
+          - TSN_BRIDGE_INFO
+          - UP_PATH_CHG_FAILURE
+          - USAGE_REPORT
+          - UE_REACH_STATUS_CH
+          - BAT_OFFSET_INFO
+          - URSP_ENF_INFO
+          - PACK_DEL_VAR
+          - L4S_SUPP
+          - RT_DELAY_TWO_QOS_FLOWS
+          - RATE_LIMIT_INFO_REPO
+          - UP_PATH_CHANGE
+          - CN_HEALTH_MONITOR
+          - UE_TEMPORARILY_UNAVAILABLE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    AfNotifMethod:
+      description: Represents the notification methods that can be subscribed for an event.
+      anyOf:
+      - type: string
+        enum:
+          - EVENT_DETECTION
+          - ONE_TIME
+          - PERIODIC
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    QosNotifType:
+      anyOf:
+      - type: string
+        enum:
+          - GUARANTEED
+          - NOT_GUARANTEED
+          - NOT_GUARANTEED_DL
+          - NOT_GUARANTEED_UL
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Indicates the notification type for QoS Notification Control.
+        Possible values are:
+        - GUARANTEED: The QoS targets of one or more SDFs are guaranteed. When ExtQoSR19 feature
+          is enabled, The QoS targets of one or more SDFs are guaranteed again in both DL and UL
+          directions.
+        - NOT_GUARANTEED: The QoS targets of one or more SDFs are not being guaranteed. When
+          ExtQoSR19 feature is enabled, The QoS targets of one or more SDFs are not being
+          guaranteed in both DL and UL directions.
+        - NOT_GUARANTEED_DL: The QoS targets of one or more SDFs are not being guaranteed in DL
+          direction.
+        - NOT_GUARANTEED_UL: The QoS targets of one or more SDFs are not being guaranteed in DL
+          direction.
+
+    TerminationCause:
+      description: >
+        Indicates the cause behind requesting the deletion of the Individual Application Session
+        Context resource.
+      anyOf:
+      - type: string
+        enum:
+          - ALL_SDF_DEACTIVATION
+          - PDU_SESSION_TERMINATION
+          - PS_TO_CS_HO
+          - INSUFFICIENT_SERVER_RESOURCES
+          - INSUFFICIENT_QOS_FLOW_RESOURCES
+          - SPONSORED_DATA_CONNECTIVITY_DISALLOWED
+          - REQUEST_QOS_NOT_SUPPORTED_IN_PLMN
+          - UE_ADDR_RELEASE
+          - SMF_FAILURE
+          - REFLECTIVE_QOS_NOT_SUPPORTED_IN_UE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    MediaComponentResourcesStatus:
+      description: Indicates whether the media component is active or inactive.
+      anyOf:
+      - type: string
+        enum:
+          - ACTIVE
+          - INACTIVE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    FlowUsage:
+      description: Describes the flow usage of the flows described by a media subcomponent.
+      anyOf:
+      - type: string
+        enum:
+          - NO_INFO
+          - RTCP
+          - AF_SIGNALLING
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    FlowStatus:
+      description: Describes whether the IP flow(s) are enabled or disabled.
+      anyOf:
+      - type: string
+        enum:
+          - ENABLED-UPLINK
+          - ENABLED-DOWNLINK
+          - ENABLED
+          - DISABLED
+          - REMOVED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    RequiredAccessInfo:
+      description: Indicates the access network information required for an AF session.
+      anyOf:
+      - type: string
+        enum:
+          - USER_LOCATION
+          - UE_TIME_ZONE
+          - UE_SAT_INFO
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    SipForkingIndication:
+      description: >
+        Indicates whether several SIP dialogues are related to an "Individual Application Session
+        Context" resource.
+      anyOf:
+        - type: string
+          enum:
+            - SINGLE_DIALOGUE
+            - SEVERAL_DIALOGUES
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+
+    AfRequestedData:
+      description: Represents the information that the AF requested to be exposed.
+      anyOf:
+        - type: string
+          enum:
+            - UE_IDENTITY
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+
+    ServiceInfoStatus:
+      description: Represents the preliminary or final service information status.
+      anyOf:
+        - type: string
+          enum:
+            - FINAL
+            - PRELIMINARY
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+
+    PreemptionControlInformation:
+      description: Represents Pre-emption control information.
+      anyOf:
+        - type: string
+          enum:
+            - MOST_RECENT
+            - LEAST_RECENT
+            - HIGHEST_BW
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+
+    PrioritySharingIndicator:
+      description: Represents the Priority sharing indicator.
+      anyOf:
+        - type: string
+          enum:
+            - ENABLED
+            - DISABLED
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+
+    PreemptionControlInformationRm:
+      description: >
+        This data type is defined in the same way as the PreemptionControlInformation data type, but
+        with the OpenAPI nullable property set to true.
+      anyOf:
+        - $ref: '#/components/schemas/PreemptionControlInformation'
+        - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
+
+    AppDetectionNotifType:
+      description: Indicates the notification type for Application Detection Control.
+      anyOf:
+      - type: string
+        enum:
+          - APP_START
+          - APP_STOP
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    PduSessionStatus:
+      description: Indicates whether the PDU session is established or terminated.
+      anyOf:
+      - type: string
+        enum:
+          - ESTABLISHED
+          - TERMINATED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    UplinkDownlinkSupport:
+      description: >
+        Represents whether an indication or capability is supported for the UL, the DL or both,
+        UL and DL.
+      anyOf:
+        - type: string
+          enum:
+            - UL
+            - DL
+            - UL_DL
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+
+    L4sNotifType:
+      description: Indicates the notification type for ECN marking for L4S support in 5GS.
+      anyOf:
+      - type: string
+        enum:
+          - AVAILABLE
+          - NOT_AVAILABLE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    NotifCap:
+      description: Indicates whether the notified capability is supported or not supported.
+      anyOf:
+      - type: string
+        enum:
+          - SUPPORTED
+          - NOT_SUPPORTED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+
+    HeaderHandlingAction:
+      anyOf:
+      - type: string
+        enum:
+          - DETECT
+          - REMOVE
+          - REPLACE
+          - INSERT
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration but
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the type of header handling actions.
+        Possible values are:
+        - DETECT: Indicates that the request is for the detection of a header field.
+        - REMOVE: Indicates that the request is for the removal of a header field.
+        - REPLACE: Indicates that the request is for the replacement of information in a header
+          field.
+        - INSERT: Indicates that the request is for the addition of a header field.
+
+    HeaderHandlingCond:
+      anyOf:
+      - type: string
+        enum:
+          - EVERY_MATCH
+          - FIRST_MATCH
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration but
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the condition to apply header handling actions.
+        Possible values are:
+        - EVERY_MATCH: Indicates that the header handling action is applied to every match.
+        - FIRST_MATCH: Indicates that the header handling action is applied only to the first
+          match.
+
+    OnPathN6Method:
+      anyOf:
+      - type: string
+        enum:
+          - CONNECT_UDP
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration but
+          is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the method of on-path N6 signaling.
+        Possible values are:
+        - CONNECT_UDP: Indicates that the method connect UDP is supported for on-path N6 signaling
+
+    NotifCapType:
+      anyOf:
+      - type: string
+        enum:
+          - PACKET_DELAY
+          - CONGESTION
+          - AVAILABLE_BITRATE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Indicates which type of QoS Monitoring capability report is applied.
+        Possible values are:
+        - PACKET_DELAY: Indication the Packet delay monitoring capability is monitored.
+        - CONGESTION: Indication the Congestion information monitoring capability is monitored.
+        - AVAILABLE_BITRATE: Indication the Available bitrate monitoring capability is monitored.
+
+    PcSessionRecoveryStatus:
+      anyOf:
+      - type: string
+        enum:
+          - REST_REQUEST
+          - REST_TRIGGERED
+          - REST_NOT_TRIGGERED
+          - NOT_FOUND
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Describes whether the session is being restored or the session is not found.
+        Possible values are:
+        - REST_REQUEST: Information about whether PDU session is being restored is requested.
+        - REST_TRIGGERED: The PDU session is being restored.
+        - REST_NOT_TRIGGERED: The PDU session exists and it is not being restored.
+        - NOT_FOUND: The PDU session was not found.

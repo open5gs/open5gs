@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_api_signature_s OpenAPI_api_signature_t;
 #include "callback_name.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_api_signature_s OpenAPI_api_signature_t;
-typedef struct OpenAPI_api_signature_s {
+struct OpenAPI_api_signature_s {
     char *callback_type;
-} OpenAPI_api_signature_t;
+};
 
 OpenAPI_api_signature_t *OpenAPI_api_signature_create(
     char *callback_type

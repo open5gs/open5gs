@@ -1,7 +1,7 @@
 /*
  * ambr_rm.h
  *
- * This data type is defined in the same way as the &#39;Ambr&#39; data type, but with the OpenAPI &#39;nullable: true&#39; property.\&quot; 
+ * 
  */
 
 #ifndef _OpenAPI_ambr_rm_H_
@@ -12,18 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "ambr.h"
-#include "null_value.h"
+typedef struct OpenAPI_ambr_rm_s OpenAPI_ambr_rm_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ambr_rm_s OpenAPI_ambr_rm_t;
-typedef struct OpenAPI_ambr_rm_s {
+struct OpenAPI_ambr_rm_s {
     char *uplink;
     char *downlink;
-} OpenAPI_ambr_rm_t;
+};
 
 OpenAPI_ambr_rm_t *OpenAPI_ambr_rm_create(
     char *uplink,

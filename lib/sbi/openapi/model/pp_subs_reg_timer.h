@@ -1,7 +1,7 @@
 /*
  * pp_subs_reg_timer.h
  *
- * 
+ * Contains AF provisionedSubscribed periodic registration timer
  */
 
 #ifndef _OpenAPI_pp_subs_reg_timer_H_
@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_pp_subs_reg_timer_s OpenAPI_pp_subs_reg_timer_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pp_subs_reg_timer_s OpenAPI_pp_subs_reg_timer_t;
-typedef struct OpenAPI_pp_subs_reg_timer_s {
+struct OpenAPI_pp_subs_reg_timer_s {
     int subs_reg_timer;
     char *af_instance_id;
     int reference_id;
     char *validity_time;
     char *mtc_provider_information;
-} OpenAPI_pp_subs_reg_timer_t;
+};
 
 OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_create(
     int subs_reg_timer,

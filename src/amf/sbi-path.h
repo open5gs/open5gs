@@ -85,19 +85,19 @@ bool amf_sbi_send_request(
 #define AMF_SMF_SELECTION_IN_HPLMN_IN_HOME_ROUTED           3
 
 int amf_ue_sbi_discover_and_send(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data),
         amf_ue_t *amf_ue, int state, void *data);
 int amf_sess_sbi_discover_and_send(
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data),
         ran_ue_t *ran_ue, amf_sess_t *sess, int state, void *data);
 
 int amf_sess_sbi_discover_by_nsi(
         ran_ue_t *ran_ue, amf_sess_t *sess,
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option, int state);
 
 void amf_sbi_send_activating_session(

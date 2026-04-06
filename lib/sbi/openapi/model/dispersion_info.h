@@ -1,7 +1,7 @@
 /*
  * dispersion_info.h
  *
- * Represents the Dispersion information. When subscribed event is \&quot;DISPERSION\&quot;, the  \&quot;disperInfos\&quot; attribute shall be included. 
+ * Represents the Dispersion information. When subscribed event is \&quot;DISPERSION\&quot;, the \&quot;disperInfos\&quot; attribute shall be included. 
  */
 
 #ifndef _OpenAPI_dispersion_info_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_dispersion_info_s OpenAPI_dispersion_info_t;
 #include "dispersion_collection.h"
 #include "dispersion_type.h"
 
@@ -19,19 +20,18 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dispersion_info_s OpenAPI_dispersion_info_t;
-typedef struct OpenAPI_dispersion_info_s {
+struct OpenAPI_dispersion_info_s {
     char *ts_start;
     int ts_duration;
     OpenAPI_list_t *disper_collects;
-    struct OpenAPI_dispersion_type_s *disper_type;
-} OpenAPI_dispersion_info_t;
+    OpenAPI_dispersion_type_e disper_type;
+};
 
 OpenAPI_dispersion_info_t *OpenAPI_dispersion_info_create(
     char *ts_start,
     int ts_duration,
     OpenAPI_list_t *disper_collects,
-    OpenAPI_dispersion_type_t *disper_type
+    OpenAPI_dispersion_type_e disper_type
 );
 void OpenAPI_dispersion_info_free(OpenAPI_dispersion_info_t *dispersion_info);
 OpenAPI_dispersion_info_t *OpenAPI_dispersion_info_parseFromJSON(cJSON *dispersion_infoJSON);

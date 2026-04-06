@@ -1,0 +1,627 @@
+openapi: 3.0.0
+
+info:
+  version: 1.3.0
+  title: VAE_MessageDelivery
+  description: |
+    API for VAE Message Delivery Service  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.486 V19.4.0 V2X Application Enabler (VAE) Services
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.486/'
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/vae-message-delivery/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+paths:
+  /subscriptions:
+    post:
+      summary: Create a new Individual Message Delivery Data Subscription resource.
+      operationId: CreateIndividualMessageDeliveryDataSubscription
+      tags:
+        - Message Delivery Data Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageDeliverySubscriptionData'
+      responses:
+        '201':
+          description: >
+            The Message Delivery Subscription is successfully created and a representation of the
+            created Individual Message Delivery Subscription resource shall be returned..
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageDeliverySubscriptionData'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        uplinkMessageDelivery:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/UplinkMessageDeliveryData'
+              responses:
+                '204':
+                  description: No Content, the notification was successful received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+        receptReportOfDownlinkMesageDelivery:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Result'
+              responses:
+                '204':
+                  description: No Content, the notification was successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Contains the identifier of the Individual Message Delivery Subscription.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Get an existing Individual Message Delivery Subscription resource
+      operationId: ReadIndividualMessageDeliverySubscription
+      tags:
+        - Individual Message Delivery Subscription (Document)
+      responses:
+        '200':
+          description: >
+            The requested Individual Message Delivery Subscription resource shall be
+            returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageDeliverySubscriptionData'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Message Delivery Subscription resource.
+      operationId: UpdateMessageDeliverySubscription
+      tags:
+        - Individual Message Delivery Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageDeliverySubscriptionData'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Message Delivery Subscription resource is successfully updated
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageDeliverySubscriptionData'
+        '204':
+          description: >
+            No Content. The Individual Message Delivery Subscription resource is successfully
+            updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Message Delivery Subscription resource.
+      operationId: ModifyMessageDeliverySubscription
+      tags:
+        - Individual Message Delivery Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/MsgDelSubscDataPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Message Delivery Subscription resource is successfully modified
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageDeliverySubscriptionData'
+        '204':
+          description: >
+            No Content. The Individual Message Delivery Subscription resource is successfully
+            modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an individual Message Delivery Subscription resource
+      operationId: DeleteMessageDeliverySubscription
+      tags:
+        - Individual Message Delivery Subscription (Document)
+      responses:
+        '204':
+          description: >
+            The Individual Message Delivery Subscription resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}/message-deliveries:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Contains the identifier of the Individual Message Delivery Subscription.
+        required: true
+        schema:
+          type: string
+
+    post:
+      summary: Request the creation of a Downlink Message Delivery.
+      operationId: CreateDownlinkMessageDelivery
+      tags:
+        - Downlink Message Deliveries (Collection)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DownlinkMessageDeliveryData'
+        required: true
+      responses:
+        '201':
+          description: >
+            Created. The Downlink Message Delivery is successfully created and a representation of
+            the created Individual Downlink Message Delivery resource shall be returned.
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownlinkMessageDeliveryData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}/message-deliveries/{dlDeliveryId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Contains the identifier of the Individual Message Delivery Subscription.
+        required: true
+        schema:
+          type: string
+      - name: dlDeliveryId
+        in: path
+        description: Contains the identifier of the Individual Downlink Message Delivery resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Enables to retrieve an existing Individual Downlink Message Delivery resource.
+      operationId: ReadIndividualDownlinkMessageDelivery
+      tags:
+        - Individual Downlink Message Delivery (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Downlink Message Delivery resource is successfully
+            returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownlinkMessageDeliveryData'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Enables to delete an existing Individual Downlink Message Delivery resource.
+      operationId: DeleteMessageDelivery
+      tags:
+        - Individual message delivery (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Downlink Message Delivery resource is successfully
+            deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows: 
+        clientCredentials: 
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    DownlinkMessageDeliveryData:
+      description: Represents the Downlink V2X Message Delivery data.
+      type: object
+      properties:
+        ueId:
+          $ref: '#/components/schemas/V2xUeId'
+        groupId:
+          $ref: '#/components/schemas/V2xGroupId'
+        serviceId:
+          $ref: '#/components/schemas/V2xServiceId'
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        geoId:
+          $ref: '#/components/schemas/GeoId'
+        payload:
+          $ref: '#/components/schemas/V2xMessagePayload'
+        receptionRepReq:
+          type: boolean
+          default: true
+          description: >
+            Contains the indication on whether a reception report is requested for this downlink V2X
+            message delivery.
+            true indicates that a reception report is requested.
+            false indicates that a reception report is not requested.
+            The default value is true when this attribute is omitted.
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - payload
+
+    MessageDeliverySubscriptionData:
+      description: Represents the Message Delivery Subscription data.
+      type: object
+      properties:
+        appSerId:
+          $ref: '#/components/schemas/AppServerId'
+        serviceId:
+          $ref: '#/components/schemas/V2xServiceId'
+        geoId:
+          $ref: '#/components/schemas/GeoId'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        requestTestNotification:
+          type: boolean
+          description: >
+            Contains the test notification indication.
+            Set to true by the service consumer to request the VAE Server to send a test
+            notification.
+            Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - appSerId
+        - serviceId
+        - notifUri
+
+    MsgDelSubscDataPatch:
+      description: Represents the requested modifications to a Message Delivery Subscription.
+      type: object
+      properties:
+        geoId:
+          $ref: '#/components/schemas/GeoId'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    UplinkMessageDeliveryData:
+      description: Represents the Uplink V2X Message Delivery data.
+      type: object
+      properties:
+        resourceUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        ueId:
+          $ref: '#/components/schemas/V2xUeId'
+        serviceId:
+          $ref: '#/components/schemas/V2xServiceId'
+        geoId:
+          $ref: '#/components/schemas/GeoId'
+        payload:
+          $ref: '#/components/schemas/V2xMessagePayload'
+      required:
+        - resourceUri
+        - ueId
+        - payload
+
+
+# SIMPLE DATA TYPES
+#
+
+
+    AppServerId:
+      description: Represents the identifier of the service consumer.
+      type: string
+
+    V2xUeId:
+      description: Represents the identifier of a V2X UE.
+      type: string
+
+    V2xGroupId:
+      description: Represents the identifier of a V2X group.
+      type: string
+
+    V2xServiceId:
+      description: Represents the the identifier of a V2X service.
+      type: string
+
+    GeoId:
+      description: Represents the identifier of a geographical area.
+      type: string
+
+    V2xMessagePayload:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+
+#
+# ENUMERATIONS
+#
+
+    Result:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - SUCCESS
+        - FAIL
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the result of message delivery.  
+#        Possible values are:
+#        - SUCCESS: Indicates that the message delivery was successful.
+#        - FAIL: Indicates that the message delivery failed.

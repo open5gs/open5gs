@@ -1,0 +1,456 @@
+openapi: 3.0.0
+
+info:
+  title: Npcf_PDTQPolicyControl API
+  version: 1.1.0
+  description: |
+    PCF PDTQ Policy Control service.  
+    © <2025>, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.543 V19.3.0; 5G System; Data Transfer Policy Control Services; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.543/'
+
+servers:
+  - url: '{apiRoot}/npcf-pdtq-policy-control/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - npcf-pdtq-policy-control
+
+paths:
+
+  /pdtq-policies:
+    post:
+      summary: Creates a new Individual PDTQ policy resource.
+      operationId: CreatePDTQPolicy
+      tags:
+        - PDTQ policies (Collection)
+      requestBody:
+        description: >
+          Contains information for the creation of a new Individual PDTQ policy resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PdtqPolicyData'
+      responses:
+        '201':
+          description: >
+            Created, an Individual PDTQ policy resource is created and a representation of that
+            resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdtqPolicyData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual PDTQ policy resource,
+                according to the structure
+                {apiRoot}/npcf-pdtq-policy-control/v1/pdtq-policies/{pdtqPolicyId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        PDTQNotification:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/Notification'
+              responses:
+                '204':
+                  description: >
+                    No Content, the reception of a PDTQ warning notification is acknowledged.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /pdtq-policies/{pdtqPolicyId}:
+
+    get:
+      summary: Reads an Individual PDTQ policy resource.
+      operationId: GetIndPDTQPolicy
+      tags:
+        - Individual PDTQ policy (Document)
+      parameters:
+        - name: pdtqPolicyId
+          description: String identifying the individual PDTQ policy resource in the PCF.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK, a representation of an Individual PDTQ policy resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdtqPolicyData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modifies an existing Individual PDTQ policy resource.
+      operationId: ModifyIndPDTQPolicy
+      tags:
+        - Individual PDTQ policy (Document)
+      parameters:
+        - name: pdtqPolicyId
+          description: String identifying the individual PDTQ policy resource in the PCF.
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: >
+          Contains modifications that shall be applied on the existing Individual PDTQ
+          policy resource.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/PdtqPolicyPatchData'
+      responses:
+        '200':
+          description: >
+            OK, the Individual PDTQ policy resource is modified and a representation of
+            that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdtqPolicyData'
+        '204':
+          description: No Content, the Individual PDTQ policy resource is modified.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an existing Individual PDTQ policy resource.
+      operationId: DeleteIndPDTQPolicy
+      tags:
+        - Individual PDTQ policy (Document)
+      parameters:
+        - name: pdtqPolicyId
+          description: Represents the identifier of the Individual PDTQ policy resource.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            No Content. The Individual PDTQ policy resource is successfully deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npcf-pdtq-policy-control: Access to the Npcf_PDTQPolicyControl API
+
+  schemas:
+
+# Structured data types
+
+    PdtqPolicyData:
+      description: Describes an Individual PDTQ policy resource.
+      type: object
+      required:
+        - aspId
+        - desTimeInts
+        - numOfUes
+      oneOf:
+        - required: [qosReference]
+        - required: [qosParamSet]
+      properties:
+        altQosParamSets:
+          description: >
+            Contains the alternative QoS requirements expressed as the list of individual
+            QoS parameter sets in a prioritized order. The lower the index of the array for
+            a given entry, the higher the priority.
+          type: array
+          items:
+            $ref: '#/components/schemas/AltQosParamSet'
+          minItems: 1
+        altQosRefs:
+          description: >
+            Contains the alternative QoS requirements expressed as the list of QoS References
+            in a prioritized order. The lower the index of the array for a given entry, the
+            higher the priority.
+          type: array
+          items:
+            type: string
+          minItems: 1
+        appId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        aspId:
+          description: Contains an identity of an application service provider.
+          type: string
+        desTimeInts:
+          description: Contains a list of desired time windows for PDTQ.
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+          minItems: 1
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        nwAreaInfo:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/NetworkAreaInfo'
+        numOfUes:
+          description: Indicates a number of UEs.
+          type: integer
+        pdtqPolicies:
+          description: Contains PDTQ policies.
+          type: array
+          items:
+            $ref: '#/components/schemas/PdtqPolicy'
+          minItems: 1
+        pdtqRefId:
+          $ref: '#/components/schemas/PdtqReferenceId'
+        qosParamSet:
+          $ref: '#/components/schemas/QosParameterSet'
+        qosReference:
+          description: >
+            Contains the requested QoS requirements expressed as the QoS Reference which
+            represents a pre-defined QoS information.
+          type: string
+        selPdtqPolicyId:
+          description: Contains the identity of the selected PDTQ policy.
+          type: integer
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        warnNotifReq:
+          description: >
+            Indicates whether the PDTQ warning notification is enabled (true) or
+            disabled (false). Default value is false.
+          type: boolean
+          default: false
+
+    QosParameterSet:
+      description: >
+        Contains the QoS requirements expressed as one or more individual QoS parameters.
+      type: object
+      properties:
+        extMaxBurstSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExtMaxDataBurstVol'
+        gfbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        gfbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxBitRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxBitRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxBurstSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MaxDataBurstVol'
+        pdb:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudget'
+        per:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketErrRate'
+        priorLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5QiPriorityLevel'
+
+    AltQosParamSet:
+      description: >
+        Contains the alternative QoS requirements expressed as the list of individual QoS
+        parameter sets.
+      type: object
+      properties:
+        gfbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        gfbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        pdb:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudget'
+        per:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketErrRate'
+
+    PdtqPolicy:
+      description: Describes a PDTQ policy.
+      type: object
+      required:
+      - pdtqPolicyId
+      - recTimeInt
+      properties:
+        pdtqPolicyId:
+          description: Contains an identity of a PDTQ policy.
+          type: integer
+        recTimeInt:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+
+    PdtqPolicyPatchData:
+      description: Represents modifications of an Individual PDTQ policy resource.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        selPdtqPolicyId:
+          description: Contains the identity of the selected PDTQ policy.
+          type: integer
+        warnNotifReq:
+          description: >
+            Indicates whether the PDTQ warning notification is enabled (true) or
+            disabled (false).
+          type: boolean
+
+    Notification:
+      description: Contains the PDTQ notification information.
+      type: object
+      required:
+      - pdtqRefId
+      - candPolicies
+      properties:
+        pdtqRefId:
+          $ref: '#/components/schemas/PdtqReferenceId'
+        candPolicies:
+          description: >
+            Contains a list of the candidate PDTQ policies from which the NF service
+            consumer may provide a new PDTQ policy.
+          type: array
+          items:
+            $ref: '#/components/schemas/PdtqPolicy'
+          minItems: 1
+
+# Simple data types
+
+    PdtqReferenceId:
+      description: Represents a PDTQ Reference ID.
+      type: string

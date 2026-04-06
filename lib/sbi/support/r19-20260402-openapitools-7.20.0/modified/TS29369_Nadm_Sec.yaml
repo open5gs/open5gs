@@ -1,0 +1,368 @@
+openapi: 3.0.0
+
+info:
+  version: '1.0.1'
+  title: 'Nadm_Sec'
+  description: |
+    Nadm_Sec Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.369 Ambient IoT Data Management Services, version 19.2.0
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.369/'
+
+servers:
+  - url: '{apiRoot}/nadm-sec/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - oauth2ClientCredentials:
+    - nadm-sec
+  - {}
+
+paths:
+  /get-rand:
+    post:
+      summary: Retrieve a random value (RANDAIOT_n)
+      operationId: getRand
+      tags:
+        - Get Rand
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nadm-sec
+        - oAuth2ClientCredentials:
+          - nadm-sec
+          - nadm-sec:get-rand:invoke
+      responses:
+        '200':
+          description: Successful retrieval of RANDAIOT_n
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetRandResponse'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /get-authentication:
+    post:
+      summary: Retrieve authentication data (XRESAIOT)
+      operationId: getAuthentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetAuthenticationRequest'
+      tags:
+        - Get Authentication
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nadm-sec
+        - oAuth2ClientCredentials:
+          - nadm-sec
+          - nadm-sec:get-authentication:invoke
+      responses:
+        '200':
+          description: Successful retrieval of authentication data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAuthenticationResponse'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /get-session-key:
+    post:
+      summary: Retrieve session key (KAIOTF)
+      operationId: getSessionKey
+      tags:
+        - Get Session Key
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nadm-sec
+        - oAuth2ClientCredentials:
+          - nadm-sec
+          - nadm-sec:get-session-key:invoke
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetSessionKeyRequest'
+      responses:
+        '200':
+          description: Successful retrieval of session key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSessionKeyResponse'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /get-tid:
+    post:
+      summary: Retrieve Temporary ID (T-ID)
+      operationId: getTid
+      tags:
+        - Get Tid
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nadm-sec
+        - oAuth2ClientCredentials:
+          - nadm-sec
+          - nadm-sec:get-tid:invoke
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetTidRequest'
+      responses:
+        '200':
+          description: Successful retrieval of T-ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTidResponse'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+components:
+  securitySchemes:
+    oauth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://example.com/oauth2/token
+          scopes:
+            nadm-sec: Access to Nadm_Sec API
+            nadm-sec:get-rand:invoke: Access to retrieve a RAND
+            nadm-sec:get-authentication:invoke: Access to retrieve Authentication Data
+            nadm-sec:get-session-key:invoke: Access to retrieve a Session Key
+            nadm-sec:get-tid:invoke: Access to retrieve a T-ID
+  schemas:
+#
+# STRUCTURED TYPES
+#
+
+    GetRandResponse:
+      type: object
+      description: Contains the RandN.
+      properties:
+        randN:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/Rand'
+      required:
+      - randN
+
+    GetAuthenticationRequest:
+      type: object
+      description: Contains the Rand and AIoT identifications.
+      properties:
+        aiotDevPermId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotDevPermId'
+        filteringInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotFilteringInformation'
+        randN:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/Rand'
+        randDlist:
+          type: array
+          items:
+            $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/Rand'
+          minItems: 1
+      required:
+      - randN
+      - randDlist
+
+    AuthData:
+      type: object
+      description: >
+        Contains the calculated XRES and optionally the AIoT device permanent
+        identifier used to calculate it.
+      properties:
+        xres:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/Xres'
+        aiotDevPermId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotDevPermId'
+      required:
+      - xres
+
+    AuthDataSet:
+      type: object
+      description: Contains a RANDAIOT_d value and a list of associated AuthData entries.
+      properties:
+        randD:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/Rand'
+        authDataSet:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthData'
+          minItems: 1
+      required:
+      - randD
+      - authDataSet
+
+    GetAuthenticationResponse:
+      type: object
+      description: Response type containing one or more AuthDataSet entries.
+      properties:
+        authDataSets:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthDataSet'
+          minItems: 1
+      required:
+      - authDataSets
+
+    GetSessionKeyRequest:
+      type: object
+      description: Contains a AIoT Device Permanent Identifier, RandN and RandD.
+      properties:
+        aiotDevPermId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotDevPermId'
+        randN:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/Rand'
+        randD:
+          $ref: 'TS29503_Nudm_UEAU.yaml#/components/schemas/Rand'
+      required:
+      - aiotDevPermId
+      - randN
+      - randD
+
+    GetSessionKeyResponse:
+      type: object
+      description: Contains the Kaiotf.
+      properties:
+        kAiotf:
+          $ref: '#/components/schemas/Kaiotf'
+      required:
+      - kAiotf
+
+    GetTidRequest:
+      type: object
+      description: Contains a AIoT Device Permanent Identifier and Resynchronization Indicator.
+      properties:
+        aiotDevPermId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotDevPermId'
+        resyncInd:
+          type: boolean
+      required:
+      - aiotDevPermId
+
+    GetTidResponse:
+      type: object
+      description: Contains T-ID Handling Info and T-ID.
+      properties:
+        tidHandInfo:
+          $ref: 'TS29369_Nadm_DM.yaml#/components/schemas/TidHandlingInformation'
+        tid:
+          $ref: 'TS29369_Nadm_DM.yaml#/components/schemas/Tid'
+        tidPrevious:
+          $ref: 'TS29369_Nadm_DM.yaml#/components/schemas/Tid'
+      required:
+      - tid
+      - tidHandInfo
+#
+# SIMPLE TYPES
+#
+
+    Kaiotf:
+      description: Indicates the Kaiotf.
+      type: string
+      pattern: '^[A-Fa-f0-9]{32}$'
+
+
+#
+# ENUMS
+#

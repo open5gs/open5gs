@@ -1,0 +1,195 @@
+openapi: 3.0.0
+info:
+  title: MSGG_L3GDelivery
+  version: 1.2.0
+  description: |
+    API for MSGG L3G Message Delivery Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.538 V19.4.0; Enabling MSGin5G Service; Application Programming Interfaces (API)
+    specification; Stage 3
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.538/
+
+servers:
+  - url: '{apiRoot}/msgg-l3gdelivery/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+
+paths:
+  /deliver-message:
+    post:
+      summary: deliver message to Legacy 3GPP Message Gateway
+      tags:
+        - L3G Message delivery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/L3gMessageDelivery'
+      responses:
+        '204':
+          description: No Content, Message delivery successful
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /deliver-report:
+    post:
+      summary: deliver status report to Legacy 3GPP Message Gateway
+      tags:
+        - L3G status report delivery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS29538_MSGS_MSGDelivery.yaml#/components/schemas/DeliveryStatusReport'
+      responses:
+        '204':
+          description: No Content, status report delivery successfully
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+
+
+  schemas:
+#
+# STRUCTURED DATA TYPES
+#
+    L3gMessageDelivery:
+      description: Contains the L3G message delivery data
+      type: object
+      required:
+        - oriAddr
+        - destAddr
+        - msgId
+      properties:
+        oriAddr:
+          $ref: '#/components/schemas/Address'
+        destAddr:
+          $ref: '#/components/schemas/Address'
+        appId:
+          type: string
+        msgId:
+          type: string
+        delivStReqInd:
+          type: boolean
+        payload:
+          type: string
+        segInd:
+          type: boolean
+        segParams:
+          $ref: 'TS29538_MSGS_MSGDelivery.yaml#/components/schemas/MessageSegmentParameters'
+
+
+    Address:
+      description: Contains the Message type data
+      type: object
+      required:
+        - addrType
+        - addr
+      properties:
+        addrType:
+          $ref: '#/components/schemas/AddressType'
+        addr:
+          type: string
+
+
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    AddressType:
+      anyOf:
+      - type: string
+        enum:
+          - UE
+          - AS
+          - GROUP
+          - BC
+          - TOPIC
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: |
+        Represent the type of message request.
+        Possible values are:
+        - UE: The address type is UE.
+        - AS: The address type is AS.
+        - GROUP: The address type is GROUP.
+        - BC: The address type is BC.
+        - TOPIC: The address type is TOPIC.

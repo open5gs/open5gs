@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "external_client_type_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_external_client_type_s OpenAPI_external_client_type_t;
-typedef struct OpenAPI_external_client_type_s {
-} OpenAPI_external_client_type_t;
+typedef enum { OpenAPI_external_client_type_NULL = 0, OpenAPI_external_client_type_EMERGENCY_SERVICES, OpenAPI_external_client_type_VALUE_ADDED_SERVICES, OpenAPI_external_client_type_PLMN_OPERATOR_SERVICES, OpenAPI_external_client_type_LAWFUL_INTERCEPT_SERVICES, OpenAPI_external_client_type_PLMN_OPERATOR_BROADCAST_SERVICES, OpenAPI_external_client_type_PLMN_OPERATOR_OM, OpenAPI_external_client_type_PLMN_OPERATOR_ANONYMOUS_STATISTICS, OpenAPI_external_client_type_PLMN_OPERATOR_TARGET_MS_SERVICE_SUPPORT, OpenAPI_external_client_type_SL_POS } OpenAPI_external_client_type_e;
 
-OpenAPI_external_client_type_t *OpenAPI_external_client_type_create(
-);
-void OpenAPI_external_client_type_free(OpenAPI_external_client_type_t *external_client_type);
-OpenAPI_external_client_type_t *OpenAPI_external_client_type_parseFromJSON(cJSON *external_client_typeJSON);
-cJSON *OpenAPI_external_client_type_convertToJSON(OpenAPI_external_client_type_t *external_client_type);
-OpenAPI_external_client_type_t *OpenAPI_external_client_type_copy(OpenAPI_external_client_type_t *dst, OpenAPI_external_client_type_t *src);
+char* OpenAPI_external_client_type_ToString(OpenAPI_external_client_type_e external_client_type);
+
+OpenAPI_external_client_type_e OpenAPI_external_client_type_FromString(char* external_client_type);
 
 #ifdef __cplusplus
 }

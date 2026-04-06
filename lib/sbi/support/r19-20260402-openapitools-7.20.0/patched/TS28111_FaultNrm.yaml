@@ -1,0 +1,789 @@
+openapi: 3.0.1
+info:
+  title: Fault Management NRM
+  version: 19.3.0
+  description: >-
+    OAS 3.0.1 definition of the Fault Supervision MnS
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.111; Fault Management
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.111/
+servers:
+  - url: '{MnSRoot}/FaultSupervisionMnS/{MnSversion}'
+    variables:
+      MnSRoot:
+        description: See subclause 4.4.3 of TS 32.158
+        default: http://example.com/3GPPManagement
+      MnSversion:
+        description: Version number of the OpenAPI definition
+        default: XXX
+paths: {}
+
+components:
+  schemas:
+
+  #---- Definition of AlarmRecord ----------------------------------------------------#
+ 
+    AlarmId:
+      type: string
+    AlarmType:
+      type: string
+      enum:
+        - COMMUNICATIONS_ALARM
+        - QUALITY_OF_SERVICE_ALARM
+        - PROCESSING_ERROR_ALARM
+        - EQUIPMENT_ALARM
+        - ENVIRONMENTAL_ALARM
+        - INTEGRITY_VIOLATION
+        - OPERATIONAL_VIOLATION
+        - PHYSICAL_VIOLATION
+        - SECURITY_SERVICE_OR_MECHANISM_VIOLATION
+        - TIME_DOMAIN_VIOLATION
+        - OTHER
+      readOnly: true  
+    ProbableCause:
+      description: >-
+        The value of the probable cause may be a specific standardized string, or any
+        vendor provided string.
+        The value of the probable cause may also be an integer. The mapping of integer
+        values to probable causes is vendor specific.
+      oneOf:
+        - anyOf:
+            - type: string
+              description: Values are from the (informative) Annex B of 3GPP TS 28.111.
+              enum:
+                - INDETERMINATE
+                - ALARM_INDICATION_SIGNAL
+                - CALL_SETUP_FAILURE
+                - DEGRADED_SIGNAL
+                - FAR_END_RECEIVER_FAILURE
+                - FRAMING_ERROR
+                - LOSS_OF_FRAME
+                - LOSS_OF_POINTER
+                - LOSS_OF_SIGNAL
+                - PAYLOAD_TYPE_MISMATCH
+                - REMOTE_ALARM_INTERFACE
+                - EXCESSIVE_BIT_ERROR_RATE
+                - PATH_TRACE_MISMATCH
+                - UNAVAILABLE
+                - SIGNAL_LABEL_MISMATCH
+                - LOSS_OF_MULTI_FRAME
+                - COMMUNICATIONS_RECEIVE_FAILURE
+                - COMMUNICATIONS_TRANSMIT_FAILURE
+                - MODULATION_FAILURE
+                - DEMODULATION_FAILURE
+                - BACK_PLANE_FAILURE
+                - DATA_SET_PROBLEM
+                - EQUIPMENT_IDENTIFIER_DUPLICATION
+                - EXTERNAL_IF_DEVICE_PROBLEM
+                - LINE_CARD_PROBLEM
+                - MULTIPLEXER_PROBLEM
+                - NE_IDENTIFIER_DUPLICATION
+                - POWER_PROBLEM
+                - PROCESSOR_PROBLEM
+                - PROTECTION_PATH_FAILURE
+                - RECEIVER_FAILURE
+                - REPLACEABLE_UNIT_MISSING
+                - REPLACEABLE_UNIT_TYPE_MISMATCH
+                - SYNCHRONIZATION_SOURCE_MISMATCH
+                - TERMINAL_PROBLEM
+                - TIMING_PROBLEM
+                - TRANSMITTER_FAILURE
+                - TRUNK_CARD_PROBLEM
+                - REPLACEABLE_UNIT_PROBLEM
+                - REAL_TIME_CLOCK_FAILURE
+                - PROTECTION_MECHANISM_FAILURE
+                - PROTECTING_RESOURCE_FAILURE
+                - AIR_COMPRESSOR_FAILURE
+                - AIR_CONDITIONING_FAILURE
+                - AIR_DRYER_FAILURE
+                - BATTERY_DISCHARGING
+                - BATTERY_FAILURE
+                - COMMERCIAL_POWER_FAILURE
+                - COOLING_FAN_FAILURE
+                - ENGINE_FAILURE
+                - FIRE_DETECTOR_FAILURE
+                - FUSE_FAILURE
+                - GENERATOR_FAILURE
+                - LOW_BATTERY_THRESHOLD
+                - PUMP_FAILURE
+                - RECTIFIER_FAILURE
+                - RECTIFIER_HIGH_VOLTAGE
+                - RECTIFIER_LOW_F_VOLTAGE
+                - VENTILATION_SYSTEM_FAILURE
+                - ENCLOSURE_DOOR_OPEN
+                - EXPLOSIVE_GAS
+                - FIRE
+                - FLOOD
+                - HIGH_HUMIDITY
+                - HIGH_TEMPERATURE
+                - HIGH_WIND
+                - ICE_BUILD_UP
+                - INTRUSION_DETECTION
+                - LOW_FUEL
+                - LOW_HUMIDITY
+                - LOW_CABLE_PRESSURE
+                - LOW_TEMPERATURE
+                - LOW_WATER
+                - SMOKE
+                - TOXIC_GAS
+                - EXTERNAL_POINT_FAILURE
+                - STORAGE_CAPACITY_PROBLEM
+                - MEMORY_MISMATCH
+                - CORRUPT_DATA
+                - OUT_OF_CPU_CYCLES
+                - SOFTWARE_ENVIRONMENT_PROBLEM
+                - SOFTWARE_DOWNLOAD_FAILURE
+                - LOSS_OF_REAL_TIME
+                - REINITIALIZED
+                - EXCESSIVE_ERROR_RATE
+                - ADAPTER_ERROR
+                - APPLICATION_SUBSYSTEM_FAILURE
+                - BANDWIDTH_REDUCED
+                - COMMUNICATIONS_PROTOCOL_ERROR
+                - COMMUNICATIONS_SUBSYSTEM_FAILURE
+                - CONFIGURATION_OR_CUSTOMIZATION_ERROR
+                - CONGESTION
+                - CPU_CYCLES_LIMIT_EXCEEDED
+                - DATA_SET_OR_MODEM_ERROR
+                - DTE_DCE_INTERFACE_ERROR
+                - EQUIPMENT_MALFUNCTION
+                - EXCESSIVE_VIBRATION
+                - FILE_ERROR
+                - HEATING_OR_VENTILATION_OR_COOLING_SYSTEM_PROBLEM
+                - HUMIDITY_UNACCEPTABLE
+                - INPUT_OUTPUT_DEVICE_ERROR
+                - INPUT_DEVICE_ERROR
+                - LAN_ERROR
+                - LEAK_DETECTED
+                - LOCAL_NODE_TRANSMISSION_ERROR
+                - MATERIAL_SUPPLY_EXHAUSTED
+                - OUT_OF_MEMORY
+                - OUTPUT_DEVICE_ERROR
+                - PERFORMANCE_DEGRADED
+                - PRESSURE_UNACCEPTABLE
+                - QUEUE_SIZE_EXCEEDED
+                - RECEIVE_FAILURE
+                - REMOTE_NODE_TRANSMISSION_ERROR
+                - RESOURCE_AT_OR_NEARING_CAPACITY
+                - RESPONSE_TIME_EXCESSIVE
+                - RETRANSMISSION_RATE_EXCESSIVE
+                - SOFTWARE_ERROR
+                - SOFTWARE_PROGRAM_ABNORMALLY_TERMINATED
+                - SOFTWARE_PROGRAM_ERROR
+                - TEMPERATURE_UNACCEPTABLE
+                - THRESHOLD_CROSSED
+                - TOXIC_LEAK_DETECTED
+                - TRANSMIT_FAILURE
+                - UNDERLYING_RESOURCE_UNAVAILABLE
+                - VERSION_MISMATCH
+                - A_BIS_TO_BTS_INTERFACE_FAILURE
+                - A_BIS_TO_TRX_INTERFACE_FAILURE
+                - ANTENNA_PROBLEM
+                - BATTERY_BREAKDOWN
+                - BATTERY_CHARGING_FAULT
+                - CLOCK_SYNCHRONIZATION_PROBLEM
+                - COMBINER_PROBLEM
+                - DISK_PROBLEM
+                - EXCESSIVE_RECEIVER_TEMPERATURE
+                - EXCESSIVE_TRANSMITTER_OUTPUT_POWER
+                - EXCESSIVE_TRANSMITTER_TEMPERATURE
+                - FREQUENCY_HOPPING_DEGRADED
+                - FREQUENCY_HOPPING_FAILURE
+                - FREQUENCY_REDEFINITION_FAILED
+                - LINE_INTERFACE_FAILURE
+                - LINK_FAILURE
+                - LOSS_OF_SYNCHRONIZATION
+                - LOST_REDUNDANCY
+                - MAINS_BREAKDOWN_WITH_BATTERY_BACKUP
+                - MAINS_BREAKDOWN_WITHOUT_BATTERY_BACKUP
+                - POWER_SUPPLY_FAILURE
+                - RECEIVER_ANTENNA_FAULT
+                - RECEIVER_MULTICOUPLER_FAILURE
+                - REDUCED_TRANSMITTER_OUTPUT_POWER
+                - SIGNAL_QUALITY_EVALUATION_FAULT
+                - TIMESLOT_HARDWARE_FAILURE
+                - TRANSCEIVER_PROBLEM
+                - TRANSCODER_PROBLEM
+                - TRANSCODER_OR_RATE_ADAPTER_PROBLEM
+                - TRANSMITTER_ANTENNA_FAILURE
+                - TRANSMITTER_ANTENNA_NOT_ADJUSTED
+                - TRANSMITTER_LOW_VOLTAGE_OR_CURRENT
+                - TRANSMITTER_OFF_FREQUENCY
+                - DATABASE_INCONSISTENCY
+                - FILE_SYSTEM_CALL_UNSUCCESSFUL
+                - INPUT_PARAMETER_OUT_OF_RANGE
+                - INVALID_PARAMETER
+                - INVALID_POINTER
+                - MESSAGE_NOT_EXPECTED
+                - MESSAGE_NOT_INITIALIZED
+                - MESSAGE_OUT_OF_SEQUENCE
+                - SYSTEM_CALL_UNSUCCESSFUL
+                - TIMEOUT_EXPIRED
+                - VARIABLE_OUT_OF_RANGE
+                - WATCH_DOG_TIMER_EXPIRED
+                - COOLING_SYSTEM_FAILURE
+                - EXTERNAL_EQUIPMENT_FAILURE
+                - EXTERNAL_POWER_SUPPLY_FAILURE
+                - EXTERNAL_TRANSMISSION_DEVICE_FAILURE
+                - REDUCED_ALARM_REPORTING
+                - REDUCED_EVENT_REPORTING
+                - REDUCED_LOGGING_CAPABILITY
+                - SYSTEM_RESOURCES_OVERLOAD
+                - BROADCAST_CHANNEL_FAILURE
+                - CONNECTION_ESTABLISHMENT_ERROR
+                - INVALID_MESSAGE_RECEIVED
+                - INVALID_MSU_RECEIVED
+                - LAPD_LINK_PROTOCOL_FAILURE
+                - LOCAL_ALARM_INDICATION
+                - REMOTE_ALARM_INDICATION
+                - ROUTING_FAILURE
+                - SS7_PROTOCOL_FAILURE
+                - TRANSMISSION_ERROR
+                - AUTHENTICATION_FAILURE
+                - BREACH_OF_CONFIDENTIALITY
+                - CABLE_TAMPER
+                - DELAYED_INFORMATION
+                - DENIAL_OF_SERVICE
+                - DUPLICATE_INFORMATION
+                - INFORMATION_MISSING
+                - INFORMATION_MODIFICATION_DETECTED
+                - INFORMATION_OUT_OF_SEQUENCE
+                - INTRUSION_DETECTED
+                - KEY_EXPIRED
+                - NON_REPUDIATION_FAILURE
+                - OUT_OF_HOURS_ACTIVITY
+                - OUT_OF_SERVICE
+                - PROCEDURAL_ERROR
+                - UNAUTHORISED_ACCESS_ATTEMPT
+                - UNEXPECTED_INFORMATION
+                - UNSPECIFIED_REASON
+              readOnly: true  
+            - type: string
+              readOnly: true 
+        - type: integer
+          readOnly: true 
+    SpecificProblem:
+      oneOf:
+        - type: string
+          readOnly: true 
+        - type: integer
+          readOnly: true 
+    PerceivedSeverity:
+      type: string
+      enum:
+        - INDETERMINATE
+        - CRITICAL
+        - MAJOR
+        - MINOR
+        - WARNING
+        - CLEARED  
+    TrendIndication:
+      type: string
+      readOnly: true
+      enum:
+        - MORE_SEVERE
+        - NO_CHANGE
+        - LESS_SEVERE
+    ThresholdHysteresis:
+      type: object
+      required:
+        - high
+      properties:
+        high:
+          oneOf:
+            - type: integer
+            - $ref: 'TS28623_ComDefs.yaml#/components/schemas/FloatRo'
+        low:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/FloatRo'
+    ThresholdLevelInd:
+      oneOf:
+        - type: object
+          properties:
+            up:
+              $ref: '#/components/schemas/ThresholdHysteresis'
+        - type: object
+          properties:
+            down:
+              $ref: '#/components/schemas/ThresholdHysteresis'
+    ThresholdCrossing:
+      type: object
+      properties:
+        observedMeasurement:
+          type: string
+          readOnly: true
+        observedValue:
+          type: number
+          readOnly: true
+        thresholdLevel:
+          $ref: '#/components/schemas/ThresholdLevelInd'
+        armTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+      required:
+        - observedMeasurement
+        - observedValue
+    CorrelatedNotification:
+      type: object
+      properties:
+        sourceObjectInstance:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+        notificationIds:
+          type: array
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationId'
+      required:
+        - sourceObjectInstance
+        - notificationIds
+    CorrelatedNotifications:
+      type: array
+      items:
+        $ref: '#/components/schemas/CorrelatedNotification'
+    AckState:
+      type: string
+      enum:
+        - ACKNOWLEDGED
+        - UNACKNOWLEDGED
+
+    AlarmRecord:
+      description: >-
+        The alarmId is not a property of an alarm record. It is used as key
+        in the map of alarm records instead.
+      type: object
+      properties:
+        # alarmId:
+        #  $ref: '#/components/schemas/AlarmId'
+        objectInstance:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+        notificationId:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationId'
+        alarmRaisedTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+        alarmChangedTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+        alarmClearedTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+        alarmType:
+          $ref: '#/components/schemas/AlarmType'
+        probableCause:
+          $ref: '#/components/schemas/ProbableCause'
+        specificProblem:
+          $ref: '#/components/schemas/SpecificProblem'
+        perceivedSeverity:
+          $ref: '#/components/schemas/PerceivedSeverity'
+        backedUpStatus:
+          type: boolean
+        backUpObject:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+        trendIndication:
+          $ref: '#/components/schemas/TrendIndication'
+        thresholdinfo:
+          $ref: '#/components/schemas/ThresholdCrossing'
+        correlatedNotifications:
+          $ref: '#/components/schemas/CorrelatedNotifications'
+        stateChangeDefinition:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeValueChangeSet'
+        monitoredAttributes:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+        proposedRepairActions:
+          type: string
+          readOnly: true
+        additionalText:
+          type: string
+          readOnly: true
+        additionalInformation:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+        rootCauseIndicator:
+          type: boolean
+          readOnly: true
+        ackTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+        ackUserId:
+          type: string
+        ackSystemId:
+          type: string
+        ackState:
+          $ref: '#/components/schemas/AckState'
+        clearUserId:
+          type: string
+        clearSystemId:
+          type: string
+        serviceUser:
+          type: string
+          readOnly: true
+        serviceProvider:
+          type: string
+          readOnly: true
+        securityAlarmDetector:
+          type: string
+          readOnly: true
+        clearingType:
+          type: string
+          enum:
+            - MANUAL
+            - AUTOMATIC 
+          default: AUTOMATIC
+    AlarmList-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                administrativeState:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/AdministrativeState'
+                operationalState:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/OperationalState'
+                numOfAlarmRecords:
+                  type: integer
+                  readOnly: true
+                lastModification:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+                alarmRecords:
+                  description: >-
+                     This resource represents a map of alarm records.
+                     The alarmIds are used as keys in the map.
+                  type: object
+                  additionalProperties:
+                    $ref: '#/components/schemas/AlarmRecord'
+                unreliableAlarmScope:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+
+
+  #---- Definition of alarm notifications --------------------------------------------#
+  
+    AlarmNotificationTypes:
+      type: string
+      enum:
+        - notifyNewAlarm
+        - notifyChangedAlarmGeneral
+        - notifyAckStateChanged
+        - notifyCorrelatedNotificationChanged
+        - notifyComments
+        - notifyClearedAlarm
+        - notifyAlarmListRebuilt
+        - notifyPotentialFaultyAlarmList
+    AlarmListAlignmentRequirement:
+      type: string
+      enum:
+        - ALIGNMENT_REQUIRED
+        - ALIGNMENT_NOT_REQUIRED
+
+    NotifyNewAlarm:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          required:
+            - alarmId
+            - alarmType
+            - probableCause
+            - perceivedSeverity
+          properties:
+            alarmId:
+              $ref: '#/components/schemas/AlarmId'
+            alarmType:
+              $ref: '#/components/schemas/AlarmType'
+            probableCause:
+              $ref: '#/components/schemas/ProbableCause'
+            specificProblem:
+              $ref: '#/components/schemas/SpecificProblem'
+            perceivedSeverity:
+              $ref: '#/components/schemas/PerceivedSeverity'
+            backedUpStatus:
+              type: boolean
+            backUpObject:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+            trendIndication:
+              $ref: '#/components/schemas/TrendIndication'
+            thresholdInfo:
+              $ref: '#/components/schemas/ThresholdCrossing'
+            correlatedNotifications:
+              $ref: '#/components/schemas/CorrelatedNotifications'
+            stateChangeDefinition:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeValueChangeSet'
+            monitoredAttributes:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+            proposedRepairActions:
+              type: string
+            additionalText:
+              type: string
+            additionalInformation:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+            rootCauseIndicator:
+              type: boolean
+            clearingType:
+              type: string
+              enum:
+              - MANUAL
+              - AUTOMATIC 
+    NotifyNewSecAlarm:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          required:
+            - alarmId
+            - alarmType
+            - probableCause
+            - perceivedSeverity
+            - serviceUser
+            - serviceProvider
+            - securityAlarmDetector 
+          properties:
+            alarmId:
+              $ref: '#/components/schemas/AlarmId'
+            alarmType:
+              $ref: '#/components/schemas/AlarmType'
+            probableCause:
+              $ref: '#/components/schemas/ProbableCause'
+            specificProblem:
+              $ref: '#/components/schemas/SpecificProblem'
+            perceivedSeverity:
+              $ref: '#/components/schemas/PerceivedSeverity'
+            correlatedNotifications:
+              $ref: '#/components/schemas/CorrelatedNotifications'
+            additionalText:
+              type: string
+            additionalInformation:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+            rootCauseIndicator:
+              type: boolean
+            serviceUser:
+              type: string
+            serviceProvider:
+              type: string
+            securityAlarmDetector:
+              type: string
+            clearingType:
+              type: string
+              enum:
+              - MANUAL
+              - AUTOMATIC 
+    NotifyClearedAlarm:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          required:
+            - alarmId
+            - alarmType
+            - probableCause
+            - perceivedSeverity
+          properties:
+            alarmId:
+              $ref: '#/components/schemas/AlarmId'
+            alarmType:
+              $ref: '#/components/schemas/AlarmType'
+            probableCause:
+              $ref: '#/components/schemas/ProbableCause'
+            specificProblem:
+              $ref: '#/components/schemas/SpecificProblem'
+            perceivedSeverity:
+              $ref: '#/components/schemas/PerceivedSeverity'
+            correlatedNotifications:
+              $ref: '#/components/schemas/CorrelatedNotifications'
+            clearUserId:
+              type: string
+            clearSystemId:
+              type: string
+    NotifyChangedAlarmGeneral:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          required:
+            - alarmId
+            - alarmType
+            - probableCause            
+          properties:
+            alarmId:
+              $ref: '#/components/schemas/AlarmId'
+            alarmType:
+              $ref: '#/components/schemas/AlarmType'
+            probableCause:
+              $ref: '#/components/schemas/ProbableCause'
+            specificProblem:
+              $ref: '#/components/schemas/SpecificProblem'
+            perceivedSeverity:
+              $ref: '#/components/schemas/PerceivedSeverity'
+            correlatedNotifications:
+              $ref: '#/components/schemas/CorrelatedNotifications'
+            backedUpStatus:
+              type: boolean
+            backUpObject:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+            trendIndication:
+              $ref: '#/components/schemas/TrendIndication'
+            thresholdInfo:
+              $ref: '#/components/schemas/ThresholdCrossing'
+            stateChangeDefinition:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeValueChangeSet'
+            monitoredAttributes:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+            proposedRepairActions:
+              type: string
+            additionalText:
+              type: string
+            additionalInformation:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+            rootCauseIndicator:
+              type: boolean
+            changedAlarmAttributes:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+    NotifyChangedSecAlarmGeneral:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          required:
+            - alarmId
+            - alarmType
+            - probableCause            
+            - serviceUser
+            - serviceProvider
+            - securityAlarmDetector
+          properties:
+            alarmId:
+              $ref: '#/components/schemas/AlarmId'
+            alarmType:
+              $ref: '#/components/schemas/AlarmType'
+            probableCause:
+              $ref: '#/components/schemas/ProbableCause'
+            specificProblem:
+              $ref: '#/components/schemas/SpecificProblem'
+            perceivedSeverity:
+              $ref: '#/components/schemas/PerceivedSeverity'
+            correlatedNotifications:
+              $ref: '#/components/schemas/CorrelatedNotifications'
+            additionalText:
+              type: string
+            additionalInformation:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+            rootCauseIndicator:
+              type: boolean
+            serviceUser:
+              type: string
+            serviceProvider:
+              type: string
+            securityAlarmDetector:
+              type: string
+            changedAlarmAttributes:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+    NotifyCorrelatedNotificationChanged:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          required:
+            - alarmId
+            - correlatedNotifications
+            - alarmType
+            - probableCause
+          properties:
+            alarmId:
+              $ref: '#/components/schemas/AlarmId'
+            alarmType:
+              $ref: '#/components/schemas/AlarmType'
+            probableCause:
+              $ref: '#/components/schemas/ProbableCause'
+            specificProblem:
+              $ref: '#/components/schemas/SpecificProblem'
+            correlatedNotifications:
+              $ref: '#/components/schemas/CorrelatedNotifications'
+            rootCauseIndicator:
+              type: boolean
+    NotifyAckStateChanged:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          required:
+            - alarmId
+            - alarmType
+            - probableCause
+            - perceivedSeverity
+            - ackState
+            - ackUserId
+          properties:
+            alarmId:
+              $ref: '#/components/schemas/AlarmId'
+            alarmType:
+              $ref: '#/components/schemas/AlarmType'
+            probableCause:
+              $ref: '#/components/schemas/ProbableCause'
+            specificProblem:
+              $ref: '#/components/schemas/SpecificProblem'
+            perceivedSeverity:
+              $ref: '#/components/schemas/PerceivedSeverity'
+            ackState:
+              $ref: '#/components/schemas/AckState'
+            ackUserId:
+              type: string
+            ackSystemId:
+              type: string
+    NotifyComments:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          required:
+            - alarmId
+            - alarmType
+            - probableCause
+            - perceivedSeverity
+            - comments
+          properties:
+            alarmId:
+              $ref: '#/components/schemas/AlarmId'
+            alarmType:
+              $ref: '#/components/schemas/AlarmType'
+            probableCause:
+              $ref: '#/components/schemas/ProbableCause'
+            specificProblem:
+              $ref: '#/components/schemas/SpecificProblem'
+            perceivedSeverity:
+              $ref: '#/components/schemas/PerceivedSeverity'
+            comments:
+              $ref: '#/components/schemas/Comments'
+    NotifyPotentialFaultyAlarmList:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          required:
+            - reason
+          properties:
+            reason:
+              type: string
+    NotifyAlarmListRebuilt:
+      allOf:
+        - $ref: 'TS28623_ComDefs.yaml#/components/schemas/NotificationHeader'
+        - type: object
+          required:
+            - reason
+          properties:
+            reason:
+              type: string
+            alarmListAlignmentRequirement:
+              $ref: '#/components/schemas/AlarmListAlignmentRequirement'
+
+  #---- Definition of resources ------------------------------------------------------#
+
+    Comment:
+      type: object
+      properties:
+        commentTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+        commentUserId:
+          type: string
+        commentSystemId:
+          type: string
+        commentText:
+          type: string
+    Comments:
+      description: >-
+        Collection of comments. The comment identifiers are allocated by the
+        MnS producer and used as key in the map.
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/Comment'
+
+   #----- Definitions in TS 28.111 for TS 28.532 --------------------------#
+    resources-faultNrm:
+      oneOf:
+       - $ref: '#/components/schemas/AlarmList-Single'       
+    
+   #----- Definitions in TS 28.111 for TS 28.532 --------------------------#

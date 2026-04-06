@@ -5,7 +5,7 @@
 #include "lcs_broadcast_assistance_types_data.h"
 
 OpenAPI_lcs_broadcast_assistance_types_data_t *OpenAPI_lcs_broadcast_assistance_types_data_create(
-    OpenAPI_binary_t* location_assistance_type
+    char *location_assistance_type
 )
 {
     OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_broadcast_assistance_types_data_local_var = ogs_malloc(sizeof(OpenAPI_lcs_broadcast_assistance_types_data_t));
@@ -24,7 +24,7 @@ void OpenAPI_lcs_broadcast_assistance_types_data_free(OpenAPI_lcs_broadcast_assi
         return;
     }
     if (lcs_broadcast_assistance_types_data->location_assistance_type) {
-        ogs_free(lcs_broadcast_assistance_types_data->location_assistance_type->data);
+        ogs_free(lcs_broadcast_assistance_types_data->location_assistance_type);
         lcs_broadcast_assistance_types_data->location_assistance_type = NULL;
     }
     ogs_free(lcs_broadcast_assistance_types_data);
@@ -45,12 +45,10 @@ cJSON *OpenAPI_lcs_broadcast_assistance_types_data_convertToJSON(OpenAPI_lcs_bro
         ogs_error("OpenAPI_lcs_broadcast_assistance_types_data_convertToJSON() failed [location_assistance_type]");
         return NULL;
     }
-    char* encoded_str_location_assistance_type = OpenAPI_base64encode(lcs_broadcast_assistance_types_data->location_assistance_type->data,lcs_broadcast_assistance_types_data->location_assistance_type->len);
-    if (cJSON_AddStringToObject(item, "locationAssistanceType", encoded_str_location_assistance_type) == NULL) {
+    if (cJSON_AddStringToObject(item, "locationAssistanceType", lcs_broadcast_assistance_types_data->location_assistance_type) == NULL) {
         ogs_error("OpenAPI_lcs_broadcast_assistance_types_data_convertToJSON() failed [location_assistance_type]");
         goto end;
     }
-    ogs_free(encoded_str_location_assistance_type);
 
 end:
     return item;
@@ -61,26 +59,18 @@ OpenAPI_lcs_broadcast_assistance_types_data_t *OpenAPI_lcs_broadcast_assistance_
     OpenAPI_lcs_broadcast_assistance_types_data_t *lcs_broadcast_assistance_types_data_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *location_assistance_type = NULL;
-    OpenAPI_binary_t *decoded_str_location_assistance_type = NULL;
     location_assistance_type = cJSON_GetObjectItemCaseSensitive(lcs_broadcast_assistance_types_dataJSON, "locationAssistanceType");
     if (!location_assistance_type) {
         ogs_error("OpenAPI_lcs_broadcast_assistance_types_data_parseFromJSON() failed [location_assistance_type]");
         goto end;
     }
-    decoded_str_location_assistance_type = ogs_malloc(sizeof(OpenAPI_binary_t));
-    ogs_assert(decoded_str_location_assistance_type);
     if (!cJSON_IsString(location_assistance_type)) {
-        ogs_error("OpenAPI_lcs_broadcast_assistance_types_data_parseFromJSON() failed [location_assistance_type]");
-        goto end;
-    }
-    decoded_str_location_assistance_type->data = OpenAPI_base64decode(location_assistance_type->valuestring, strlen(location_assistance_type->valuestring), &decoded_str_location_assistance_type->len);
-    if (!decoded_str_location_assistance_type->data) {
         ogs_error("OpenAPI_lcs_broadcast_assistance_types_data_parseFromJSON() failed [location_assistance_type]");
         goto end;
     }
 
     lcs_broadcast_assistance_types_data_local_var = OpenAPI_lcs_broadcast_assistance_types_data_create (
-        decoded_str_location_assistance_type
+        ogs_strdup(location_assistance_type->valuestring)
     );
 
     return lcs_broadcast_assistance_types_data_local_var;

@@ -1,7 +1,7 @@
 /*
  * shared_data_treatment_instruction.h
  *
- * 
+ * Indicates the presence of this attribute in the individual data. Otherwise, the individual data takes precedence, by default. 
  */
 
 #ifndef _OpenAPI_shared_data_treatment_instruction_H_

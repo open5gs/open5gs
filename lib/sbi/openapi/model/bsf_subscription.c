@@ -12,6 +12,7 @@ OpenAPI_bsf_subscription_t *OpenAPI_bsf_subscription_create(
     char *gpsi,
     OpenAPI_snssai_dnn_pair_t *snssai_dnn_pairs,
     OpenAPI_list_t *add_snssai_dnn_pairs,
+    char *expiry,
     char *supp_feat
 )
 {
@@ -25,6 +26,7 @@ OpenAPI_bsf_subscription_t *OpenAPI_bsf_subscription_create(
     bsf_subscription_local_var->gpsi = gpsi;
     bsf_subscription_local_var->snssai_dnn_pairs = snssai_dnn_pairs;
     bsf_subscription_local_var->add_snssai_dnn_pairs = add_snssai_dnn_pairs;
+    bsf_subscription_local_var->expiry = expiry;
     bsf_subscription_local_var->supp_feat = supp_feat;
 
     return bsf_subscription_local_var;
@@ -67,6 +69,10 @@ void OpenAPI_bsf_subscription_free(OpenAPI_bsf_subscription_t *bsf_subscription)
         }
         OpenAPI_list_free(bsf_subscription->add_snssai_dnn_pairs);
         bsf_subscription->add_snssai_dnn_pairs = NULL;
+    }
+    if (bsf_subscription->expiry) {
+        ogs_free(bsf_subscription->expiry);
+        bsf_subscription->expiry = NULL;
     }
     if (bsf_subscription->supp_feat) {
         ogs_free(bsf_subscription->supp_feat);
@@ -165,6 +171,13 @@ cJSON *OpenAPI_bsf_subscription_convertToJSON(OpenAPI_bsf_subscription_t *bsf_su
     }
     }
 
+    if (bsf_subscription->expiry) {
+    if (cJSON_AddStringToObject(item, "expiry", bsf_subscription->expiry) == NULL) {
+        ogs_error("OpenAPI_bsf_subscription_convertToJSON() failed [expiry]");
+        goto end;
+    }
+    }
+
     if (bsf_subscription->supp_feat) {
     if (cJSON_AddStringToObject(item, "suppFeat", bsf_subscription->supp_feat) == NULL) {
         ogs_error("OpenAPI_bsf_subscription_convertToJSON() failed [supp_feat]");
@@ -190,6 +203,7 @@ OpenAPI_bsf_subscription_t *OpenAPI_bsf_subscription_parseFromJSON(cJSON *bsf_su
     OpenAPI_snssai_dnn_pair_t *snssai_dnn_pairs_local_nonprim = NULL;
     cJSON *add_snssai_dnn_pairs = NULL;
     OpenAPI_list_t *add_snssai_dnn_pairsList = NULL;
+    cJSON *expiry = NULL;
     cJSON *supp_feat = NULL;
     events = cJSON_GetObjectItemCaseSensitive(bsf_subscriptionJSON, "events");
     if (!events) {
@@ -294,6 +308,14 @@ OpenAPI_bsf_subscription_t *OpenAPI_bsf_subscription_parseFromJSON(cJSON *bsf_su
         }
     }
 
+    expiry = cJSON_GetObjectItemCaseSensitive(bsf_subscriptionJSON, "expiry");
+    if (expiry) {
+    if (!cJSON_IsString(expiry) && !cJSON_IsNull(expiry)) {
+        ogs_error("OpenAPI_bsf_subscription_parseFromJSON() failed [expiry]");
+        goto end;
+    }
+    }
+
     supp_feat = cJSON_GetObjectItemCaseSensitive(bsf_subscriptionJSON, "suppFeat");
     if (supp_feat) {
     if (!cJSON_IsString(supp_feat) && !cJSON_IsNull(supp_feat)) {
@@ -310,6 +332,7 @@ OpenAPI_bsf_subscription_t *OpenAPI_bsf_subscription_parseFromJSON(cJSON *bsf_su
         gpsi && !cJSON_IsNull(gpsi) ? ogs_strdup(gpsi->valuestring) : NULL,
         snssai_dnn_pairs ? snssai_dnn_pairs_local_nonprim : NULL,
         add_snssai_dnn_pairs ? add_snssai_dnn_pairsList : NULL,
+        expiry && !cJSON_IsNull(expiry) ? ogs_strdup(expiry->valuestring) : NULL,
         supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL
     );
 

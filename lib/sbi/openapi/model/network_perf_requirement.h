@@ -12,27 +12,33 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_network_perf_requirement_s OpenAPI_network_perf_requirement_t;
+#include "network_perf_order_criterion.h"
 #include "network_perf_type.h"
+#include "resource_usage_requirement.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_network_perf_requirement_s OpenAPI_network_perf_requirement_t;
-typedef struct OpenAPI_network_perf_requirement_s {
-    struct OpenAPI_network_perf_type_s *nw_perf_type;
+struct OpenAPI_network_perf_requirement_s {
+    OpenAPI_network_perf_type_e nw_perf_type;
     bool is_relative_ratio;
     int relative_ratio;
     bool is_absolute_num;
     int absolute_num;
-} OpenAPI_network_perf_requirement_t;
+    OpenAPI_network_perf_order_criterion_e order_criterion;
+    struct OpenAPI_resource_usage_requirement_s *rsc_usg_req;
+};
 
 OpenAPI_network_perf_requirement_t *OpenAPI_network_perf_requirement_create(
-    OpenAPI_network_perf_type_t *nw_perf_type,
+    OpenAPI_network_perf_type_e nw_perf_type,
     bool is_relative_ratio,
     int relative_ratio,
     bool is_absolute_num,
-    int absolute_num
+    int absolute_num,
+    OpenAPI_network_perf_order_criterion_e order_criterion,
+    OpenAPI_resource_usage_requirement_t *rsc_usg_req
 );
 void OpenAPI_network_perf_requirement_free(OpenAPI_network_perf_requirement_t *network_perf_requirement);
 OpenAPI_network_perf_requirement_t *OpenAPI_network_perf_requirement_parseFromJSON(cJSON *network_perf_requirementJSON);

@@ -1,0 +1,61 @@
+openapi: 3.0.0
+info:
+  title: TS26264_CommonData
+  version: 1.0.0
+  description: |
+    Common Data Types for IMS-based AR Real-Time Communication
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 'TS 26.264 V19.1.0; IMS-based AR Real-Time Communication'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.264/'
+
+paths: {}
+
+components:
+  schemas:
+
+    ###################################################
+    # Annex B.1.7: Associated Information (Table B.1-9)
+    ###################################################
+    AssociatedInfo:
+      type: object
+      description: 'Associated information metadata for Base Avatars and Assets'
+      properties:
+        avatarId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        avatarMetadata:
+          type: object
+          description: 'Metadata related to the Avatar'
+        assets:
+          type: array
+          items:
+            type: object
+            properties:
+              assetLoDs:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    level:
+                      type: string
+                      description: 'Level of detail identifier.'
+                    size:
+                      type: integer
+                      description: 'The size in bytes associated with this LoD'
+                description: 'A list of available LoDs for the corresponding asset with size information'
+          description: 'A list of assets associated with the Base Avatar'
+        selectionInfo:
+          type: object
+          description: 'Provides information that the user can use to select this avatar, including name, nickname, usage context, and images of renditions'
+        supportedAnimations:
+          type: array
+          items:
+            type: string
+          description: 'A list of the URNs that identify the supported animation frameworks by this base avatar'
+        infoUpdatedAt:
+          type: number
+          format: int64
+          description: 'A timestamp (in wall clock time) describing the time of the last update to the associated information'
+      required: [avatarId, assets, supportedAnimations, infoUpdatedAt]

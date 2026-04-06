@@ -1,0 +1,556 @@
+openapi: 3.0.0
+info:
+  title: EES UE Location Information_API
+  description: |
+    API for EES UE Location Information.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+  version: 1.2.0
+externalDocs:
+  description: >
+    3GPP TS 29.558 V19.5.0 Enabling Edge Applications;
+    Application Programming Interface (API) specification; Stage 3
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.558/
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/eees-uelocation/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.558.
+
+paths:
+  /fetch:
+    post:
+      summary: Fetch an UE location information.
+      operationId: FetchUELocation
+      tags:
+        - Fetch an UE location information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationRequest'
+      responses:
+        '200':
+          description: OK (The requested location information)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationResponse'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /subscriptions:
+    post:
+      summary: Creates a new Individual Location Information Subscription resource
+      operationId: CreateLocationInfoSubscription
+      tags:
+        - Location Information Subscriptions (Collection)
+      description: >
+        Create a Subscription resource for continious reporting of UE location
+        information to the EAS.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationSubscription'
+      responses:
+        '201':
+          description: >
+            Created (The individual location information subscription resource
+            is created successfully)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        LocationInformationNotification:
+          '{$request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/LocationNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+        UserConsentRevocationNotif:
+          '{$request.body#/revocationNotifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ConsentRevocNotif'
+              responses:
+                '204':
+                  description: No Content (successful notification).
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    get:
+      summary: Read an Individual Location Information Subscription resource
+      operationId: ReadIndLocationInfoSubscription
+      tags:
+        - Individual Location Information Subscription (Document)
+      description: Retrieve an Individual location information subscription information.
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription Id.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (Successfully get the location information subscription).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationSubscription'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Update an Individual Location Information Subscription resource
+      operationId: UpdateIndLocationInfoSubscription
+      tags:
+        - Individual Location Information Subscription (Document)
+      description: Fully replace an existing Individual location information Subscription.
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription Id.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationSubscription'
+      responses:
+        '200':
+          description: OK (The individual location information subscription was modified successfully).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationSubscription'
+        '204':
+          description: No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Modify an Individual Location Information Subscription resource
+      operationId: ModifyIndLocationInfoSubscription
+      tags:
+        - Individual Location Information Subscription (Document)
+      description: Partially update an existing Individual location information Subscription.
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription Id.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Partial update an existing Individual AC information Subscription.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/LocationSubscriptionPatch'
+      responses:
+        '200':
+          description: >
+            OK (The Individual location information Subscription is successfully
+            modified and the updated subscription information is returned in the response).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationSubscription'
+        '204':
+          description: >
+            No Content (The individual location information subscription was modified successfully).
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete an Individual Location Information Subscription resource
+      operationId: DeleteIndLocationInfoSubscription
+      tags:
+        - Individual Location Information Subscription (Document)
+      description: Delete an existing Individual location information Subscription.
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription Id.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The individual subscription is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+# Components
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    LocationSubscription:
+      type: object
+      description: Represents an Individual Location Information Subscription.
+      properties:
+        easId:
+          type: string
+          description: Identifier of the EAS subscribing for location information report.
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        intGrpId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        extGrpId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExternalGroupId'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        locGran:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/Accuracy'
+        locQos:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocationQoS'
+        eventReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        requestTestNotification:
+          type: boolean
+          description: >
+            Set to true by the EAS to request the EES to send a test notification.
+            Set to false or omitted otherwise.
+        revocationNotifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+#      oneOf:
+#        - required: [ueId]
+#        - required: [intGrpId]
+#        - required: [extGrpId]
+      required:
+        - easId
+
+    LocationSubscriptionPatch:
+      type: object
+      description: Represents the partial update of Individual AC Information Subscription.
+      properties:
+        eventReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        revocationNotifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        locGran:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/Accuracy'
+        locQos:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocationQoS'
+
+    LocationNotification:
+      type: object
+      description: Represents the filters information for AC Information Subscription.
+      properties:
+        subId:
+          type: string
+          description: >
+            Identifier of the location information subscription for which the
+            location information notification is related to.
+        locEvs:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationEvent'
+          minItems: 1
+          description: List of notifications with location information.
+      required:
+        - subId
+        - locEvs
+
+    LocationEvent:
+      type: object
+      description: Location Information event notification.
+      properties:
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        locInf:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        locInfPred:
+          $ref: 'TS29522_AnalyticsExposure.yaml#/components/schemas/UeMobilityExposure'
+#      oneOf:
+#        - required: [locInf]
+#        - required: [locInfPred]
+      required:
+        - ueId
+
+    LocationRequest:
+      type: object
+      description: To request location information request.
+      properties:
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        gran:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/Accuracy'
+        locQos:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LocationQoS'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ueId
+
+    LocationResponse:
+      type: object
+      description: Contains the response  location information request.
+      properties:
+        ueLocation:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - ueLocation
+
+    ConsentRevocNotif:
+      description: >
+        Represents the user consent revocation information conveyed in a user consent
+        revocation notification.
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+          description: >
+            Contains the identifier of the subscription to which the notification is related.
+        consentsRevoked:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsentRevoked'
+          minItems: 1
+      required:
+        - subscriptionId
+        - consentsRevoked
+
+    ConsentRevoked:
+      description: Represents the information related to a revoked user consent.
+      type: object
+      properties:
+        ucPurpose:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/UcPurpose'
+        externalId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+        ueId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+      required:
+        - ucPurpose
+#      oneOf:
+#      - required: [externalId]
+#      - required: [ueId]

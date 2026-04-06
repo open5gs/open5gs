@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_tunnel_info_s OpenAPI_tunnel_info_t;
 #include "access_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_tunnel_info_s OpenAPI_tunnel_info_t;
-typedef struct OpenAPI_tunnel_info_s {
+struct OpenAPI_tunnel_info_s {
     char *ipv4_addr;
     char *ipv6_addr;
     char *gtp_teid;
     OpenAPI_access_type_e an_type;
-} OpenAPI_tunnel_info_t;
+};
 
 OpenAPI_tunnel_info_t *OpenAPI_tunnel_info_create(
     char *ipv4_addr,

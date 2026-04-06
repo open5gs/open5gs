@@ -1,0 +1,1196 @@
+openapi: 3.0.0
+
+info:
+  title: LMS_Reporting
+  version: 1.0.0
+  description: |
+    API for Registration and location reporting to LMS Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 24.283 V19.1.0; Mission Critical Location Management (MCLoc).
+  url: http://www.3gpp.org/ftp/Specs/archive/24_series/24.283/
+
+servers:
+  - url: '{apiRoot}/lms-reporting/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 8.2.44D1 of 3GPP TS 24.483
+
+security:
+  - BearerAuth: []
+
+paths:
+  /registrations:
+    post:
+      description: Creates a new indiviual LMC registration in the LMS.
+      security: 
+        - BearerAuth: []
+      operationId: registerLMC
+      tags:
+        - LMS Registration (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LMCRegistration'
+      responses:
+        '201':
+          description: Successful regitration of LMC.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LMCRegistration'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        locationConfiguration:
+          '{request.body#/locationConfigUri}':
+            post:
+              requestBody: 
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/LocationConfiguration'
+              responses:
+                '204':
+                  description: No Content (The receipt of the Configuration is acknowledged).
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+        locationRequest:
+          '{request.body#/locationRequestUri}':
+            post:
+              requestBody: 
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/LocationRequest'
+              responses:
+                '200':
+                  description: Location report.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/MCUELocation'
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+  /registrations/{registrationId}:
+    put:
+      description: >
+        Updates an existing LMC registration in the LMS
+      tags:
+        - Individual LMS registration (Document)
+      parameters:
+        - name: registrationId
+          in: path
+          description: Identifies an individual LMC registration resource.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to replace the existing subscription.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LMCRegistration'
+      responses:
+        '200':
+          description: >
+            OK. The individual LMC registration resource was updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LMCRegistration'
+        '204':
+          description: No Content (updated successfully).
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      description: >
+        Deletes an existing LMC reigstration identified by the registrationId.
+      operationId: DeleteLMCRegistration
+      tags:
+        - Individual LMC registration (Document)
+      parameters:
+        - name: registrationId
+          in: path
+          description: Identifies an LMC registration resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            An individual LMC registration resource deleted successfully.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /locationreports:
+    post:
+      summary: submit a MC UE location report
+      security: 
+        - BearerAuth: []
+      operationId: submitLocationReport
+      tags:
+        - MC UE Location Report (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MCUELocation'
+      responses:
+        '201':
+          description: Successful submission of location report.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MCUELocation'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /configurations:
+    get:
+      summary: request to download the location configuration
+      security: 
+        - BearerAuth: []
+      operationId: ConfigurationRequest
+      tags:
+        - LMC configurations (Collection)
+      responses:
+        '200':
+          description: Successful submission of location report.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationConfiguration'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+# API specific definitions
+
+  schemas:
+
+    LMCRegistration:
+      description: Resprestents an individual LMS registration resource.
+      type: object
+      properties:
+        expTime:
+          type: string
+          format: date-time
+        mclocClientID:
+          type: string
+          description: Identify the LMC of the MC UE
+        locationConfigUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        locationRequestUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      required:
+        - mclocClientID
+        - expTime
+        - locationConfigUri
+        - locationRequestUri
+
+    LocationConfiguration:
+      description: Represents an location configuraion objects sent from LMS to an LMC
+      type: object
+      properties:
+        emergencyTriggeringCriteria:
+          $ref: '#/components/schemas/TriggeringCriteria'
+        emergencyLocationInformation:
+          $ref: '#/components/schemas/RequestedLocationInfo'
+        triggeringCriteria:
+          $ref: '#/components/schemas/TriggeringCriteria'
+        nonEmergencyLocationInformation:
+          $ref: '#/components/schemas/RequestedLocationInfo'
+        mcServiceId:
+          type: string
+          format: Uri
+          description: Optional attribute that is used to indicate the identity of the 
+            MC user requesting to set the location configuration. 
+        configScope:
+          $ref: '#/components/schemas/ConfigScope'
+        historyReporting:
+          type: boolean
+          description: The attribute indicates that the LMC shall store location
+            information if location reporting can not be done, for example if the MC UE is out of
+            coverage. The stored location information can be reported at a later time.
+
+
+
+
+    TriggeringCriteria:
+      description: Contains the location reporting trigger criteria.
+      type: object
+      properties:
+        adaptiveTrigger:
+          $ref: '#/components/schemas/AdaptiveTrigger'
+        cellChange:
+          $ref: '#/components/schemas/CellChange'
+        geographicalAreaChange:
+          $ref: '#/components/schemas/GeographicalAreaChange'
+        mbsfnAreaChange:
+          $ref: '#/components/schemas/MbsfnAreaChange'
+        mbmsSaChange:
+          $ref: '#/components/schemas/MbmsSaChange'
+        nr5GMbsfsaAreaChange:
+          $ref: '#/components/schemas/NR5GMbsfsaAreaChange'
+        periodicReport:
+          $ref: '#/components/schemas/PeriodicReport'
+        plmnChange:
+          $ref: '#/components/schemas/PlmnChange'
+        ratTypeChange:
+          $ref: '#/components/schemas/RatTypeChange'
+        signallingEvent:
+          $ref: '#/components/schemas/SignallingEvent'
+        trackingAreaChange:
+          $ref: '#/components/schemas/TrackingAreaChange'
+        travelledDistance:
+          $ref: '#/components/schemas/TravelledDistance'
+
+
+    AdaptiveTrigger:
+      description: This attribute specifies parameters controlling adaptive combined time
+        and distance triggers for location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+        minPeriod:
+          type: integer
+          description: An optional attribute specified as a positive or 0 integer number
+            of seconds and defaulting at 0, if not present. This attribute specifies the minimum
+            wait period between consecutive location reports, irrespective of changes in the
+            distance between the current location and the location of the most recent sending of a
+            location report.
+        minDistance:
+         type: integer
+         description: An optional attribute specified as a strictly positive integer number of
+           meters and defaulting at infinity, if not present. This attribute is used in the
+           decision of sending a location report based on travelled distance, and specifies the
+           minimum required distance, between the current location and the location of the most
+           recent sending of a location report.
+        persistencePeriod:
+          type: integer
+          description: An optional attribute specified as a positive or 0 integer number of
+            seconds and defaulting at 0, if not present. This attribute specifies the time between
+            the moment when the LMC detected that the distance between the current location and
+            the location of the most recent sending of a location report exceeded the minDistance
+            attribute and the moment when the LMC will check again that the updated current
+            location is still farther away by at least minDistance from the location of the
+            mentioned sending of the location report. If the check is positive, a location report
+            based on travelled distance will be sent.
+        additionalTime:
+          type: integer
+          description: An optional attribute, specified as a strictly positive integer number of
+            seconds and defaulting at 1. If a location report is not sent based on the travelled
+            distance, the LMC will send a location report after minPeriod + PersistencePeriod
+            + AdditionalTime seconds after the previous location report.
+        rrcInactiveMinPeriod:
+          type: integer
+          description: An optional attribute with the same semantics and behaviour as described
+            above for the corresponding parameter, but applicable when the UE receives MBS traffic
+            in RRC_INACTIVE state.
+        rrcInactiveMinDistance:
+          type: integer
+          description: An optional attribute with the same semantics and behaviour as described
+            above for the corresponding parameter, but applicable when the UE receives MBS traffic
+            in RRC_INACTIVE state.
+        rrcInactivePersistencePeriod:
+          type: integer
+          description: An optional attribute with the same semantics and behaviour as described
+            above for the corresponding parameter, but applicable when the UE receives MBS traffic
+            in RRC_INACTIVE state.
+        rrcInactiveadditionalTime:
+          type: integer
+          description: An optional attribute with the same semantics and behaviour as described
+            above for the corresponding parameter, but applicable when the UE receives MBS traffic
+            in RRC_INACTIVE state.
+
+
+    CellChange:
+      description: The attribute specifies which cell changes trigger location reporting.
+      type: object
+      properties:
+        anyCellChange:
+          $ref: '#/components/schemas/AnyCellChange'
+        enterSpecificCell:
+          $ref: '#/components/schemas/SpecificCellChange'
+        exitSpecificCell:
+          $ref: '#/components/schemas/SpecificCellChange'
+
+    AnyCellChange:
+      description: The presence of this attribute specifies that any cell change
+        is a trigger for location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+
+    SpecificCellChange:
+      description: A list of cell Ids which triggers location reporting when 
+        entering or exiting the cells.
+      type: object
+      properties:
+        eutranCells:
+          $ref: '#/components/schemas/EutranCells'
+        nrCells:
+          $ref: '#/components/schemas/NrCells'
+      anyOf:
+        - required: [eutranCells]
+        - required: [nrCells]
+
+    EutranCells:
+      description: A list of Eutran cell Ids which triggers location reporting when 
+        entering or exiting the cells.
+      type: array
+      items:
+        $ref: '#/components/schemas/EutranCell'
+
+    NrCells:
+      description: A list of NR cell Ids which triggers location reporting when 
+        entering or exiting the cells.
+      type: array
+      items:
+        $ref: '#/components/schemas/NrCell'
+
+    EutranCell:
+      description: An Eutran cell id that triggers a location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+        eutranCell:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+
+    NrCell:
+      description: A NR cell id that triggers location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+        nrCell:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+
+
+
+    GeographicalAreaChange:
+      description: The attribute specifies which geographical area changes that
+        trigger location reporting.
+      type: object
+      properties:
+        enterSpecifcArea:
+          $ref: '#/components/schemas/SpecificArea'
+        exitSpecifcArea:
+          $ref: '#/components/schemas/SpecificArea'
+
+
+
+    SpecificArea:
+      description: A geographical area which triggers location reporting when 
+        entering or exiting the defined geographical area.
+      type: object
+      properties:
+        geoAreas:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+
+
+    MbsfnAreaChange:
+      description: The attribute specifies which MBSFN area changes trigger
+        location reporting.
+      type: object
+      properties:
+        anyMbfsnAreaChange:
+          $ref: '#/components/schemas/AnyMbsfnAreaChange'
+        enterSpecificMbsfnArea:
+          $ref: '#/components/schemas/SpecificMbsfnArea'
+        exitSpecificMbsfnArea:
+          $ref: '#/components/schemas/SpecificMbsfnArea'
+
+    AnyMbsfnAreaChange:
+      description: The precense of this attribute specifies that any MBSFN area change
+        is a trigger for location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+
+    SpecificMbsfnArea:
+      description: A list of MBSFN area Ids that triggers location reporting when
+        entering or exiting the MBSFN area Ids.
+      type: object
+      properties:
+        mbsfnAreas:
+          type: array
+          items:
+            $ref: '#/components/schemas/MbsfnAreaId'
+
+
+
+    MbsfnAreaId:
+      description: An MBFSN area id that triggers location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+        mbsfnArea:
+          type: integer
+          minimum: 0
+          maximum: 255
+          description: The MBSFN area identity.
+
+
+
+    MbmsSaChange:
+      description: The attribute specifies which MBMS SA area changes trigger
+        location reporting.
+      type: object
+      properties:
+        anyMbmsSaChange:
+          $ref: '#/components/schemas/AnyMbmsSaChange'
+        enterSpecificMbmsSa:
+          $ref: '#/components/schemas/SpecificMbmsSaIdentity'
+        exitSpecificMbmsSa:
+          $ref: '#/components/schemas/SpecificMbmsSaIdentity'
+
+    AnyMbmsSaChange:
+      description: The presence of this element specifies that any MBMS SA change
+        is a trigger for location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+
+    SpecificMbmsSaIdentity:
+      description: A list of MBMS SAI that triggers location reporting when
+        entering or exiting the MBMS SAI.
+      type: object
+      properties:
+        mbmsSaIdentities:
+          type: array
+          items:
+            $ref: '#/components/schemas/MbmsSaIdentity'
+
+
+    MbmsSaIdentity:
+      description: An MBMS SA identity that triggers location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+        mbmsSaIdentity:
+          type: integer
+          minimum: 0
+          maximum: 65535
+          description: The MBMS SA identity.
+
+
+
+    NR5GMbsfsaAreaChange:
+      description: The attribute specifies which 5G Mbsfsa area changes trigger  
+        location reporting.
+      type: object
+      properties:
+        anyNR5GMbsfsaAreaChange:
+          $ref: '#/components/schemas/AnyNR5GMbsfsaAreaChange'
+        enterSpecificNR5GMbsfsaArea:
+          $ref: '#/components/schemas/SpecificNR5GMbsfsaArea'
+        exitSpecificNR5GMbsfsaArea:
+          $ref: '#/components/schemas/SpecificNR5GMbsfsaArea'
+
+    AnyNR5GMbsfsaAreaChange:
+      description: The presence of this element specifies that any 5G Mbsfsa area change
+        is a trigger for location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+
+    SpecificNR5GMbsfsaArea:
+      description: A list of 5G Mbsfsa area that triggers a location reporting when
+        entering or exiting the 5G Mbsfsa area.
+      type: object
+      properties:
+        nr5GMbsFsaIdentities:
+          type: array
+          items:
+            $ref: '#/components/schemas/NR5GMbsfsaAreaIdentity'
+
+    NR5GMbsfsaAreaIdentity:
+      description: An 5G Mbsfsa area identity that triggers location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+        mbsfnAreaIdentity:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsFsaId'
+
+
+
+    PeriodicReport:
+      description: The attribute specifies how frequent periodic location reports 
+        shall be sent.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+        periodicReport:
+          type: integer
+          description: Value in seconds specifies the reporting interval.
+
+
+
+    PlmnChange:
+      description: The attribute specifies which PLMN changes trigger 
+        location reporting.
+      type: object
+      properties:
+        anyPlmnChange:
+          $ref: '#/components/schemas/AnyPlmnChange'
+        enterSpecificPlmnArea:
+          $ref: '#/components/schemas/SpecificPlmnChange'
+        exitSpecificPlmnArea:
+          $ref: '#/components/schemas/SpecificPlmnChange'
+
+    AnyPlmnChange:
+      description: The presence of this element specifies that any PLMN change
+        is a trigger for location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+
+    SpecificPlmnChange:
+      description: A list of PLMNs that triggers a location reporting when
+        entering or exiting the PLMN.
+      type: object
+      properties:
+        plmnIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Plmn'
+
+    Plmn:
+      description: A PLMN identity that triggers location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+        plmn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+
+
+
+    RatTypeChange:
+      description: An optional attribute specifying what inter-RAT changes triggers
+        a location report.
+      type: object
+      properties:
+        anyRatTypeChange:
+          $ref: '#/components/schemas/AnyRatTypeChange'
+
+    AnyRatTypeChange:
+      description: This attribute specifies that any inter-RAT change triggers a location report.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+
+
+
+    SignallingEvent:
+      description: An optional attribute specifying what signalling events triggers
+        a location report.
+      type: object
+      properties:
+        functionalAliasActivation:
+          $ref: '#/components/schemas/FunctionalAliasActivation'
+        functionalAliasDeactivation:
+          $ref: '#/components/schemas/FunctionalAliasDeactivation'
+        initialLogOn:
+          $ref: '#/components/schemas/InitialLogOn'
+        groupCallNonEmergency:
+          $ref: '#/components/schemas/GroupCallNonEmergency'
+        privateCallNonEmergency:
+          $ref: '#/components/schemas/PrivateCallNonEmergency'
+        locationConfigurationReceived:
+          $ref: '#/components/schemas/LocationConfigurationReceived'
+
+    FunctionalAliasActivation:
+      description: This attribute specifies that a functional alias activation 
+        triggers a location report.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+
+    FunctionalAliasDeactivation:
+      description: This attribute specifies that a functional Alias deactivation 
+        triggers a location report.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+
+    InitialLogOn:
+      description: This attribute specifies that an initial log on triggers a location report.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+
+    GroupCallNonEmergency:
+      description: This attribute specifies that a non-emergency group call triggers
+        a location report.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+
+    PrivateCallNonEmergency:
+      description: This attribute specifies that a non-emergency private call triggers
+        a location report.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+
+    LocationConfigurationReceived:
+      description: This attribute specifies that a received location configuration triggers
+        a location report.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+
+
+
+    TrackingAreaChange:
+      description: The attribute specifies which tracking area changes trigger 
+        location reporting.
+      type: object
+      properties:
+        anyTrackingAreaChange:
+          $ref: '#/components/schemas/AnyTrackingAreaChange'
+        enterSpecificTrackingArea:
+          $ref: '#/components/schemas/SpecificTrackingAreaChange'
+        exitSpecificTrackingArea:
+          $ref: '#/components/schemas/SpecificTrackingAreaChange'
+
+    AnyTrackingAreaChange:
+      description: The presence of this element specifies that any tracking area change
+        is a trigger for location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+
+    SpecificTrackingAreaChange:
+      description: A list of tracking areas that triggers a location reporting when
+        entering or exiting the tracking area.
+      type: object
+      properties:
+        trackingAreas:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrackingArea'
+
+    TrackingArea:
+      description: A tracking area identity that triggers location reporting.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+        trackingArea:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Tac'
+
+
+
+    TravelledDistance:
+      description: The attribute specifies the required travelled distance for a 
+        trigger for location reporting.
+        shall be sent.
+      type: object
+      properties:
+        triggerId:
+          $ref: '#/components/schemas/TriggerId'
+        travelledDistance:
+          type: integer
+          description: Value in meter specifies the travelled distance 
+            for location reporting.
+
+
+
+    RequestedLocationInfo:
+      description: Contains the details of what the location report shall include.
+      type: object
+      properties:
+        bearingAndSpeed:
+          type: boolean
+          nullable: true
+          description: The presence of this attribute indicates that the 
+            item shall be included in the location report.
+        coordinate:
+          type: boolean
+          nullable: true
+          description: The presence of this attribute indicates that the 
+            item shall be included in the location report.
+        mbmsSaiId:
+          type: boolean
+          nullable: true
+          description: The presence of this attribute indicates that the 
+            item shall be included in the location report.
+        mbsfnArea:
+          type: boolean
+          nullable: true
+          description: The presence of this attribute indicates that the 
+            item shall be included in the location report.
+        minimumIntervalLength:
+          type: integer
+          description: Value in seconds, the minimum time between location reports.
+        neigbouringEcgi:
+          type: boolean
+          nullable: true
+          description: The presence of this attribute indicates that the 
+            item shall be included in the location report.
+        neigbouringNcgi:
+          type: boolean
+          nullable: true
+          description: The presence of this attribute indicates that the 
+            item shall be included in the location report.
+        nr5GmbsfsaArea:
+          type: boolean
+          nullable: true
+          description: The presence of this attribute indicates that the 
+            item shall be included in the location report.
+        servingEcgi:
+          type: boolean
+          nullable: true
+          description: The presence of this attribute indicates that the 
+            item shall be included in the location report.
+        servingNcgi:
+          type: boolean
+          nullable: true
+          description: The presence of this attribute indicates that the 
+            item shall be included in the location report.
+
+
+
+    TriggerId:
+      type: string
+      description: The triggerId shall be set to a unique value and is
+        returned in the location report.
+
+
+
+    LocationRequest:
+      description: Represents an location request object used by LMS to
+        request a location report from an LMC.
+      type: object
+      properties:
+        requestedMcServiceId:
+          type: string
+          format: uri
+          description: The MC service ID of the MC user being requested to send a
+            location report.
+        requestingMcServiceId:
+          type: string
+          format: uri
+          description: The MC service ID of the MC user from which location information
+            is being requested.
+        requestedFunctionalAliasId:
+          type: string
+          format: uri
+          description: The activated functional alias ID of the MC user being requested
+            to send a location report.
+        requestingFunctionalAliasId:
+          type: string
+          format: uri
+          description: The activated functional alias ID of the MC user from which location
+            information is being requested.
+        requestedLocationInfo:
+          $ref: '#/components/schemas/RequestedLocationInfo'
+        requestLocationHistory:
+          $ref: '#/components/schemas/RequestedLocationHistory'
+        requestHistoryStatus:
+          type: boolean
+          description: This attributes indicates that a location history status report is requested.
+
+
+
+    ConfigScope:
+      description: Indicates if the location configuration shall be updated fully and replace
+        existing configration, or if the location configuration is added to the exsting.
+      anyOf:
+        - type: string
+          enum: 
+            - FULL
+            - UPDATE
+        - type: string
+          description: This string provides forward-compatibility with future extensions to the
+            enumeration and is not used to encode content defined in the present version
+            of this API.
+
+
+    RequestedLocationHistory:
+      description: Includes details on requested location history information
+      type: object
+      properties:
+        numberOfReports:
+          type: integer
+          description: Indicates the number of requested stored reports.
+        startTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        endTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        triggerCriteria:
+          $ref: '#/components/schemas/TriggeringCriteria'
+        minimumIntervalLength:
+          type: integer
+          description: Value in seconds, the minimum time between location reports.
+
+
+    MCUELocation:
+      description: Describes the parameters to perform LMS Location reports.
+      type: object
+      properties:
+        functionalAlias:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        interRatType:
+          $ref: '#/components/schemas/InterRatType'
+        locationData:
+          $ref: '#/components/schemas/LocationInfo'
+        locTimestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        mclocClientId:
+          $ref: '#/components/schemas/MclocClientId'
+        mcServiceUELabel:
+          type: string
+          description: Used to identify the reporting MC UE for the end users, this may be used
+            when multiple MC UEs are used by the same MC service user.
+        reportId:
+          type: string
+          description: Attribute is used to return the value in the RequestId attribute 
+            in the an Location Request.
+        reportType:
+          $ref: '#/components/schemas/ReportType'
+        triggerId:
+          type: array
+          items:
+            type: string
+            description: Attribute which can occur multiple times that contain the value 
+              of the TriggerId attribute associated with a trigger that has fired.
+        locationHistoryData:
+          $ref: '#/components/schemas/LocationHistoryData'
+        locationHistoryStatus:
+          $ref: '#/components/schemas/LocationHistoryStatus'
+    MclocClientId:
+      type: string
+      format: uuid
+      description: Used to identify the reporting LMC, this is required when multiple location
+        information responses for different requested LMC are sent.
+
+    LocationInfo:
+      description: object that includes coordinates typically obtained from GPS.
+      type: object
+      properties:
+        currentCoordinate:
+          $ref: '#/components/schemas/CurrentCoordinate'
+        ecgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+        mbmsSaiId:
+          type: integer
+          minimum: 0
+          maximum: 65535
+          description: Attribute containing the MBMS Service Area Id the LMC is located in.
+        mbsfnArea:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsfnArea'
+        ncgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+        neighbouringEcgi:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+        neighbouringNcgi:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+        nr5GMbsfsaArea:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsFsaId'
+
+    CurrentCoordinate:
+      description: This object contains one specific location point, speed and bearing (e.g., 
+        received from a GPS reciever).
+      type: object
+      properties:
+        altitude:
+          anyOf:
+            - $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/Altitude'
+        bearingAndSpeed:
+          anyOf:
+            - $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/HorizontalWithVerticalVelocity'
+        geographicalCoordinate:
+          anyOf:
+            - $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicalCoordinates'
+        horizontalaccuracy:
+          anyOf:
+            - $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/Accuracy'
+        verticalaccuracy:
+          anyOf:
+            - $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/Accuracy'
+
+
+
+    LocationHistoryData:
+      description: This object contains one or multiple time stamped location information reports.
+      type: array
+      items: 
+        $ref: '#/components/schemas/LocationHistoryEvent'
+
+
+    LocationHistoryEvent:
+      description: This object respresents a single location information report that has been 
+        stored in the LMC.
+      type: object
+      properties:
+        locationData:
+          $ref: '#/components/schemas/LocationInfo'
+        locTimestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        triggerId:
+          type: array
+          items:
+            type: string
+            description: Attribute which can occur multiple times that contain the value 
+              of the TriggerId attribute associated with a trigger that has fired.
+
+
+
+    LocationHistoryStatus:
+      description: This object respresents Location history summary status of the location reports
+        that has been stored in the LMC and has not yet been reporeted.
+      type: object
+      properties:
+        storedReports:
+          type: integer
+          description: set to the number of stored reports.
+        startTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        endTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        triggerId:
+          type: array
+          items:
+            type: string
+            description: Attribute which can occur multiple times that contain the value 
+              of the TriggerId attribute associated with a trigger that has fired.
+
+
+#
+# Simple Types:
+#
+
+
+#
+# Enumeration data types
+#
+    InterRatType:
+      description: Attribute containing the inter-RAT change type.
+      anyOf:
+        - type: string
+          enum: 
+            - 5G_MBS_TO_LTE_MBMS
+            - 5G_MBS_TO_LTE_UNICAST
+            - LTE_MBMS_TO_5G_MBS
+            - LTE_MBMS_TO_5G_UNICAST
+        - type: string
+          description: This string provides forward-compatibility with future extensions to the
+            enumeration and is not used to encode content defined in the present version
+            of this API.
+
+    ReportType:
+      description: Used to inform whether the LMC is sending the report in an emergency
+        situation or not.
+      anyOf:
+        - type: string
+          enum: 
+            - EMERGENCY
+            - NONEMERGENCY
+        - type: string
+          description: This string provides forward-compatibility with future extensions to the
+            enumeration and is not used to encode content defined in the present version
+            of this API.

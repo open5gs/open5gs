@@ -1,0 +1,370 @@
+openapi: 3.0.0
+
+info:
+  title: Aimles_SplitOpPipeline
+  version: 1.0.2
+  description: |
+    API for split AI/ML operation pipeline service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.560 V19.1.0; Artificial Intelligence / Machine Learning (AIML) Services – Service
+    Enabler Architecture Layer for Verticals (SEAL); Protocol Specification; Stage 3.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/24_series/24.560/'
+
+servers:
+  - url: '{apiRoot}/aimles-sopl/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /request:
+    post:
+      summary: >
+        Used by AIMLE client to create an instance of a split operation pipeline at the AIMLE
+        server.
+      operationId: SplitOpPipeCreate
+      tags:
+        - Split operation pipeline creation API (Collection)
+      requestBody:
+        description: Contains information of the AI/ML split operation pipelie creation.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SplitOpPipelineCreateReq'
+      responses:
+        '201':
+          description: Created. Split operation pipeline creation resource is created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SplitOpPipelineCreateResp'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /request/{requestId}:
+    parameters:
+      - name: requestId
+        in: path
+        description: Identifier of the individual AI/ML split operation pipeline.
+        required: true
+        schema:
+          type: string
+
+    put:
+      description: >
+        Update an individual split operation pipeline resource.
+      operationId: SplitOpPipeUpdate
+      tags:
+        - Individual split operation pipeline (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SplitOpPipelineCreateReq'
+      responses:
+        '200':
+          description: >
+            OK. Individual AIMLE split operation pipeline resource is successfully updated,
+            and representation of updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SplitOpPipelineCreateResp'
+        '204':
+          description: >
+            No Content. Individual AIMLE split operation pipeline resource is successfully updated,
+            and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      description: >
+        Modify the "Individual AIMLE split operation pipeline" resource.
+      operationId: SplitOpPipeModify
+      tags:
+        - Individual AIMLE split operation pipeline (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/SplitOpPipelinePatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual AIMLE split operation pipeline resource is successfully modified,
+            and representation of the modified resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SplitOpPipelineCreateResp'
+        '204':
+          description: >
+            No Content. The Individual AIMLE split operation pipeline resource is successfully
+            modified, and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      description: Deletes an individual AIMLE split operation pipeline.
+      operationId: SplitOpPipeDelete
+      tags:
+        - Individual AIMLE split operation pipeline (Document)
+      responses:
+        '204':
+          description: >
+            The individual AIMLE split operation pipeline matching the requestId is deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /discovery:
+    post:
+      summary: >
+        Used by consumer to request the AIMLE server for split AI/ML operation pipeline discovery
+      operationId: SplitOpPipeDiscovery
+      tags:
+        - AIMLE split operation pipeline discovery
+      requestBody:
+        description: Contains information of the AIMLE split operation pipeline discovery.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SplitOpPipelineDiscReq'
+      responses:
+        '200':
+          description: Contains successful outcome of AIMLE split operation pipeline discovery.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SplitOpPipelineDiscResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    SplitOpPipelineCreateReq:
+      description: Represents AIMLE split operation pipeline create and its update.
+      type: object
+      required:
+      - requestorId
+      - notifUri
+      - splitOpRequirements
+      properties:
+        requestorId:
+          description: Identifies the service consumer.
+          type: string
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        splitOpRequirements:
+          $ref: '#/components/schemas/SplitOpRequirements'
+
+    SplitOpPipelineCreateResp:
+      description: Represents response to AIMLE split operation pipeline create and its update.
+      type: object
+      properties:
+        splitOpProfile:
+          $ref: 'TS29482_AIMLES_SplitOpEvent.yaml#/components/schemas/SplitOpProfile'
+
+    SplitOpPipelinePatch:
+      description: Represents AIMLE split operation pipeline update.
+      type: object
+      required:
+      - notifUri
+      - splitOpPipelineId
+      - splitOpPipelineInfo
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        splitOpPipelineId:
+          description: Identifies split operation pipeline.
+          type: string
+        splitOpPipelineInfo:
+          $ref: 'TS29482_AIMLES_SplitOpEvent.yaml#/components/schemas/SplitOpPipelineInfo'
+
+    SplitOpPipelineDiscReq:
+      description: Represents the AIMLE Split Operation Pipeline Discovery request.
+      type: object
+      required:
+      - notifUri
+      - discFilters
+      properties:
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        discFilters:
+          $ref: 'TS29482_AIMLES_SplitOpEvent.yaml#/components/schemas/DiscFilters'
+
+    SplitOpPipelineDiscResp:
+      description: Represents the AIMLE Split Operation Pipeline Discovery response.
+      type: object
+      properties:
+        discoveredNodes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        splitOpProfiles:
+          type: array
+          items:
+            $ref: 'TS29482_AIMLES_SplitOpEvent.yaml#/components/schemas/SplitOpProfile'
+          minItems: 1
+      anyOf:
+        - required: [discoveredNodes]
+        - required: [splitOpProfiles]
+
+    SplitOpRequirements:
+      description: Represents the AIMLE Split Operation Pipeline requirements.
+      type: object
+      required:
+      - stageInfo
+      properties:
+        stageInfo:
+          type: array
+          items:
+            $ref: 'TS29482_AIMLES_SplitOpEvent.yaml#/components/schemas/StageInfo'
+          minItems: 1
+        usageInfo:
+          $ref: 'TS29482_AIMLES_SplitOpNodeRegistration.yaml#/components/schemas/UsageInformation'
+        notificationTarget:
+          $ref: 'TS29558_Eees_EASRegistration.yaml#/components/schemas/EndPoint'

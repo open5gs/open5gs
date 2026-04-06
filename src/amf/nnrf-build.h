@@ -28,7 +28,7 @@ extern "C" {
 
 ogs_sbi_request_t *amf_nnrf_disc_build_discover(
         char *nrf_id,
-        ogs_sbi_service_type_e service_type,
+        OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option);
 
 #ifdef __cplusplus

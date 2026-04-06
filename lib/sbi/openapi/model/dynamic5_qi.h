@@ -12,14 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_dynamic5_qi_s OpenAPI_dynamic5_qi_t;
 #include "qos_resource_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dynamic5_qi_s OpenAPI_dynamic5_qi_t;
-typedef struct OpenAPI_dynamic5_qi_s {
+struct OpenAPI_dynamic5_qi_s {
     OpenAPI_qos_resource_type_e resource_type;
     int priority_level;
     int packet_delay_budget;
@@ -36,7 +36,7 @@ typedef struct OpenAPI_dynamic5_qi_s {
     int cn_packet_delay_budget_dl;
     bool is_cn_packet_delay_budget_ul;
     int cn_packet_delay_budget_ul;
-} OpenAPI_dynamic5_qi_t;
+};
 
 OpenAPI_dynamic5_qi_t *OpenAPI_dynamic5_qi_create(
     OpenAPI_qos_resource_type_e resource_type,

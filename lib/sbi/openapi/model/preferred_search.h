@@ -12,13 +12,13 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_preferred_search_s OpenAPI_preferred_search_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_preferred_search_s OpenAPI_preferred_search_t;
-typedef struct OpenAPI_preferred_search_s {
+struct OpenAPI_preferred_search_s {
     bool is_preferred_tai_match_ind;
     int preferred_tai_match_ind;
     bool is_preferred_full_plmn_match_ind;
@@ -39,7 +39,15 @@ typedef struct OpenAPI_preferred_search_s {
     int preferred_pgw_match_ind;
     bool is_preferred_analytics_delays_ind;
     int preferred_analytics_delays_ind;
-} OpenAPI_preferred_search_t;
+    bool is_preferred_features_match_ind;
+    int preferred_features_match_ind;
+    bool is_no_preferred_features_ind;
+    int no_preferred_features_ind;
+    bool is_preferred_op_config_cap_ind;
+    int preferred_op_config_cap_ind;
+    bool is_preferred_upf_packet_inspection_match_ind;
+    int preferred_upf_packet_inspection_match_ind;
+};
 
 OpenAPI_preferred_search_t *OpenAPI_preferred_search_create(
     bool is_preferred_tai_match_ind,
@@ -61,7 +69,15 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_create(
     bool is_preferred_pgw_match_ind,
     int preferred_pgw_match_ind,
     bool is_preferred_analytics_delays_ind,
-    int preferred_analytics_delays_ind
+    int preferred_analytics_delays_ind,
+    bool is_preferred_features_match_ind,
+    int preferred_features_match_ind,
+    bool is_no_preferred_features_ind,
+    int no_preferred_features_ind,
+    bool is_preferred_op_config_cap_ind,
+    int preferred_op_config_cap_ind,
+    bool is_preferred_upf_packet_inspection_match_ind,
+    int preferred_upf_packet_inspection_match_ind
 );
 void OpenAPI_preferred_search_free(OpenAPI_preferred_search_t *preferred_search);
 OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *preferred_searchJSON);

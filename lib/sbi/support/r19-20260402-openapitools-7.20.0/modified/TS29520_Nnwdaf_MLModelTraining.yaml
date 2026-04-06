@@ -1,0 +1,687 @@
+openapi: 3.0.0
+
+info:
+  title: Nnwdaf_MLModelTraining
+  version: 1.1.0
+  description: |
+    Nnwdaf_MLModelTraining API Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.520 V19.5.0; 5G System; Network Data Analytics Services.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.520/
+
+servers:
+  - url: '{apiRoot}/nnwdaf-mlmodeltraining/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nnwdaf-mlmodeltraining
+
+paths:
+  /subscriptions:
+    post:
+      summary: Create a new Individual NWDAF ML Model Training Subscription resource.
+      operationId: CreateNWDAFMLModelTrainingSubcription
+      tags:
+        - Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NwdafMLModelTrainSubsc'
+      responses:
+        '201':
+          description: Create a new Individual NWDAF ML Model Training Subscription resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NwdafMLModelTrainSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nnwdaf-mlmodeltraining/v1/subscriptions/{subscriptionId}.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        myNotification:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NwdafMLModelTrainNotif'
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /subscriptions/{subscriptionId}:
+    put:
+      summary: update an existing Individual NWDAF ML Model Training Subscription
+      operationId: UpdateNWDAFMLModelTrainingSubcription
+      tags:
+        - Individual NWDAF ML Model Training Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NwdafMLModelTrainSubsc'
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: String identifying a subscription to the Nnwdaf_MLModelTraining Service.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >
+            The Individual NWDAF ML Model Training Subscription resource was modified successfully
+            and a representation of that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NwdafMLModelTrainSubsc'
+        '204':
+          description: >
+            The Individual NWDAF ML Model Training Subscription resource was modified successfully.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: partial update an existing Individual NWDAF ML Model Training Subscription
+      operationId: PartialUpdateNWDAFMLModelTrainingSubcription
+      tags:
+        - Individual NWDAF ML Model Training Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/NwdafMLModelTrainSubscPatch'
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: String identifying a subscription to the Nnwdaf_MLModelTraining Service.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >
+            The Individual NWDAF ML Model Training Subscription resource was partial modified
+            successfully and a representation of that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NwdafMLModelTrainSubsc'
+        '204':
+          description: >
+            The Individual NWDAF ML Model Training Subscription resource was partial modified
+            successfully.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete an existing Individual NWDAF ML Model Training Subscription.
+      operationId: DeleteNWDAFMLModelTrainingSubcription
+      tags:
+        - Individual NWDAF ML Model Training Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: String identifying a subscription to the Nnwdaf_MLModelTraining Service.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: >
+            No Content. The Individual NWDAF ML Model Training Subscription matching the
+            subscriptionId was deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /subscriptions/{subscriptionId}/unsubscribe-info:
+    post:
+      summary: Unsubscribe from ML Model Training while providing additional information.
+      operationId: UnsubscribeInfo
+      tags:
+        - Individual NWDAF ML Model Training Subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainingUnsubscribeInfo'
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifier of an ML Model Training subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No content
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nnwdaf-mlmodeltraining: Access to the Nnwdaf_MLModelTraining API
+
+  schemas:
+    NwdafMLModelTrainSubsc:
+      description: Represents a ML Model Training subscription.
+      type: object
+      properties:
+        mLEventSubscs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_MLModelProvision.yaml#/components/schemas/MLEventSubscription'
+          minItems: 1
+          description: Subscribed events
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        suppFeats:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        eventReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        failEventReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/FailureEventInfoForMLModelTrain'
+          minItems: 1
+          description: >
+            Supplied by the NWDAF containing MTLF when available, shall contain the event(s) that
+            the subscription is not successful including the failure reason(s).
+        mlCorreId:
+          type: string
+          description: String identifying the subscription is for a Federated Learning procedure.
+        mLModelInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_MLModelProvision.yaml#/components/schemas/MLEventNotif'
+          minItems: 1
+          description: Represents the ML Model information.
+        immReport:
+          $ref: '#/components/schemas/NwdafMLModelTrainNotif'
+        mLModelTrainInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/MLModelTrainInfo'
+          minItems: 1
+          description: Represents the ML Model training information.
+        mLPreFlag:
+          type: boolean
+          description: >
+            Indicates whether the subscription is for preparation of ML Model training. Set to
+            "true" if it is for ML training preparation, otherwise set to "false".
+        mLAccChkFlg:
+          type: boolean
+          description: >
+            Indicates whether it is requested to use the local training data as the testing dataset
+            to calculate the Model Accuracy of the global ML model provided by the consumer. Set to
+            "true" if this is requested, otherwise set to "false" or omitted.
+        mLTrainRepInfo:
+          $ref: '#/components/schemas/MLTrainReportInfo'
+        notifCorreId:
+          type: string
+          description: >
+            String identifying the Notification Correlation ID in the corresponding notification.
+        roundInd:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        tgtRepUe:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/TargetUeInformation'
+        skipFlInd:
+          type: boolean
+          description: Indicates whether to skip the current FL round or not.
+      required:
+        - mLEventSubscs
+        - notifUri
+        - notifCorreId
+
+    NwdafMLModelTrainSubscPatch:
+      description: >
+        Represents parameters to request the modification of a ML Model Training subscription.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        eventReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        mLModelInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_MLModelProvision.yaml#/components/schemas/MLEventNotif'
+          minItems: 1
+          description: Represents the ML Model information.
+        mLModelTrainInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/MLModelTrainInfo'
+          minItems: 1
+          description: Represents the ML Model training information.
+        mLPreFlag:
+          type: boolean
+          description: >
+            Indicates whether the subscription is for preparation of ML Model training. Set to
+            "true" if it is for ML training preparation, otherwise set to "false".
+        mLAccChkFlg:
+          type: boolean
+          description: >
+            Indicates whether it is requested to use the local training data as the testing dataset
+            to calculate the Model Accuracy of the global ML model(s) provided by the consumer.
+        mLTrainRepInfo:
+          $ref: '#/components/schemas/MLTrainReportInfo'
+        roundInd:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        tgtRepUe:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/TargetUeInformation'
+        skipFlInd:
+          type: boolean
+          description: Indicates whether to skip the current FL round or not.
+
+    NwdafMLModelTrainNotif:
+      description: Represents notifications on events that occurred.
+      type: object
+      properties:
+        delayEventNotif:
+          $ref: '#/components/schemas/DelayEventNotif'
+        mlCorreId:
+          type: string
+          description: String identifying the subscription is for a Federated Learning procedure.
+        mLModelInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_MLModelProvision.yaml#/components/schemas/MLEventNotif'
+          minItems: 1
+          description: Represents the ML Model information.
+        notifCorreId:
+          type: string
+          description: >
+            String identifying the Notification Correlation ID in the corresponding notification.
+        roundInd:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        statusReport:
+          $ref: '#/components/schemas/StatusReportInfo'
+        termTrainReq:
+          $ref: '#/components/schemas/TermTrainCause'
+      required:
+        - notifCorreId
+#      oneOf:
+#        - required: [delayEventNotif]
+#        - required: [mLModelInfos]
+#        - required: [termTrainReq]
+#        - required: [mLModelInfos, termTrainReq]
+#
+    MLModelTrainInfo:
+      description: >
+        Represents the ML Model training information, include requirement on data availability and
+        time availability, training filter information.
+      type: object
+      properties:
+        dataAvReq:
+          $ref: '#/components/schemas/DataAvReq'
+        timeAvReq:
+          type: string
+          description: >
+            String representing the requirement on available time for the ML model training.
+
+    MLTrainReportInfo:
+      description: Represents the ML Model training reporting information.
+      type: object
+      properties:
+        maxResTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+
+    FailureEventInfoForMLModelTrain:
+      description: Represents the failure event information for a ML Model Training subscription.
+      type: object
+      properties:
+        mLTrainEvent:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NwdafEvent'
+        failureCodeTrain:
+          $ref: '#/components/schemas/FailureCodeTrain'
+      required:
+        - mLTrainEvent
+        - failureCodeTrain
+
+    DataAvReq:
+      description: Represents the requirement on available data for the ML model training.
+      type: object
+      properties:
+        dataStatProps:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/DatasetStatisticalProperty'
+          minItems: 1
+        inpEvents:
+          type: array
+          items:
+            $ref: 'TS29574_Ndccf_DataManagement.yaml#/components/schemas/DccfEvent'
+          minItems: 1
+        minNumSamples:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        timeWindows:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+          minItems: 1
+      required:
+        - inpEvents
+
+    DelayEventNotif:
+      description: >
+        Indicating that the NWDAF containing MTLF is not able to complete the training of ML model
+        within the maximum response time, the cause code, and the expected time complete the
+        training.
+      type: object
+      properties:
+        delayEventInd:
+          type: boolean
+          description: >
+            Indicates that the NWDAF containing MTLF is not able to complete the training of ML
+            model within the maximum response time. Set to "true" if not able to complete the ML
+            model training on time, otherwise set to "false".
+        delayCause:
+          $ref: '#/components/schemas/DelayCause'
+        expCompTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+      required:
+        - delayEventInd
+
+    StatusReportInfo:
+      description: >
+        Indicating status information generated by the NWDAF containing MTLF during ML model
+        training.
+      type: object
+      properties:
+        mlModelAcc:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        trainInDataInfo:
+          $ref: '#/components/schemas/TrainDataInfo'
+
+    TrainDataInfo:
+      description: Represents the training input data information.
+      type: object
+      properties:
+        areaInfo:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/NetworkAreaInfo'
+        maxValues:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: >
+            Represents the maximum value of one dimension of data. The format of its value is out of
+            3GPP scope.
+        minValues:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: >
+            Represents the minimum value of one dimension of data. The format of its value is out of
+            3GPP scope.
+        samplRatio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+
+    TrainingUnsubscribeInfo:
+      description: Contains information provided when unsubscribing from ML Model Training.
+      type: object
+      properties:
+        termCause:
+          $ref: '#/components/schemas/FLServerTermCause'
+        mLModelInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_MLModelProvision.yaml#/components/schemas/MLEventNotif'
+          minItems: 1
+          description: Contains ML Model information.
+      required:
+        - termCause
+
+#
+# ENUMERATIONS DATA TYPES
+#
+    FailureCodeTrain:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - UNAVAILABLE_ML_MODEL_TRAIN
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration but
+#          is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the failure reason.  
+#        Possible values are:
+#          - UNAVAILABLE_ML_MODEL_TRAIN: The ML model training is unavailable.
+#
+    TermTrainCause:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - NWDAF_OVERLOAD
+        - NOT_AVAILABLE_ML_TRAIN
+        - OTHERS
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration but
+#          is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the reasons that ML Model Training to be terminated.  
+#        Possible values are:
+#          - NWDAF_OVERLOAD: The NWDAF is overloaded for the ML model training.
+#          - NOT_AVAILABLE_ML_TRAIN: The ML model training process is not available.
+#          - OTHERS: Other cause.
+#
+    DelayCause:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - ML_MODEL_TRAIN_FAILURE
+        - NEED_MORE_TIME
+        - OTHERS
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration but
+#          is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the reasons for ML Model training delay.  
+#        Possible values are:
+#          - ML_MODEL_TRAIN_FAILURE: The ML model training is failure.
+#          - NEED_MORE_TIME: The ML model training needs more time.
+#          - OTHERS: Other cause.
+#
+    FLServerTermCause:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - FL_CLI_UNSELECTED
+        - FL_SUSPENDED
+        - FL_FINISHED
+        - OTHER
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration but
+#          is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the reasons for ML Model training termination from the FL client.  
+#        Possible values are:
+#          - FL_CLI_UNSELECTED: Indicates that the FL Client has been unselected by the FL Server
+#            for the FL process.
+#          - FL_SUSPENDED: Indicates that the FL process has been suspended.
+#          - FL_FINISHED: Indicates that the FL process has finished.
+#          - OTHER: Indicates that the ML Model Training subscription is terminated for other
+#            reasons.

@@ -1,0 +1,120 @@
+openapi: 3.0.0
+
+info:
+  version: '1.4.0'
+  title: '5G-EIR Equipment Identity Check'
+  description: |
+    5G-EIR Equipment Identity Check Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.511 V19.1.0; 5G System; Equipment Identity Register Services; Stage 3
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.511/'
+
+servers:
+  - url: '{apiRoot}/n5g-eir-eic/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - n5g-eir-eic
+
+paths:
+  /equipment-status:
+    get:
+      summary: Retrieves the status of the UE
+      operationId: GetEquipmentStatus
+      tags:
+        - Equipment Status (Document)
+      parameters:
+        - name: pei
+          in: query
+          description: PEI of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        - name: supi
+          in: query
+          description: SUPI of the UE
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        - name: gpsi
+          in: query
+          description: GPSI of the UE
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        - name: supported-features
+          in: query
+          description: supported features of the NF consumer
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EirResponseData'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          description: PEI Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            n5g-eir-eic: Access to the N5g-eir_EquipmentIdentityCheck API
+  schemas:
+    EirResponseData:
+      description: Represents equipment status data provided in an EIR response message.
+      type: object
+      required:
+        - status
+      properties:
+        status:
+            $ref: '#/components/schemas/EquipmentStatus'
+    EquipmentStatus:
+      description: Represents equipment status of the PEI. This data type is a string.
+      type: string
+      enum:
+        - WHITELISTED  # PERMITTED
+        - BLACKLISTED  # PROHIBITED
+        - GREYLISTED   # TRACKING

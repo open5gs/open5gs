@@ -1,0 +1,944 @@
+openapi: 3.0.0
+
+info:
+  title: NSCE Server Network Slice Performance and Analytics Monitoring Service
+  version: 1.0.0
+  description: |
+    NSCE Server Network Slice Performance and Analytics Monitoring Service.  
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.435 V18.1.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Network Slice Capability Enablement (NSCE) Server Service(s); Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.435/
+
+servers:
+  - url: '{apiRoot}/nsce-pam/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /jobs:
+    post:
+      summary: Request the creation of a Monitoring Job.
+      operationId: CreateMonJob
+      tags:
+        - Monitoring Jobs (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonitoringJob'
+      responses:
+        '201':
+          description: >
+            Created. The Monitoring Job is successfully created and a representation of the
+            created Individual Monitoring Job resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringJob'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Monitoring Job resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /jobs/{jobId}:
+    parameters:
+      - name: jobId
+        in: path
+        description: >
+          Represents the identifier of the Individual Monitoring Job resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Monitoring Job resource.
+      operationId: GetIndMonJob
+      tags:
+        - Individual Monitoring Job (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Monitoring Job resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringJob'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Monitoring Job resource.
+      operationId: UpdateIndMonJob
+      tags:
+        - Individual Monitoring Job (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonitoringJob'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Monitoring Job resource is successfully updated and a representation
+            of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringJob'
+        '204':
+          description: >
+            No Content. The Individual Monitoring Job resource is successfully updated and no
+            content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Monitoring Job resource.
+      operationId: ModifyIndMonJob
+      tags:
+        - Individual Monitoring Job (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/MonitoringJobPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Monitoring Job resource is successfully modified and a representation
+            of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringJob'
+        '204':
+          description: >
+            No Content. The Individual Monitoring Job resource is successfully modified and no
+            content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Monitoring Job resource.
+      operationId: DeleteIndMonJob
+      tags:
+        - Individual Monitoring Job (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Monitoring Job resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions:
+    post:
+      summary: Request the creation of a Monitoring Subscription.
+      operationId: CreateMonSubsc
+      tags:
+        - Monitoring Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonitoringSubsc'
+      responses:
+        '201':
+          description: >
+            Created. The Monitoring Subscription is successfully created and a representation of the
+            created Individual Monitoring Subscription resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Monitoring Subscription resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        MonitoringNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/MonitoringNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Monitoring Notification is successfully received and
+                    acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscId}:
+    parameters:
+      - name: subscId
+        in: path
+        description: >
+          Represents the identifier of the Individual Monitoring Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Monitoring Subscription resource.
+      operationId: GetIndMonSubsc
+      tags:
+        - Individual Monitoring Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Monitoring Subscription resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Monitoring Subscription resource.
+      operationId: UpdateIndMonSubsc
+      tags:
+        - Individual Monitoring Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonitoringSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Monitoring Subscription resource is successfully updated and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringSubsc'
+        '204':
+          description: >
+            No Content. The Individual Monitoring Subscription resource is successfully updated
+            and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Monitoring Subscription resource.
+      operationId: ModifyIndMonSubsc
+      tags:
+        - Individual Monitoring Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/MonitoringSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Monitoring Subscription resource is successfully modified and a
+            representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringSubsc'
+        '204':
+          description: >
+            No Content. The Individual Monitoring Subscription resource is successfully modified
+            and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Monitoring Subscription resource.
+      operationId: DeleteIndMonSubsc
+      tags:
+        - Individual Monitoring Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Monitoring Subscription resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /request:
+    post:
+      summary: Enables to request a multiple slices related performance and analytics consolidated reporting.
+      operationId: MultiSlicesMonRepReq
+      tags:
+        - Multiple Slices related Performance and Analytics Consolidated Reporting Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonitoringReq'
+      responses:
+        '200':
+          description: >
+            OK. The requested multiple slices related performance and analytics consolidated report
+            shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    MonitoringJob:
+      description: >
+        Represents a Monitoring Job.
+      type: object
+      properties:
+        monMetrics:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MonitoringMetric'
+          minProperties: 1
+          description: >
+            Contains the requested performance and analytics monitoring metric(s).
+            The key of the map shall be any unique string encoded value.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - monMetrics
+
+    MonitoringJobPatch:
+      description: >
+        Represents the requested modifications to a Monitoring Job.
+      type: object
+      properties:
+        monMetrics:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MonitoringMetric'
+          minProperties: 1
+          description: >
+            Contains the updated requested performance and analytics monitoring metric(s).
+            The key of the map shall be any unique string encoded value and shall be set to the same
+            value as the one provided during the creation of the corresponding Monitoring Job.
+
+    MonitoringMetric:
+      description: >
+        Represents the parameters of a network slice related performance and analytics monitoring
+        metric.
+      type: object
+      properties:
+        valServId:
+          type: string
+        netSliceIds:
+          type: array
+          items:
+            $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+          minItems: 1
+        perfAnalyList:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonPerfAnalytics'
+          minItems: 1
+        startTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        endTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - perfAnalyList
+        - startTime
+      anyOf:
+        - required: [valServId]
+        - required: [netSliceIds]
+
+    MonPerfAnalytics:
+      description: >
+        Represents a monitored performance or analytics information.
+        metric.
+      type: object
+      properties:
+        monNetSliceIds:
+          type: array
+          items:
+            $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+          minItems: 1
+        metricName:
+          $ref: '#/components/schemas/MonPerfMetric'
+        metricCustName:
+          type: string
+      required:
+        - metricName
+
+    MonitoringSubsc:
+      description: >
+        Represents a Monitoring Subscription.
+      type: object
+      properties:
+        reqReportingList:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ReportingInfo'
+          minProperties: 1
+          description: >
+            Contains the requested performance and analytics reporting information.
+            The key of the map shall be any unique string encoded value.
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - reqReportingList
+        - notifUri
+
+    MonitoringSubscPatch:
+      description: >
+        Represents the requested modifications to a Monitoring Subscription.
+      type: object
+      properties:
+        monMetrics:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ReportingInfo'
+          minProperties: 1
+          description: >
+            Contains the updated requested performance and analytics reporting information.
+            The key of the map shall be any unique string encoded value and shall be set to the same
+            value as the one provided during the creation of the corresponding Monitoring
+            Subscription.
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    ReportingInfo:
+      description: >
+        Represents the network slice related performance and analytics monitoring reporting
+        information.
+      type: object
+      properties:
+        valServId:
+          type: string
+        netSliceIds:
+          type: array
+          items:
+            $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+          minItems: 1
+        perfAnalyList:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonPerfAnalytics'
+          minItems: 1
+        startTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        endTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        repPeriodicity:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+      required:
+        - perfAnalyList
+        - startTime
+        - endTime
+      anyOf:
+        - required: [valServId]
+        - required: [netSliceIds]
+
+    MonitoringNotif:
+      description: >
+        Represents a Monitoring Notification.
+      type: object
+      properties:
+        subscId:
+          type: string
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportingData'
+          minItems: 1
+      required:
+        - subscId
+        - reports
+
+    ReportingData:
+      description: >
+        Represents a network slice related performance and analytics monitoring report.
+      type: object
+      properties:
+        valServId:
+          type: string
+        netSliceIds:
+          type: array
+          items:
+            $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+          minItems: 1
+        perfResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonPerfAnalyRes'
+          minItems: 1
+      required:
+        - perfResults
+      anyOf:
+        - required: [valServId]
+        - required: [netSliceIds]
+
+    MonPerfAnalyRes:
+      description: >
+        Represents a monitored performance or analytics result.
+        metric.
+      type: object
+      properties:
+        monNetSliceIds:
+          type: array
+          items:
+            $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+          minItems: 1
+        metricName:
+          $ref: '#/components/schemas/MonPerfMetric'
+        metricCustName:
+          type: string
+        metricValue:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+      required:
+        - metricName
+        - metricValue
+
+    MonitoringReq:
+      description: >
+        Represents a multiple slices related performance and analytics consolidated reporting
+        request.
+      type: object
+      properties:
+        monMetrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonReqMetrics'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - monMetrics
+
+    MonitoringResp:
+      description: >
+        Represents a multiple slices related performance and analytics consolidated reporting
+        response.
+      type: object
+      properties:
+        perfResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonRespRepData'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - perfResults
+
+    MonReqMetrics:
+      description: >
+        Represents the parameters of a network slice related performance and analytics monitoring
+        metric used within a multiple slices related performance and analytics consolidated
+        reporting request.
+      type: object
+      properties:
+        valServId:
+          type: string
+        netSliceIds:
+          type: array
+          items:
+            $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+          minItems: 1
+        perfAnalyList:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonPerfAnalytics'
+          minItems: 1
+        startTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        endTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - perfAnalyList
+        - startTime
+        - endTime
+      anyOf:
+        - required: [valServId]
+        - required: [netSliceIds]
+
+    MonRespRepData:
+      description: >
+        Represents a network slice related performance and analytics monitoring report instance
+        provided as part of a multiple slices related performance and analytics consolidated
+        reporting response.
+      type: object
+      properties:
+        valServId:
+          type: string
+        netSliceIds:
+          type: array
+          items:
+            $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+          minItems: 1
+        perfResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonPerfAnalyRes'
+          minItems: 1
+        startTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        endTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - perfResults
+        - startTime
+        - endTime
+      anyOf:
+        - required: [valServId]
+        - required: [netSliceIds]
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    MonPerfMetric:
+      anyOf:
+      - type: string
+        enum:
+           - RTT
+           - E2E_LATENCY
+           - PACKET_LOSS
+           - RETRANSMISSIONS
+           - THROUGHPUT
+           - NUM_OF_REG_UES
+           - NUM_OF_EST_PDU_SESS
+           - RESOURCE_USAGE
+           - LOAD_LEVEL
+           - OTHER
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents a performance or analytics metric.  
+        Possible values are:
+        - RTT: Indicates that the performance or analytics metric is the round-trip time within the
+          network slice.
+        - E2E_LATENCY: Indicates that the performance or analytics metric is the E2E Latency within
+          the network slice.
+        - PACKET_LOSS: Indicates that the performance or analytics metric is the packet loss within
+          the network slice.
+        - RETRANSMISSIONS: Indicates that the performance or analytics metric is the retransmissions
+          within the network slice.
+        - THROUGHPUT: Indicates that the performance or analytics metric is the throughput within
+          the network slice.
+        - NUM_OF_REG_UES: Indicates that the performance or analytics metric is the number of
+          registered UEs within the network slice.
+        - NUM_OF_EST_PDU_SESS: Indicates that the performance or analytics metric is the number of
+          established PDU Sessions within the network slice.
+        - RESOURCE_USAGE: Indicates that the performance or analytics metric is the resources usage
+          within the network slice.
+        - LOAD_LEVEL: Indicates that the performance or analytics metric is the load level within
+          the network slice.
+        - OTHER: Indicates that the performance or analytics metric is a custom metric.

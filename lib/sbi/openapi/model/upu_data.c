@@ -7,7 +7,14 @@
 OpenAPI_upu_data_t *OpenAPI_upu_data_create(
     char *sec_packet,
     OpenAPI_list_t *default_conf_nssai,
-    char *routing_id
+    char *routing_id,
+    bool is_drei,
+    int drei,
+    bool is_drei_eps,
+    int drei_eps,
+    bool is_aol,
+    int aol,
+    OpenAPI_list_t *disaster_cond_plmn_ids
 )
 {
     OpenAPI_upu_data_t *upu_data_local_var = ogs_malloc(sizeof(OpenAPI_upu_data_t));
@@ -16,6 +23,13 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_create(
     upu_data_local_var->sec_packet = sec_packet;
     upu_data_local_var->default_conf_nssai = default_conf_nssai;
     upu_data_local_var->routing_id = routing_id;
+    upu_data_local_var->is_drei = is_drei;
+    upu_data_local_var->drei = drei;
+    upu_data_local_var->is_drei_eps = is_drei_eps;
+    upu_data_local_var->drei_eps = drei_eps;
+    upu_data_local_var->is_aol = is_aol;
+    upu_data_local_var->aol = aol;
+    upu_data_local_var->disaster_cond_plmn_ids = disaster_cond_plmn_ids;
 
     return upu_data_local_var;
 }
@@ -41,6 +55,13 @@ void OpenAPI_upu_data_free(OpenAPI_upu_data_t *upu_data)
     if (upu_data->routing_id) {
         ogs_free(upu_data->routing_id);
         upu_data->routing_id = NULL;
+    }
+    if (upu_data->disaster_cond_plmn_ids) {
+        OpenAPI_list_for_each(upu_data->disaster_cond_plmn_ids, node) {
+            OpenAPI_plmn_id_free(node->data);
+        }
+        OpenAPI_list_free(upu_data->disaster_cond_plmn_ids);
+        upu_data->disaster_cond_plmn_ids = NULL;
     }
     ogs_free(upu_data);
 }
@@ -86,6 +107,43 @@ cJSON *OpenAPI_upu_data_convertToJSON(OpenAPI_upu_data_t *upu_data)
     }
     }
 
+    if (upu_data->is_drei) {
+    if (cJSON_AddBoolToObject(item, "drei", upu_data->drei) == NULL) {
+        ogs_error("OpenAPI_upu_data_convertToJSON() failed [drei]");
+        goto end;
+    }
+    }
+
+    if (upu_data->is_drei_eps) {
+    if (cJSON_AddBoolToObject(item, "dreiEps", upu_data->drei_eps) == NULL) {
+        ogs_error("OpenAPI_upu_data_convertToJSON() failed [drei_eps]");
+        goto end;
+    }
+    }
+
+    if (upu_data->is_aol) {
+    if (cJSON_AddBoolToObject(item, "aol", upu_data->aol) == NULL) {
+        ogs_error("OpenAPI_upu_data_convertToJSON() failed [aol]");
+        goto end;
+    }
+    }
+
+    if (upu_data->disaster_cond_plmn_ids) {
+    cJSON *disaster_cond_plmn_idsList = cJSON_AddArrayToObject(item, "disasterCondPlmnIds");
+    if (disaster_cond_plmn_idsList == NULL) {
+        ogs_error("OpenAPI_upu_data_convertToJSON() failed [disaster_cond_plmn_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(upu_data->disaster_cond_plmn_ids, node) {
+        cJSON *itemLocal = OpenAPI_plmn_id_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_upu_data_convertToJSON() failed [disaster_cond_plmn_ids]");
+            goto end;
+        }
+        cJSON_AddItemToArray(disaster_cond_plmn_idsList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -98,6 +156,11 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
     cJSON *default_conf_nssai = NULL;
     OpenAPI_list_t *default_conf_nssaiList = NULL;
     cJSON *routing_id = NULL;
+    cJSON *drei = NULL;
+    cJSON *drei_eps = NULL;
+    cJSON *aol = NULL;
+    cJSON *disaster_cond_plmn_ids = NULL;
+    OpenAPI_list_t *disaster_cond_plmn_idsList = NULL;
     sec_packet = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "secPacket");
     if (sec_packet) {
     if (!cJSON_IsString(sec_packet) && !cJSON_IsNull(sec_packet)) {
@@ -138,10 +201,65 @@ OpenAPI_upu_data_t *OpenAPI_upu_data_parseFromJSON(cJSON *upu_dataJSON)
     }
     }
 
+    drei = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "drei");
+    if (drei) {
+    if (!cJSON_IsBool(drei)) {
+        ogs_error("OpenAPI_upu_data_parseFromJSON() failed [drei]");
+        goto end;
+    }
+    }
+
+    drei_eps = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "dreiEps");
+    if (drei_eps) {
+    if (!cJSON_IsBool(drei_eps)) {
+        ogs_error("OpenAPI_upu_data_parseFromJSON() failed [drei_eps]");
+        goto end;
+    }
+    }
+
+    aol = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "aol");
+    if (aol) {
+    if (!cJSON_IsBool(aol)) {
+        ogs_error("OpenAPI_upu_data_parseFromJSON() failed [aol]");
+        goto end;
+    }
+    }
+
+    disaster_cond_plmn_ids = cJSON_GetObjectItemCaseSensitive(upu_dataJSON, "disasterCondPlmnIds");
+    if (disaster_cond_plmn_ids) {
+        cJSON *disaster_cond_plmn_ids_local = NULL;
+        if (!cJSON_IsArray(disaster_cond_plmn_ids)) {
+            ogs_error("OpenAPI_upu_data_parseFromJSON() failed [disaster_cond_plmn_ids]");
+            goto end;
+        }
+
+        disaster_cond_plmn_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(disaster_cond_plmn_ids_local, disaster_cond_plmn_ids) {
+            if (!cJSON_IsObject(disaster_cond_plmn_ids_local)) {
+                ogs_error("OpenAPI_upu_data_parseFromJSON() failed [disaster_cond_plmn_ids]");
+                goto end;
+            }
+            OpenAPI_plmn_id_t *disaster_cond_plmn_idsItem = OpenAPI_plmn_id_parseFromJSON(disaster_cond_plmn_ids_local);
+            if (!disaster_cond_plmn_idsItem) {
+                ogs_error("No disaster_cond_plmn_idsItem");
+                goto end;
+            }
+            OpenAPI_list_add(disaster_cond_plmn_idsList, disaster_cond_plmn_idsItem);
+        }
+    }
+
     upu_data_local_var = OpenAPI_upu_data_create (
         sec_packet && !cJSON_IsNull(sec_packet) ? ogs_strdup(sec_packet->valuestring) : NULL,
         default_conf_nssai ? default_conf_nssaiList : NULL,
-        routing_id && !cJSON_IsNull(routing_id) ? ogs_strdup(routing_id->valuestring) : NULL
+        routing_id && !cJSON_IsNull(routing_id) ? ogs_strdup(routing_id->valuestring) : NULL,
+        drei ? true : false,
+        drei ? drei->valueint : 0,
+        drei_eps ? true : false,
+        drei_eps ? drei_eps->valueint : 0,
+        aol ? true : false,
+        aol ? aol->valueint : 0,
+        disaster_cond_plmn_ids ? disaster_cond_plmn_idsList : NULL
     );
 
     return upu_data_local_var;
@@ -152,6 +270,13 @@ end:
         }
         OpenAPI_list_free(default_conf_nssaiList);
         default_conf_nssaiList = NULL;
+    }
+    if (disaster_cond_plmn_idsList) {
+        OpenAPI_list_for_each(disaster_cond_plmn_idsList, node) {
+            OpenAPI_plmn_id_free(node->data);
+        }
+        OpenAPI_list_free(disaster_cond_plmn_idsList);
+        disaster_cond_plmn_idsList = NULL;
     }
     return NULL;
 }

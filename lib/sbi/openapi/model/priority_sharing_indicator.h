@@ -1,7 +1,7 @@
 /*
  * priority_sharing_indicator.h
  *
- * 
+ * Represents the Priority sharing indicator.
  */
 
 #ifndef _OpenAPI_priority_sharing_indicator_H_

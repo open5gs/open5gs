@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_mb_smf_info_s OpenAPI_mb_smf_info_t;
 #include "mbs_session.h"
 #include "snssai_mb_smf_info_item.h"
 #include "tai.h"
@@ -22,14 +23,13 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_mb_smf_info_s OpenAPI_mb_smf_info_t;
-typedef struct OpenAPI_mb_smf_info_s {
+struct OpenAPI_mb_smf_info_s {
     OpenAPI_list_t* s_nssai_info_list;
     OpenAPI_list_t* tmgi_range_list;
     OpenAPI_list_t *tai_list;
     OpenAPI_list_t *tai_range_list;
     OpenAPI_list_t* mbs_session_list;
-} OpenAPI_mb_smf_info_t;
+};
 
 OpenAPI_mb_smf_info_t *OpenAPI_mb_smf_info_create(
     OpenAPI_list_t* s_nssai_info_list,

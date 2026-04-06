@@ -7,7 +7,7 @@
 OpenAPI_reporting_information_t *OpenAPI_reporting_information_create(
     bool is_imm_rep,
     int imm_rep,
-    OpenAPI_notification_method_1_t *notif_method,
+    OpenAPI_notification_method_1_e notif_method,
     bool is_max_report_nbr,
     int max_report_nbr,
     char *mon_dur,
@@ -18,7 +18,9 @@ OpenAPI_reporting_information_t *OpenAPI_reporting_information_create(
     OpenAPI_list_t *partition_criteria,
     bool is_grp_rep_time,
     int grp_rep_time,
-    OpenAPI_notification_flag_e notif_flag
+    OpenAPI_notification_flag_e notif_flag,
+    OpenAPI_muting_exception_instructions_t *notif_flag_instruct,
+    OpenAPI_muting_notifications_settings_t *muting_setting
 )
 {
     OpenAPI_reporting_information_t *reporting_information_local_var = ogs_malloc(sizeof(OpenAPI_reporting_information_t));
@@ -38,6 +40,8 @@ OpenAPI_reporting_information_t *OpenAPI_reporting_information_create(
     reporting_information_local_var->is_grp_rep_time = is_grp_rep_time;
     reporting_information_local_var->grp_rep_time = grp_rep_time;
     reporting_information_local_var->notif_flag = notif_flag;
+    reporting_information_local_var->notif_flag_instruct = notif_flag_instruct;
+    reporting_information_local_var->muting_setting = muting_setting;
 
     return reporting_information_local_var;
 }
@@ -49,10 +53,6 @@ void OpenAPI_reporting_information_free(OpenAPI_reporting_information_t *reporti
     if (NULL == reporting_information) {
         return;
     }
-    if (reporting_information->notif_method) {
-        OpenAPI_notification_method_1_free(reporting_information->notif_method);
-        reporting_information->notif_method = NULL;
-    }
     if (reporting_information->mon_dur) {
         ogs_free(reporting_information->mon_dur);
         reporting_information->mon_dur = NULL;
@@ -60,6 +60,14 @@ void OpenAPI_reporting_information_free(OpenAPI_reporting_information_t *reporti
     if (reporting_information->partition_criteria) {
         OpenAPI_list_free(reporting_information->partition_criteria);
         reporting_information->partition_criteria = NULL;
+    }
+    if (reporting_information->notif_flag_instruct) {
+        OpenAPI_muting_exception_instructions_free(reporting_information->notif_flag_instruct);
+        reporting_information->notif_flag_instruct = NULL;
+    }
+    if (reporting_information->muting_setting) {
+        OpenAPI_muting_notifications_settings_free(reporting_information->muting_setting);
+        reporting_information->muting_setting = NULL;
     }
     ogs_free(reporting_information);
 }
@@ -82,14 +90,8 @@ cJSON *OpenAPI_reporting_information_convertToJSON(OpenAPI_reporting_information
     }
     }
 
-    if (reporting_information->notif_method) {
-    cJSON *notif_method_local_JSON = OpenAPI_notification_method_1_convertToJSON(reporting_information->notif_method);
-    if (notif_method_local_JSON == NULL) {
-        ogs_error("OpenAPI_reporting_information_convertToJSON() failed [notif_method]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "notifMethod", notif_method_local_JSON);
-    if (item->child == NULL) {
+    if (reporting_information->notif_method != OpenAPI_notification_method_1_NULL) {
+    if (cJSON_AddStringToObject(item, "notifMethod", OpenAPI_notification_method_1_ToString(reporting_information->notif_method)) == NULL) {
         ogs_error("OpenAPI_reporting_information_convertToJSON() failed [notif_method]");
         goto end;
     }
@@ -151,6 +153,32 @@ cJSON *OpenAPI_reporting_information_convertToJSON(OpenAPI_reporting_information
     }
     }
 
+    if (reporting_information->notif_flag_instruct) {
+    cJSON *notif_flag_instruct_local_JSON = OpenAPI_muting_exception_instructions_convertToJSON(reporting_information->notif_flag_instruct);
+    if (notif_flag_instruct_local_JSON == NULL) {
+        ogs_error("OpenAPI_reporting_information_convertToJSON() failed [notif_flag_instruct]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "notifFlagInstruct", notif_flag_instruct_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_reporting_information_convertToJSON() failed [notif_flag_instruct]");
+        goto end;
+    }
+    }
+
+    if (reporting_information->muting_setting) {
+    cJSON *muting_setting_local_JSON = OpenAPI_muting_notifications_settings_convertToJSON(reporting_information->muting_setting);
+    if (muting_setting_local_JSON == NULL) {
+        ogs_error("OpenAPI_reporting_information_convertToJSON() failed [muting_setting]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "mutingSetting", muting_setting_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_reporting_information_convertToJSON() failed [muting_setting]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -161,7 +189,7 @@ OpenAPI_reporting_information_t *OpenAPI_reporting_information_parseFromJSON(cJS
     OpenAPI_lnode_t *node = NULL;
     cJSON *imm_rep = NULL;
     cJSON *notif_method = NULL;
-    OpenAPI_notification_method_1_t *notif_method_local_nonprim = NULL;
+    OpenAPI_notification_method_1_e notif_methodVariable = 0;
     cJSON *max_report_nbr = NULL;
     cJSON *mon_dur = NULL;
     cJSON *rep_period = NULL;
@@ -171,6 +199,10 @@ OpenAPI_reporting_information_t *OpenAPI_reporting_information_parseFromJSON(cJS
     cJSON *grp_rep_time = NULL;
     cJSON *notif_flag = NULL;
     OpenAPI_notification_flag_e notif_flagVariable = 0;
+    cJSON *notif_flag_instruct = NULL;
+    OpenAPI_muting_exception_instructions_t *notif_flag_instruct_local_nonprim = NULL;
+    cJSON *muting_setting = NULL;
+    OpenAPI_muting_notifications_settings_t *muting_setting_local_nonprim = NULL;
     imm_rep = cJSON_GetObjectItemCaseSensitive(reporting_informationJSON, "immRep");
     if (imm_rep) {
     if (!cJSON_IsBool(imm_rep)) {
@@ -181,11 +213,11 @@ OpenAPI_reporting_information_t *OpenAPI_reporting_information_parseFromJSON(cJS
 
     notif_method = cJSON_GetObjectItemCaseSensitive(reporting_informationJSON, "notifMethod");
     if (notif_method) {
-    notif_method_local_nonprim = OpenAPI_notification_method_1_parseFromJSON(notif_method);
-    if (!notif_method_local_nonprim) {
-        ogs_error("OpenAPI_notification_method_1_parseFromJSON failed [notif_method]");
+    if (!cJSON_IsString(notif_method)) {
+        ogs_error("OpenAPI_reporting_information_parseFromJSON() failed [notif_method]");
         goto end;
     }
+    notif_methodVariable = OpenAPI_notification_method_1_FromString(notif_method->valuestring);
     }
 
     max_report_nbr = cJSON_GetObjectItemCaseSensitive(reporting_informationJSON, "maxReportNbr");
@@ -267,10 +299,28 @@ OpenAPI_reporting_information_t *OpenAPI_reporting_information_parseFromJSON(cJS
     notif_flagVariable = OpenAPI_notification_flag_FromString(notif_flag->valuestring);
     }
 
+    notif_flag_instruct = cJSON_GetObjectItemCaseSensitive(reporting_informationJSON, "notifFlagInstruct");
+    if (notif_flag_instruct) {
+    notif_flag_instruct_local_nonprim = OpenAPI_muting_exception_instructions_parseFromJSON(notif_flag_instruct);
+    if (!notif_flag_instruct_local_nonprim) {
+        ogs_error("OpenAPI_muting_exception_instructions_parseFromJSON failed [notif_flag_instruct]");
+        goto end;
+    }
+    }
+
+    muting_setting = cJSON_GetObjectItemCaseSensitive(reporting_informationJSON, "mutingSetting");
+    if (muting_setting) {
+    muting_setting_local_nonprim = OpenAPI_muting_notifications_settings_parseFromJSON(muting_setting);
+    if (!muting_setting_local_nonprim) {
+        ogs_error("OpenAPI_muting_notifications_settings_parseFromJSON failed [muting_setting]");
+        goto end;
+    }
+    }
+
     reporting_information_local_var = OpenAPI_reporting_information_create (
         imm_rep ? true : false,
         imm_rep ? imm_rep->valueint : 0,
-        notif_method ? notif_method_local_nonprim : NULL,
+        notif_method ? notif_methodVariable : 0,
         max_report_nbr ? true : false,
         max_report_nbr ? max_report_nbr->valuedouble : 0,
         mon_dur && !cJSON_IsNull(mon_dur) ? ogs_strdup(mon_dur->valuestring) : NULL,
@@ -281,18 +331,24 @@ OpenAPI_reporting_information_t *OpenAPI_reporting_information_parseFromJSON(cJS
         partition_criteria ? partition_criteriaList : NULL,
         grp_rep_time ? true : false,
         grp_rep_time ? grp_rep_time->valuedouble : 0,
-        notif_flag ? notif_flagVariable : 0
+        notif_flag ? notif_flagVariable : 0,
+        notif_flag_instruct ? notif_flag_instruct_local_nonprim : NULL,
+        muting_setting ? muting_setting_local_nonprim : NULL
     );
 
     return reporting_information_local_var;
 end:
-    if (notif_method_local_nonprim) {
-        OpenAPI_notification_method_1_free(notif_method_local_nonprim);
-        notif_method_local_nonprim = NULL;
-    }
     if (partition_criteriaList) {
         OpenAPI_list_free(partition_criteriaList);
         partition_criteriaList = NULL;
+    }
+    if (notif_flag_instruct_local_nonprim) {
+        OpenAPI_muting_exception_instructions_free(notif_flag_instruct_local_nonprim);
+        notif_flag_instruct_local_nonprim = NULL;
+    }
+    if (muting_setting_local_nonprim) {
+        OpenAPI_muting_notifications_settings_free(muting_setting_local_nonprim);
+        muting_setting_local_nonprim = NULL;
     }
     return NULL;
 }

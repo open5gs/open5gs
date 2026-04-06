@@ -12,15 +12,15 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_n32f_context_info_s OpenAPI_n32f_context_info_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n32f_context_info_s OpenAPI_n32f_context_info_t;
-typedef struct OpenAPI_n32f_context_info_s {
+struct OpenAPI_n32f_context_info_s {
     char *n32f_context_id;
-} OpenAPI_n32f_context_info_t;
+};
 
 OpenAPI_n32f_context_info_t *OpenAPI_n32f_context_info_create(
     char *n32f_context_id

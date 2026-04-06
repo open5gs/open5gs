@@ -1,0 +1,373 @@
+openapi: 3.0.0
+
+info:
+  title: Npkmf_Discovery API
+  version: '1.2.0'
+  description: |
+    Npkmf_Discovery Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.559 V19.4.0; 5G System; 5G ProSe Key Management Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.559/
+
+servers:
+  - url: '{apiRoot}/npkmf-discovery/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - npkmf-discovery
+
+paths:
+  /{ueId}/announce-authorize/{userInfoId}:
+    put:
+      summary: Obtain the authorization from the 5G PKMF for announcing in the PLMN
+      operationId: ObtainAnnounceAuth
+      tags:
+        - Obtain the authorization from the 5G PKMF for announcing in the PLMN
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - npkmf-disc
+        - oAuth2ClientCredentials:
+          - npkmf-disc
+          - npkmf-disc:announce-authorize:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: userInfoId
+          in: path
+          description: User Info Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserInfoId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnnounceAuthData'
+        required: true
+      responses:
+        '201':
+          description: Successful creation of the resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnnounceAuthData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/npkmf-disc>/<apiVersion>/{ueId}/announce-authorize/{userInfoId}
+              required: true
+              schema:
+                type: string
+        '204':
+          description: Successful update of the resource.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+  /{ueId}/monitor-key/{userInfoId}:
+    put:
+      summary: Obtain the discovery key from the 5G PKMF for monitoring in the PLMN
+      operationId: ObtainMonitorKey
+      tags:
+        - Obtain the discovery key from the 5G PKMF for monitoring in the PLMN
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - npkmf-disc
+        - oAuth2ClientCredentials:
+          - npkmf-disc
+          - npkmf-disc:monitor-key:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: userInfoId
+          in: path
+          description: User Info Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserInfoId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonitorKeyReqData'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitorKeyRespData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/npkmf-disc>/<apiVersion>/{ueId}/monitor-key/{userInfoId}
+              required: true
+              schema:
+                type: string
+        '204':
+          description: Successful update of the resource.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+  /{ueId}/discovery-key/{userInfoId}:
+    put:
+      summary: Obtain the discovery key from the 5G PKMF for a discoverer UE
+      operationId: ObtainDiscKey
+      tags:
+        - Obtain the discovery key for a discoverer UE
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - npkmf-disc
+        - oAuth2ClientCredentials:
+          - npkmf-disc
+          - npkmf-disc:discovery-authorize:modify
+      parameters:
+        - name: ueId
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/VarUeId'
+        - name: userInfoId
+          in: path
+          description: User Info Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserInfoId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscoveryKeyReqData'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryKeyRespData'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/npkmf-disc>/<apiVersion>/{ueId}/discovery-key/{userInfoId}
+              required: true
+              schema:
+                type: string
+        '204':
+          description: Successful update of the resource.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npkmf-disc: Access to the Npkmf_Discovery API
+            npkmf-disc:announce-authorize:modify: >
+              Access to modify the authorization to announce for a UE in the PLMN
+            npkmf-disc:monitor-key:modify: >
+              Access to modify the authorization for monitoring for an UE in the PLMN
+            npkmf-disc:discovery-key:modify: >
+              Access to modify the authorization from the 5G DDNMF for a discoverer UE 
+              in the PLMN to operate Model B restricted discovery
+
+  schemas:
+
+# STRUCTURED TYPES:
+
+    AnnounceAuthData:
+      type: object
+      description: Represents Data used to request the authorization to announce for a UE
+      required:
+        - relayServCode
+      properties:
+        relayServCode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RelayServiceCode'
+
+    MonitorKeyReqData:
+      type: object
+      description: Data used to request the discovery key to monitor for a UE
+      required:
+        - relayServCode
+        - ueSecurityCapability
+      properties:
+        relayServCode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RelayServiceCode'
+        ueSecurityCapability:
+          $ref: '#/components/schemas/UeSecurityCapability'
+
+    MonitorKeyRespData:
+      type: object
+      description: Represents the obtained Monitor Discovery Key Data for a UE
+      required:
+        - chosenPc5CipheringAlgorithm
+        - discSecMaterials
+      properties:
+        chosenPc5CipheringAlgorithm:
+          $ref: '#/components/schemas/ChosenPc5CipheringAlgorithm'
+        discSecMaterials:
+          $ref: '#/components/schemas/DiscSecMaterials'
+    DiscoveryKeyReqData:
+      type: object
+      description: Data used to request the discovery key to monitor for a discoverer UE
+      required:
+        - relayServCode
+        - ueSecurityCapability
+      properties:
+        relayServCode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RelayServiceCode'
+        ueSecurityCapability:
+          $ref: '#/components/schemas/UeSecurityCapability'
+
+    DiscoveryKeyRespData:
+      type: object
+      description: Represents the obtained Monitor Discovery Key Data for a discoverer UE
+      required:
+        - chosenPc5CipheringAlgorithm
+        - discSecMaterials
+      properties:
+        chosenPc5CipheringAlgorithm:
+          $ref: '#/components/schemas/ChosenPc5CipheringAlgorithm'
+        discSecMaterials:
+          $ref: '#/components/schemas/DiscSecMaterials'
+    DiscSecMaterials:
+      type: object
+      description: Represents the discovery security materials
+      properties:
+        duik:
+          $ref: '#/components/schemas/Duik'
+        dusk:
+          $ref: '#/components/schemas/Dusk'
+        duck:
+          $ref: '#/components/schemas/Duck'
+
+
+
+# SIMPLE TYPES:
+    UserInfoId:
+      description: Contains the User Info ID.
+      type: string
+
+    UeSecurityCapability:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+
+    ChosenPc5CipheringAlgorithm:
+      description: Contains the chosen PC5 ciphering algorithm.
+      type: integer
+
+    Duik:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+
+    Dusk:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+
+    Duck:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+
+# ENUMS:

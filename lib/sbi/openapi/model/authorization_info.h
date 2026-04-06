@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_authorization_info_s OpenAPI_authorization_info_t;
 #include "context_info.h"
 #include "snssai.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_authorization_info_s OpenAPI_authorization_info_t;
-typedef struct OpenAPI_authorization_info_s {
+struct OpenAPI_authorization_info_s {
     struct OpenAPI_snssai_s *snssai;
     char *dnn;
     char *mtc_provider_information;
@@ -29,7 +29,7 @@ typedef struct OpenAPI_authorization_info_s {
     char *nef_id;
     char *validity_time;
     struct OpenAPI_context_info_s *context_info;
-} OpenAPI_authorization_info_t;
+};
 
 OpenAPI_authorization_info_t *OpenAPI_authorization_info_create(
     OpenAPI_snssai_t *snssai,

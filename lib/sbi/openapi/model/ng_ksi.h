@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ng_ksi_s OpenAPI_ng_ksi_t;
 #include "sc_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ng_ksi_s OpenAPI_ng_ksi_t;
-typedef struct OpenAPI_ng_ksi_s {
+struct OpenAPI_ng_ksi_s {
     OpenAPI_sc_type_e tsc;
     int ksi;
-} OpenAPI_ng_ksi_t;
+};
 
 OpenAPI_ng_ksi_t *OpenAPI_ng_ksi_create(
     OpenAPI_sc_type_e tsc,

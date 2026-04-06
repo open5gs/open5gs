@@ -1,0 +1,576 @@
+openapi: 3.0.0
+info:
+  title: Ndcaf_DataReportingProvisioning
+  version: 2.0.1
+  description: |
+    Data Collection AF: Provisioning Sessions API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Ndcaf_DataReportingProvisioning
+    description: 'Data Collection and Reporting: Application Service Provider Provisioning (R1) APIs'
+
+externalDocs:
+  description: 'TS 26.532 V18.5.0; Data Collection and Reporting; Protocols and Formats'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.532/'
+
+servers:
+  - url: '{apiRoot}/3gpp-ndcaf_data-reporting-provisioning/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 29.532 clause 5.2.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /sessions:
+    post:
+      operationId: CreateSession
+      summary: 'Create a new Data Reporting Provisioning Session'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataReportingProvisioningSession'
+      responses:
+        '201':
+          description: 'Data Reporting Provisioning Session successfully created'
+          headers:
+            Location:
+              description: 'URL including the resource identifier of the newly created Data Reporting Provisioning Session.'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/Url'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataReportingProvisioningSession'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /sessions/{sessionId}:
+    parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          description: 'The resource identifier of an existing Data Reporting Provisioning Session.'
+    get:
+      operationId: RetrieveSession
+      summary: 'Retrieve an existing Data Reporting Provisioning Session'
+      responses:
+        '200':
+          description: 'Representation of Data Reporting Provisioning Session is returned'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataReportingProvisioningSession'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      operationId: DestroySession
+      summary: 'Destroy an existing Data Reporting Provisioning Session'
+      responses:
+        '204':
+          description: 'Data Reporting Provisioning Session resource successfully destroyed'
+          # No Content
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /sessions/{sessionId}/configurations:
+    parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          description: 'The resource identifier of an existing Data Reporting Provisioning Session.'
+    post:
+      operationId: CreateConfiguration
+      summary: 'Create a new Data Reporting Configuration subresource within the scope of an existing Data Reporting Provisioning Session'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataReportingConfiguration'
+      responses:
+        '201':
+          description: 'Data Reporting Configuration successfully created'
+          headers:
+            Location:
+              description: 'URL including the resource identifier of the newly created Data Reporting Configuration.'
+              required: true
+              schema:
+                $ref: 'TS26510_CommonData.yaml#/components/schemas/Url'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataReportingConfiguration'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /sessions/{sessionId}/configurations/{configurationId}:
+    parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          description: 'The resource identifier of an existing Data Reporting Provisioning Session.'
+        - name: configurationId
+          in: path
+          required: true
+          schema:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          description: 'The resource identifier of an existing Data Reporting Configuration.'
+    get:
+      operationId: RetrieveConfiguration
+      summary: 'Retrieve an existing Data Reporting Configuration'
+      responses:
+        '200':
+          description: 'Representation of Data Reporting Configuration is returned'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataReportingConfiguration'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      operationId: UpdateConfiguration
+      summary: 'Replace an existing Data Reporting Configuration subresource'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataReportingConfiguration'
+      responses:
+        '200':
+          description: 'Data Reporting Configuration successfully replaced and updated resource representation is returned'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataReportingConfiguration'
+        '204':
+          description: 'Data Reporting Configuration successfully replaced'
+          # No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      operationId: ModifyConfiguration
+      summary: 'Modify an existing Data Reporting Configuration subresource'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/DataReportingConfigurationPatch'
+      responses:
+        '200':
+          description: 'Data Reporting Configuration successfully replaced and updated resource representation is returned'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataReportingConfiguration'
+        '204':
+          description: 'Data Reporting Configuration successfully replaced'
+          # No Content.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      operationId: DestroyConfiguration
+      summary: 'Destroy an existing Data Reporting Configuration'
+      responses:
+        '204':
+          description: 'Data Reporting Configuration resource successfully destroyed'
+          # No Content
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUri}'
+          scopes: {}
+      description: >
+        For a trusted Provisioning AF, 'ndcaf-datareportingprovisioning' shall be used
+        as 'scopes' and '{nrfApiRoot}/oauth2/token' shall be used as 'tokenUri'.
+
+  schemas:
+    DataReportingProvisioningSession:
+      description: "A representation of a Data Reporting Provisioning Session."
+      type: object
+      properties:
+        provisioningSessionId:
+          readOnly: true
+          allOf:
+            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        aspId:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/AspId'
+        externalApplicationId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        internalApplicationId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        eventId:
+          $ref: 'TS29517_Naf_EventExposure.yaml#/components/schemas/AfEvent'
+        dataReportingConfigurationIds:
+          readOnly: true
+          type: array
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+          minItems: 0
+      required:
+        - provisioningSessionId
+        - aspId
+        - externalApplicationId
+        - eventId
+        - dataReportingConfigurationIds
+
+    DataReportingConfiguration:
+      description: "A Data Reporting Configuration subresource."
+      type: object
+      properties:
+        dataReportingConfigurationId:
+          readOnly: true
+          allOf:
+            - $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        dataCollectionClientType:
+          $ref: 'TS26532_CommonData.yaml#/components/schemas/DataCollectionClientType'
+        authorizationURL:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/Url'
+        dataSamplingRules:
+          type: array
+          items:
+            $ref: 'TS26532_CommonData.yaml#/components/schemas/DataSamplingRule'
+          minItems: 0
+        dataReportingConditions:
+          type: array
+          items:
+            $ref: 'TS26532_CommonData.yaml#/components/schemas/DataReportingCondition'
+          minItems: 1
+        dataReportingRules:
+          type: array
+          items:
+            $ref: 'TS26532_CommonData.yaml#/components/schemas/DataReportingRule'
+          minItems: 0
+        dataAccessProfiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataAccessProfile'
+          minItems: 1
+      required:
+        - dataReportingConfigurationId
+        - dataCollectionClientType
+        - dataReportingConditions
+        - dataAccessProfiles
+
+    DataReportingConfigurationPatch:
+      description: "A JSON patch for a Data Reporting Configuration."
+      type: object
+      properties:
+        authorizationURL:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/Url'
+        dataSamplingRules:
+          type: array
+          items:
+            $ref: 'TS26532_CommonData.yaml#/components/schemas/DataSamplingRule'
+          minItems: 0
+        dataReportingConditions:
+          type: array
+          items:
+            $ref: 'TS26532_CommonData.yaml#/components/schemas/DataReportingCondition'
+          minItems: 1
+        dataReportingRules:
+          type: array
+          items:
+            $ref: 'TS26532_CommonData.yaml#/components/schemas/DataReportingRule'
+          minItems: 0
+        dataAccessProfiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataAccessProfile'
+          minItems: 1
+
+    DataAccessProfile:
+      description: "A data access profile."
+      type: object
+      properties:
+        dataAccessProfileId:
+          type: string
+        targetEventConsumerTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventConsumerType'
+          minItems: 0
+          uniqueItems: true
+        parameters:
+          type: array
+          items:
+            type: string
+          minItems: 0
+          uniqueItems: true
+        timeAccessRestrictions:
+          type: object
+          properties:
+            duration:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+            aggregationFunctions:
+              type: array
+              items:
+                $ref: '#/components/schemas/DataAggregationFunctionType'
+              minItems: 0
+              uniqueItems: true
+          required:
+            - duration
+            - aggregationFunctions
+        userAccessRestrictions:
+          type: object
+          properties:
+            groupIds:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+              minItems: 0
+              uniqueItems: true
+            userIds:
+              type: array
+              items:
+                anyOf:
+                - $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+                - $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+                minItems: 0
+                uniqueItems: true
+            aggregationFunctions:
+              type: array
+              items:
+                $ref: '#/components/schemas/DataAggregationFunctionType'
+              minItems: 0
+              uniqueItems: true
+          required:
+            - groupIds
+            - userIds
+            - aggregationFunctions
+        locationAccessRestrictions:
+          type: object
+          properties:
+            locationAreas:
+              type: array
+              items:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+              minItems: 1
+              uniqueItems: true
+            aggregationFunctions:
+              type: array
+              items:
+                $ref: '#/components/schemas/DataAggregationFunctionType'
+              minItems: 0
+              uniqueItems: true
+          required:
+            - locationAreas
+            - aggregationFunctions
+      required:
+        - dataAccessProfileId
+        - targetEventConsumerTypes
+        - parameters
+
+    EventConsumerType:
+      description: "The type of event consumer."
+      anyOf:
+      - type: string
+        enum:
+          - NWDAF
+          - EVENT_CONSUMER_AF
+          - NEF
+      - type: string
+        description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+
+    DataAggregationFunctionType:
+      description: "The type of data aggregation function."
+      anyOf:
+      - type: string
+        enum:
+          - NONE
+          - COUNT
+          - MEAN
+          - MAXIMUM
+          - MINIMUM
+          - SUM
+      - type: string
+        description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.

@@ -1,0 +1,350 @@
+openapi: 3.0.0
+
+info:
+  title: MMTel_DCAppCall API
+  version: 1.0.1
+  description: |
+    MMTel Enabler Server DC Application Call Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: |
+    3GPP TS 29.392 V19.1.0; 
+    Application layer support for MMTel; MMTel Enabler Server Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.392/
+
+servers:
+  - url: '{apiRoot}/mmtel-dcappcall/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /dccall:
+    post:
+      summary: Request to Establish a call with DC capability.
+      operationId: DcCallRequest
+      tags:
+        - DC Call Establishment Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DcCallReq'
+      responses:
+        '200':
+          description: >
+            OK. The requested DC Call information is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DcCallResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '409':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/409'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        DcMediaNotification:
+          '{$request.body#/notificationInfo}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/DcMediaNotifyReq'
+              responses:
+                '200':
+                  description: >
+                    OK. The DC Media Notification is successfully received and DC Media related
+                    information is returned in the response body.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/DcMediaNotifyResp'
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /update-dc-media:
+    post:
+      summary: Update DC media of an existing session.
+      operationId: DcMediaUpdateRequest
+      tags:
+        - DC Media Update Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DcMediaUpdateReq'
+      responses:
+        '200':
+          description: >
+            OK. The requested DC Media update information is successfully returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DcMediaUpdateResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '409':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/409'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+    DcCallReq:
+      type: object
+      properties:
+        originatingId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        terminatingId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        mediaInfo:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        dcMediaInfo:
+          type: boolean
+          description: Indicates whether the DC Media is expected to be used or not.
+            true indicates that the DC Media is expected to be used.
+            false (default) indicates that the DC Media is not expected to be used.
+        appProfileRequested:
+          $ref: 'TS29392_MMTel_DCAppManagement.yaml#/components/schemas/DcAppUpdateParameters'
+        notificationInfo:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        callType:
+          $ref: '#/components/schemas/CallType'
+      required:
+        - terminatingId
+        - notificationInfo
+        - callType
+    DcCallResp:
+      type: object
+      properties:
+        callResult:
+          $ref: 'TS29392_MMTel_DCAppManagement.yaml#/components/schemas/Status'
+        sessionId:
+          type: string
+          description: Call session identifier, maps to callSessionId in OMA Third Party Call API
+        failureCause:
+          type: string
+          description: Cause of call establishment failure
+        originatingId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        terminatingId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        mediaInfo:
+          type: array
+          items:
+            type: string
+          description: Negotiated media types
+          minItems: 1
+        dcMediaInfo:
+          type: string
+          description: DC media activation status
+        appProfileRequested:
+          $ref: 'TS29392_MMTel_DCAppManagement.yaml#/components/schemas/DcAppUpdateParameters'
+        callType:
+          $ref: '#/components/schemas/CallType'
+      required:
+        - callResult
+        - terminatingId
+        - callType
+    DcMediaUpdateReq:
+      type: object
+      properties:
+        dcAppId:
+          type: string
+          description: Unique identifier of the DC application
+        sessionId:
+          type: string
+          description: Identifier of the session to be updated
+        mediaResourceInfo:
+          type: object
+          description: Media information to be transmitted via the Data Channel
+        appProfileRequested:
+          $ref: 'TS29392_MMTel_DCAppManagement.yaml#/components/schemas/DcAppUpdateParameters'
+        notificationInfo:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        mediaDirection:
+          $ref: '#/components/schemas/AdcType'
+      required:
+        - dcAppId
+        - sessionId
+        - notificationInfo
+    DcMediaUpdateResp:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          description: Session identifier
+        result:
+          $ref: 'TS29392_MMTel_DCAppManagement.yaml#/components/schemas/Status'
+        cause:
+          type: string
+          description: Cause of update request failure
+      required:
+        - sessionId
+        - result
+    DcMediaNotifyReq:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          description: Session identifier
+        mediaResourceInfo:
+          type: object
+          description: Media information transmitted via the Data Channel
+        mediaDirection:
+          $ref: '#/components/schemas/AdcType'
+      required:
+        - sessionId
+        - mediaResourceInfo
+    DcMediaNotifyResp:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          description: Session identifier
+        result:
+          $ref: 'TS29392_MMTel_DCAppManagement.yaml#/components/schemas/Status'
+        cause:
+          type: string
+          description: Cause of notification processing failure
+      required:
+        - sessionId
+        - result
+
+#
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    AdcType:
+      anyOf:
+        - type: string
+          enum:
+            - A2P
+            - P2A
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the type of the data channel media direction.  
+        Possible values are:
+        - A2P: Indicates that the type of the data channel media direction is a Data Channel
+          initiated by the Application.
+        - P2P: Indicates that the type of the data channel media direction is a Data Channel
+          initiated by the UE.
+
+    CallType:
+      anyOf:
+        - type: string
+          enum:
+            - A2P
+            - P2P
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the established call type.  
+        Possible values are:
+        - A2P: Indicates that the established call type is an Application call initiated by the
+          Application towards the UE.
+        - P2P: Indicates that the established call type is a Third Party call established between
+          two UEs.

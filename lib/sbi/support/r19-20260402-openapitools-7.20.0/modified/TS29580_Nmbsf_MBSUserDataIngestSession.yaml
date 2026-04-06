@@ -1,0 +1,1393 @@
+openapi: 3.0.0
+
+info:
+  title: nmbsf-mbs-ud-ingest
+  version: 1.2.1
+  description: |
+    API for MBS User Data Ingest Session Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.580 V19.5.0; 5G System; Multicast/Broadcast Service Function Services.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.580/'
+
+servers:
+  - url: '{apiRoot}/nmbsf-mbs-ud-ingest/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+#When the Nmbsf_MBSUserDataIngestSession API is consumed by a trusted or internal AF, then the
+#"oAuth2ClientCredentials" property shall contain an array of scopes including the API level
+#"nmbsf-mbs-ud-ingest" scope as the only scope.
+
+paths:
+  /sessions:
+    get:
+      summary: Retrieve all the active MBS User Data Ingest Sessions managed by the MBSF.
+      tags:
+        - MBS User Data Ingest Sessions (Collection)
+      operationId: RetrieveMBSUserDataIngSessions
+      responses:
+        '200':
+          description: >
+            OK. All the active MBS User Data Ingest Sessions managed by the MBSF are returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MBSUserDataIngSession'
+                minItems: 0
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request the creation of a new MBS User Data Ingest Session.
+      tags:
+        - MBS User Data Ingest Sessions (Collection)
+      operationId: CreateMBSUserDataIngSession
+      requestBody:
+        description: >
+          Contains the parameters to request the creation of a new MBS User Data Ingest Session 
+          at the MBSF.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MBSUserDataIngSession'
+      responses:
+        '201':
+          description: >
+            Created. A new MBS User Data Ingest Session is successfully created and a representation 
+            of the created Individual MBS User Data Ingest Session resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSUserDataIngSession'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nmbs-mbs-ud-ingest/v1/sessions/{sessionId}
+              required: true
+              schema:
+                type: string
+        '400':
+          description: >
+            The request is rejected by the NEF and more details (along with ProblemDetails) may
+            be returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsMBS'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          description: >
+            The request is rejected by the NEF and more details (along with ProblemDetails) may
+            be returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsMBS'
+        '404':
+          description: >
+            The request is rejected by the NEF and more details (along with ProblemDetails) may
+            be returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsMBS'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+  /sessions/{sessionId}:
+    parameters:
+      - name: sessionId
+        in: path
+        description: Identifier of the Individual MBS User Data Ingest Session resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual MBS User Data Ingest Session resource.
+      tags:
+        - Individual MBS User Data Ingest Session (Document)
+      operationId: RetrieveIndMBSUserDataIngSession
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual MBS User Data Ingest Session resource is successfully 
+            returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSUserDataIngSession'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual MBS User Data Ingest Session resource.
+      tags:
+        - Individual MBS User Data Ingest Session (Document)
+      operationId: UpdateIndMBSUserDataIngSession
+      requestBody:
+        description: >
+          Contains the updated representation of the Individual MBS User Data Ingest Session 
+          resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MBSUserDataIngSession'
+      responses:
+        '200':
+          description: >
+            OK. The concerned Individual MBS User Data Ingest Session resource is successfully 
+            updated and a representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSUserDataIngSession'
+        '204':
+          description: >
+            No Content. The concerned Individual MBS User Data Ingest Session resource is 
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          description: >
+            The request is rejected by the NEF and more details (along with ProblemDetails) may
+            be returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsMBS'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          description: >
+            The request is rejected by the NEF and more details (along with ProblemDetails) may
+            be returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsMBS'
+        '404':
+          description: >
+            The request is rejected by the NEF and more details (along with ProblemDetails) may
+            be returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsMBS'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual MBS User Data Ingest Session resource.
+      tags:
+        - Individual MBS User Data Ingest Session (Document)
+      operationId: ModifyIndMBSUserDataIngSession
+      requestBody:
+        description: >
+          Contains the parameters to request the modification of the Individual MBS User Data Ingest 
+          Session resource.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              anyOf:
+              - $ref: '#/components/schemas/MBSUserDataIngSessionPatch'
+              - $ref: '#/components/schemas/MBSUserDataIngSessionPatchEnh'
+      responses:
+        '200':
+          description: >
+            OK. The concerned Individual MBS User Data Ingest Session resource is successfully 
+            modified and a representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSUserDataIngSession'
+        '204':
+          description: >
+            No Content. The concerned Individual MBS User Data Ingest Session resource is 
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          description: >
+            The request is rejected by the NEF and more details (along with ProblemDetails) may
+            be returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsMBS'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          description: >
+            The request is rejected by the NEF and more details (along with ProblemDetails) may
+            be returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsMBS'
+        '404':
+          description: >
+            The request is rejected by the NEF and more details (along with ProblemDetails) may
+            be returned.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetailsMBS'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual MBS User Data Ingest Session resource.
+      tags:
+        - Individual MBS User Data Ingest Session (Document)
+      operationId: DeleteIndMBSUserDataIngSession
+      responses:
+        '204':
+          description: >
+            No Content. The Individual MBS User Data Ingest Session resource is successfully 
+            deleted.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+  /status-subscriptions:
+    get:
+      summary: Retrieve all the active MBS User Data Ingest Session Status Subscription resources managed by the MBSF.
+      tags:
+        - MBS User Data Ingest Session Status Subscriptions (Collection)
+      operationId: RetrieveMBSUserDataIngStatSubscs
+      responses:
+        '200':
+          description: >
+            OK. All the active MBS User Data Ingest Session Status Subscriptions managed by the MBSF 
+            are returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MBSUserDataIngStatSubsc'
+                minItems: 0
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request the creation of a new MBS User Data Ingest Session Status Subscription.
+      tags:
+        - MBS User Data Ingest Session Status Subscriptions (Collection)
+      operationId: CreateMBSUserDataIngStatSubsc
+      requestBody:
+        description: >
+          Contains the parameters to request the creation of a new MBS User Data Ingest Session
+          Status Subscription.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MBSUserDataIngStatSubsc'
+      responses:
+        '201':
+          description: >
+            Created. Successful creation of a new Individual MBS User Data Ingest Session 
+            Status Subscription resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSUserDataIngStatSubsc'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure
+                {apiRoot}/nmbs-mbs-ud-ingest/v1/status-subscriptions/{subscriptionId}
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        mbsUserDataIngestSessionStatusNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/MBSUserDataIngStatNotif'
+              responses:
+                '204':
+                  description: No Content. Successful reception of the notification.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+  /status-subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Identifier of the Individual MBS User Data Ingest Session Status Subscription resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual MBS User Data Ingest Session Status Subscription resource.
+      tags:
+        - Individual MBS User Data Ingest Session Status Subscription (Document)
+      operationId: RetrieveIndMBSUserDataIngStatSubsc
+      responses:
+        '200':
+          description: >
+            OK. Successful retrieval of the requested Individual MBS User Data Ingest Session
+            Status Subscription resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSUserDataIngStatSubsc'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual MBS User Data Ingest Session Status Subscription resource.
+      tags:
+        - Individual MBS User Data Ingest Session Status Subscription (Document)
+      operationId: UpdateIndMBSUserDataIngStatSubsc
+      requestBody:
+        description: >
+          Contains the updated representation of the Individual MBS User Data Ingest Session Status 
+          Subscription resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MBSUserDataIngStatSubsc'
+      responses:
+        '200':
+          description: >
+            OK. The concerned Individual MBS User Data Ingest Session Status Subscription resource 
+            is successfully updated and a representation of the updated resource is returned in the
+            response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSUserDataIngStatSubsc'
+        '204':
+          description: >
+            No Content. The concerned Individual MBS User Data Ingest Session Status Subscription 
+            resource is successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual MBS User Data Ingest Session Status Subscription resource.
+      tags:
+        - Individual MBS User Data Ingest Session Status Subscription (Document)
+      operationId: ModifyIndMBSUserDataIngStatSubsc
+      requestBody:
+        description: >
+          Contains the parameters to request the modification of the Individual MBS User Data Ingest 
+          Session Status Subscription resource.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/MBSUserDataIngStatSubscPatch'
+      responses:
+        '200':
+          description: >
+            OK. The concerned Individual MBS User Data Ingest Session Status Subscription resource
+            is successfully modified and a representation of the updated resource is returned in the
+            response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MBSUserDataIngStatSubsc'
+        '204':
+          description: >
+            No Content. The concerned Individual MBS User Data Ingest Session Status Subscription
+            resource is successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual MBS User Data Ingest Session Status Subscription resource.
+      tags:
+        - Individual MBS User Data Ingest Session Status Subscription (Document)
+      operationId: DeleteMBSUserDataIngStatSubsc
+      responses:
+        '204':
+          description: >
+            No Content. Successful deletion of the existing Individual MBS User Data Ingest Session 
+            Status Subscription resource.
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+      description: >
+        When the Nmbsf_MBSUserDataIngestSession API is consumed by a trusted or internal AF, then
+        'nmbsf-mbs-ud-ingest' shall be used as the scope value (i.e. within the "scopes" property)
+        and '{nrfApiRoot}/oauth2/token' shall be used as the URI to retrieve the token within the
+        "tokenUrl" property (i.e., instead of 'tokenUri').
+
+#
+# STRUCTURED DATA TYPES
+#
+  schemas:
+    MBSUserDataIngSession:
+      description: Represents MBS User Data Ingest Session information.
+      type: object
+      properties:
+        mbsUserServId:
+          type: string
+        mbsDisSessInfos:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MBSDistributionSessionInfo'
+          minProperties: 1
+          nullable: true
+          description: >
+            Represents one or more MBS Distribution Session(s) composing the MBS User Data Ingest 
+            Session.
+            The key of the map shall be any unique string encoded value.
+        actPeriods:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+          minItems: 1
+        actPeriodsRepRule:
+          $ref: 'TS26517_MBSUserServiceAnnouncement.yaml#/components/schemas/RepetitionRule'
+        mbsUserServAnmt:
+          $ref: '#/components/schemas/MBSUserServAnmt'
+        mbsUserServiceAnmt:
+          $ref: 'TS26517_MBSUserServiceAnnouncement.yaml#/components/schemas/UserServiceDescription'
+        mbsUserServiceAnmtUrl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        failedDistSessions:
+          $ref: '#/components/schemas/MbsDistSessFailureSets'
+        redMbsServAreaInfo:
+          type: object
+          additionalProperties:
+            $ref: 'TS29522_MBSTMGI.yaml#/components/schemas/ReducedMbsServArea'
+          minProperties: 1
+          description: >
+            Contains the MBS Distribution Session(s) for which the provided MBS Service Area was
+            only partially accepted by the MB-SMF and the corresponding retained (reduced) MBS
+            Service Area.
+            The key of the map shall be a string set to the same value received from the NF
+            service consumer within "mbsDisSessInfos" attribute to enable the identification of
+            the concerned MBS Distribution session.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - mbsUserServId
+        - mbsDisSessInfos
+      not:
+        required: [actPeriods, actPeriodsRepRule]
+
+    MBSDistributionSessionInfo:
+      description: Represents MBS Distribution Session information.
+      type: object
+      properties:
+        mbsDistSessionId:
+          type: string
+        mbsDistSessState:
+          $ref: 'TS29581_Nmbstf_DistSession.yaml#/components/schemas/DistSessionState'
+        mbsSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
+        associatedSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AssociatedSessionId'
+        nrRedCapUeInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NrRedCapUeInfo'
+        mbsServInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsServiceInfo'
+        maxContBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxContDelay:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudget'
+        distrMethod:
+          $ref: '#/components/schemas/DistributionMethod'
+        fecConfig:
+          $ref: '#/components/schemas/FECConfig'
+        objDistrInfo:
+          $ref: '#/components/schemas/ObjectDistrMethInfo'
+        pckDistrInfo:
+          $ref: '#/components/schemas/PacketDistrMethInfo'
+        trafficMarkingInfo:
+          type: string
+        tgtServAreas:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsServiceArea'
+        extTgtServAreas:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExternalMbsServiceArea'
+        mbsFSAId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsFsaId'
+        locationDependent:
+          type: boolean
+          description: >
+            Represents an indication that this MBS Distribution Session belongs to a location-
+            dependent MBS. This attribute shall be set to "true" to indicate that the MBS 
+            Distribution Session belongs to a location-dependent MBS; or set to "false" to 
+            indicate that the MBS Distribution Session does not belong to a location-dependent MBS.
+            The default value is "false", if omitted.
+          default: false
+        multiplexedServFlag:
+          type: boolean
+          description: >
+            Represents an indication that this MBS Distribution Session belongs to a multiplex, i.e. 
+            forms part of a set of MBS Distribution Sessions under the same parent MBS User Data 
+            Ingest Session with identical or empty sets of target service areas and multiplexed onto 
+            the same MBS Session at the MB-SMF.
+          default: false
+        restrictedFlag:
+          type: boolean
+          description: >
+            Represents an indication that this MBS Distribution Session is not open to any UE, i.e. 
+            restricted to a set of UEs according to their MBS related subscription information.
+            This attribute may be included only if the parent MBS User Service is of Multicast
+            service type. This attribute shall be set to "true" to indicate that this MBS
+            Distribution Session is restricted to a set of UE(s); or set to "false" to indicate that
+            this MBS Distribution Session is open to any UE.
+            The default value is "false", if omitted.
+          default: false
+      required:
+        - distrMethod
+        - maxContBitRate
+
+    MBSDistributionSessionInfoRm:
+      description: >
+        Represents the same as the MBSDistributionSessionInfo data type but with the OpenAPI
+        "nullable" property set to "true".
+      type: object
+      properties:
+        mbsDistSessionId:
+          type: string
+        mbsDistSessState:
+          $ref: 'TS29581_Nmbstf_DistSession.yaml#/components/schemas/DistSessionState'
+        mbsSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
+        associatedSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AssociatedSessionId'
+        nrRedCapUeInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NrRedCapUeInfo'
+        mbsServInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsServiceInfo'
+        maxContBitRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxContDelay:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudget'
+        distrMethod:
+          $ref: '#/components/schemas/DistributionMethod'
+        fecConfig:
+          $ref: '#/components/schemas/FECConfig'
+        objDistrInfo:
+          $ref: '#/components/schemas/ObjectDistrMethInfo'
+        pckDistrInfo:
+          $ref: '#/components/schemas/PacketDistrMethInfo'
+        trafficMarkingInfo:
+          type: string
+        tgtServAreas:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsServiceArea'
+        extTgtServAreas:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExternalMbsServiceArea'
+        mbsFSAId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsFsaId'
+        locationDependent:
+          type: boolean
+          description: >
+            Represents an indication that this MBS Distribution Session belongs to a location-
+            dependent MBS. This attribute shall be set to "true" to indicate that the MBS 
+            Distribution Session belongs to a location-dependent MBS; or set to "false" to 
+            indicate that the MBS Distribution Session does not belong to a location-dependent MBS.
+            The default value is "false", if omitted.
+          default: false
+        multiplexedServFlag:
+          type: boolean
+          description: >
+            Represents an indication that this MBS Distribution Session belongs to a multiplex, i.e. 
+            forms part of a set of MBS Distribution Sessions under the same parent MBS User Data 
+            Ingest Session with identical or empty sets of target service areas and multiplexed onto 
+            the same MBS Session at the MB-SMF.
+          default: false
+        restrictedFlag:
+          type: boolean
+          description: >
+            Represents an indication that this MBS Distribution Session is not open to any UE, i.e. 
+            restricted to a set of UEs according to their MBS related subscription information.
+            This attribute may be included only if the parent MBS User Service is of Multicast
+            service type. This attribute shall be set to "true" to indicate that this MBS
+            Distribution Session is restricted to a set of UE(s); or set to "false" to indicate that
+            this MBS Distribution Session is open to any UE.
+            The default value is "false", if omitted.
+          default: false
+      nullable: true
+      required:
+        - distrMethod
+        - maxContBitRate
+
+    MBSUserDataIngSessionPatch:
+      deprecated: true
+      description: >
+        Represents the requested modifications to an MBS User Data Ingest Session Status 
+        Subscription.
+      type: object
+      properties:
+        actPeriods:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+          minItems: 1
+          nullable: true
+        actPeriodsRepRule:
+          $ref: '#/components/schemas/RepetitionRuleRm'
+        mbsDisSessInfos:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MBSDistributionSessionInfo'
+          minProperties: 1
+          nullable: true
+          description: >
+            Contains the requested modifications to one or more MBS Distribution Session(s) 
+            composing the MBS User Data Ingest Session.
+            The key of the map shall be any unique string encoded value.
+
+    MBSUserDataIngSessionPatchEnh:
+      description: >
+        Represents the enhanced set of requested modifications to an MBS User Data Ingest Session
+        Status Subscription.
+      type: object
+      properties:
+        actPeriods:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+          minItems: 1
+          nullable: true
+        actPeriodsRepRule:
+          $ref: '#/components/schemas/RepetitionRuleRm'
+        mbsDisSessInfos:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MBSDistributionSessionInfoRm'
+          minProperties: 1
+          description: >
+            Contains the requested modifications to one or more MBS Distribution Session(s) 
+            composing the MBS User Data Ingest Session.
+            The key of the map shall be any unique string encoded value and shall be set to the same
+            value as the one provided during the creation of the targeted MBS Distribution Session.
+
+    ObjectDistrMethInfo:
+      description: >
+        Represents additional MBS Distribution Session parameters for the case of an Object 
+        Distribution Method.
+      type: object
+      properties:
+        operatingMode:
+          $ref: 'TS29581_Nmbstf_DistSession.yaml#/components/schemas/ObjDistributionOperatingMode'
+        objAcqMethod:
+          $ref: 'TS29581_Nmbstf_DistSession.yaml#/components/schemas/ObjAcquisitionMethod'
+        objAcqIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 0
+        objIngUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        objDistrUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        objRepairUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+      required:
+        - operatingMode
+        - objAcqMethod
+        - objAcqIds
+
+    PacketDistrMethInfo:
+      description: >
+        Represents additional MBS Distribution Session parameters for the case of Packet 
+        Distribution Method.
+      type: object
+      properties:
+        operatingMode:
+          $ref: 'TS29581_Nmbstf_DistSession.yaml#/components/schemas/PktDistributionOperatingMode'
+        pckIngMethod:
+          $ref: 'TS29581_Nmbstf_DistSession.yaml#/components/schemas/PktIngestMethod'
+        ingEndpointAddrs:
+          $ref: 'TS29581_Nmbstf_DistSession.yaml#/components/schemas/MbStfIngestAddr'
+      required:
+        - operatingMode
+        - pckIngMethod
+        - ingEndpointAddrs
+
+    MBSUserDataIngStatSubsc:
+      description: >
+        Represents an MBS User Data Ingest Session Status Subscription.
+      type: object
+      properties:
+        mbsIngSessionId:
+          type: string
+        eventSubscs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscribedEvent'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+      required:
+        - mbsIngSessionId
+        - eventSubscs
+        - notifUri
+
+    MBSUserDataIngStatSubscPatch:
+      description: >
+        Represents the requested modifications to an MBS User Data Ingest Session Status 
+        Subscription.
+      type: object
+      properties:
+        eventSubscs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscribedEvent'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+
+    SubscribedEvent:
+      description: >
+        Represents a subscribed MBS User Data Ingest Session Status event and the related 
+        information.
+      type: object
+      properties:
+        statusEvent:
+          $ref: '#/components/schemas/Event'
+        mbsDistSessionId:
+          type: string
+      required:
+        - statusEvent
+
+    MBSUserDataIngStatNotif:
+      description: >
+        Represents an MBS User Data Ingest Session Status Notification.
+      type: object
+      properties:
+        mbsIngSessionId:
+          type: string
+        eventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventNotification'
+          minItems: 1
+      required:
+        - mbsIngSessionId
+        - eventNotifs
+
+    EventNotification:
+      description: Represents Event Notification.
+      type: object
+      properties:
+        statusEvent:
+          $ref: '#/components/schemas/Event'
+        mbsDisSessionId:
+          type: string
+        mbsSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
+        statusAddInfo:
+          type: string
+        timeStamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - statusEvent
+        - timeStamp
+
+    MBSUserServAnmt:
+      deprecated: true
+      description: >
+        Represents the MBS User Service Announcement currently associated with the MBS User Data 
+        Ingest Session.
+      type: object
+      properties:
+        extServiceId:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        servClass:
+          type: string
+        startTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        endTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        servNameDescs:
+          type: array
+          items:
+            $ref: 'TS29580_Nmbsf_MBSUserService.yaml#/components/schemas/ServiceNameDescription'
+          minItems: 1
+        mainServLang:
+          type: string
+        mbsDistSessAnmt:
+          additionalProperties:
+            $ref: '#/components/schemas/MBSDistSessionAnmt'
+          minProperties: 1
+          description: >
+            Represents the set of MBS Distribution Session Announcements currently associated with 
+            this MBS User Service Announcement.
+      required:
+        - extServiceId
+        - servClass
+        - servNameDescs
+
+    MBSDistSessionAnmt:
+      description: >
+        Represents the set of MBS Distribution Session Announcements currently associated with this 
+        MBS User Service Announcement.
+      type: object
+      properties:
+        mbsSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsSessionId'
+        mbsFSAId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MbsFsaId'
+        distrMethod:
+          $ref: '#/components/schemas/DistributionMethod'
+        objDistrAnnInfo:
+          $ref: '#/components/schemas/ObjectDistMethAnmtInfo'
+        sesDesInfo:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - distrMethod
+        - sesDesInfo
+
+    ObjectDistMethAnmtInfo:
+      description: >
+        Represents MBS Distribution Session Announcement parameters for Object Distribution Method.
+      type: object
+      properties:
+        objDistrSched:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        objDistrBaseUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        objRepBaseUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+
+    FECConfig:
+      description: Represents FEC configuration information.
+      type: object
+      properties:
+        fecScheme:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        fecOverHead:
+          type: integer
+        additionalParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddFecParams'
+          minItems: 1
+      required:
+        - fecScheme
+        - fecOverHead
+
+    AddFecParams:
+      description: Represents additional scheme-specific parameters for AL-FEC configuration.
+      type: object
+      properties:
+        paramName:
+          type: string
+        paramValue:
+          type: string
+      required:
+        - paramName
+        - paramValue
+
+    MbsDistSessFailure:
+      description: Represents MBS Distribution Session specific failure information.
+      type: object
+      properties:
+        cause:
+          $ref: '#/components/schemas/DistSessionFailure'
+        redMbsServArea:
+          $ref: 'TS29522_MBSTMGI.yaml#/components/schemas/ReducedMbsServArea'
+      required:
+        - cause
+
+    MbsDistSessFailureSets:
+      description: >
+        Represents one or several set(s) of MBS Distribution Session specific failure
+        information.
+      type: object
+      properties:
+        causes:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MbsDistSessFailure'
+          minProperties: 1
+          description: >
+            Represents the causes of the failure of the MBS User Data Ingest session
+            creation/update on a per-MBS Distribution Session granularity.
+            The key of the map shall be a string set to the same value received from the NF
+            service consumer within "mbsDisSessInfos" attribute of the MBSUserDataIngSession
+            data type to enable the identification of the failed MBS Distribution session.
+      required:
+        - causes
+
+    RepetitionRuleRm:
+      description: >
+        Represents the same as the RepetitionRule data type defined in 3GPP TS 26.517 but with the
+        OpenAPI nullable property set to true.
+      type: object
+      properties:
+        startTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        duration:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        repetitionInterval:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+      nullable: true
+      required:
+        - startTime
+        - duration
+        - repetitionInterval
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+    DistributionMethod:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - OBJECT
+        - PACKET
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the MBS Distribution method.  
+#        Possible values are:
+#        - OBJECT: Indicates the Object Distribution Method.
+#        - PACKET: Indicates the Packet Distribution Method.
+#
+    Event:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - USER_DATA_ING_SESS_STARTING
+        - USER_DATA_ING_SESS_STARTED
+        - USER_DATA_ING_SESS_TERMINATED
+        - DIST_SESS_STARTING
+        - DIST_SESS_STARTED
+        - DIST_SESS_TERMINATED
+        - DIST_SESS_SERV_MNGT_FAILURE
+        - DIST_SESS_POL_CRTL_FAILURE
+        - DATA_INGEST_FAILURE
+        - DELIVERY_STARTED
+        - SESSION_TERMINATED
+        - SESSION_STARTED
+        - SESSION_RELEASED
+        - DIST_SESS_ACTIVATED
+        - DIST_SESS_EST_FAILURE
+        - USER_SER_AD
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the MBS User Data Ingest Session Status events.  
+#        Possible values are:
+#        - USER_DATA_ING_SESS_STARTING: >
+#            Indicates that the MBS User Data Ingest Session is starting. This is an "MBS User Data
+#            Ingest Session" level event.
+#        - USER_DATA_ING_SESS_STARTED: >
+#            Indicates that the MBS User Data Ingest Session established. This is an "MBS User Data
+#            Ingest Session" level event.
+#        - USER_DATA_ING_SESS_TERMINATED: >
+#            Indicates that the MBS User Data Ingest Session is terminated. This is an "MBS User Data
+#            Ingest Session" level event.
+#        - DIST_SESS_STARTING: >
+#            Indicates that the MBS Distribution Session is starting. This is an "MBS Distribution
+#            Session" level event.
+#        - DIST_SESS_STARTED: >
+#            Indicates that the MBS Distribution Session started. This is an "MBS Distribution
+#            Session" level event.
+#        - DIST_SESS_TERMINATED: >
+#            Indicates that the MBS Distribution Session is terminated. This is an "MBS Distribution
+#            Session" level event.
+#        - DIST_SESS_SERV_MNGT_FAILURE: >
+#            Indicates that the MBS Distribution Session could not be started (e.g. the necessary
+#            resources could not be allocated by the MBS system). This is an "MBS Distribution
+#            Session" level event.
+#        - DIST_SESS_POL_CRTL_FAILURE: >
+#            Indicates that the MBS Distribution Session could not be started because of a policy
+#            authorization/control failure or rejection. This is an "MBS Distribution Session"
+#            level event.
+#        - DATA_INGEST_FAILURE: >
+#            The MBS User Data Ingest is failed because the MBSTF is expecting data (the MBS Session
+#            is active), but not receiving it. This is an "MBS Distribution Session" level event.
+#        - DELIVERY_STARTED: >
+#            The MBS User Data delivery is started.
+#        - SESSION_TERMINATED: >
+#            The MBS User Data Ingest Session is terminated.
+#        - SESSION_STARTED: >
+#            The MBS Session is started.
+#        - SESSION_RELEASED: >
+#            The MBS Session is released.
+#        - DIST_SESS_ACTIVATED:
+#            Indicates that the MBS Distribution Session is activated successfully.
+#        - DIST_SESS_EST_FAILURE:
+#            Indicates that the MBSF failed to successfully establish the MBS Distribution Session at
+#            the MBSTF. This is an "MBS Distribution Session" level event.
+#        - USER_SER_AD:
+#            Indicates that the MBSF advertises the User Service Announcement information to the MBS
+#            Application Provider.
+#
+    DistSessionFailure:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+        - INVALID_MBS_SERVICE_INFO
+        - MBS_SERVICE_AREA_NOT_SUPPORTED
+        - MBS_SERVICE_INFO_NOT_AUTHORIZED
+        - MBS_DIST_SESSION_ALREADY_CREATED
+        - OVERLAPPING_MBS_SERVICE_AREA
+        - UNKNOWN_MBS_SERVICE_AREA
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration
+#          and is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the MBS Distribution Session creation/update related failure cause.  
+#        Possible values are:
+#        - INVALID_MBS_SERVICE_INFO: >
+#            Indicates that the provided MBS Service Information is invalid (e.g. invalid QoS
+#            reference), incorrect or insufficient to perform MBS policy authorization.
+#        - MBS_SERVICE_AREA_NOT_SUPPORTED: >
+#            Indicates that the requested MBS Service Area is not supported by the 3GPP Core
+#            Network.
+#        - MBS_SERVICE_INFO_NOT_AUTHORIZED: >
+#            Indicates that the provided MBS Service Information is rejected.
+#        - MBS_DIST_SESSION_ALREADY_CREATED: >
+#            Indicates that the requested MBS Distribution Session has already been created.
+#        - OVERLAPPING_MBS_SERVICE_AREA: >
+#            Indicates that the provided MBS service area overlaps with the MBS service area of
+#            an existing MBS Distribution Session that shares the same MBS session Identifier.
+#        - UNKNOWN_MBS_SERVICE_AREA: >
+#            Indicates that the requested MBS service area (e.g., identified by the Area Session
+#            ID) cannot be found.
+#
+#
+# Data types describing alternative data types or combinations of data types
+#
+
+    ProblemDetailsMBS:
+      description: >
+        Represents an extension to the ProblemDetails data structure with potentially additional
+        error information related to MBS.
+      allOf:
+        - $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        - $ref: '#/components/schemas/MbsDistSessFailureSets'

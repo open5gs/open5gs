@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_scp_domain_routing_information_s OpenAPI_scp_domain_routing_information_t;
 #include "scp_domain_connectivity.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_scp_domain_routing_information_s OpenAPI_scp_domain_routing_information_t;
-typedef struct OpenAPI_scp_domain_routing_information_s {
+struct OpenAPI_scp_domain_routing_information_s {
     OpenAPI_list_t* scp_domain_list;
-} OpenAPI_scp_domain_routing_information_t;
+};
 
 OpenAPI_scp_domain_routing_information_t *OpenAPI_scp_domain_routing_information_create(
     OpenAPI_list_t* scp_domain_list

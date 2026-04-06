@@ -7,6 +7,7 @@
 OpenAPI_routing_info_sm_request_t *OpenAPI_routing_info_sm_request_create(
     bool is_ip_sm_gw_ind,
     int ip_sm_gw_ind,
+    char *correlation_id,
     char *supported_features
 )
 {
@@ -15,6 +16,7 @@ OpenAPI_routing_info_sm_request_t *OpenAPI_routing_info_sm_request_create(
 
     routing_info_sm_request_local_var->is_ip_sm_gw_ind = is_ip_sm_gw_ind;
     routing_info_sm_request_local_var->ip_sm_gw_ind = ip_sm_gw_ind;
+    routing_info_sm_request_local_var->correlation_id = correlation_id;
     routing_info_sm_request_local_var->supported_features = supported_features;
 
     return routing_info_sm_request_local_var;
@@ -26,6 +28,10 @@ void OpenAPI_routing_info_sm_request_free(OpenAPI_routing_info_sm_request_t *rou
 
     if (NULL == routing_info_sm_request) {
         return;
+    }
+    if (routing_info_sm_request->correlation_id) {
+        ogs_free(routing_info_sm_request->correlation_id);
+        routing_info_sm_request->correlation_id = NULL;
     }
     if (routing_info_sm_request->supported_features) {
         ogs_free(routing_info_sm_request->supported_features);
@@ -52,6 +58,13 @@ cJSON *OpenAPI_routing_info_sm_request_convertToJSON(OpenAPI_routing_info_sm_req
     }
     }
 
+    if (routing_info_sm_request->correlation_id) {
+    if (cJSON_AddStringToObject(item, "correlationId", routing_info_sm_request->correlation_id) == NULL) {
+        ogs_error("OpenAPI_routing_info_sm_request_convertToJSON() failed [correlation_id]");
+        goto end;
+    }
+    }
+
     if (routing_info_sm_request->supported_features) {
     if (cJSON_AddStringToObject(item, "supportedFeatures", routing_info_sm_request->supported_features) == NULL) {
         ogs_error("OpenAPI_routing_info_sm_request_convertToJSON() failed [supported_features]");
@@ -68,11 +81,20 @@ OpenAPI_routing_info_sm_request_t *OpenAPI_routing_info_sm_request_parseFromJSON
     OpenAPI_routing_info_sm_request_t *routing_info_sm_request_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *ip_sm_gw_ind = NULL;
+    cJSON *correlation_id = NULL;
     cJSON *supported_features = NULL;
     ip_sm_gw_ind = cJSON_GetObjectItemCaseSensitive(routing_info_sm_requestJSON, "ipSmGwInd");
     if (ip_sm_gw_ind) {
     if (!cJSON_IsBool(ip_sm_gw_ind)) {
         ogs_error("OpenAPI_routing_info_sm_request_parseFromJSON() failed [ip_sm_gw_ind]");
+        goto end;
+    }
+    }
+
+    correlation_id = cJSON_GetObjectItemCaseSensitive(routing_info_sm_requestJSON, "correlationId");
+    if (correlation_id) {
+    if (!cJSON_IsString(correlation_id) && !cJSON_IsNull(correlation_id)) {
+        ogs_error("OpenAPI_routing_info_sm_request_parseFromJSON() failed [correlation_id]");
         goto end;
     }
     }
@@ -88,6 +110,7 @@ OpenAPI_routing_info_sm_request_t *OpenAPI_routing_info_sm_request_parseFromJSON
     routing_info_sm_request_local_var = OpenAPI_routing_info_sm_request_create (
         ip_sm_gw_ind ? true : false,
         ip_sm_gw_ind ? ip_sm_gw_ind->valueint : 0,
+        correlation_id && !cJSON_IsNull(correlation_id) ? ogs_strdup(correlation_id->valuestring) : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
     );
 

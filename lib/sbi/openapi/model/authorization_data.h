@@ -12,8 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_authorization_data_s OpenAPI_authorization_data_t;
 #include "mtc_provider.h"
-#include "set.h"
 #include "snssai.h"
 #include "user_identifier.h"
 
@@ -21,17 +21,16 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_authorization_data_s OpenAPI_authorization_data_t;
-typedef struct OpenAPI_authorization_data_s {
-    OpenAPI_set_t *authorization_data;
+struct OpenAPI_authorization_data_s {
+    OpenAPI_list_t *authorization_data;
     OpenAPI_list_t *allowed_dnn_list;
     OpenAPI_list_t *allowed_snssai_list;
     OpenAPI_list_t *allowed_mtc_providers;
     char *validity_time;
-} OpenAPI_authorization_data_t;
+};
 
 OpenAPI_authorization_data_t *OpenAPI_authorization_data_create(
-    OpenAPI_set_t *authorization_data,
+    OpenAPI_list_t *authorization_data,
     OpenAPI_list_t *allowed_dnn_list,
     OpenAPI_list_t *allowed_snssai_list,
     OpenAPI_list_t *allowed_mtc_providers,

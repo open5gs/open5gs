@@ -10,6 +10,7 @@ OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_create(
     OpenAPI_smf_registration_info_t *smf_registration,
     OpenAPI_smsf_registration_t *smsf3_gpp,
     OpenAPI_smsf_registration_t *smsf_non3_gpp,
+    bool is_ip_sm_gw_null,
     OpenAPI_ip_sm_gw_registration_t *ip_sm_gw,
     OpenAPI_nwdaf_registration_info_t *nwdaf_registration
 )
@@ -22,6 +23,7 @@ OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_create(
     registration_data_sets_local_var->smf_registration = smf_registration;
     registration_data_sets_local_var->smsf3_gpp = smsf3_gpp;
     registration_data_sets_local_var->smsf_non3_gpp = smsf_non3_gpp;
+    registration_data_sets_local_var->is_ip_sm_gw_null = is_ip_sm_gw_null;
     registration_data_sets_local_var->ip_sm_gw = ip_sm_gw;
     registration_data_sets_local_var->nwdaf_registration = nwdaf_registration;
 
@@ -153,6 +155,11 @@ cJSON *OpenAPI_registration_data_sets_convertToJSON(OpenAPI_registration_data_se
         ogs_error("OpenAPI_registration_data_sets_convertToJSON() failed [ip_sm_gw]");
         goto end;
     }
+    } else if (registration_data_sets->is_ip_sm_gw_null) {
+        if (cJSON_AddNullToObject(item, "ipSmGw") == NULL) {
+            ogs_error("OpenAPI_registration_data_sets_convertToJSON() failed [ip_sm_gw]");
+            goto end;
+        }
     }
 
     if (registration_data_sets->nwdaf_registration) {
@@ -237,10 +244,12 @@ OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_parseFromJSON(c
 
     ip_sm_gw = cJSON_GetObjectItemCaseSensitive(registration_data_setsJSON, "ipSmGw");
     if (ip_sm_gw) {
+    if (!cJSON_IsNull(ip_sm_gw)) {
     ip_sm_gw_local_nonprim = OpenAPI_ip_sm_gw_registration_parseFromJSON(ip_sm_gw);
     if (!ip_sm_gw_local_nonprim) {
         ogs_error("OpenAPI_ip_sm_gw_registration_parseFromJSON failed [ip_sm_gw]");
         goto end;
+    }
     }
     }
 
@@ -259,6 +268,7 @@ OpenAPI_registration_data_sets_t *OpenAPI_registration_data_sets_parseFromJSON(c
         smf_registration ? smf_registration_local_nonprim : NULL,
         smsf3_gpp ? smsf3_gpp_local_nonprim : NULL,
         smsf_non3_gpp ? smsf_non3_gpp_local_nonprim : NULL,
+        ip_sm_gw && cJSON_IsNull(ip_sm_gw) ? true : false,
         ip_sm_gw ? ip_sm_gw_local_nonprim : NULL,
         nwdaf_registration ? nwdaf_registration_local_nonprim : NULL
     );

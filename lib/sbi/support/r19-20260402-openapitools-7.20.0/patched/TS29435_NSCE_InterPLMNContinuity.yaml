@@ -1,0 +1,239 @@
+openapi: 3.0.0
+
+info:
+  title: NSCE Server Inter-PLMN Service Continuity Service
+  version: 1.0.0
+  description: |
+    NSCE Server Inter-PLMN Service Continuity Service.  
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.435 V18.1.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Network Slice Capability Enablement (NSCE) Server Service(s); Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.435/
+
+servers:
+  - url: '{apiRoot}/nsce-ipc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /request:
+    post:
+      summary: Enables to request inter-PLMN application service continuity.
+      operationId: InterPlmnServContReq
+      tags:
+        - Inter-PLMN Application Service Continuity Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InterPlmnServContReq'
+      responses:
+        '204':
+          description: >
+            No Content. The inter-PLMN application service continuity request is successfully
+            received and processed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        InterPlmnServContNotif:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/InterPlmnServContNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Inter-PLMN Service Continuity Notification is successfully
+                    received and processed.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    InterPlmnServContReq:
+      description: >
+        Represents the parameters to request inter-PLMN application service continuity.
+      type: object
+      properties:
+        valServId:
+          type: string
+        ueIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        servContReq:
+          $ref: '#/components/schemas/ServContReq'
+        targetPlmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        targetServArea:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+        appQoSReqs:
+          $ref: '#/components/schemas/AppReqs'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - valServId
+        - servContReq
+        - targetPlmnId
+        - netSliceId
+        - notifUri
+
+    AppReqs:
+      description: >
+        Represents application QoS requirements.
+      type: object
+      properties:
+        reliability:
+          format: float
+          type: number
+          minimum: 0
+          maximum: 100
+        delay:
+          type: integer
+          minimum: 1
+        jitter:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+      anyOf:
+        - required: [reliability]
+        - required: [delay]
+        - required: [jitter]
+
+    InterPlmnServContNotif:
+      description: >
+        Represents an Inter-PLMN Service Continuity Notification.
+      type: object
+      properties:
+        valServId:
+          type: string
+        ueIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        netSliceId:
+          $ref: 'TS29435_NSCE_PolicyManagement.yaml#/components/schemas/NetSliceId'
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        targetServArea:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+      required:
+        - valServId
+        - netSliceId
+        - plmnId
+        - targetServArea
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#
+
+    ServContReq:
+      anyOf:
+      - type: string
+        enum:
+           - EXPECTED_MIGRATION
+           - PREDICTED_MIGRATION
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the enumeration
+          and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents a service continuity requirement.  
+        Possible values are:
+        - EXPECTED_MIGRATION: Indicates that the service continuity requirement is the expected
+          migration of the VAL application (or a list of VAL UE(s) of the VAL application) to a
+          target area.
+        - PREDICTED_MIGRATION: Indicates that the service continuity requirement is the predicted
+          migration of the VAL application (or a list of VAL UE(s) of the VAL application) to a
+          target area.

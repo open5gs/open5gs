@@ -1,0 +1,508 @@
+openapi: 3.0.0
+
+info:
+  title: CAPIF_API_Invoker_Management_API
+  version: 1.4.0
+  description: |
+    API for API invoker management.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.222 V19.5.0 Common API Framework for 3GPP Northbound APIs
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.222/
+
+servers:
+  - url: '{apiRoot}/api-invoker-management/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 7.5 of 3GPP TS 29.222
+
+paths:
+  /onboardedInvokers:
+    post:
+      summary: Request the Creation of a new On-boarded API Invoker.
+      operationId: CreateOnboardedAPIInvoker
+      tags:
+        - On-boarded API Invokers (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIInvokerEnrolmentDetails'
+      responses:
+        '201':
+          description: >
+            Created. The API Invoker is successfully on-boarded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIInvokerEnrolmentDetails'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '202':
+          description: >
+            Accepted. The CCF accepted the Onboarding request and is processing it.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        notificationDestination:
+          '{$request.body#/notificationDestination}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/OnboardingNotification'
+              responses:
+                '204':
+                  description: >
+                    No Content. The onboarding notification is successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /onboardedInvokers/{onboardingId}:
+    parameters:
+      - name: onboardingId
+        in: path
+        required: true
+        schema:
+          type: string
+
+    delete:
+      description: Deletes an existing Individual On-boarded API Invoker.
+      summary: Delete an existing Individual On-boarded API Invoker resource.
+      operationId: DeleteIndOnboardedAPIInvoker
+      tags:
+        - Individual On-boarded API Invoker (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual On-boarded API Invoker resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update an existing Individual On-boarded API Invoker resource.
+      operationId: UpdateIndOnboardedAPIInvoker
+      tags:
+        - Individual On-boarded API Invoker (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIInvokerEnrolmentDetails'
+      responses:
+        '200':
+          description: >
+            OK. The Individual On-boarded API Invoker resource is successfully updated and the
+            representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIInvokerEnrolmentDetails'
+        '202':
+          description: >
+            Accepted. The request is accepted and under processing.
+        '204':
+          description: >
+            No Content. The Individual On-boarded API Invoker resource is successfully updated
+            and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify an existing Individual On-boarded API Invoker resource.
+      operationId: ModifyIndOnboardedAPIInvoker
+      tags:
+        - Individual On-boarded API Invoker (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/APIInvokerEnrolmentDetailsPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual On-boarded API Invoker resource is successfully modified and the
+            representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIInvokerEnrolmentDetails'
+        '202':
+          description: >
+            Accepted. The request is accepted and under processing.
+        '204':
+          description: >
+            No Content. The Individual On-boarded API Invoker resource is successfully modified
+            and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+
+    OnboardingInformation:
+      type: object
+      description: Represents the on-boarding information of the API Invoker.
+      properties:
+        apiInvokerPublicKey:
+          type: string
+          description: The API Invoker's public key
+        apiInvokerCertificate:
+          type: string
+          description: >
+            The API Invoker's generic client certificate, provided by the CAPIF core function.
+        onboardingSecret:
+          type: string
+          description: >
+            The API Invoker's onboarding secret, provided by the CAPIF core function.
+        onboardingCriteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/OnboardingCriteria'
+          minItems: 1
+      required:
+        - apiInvokerPublicKey
+
+    APIList:
+      type: object
+      description: Represents a list of APIs with the corresponding information.
+      properties:
+        serviceAPIDescriptions:
+          type: array
+          items:
+            $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/ServiceAPIDescription'
+          minItems: 1
+          description: >
+            Represents the list of service APIs that the API Invoker is allowed to invoke.
+
+    APIInvokerEnrolmentDetails:
+      description: Represents the onboarding information of the API Invoker.
+      type: object
+      properties:
+        apiInvokerId:
+          type: string
+          description: >
+            API invoker ID assigned by the CAPIF core function to the API invoker while
+            on-boarding the API invoker. Shall not be present in the HTTP POST request
+            from the API invoker to the CAPIF core function, to on-board itself. Shall be
+            present in all other HTTP requests and responses.
+          readOnly: true
+        onboardingInformation:
+          $ref: '#/components/schemas/OnboardingInformation'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        requestTestNotification:
+          type: boolean
+          description: >
+            Set to true to request the CCF to send a
+            test notification as defined in in clause 7.6.
+            Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        apiList:
+          $ref: '#/components/schemas/APIList'
+        apiInvokerInformation:
+          type: string
+          description: >
+             Generic information related to the API invoker such as details of
+             the device or the application.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        failureReasons:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnrolFailReason'
+          minItems: 1
+      required:
+        - onboardingInformation
+        - notificationDestination
+
+    OnboardingNotification:
+      type: object
+      description: Represents a notification of on-boarding creation or update result.
+      properties:
+        result:
+          type: boolean
+          description: Set to "true" to indicate successful on-boarding. Otherwise set to "false".
+        resourceLocation:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        apiInvokerEnrolmentDetails:
+          $ref: '#/components/schemas/APIInvokerEnrolmentDetails'
+        apiList:
+          $ref: '#/components/schemas/APIList'
+        failReason:
+          $ref: '#/components/schemas/OnboardingFailReason'
+      required:
+        - result
+
+    APIInvokerEnrolmentDetailsPatch:
+      type: object
+      description: Represents an API Invoker's enrolment details to be updated.
+      properties:
+        onboardingInformation:
+          $ref: '#/components/schemas/OnboardingInformation'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        apiList:
+          $ref: '#/components/schemas/APIList'
+        apiInvokerInformation:
+          type: string
+          description: >
+            Generic information related to the API invoker such as details of
+            the device or the application.
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTimeRm'
+
+    OnboardingCriteria:
+      type: object
+      description: Represents the onboarding criteria information.
+      properties:
+        secMethods:
+          type: array
+          items:
+            $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/SecurityMethod'
+          minItems: 1
+        relatedCriteria:
+          $ref: '#/components/schemas/RelatedCriteria'
+      required:
+        - secMethods
+
+    RelatedCriteria:
+      type: object
+      description: Represents onboarding related criteria.
+      properties:
+        aefIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        apis:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiInfo'
+          minItems: 1
+        serviceAPICategories:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      anyOf:
+        - required: [aefIds]
+        - required: [serviceAPICategories]
+        - required: [apis]
+
+    ApiInfo:
+      type: object
+      description: Represents service API identification related information.
+      properties:
+        apiName:
+          type: string
+        supportedApiVersions:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - apiName
+
+    EnrolFailReason:
+      type: object
+      description: Represents the failure reason for not those APIs not enrolled successfully.
+      properties:
+        apiName:
+          items:
+            type: string
+        failureCode:
+          $ref: '#/components/schemas/EnrolFailCause'
+      required:
+        - apiName
+        - failureCode
+
+# SIMPLE DATA TYPES
+#
+
+
+# ENUMERATIONS DATA TYPES
+#
+    EnrolFailCause:
+      anyOf:
+        - type: string
+          enum:
+            - AUTHORIZATION_ISSUE
+            - ONBOARDING_CRI_NOT_MET
+            - UNSPECIFIED
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration but
+            is not used to encode content defined in the present version of this API.
+      description: |
+        Represents API Invoker's per API enrollment failure code.  
+        Possible values are:
+        - AUTHORIZATION_ISSUE: Indicates that the service API enrollment failed because the service
+          API is not authorized for the API Invoker.
+        - ONBOARDING_CRI_NOT_MET: Indicates that the service API entollment failed because the
+          onboarding criteria not met for this service API for the API Invoker.
+        - UNSPECIFIED: Indicates that the service API enrollment failed due to an unspecified
+          reason.
+
+    OnboardingFailReason:
+      anyOf:
+        - type: string
+          enum:
+          - API_INVOKER_NOT_ALLOWED
+          - ONBOARDING_CRI_NOT_MET
+          - OTHER
+        - type: string
+          description: >
+            This string provides forward-compatibility with future extensions to the enumeration
+            and is not used to encode content defined in the present version of this API.
+      description: |
+        Represents the API Invoker onboarding failure reason.  
+        Possible values are:
+        - API_INVOKER_NOT_ALLOWED: Indicates that the onboarding of the API Invoker failed because
+          the API Invoker is not allowed.
+        - ONBOARDING_CRI_NOT_MET: Indicates that the onboarding of the API Invoker failed because
+          the onboarding criteria is not met.
+        - OTHER: Indicates that the onboarding of the API Invoker failed because of other reasons.
+
+
+# Data types describing alternative data types or combinations of data types:
+#

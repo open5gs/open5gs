@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_n1_n2_message_transfer_error_s OpenAPI_n1_n2_message_transfer_error_t;
 #include "n1_n2_msg_txfr_err_detail.h"
 #include "problem_details.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n1_n2_message_transfer_error_s OpenAPI_n1_n2_message_transfer_error_t;
-typedef struct OpenAPI_n1_n2_message_transfer_error_s {
+struct OpenAPI_n1_n2_message_transfer_error_s {
     struct OpenAPI_problem_details_s *error;
     struct OpenAPI_n1_n2_msg_txfr_err_detail_s *err_info;
-} OpenAPI_n1_n2_message_transfer_error_t;
+};
 
 OpenAPI_n1_n2_message_transfer_error_t *OpenAPI_n1_n2_message_transfer_error_create(
     OpenAPI_problem_details_t *error,

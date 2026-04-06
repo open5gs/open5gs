@@ -40,6 +40,7 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_message_t *message = NULL;
+    int service_name_id = OpenAPI_service_name_NULL;
     int r;
 
     ogs_assert(s);
@@ -71,8 +72,10 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             break;
         }
 
-        SWITCH(message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NUDM_UEAU)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message->h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nudm_ueau:
             SWITCH(message->h.method)
             CASE(OGS_SBI_HTTP_METHOD_POST)
                 SWITCH(message->h.resource.component[1])
@@ -119,7 +122,7 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             END
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
+        case OpenAPI_service_name_nudm_uecm:
             SWITCH(message->h.method)
             CASE(OGS_SBI_HTTP_METHOD_PUT)
                 SWITCH(message->h.resource.component[1])
@@ -186,13 +189,13 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             END
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+        case OpenAPI_service_name_nudm_sdm:
             SWITCH(message->h.method)
             CASE(OGS_SBI_HTTP_METHOD_GET)
                 if (message->param.num_of_dataset_names &&
                         !message->h.resource.component[1]) {
                     r = udm_ue_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
+                            OpenAPI_service_name_nudr_dr, NULL,
                             udm_nudr_dr_build_query_subscription_provisioned,
                             udm_ue, stream, UDM_SBI_UE_PROVISIONED_DATASETS,
                             message);
@@ -205,7 +208,7 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
                 CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
                     r = udm_ue_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
+                            OpenAPI_service_name_nudr_dr, NULL,
                             udm_nudr_dr_build_query_subscription_provisioned,
                             udm_ue, stream, UDM_SBI_NO_STATE, message);
                     ogs_expect(r == OGS_OK);
@@ -214,7 +217,7 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
                 CASE(OGS_SBI_RESOURCE_NAME_NSSAI)
                     r = udm_ue_sbi_discover_and_send(
-                            OGS_SBI_SERVICE_TYPE_NUDR_DR, NULL,
+                            OpenAPI_service_name_nudr_dr, NULL,
                             udm_nudr_dr_build_query_subscription_provisioned,
                             udm_ue, stream, UDM_SBI_UE_PROVISIONED_NSSAI_ONLY,
                             message);
@@ -281,13 +284,13 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("Invalid API name [%s]", message->h.service.name);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, message,
                     "Invalid API name", message->h.service.name, NULL));
-        END
+        }
         break;
 
     case OGS_EVENT_SBI_CLIENT:
@@ -307,8 +310,10 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             break;
         }
 
-        SWITCH(message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NUDR_DR)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message->h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nudr_dr:
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA)
                 SWITCH(message->h.resource.component[2])
@@ -347,14 +352,14 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("Invalid API name [%s]", message->h.service.name);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, message,
                     "Invalid API name", message->h.resource.component[0],
                     NULL));
-        END
+        }
         break;
 
     default:

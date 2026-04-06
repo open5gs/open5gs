@@ -12,14 +12,14 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_bdt_policy_data_s OpenAPI_bdt_policy_data_t;
 #include "snssai.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_bdt_policy_data_s OpenAPI_bdt_policy_data_t;
-typedef struct OpenAPI_bdt_policy_data_s {
+struct OpenAPI_bdt_policy_data_s {
     char *inter_group_id;
     char *supi;
     char *bdt_ref_id;
@@ -27,7 +27,7 @@ typedef struct OpenAPI_bdt_policy_data_s {
     struct OpenAPI_snssai_s *snssai;
     char *res_uri;
     OpenAPI_list_t *reset_ids;
-} OpenAPI_bdt_policy_data_t;
+};
 
 OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_create(
     char *inter_group_id,

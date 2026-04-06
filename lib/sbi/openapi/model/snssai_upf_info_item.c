@@ -8,7 +8,10 @@ OpenAPI_snssai_upf_info_item_t *OpenAPI_snssai_upf_info_item_create(
     OpenAPI_ext_snssai_t *s_nssai,
     OpenAPI_list_t *dnn_upf_info_list,
     bool is_redundant_transport,
-    int redundant_transport
+    int redundant_transport,
+    OpenAPI_list_t *interface_upf_info_list,
+    bool is_dnn_upf_info_list_id,
+    int dnn_upf_info_list_id
 )
 {
     OpenAPI_snssai_upf_info_item_t *snssai_upf_info_item_local_var = ogs_malloc(sizeof(OpenAPI_snssai_upf_info_item_t));
@@ -18,6 +21,9 @@ OpenAPI_snssai_upf_info_item_t *OpenAPI_snssai_upf_info_item_create(
     snssai_upf_info_item_local_var->dnn_upf_info_list = dnn_upf_info_list;
     snssai_upf_info_item_local_var->is_redundant_transport = is_redundant_transport;
     snssai_upf_info_item_local_var->redundant_transport = redundant_transport;
+    snssai_upf_info_item_local_var->interface_upf_info_list = interface_upf_info_list;
+    snssai_upf_info_item_local_var->is_dnn_upf_info_list_id = is_dnn_upf_info_list_id;
+    snssai_upf_info_item_local_var->dnn_upf_info_list_id = dnn_upf_info_list_id;
 
     return snssai_upf_info_item_local_var;
 }
@@ -39,6 +45,13 @@ void OpenAPI_snssai_upf_info_item_free(OpenAPI_snssai_upf_info_item_t *snssai_up
         }
         OpenAPI_list_free(snssai_upf_info_item->dnn_upf_info_list);
         snssai_upf_info_item->dnn_upf_info_list = NULL;
+    }
+    if (snssai_upf_info_item->interface_upf_info_list) {
+        OpenAPI_list_for_each(snssai_upf_info_item->interface_upf_info_list, node) {
+            OpenAPI_interface_upf_info_item_free(node->data);
+        }
+        OpenAPI_list_free(snssai_upf_info_item->interface_upf_info_list);
+        snssai_upf_info_item->interface_upf_info_list = NULL;
     }
     ogs_free(snssai_upf_info_item);
 }
@@ -69,10 +82,7 @@ cJSON *OpenAPI_snssai_upf_info_item_convertToJSON(OpenAPI_snssai_upf_info_item_t
         goto end;
     }
 
-    if (!snssai_upf_info_item->dnn_upf_info_list) {
-        ogs_error("OpenAPI_snssai_upf_info_item_convertToJSON() failed [dnn_upf_info_list]");
-        return NULL;
-    }
+    if (snssai_upf_info_item->dnn_upf_info_list) {
     cJSON *dnn_upf_info_listList = cJSON_AddArrayToObject(item, "dnnUpfInfoList");
     if (dnn_upf_info_listList == NULL) {
         ogs_error("OpenAPI_snssai_upf_info_item_convertToJSON() failed [dnn_upf_info_list]");
@@ -86,10 +96,34 @@ cJSON *OpenAPI_snssai_upf_info_item_convertToJSON(OpenAPI_snssai_upf_info_item_t
         }
         cJSON_AddItemToArray(dnn_upf_info_listList, itemLocal);
     }
+    }
 
     if (snssai_upf_info_item->is_redundant_transport) {
     if (cJSON_AddBoolToObject(item, "redundantTransport", snssai_upf_info_item->redundant_transport) == NULL) {
         ogs_error("OpenAPI_snssai_upf_info_item_convertToJSON() failed [redundant_transport]");
+        goto end;
+    }
+    }
+
+    if (snssai_upf_info_item->interface_upf_info_list) {
+    cJSON *interface_upf_info_listList = cJSON_AddArrayToObject(item, "interfaceUpfInfoList");
+    if (interface_upf_info_listList == NULL) {
+        ogs_error("OpenAPI_snssai_upf_info_item_convertToJSON() failed [interface_upf_info_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(snssai_upf_info_item->interface_upf_info_list, node) {
+        cJSON *itemLocal = OpenAPI_interface_upf_info_item_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_snssai_upf_info_item_convertToJSON() failed [interface_upf_info_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(interface_upf_info_listList, itemLocal);
+    }
+    }
+
+    if (snssai_upf_info_item->is_dnn_upf_info_list_id) {
+    if (cJSON_AddNumberToObject(item, "dnnUpfInfoListId", snssai_upf_info_item->dnn_upf_info_list_id) == NULL) {
+        ogs_error("OpenAPI_snssai_upf_info_item_convertToJSON() failed [dnn_upf_info_list_id]");
         goto end;
     }
     }
@@ -107,6 +141,9 @@ OpenAPI_snssai_upf_info_item_t *OpenAPI_snssai_upf_info_item_parseFromJSON(cJSON
     cJSON *dnn_upf_info_list = NULL;
     OpenAPI_list_t *dnn_upf_info_listList = NULL;
     cJSON *redundant_transport = NULL;
+    cJSON *interface_upf_info_list = NULL;
+    OpenAPI_list_t *interface_upf_info_listList = NULL;
+    cJSON *dnn_upf_info_list_id = NULL;
     s_nssai = cJSON_GetObjectItemCaseSensitive(snssai_upf_info_itemJSON, "sNssai");
     if (!s_nssai) {
         ogs_error("OpenAPI_snssai_upf_info_item_parseFromJSON() failed [s_nssai]");
@@ -119,10 +156,7 @@ OpenAPI_snssai_upf_info_item_t *OpenAPI_snssai_upf_info_item_parseFromJSON(cJSON
     }
 
     dnn_upf_info_list = cJSON_GetObjectItemCaseSensitive(snssai_upf_info_itemJSON, "dnnUpfInfoList");
-    if (!dnn_upf_info_list) {
-        ogs_error("OpenAPI_snssai_upf_info_item_parseFromJSON() failed [dnn_upf_info_list]");
-        goto end;
-    }
+    if (dnn_upf_info_list) {
         cJSON *dnn_upf_info_list_local = NULL;
         if (!cJSON_IsArray(dnn_upf_info_list)) {
             ogs_error("OpenAPI_snssai_upf_info_item_parseFromJSON() failed [dnn_upf_info_list]");
@@ -143,6 +177,7 @@ OpenAPI_snssai_upf_info_item_t *OpenAPI_snssai_upf_info_item_parseFromJSON(cJSON
             }
             OpenAPI_list_add(dnn_upf_info_listList, dnn_upf_info_listItem);
         }
+    }
 
     redundant_transport = cJSON_GetObjectItemCaseSensitive(snssai_upf_info_itemJSON, "redundantTransport");
     if (redundant_transport) {
@@ -152,11 +187,46 @@ OpenAPI_snssai_upf_info_item_t *OpenAPI_snssai_upf_info_item_parseFromJSON(cJSON
     }
     }
 
+    interface_upf_info_list = cJSON_GetObjectItemCaseSensitive(snssai_upf_info_itemJSON, "interfaceUpfInfoList");
+    if (interface_upf_info_list) {
+        cJSON *interface_upf_info_list_local = NULL;
+        if (!cJSON_IsArray(interface_upf_info_list)) {
+            ogs_error("OpenAPI_snssai_upf_info_item_parseFromJSON() failed [interface_upf_info_list]");
+            goto end;
+        }
+
+        interface_upf_info_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(interface_upf_info_list_local, interface_upf_info_list) {
+            if (!cJSON_IsObject(interface_upf_info_list_local)) {
+                ogs_error("OpenAPI_snssai_upf_info_item_parseFromJSON() failed [interface_upf_info_list]");
+                goto end;
+            }
+            OpenAPI_interface_upf_info_item_t *interface_upf_info_listItem = OpenAPI_interface_upf_info_item_parseFromJSON(interface_upf_info_list_local);
+            if (!interface_upf_info_listItem) {
+                ogs_error("No interface_upf_info_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(interface_upf_info_listList, interface_upf_info_listItem);
+        }
+    }
+
+    dnn_upf_info_list_id = cJSON_GetObjectItemCaseSensitive(snssai_upf_info_itemJSON, "dnnUpfInfoListId");
+    if (dnn_upf_info_list_id) {
+    if (!cJSON_IsNumber(dnn_upf_info_list_id)) {
+        ogs_error("OpenAPI_snssai_upf_info_item_parseFromJSON() failed [dnn_upf_info_list_id]");
+        goto end;
+    }
+    }
+
     snssai_upf_info_item_local_var = OpenAPI_snssai_upf_info_item_create (
         s_nssai_local_nonprim,
-        dnn_upf_info_listList,
+        dnn_upf_info_list ? dnn_upf_info_listList : NULL,
         redundant_transport ? true : false,
-        redundant_transport ? redundant_transport->valueint : 0
+        redundant_transport ? redundant_transport->valueint : 0,
+        interface_upf_info_list ? interface_upf_info_listList : NULL,
+        dnn_upf_info_list_id ? true : false,
+        dnn_upf_info_list_id ? dnn_upf_info_list_id->valuedouble : 0
     );
 
     return snssai_upf_info_item_local_var;
@@ -171,6 +241,13 @@ end:
         }
         OpenAPI_list_free(dnn_upf_info_listList);
         dnn_upf_info_listList = NULL;
+    }
+    if (interface_upf_info_listList) {
+        OpenAPI_list_for_each(interface_upf_info_listList, node) {
+            OpenAPI_interface_upf_info_item_free(node->data);
+        }
+        OpenAPI_list_free(interface_upf_info_listList);
+        interface_upf_info_listList = NULL;
     }
     return NULL;
 }

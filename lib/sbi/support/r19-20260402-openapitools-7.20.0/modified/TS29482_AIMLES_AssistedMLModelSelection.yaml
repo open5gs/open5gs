@@ -1,0 +1,498 @@
+openapi: 3.0.0
+
+info:
+  title: AIMLES_AssistedMLModelSelection
+  version: 1.0.0
+  description: |
+    API for AIMLES Assisted ML Model Selection Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.0.0; Artificial Intelligence Machine Learning Enablement
+    (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/aimles-amlmsel/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /subscriptions:
+    post:
+      summary: Request the creation of a AIMLE Assisted ML Model Selection Subscription resource.
+      operationId: CreateAimleAssistMLMdlSelSubscription
+      tags:
+        - AIMLE Assisted ML Model Selection Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssistMLMdlSelSubsc'
+      responses:
+        '201':
+          description: >
+            Successful case. The creation of an Individual AIMLE Assisted ML Model Selection
+            Subscription resource is confirmed and a representation of that resource is returned in
+            the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssistMLMdlSelSubsc'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        myNotification:
+          '{$request.body#/notifUri}':
+            post:
+              summary: notify a previously subscribed service consumer on AIML Assisted ML Model Selection related event(s).
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AssistMLMdlSelNotif'
+              responses:
+                '204':
+                  description: The notification is successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of an Individual AIMLE Assisted ML Model Selection Subscription
+          resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual AIMLE Assisted ML Model Selection Subscription resource.
+      operationId: GetAimleAssistMLMdlSelSubscription
+      tags:
+        - Individual AIMLE Assisted ML Model Selection Subscription (Document)
+      responses:
+        '200':
+          description: >
+            Successful case. The requested Individual AIMLE Assisted ML Model Selection
+            Subscription resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssistMLMdlSelSubsc'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual AIMLE Assisted ML Model Selection Subscription resource.
+      operationId: UpdateAimleAssistMLMdlSelSubscription
+      tags:
+        - Individual AIMLE Assisted ML Model Selection Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssistMLMdlSelSubsc'
+      responses:
+        '200':
+          description: >
+            Successful case. The Individual AIMLE Assisted ML Model Selection Subscription resource
+            is successfully updated and a representation of the updated resource shall be returned
+            in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssistMLMdlSelSubsc'
+        '204':
+          description: >
+            No Content. The Individual AIMLE Assisted ML Model Selection Subscription resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual AIMLE Assisted ML Model Selection Subscription resource.
+      operationId: ModifyAimleAssistMLMdlSelSubscription
+      tags:
+        - Individual AIMLE Assisted ML Model Selection Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssistMLMdlSelSubscPatch'
+      responses:
+        '200':
+          description: >
+            Successful case. The Individual AIMLE Assisted ML Model Selection Subscription resource
+            is successfully modified and a representation of the updated resource shall be returned
+            in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssistMLMdlSelSubsc'
+        '204':
+          description: >
+            No Content. The Individual AIMLE Assisted ML Model Selection Subscription resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual AIMLE Assisted ML Model Selection Subscription resource.
+      operationId: UnsubscribeAimleAssistMLMdlSelSubscription
+      tags:
+        - Individual AIMLE Assisted ML Model Selection Subscription (Document).
+      responses:
+        '204':
+          description: >
+            No Content. The Individual AIMLE Assisted ML Model Selection Subscription resource is
+            successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    AssistMLMdlSelSubsc:
+      description: Represents the AIMLE Assisted ML Model Selection subscription information.
+      type: object
+      properties:
+        aimlProfile:
+          $ref: '#/components/schemas/AimlProfile'
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        repInfo:
+          $ref: '#/components/schemas/ReportingInformation'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - aimlProfile
+
+    AssistMLMdlSelNotif:
+      description: Represents the AIMLE Assisted ML Selection notification.
+      type: object
+      properties:
+        opStatus:
+          $ref: 'TS29482_AIMLES_DataManagement.yaml#/components/schemas/DataMgmtOp'
+        trainMLModel:
+          $ref: 'TS29482_MLR_MLModelManagement.yaml#/components/schemas/MLModelTrainingInfo'
+        elapseTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        timeStamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - opStatus
+        - trainMLModel
+
+    AimlProfile:
+      description: Represents the ML model selection operation.
+      type: object
+      properties:
+        candMLMdls:
+          type: array
+          items:
+            $ref: '#/components/schemas/CandMLMdl'
+          minItems: 1
+        mlMdlReq:
+          $ref: 'TS29482_MLR_MLModelManagement.yaml#/components/schemas/MLModel'
+        dataSetIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        trainReq:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainingRequirement'
+          minItems: 1
+        clientList:
+          type: array
+          items:
+            $ref: 'TS29482_AIMLES_ContextTransfer.yaml#/components/schemas/AimleClientId'
+          minItems: 1
+        clientSelCriteria:
+          $ref: 'TS29482_AIMLES_AIMLEClientDiscovery.yaml#/components/schemas/ClientDiscCriteria'
+        clNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - candMLMdls
+        - dataSetIds
+        - trainReq
+      anyOf:
+        - required: [clientList]
+        - required: [clientSelCriteria]
+
+    TrainingRequirement:
+      description: Represents the training requirements for ML model selection.
+      type: object
+      properties:
+        perfReq:
+          type: array
+          items:
+            $ref: '#/components/schemas/PerformanceRequirement'
+          minItems: 1
+        trainCount:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        sampleCount:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - perfReq
+        - trainCount
+        - sampleCount
+
+    PerformanceRequirement:
+      description: Represents the performance requirements for ML model selection.
+      type: object
+      properties:
+        perfMetric:
+          $ref: '#/components/schemas/PerformanceMetric'
+        perfTarget:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - perfMetric
+
+    AssistMLMdlSelSubscPatch:
+      description: >
+        Represents the requested modifications to a AIMLE Assisted ML Selection subscription
+        information.
+      type: object
+      properties:
+        mlMdlReq:
+          $ref: 'TS29482_MLR_MLModelManagement.yaml#/components/schemas/MLModel'
+        trainReq:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainingRequirement'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+
+    ReportingInformation:
+      description: Represents the reporting requirements for ML model selection.
+      type: object
+      properties:
+        notifMethod:
+          $ref: '#/components/schemas/NotificationMethod'
+        jobPercentage:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        timeWindow:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+
+    CandMLMdl:
+      description: Contains the candidate ML model selection information.
+      type: object
+      properties:
+        mlMdlId: 
+          type: string
+        mlMdlParam:
+          type: string
+      required:
+        - mlMdlId
+        - mlMdlParam
+
+# SIMPLE DATA TYPES
+#
+
+# ENUMERATIONS
+    PerformanceMetric:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - ACCURACY
+         - PRECISION
+         - RECALL
+         - MEAN_SQUARED_ERROR
+         - MEAN_ABSOLUTE_ERROR
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration and
+#          is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the performance metric for training the ML model.  
+#        Possible values are:
+#           - ACCURACY: Indicates the performance metric is accuracy.
+#           - PRECISION: Indicates the performance metric is precision.
+#           - RECALL: Indicates the performance metric is recall.
+#           - MEAN_SQUARED_ERROR: Indicates the performance metric is mean squared error.
+#           - MEAN_ABSOLUTE_ERROR: Indicates the performance metric is mean absolute error.
+#
+    NotificationMethod:
+#      anyOf:
+#      - type: string
+      type: string
+      enum:
+         - PERIODIC
+         - ON_JOB_COMPLETION
+         - ON_PCT_COMPLETION
+         - ON_EVENT_DETECTION
+#      - type: string
+#        description: >
+#          This string provides forward-compatibility with future extensions to the enumeration and
+#          is not used to encode content defined in the present version of this API.
+#      description: |
+#        Represents the notification methods that can be subscribed.  
+#        Possible values are:
+#           - PERIODIC: The notification of the ML model status is periodically sent.
+#           - ON_JOB_COMPLETION: The notification is sent only after the entire ML model selection
+#             job is completed.
+#           - ON_PCT_COMPLETION: The notification is sent after the certain job percentage
+#             completion.
+#           - ON_EVENT_DETECTION: The notification is sent each time the event is detected.

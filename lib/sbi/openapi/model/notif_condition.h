@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_notif_condition_s OpenAPI_notif_condition_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_notif_condition_s OpenAPI_notif_condition_t;
-typedef struct OpenAPI_notif_condition_s {
+struct OpenAPI_notif_condition_s {
     OpenAPI_list_t *monitored_attributes;
     OpenAPI_list_t *unmonitored_attributes;
-} OpenAPI_notif_condition_t;
+};
 
 OpenAPI_notif_condition_t *OpenAPI_notif_condition_create(
     OpenAPI_list_t *monitored_attributes,

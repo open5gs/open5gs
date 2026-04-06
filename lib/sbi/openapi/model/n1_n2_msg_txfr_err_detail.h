@@ -12,20 +12,20 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_n1_n2_msg_txfr_err_detail_s OpenAPI_n1_n2_msg_txfr_err_detail_t;
 #include "arp.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n1_n2_msg_txfr_err_detail_s OpenAPI_n1_n2_msg_txfr_err_detail_t;
-typedef struct OpenAPI_n1_n2_msg_txfr_err_detail_s {
+struct OpenAPI_n1_n2_msg_txfr_err_detail_s {
     bool is_retry_after;
     int retry_after;
     struct OpenAPI_arp_s *highest_prio_arp;
     bool is_max_waiting_time;
     int max_waiting_time;
-} OpenAPI_n1_n2_msg_txfr_err_detail_t;
+};
 
 OpenAPI_n1_n2_msg_txfr_err_detail_t *OpenAPI_n1_n2_msg_txfr_err_detail_create(
     bool is_retry_after,

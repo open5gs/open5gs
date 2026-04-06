@@ -1,0 +1,621 @@
+openapi: 3.0.0
+
+info:
+  title: 3gpp-ueid
+  version: 1.2.0
+  description: |
+    API for UE ID service.
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.522 V19.5.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/3gpp-ueid/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+paths:
+  /retrieve:
+    post:
+      summary: Retrieve AF specific UE ID.
+      operationId: RetrieveUEId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UeIdReq'
+      responses:
+        '200':
+          description: The requested information was returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeIdInfo'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /get-msisdn:
+    post:
+      summary: GET the MSISDN of the UE.
+      operationId: GetMsisdn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MsisdnReq'
+      responses:
+        '200':
+          description: Successful case. The requested UE ID in the form of MSISDN is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MsisdnInfo'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /verify-msisdn:
+    post:
+      summary: Request to verify whether the UE's MSISDN provided by the AF matches the UE ID in the form of MSISDN retrieved from the UDM.
+      operationId: VerifyMsisdn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MsisdnVerifReq'
+      responses:
+        '200':
+          description: >
+            OK. The MSISDN verification request is successfully received and processed, and the
+            MSISDN verification outcome is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MsisdnVerifResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{afId}/pp:
+    parameters:
+      - name: afId
+        in: path
+        description: Represents the identifier of the AF.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Request to retrieve all the active UE ID Mapping Information Provisionings at the NEF.
+      operationId: GetUeIdMappingProvisionings
+      tags:
+        - UE ID Mapping Information Provisionings (Collection)
+      responses:
+        '200':
+          description: >
+            OK. All the Individual UE ID Mapping Information Provisioning resource(s) managed by the
+            NEF are returned.
+            If there are no existing Individual UE ID Mapping Information Provisioning resources at
+            the NEF, an empty array is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UeIdMappingInfo'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Request the creation of a new UE ID Mapping Information Provisioning.
+      operationId: CreateUeIdMappingProvisioning
+      tags:
+        - UE ID Mapping Information Provisioning (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UeIdMappingInfo'
+      responses:
+        '201':
+          description: >
+            Created. A representation of the created Individual UE ID Mapping Information
+            Provisioning resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeIdMappingInfo'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{afId}/pp/{ppId}:
+    parameters:
+      - name: afId
+        in: path
+        description: Represents the identifier of the AF.
+        required: true
+        schema:
+          type: string
+      - name: ppId
+        in: path
+        description: >
+          Represents the identifier of the Individual UE ID Mapping Information Provisioning
+          resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Request to retrieve an existing Individual UE ID Mapping Information Provisioning resource.
+      operationId: GetIndUeIdMappingProvisioning
+      tags:
+        - Individual UE ID Mapping Information Provisioning (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual UE ID Mapping Information Provisioning resource is returned
+            in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeIdMappingInfo'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual UE ID Mapping Information Provisioning resource.
+      operationId: UpdateIndUeIdMappingProvisioning
+      tags:
+        - Individual UE ID Mapping Information Provisioning (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UeIdMappingInfo'
+      responses:
+        '200':
+          description: >
+            OK. The Individual UE ID Mapping Information Provisioning resource is successfully
+            updated and a representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeIdMappingInfo'
+        '204':
+          description: >
+            No Content. The Individual UE ID Mapping Information Provisioning resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+    patch:
+      summary: Request the modification of an existing Individual UE ID Mapping Information Provisioning resource.
+      operationId: ModifyIndUeIdMappingProvisioning
+      tags:
+        - Individual UE ID Mapping Information Provisioning (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/UeIdMappingInfoPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual UE ID Mapping Information Provisioning resource is successfully
+            modified and a representation of the updated resource is returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeIdMappingInfo'
+        '204':
+          description: >
+            No Content. The Individual UE ID Mapping Information Provisioning resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual UE ID Mapping Information Provisioning resource.
+      operationId: DeleteIndUeIdMappingProvisioning
+      tags:
+        - Individual UE ID Mapping Information Provisioning (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual UE ID Mapping Information Provisioning resource is
+            successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas: 
+    UeIdReq:
+      description: Represents the parameters to request the retrieval of AF specific UE ID.
+      type: object
+      properties:
+        afId:
+          type: string
+        appPortId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        ipDomain:
+          type: string
+        mtcProviderId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+        portNumber:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        ueIpAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        ueMacAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - afId
+#      oneOf:
+#        - required: [ueIpAddr]
+#        - required: [ueMacAddr]
+#
+    UeIdInfo:
+      description: Represents UE ID information.
+      type: object
+      properties:
+        externalId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - externalId
+
+    MsisdnReq:
+      description: Represents the parameters to request the retrieval of MSISDN of the UE.
+      type: object
+      properties:
+        afId:
+          type: string
+        appPortId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        ipDomain:
+          type: string
+        mtcProviderId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+        portNumber:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        ueIpAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        ueMacAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - afId
+#      oneOf:
+#        - required: [ueIpAddr]
+#        - required: [ueMacAddr]
+#
+    MsisdnInfo:
+      description: Represents MSISDN information.
+      type: object
+      properties:
+        msisdn:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Msisdn'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - msisdn
+
+    MsisdnVerifReq:
+      description: Represents the MSISDN verification request.
+      type: object
+      properties:
+        afId:
+          type: string
+        msisdn:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Msisdn'
+        appPortId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        ipDomain:
+          type: string
+        mtcProviderId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MtcProviderInformation'
+        portNumber:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Port'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        ueIpAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/IpAddr'
+        ueMacAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - afId
+        - msisdn
+#      oneOf:
+#        - required: [ueIpAddr]
+#        - required: [ueMacAddr]
+#
+    MsisdnVerifResp:
+      description: Represents the MSISDN verification response.
+      type: object
+      properties:
+        verifResult:
+          type: boolean
+          description: >
+            Indicates the verification result on whether the UE's MSISDN provided by the AF matches
+            the UE's MSISDN retrieved from the UDM or not.
+            Set to true if the UE's MSISDN provided by the AF matches the UE's MSISDN retrieved
+            from the UDM.
+            Set to false if the UE's MSISDN provided by the AF does not match the UE's MSISDN
+            retrieved from UDM.
+      required:
+        - verifResult
+
+    UeIdMappingInfo:
+      description: >
+        Represents the UE ID Mapping Information Provisioning.
+      type: object
+      properties:
+        rsUeIdMappingInfo:
+          $ref: '#/components/schemas/RangSlUeIdMappInfo'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    RangSlUeIdMappInfo:
+      description: >
+        Represents the Ranging/Sidelink UE ID mapping information between the Application Layer ID
+        and the GPSI.
+      type: object
+      properties:
+        appLayerId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationlayerId'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+      required:
+        - appLayerId
+        - gpsi
+
+    UeIdMappingInfoPatch:
+      description: >
+        Represents the requested modification to a UE ID Mapping Information Provisioning.
+      type: object
+      properties:
+        rsUeIdMappingInfo:
+          $ref: '#/components/schemas/RangSlUeIdMappInfo'

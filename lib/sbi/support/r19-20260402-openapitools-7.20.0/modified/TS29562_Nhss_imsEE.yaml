@@ -1,0 +1,373 @@
+openapi: 3.0.0
+
+info:
+  version: '1.0.1'
+  title: 'Nhss_imsEE'
+  description: |
+    Nhss Event Exposure Service for IMS.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.562 V19.5.0; Home Subscriber Server (HSS) Services
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.562/
+
+servers:
+  - url: '{apiRoot}/nhss-ims-ee/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nhss-ims-ee
+
+paths:
+  /{imsUeId}/ee-subscriptions:
+    post:
+      summary: Subscribe to IMS Event
+      operationId: ImsEventSubscribe
+      tags:
+        - IMS Event Subscription Creation
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-ims-ee
+        - oAuth2ClientCredentials:
+          - nhss-ims-ee
+          - nhss-ims-ee:ee-subscriptions:create
+      parameters:
+        - name: imsUeId
+          in: path
+          description: IMS Public Identity
+          required: true
+          schema:
+            type: string
+            pattern: '^(impu-sip\:([a-zA-Z0-9_\-.!~*()&=+$,;?\/]+)\@([A-Za-z0-9]+([-A-Za-z0-9]+)\.)+[a-z]{2,}|impu-tel\:\+[0-9]{5,15}|.+)$'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImsEeSubscription'
+        required: true
+      responses:
+        '201':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedImsEeSubscription'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the structure:
+                {apiRoot}/nhss-ims-ee/v1/{imsUeId}/ee-subscriptions/{subscriptionId}
+              required: true
+              schema:
+                type: string
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        imsMonitoringRevocationNotification:
+          '{$request.body#/revocationNotifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ImsEeMonitoringRevoked'
+              responses:
+                '204':
+                  description: Successful Notification response
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  description: Unexpected error
+
+  /{imsUeId}/ee-subscriptions/{subscriptionId}:
+    delete:
+      summary: unsubscribe from Individual IMS Event
+      operationId: ImsEventUnsubscribe
+      tags:
+        - Individual IMS Event Subscription Deletion
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-ims-ee
+        - oAuth2ClientCredentials:
+          - nhss-ims-ee
+          - nhss-ims-ee:ee-subscriptions:modify
+      parameters:
+        - name: imsUeId
+          in: path
+          description: IMS Public Identity
+          required: true
+          schema:
+            type: string
+            pattern: '^(impu-sip\:([a-zA-Z0-9_\-.!~*()&=+$,;?\/]+)\@([A-Za-z0-9]+([-A-Za-z0-9]+)\.)+[a-z]{2,}|impu-tel\:\+[0-9]{5,15}|.+)$'
+        - name: subscriptionId
+          in: path
+          description: Id of the Subscription
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successful response
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: modify the subscription
+      operationId: ImsEventSubsModify
+      tags:
+        - Individual IMS Event Subscription Modification
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nhss-ims-ee
+        - oAuth2ClientCredentials:
+          - nhss-ims-ee
+          - nhss-ims-ee:subscription:modify
+      parameters:
+        - name: imsUeId
+          in: path
+          description: IMS Public Identity
+          required: true
+          schema:
+            type: string
+            pattern: '^(impu-sip\:([a-zA-Z0-9_\-.!~*()&=+$,;?\/]+)\@([A-Za-z0-9]+([-A-Za-z0-9]+)\.)+[a-z]{2,}|impu-tel\:\+[0-9]{5,15}|.+)$'
+        - name: subscriptionId
+          in: path
+          description: Id of the Subscription
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedImsEeSubscription'
+        '204':
+          description: Successful response
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nhss-ims-ee: Access to the Nhss IMS Event Exposure API
+            nhss-ims-ee:ee-subscriptions:create: >-
+              Access to create IMS Event Subscriptions resource
+            nhss-ims-ee:ee-subscriptions:modify: >-
+              Access to update/delete the Individual IMS Event Subscription resource
+
+  schemas:
+
+#
+# COMPLEX TYPES:
+#
+
+    ImsEeSubscription:
+      description: An Individual IMS Event Subscription
+      type: object
+      required:
+        - notifId
+        - notificationURI
+        - subscrImsEvents
+      properties:
+        notifId:
+          type: string
+        afId:
+          type: string
+        notificationURI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        subscrImsEvents:
+          description: >
+            It contains the IMS events to be subscribed (in a subscripiton request)
+            or successfully subscribed (in a subscription reponse) where the key of the map
+            is an unsigned 64-bit integer value (Reference ID) converted to a string.
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ImsEventConfiguration'
+          minProperties: 1
+        imsReportingOptions:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ImsReportingOptions'
+        revocationNotifURI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        
+    CreatedImsEeSubscription:
+      description: The created Individual IMS Event Subscription
+      type: object
+      required:
+        - imsEeSubscription
+      properties:
+        imsEeSubscription:
+          $ref: '#/components/schemas/ImsEeSubscription'
+        statusEvents:
+          type: array
+          minItems: 1
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ImsEventReport'
+
+    ImsEeMonitoringRevoked:
+      type: object
+      required:
+        - revokedMonitoringEventList
+      properties:
+        revokedMonitoringEventList:
+          description: >
+            A map (list of key-value pairs where the Reference ID value
+            assigned during the creation of the subscription serves as key)
+            of ImsEeMonitoringEvents
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ImsEeMonitoringEvent'
+          minProperties: 1
+        revokedImsUeId:
+          $ref: 'TS29562_Nhss_imsSDM.yaml#/components/schemas/ImsPublicId'
+
+    ImsEeMonitoringEvent:
+      type: object
+      required:
+        - eventType
+      properties:
+        eventType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ImsEvent'
+        revokedCause:
+          $ref: '#/components/schemas/ImsRevokedCause'
+
+#
+# SIMPLE TYPES
+#
+
+#
+# ENUMS
+#
+
+    ImsRevokedCause:
+      description: Revocation Cause for the IMS monitoring event.
+#      anyOf:
+#        - type: string
+      type: string
+      enum:
+        - MONITORING_NOT_ALLOWED
+        - IMS_UE_ID_REMOVED
+#        - type: string
+#          description: >
+#            This string provides forward-compatibility with future
+#            extensions to the enumeration but is not used to encode
+#            content defined in the present version of this API.

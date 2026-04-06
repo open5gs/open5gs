@@ -1,7 +1,7 @@
 /*
  * connection_capabilities.h
  *
- * Possible values are   - IMS: Indicates the connection capability to support IMS service.   - MMS: Indicates the connection capability to support MMS service.   - SUPL: Indicates the connection capability to support SUPL service.   - INTERNET: Indicates the connection capability to support Internet service. 
+ * 
  */
 
 #ifndef _OpenAPI_connection_capabilities_H_
@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "connection_capabilities_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_connection_capabilities_s OpenAPI_connection_capabilities_t;
-typedef struct OpenAPI_connection_capabilities_s {
-} OpenAPI_connection_capabilities_t;
+typedef enum { OpenAPI_connection_capabilities_NULL = 0, OpenAPI_connection_capabilities_IMS, OpenAPI_connection_capabilities_MMS, OpenAPI_connection_capabilities_SUPL, OpenAPI_connection_capabilities_INTERNET, OpenAPI_connection_capabilities_IOT_DELAY_TOLERANT, OpenAPI_connection_capabilities_IOT_NON_DELAY_TOLERANT, OpenAPI_connection_capabilities_DL_STREAMING, OpenAPI_connection_capabilities_UL_STREAMING, OpenAPI_connection_capabilities_VEHIC_COMM, OpenAPI_connection_capabilities_REAL_TIME_INTERACTIVE, OpenAPI_connection_capabilities_UNIFIED_COMM, OpenAPI_connection_capabilities_BACKGROUND, OpenAPI_connection_capabilities_MISS_CRITICAL, OpenAPI_connection_capabilities_TIME_CRITICAL, OpenAPI_connection_capabilities_LOW_LAT_LOSS_TOL_UNACK } OpenAPI_connection_capabilities_e;
 
-OpenAPI_connection_capabilities_t *OpenAPI_connection_capabilities_create(
-);
-void OpenAPI_connection_capabilities_free(OpenAPI_connection_capabilities_t *connection_capabilities);
-OpenAPI_connection_capabilities_t *OpenAPI_connection_capabilities_parseFromJSON(cJSON *connection_capabilitiesJSON);
-cJSON *OpenAPI_connection_capabilities_convertToJSON(OpenAPI_connection_capabilities_t *connection_capabilities);
-OpenAPI_connection_capabilities_t *OpenAPI_connection_capabilities_copy(OpenAPI_connection_capabilities_t *dst, OpenAPI_connection_capabilities_t *src);
+char* OpenAPI_connection_capabilities_ToString(OpenAPI_connection_capabilities_e connection_capabilities);
+
+OpenAPI_connection_capabilities_e OpenAPI_connection_capabilities_FromString(char* connection_capabilities);
 
 #ifdef __cplusplus
 }

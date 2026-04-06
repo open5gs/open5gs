@@ -1,0 +1,422 @@
+openapi: 3.0.0
+
+info:
+  title: 3gpp-vfl-inference
+  version: 1.0.1
+  description: |
+    API for VFL Inference.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+     3GPP TS 29.522 V19.6.0; 5G System; Network Exposure Function Northbound APIs.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/
+
+servers:
+  - url: '{apiRoot}/3gpp-vfl-inference/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - 3gpp-vfl-inference
+    
+
+paths:
+  /{afId}/subscriptions:
+    parameters:
+      - name: afId
+        in: path
+        description: Represents the identifier of the AF.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve all the active VFL Inference Subscriptions for the given AF.
+      operationId: GetVFLInferenceSubscriptions
+      tags:
+        - VFL Inference Subscriptions (Collection)
+      responses:
+        '200':
+          description: >
+            OK. All the Individual VFL Inference Subscription resource(s) managed
+            by the NEF for the requested AF are returned.
+            If there are no active Individual VFL Inference Subscription resources
+            at the NEF for the requested AF, an empty array is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VflInferSub'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Create a new Individual VFL Inference Subscription resource.
+      operationId: CreateVFLInferenceSubcription
+      tags:
+        - Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VflInferSub'
+      responses:
+        '201':
+          description: Create a new Individual VFL Inference Subscription resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VflInferSub'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the newly created resource, according to the
+                structure 
+                {apiRoot}/3gpp-vfl-inference/v1/{afId}/subscriptions/{subscriptionId}.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        myNotification:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: 'TS29520_Nnwdaf_VFLInference.yaml#/components/schemas/VflInferNotif'
+              responses:
+                '204':
+                  description: No Content, Notification was successful
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{afId}/subscriptions/{subscriptionId}:
+    parameters:
+      - name: afId
+        in: path
+        description: Represents the identifier of the AF.
+        required: true
+        schema:
+          type: string
+      - name: subscriptionId
+        in: path
+        description: String identifying a VFL Inference Subscription.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual VFL Inference Subscription.
+      operationId: GetVFLInferenceSubscription
+      tags:
+        - Individual VFL Inference Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual VFL Inference Subscription resource is
+            successfully returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VflInferSub'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update an existing Individual VFL Inference Subscription
+      operationId: UpdateVFLInferenceSubcription
+      tags:
+        - Individual VFL Inference Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VflInferSub'
+      responses:
+        '200':
+          description: >
+            The Individual VFL Inference Subscription resource was modified
+            successfully and a representation of that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VflInferSub'
+        '204':
+          description: >
+            The Individual VFL Inference Subscription resource was modified
+            successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Partial update an existing Individual VFL Inference Subscription
+      operationId: PartialUpdateVFLInferenceSubcription
+      tags:
+        - Individual VFL Inference Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/VflInferSubPatch'
+      responses:
+        '200':
+          description: >
+            The Individual VFL Inference Subscription resource was partial
+            modified successfully and a representation of that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VflInferSub'
+        '204':
+          description: >
+            The Individual VFL Inference Subscription resource was partial
+            modified successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an existing Individual VFL Inference Subscription.
+      operationId: DeleteVFLInferenceSubcription
+      tags:
+        - Individual VFL Inference Subscription (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual VFL Inference Subscription matching the
+            subscriptionId was deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            3gpp-vfl-inference: Access to the VFLInference API
+
+  schemas:
+    VflInferSub:
+      description: Represents a VFL Inference subscription.
+      type: object
+      properties:
+        notifCorrId:
+          type: string
+          description: >
+            String identifying the Notification Correlation ID in the corresponding
+            notification.
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        extNwdafId:
+          type: string
+          description: >
+            Contains the external identifier of the target NWDAF acting as VFL client.
+        reportingReqs:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        suppFeats:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        vflInferAnaSubs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_VFLInference.yaml#/components/schemas/VflInferAnaSub'
+          minItems: 1
+          description: Represents inference subscription per analytics Id.
+        vflInferResults:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_VFLInference.yaml#/components/schemas/VflInferResult'
+          minItems: 1
+          description: Represents intermediate VFL Inference result.
+      required:
+        - notifUri
+        - notifCorrId
+        - vflInferAnaSubs
+
+    VflInferSubPatch:
+      description: >
+        Represents parameters to request the modification of a VFL Inference
+        subscription.
+      type: object
+      properties:
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifCorrId:
+          type: string
+          description: >
+            String identifying the Notification Correlation ID in the corresponding
+            notification.
+        reportingReqs:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        vflInferAnaSubs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_VFLInference.yaml#/components/schemas/VflInferAnaSub'
+          minItems: 1
+          description: Represents inference subscription per analytics Id.

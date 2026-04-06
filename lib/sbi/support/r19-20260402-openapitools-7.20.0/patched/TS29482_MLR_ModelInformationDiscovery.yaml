@@ -1,0 +1,128 @@
+openapi: 3.0.0
+
+info:
+  title: MLR_ModelInformationDiscovery
+  version: 1.0.0
+  description: |
+    API for MLR Model Information Discovery Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).   
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.482 v19.0.0; Artificial Intelligence Machine Learning Enablement
+    (AIMLE) Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.482/
+
+servers:
+  - url: '{apiRoot}/mlr-mid/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /models:
+    get:
+      summary: Discover the ML model information according to the filtering criteria.
+      operationId: GetMlModelInfo
+      tags:
+        - ML Models (Collection)
+      parameters:
+        - name: filt-criteria
+          in: query
+          description: >
+             Represents the ML model filtering criteria.
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29482_MLR_MLModelManagement.yaml#/components/schemas/MLModel'
+        - name: supported-features
+          in: query
+          description: >
+            Contains supported features information, used to negotiate the applicability
+            of optional features.
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            OK. The response body contains the result of the search over the list
+            of stored ML Models.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    DiscoveryResp:
+      description: Represents the ML model discovery repsonse.
+      type: object
+      properties:
+        profiles:
+          type: array
+          items:
+            $ref: 'TS29482_MLR_MLModelManagement.yaml#/components/schemas/MLModelProfile'
+          minItems: 1
+        mlModels:
+          type: array
+          items:
+            $ref: '#/components/schemas/MlModel'
+          minItems: 1
+        indicator:
+          type: boolean
+      oneOf:
+        - required: [profiles]
+        - required: [mlModels]
+
+    MlModel:
+      description: Represents the ML model.
+      type: object
+      properties:
+        mlModelId:
+          type: string
+        mlModel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+      required:
+        - mlModelId
+
+# SIMPLE DATA TYPES
+#
+
+# ENUMERATIONS

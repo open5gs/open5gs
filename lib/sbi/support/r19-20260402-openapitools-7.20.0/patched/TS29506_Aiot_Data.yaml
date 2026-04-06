@@ -1,0 +1,297 @@
+openapi: 3.0.0
+
+info:
+  version: '-'
+  title: Unified Data Repository Service API file for Ambient IoT data
+  description: |
+    The API version is defined in 3GPP TS 29.504  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.506 V19.2.0; 5G System; Usage of the Unified Data Repository Service for AIoT Data
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.506/'
+
+paths:
+  /aiot-data/aiot-device-profile-data/{aiotDevPermId}:
+    parameters:
+     - name: aiotDevPermId
+       in: path
+       required: true
+       schema:
+         $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotDevPermId'
+    get:
+      summary: Retrieves the AIoT device profile data for a given AIoT device permanent identifier
+      operationId: ReadAiotDeviceProfileData
+      tags:
+        - AiotDeviceProfileData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:aiot-data:aiot-device-profile-data
+          - nudr-dr:aiot-data:aiot-device-profile-data:aiotDevPermId:read
+      responses:
+        '200':
+          description: >
+            Upon success, a response body containing AIoT device profile data shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29369_Nadm_DM.yaml#/components/schemas/AiotDevProfileData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Modify the AIoT device profile data for a given AIoT device permanent identifier.
+      operationId: UpdateAiotDeviceProfileData
+      tags:
+        - AiotDeviceProfileData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:aiot-data:aiot-device-profile-data
+          - nudr-dr:aiot-data:aiot-device-profile-data:aiotDevPermId:modify
+      parameters:
+        - name: supported-features
+          in: query
+          description: Supported Features
+          required: false
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        required: true
+        content:
+          application/json-patch+json:
+            schema:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+      responses:
+        '200':
+          description: Expected response to a valid request.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '204':
+          description: No content. Response to successful modification.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /aiot-data/aiot-device-profile-data:
+    get:
+      summary: Retrieves the AIoT device profile data for bundled AIoT devices
+      operationId: ReadBundledAiotDeviceProfileData
+      tags:
+        - BundledAiotDeviceProfileData (Document)
+      parameters:
+        - name: requester-aiot-devices-id
+          in: query
+          description: a list of AIoT Device Permanent ID
+          required: true
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/AiotDevPermId'
+            minItems: 1
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:aiot-data:aiot-device-profile-data
+          - nudr-dr:aiot-data:aiot-device-profile-data:read
+      responses:
+        '200':
+          description: >
+            Upon success, a response body containing bundled AIoT device profile data shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29369_Nadm_DM.yaml#/components/schemas/AiotDevProfileDataList'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify the AIoT device profile data for bundled AIoT devices.
+      operationId: UpdateBundledAiotDeviceProfileData
+      tags:
+        - BundledAiotDeviceProfileData (Document)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr
+          - nudr-dr:aiot-data:aiot-device-profile-data
+          - nudr-dr:aiot-data:aiot-device-profile-data:modify
+      parameters:
+        - name: supported-features
+          in: query
+          description: Supported Features
+          required: true
+          schema:
+             $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+      responses:
+        '200':
+          description: Expected response to a valid request.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '204':
+          description: No content. Response to successful modification.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+  /aiot-data/af-authorization-data:
+    get:
+      summary: get AF Authorization Data
+      operationId: Get AF Authorization Data
+      tags:
+        - AF Authorization Data Retrieval
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudr-dr:aiot-data:af-authorization-data
+          - nudr-dr:aiot-data:af-authorization-data:read
+      parameters:
+        - name: af-id
+          in: query
+          description: AF ID
+          required: false
+          schema:
+            $ref: 'TS29369_Nadm_DM.yaml#/components/schemas/AfId'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29369_Nadm_DM.yaml#/components/schemas/AfAuthorizationData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+
+  schemas: {}
+
+# STRUCTURED TYPES
+
+
+
+# ENUMS:

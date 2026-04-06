@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_default_notification_subscription_s OpenAPI_default_notification_subscription_t;
 #include "def_sub_service_info.h"
 #include "n1_message_class.h"
 #include "n2_information_class.h"
@@ -21,10 +22,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_default_notification_subscription_s OpenAPI_default_notification_subscription_t;
-typedef struct OpenAPI_default_notification_subscription_s {
+struct OpenAPI_default_notification_subscription_s {
     OpenAPI_notification_type_e notification_type;
     char *callback_uri;
+    char *inter_plmn_callback_uri;
     OpenAPI_n1_message_class_e n1_message_class;
     OpenAPI_n2_information_class_e n2_information_class;
     OpenAPI_list_t *versions;
@@ -32,18 +33,21 @@ typedef struct OpenAPI_default_notification_subscription_s {
     char *accepted_encoding;
     char *supported_features;
     OpenAPI_list_t* service_info_list;
-} OpenAPI_default_notification_subscription_t;
+    char *callback_uri_prefix;
+};
 
 OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscription_create(
     OpenAPI_notification_type_e notification_type,
     char *callback_uri,
+    char *inter_plmn_callback_uri,
     OpenAPI_n1_message_class_e n1_message_class,
     OpenAPI_n2_information_class_e n2_information_class,
     OpenAPI_list_t *versions,
     char *binding,
     char *accepted_encoding,
     char *supported_features,
-    OpenAPI_list_t* service_info_list
+    OpenAPI_list_t* service_info_list,
+    char *callback_uri_prefix
 );
 void OpenAPI_default_notification_subscription_free(OpenAPI_default_notification_subscription_t *default_notification_subscription);
 OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscription_parseFromJSON(cJSON *default_notification_subscriptionJSON);

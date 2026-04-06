@@ -1,0 +1,229 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-mbs-tmgi
+  version: 1.0.1
+  description: |
+    API for the allocation, deallocation and management of TMGI(s) for MBS.  
+    © 2022, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.522 V17.7.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/3gpp-mbs-tmgi/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+paths:
+  /allocate:
+    post:
+      summary: Request the allocation of TMGI(s) for new MBS session(s) or the refresh of the expiry time of already allocated TMGI(s).
+      operationId: AllocateTmgi
+      tags:
+        - TMGI Allocation or Timer Expiry Refresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TmgiAllocRequest'
+      responses:
+        '200':
+          description: >
+            OK. Successful case. The allocated TMGI(s) or a refreshed expiry time for the concerned
+            already allocated TMGI(s) is/are returned to the requesting AF.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TmgiAllocResponse'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        TmgiTimerExpiryNotification:
+          '{$request.body#/notificationUri}':
+            post:
+              requestBody:
+                description: >
+                  Represents the MBS TMGI(s) timer expiry notification information (e.g. list of
+                  TMGI(s) for which the timer has expired).
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ExpiryNotif'
+              responses:
+                '204':
+                  description: No content. The notification is successfully received.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /deallocate:
+    post:
+      summary: Request the deallocation of MBS TMGI(s).
+      operationId: DeallocateTmgi
+      tags:
+        - MBS TMGI Deallocation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TmgiDeallocRequest'
+      responses:
+        '204':
+          description: No Content. Successful case, the TMGI(s) are deallocated.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas: 
+    TmgiAllocRequest:
+      description: >
+        Represents the full set of parameters to initiate an MBS TMGI(s) allocation request
+        or the refresh of the expiry time of already allocated TMGI(s).
+      type: object
+      properties:
+        afId:
+          type: string
+        tmgiParams:
+          $ref: 'TS29532_Nmbsmf_TMGI.yaml#/components/schemas/TmgiAllocate'
+        notificationUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        requestTestNotification:
+          type: boolean
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - afId
+        - tmgiParams
+
+    TmgiAllocResponse:
+      description: >
+        Represents MBS TMGI(s) allocation information or the refreshed expiry time for
+        already allocated TMGI(s)
+      type: object
+      properties:
+        tmgiInfo:
+          $ref: 'TS29532_Nmbsmf_TMGI.yaml#/components/schemas/TmgiAllocated'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - tmgiInfo
+
+    TmgiDeallocRequest:
+      description: Represents information to request the deallocation of MBS TMGI(s).
+      type: object
+      properties:
+        afId:
+          type: string
+        tmgis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tmgi'
+          minItems: 1
+      required:
+        - afId
+        - tmgis
+
+    ExpiryNotif:
+      description: Represents MBS TMGI(s) timer expiry notification information.
+      type: object
+      properties:
+        tmgis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tmgi'
+          minItems: 1
+      required:
+        - tmgis

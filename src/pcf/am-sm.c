@@ -42,6 +42,7 @@ void pcf_am_state_operational(ogs_fsm_t *s, pcf_event_t *e)
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id;
     ogs_sbi_message_t *message = NULL;
+    int service_name_id = OpenAPI_service_name_NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -111,8 +112,10 @@ void pcf_am_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             break;
         }
 
-        SWITCH(message->h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NUDR_DR)
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                message->h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_nudr_dr:
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_POLICY_DATA)
                 SWITCH(message->h.resource.component[1])
@@ -153,7 +156,7 @@ void pcf_am_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             END
             break;
 
-        DEFAULT
+        default:
             ogs_error("[%s] Invalid API name [%s]",
                     pcf_ue_am->supi, message->h.service.name);
             ogs_assert(true ==
@@ -161,7 +164,7 @@ void pcf_am_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, message,
                     "Invalid API name", message->h.resource.component[0],
                     NULL));
-        END
+        }
         break;
 
     default:

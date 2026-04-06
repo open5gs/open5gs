@@ -8,7 +8,8 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_create(
     OpenAPI_list_t *global_line_ids,
     OpenAPI_list_t *hfc_n_ids,
     char *area_code_b,
-    char *area_code_c
+    char *area_code_c,
+    OpenAPI_list_t *comb_gci_and_hfc_n_ids
 )
 {
     OpenAPI_wireline_area_t *wireline_area_local_var = ogs_malloc(sizeof(OpenAPI_wireline_area_t));
@@ -18,6 +19,7 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_create(
     wireline_area_local_var->hfc_n_ids = hfc_n_ids;
     wireline_area_local_var->area_code_b = area_code_b;
     wireline_area_local_var->area_code_c = area_code_c;
+    wireline_area_local_var->comb_gci_and_hfc_n_ids = comb_gci_and_hfc_n_ids;
 
     return wireline_area_local_var;
 }
@@ -50,6 +52,13 @@ void OpenAPI_wireline_area_free(OpenAPI_wireline_area_t *wireline_area)
     if (wireline_area->area_code_c) {
         ogs_free(wireline_area->area_code_c);
         wireline_area->area_code_c = NULL;
+    }
+    if (wireline_area->comb_gci_and_hfc_n_ids) {
+        OpenAPI_list_for_each(wireline_area->comb_gci_and_hfc_n_ids, node) {
+            OpenAPI_comb_gci_and_hfc_n_ids_free(node->data);
+        }
+        OpenAPI_list_free(wireline_area->comb_gci_and_hfc_n_ids);
+        wireline_area->comb_gci_and_hfc_n_ids = NULL;
     }
     ogs_free(wireline_area);
 }
@@ -107,6 +116,22 @@ cJSON *OpenAPI_wireline_area_convertToJSON(OpenAPI_wireline_area_t *wireline_are
     }
     }
 
+    if (wireline_area->comb_gci_and_hfc_n_ids) {
+    cJSON *comb_gci_and_hfc_n_idsList = cJSON_AddArrayToObject(item, "combGciAndHfcNIds");
+    if (comb_gci_and_hfc_n_idsList == NULL) {
+        ogs_error("OpenAPI_wireline_area_convertToJSON() failed [comb_gci_and_hfc_n_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(wireline_area->comb_gci_and_hfc_n_ids, node) {
+        cJSON *itemLocal = OpenAPI_comb_gci_and_hfc_n_ids_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_wireline_area_convertToJSON() failed [comb_gci_and_hfc_n_ids]");
+            goto end;
+        }
+        cJSON_AddItemToArray(comb_gci_and_hfc_n_idsList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -121,6 +146,8 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_are
     OpenAPI_list_t *hfc_n_idsList = NULL;
     cJSON *area_code_b = NULL;
     cJSON *area_code_c = NULL;
+    cJSON *comb_gci_and_hfc_n_ids = NULL;
+    OpenAPI_list_t *comb_gci_and_hfc_n_idsList = NULL;
     global_line_ids = cJSON_GetObjectItemCaseSensitive(wireline_areaJSON, "globalLineIds");
     if (global_line_ids) {
         cJSON *global_line_ids_local = NULL;
@@ -179,11 +206,36 @@ OpenAPI_wireline_area_t *OpenAPI_wireline_area_parseFromJSON(cJSON *wireline_are
     }
     }
 
+    comb_gci_and_hfc_n_ids = cJSON_GetObjectItemCaseSensitive(wireline_areaJSON, "combGciAndHfcNIds");
+    if (comb_gci_and_hfc_n_ids) {
+        cJSON *comb_gci_and_hfc_n_ids_local = NULL;
+        if (!cJSON_IsArray(comb_gci_and_hfc_n_ids)) {
+            ogs_error("OpenAPI_wireline_area_parseFromJSON() failed [comb_gci_and_hfc_n_ids]");
+            goto end;
+        }
+
+        comb_gci_and_hfc_n_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(comb_gci_and_hfc_n_ids_local, comb_gci_and_hfc_n_ids) {
+            if (!cJSON_IsObject(comb_gci_and_hfc_n_ids_local)) {
+                ogs_error("OpenAPI_wireline_area_parseFromJSON() failed [comb_gci_and_hfc_n_ids]");
+                goto end;
+            }
+            OpenAPI_comb_gci_and_hfc_n_ids_t *comb_gci_and_hfc_n_idsItem = OpenAPI_comb_gci_and_hfc_n_ids_parseFromJSON(comb_gci_and_hfc_n_ids_local);
+            if (!comb_gci_and_hfc_n_idsItem) {
+                ogs_error("No comb_gci_and_hfc_n_idsItem");
+                goto end;
+            }
+            OpenAPI_list_add(comb_gci_and_hfc_n_idsList, comb_gci_and_hfc_n_idsItem);
+        }
+    }
+
     wireline_area_local_var = OpenAPI_wireline_area_create (
         global_line_ids ? global_line_idsList : NULL,
         hfc_n_ids ? hfc_n_idsList : NULL,
         area_code_b && !cJSON_IsNull(area_code_b) ? ogs_strdup(area_code_b->valuestring) : NULL,
-        area_code_c && !cJSON_IsNull(area_code_c) ? ogs_strdup(area_code_c->valuestring) : NULL
+        area_code_c && !cJSON_IsNull(area_code_c) ? ogs_strdup(area_code_c->valuestring) : NULL,
+        comb_gci_and_hfc_n_ids ? comb_gci_and_hfc_n_idsList : NULL
     );
 
     return wireline_area_local_var;
@@ -201,6 +253,13 @@ end:
         }
         OpenAPI_list_free(hfc_n_idsList);
         hfc_n_idsList = NULL;
+    }
+    if (comb_gci_and_hfc_n_idsList) {
+        OpenAPI_list_for_each(comb_gci_and_hfc_n_idsList, node) {
+            OpenAPI_comb_gci_and_hfc_n_ids_free(node->data);
+        }
+        OpenAPI_list_free(comb_gci_and_hfc_n_idsList);
+        comb_gci_and_hfc_n_idsList = NULL;
     }
     return NULL;
 }

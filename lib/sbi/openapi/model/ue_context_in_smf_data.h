@@ -1,7 +1,7 @@
 /*
  * ue_context_in_smf_data.h
  *
- * 
+ * Contains UE Context In SMF Data
  */
 
 #ifndef _OpenAPI_ue_context_in_smf_data_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ue_context_in_smf_data_s OpenAPI_ue_context_in_smf_data_t;
 #include "emergency_info.h"
 #include "pdu_session.h"
 #include "pgw_info.h"
@@ -20,12 +21,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ue_context_in_smf_data_s OpenAPI_ue_context_in_smf_data_t;
-typedef struct OpenAPI_ue_context_in_smf_data_s {
+struct OpenAPI_ue_context_in_smf_data_s {
     OpenAPI_list_t* pdu_sessions;
     OpenAPI_list_t *pgw_info;
     struct OpenAPI_emergency_info_s *emergency_info;
-} OpenAPI_ue_context_in_smf_data_t;
+};
 
 OpenAPI_ue_context_in_smf_data_t *OpenAPI_ue_context_in_smf_data_create(
     OpenAPI_list_t* pdu_sessions,

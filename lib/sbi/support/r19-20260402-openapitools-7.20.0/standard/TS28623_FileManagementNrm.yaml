@@ -1,0 +1,195 @@
+openapi: 3.0.1
+info:
+  title: File Management NRM
+  version: 19.3.0
+  description: >-
+    OAS 3.0.1 definition of the File Management NRM fragment
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.623; Generic NRM, File Management NRM 
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.623/
+paths: {}
+components:
+  schemas:
+
+  #-------- Definition of types for name-containments ------
+    SubNetwork-ncO-FileManagementNrm:
+      type: object
+      properties:
+        FileDownloadJob:
+          $ref: '#/components/schemas/FileDownloadJob-Multiple'
+        Files:
+          $ref: '#/components/schemas/Files-Multiple'
+    ManagedElement-ncO-FileManagementNrm:
+      type: object
+      properties:
+        FileDownloadJob:
+          $ref: '#/components/schemas/FileDownloadJob-Multiple'
+        Files:
+          $ref: '#/components/schemas/Files-Multiple'      
+   #-------Definition of generic IOCs ----------#  
+
+
+#-------- Definition of types-----------------------------------------------------
+    FileDownloadJobProcessMonitor:
+      description: >-
+        This data type is the "ProcessMonitor" data type with specialisations
+        for usage in the "FileDownloadJob".
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        status:
+          type: string
+          readOnly: true
+          enum:
+            - NOT_STARTED
+            - RUNNING
+            - FINSHED
+            - FAILED
+            - CANCELLING
+            - CANCELLED
+        progressPercentage:
+          type: integer
+          readOnly: true
+          minimum: 0
+          maximum: 100
+        progressStateInfo:
+          readOnly: true
+          type: string
+        resultStateInfo:
+          oneOf:
+            - type: string
+              readOnly: true
+              enum:
+                - NULL
+                - UNKNOWN
+                - NO_STORAGE
+                - LOW_MEMROY
+                - NO_CONNECTION_TO_REMOTE_SERVER
+                - FILE_NOT_AVAILABLE
+                - DNS_CANNOT_BE_RESOLVED
+                - TIMER_EXPIRED
+                - OTHER
+            - type: string
+              readOnly: true
+        startTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+        endTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+        timer:
+          type: integer
+
+#-------- Definition of concrete IOCs --------------------------------------------
+
+
+    FileDownloadJob-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                fileLocation:
+                  $ref: '#/components/schemas/FileLocation'
+                notificationRecipientAddress:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/Uri'
+                cancelJob:
+                  type: string
+                  enum:
+                    - TRUE
+                    - FALSE
+                  default: FALSE   
+                jobMonitor:
+                  $ref: '#/components/schemas/FileDownloadJobProcessMonitor'
+    Files-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                numberOfFiles:
+                  type: integer
+                  readOnly: true
+                jobRef:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+                jobId:
+                  type: string
+                  readOnly: true
+                File:
+                  $ref: '#/components/schemas/File-Multiple'
+    File-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                file:
+                  oneOf:
+                    - $ref: '#/components/schemas/FileLocation'
+                    - $ref: '#/components/schemas/FileContent'
+                fileCompression:
+                  type: string
+                  readOnly: true
+                fileSize:
+                  type: integer
+                  readOnly: true
+                fileDataType:
+                  type: string
+                  readOnly: true
+                  enum:
+                    - PERFORMANCE
+                    - TRACE
+                    - ANALYTICS
+                    - PROPRIETARY
+                fileFormat:
+                  type: string
+                  readOnly: true
+                fileReadyTime:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+                fileExpirationTime:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTimeRo'
+                jobRef:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+                jobId:
+                  type: string
+                  readOnly: true
+    FileLocation:
+      $ref: 'TS28623_ComDefs.yaml#/components/schemas/UriRo'
+    FileContent:
+      type: string
+      readOnly: true
+ 
+            
+
+#-------- Definition of YAML arrays for name-contained IOCs ----------------------
+
+    FileDownloadJob-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/FileDownloadJob-Single'
+    Files-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/Files-Single'
+    File-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/File-Single'
+
+
+
+#-------- Definitions in TS 28.623 for TS 28.532 ---------------------------------
+    resources-fileMgmtNrm:
+      oneOf:
+       - $ref: '#/components/schemas/FileDownloadJob-Single'
+       - $ref: '#/components/schemas/Files-Single'    
+       - $ref: '#/components/schemas/File-Single'
+       

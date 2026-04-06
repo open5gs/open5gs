@@ -7,7 +7,7 @@
 OpenAPI_retainability_threshold_t *OpenAPI_retainability_threshold_create(
     bool is_rel_flow_num,
     int rel_flow_num,
-    OpenAPI_time_unit_t *rel_time_unit,
+    OpenAPI_time_unit_e rel_time_unit,
     bool is_rel_flow_ratio,
     int rel_flow_ratio
 )
@@ -31,10 +31,6 @@ void OpenAPI_retainability_threshold_free(OpenAPI_retainability_threshold_t *ret
     if (NULL == retainability_threshold) {
         return;
     }
-    if (retainability_threshold->rel_time_unit) {
-        OpenAPI_time_unit_free(retainability_threshold->rel_time_unit);
-        retainability_threshold->rel_time_unit = NULL;
-    }
     ogs_free(retainability_threshold);
 }
 
@@ -56,14 +52,8 @@ cJSON *OpenAPI_retainability_threshold_convertToJSON(OpenAPI_retainability_thres
     }
     }
 
-    if (retainability_threshold->rel_time_unit) {
-    cJSON *rel_time_unit_local_JSON = OpenAPI_time_unit_convertToJSON(retainability_threshold->rel_time_unit);
-    if (rel_time_unit_local_JSON == NULL) {
-        ogs_error("OpenAPI_retainability_threshold_convertToJSON() failed [rel_time_unit]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "relTimeUnit", rel_time_unit_local_JSON);
-    if (item->child == NULL) {
+    if (retainability_threshold->rel_time_unit != OpenAPI_time_unit_NULL) {
+    if (cJSON_AddStringToObject(item, "relTimeUnit", OpenAPI_time_unit_ToString(retainability_threshold->rel_time_unit)) == NULL) {
         ogs_error("OpenAPI_retainability_threshold_convertToJSON() failed [rel_time_unit]");
         goto end;
     }
@@ -86,7 +76,7 @@ OpenAPI_retainability_threshold_t *OpenAPI_retainability_threshold_parseFromJSON
     OpenAPI_lnode_t *node = NULL;
     cJSON *rel_flow_num = NULL;
     cJSON *rel_time_unit = NULL;
-    OpenAPI_time_unit_t *rel_time_unit_local_nonprim = NULL;
+    OpenAPI_time_unit_e rel_time_unitVariable = 0;
     cJSON *rel_flow_ratio = NULL;
     rel_flow_num = cJSON_GetObjectItemCaseSensitive(retainability_thresholdJSON, "relFlowNum");
     if (rel_flow_num) {
@@ -98,11 +88,11 @@ OpenAPI_retainability_threshold_t *OpenAPI_retainability_threshold_parseFromJSON
 
     rel_time_unit = cJSON_GetObjectItemCaseSensitive(retainability_thresholdJSON, "relTimeUnit");
     if (rel_time_unit) {
-    rel_time_unit_local_nonprim = OpenAPI_time_unit_parseFromJSON(rel_time_unit);
-    if (!rel_time_unit_local_nonprim) {
-        ogs_error("OpenAPI_time_unit_parseFromJSON failed [rel_time_unit]");
+    if (!cJSON_IsString(rel_time_unit)) {
+        ogs_error("OpenAPI_retainability_threshold_parseFromJSON() failed [rel_time_unit]");
         goto end;
     }
+    rel_time_unitVariable = OpenAPI_time_unit_FromString(rel_time_unit->valuestring);
     }
 
     rel_flow_ratio = cJSON_GetObjectItemCaseSensitive(retainability_thresholdJSON, "relFlowRatio");
@@ -116,17 +106,13 @@ OpenAPI_retainability_threshold_t *OpenAPI_retainability_threshold_parseFromJSON
     retainability_threshold_local_var = OpenAPI_retainability_threshold_create (
         rel_flow_num ? true : false,
         rel_flow_num ? rel_flow_num->valuedouble : 0,
-        rel_time_unit ? rel_time_unit_local_nonprim : NULL,
+        rel_time_unit ? rel_time_unitVariable : 0,
         rel_flow_ratio ? true : false,
         rel_flow_ratio ? rel_flow_ratio->valuedouble : 0
     );
 
     return retainability_threshold_local_var;
 end:
-    if (rel_time_unit_local_nonprim) {
-        OpenAPI_time_unit_free(rel_time_unit_local_nonprim);
-        rel_time_unit_local_nonprim = NULL;
-    }
     return NULL;
 }
 

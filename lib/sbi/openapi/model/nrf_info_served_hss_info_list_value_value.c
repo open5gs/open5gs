@@ -11,7 +11,8 @@ OpenAPI_nrf_info_served_hss_info_list_value_value_t *OpenAPI_nrf_info_served_hss
     OpenAPI_list_t *ims_public_identity_ranges,
     OpenAPI_list_t *msisdn_ranges,
     OpenAPI_list_t *external_group_identifiers_ranges,
-    OpenAPI_network_node_diameter_address_t *hss_diameter_address
+    OpenAPI_network_node_diameter_address_t *hss_diameter_address,
+    OpenAPI_list_t *additional_diam_addresses
 )
 {
     OpenAPI_nrf_info_served_hss_info_list_value_value_t *nrf_info_served_hss_info_list_value_value_local_var = ogs_malloc(sizeof(OpenAPI_nrf_info_served_hss_info_list_value_value_t));
@@ -24,6 +25,7 @@ OpenAPI_nrf_info_served_hss_info_list_value_value_t *OpenAPI_nrf_info_served_hss
     nrf_info_served_hss_info_list_value_value_local_var->msisdn_ranges = msisdn_ranges;
     nrf_info_served_hss_info_list_value_value_local_var->external_group_identifiers_ranges = external_group_identifiers_ranges;
     nrf_info_served_hss_info_list_value_value_local_var->hss_diameter_address = hss_diameter_address;
+    nrf_info_served_hss_info_list_value_value_local_var->additional_diam_addresses = additional_diam_addresses;
 
     return nrf_info_served_hss_info_list_value_value_local_var;
 }
@@ -77,6 +79,13 @@ void OpenAPI_nrf_info_served_hss_info_list_value_value_free(OpenAPI_nrf_info_ser
     if (nrf_info_served_hss_info_list_value_value->hss_diameter_address) {
         OpenAPI_network_node_diameter_address_free(nrf_info_served_hss_info_list_value_value->hss_diameter_address);
         nrf_info_served_hss_info_list_value_value->hss_diameter_address = NULL;
+    }
+    if (nrf_info_served_hss_info_list_value_value->additional_diam_addresses) {
+        OpenAPI_list_for_each(nrf_info_served_hss_info_list_value_value->additional_diam_addresses, node) {
+            OpenAPI_network_node_diameter_address_free(node->data);
+        }
+        OpenAPI_list_free(nrf_info_served_hss_info_list_value_value->additional_diam_addresses);
+        nrf_info_served_hss_info_list_value_value->additional_diam_addresses = NULL;
     }
     ogs_free(nrf_info_served_hss_info_list_value_value);
 }
@@ -192,6 +201,22 @@ cJSON *OpenAPI_nrf_info_served_hss_info_list_value_value_convertToJSON(OpenAPI_n
     }
     }
 
+    if (nrf_info_served_hss_info_list_value_value->additional_diam_addresses) {
+    cJSON *additional_diam_addressesList = cJSON_AddArrayToObject(item, "additionalDiamAddresses");
+    if (additional_diam_addressesList == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_hss_info_list_value_value_convertToJSON() failed [additional_diam_addresses]");
+        goto end;
+    }
+    OpenAPI_list_for_each(nrf_info_served_hss_info_list_value_value->additional_diam_addresses, node) {
+        cJSON *itemLocal = OpenAPI_network_node_diameter_address_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_nrf_info_served_hss_info_list_value_value_convertToJSON() failed [additional_diam_addresses]");
+            goto end;
+        }
+        cJSON_AddItemToArray(additional_diam_addressesList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -213,6 +238,8 @@ OpenAPI_nrf_info_served_hss_info_list_value_value_t *OpenAPI_nrf_info_served_hss
     OpenAPI_list_t *external_group_identifiers_rangesList = NULL;
     cJSON *hss_diameter_address = NULL;
     OpenAPI_network_node_diameter_address_t *hss_diameter_address_local_nonprim = NULL;
+    cJSON *additional_diam_addresses = NULL;
+    OpenAPI_list_t *additional_diam_addressesList = NULL;
     group_id = cJSON_GetObjectItemCaseSensitive(nrf_info_served_hss_info_list_value_valueJSON, "groupId");
     if (group_id) {
     if (!cJSON_IsString(group_id) && !cJSON_IsNull(group_id)) {
@@ -350,6 +377,30 @@ OpenAPI_nrf_info_served_hss_info_list_value_value_t *OpenAPI_nrf_info_served_hss
     }
     }
 
+    additional_diam_addresses = cJSON_GetObjectItemCaseSensitive(nrf_info_served_hss_info_list_value_valueJSON, "additionalDiamAddresses");
+    if (additional_diam_addresses) {
+        cJSON *additional_diam_addresses_local = NULL;
+        if (!cJSON_IsArray(additional_diam_addresses)) {
+            ogs_error("OpenAPI_nrf_info_served_hss_info_list_value_value_parseFromJSON() failed [additional_diam_addresses]");
+            goto end;
+        }
+
+        additional_diam_addressesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(additional_diam_addresses_local, additional_diam_addresses) {
+            if (!cJSON_IsObject(additional_diam_addresses_local)) {
+                ogs_error("OpenAPI_nrf_info_served_hss_info_list_value_value_parseFromJSON() failed [additional_diam_addresses]");
+                goto end;
+            }
+            OpenAPI_network_node_diameter_address_t *additional_diam_addressesItem = OpenAPI_network_node_diameter_address_parseFromJSON(additional_diam_addresses_local);
+            if (!additional_diam_addressesItem) {
+                ogs_error("No additional_diam_addressesItem");
+                goto end;
+            }
+            OpenAPI_list_add(additional_diam_addressesList, additional_diam_addressesItem);
+        }
+    }
+
     nrf_info_served_hss_info_list_value_value_local_var = OpenAPI_nrf_info_served_hss_info_list_value_value_create (
         group_id && !cJSON_IsNull(group_id) ? ogs_strdup(group_id->valuestring) : NULL,
         imsi_ranges ? imsi_rangesList : NULL,
@@ -357,7 +408,8 @@ OpenAPI_nrf_info_served_hss_info_list_value_value_t *OpenAPI_nrf_info_served_hss
         ims_public_identity_ranges ? ims_public_identity_rangesList : NULL,
         msisdn_ranges ? msisdn_rangesList : NULL,
         external_group_identifiers_ranges ? external_group_identifiers_rangesList : NULL,
-        hss_diameter_address ? hss_diameter_address_local_nonprim : NULL
+        hss_diameter_address ? hss_diameter_address_local_nonprim : NULL,
+        additional_diam_addresses ? additional_diam_addressesList : NULL
     );
 
     return nrf_info_served_hss_info_list_value_value_local_var;
@@ -400,6 +452,13 @@ end:
     if (hss_diameter_address_local_nonprim) {
         OpenAPI_network_node_diameter_address_free(hss_diameter_address_local_nonprim);
         hss_diameter_address_local_nonprim = NULL;
+    }
+    if (additional_diam_addressesList) {
+        OpenAPI_list_for_each(additional_diam_addressesList, node) {
+            OpenAPI_network_node_diameter_address_free(node->data);
+        }
+        OpenAPI_list_free(additional_diam_addressesList);
+        additional_diam_addressesList = NULL;
     }
     return NULL;
 }

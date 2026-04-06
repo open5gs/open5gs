@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_condition_data_s OpenAPI_condition_data_t;
 #include "access_type.h"
 #include "rat_type.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_condition_data_s OpenAPI_condition_data_t;
-typedef struct OpenAPI_condition_data_s {
+struct OpenAPI_condition_data_s {
     char *cond_id;
     bool is_activation_time_null;
     char *activation_time;
@@ -28,7 +28,7 @@ typedef struct OpenAPI_condition_data_s {
     char *deactivation_time;
     OpenAPI_access_type_e access_type;
     OpenAPI_rat_type_e rat_type;
-} OpenAPI_condition_data_t;
+};
 
 OpenAPI_condition_data_t *OpenAPI_condition_data_create(
     char *cond_id,

@@ -121,7 +121,8 @@ bool pcf_nudr_dr_handle_query_am_data(
 
         memset(&header, 0, sizeof(header));
         header.service.name =
-            (char *)OGS_SBI_SERVICE_NAME_NPCF_AM_POLICY_CONTROL;
+            OpenAPI_service_name_ToString(
+                    OpenAPI_service_name_npcf_am_policy_control);
         header.api.version = (char *)OGS_SBI_API_V1;
         header.resource.component[0] =
             (char *)OGS_SBI_RESOURCE_NAME_POLICIES;
@@ -213,7 +214,7 @@ bool pcf_nudr_dr_handle_query_sm_data(
         }
 
         r = pcf_sess_sbi_discover_and_send(
-                    OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT, NULL,
+                    OpenAPI_service_name_nbsf_management, NULL,
                     pcf_nbsf_management_build_register,
                     sess, stream, NULL);
         ogs_expect(r == OGS_OK);

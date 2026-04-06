@@ -12,6 +12,8 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_nsacf_info_s OpenAPI_nsacf_info_t;
+#include "ext_snssai.h"
 #include "nsacf_capability.h"
 #include "tai.h"
 #include "tai_range.h"
@@ -20,17 +22,20 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_nsacf_info_s OpenAPI_nsacf_info_t;
-typedef struct OpenAPI_nsacf_info_s {
+struct OpenAPI_nsacf_info_s {
     struct OpenAPI_nsacf_capability_s *nsacf_capability;
+    OpenAPI_list_t *snssai_list_for_entire_plmn;
     OpenAPI_list_t *tai_list;
     OpenAPI_list_t *tai_range_list;
-} OpenAPI_nsacf_info_t;
+    OpenAPI_list_t *nsac_sai_list;
+};
 
 OpenAPI_nsacf_info_t *OpenAPI_nsacf_info_create(
     OpenAPI_nsacf_capability_t *nsacf_capability,
+    OpenAPI_list_t *snssai_list_for_entire_plmn,
     OpenAPI_list_t *tai_list,
-    OpenAPI_list_t *tai_range_list
+    OpenAPI_list_t *tai_range_list,
+    OpenAPI_list_t *nsac_sai_list
 );
 void OpenAPI_nsacf_info_free(OpenAPI_nsacf_info_t *nsacf_info);
 OpenAPI_nsacf_info_t *OpenAPI_nsacf_info_parseFromJSON(cJSON *nsacf_infoJSON);

@@ -1,7 +1,7 @@
 /*
  * notification_control_indication.h
  *
- * 
+ * Indicates that the notification of DDD Status is requested and/or that the notification of DDN Failure is requested. 
  */
 
 #ifndef _OpenAPI_notification_control_indication_H_

@@ -1,0 +1,386 @@
+openapi: 3.0.0
+
+info:
+  title: SS_IdmParameterProvisioning
+  version: 1.0.0
+  description: |
+    API for SEAL Identity management.  
+    © 2024, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.549 V18.6.0 Service Enabler Architecture Layer for Verticals (SEAL);
+    Application Programming Interface (API) specification; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-ipp/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+paths:
+  /configurations:
+    post:
+      description: Provisions VAL Services configuration information.
+      operationId: CreateValServiceConf
+      tags:
+        - VAL Services Configurations (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VALServicesConfig'
+      responses:
+        '201':
+          description: VAL services configuration created sucessfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VALServicesConfig'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    get:
+      description: Retrieves VAL services configuration satisfying filter criteria
+      operationId: RetrieveValServiceConf
+      tags:
+        - VAL Services Configurations (Collection)
+      parameters:
+        - name: val-server-id
+          in: query
+          description: String identifying the VAL server.
+          required: false
+          schema:
+            type: string
+        - name: config-ids
+          in: query
+          description: Identifying the list of the val services configuration resources.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+            minItems: 1
+        - name: supp-feats
+          in: query
+          description: >
+            Contains the list of supported features among the ones defined in clause 7.8.1.7.
+          required: false
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: >
+            OK. The requested VAL services configuration(s) matching the received query parameter(s)
+            shall be returned.
+            If there are no active VAL services configuration(s) matching the received query
+            parameter(s), an empty array is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VALServicesConfig'
+                minItems: 0
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /configurations/{confId}:
+    get:
+      description: Retrieves Individual VAL services configuration information.
+      operationId: RetrieveIndValServicesConf
+      tags:
+        - Individual VAL Services Configuration (Document)
+      parameters:
+        - name: confId
+          in: path
+          description: String identifying an individual VAL services configuration resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The whole Individual VAL services configuration resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VALServicesConfig'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      description: Updates an individual VAL services configuration resource.
+      operationId: UpdateIndValServicesConf
+      tags:
+        - Individual VAL Services Configuration (Document)
+      parameters:
+        - name: confId
+          in: path
+          description: String identifying an individual VAL services configuration resource
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: VAL services configuration to be updated in IM server.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VALServicesConfig'
+      responses:
+        '200':
+          description: VAL services configuration updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VALServicesConfig'
+        '204':
+          description: No Content
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      description: Modify an existing VAL services configuration.
+      operationId: ModifyIndValServicesConf
+      tags:
+        - Individual VAL Services Configuration (Document)
+      parameters:
+        - name: confId
+          in: path
+          description: Identifier of an individual VAL services configuration resource.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/VALServicesConfigPatch'
+      responses:
+        '200':
+          description: >
+            The individual VAL services configuration resource is modified successfully and a
+            representation of the updated VAL services configuration resource is returned in
+            the request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VALServicesConfig'
+        '204':
+          description: No Content. The individual VAL services configuration is modified successfully.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      description: Deletes a VAL Services Configuration.
+      operationId: DeleteIndValServicesConf
+      tags:
+        - Individual VAL Services Configuration (Document)
+      parameters:
+        - name: confId
+          in: path
+          description: String identifying an individual VAL Service Configuration resource.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The individual VAL services configuration matching confId was deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    VALServicesConfig:
+      description: Represents a VAL services configuration.
+      type: object
+      properties:
+        valSvcConf:
+          type: array
+          items:
+            $ref: '#/components/schemas/VALServiceParams'
+          minItems: 1
+          description: The list of the provisioned VAL services configuration parameters.
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - valSvcConf
+
+    VALServiceParams:
+      description: Represents VAL services configuration information.
+      type: object
+      properties:
+        valServiceId:
+          type: string
+          description: The identifier of the VAL service.
+        idList:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+          minItems: 1
+          description: The list of VAL User IDs or VAL UE IDs.
+      required:
+        - valServiceId
+        - idList
+
+    VALServicesConfigPatch:
+      description: >
+        Represents of the requested modifications to a VAL services configuration.
+      type: object
+      properties:
+        valSvcConf:
+          type: array
+          description: The list of the provisioned VAL services configuration parameters.
+          items:
+            $ref: '#/components/schemas/VALServiceParams'
+          minItems: 1

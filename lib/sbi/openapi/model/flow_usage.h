@@ -1,7 +1,7 @@
 /*
  * flow_usage.h
  *
- * 
+ * Describes the flow usage of the flows described by a media subcomponent.
  */
 
 #ifndef _OpenAPI_flow_usage_H_

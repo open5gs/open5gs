@@ -17,8 +17,15 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_create(
     bool is_invoke_nef_ind,
     int invoke_nef_ind,
     OpenAPI_list_t *smf_list,
+    OpenAPI_ip_index_t *ipv4_index,
+    OpenAPI_ip_index_t *ipv6_index,
     bool is_same_smf_ind,
-    int same_smf_ind
+    int same_smf_ind,
+    bool is_hr_sbo_allowed,
+    int hr_sbo_allowed,
+    OpenAPI_additional_smf_selection_info_t *additional_smf_selection_info,
+    bool is_local_offloading_mngt_ind,
+    int local_offloading_mngt_ind
 )
 {
     OpenAPI_dnn_info_t *dnn_info_local_var = ogs_malloc(sizeof(OpenAPI_dnn_info_t));
@@ -36,8 +43,15 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_create(
     dnn_info_local_var->is_invoke_nef_ind = is_invoke_nef_ind;
     dnn_info_local_var->invoke_nef_ind = invoke_nef_ind;
     dnn_info_local_var->smf_list = smf_list;
+    dnn_info_local_var->ipv4_index = ipv4_index;
+    dnn_info_local_var->ipv6_index = ipv6_index;
     dnn_info_local_var->is_same_smf_ind = is_same_smf_ind;
     dnn_info_local_var->same_smf_ind = same_smf_ind;
+    dnn_info_local_var->is_hr_sbo_allowed = is_hr_sbo_allowed;
+    dnn_info_local_var->hr_sbo_allowed = hr_sbo_allowed;
+    dnn_info_local_var->additional_smf_selection_info = additional_smf_selection_info;
+    dnn_info_local_var->is_local_offloading_mngt_ind = is_local_offloading_mngt_ind;
+    dnn_info_local_var->local_offloading_mngt_ind = local_offloading_mngt_ind;
 
     return dnn_info_local_var;
 }
@@ -59,6 +73,18 @@ void OpenAPI_dnn_info_free(OpenAPI_dnn_info_t *dnn_info)
         }
         OpenAPI_list_free(dnn_info->smf_list);
         dnn_info->smf_list = NULL;
+    }
+    if (dnn_info->ipv4_index) {
+        OpenAPI_ip_index_free(dnn_info->ipv4_index);
+        dnn_info->ipv4_index = NULL;
+    }
+    if (dnn_info->ipv6_index) {
+        OpenAPI_ip_index_free(dnn_info->ipv6_index);
+        dnn_info->ipv6_index = NULL;
+    }
+    if (dnn_info->additional_smf_selection_info) {
+        OpenAPI_additional_smf_selection_info_free(dnn_info->additional_smf_selection_info);
+        dnn_info->additional_smf_selection_info = NULL;
     }
     ogs_free(dnn_info);
 }
@@ -132,9 +158,62 @@ cJSON *OpenAPI_dnn_info_convertToJSON(OpenAPI_dnn_info_t *dnn_info)
     }
     }
 
+    if (dnn_info->ipv4_index) {
+    cJSON *ipv4_index_local_JSON = OpenAPI_ip_index_convertToJSON(dnn_info->ipv4_index);
+    if (ipv4_index_local_JSON == NULL) {
+        ogs_error("OpenAPI_dnn_info_convertToJSON() failed [ipv4_index]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ipv4Index", ipv4_index_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_dnn_info_convertToJSON() failed [ipv4_index]");
+        goto end;
+    }
+    }
+
+    if (dnn_info->ipv6_index) {
+    cJSON *ipv6_index_local_JSON = OpenAPI_ip_index_convertToJSON(dnn_info->ipv6_index);
+    if (ipv6_index_local_JSON == NULL) {
+        ogs_error("OpenAPI_dnn_info_convertToJSON() failed [ipv6_index]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "ipv6Index", ipv6_index_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_dnn_info_convertToJSON() failed [ipv6_index]");
+        goto end;
+    }
+    }
+
     if (dnn_info->is_same_smf_ind) {
     if (cJSON_AddBoolToObject(item, "sameSmfInd", dnn_info->same_smf_ind) == NULL) {
         ogs_error("OpenAPI_dnn_info_convertToJSON() failed [same_smf_ind]");
+        goto end;
+    }
+    }
+
+    if (dnn_info->is_hr_sbo_allowed) {
+    if (cJSON_AddBoolToObject(item, "hrSboAllowed", dnn_info->hr_sbo_allowed) == NULL) {
+        ogs_error("OpenAPI_dnn_info_convertToJSON() failed [hr_sbo_allowed]");
+        goto end;
+    }
+    }
+
+    if (dnn_info->additional_smf_selection_info) {
+    cJSON *additional_smf_selection_info_local_JSON = OpenAPI_additional_smf_selection_info_convertToJSON(dnn_info->additional_smf_selection_info);
+    if (additional_smf_selection_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_dnn_info_convertToJSON() failed [additional_smf_selection_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "additionalSmfSelectionInfo", additional_smf_selection_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_dnn_info_convertToJSON() failed [additional_smf_selection_info]");
+        goto end;
+    }
+    }
+
+    if (dnn_info->is_local_offloading_mngt_ind) {
+    if (cJSON_AddBoolToObject(item, "localOffloadingMngtInd", dnn_info->local_offloading_mngt_ind) == NULL) {
+        ogs_error("OpenAPI_dnn_info_convertToJSON() failed [local_offloading_mngt_ind]");
         goto end;
     }
     }
@@ -155,7 +234,15 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
     cJSON *invoke_nef_ind = NULL;
     cJSON *smf_list = NULL;
     OpenAPI_list_t *smf_listList = NULL;
+    cJSON *ipv4_index = NULL;
+    OpenAPI_ip_index_t *ipv4_index_local_nonprim = NULL;
+    cJSON *ipv6_index = NULL;
+    OpenAPI_ip_index_t *ipv6_index_local_nonprim = NULL;
     cJSON *same_smf_ind = NULL;
+    cJSON *hr_sbo_allowed = NULL;
+    cJSON *additional_smf_selection_info = NULL;
+    OpenAPI_additional_smf_selection_info_t *additional_smf_selection_info_local_nonprim = NULL;
+    cJSON *local_offloading_mngt_ind = NULL;
     dnn = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "dnn");
     if (!dnn) {
         ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [dnn]");
@@ -227,10 +314,53 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
         }
     }
 
+    ipv4_index = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "ipv4Index");
+    if (ipv4_index) {
+    ipv4_index_local_nonprim = OpenAPI_ip_index_parseFromJSON(ipv4_index);
+    if (!ipv4_index_local_nonprim) {
+        ogs_error("OpenAPI_ip_index_parseFromJSON failed [ipv4_index]");
+        goto end;
+    }
+    }
+
+    ipv6_index = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "ipv6Index");
+    if (ipv6_index) {
+    ipv6_index_local_nonprim = OpenAPI_ip_index_parseFromJSON(ipv6_index);
+    if (!ipv6_index_local_nonprim) {
+        ogs_error("OpenAPI_ip_index_parseFromJSON failed [ipv6_index]");
+        goto end;
+    }
+    }
+
     same_smf_ind = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "sameSmfInd");
     if (same_smf_ind) {
     if (!cJSON_IsBool(same_smf_ind)) {
         ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [same_smf_ind]");
+        goto end;
+    }
+    }
+
+    hr_sbo_allowed = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "hrSboAllowed");
+    if (hr_sbo_allowed) {
+    if (!cJSON_IsBool(hr_sbo_allowed)) {
+        ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [hr_sbo_allowed]");
+        goto end;
+    }
+    }
+
+    additional_smf_selection_info = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "additionalSmfSelectionInfo");
+    if (additional_smf_selection_info) {
+    additional_smf_selection_info_local_nonprim = OpenAPI_additional_smf_selection_info_parseFromJSON(additional_smf_selection_info);
+    if (!additional_smf_selection_info_local_nonprim) {
+        ogs_error("OpenAPI_additional_smf_selection_info_parseFromJSON failed [additional_smf_selection_info]");
+        goto end;
+    }
+    }
+
+    local_offloading_mngt_ind = cJSON_GetObjectItemCaseSensitive(dnn_infoJSON, "localOffloadingMngtInd");
+    if (local_offloading_mngt_ind) {
+    if (!cJSON_IsBool(local_offloading_mngt_ind)) {
+        ogs_error("OpenAPI_dnn_info_parseFromJSON() failed [local_offloading_mngt_ind]");
         goto end;
     }
     }
@@ -248,8 +378,15 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
         invoke_nef_ind ? true : false,
         invoke_nef_ind ? invoke_nef_ind->valueint : 0,
         smf_list ? smf_listList : NULL,
+        ipv4_index ? ipv4_index_local_nonprim : NULL,
+        ipv6_index ? ipv6_index_local_nonprim : NULL,
         same_smf_ind ? true : false,
-        same_smf_ind ? same_smf_ind->valueint : 0
+        same_smf_ind ? same_smf_ind->valueint : 0,
+        hr_sbo_allowed ? true : false,
+        hr_sbo_allowed ? hr_sbo_allowed->valueint : 0,
+        additional_smf_selection_info ? additional_smf_selection_info_local_nonprim : NULL,
+        local_offloading_mngt_ind ? true : false,
+        local_offloading_mngt_ind ? local_offloading_mngt_ind->valueint : 0
     );
 
     return dnn_info_local_var;
@@ -260,6 +397,18 @@ end:
         }
         OpenAPI_list_free(smf_listList);
         smf_listList = NULL;
+    }
+    if (ipv4_index_local_nonprim) {
+        OpenAPI_ip_index_free(ipv4_index_local_nonprim);
+        ipv4_index_local_nonprim = NULL;
+    }
+    if (ipv6_index_local_nonprim) {
+        OpenAPI_ip_index_free(ipv6_index_local_nonprim);
+        ipv6_index_local_nonprim = NULL;
+    }
+    if (additional_smf_selection_info_local_nonprim) {
+        OpenAPI_additional_smf_selection_info_free(additional_smf_selection_info_local_nonprim);
+        additional_smf_selection_info_local_nonprim = NULL;
     }
     return NULL;
 }

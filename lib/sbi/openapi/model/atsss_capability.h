@@ -12,28 +12,40 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_atsss_capability_s OpenAPI_atsss_capability_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_atsss_capability_s OpenAPI_atsss_capability_t;
-typedef struct OpenAPI_atsss_capability_s {
+struct OpenAPI_atsss_capability_s {
     bool is_atsss_ll;
     int atsss_ll;
     bool is_mptcp;
     int mptcp;
+    bool is_mpquic;
+    int mpquic;
     bool is_rtt_without_pmf;
     int rtt_without_pmf;
-} OpenAPI_atsss_capability_t;
+    bool is_mpquic_ip;
+    int mpquic_ip;
+    bool is_mpquic_e;
+    int mpquic_e;
+};
 
 OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_create(
     bool is_atsss_ll,
     int atsss_ll,
     bool is_mptcp,
     int mptcp,
+    bool is_mpquic,
+    int mpquic,
     bool is_rtt_without_pmf,
-    int rtt_without_pmf
+    int rtt_without_pmf,
+    bool is_mpquic_ip,
+    int mpquic_ip,
+    bool is_mpquic_e,
+    int mpquic_e
 );
 void OpenAPI_atsss_capability_free(OpenAPI_atsss_capability_t *atsss_capability);
 OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_capabilityJSON);

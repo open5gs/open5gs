@@ -213,7 +213,8 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     memset(&LinksValueSchemeValue, 0, sizeof(LinksValueSchemeValue));
 
     memset(&header, 0, sizeof(header));
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAUSF_AUTH;
+    header.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nausf_auth);
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] =
             (char *)OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS;
@@ -233,7 +234,8 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     memset(&sendmsg, 0, sizeof(sendmsg));
 
     memset(&header, 0, sizeof(header));
-    header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAUSF_AUTH;
+    header.service.name =
+        OpenAPI_service_name_ToString(OpenAPI_service_name_nausf_auth);
     header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] =
             (char *)OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS;

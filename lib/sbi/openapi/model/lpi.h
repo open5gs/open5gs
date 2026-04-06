@@ -1,7 +1,7 @@
 /*
  * lpi.h
  *
- * 
+ * Contains Location Privacy Indication
  */
 
 #ifndef _OpenAPI_lpi_H_
@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_lpi_s OpenAPI_lpi_t;
 #include "location_privacy_ind.h"
 #include "valid_time_period.h"
 
@@ -19,11 +20,10 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_lpi_s OpenAPI_lpi_t;
-typedef struct OpenAPI_lpi_s {
+struct OpenAPI_lpi_s {
     OpenAPI_location_privacy_ind_e location_privacy_ind;
     struct OpenAPI_valid_time_period_s *valid_time_period;
-} OpenAPI_lpi_t;
+};
 
 OpenAPI_lpi_t *OpenAPI_lpi_create(
     OpenAPI_location_privacy_ind_e location_privacy_ind,

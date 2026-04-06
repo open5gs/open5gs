@@ -12,17 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_data_filter_s OpenAPI_data_filter_t;
 #include "data_ind.h"
 #include "dnn_snssai_information.h"
+#include "network_description_1.h"
+#include "plmn_id.h"
 #include "snssai.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_data_filter_s OpenAPI_data_filter_t;
-typedef struct OpenAPI_data_filter_s {
-    struct OpenAPI_data_ind_s *data_ind;
+struct OpenAPI_data_filter_s {
+    OpenAPI_data_ind_e data_ind;
     OpenAPI_list_t *dnns;
     OpenAPI_list_t *snssais;
     OpenAPI_list_t *internal_group_ids;
@@ -34,10 +36,13 @@ typedef struct OpenAPI_data_filter_s {
     bool is_any_ue_ind;
     int any_ue_ind;
     OpenAPI_list_t *dnn_snssai_infos;
-} OpenAPI_data_filter_t;
+    OpenAPI_list_t *dnais;
+    OpenAPI_list_t *roam_ue_plmn_ids;
+    OpenAPI_list_t *roam_ue_net_descs;
+};
 
 OpenAPI_data_filter_t *OpenAPI_data_filter_create(
-    OpenAPI_data_ind_t *data_ind,
+    OpenAPI_data_ind_e data_ind,
     OpenAPI_list_t *dnns,
     OpenAPI_list_t *snssais,
     OpenAPI_list_t *internal_group_ids,
@@ -48,7 +53,10 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_create(
     OpenAPI_list_t *ue_macs,
     bool is_any_ue_ind,
     int any_ue_ind,
-    OpenAPI_list_t *dnn_snssai_infos
+    OpenAPI_list_t *dnn_snssai_infos,
+    OpenAPI_list_t *dnais,
+    OpenAPI_list_t *roam_ue_plmn_ids,
+    OpenAPI_list_t *roam_ue_net_descs
 );
 void OpenAPI_data_filter_free(OpenAPI_data_filter_t *data_filter);
 OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON);

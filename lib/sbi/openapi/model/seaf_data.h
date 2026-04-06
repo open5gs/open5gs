@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_seaf_data_s OpenAPI_seaf_data_t;
 #include "key_amf.h"
 #include "ng_ksi.h"
 
@@ -19,8 +20,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_seaf_data_s OpenAPI_seaf_data_t;
-typedef struct OpenAPI_seaf_data_s {
+struct OpenAPI_seaf_data_s {
     struct OpenAPI_ng_ksi_s *ng_ksi;
     struct OpenAPI_key_amf_s *key_amf;
     char *nh;
@@ -30,7 +30,7 @@ typedef struct OpenAPI_seaf_data_s {
     int key_amf_change_ind;
     bool is_key_amf_h_derivation_ind;
     int key_amf_h_derivation_ind;
-} OpenAPI_seaf_data_t;
+};
 
 OpenAPI_seaf_data_t *OpenAPI_seaf_data_create(
     OpenAPI_ng_ksi_t *ng_ksi,

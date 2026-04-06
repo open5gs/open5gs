@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "network_perf_type.h"
 
-OpenAPI_network_perf_type_t *OpenAPI_network_perf_type_create(
-)
+char* OpenAPI_network_perf_type_ToString(OpenAPI_network_perf_type_e network_perf_type)
 {
-    OpenAPI_network_perf_type_t *network_perf_type_local_var = ogs_malloc(sizeof(OpenAPI_network_perf_type_t));
-    ogs_assert(network_perf_type_local_var);
-
-
-    return network_perf_type_local_var;
+    const char *network_perf_typeArray[] =  { "NULL", "GNB_ACTIVE_RATIO", "GNB_COMPUTING_USAGE", "GNB_MEMORY_USAGE", "GNB_DISK_USAGE", "GNB_RSC_USAGE_OVERALL_TRAFFIC", "GNB_RSC_USAGE_GBR_TRAFFIC", "GNB_RSC_USAGE_DELAY_CRIT_GBR_TRAFFIC", "NUM_OF_UE", "SESS_SUCC_RATIO", "HO_SUCC_RATIO" };
+    size_t sizeofArray = sizeof(network_perf_typeArray) / sizeof(network_perf_typeArray[0]);
+    if (network_perf_type < sizeofArray)
+        return (char *)network_perf_typeArray[network_perf_type];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_network_perf_type_free(OpenAPI_network_perf_type_t *network_perf_type)
+OpenAPI_network_perf_type_e OpenAPI_network_perf_type_FromString(char* network_perf_type)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == network_perf_type) {
-        return;
+    int stringToReturn = 0;
+    const char *network_perf_typeArray[] =  { "NULL", "GNB_ACTIVE_RATIO", "GNB_COMPUTING_USAGE", "GNB_MEMORY_USAGE", "GNB_DISK_USAGE", "GNB_RSC_USAGE_OVERALL_TRAFFIC", "GNB_RSC_USAGE_GBR_TRAFFIC", "GNB_RSC_USAGE_DELAY_CRIT_GBR_TRAFFIC", "NUM_OF_UE", "SESS_SUCC_RATIO", "HO_SUCC_RATIO" };
+    size_t sizeofArray = sizeof(network_perf_typeArray) / sizeof(network_perf_typeArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(network_perf_type, network_perf_typeArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(network_perf_type);
-}
-
-cJSON *OpenAPI_network_perf_type_convertToJSON(OpenAPI_network_perf_type_t *network_perf_type)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (network_perf_type == NULL) {
-        ogs_error("OpenAPI_network_perf_type_convertToJSON() failed [NetworkPerfType]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_network_perf_type_t *OpenAPI_network_perf_type_parseFromJSON(cJSON *network_perf_typeJSON)
-{
-    OpenAPI_network_perf_type_t *network_perf_type_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    network_perf_type_local_var = OpenAPI_network_perf_type_create (
-    );
-
-    return network_perf_type_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_network_perf_type_t *OpenAPI_network_perf_type_copy(OpenAPI_network_perf_type_t *dst, OpenAPI_network_perf_type_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_network_perf_type_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_network_perf_type_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_network_perf_type_free(dst);
-    dst = OpenAPI_network_perf_type_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

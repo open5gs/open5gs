@@ -13,7 +13,10 @@ OpenAPI_nnwdaf_events_subscription_t *OpenAPI_nnwdaf_events_subscription_create(
     OpenAPI_list_t *event_notifications,
     OpenAPI_list_t *fail_event_reports,
     OpenAPI_prev_sub_info_t *prev_sub,
-    OpenAPI_consumer_nf_information_t *cons_nf_info
+    OpenAPI_consumer_nf_information_t *cons_nf_info,
+    char *adrf_nf_id,
+    char *adrf_nf_set_id,
+    OpenAPI_storage_handling_information_t *store_handl
 )
 {
     OpenAPI_nnwdaf_events_subscription_t *nnwdaf_events_subscription_local_var = ogs_malloc(sizeof(OpenAPI_nnwdaf_events_subscription_t));
@@ -28,6 +31,9 @@ OpenAPI_nnwdaf_events_subscription_t *OpenAPI_nnwdaf_events_subscription_create(
     nnwdaf_events_subscription_local_var->fail_event_reports = fail_event_reports;
     nnwdaf_events_subscription_local_var->prev_sub = prev_sub;
     nnwdaf_events_subscription_local_var->cons_nf_info = cons_nf_info;
+    nnwdaf_events_subscription_local_var->adrf_nf_id = adrf_nf_id;
+    nnwdaf_events_subscription_local_var->adrf_nf_set_id = adrf_nf_set_id;
+    nnwdaf_events_subscription_local_var->store_handl = store_handl;
 
     return nnwdaf_events_subscription_local_var;
 }
@@ -83,6 +89,18 @@ void OpenAPI_nnwdaf_events_subscription_free(OpenAPI_nnwdaf_events_subscription_
     if (nnwdaf_events_subscription->cons_nf_info) {
         OpenAPI_consumer_nf_information_free(nnwdaf_events_subscription->cons_nf_info);
         nnwdaf_events_subscription->cons_nf_info = NULL;
+    }
+    if (nnwdaf_events_subscription->adrf_nf_id) {
+        ogs_free(nnwdaf_events_subscription->adrf_nf_id);
+        nnwdaf_events_subscription->adrf_nf_id = NULL;
+    }
+    if (nnwdaf_events_subscription->adrf_nf_set_id) {
+        ogs_free(nnwdaf_events_subscription->adrf_nf_set_id);
+        nnwdaf_events_subscription->adrf_nf_set_id = NULL;
+    }
+    if (nnwdaf_events_subscription->store_handl) {
+        OpenAPI_storage_handling_information_free(nnwdaf_events_subscription->store_handl);
+        nnwdaf_events_subscription->store_handl = NULL;
     }
     ogs_free(nnwdaf_events_subscription);
 }
@@ -208,6 +226,33 @@ cJSON *OpenAPI_nnwdaf_events_subscription_convertToJSON(OpenAPI_nnwdaf_events_su
     }
     }
 
+    if (nnwdaf_events_subscription->adrf_nf_id) {
+    if (cJSON_AddStringToObject(item, "adrfNfId", nnwdaf_events_subscription->adrf_nf_id) == NULL) {
+        ogs_error("OpenAPI_nnwdaf_events_subscription_convertToJSON() failed [adrf_nf_id]");
+        goto end;
+    }
+    }
+
+    if (nnwdaf_events_subscription->adrf_nf_set_id) {
+    if (cJSON_AddStringToObject(item, "adrfNfSetId", nnwdaf_events_subscription->adrf_nf_set_id) == NULL) {
+        ogs_error("OpenAPI_nnwdaf_events_subscription_convertToJSON() failed [adrf_nf_set_id]");
+        goto end;
+    }
+    }
+
+    if (nnwdaf_events_subscription->store_handl) {
+    cJSON *store_handl_local_JSON = OpenAPI_storage_handling_information_convertToJSON(nnwdaf_events_subscription->store_handl);
+    if (store_handl_local_JSON == NULL) {
+        ogs_error("OpenAPI_nnwdaf_events_subscription_convertToJSON() failed [store_handl]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "storeHandl", store_handl_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_nnwdaf_events_subscription_convertToJSON() failed [store_handl]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -231,6 +276,10 @@ OpenAPI_nnwdaf_events_subscription_t *OpenAPI_nnwdaf_events_subscription_parseFr
     OpenAPI_prev_sub_info_t *prev_sub_local_nonprim = NULL;
     cJSON *cons_nf_info = NULL;
     OpenAPI_consumer_nf_information_t *cons_nf_info_local_nonprim = NULL;
+    cJSON *adrf_nf_id = NULL;
+    cJSON *adrf_nf_set_id = NULL;
+    cJSON *store_handl = NULL;
+    OpenAPI_storage_handling_information_t *store_handl_local_nonprim = NULL;
     event_subscriptions = cJSON_GetObjectItemCaseSensitive(nnwdaf_events_subscriptionJSON, "eventSubscriptions");
     if (!event_subscriptions) {
         ogs_error("OpenAPI_nnwdaf_events_subscription_parseFromJSON() failed [event_subscriptions]");
@@ -356,6 +405,31 @@ OpenAPI_nnwdaf_events_subscription_t *OpenAPI_nnwdaf_events_subscription_parseFr
     }
     }
 
+    adrf_nf_id = cJSON_GetObjectItemCaseSensitive(nnwdaf_events_subscriptionJSON, "adrfNfId");
+    if (adrf_nf_id) {
+    if (!cJSON_IsString(adrf_nf_id) && !cJSON_IsNull(adrf_nf_id)) {
+        ogs_error("OpenAPI_nnwdaf_events_subscription_parseFromJSON() failed [adrf_nf_id]");
+        goto end;
+    }
+    }
+
+    adrf_nf_set_id = cJSON_GetObjectItemCaseSensitive(nnwdaf_events_subscriptionJSON, "adrfNfSetId");
+    if (adrf_nf_set_id) {
+    if (!cJSON_IsString(adrf_nf_set_id) && !cJSON_IsNull(adrf_nf_set_id)) {
+        ogs_error("OpenAPI_nnwdaf_events_subscription_parseFromJSON() failed [adrf_nf_set_id]");
+        goto end;
+    }
+    }
+
+    store_handl = cJSON_GetObjectItemCaseSensitive(nnwdaf_events_subscriptionJSON, "storeHandl");
+    if (store_handl) {
+    store_handl_local_nonprim = OpenAPI_storage_handling_information_parseFromJSON(store_handl);
+    if (!store_handl_local_nonprim) {
+        ogs_error("OpenAPI_storage_handling_information_parseFromJSON failed [store_handl]");
+        goto end;
+    }
+    }
+
     nnwdaf_events_subscription_local_var = OpenAPI_nnwdaf_events_subscription_create (
         event_subscriptionsList,
         evt_req ? evt_req_local_nonprim : NULL,
@@ -365,7 +439,10 @@ OpenAPI_nnwdaf_events_subscription_t *OpenAPI_nnwdaf_events_subscription_parseFr
         event_notifications ? event_notificationsList : NULL,
         fail_event_reports ? fail_event_reportsList : NULL,
         prev_sub ? prev_sub_local_nonprim : NULL,
-        cons_nf_info ? cons_nf_info_local_nonprim : NULL
+        cons_nf_info ? cons_nf_info_local_nonprim : NULL,
+        adrf_nf_id && !cJSON_IsNull(adrf_nf_id) ? ogs_strdup(adrf_nf_id->valuestring) : NULL,
+        adrf_nf_set_id && !cJSON_IsNull(adrf_nf_set_id) ? ogs_strdup(adrf_nf_set_id->valuestring) : NULL,
+        store_handl ? store_handl_local_nonprim : NULL
     );
 
     return nnwdaf_events_subscription_local_var;
@@ -402,6 +479,10 @@ end:
     if (cons_nf_info_local_nonprim) {
         OpenAPI_consumer_nf_information_free(cons_nf_info_local_nonprim);
         cons_nf_info_local_nonprim = NULL;
+    }
+    if (store_handl_local_nonprim) {
+        OpenAPI_storage_handling_information_free(store_handl_local_nonprim);
+        store_handl_local_nonprim = NULL;
     }
     return NULL;
 }

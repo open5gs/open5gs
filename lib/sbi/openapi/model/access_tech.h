@@ -12,22 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "access_tech_any_of.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_access_tech_s OpenAPI_access_tech_t;
-typedef struct OpenAPI_access_tech_s {
-} OpenAPI_access_tech_t;
+typedef enum { OpenAPI_access_tech_NULL = 0, OpenAPI_access_tech_NR, OpenAPI_access_tech_EUTRAN_IN_WBS1_MODE_AND_NBS1_MODE, OpenAPI_access_tech_EUTRAN_IN_NBS1_MODE_ONLY, OpenAPI_access_tech_EUTRAN_IN_WBS1_MODE_ONLY, OpenAPI_access_tech_UTRAN, OpenAPI_access_tech_GSM_AND_ECGSM_IoT, OpenAPI_access_tech_GSM_WITHOUT_ECGSM_IoT, OpenAPI_access_tech_ECGSM_IoT_ONLY, OpenAPI_access_tech_CDMA_1xRTT, OpenAPI_access_tech_CDMA_HRPD, OpenAPI_access_tech_GSM_COMPACT, OpenAPI_access_tech_SATELLITE_NG_RAN, OpenAPI_access_tech_SATELLITE_EUTRAN_IN_NBS1_MODE, OpenAPI_access_tech_SATELLITE_EUTRAN_IN_WBS1_MODE } OpenAPI_access_tech_e;
 
-OpenAPI_access_tech_t *OpenAPI_access_tech_create(
-);
-void OpenAPI_access_tech_free(OpenAPI_access_tech_t *access_tech);
-OpenAPI_access_tech_t *OpenAPI_access_tech_parseFromJSON(cJSON *access_techJSON);
-cJSON *OpenAPI_access_tech_convertToJSON(OpenAPI_access_tech_t *access_tech);
-OpenAPI_access_tech_t *OpenAPI_access_tech_copy(OpenAPI_access_tech_t *dst, OpenAPI_access_tech_t *src);
+char* OpenAPI_access_tech_ToString(OpenAPI_access_tech_e access_tech);
+
+OpenAPI_access_tech_e OpenAPI_access_tech_FromString(char* access_tech);
 
 #ifdef __cplusplus
 }

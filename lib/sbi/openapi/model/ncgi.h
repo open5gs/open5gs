@@ -12,18 +12,18 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ncgi_s OpenAPI_ncgi_t;
 #include "plmn_id.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ncgi_s OpenAPI_ncgi_t;
-typedef struct OpenAPI_ncgi_s {
+struct OpenAPI_ncgi_s {
     struct OpenAPI_plmn_id_s *plmn_id;
     char *nr_cell_id;
     char *nid;
-} OpenAPI_ncgi_t;
+};
 
 OpenAPI_ncgi_t *OpenAPI_ncgi_create(
     OpenAPI_plmn_id_t *plmn_id,

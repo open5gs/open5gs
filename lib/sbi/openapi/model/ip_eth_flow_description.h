@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ip_eth_flow_description_s OpenAPI_ip_eth_flow_description_t;
 #include "eth_flow_description.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ip_eth_flow_description_s OpenAPI_ip_eth_flow_description_t;
-typedef struct OpenAPI_ip_eth_flow_description_s {
+struct OpenAPI_ip_eth_flow_description_s {
     char *ip_traffic_filter;
     struct OpenAPI_eth_flow_description_s *eth_traffic_filter;
-} OpenAPI_ip_eth_flow_description_t;
+};
 
 OpenAPI_ip_eth_flow_description_t *OpenAPI_ip_eth_flow_description_create(
     char *ip_traffic_filter,

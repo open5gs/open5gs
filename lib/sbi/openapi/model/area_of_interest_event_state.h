@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_area_of_interest_event_state_s OpenAPI_area_of_interest_event_state_t;
 #include "presence_state.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_area_of_interest_event_state_s OpenAPI_area_of_interest_event_state_t;
-typedef struct OpenAPI_area_of_interest_event_state_s {
+struct OpenAPI_area_of_interest_event_state_s {
     OpenAPI_presence_state_e presence;
     OpenAPI_list_t *individual_pra_id_list;
-} OpenAPI_area_of_interest_event_state_t;
+};
 
 OpenAPI_area_of_interest_event_state_t *OpenAPI_area_of_interest_event_state_create(
     OpenAPI_presence_state_e presence,

@@ -1,0 +1,159 @@
+openapi: 3.0.0
+info:
+  title: 5GMS Common Data Types
+  version: 3.1.1
+  description: |
+    5GMS Common Data Types
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+tags:
+  - name: 5GMS Common Data Types
+    description: '5G Media Streaming: Common Data Types'
+externalDocs:
+  description: 'TS 26.512 V18.6.0; 5G Media Streaming (5GMS); Protocols'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.512/'
+paths: {}
+components:
+  schemas:
+    #################################
+    # Clause 6.4.2: Simple data types
+    #################################
+
+    #####################################
+    # Clause 6.4.3: Structured data types
+    #####################################
+    MediaStreamingBaseReportingRecord:
+      type: object
+      properties:
+        sliceInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dataNetworkName:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        location:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/TypedLocation'
+
+    MediaStreamingSessionIdentification:
+      type: object
+      required:
+        - sessionId
+      properties:
+        sessionId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/MediaDeliverySessionId'
+
+    MediaStreamingAccess:
+      type: object
+      description: Common properties of a single media access by the Media Stream Handler.
+      required:
+        - mediaStreamHandlerEndpointAddress
+        - applicationServerEndpointAddress
+        - requestMessage
+        - responseMessage
+        - processingLatency
+      properties:
+        mediaStreamHandlerEndpointAddress:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/EndpointAddress'
+        applicationServerEndpointAddress:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/EndpointAddress'
+        requestMessage:
+          type: object
+          required:
+            - method
+            - url
+            - protocolVersion
+            - size
+            - bodySize
+          properties:
+            method:
+              type: string
+            url:
+              $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+            protocolVersion:
+              type: string
+            range:
+              type: string
+            size:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+            bodySize:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+            contentType:
+              type: string
+            userAgent:
+              type: string
+            userIdentity:
+              type: string
+            referer:
+              $ref: 'TS26510_CommonData.yaml#/components/schemas/AbsoluteUrl'
+        cacheStatus:
+          $ref: '#/components/schemas/CacheStatus'
+        responseMessage:
+          type: object
+          required:
+            - responseCode
+            - size
+            - bodySize
+          properties:
+            responseCode:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+            size:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+            bodySize:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+            contentType:
+              type: string
+        processingLatency:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        connectionMetrics:
+          type: object
+          required:
+            - meanNetworkRoundTripTime
+            - networkRoundTripTimeVariation
+            - congestionWindowSize
+          properties:
+            meanNetworkRoundTripTime:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+            networkRoundTripTimeVariation:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+            congestionWindowSize:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+
+    NetworkAssistanceInvocation:
+      description: Common properties of a single Network Assistance invocation.
+      type: object
+      properties:
+        policyTemplateId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        applicationFlowDescriptions:
+          type: array
+          minItems: 1
+          items:
+            $ref: 'TS26510_CommonData.yaml#/components/schemas/ApplicationFlowDescription'
+        requestedQoS:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/UnidirectionalQoSSpecification'
+        # The network QoS parameters (if any) requested by the Media Session Handler.
+        recommendedQoS:
+          type: object
+          description: The network QoS parameters (if any) recommended to the Media Session Handler.
+          required:
+            - maximumBitRate
+            - minimumBitRate
+          properties:
+            maximumBitRate:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+            minimumBitRate:
+              $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+
+    #####################################
+    # Clause 6.4.4: Enumerated data types
+    #####################################
+    CacheStatus:
+      anyOf:
+        - type: string
+          enum:
+            - HIT
+            - MISS
+            - EXPIRED
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.

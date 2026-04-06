@@ -1,0 +1,96 @@
+openapi: 3.0.0
+
+info:
+  title: MMTel_CallEvent API
+  version: 1.0.1
+  description: |
+    MMTel Enabler Server Call Event Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.392 V19.1.0;
+    Application layer support for MMTel; MMTel Enabler Server Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.392/
+
+servers:
+  - url: '{apiRoot}/mmtel-callevent/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /session-event-subscriptions:
+    # This is a dummy resource that is not needed and not used. It is defined for the sole purpose of enabling the definition of the below ImsSessionEventNotification callback.
+    post:
+    # This is a dummy service operation, service consumers (e.g., Application Server) shall NOT invoke this method on this resource! It is defined only for the purpose of defining the below ImsSessionEventNotification callback.
+      summary: Pseudo dummy operation
+      tags:
+        - Session Event Subscriptions (Collection)
+      operationId: DummySubscribe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            # Unspecified schema for the JSON body, since this is not used by consumer or producer.
+            schema: {}
+      responses:
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        ImsSessionEventNotification:
+          '{sessionEventNotificationUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: 'TS29175_Nimsas_ImsSessionManagement.yaml#/components/schemas/ImsSessionEventNotification'
+              responses:
+                '204':
+                  description: No Content, notification wassuccessfully received.
+                '307':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}

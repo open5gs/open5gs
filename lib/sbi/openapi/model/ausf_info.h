@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ausf_info_s OpenAPI_ausf_info_t;
 #include "suci_info.h"
 #include "supi_range.h"
 
@@ -19,13 +20,12 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ausf_info_s OpenAPI_ausf_info_t;
-typedef struct OpenAPI_ausf_info_s {
+struct OpenAPI_ausf_info_s {
     char *group_id;
     OpenAPI_list_t *supi_ranges;
     OpenAPI_list_t *routing_indicators;
     OpenAPI_list_t *suci_infos;
-} OpenAPI_ausf_info_t;
+};
 
 OpenAPI_ausf_info_t *OpenAPI_ausf_info_create(
     char *group_id,

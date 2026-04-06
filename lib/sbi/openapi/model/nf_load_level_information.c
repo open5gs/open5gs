@@ -8,6 +8,7 @@ OpenAPI_nf_load_level_information_t *OpenAPI_nf_load_level_information_create(
     OpenAPI_nf_type_e nf_type,
     char *nf_instance_id,
     char *nf_set_id,
+    bool is_nf_status_null,
     OpenAPI_nnwdaf_nf_status_t *nf_status,
     bool is_nf_cpu_usage,
     int nf_cpu_usage,
@@ -32,6 +33,7 @@ OpenAPI_nf_load_level_information_t *OpenAPI_nf_load_level_information_create(
     nf_load_level_information_local_var->nf_type = nf_type;
     nf_load_level_information_local_var->nf_instance_id = nf_instance_id;
     nf_load_level_information_local_var->nf_set_id = nf_set_id;
+    nf_load_level_information_local_var->is_nf_status_null = is_nf_status_null;
     nf_load_level_information_local_var->nf_status = nf_status;
     nf_load_level_information_local_var->is_nf_cpu_usage = is_nf_cpu_usage;
     nf_load_level_information_local_var->nf_cpu_usage = nf_cpu_usage;
@@ -121,6 +123,11 @@ cJSON *OpenAPI_nf_load_level_information_convertToJSON(OpenAPI_nf_load_level_inf
         ogs_error("OpenAPI_nf_load_level_information_convertToJSON() failed [nf_status]");
         goto end;
     }
+    } else if (nf_load_level_information->is_nf_status_null) {
+        if (cJSON_AddNullToObject(item, "nfStatus") == NULL) {
+            ogs_error("OpenAPI_nf_load_level_information_convertToJSON() failed [nf_status]");
+            goto end;
+        }
     }
 
     if (nf_load_level_information->is_nf_cpu_usage) {
@@ -235,10 +242,12 @@ OpenAPI_nf_load_level_information_t *OpenAPI_nf_load_level_information_parseFrom
 
     nf_status = cJSON_GetObjectItemCaseSensitive(nf_load_level_informationJSON, "nfStatus");
     if (nf_status) {
+    if (!cJSON_IsNull(nf_status)) {
     nf_status_local_nonprim = OpenAPI_nnwdaf_nf_status_parseFromJSON(nf_status);
     if (!nf_status_local_nonprim) {
         ogs_error("OpenAPI_nnwdaf_nf_status_parseFromJSON failed [nf_status]");
         goto end;
+    }
     }
     }
 
@@ -311,6 +320,7 @@ OpenAPI_nf_load_level_information_t *OpenAPI_nf_load_level_information_parseFrom
         nf_type ? nf_typeVariable : 0,
         nf_instance_id && !cJSON_IsNull(nf_instance_id) ? ogs_strdup(nf_instance_id->valuestring) : NULL,
         nf_set_id && !cJSON_IsNull(nf_set_id) ? ogs_strdup(nf_set_id->valuestring) : NULL,
+        nf_status && cJSON_IsNull(nf_status) ? true : false,
         nf_status ? nf_status_local_nonprim : NULL,
         nf_cpu_usage ? true : false,
         nf_cpu_usage ? nf_cpu_usage->valuedouble : 0,

@@ -16,7 +16,14 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_create(
     bool is_prose_support_ind,
     int prose_support_ind,
     OpenAPI_pro_se_capability_t *prose_capability,
-    OpenAPI_v2x_capability_t *v2x_capability
+    OpenAPI_v2x_capability_t *v2x_capability,
+    bool is_a2x_support_ind,
+    int a2x_support_ind,
+    OpenAPI_a2x_capability_t *a2x_capability,
+    bool is_ranging_sl_pos_support_ind,
+    int ranging_sl_pos_support_ind,
+    bool is_ursp_eps_support,
+    int ursp_eps_support
 )
 {
     OpenAPI_pcf_info_t *pcf_info_local_var = ogs_malloc(sizeof(OpenAPI_pcf_info_t));
@@ -34,6 +41,13 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_create(
     pcf_info_local_var->prose_support_ind = prose_support_ind;
     pcf_info_local_var->prose_capability = prose_capability;
     pcf_info_local_var->v2x_capability = v2x_capability;
+    pcf_info_local_var->is_a2x_support_ind = is_a2x_support_ind;
+    pcf_info_local_var->a2x_support_ind = a2x_support_ind;
+    pcf_info_local_var->a2x_capability = a2x_capability;
+    pcf_info_local_var->is_ranging_sl_pos_support_ind = is_ranging_sl_pos_support_ind;
+    pcf_info_local_var->ranging_sl_pos_support_ind = ranging_sl_pos_support_ind;
+    pcf_info_local_var->is_ursp_eps_support = is_ursp_eps_support;
+    pcf_info_local_var->ursp_eps_support = ursp_eps_support;
 
     return pcf_info_local_var;
 }
@@ -85,6 +99,10 @@ void OpenAPI_pcf_info_free(OpenAPI_pcf_info_t *pcf_info)
     if (pcf_info->v2x_capability) {
         OpenAPI_v2x_capability_free(pcf_info->v2x_capability);
         pcf_info->v2x_capability = NULL;
+    }
+    if (pcf_info->a2x_capability) {
+        OpenAPI_a2x_capability_free(pcf_info->a2x_capability);
+        pcf_info->a2x_capability = NULL;
     }
     ogs_free(pcf_info);
 }
@@ -207,6 +225,40 @@ cJSON *OpenAPI_pcf_info_convertToJSON(OpenAPI_pcf_info_t *pcf_info)
     }
     }
 
+    if (pcf_info->is_a2x_support_ind) {
+    if (cJSON_AddBoolToObject(item, "a2xSupportInd", pcf_info->a2x_support_ind) == NULL) {
+        ogs_error("OpenAPI_pcf_info_convertToJSON() failed [a2x_support_ind]");
+        goto end;
+    }
+    }
+
+    if (pcf_info->a2x_capability) {
+    cJSON *a2x_capability_local_JSON = OpenAPI_a2x_capability_convertToJSON(pcf_info->a2x_capability);
+    if (a2x_capability_local_JSON == NULL) {
+        ogs_error("OpenAPI_pcf_info_convertToJSON() failed [a2x_capability]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "a2xCapability", a2x_capability_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_pcf_info_convertToJSON() failed [a2x_capability]");
+        goto end;
+    }
+    }
+
+    if (pcf_info->is_ranging_sl_pos_support_ind) {
+    if (cJSON_AddBoolToObject(item, "rangingSlPosSupportInd", pcf_info->ranging_sl_pos_support_ind) == NULL) {
+        ogs_error("OpenAPI_pcf_info_convertToJSON() failed [ranging_sl_pos_support_ind]");
+        goto end;
+    }
+    }
+
+    if (pcf_info->is_ursp_eps_support) {
+    if (cJSON_AddBoolToObject(item, "urspEpsSupport", pcf_info->ursp_eps_support) == NULL) {
+        ogs_error("OpenAPI_pcf_info_convertToJSON() failed [ursp_eps_support]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -230,6 +282,11 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
     OpenAPI_pro_se_capability_t *prose_capability_local_nonprim = NULL;
     cJSON *v2x_capability = NULL;
     OpenAPI_v2x_capability_t *v2x_capability_local_nonprim = NULL;
+    cJSON *a2x_support_ind = NULL;
+    cJSON *a2x_capability = NULL;
+    OpenAPI_a2x_capability_t *a2x_capability_local_nonprim = NULL;
+    cJSON *ranging_sl_pos_support_ind = NULL;
+    cJSON *ursp_eps_support = NULL;
     group_id = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "groupId");
     if (group_id) {
     if (!cJSON_IsString(group_id) && !cJSON_IsNull(group_id)) {
@@ -357,6 +414,39 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
     }
     }
 
+    a2x_support_ind = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "a2xSupportInd");
+    if (a2x_support_ind) {
+    if (!cJSON_IsBool(a2x_support_ind)) {
+        ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [a2x_support_ind]");
+        goto end;
+    }
+    }
+
+    a2x_capability = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "a2xCapability");
+    if (a2x_capability) {
+    a2x_capability_local_nonprim = OpenAPI_a2x_capability_parseFromJSON(a2x_capability);
+    if (!a2x_capability_local_nonprim) {
+        ogs_error("OpenAPI_a2x_capability_parseFromJSON failed [a2x_capability]");
+        goto end;
+    }
+    }
+
+    ranging_sl_pos_support_ind = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "rangingSlPosSupportInd");
+    if (ranging_sl_pos_support_ind) {
+    if (!cJSON_IsBool(ranging_sl_pos_support_ind)) {
+        ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [ranging_sl_pos_support_ind]");
+        goto end;
+    }
+    }
+
+    ursp_eps_support = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "urspEpsSupport");
+    if (ursp_eps_support) {
+    if (!cJSON_IsBool(ursp_eps_support)) {
+        ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [ursp_eps_support]");
+        goto end;
+    }
+    }
+
     pcf_info_local_var = OpenAPI_pcf_info_create (
         group_id && !cJSON_IsNull(group_id) ? ogs_strdup(group_id->valuestring) : NULL,
         dnn_list ? dnn_listList : NULL,
@@ -369,7 +459,14 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
         prose_support_ind ? true : false,
         prose_support_ind ? prose_support_ind->valueint : 0,
         prose_capability ? prose_capability_local_nonprim : NULL,
-        v2x_capability ? v2x_capability_local_nonprim : NULL
+        v2x_capability ? v2x_capability_local_nonprim : NULL,
+        a2x_support_ind ? true : false,
+        a2x_support_ind ? a2x_support_ind->valueint : 0,
+        a2x_capability ? a2x_capability_local_nonprim : NULL,
+        ranging_sl_pos_support_ind ? true : false,
+        ranging_sl_pos_support_ind ? ranging_sl_pos_support_ind->valueint : 0,
+        ursp_eps_support ? true : false,
+        ursp_eps_support ? ursp_eps_support->valueint : 0
     );
 
     return pcf_info_local_var;
@@ -402,6 +499,10 @@ end:
     if (v2x_capability_local_nonprim) {
         OpenAPI_v2x_capability_free(v2x_capability_local_nonprim);
         v2x_capability_local_nonprim = NULL;
+    }
+    if (a2x_capability_local_nonprim) {
+        OpenAPI_a2x_capability_free(a2x_capability_local_nonprim);
+        a2x_capability_local_nonprim = NULL;
     }
     return NULL;
 }

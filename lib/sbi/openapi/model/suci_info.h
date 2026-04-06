@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_suci_info_s OpenAPI_suci_info_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_suci_info_s OpenAPI_suci_info_t;
-typedef struct OpenAPI_suci_info_s {
+struct OpenAPI_suci_info_s {
     OpenAPI_list_t *routing_inds;
     OpenAPI_list_t *h_nw_pub_key_ids;
-} OpenAPI_suci_info_t;
+};
 
 OpenAPI_suci_info_t *OpenAPI_suci_info_create(
     OpenAPI_list_t *routing_inds,

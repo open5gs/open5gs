@@ -10,7 +10,9 @@ OpenAPI_nrf_info_served_udr_info_value_t *OpenAPI_nrf_info_served_udr_info_value
     OpenAPI_list_t *gpsi_ranges,
     OpenAPI_list_t *external_group_identifiers_ranges,
     OpenAPI_list_t *supported_data_sets,
-    OpenAPI_list_t *shared_data_id_ranges
+    OpenAPI_list_t *shared_data_id_ranges,
+    bool is_any_ue_ind,
+    int any_ue_ind
 )
 {
     OpenAPI_nrf_info_served_udr_info_value_t *nrf_info_served_udr_info_value_local_var = ogs_malloc(sizeof(OpenAPI_nrf_info_served_udr_info_value_t));
@@ -22,6 +24,8 @@ OpenAPI_nrf_info_served_udr_info_value_t *OpenAPI_nrf_info_served_udr_info_value
     nrf_info_served_udr_info_value_local_var->external_group_identifiers_ranges = external_group_identifiers_ranges;
     nrf_info_served_udr_info_value_local_var->supported_data_sets = supported_data_sets;
     nrf_info_served_udr_info_value_local_var->shared_data_id_ranges = shared_data_id_ranges;
+    nrf_info_served_udr_info_value_local_var->is_any_ue_ind = is_any_ue_ind;
+    nrf_info_served_udr_info_value_local_var->any_ue_ind = any_ue_ind;
 
     return nrf_info_served_udr_info_value_local_var;
 }
@@ -168,6 +172,13 @@ cJSON *OpenAPI_nrf_info_served_udr_info_value_convertToJSON(OpenAPI_nrf_info_ser
     }
     }
 
+    if (nrf_info_served_udr_info_value->is_any_ue_ind) {
+    if (cJSON_AddBoolToObject(item, "anyUeInd", nrf_info_served_udr_info_value->any_ue_ind) == NULL) {
+        ogs_error("OpenAPI_nrf_info_served_udr_info_value_convertToJSON() failed [any_ue_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -187,6 +198,7 @@ OpenAPI_nrf_info_served_udr_info_value_t *OpenAPI_nrf_info_served_udr_info_value
     OpenAPI_list_t *supported_data_setsList = NULL;
     cJSON *shared_data_id_ranges = NULL;
     OpenAPI_list_t *shared_data_id_rangesList = NULL;
+    cJSON *any_ue_ind = NULL;
     group_id = cJSON_GetObjectItemCaseSensitive(nrf_info_served_udr_info_valueJSON, "groupId");
     if (group_id) {
     if (!cJSON_IsString(group_id) && !cJSON_IsNull(group_id)) {
@@ -321,13 +333,23 @@ OpenAPI_nrf_info_served_udr_info_value_t *OpenAPI_nrf_info_served_udr_info_value
         }
     }
 
+    any_ue_ind = cJSON_GetObjectItemCaseSensitive(nrf_info_served_udr_info_valueJSON, "anyUeInd");
+    if (any_ue_ind) {
+    if (!cJSON_IsBool(any_ue_ind)) {
+        ogs_error("OpenAPI_nrf_info_served_udr_info_value_parseFromJSON() failed [any_ue_ind]");
+        goto end;
+    }
+    }
+
     nrf_info_served_udr_info_value_local_var = OpenAPI_nrf_info_served_udr_info_value_create (
         group_id && !cJSON_IsNull(group_id) ? ogs_strdup(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
         gpsi_ranges ? gpsi_rangesList : NULL,
         external_group_identifiers_ranges ? external_group_identifiers_rangesList : NULL,
         supported_data_sets ? supported_data_setsList : NULL,
-        shared_data_id_ranges ? shared_data_id_rangesList : NULL
+        shared_data_id_ranges ? shared_data_id_rangesList : NULL,
+        any_ue_ind ? true : false,
+        any_ue_ind ? any_ue_ind->valueint : 0
     );
 
     return nrf_info_served_udr_info_value_local_var;

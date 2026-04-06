@@ -6,6 +6,7 @@
 
 OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_create(
     char *sender,
+    char *n32_handshake_id,
     OpenAPI_list_t *supported_sec_capability_list,
     bool is__3_gpp_sbi_target_api_root_supported,
     int _3_gpp_sbi_target_api_root_supported,
@@ -14,13 +15,18 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_create(
     OpenAPI_plmn_id_t *target_plmn_id,
     OpenAPI_plmn_id_nid_t *target_snpn_id,
     OpenAPI_list_t *intended_usage_purpose,
-    char *supported_features
+    char *supported_features,
+    char *sender_n32f_fqdn,
+    OpenAPI_list_t *sender_n32f_port_list,
+    bool is_n32_keepalive_timer,
+    int n32_keepalive_timer
 )
 {
     OpenAPI_sec_negotiate_req_data_t *sec_negotiate_req_data_local_var = ogs_malloc(sizeof(OpenAPI_sec_negotiate_req_data_t));
     ogs_assert(sec_negotiate_req_data_local_var);
 
     sec_negotiate_req_data_local_var->sender = sender;
+    sec_negotiate_req_data_local_var->n32_handshake_id = n32_handshake_id;
     sec_negotiate_req_data_local_var->supported_sec_capability_list = supported_sec_capability_list;
     sec_negotiate_req_data_local_var->is__3_gpp_sbi_target_api_root_supported = is__3_gpp_sbi_target_api_root_supported;
     sec_negotiate_req_data_local_var->_3_gpp_sbi_target_api_root_supported = _3_gpp_sbi_target_api_root_supported;
@@ -30,6 +36,10 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_create(
     sec_negotiate_req_data_local_var->target_snpn_id = target_snpn_id;
     sec_negotiate_req_data_local_var->intended_usage_purpose = intended_usage_purpose;
     sec_negotiate_req_data_local_var->supported_features = supported_features;
+    sec_negotiate_req_data_local_var->sender_n32f_fqdn = sender_n32f_fqdn;
+    sec_negotiate_req_data_local_var->sender_n32f_port_list = sender_n32f_port_list;
+    sec_negotiate_req_data_local_var->is_n32_keepalive_timer = is_n32_keepalive_timer;
+    sec_negotiate_req_data_local_var->n32_keepalive_timer = n32_keepalive_timer;
 
     return sec_negotiate_req_data_local_var;
 }
@@ -44,6 +54,10 @@ void OpenAPI_sec_negotiate_req_data_free(OpenAPI_sec_negotiate_req_data_t *sec_n
     if (sec_negotiate_req_data->sender) {
         ogs_free(sec_negotiate_req_data->sender);
         sec_negotiate_req_data->sender = NULL;
+    }
+    if (sec_negotiate_req_data->n32_handshake_id) {
+        ogs_free(sec_negotiate_req_data->n32_handshake_id);
+        sec_negotiate_req_data->n32_handshake_id = NULL;
     }
     if (sec_negotiate_req_data->supported_sec_capability_list) {
         OpenAPI_list_free(sec_negotiate_req_data->supported_sec_capability_list);
@@ -82,6 +96,17 @@ void OpenAPI_sec_negotiate_req_data_free(OpenAPI_sec_negotiate_req_data_t *sec_n
         ogs_free(sec_negotiate_req_data->supported_features);
         sec_negotiate_req_data->supported_features = NULL;
     }
+    if (sec_negotiate_req_data->sender_n32f_fqdn) {
+        ogs_free(sec_negotiate_req_data->sender_n32f_fqdn);
+        sec_negotiate_req_data->sender_n32f_fqdn = NULL;
+    }
+    if (sec_negotiate_req_data->sender_n32f_port_list) {
+        OpenAPI_list_for_each(sec_negotiate_req_data->sender_n32f_port_list, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(sec_negotiate_req_data->sender_n32f_port_list);
+        sec_negotiate_req_data->sender_n32f_port_list = NULL;
+    }
     ogs_free(sec_negotiate_req_data);
 }
 
@@ -103,6 +128,13 @@ cJSON *OpenAPI_sec_negotiate_req_data_convertToJSON(OpenAPI_sec_negotiate_req_da
     if (cJSON_AddStringToObject(item, "sender", sec_negotiate_req_data->sender) == NULL) {
         ogs_error("OpenAPI_sec_negotiate_req_data_convertToJSON() failed [sender]");
         goto end;
+    }
+
+    if (sec_negotiate_req_data->n32_handshake_id) {
+    if (cJSON_AddStringToObject(item, "n32HandshakeId", sec_negotiate_req_data->n32_handshake_id) == NULL) {
+        ogs_error("OpenAPI_sec_negotiate_req_data_convertToJSON() failed [n32_handshake_id]");
+        goto end;
+    }
     }
 
     if (sec_negotiate_req_data->supported_sec_capability_list == OpenAPI_security_capability_NULL) {
@@ -209,6 +241,38 @@ cJSON *OpenAPI_sec_negotiate_req_data_convertToJSON(OpenAPI_sec_negotiate_req_da
     }
     }
 
+    if (sec_negotiate_req_data->sender_n32f_fqdn) {
+    if (cJSON_AddStringToObject(item, "senderN32fFqdn", sec_negotiate_req_data->sender_n32f_fqdn) == NULL) {
+        ogs_error("OpenAPI_sec_negotiate_req_data_convertToJSON() failed [sender_n32f_fqdn]");
+        goto end;
+    }
+    }
+
+    if (sec_negotiate_req_data->sender_n32f_port_list) {
+    cJSON *sender_n32f_port_listList = cJSON_AddArrayToObject(item, "senderN32fPortList");
+    if (sender_n32f_port_listList == NULL) {
+        ogs_error("OpenAPI_sec_negotiate_req_data_convertToJSON() failed [sender_n32f_port_list]");
+        goto end;
+    }
+    OpenAPI_list_for_each(sec_negotiate_req_data->sender_n32f_port_list, node) {
+        if (node->data == NULL) {
+            ogs_error("OpenAPI_sec_negotiate_req_data_convertToJSON() failed [sender_n32f_port_list]");
+            goto end;
+        }
+        if (cJSON_AddNumberToObject(sender_n32f_port_listList, "", *(double *)node->data) == NULL) {
+            ogs_error("OpenAPI_sec_negotiate_req_data_convertToJSON() failed [sender_n32f_port_list]");
+            goto end;
+        }
+    }
+    }
+
+    if (sec_negotiate_req_data->is_n32_keepalive_timer) {
+    if (cJSON_AddNumberToObject(item, "n32KeepaliveTimer", sec_negotiate_req_data->n32_keepalive_timer) == NULL) {
+        ogs_error("OpenAPI_sec_negotiate_req_data_convertToJSON() failed [n32_keepalive_timer]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -218,6 +282,7 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_parseFromJSON(c
     OpenAPI_sec_negotiate_req_data_t *sec_negotiate_req_data_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *sender = NULL;
+    cJSON *n32_handshake_id = NULL;
     cJSON *supported_sec_capability_list = NULL;
     OpenAPI_list_t *supported_sec_capability_listList = NULL;
     cJSON *_3_gpp_sbi_target_api_root_supported = NULL;
@@ -232,6 +297,10 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_parseFromJSON(c
     cJSON *intended_usage_purpose = NULL;
     OpenAPI_list_t *intended_usage_purposeList = NULL;
     cJSON *supported_features = NULL;
+    cJSON *sender_n32f_fqdn = NULL;
+    cJSON *sender_n32f_port_list = NULL;
+    OpenAPI_list_t *sender_n32f_port_listList = NULL;
+    cJSON *n32_keepalive_timer = NULL;
     sender = cJSON_GetObjectItemCaseSensitive(sec_negotiate_req_dataJSON, "sender");
     if (!sender) {
         ogs_error("OpenAPI_sec_negotiate_req_data_parseFromJSON() failed [sender]");
@@ -240,6 +309,14 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_parseFromJSON(c
     if (!cJSON_IsString(sender)) {
         ogs_error("OpenAPI_sec_negotiate_req_data_parseFromJSON() failed [sender]");
         goto end;
+    }
+
+    n32_handshake_id = cJSON_GetObjectItemCaseSensitive(sec_negotiate_req_dataJSON, "n32HandshakeId");
+    if (n32_handshake_id) {
+    if (!cJSON_IsString(n32_handshake_id) && !cJSON_IsNull(n32_handshake_id)) {
+        ogs_error("OpenAPI_sec_negotiate_req_data_parseFromJSON() failed [n32_handshake_id]");
+        goto end;
+    }
     }
 
     supported_sec_capability_list = cJSON_GetObjectItemCaseSensitive(sec_negotiate_req_dataJSON, "supportedSecCapabilityList");
@@ -380,8 +457,52 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_parseFromJSON(c
     }
     }
 
+    sender_n32f_fqdn = cJSON_GetObjectItemCaseSensitive(sec_negotiate_req_dataJSON, "senderN32fFqdn");
+    if (sender_n32f_fqdn) {
+    if (!cJSON_IsString(sender_n32f_fqdn) && !cJSON_IsNull(sender_n32f_fqdn)) {
+        ogs_error("OpenAPI_sec_negotiate_req_data_parseFromJSON() failed [sender_n32f_fqdn]");
+        goto end;
+    }
+    }
+
+    sender_n32f_port_list = cJSON_GetObjectItemCaseSensitive(sec_negotiate_req_dataJSON, "senderN32fPortList");
+    if (sender_n32f_port_list) {
+        cJSON *sender_n32f_port_list_local = NULL;
+        if (!cJSON_IsArray(sender_n32f_port_list)) {
+            ogs_error("OpenAPI_sec_negotiate_req_data_parseFromJSON() failed [sender_n32f_port_list]");
+            goto end;
+        }
+
+        sender_n32f_port_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(sender_n32f_port_list_local, sender_n32f_port_list) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsNumber(sender_n32f_port_list_local)) {
+                ogs_error("OpenAPI_sec_negotiate_req_data_parseFromJSON() failed [sender_n32f_port_list]");
+                goto end;
+            }
+            localDouble = (double *)ogs_calloc(1, sizeof(double));
+            if (!localDouble) {
+                ogs_error("OpenAPI_sec_negotiate_req_data_parseFromJSON() failed [sender_n32f_port_list]");
+                goto end;
+            }
+            *localDouble = sender_n32f_port_list_local->valuedouble;
+            OpenAPI_list_add(sender_n32f_port_listList, localDouble);
+        }
+    }
+
+    n32_keepalive_timer = cJSON_GetObjectItemCaseSensitive(sec_negotiate_req_dataJSON, "n32KeepaliveTimer");
+    if (n32_keepalive_timer) {
+    if (!cJSON_IsNumber(n32_keepalive_timer)) {
+        ogs_error("OpenAPI_sec_negotiate_req_data_parseFromJSON() failed [n32_keepalive_timer]");
+        goto end;
+    }
+    }
+
     sec_negotiate_req_data_local_var = OpenAPI_sec_negotiate_req_data_create (
         ogs_strdup(sender->valuestring),
+        n32_handshake_id && !cJSON_IsNull(n32_handshake_id) ? ogs_strdup(n32_handshake_id->valuestring) : NULL,
         supported_sec_capability_listList,
         _3_gpp_sbi_target_api_root_supported ? true : false,
         _3_gpp_sbi_target_api_root_supported ? _3_gpp_sbi_target_api_root_supported->valueint : 0,
@@ -390,7 +511,11 @@ OpenAPI_sec_negotiate_req_data_t *OpenAPI_sec_negotiate_req_data_parseFromJSON(c
         target_plmn_id ? target_plmn_id_local_nonprim : NULL,
         target_snpn_id ? target_snpn_id_local_nonprim : NULL,
         intended_usage_purpose ? intended_usage_purposeList : NULL,
-        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
+        sender_n32f_fqdn && !cJSON_IsNull(sender_n32f_fqdn) ? ogs_strdup(sender_n32f_fqdn->valuestring) : NULL,
+        sender_n32f_port_list ? sender_n32f_port_listList : NULL,
+        n32_keepalive_timer ? true : false,
+        n32_keepalive_timer ? n32_keepalive_timer->valuedouble : 0
     );
 
     return sec_negotiate_req_data_local_var;
@@ -427,6 +552,13 @@ end:
         }
         OpenAPI_list_free(intended_usage_purposeList);
         intended_usage_purposeList = NULL;
+    }
+    if (sender_n32f_port_listList) {
+        OpenAPI_list_for_each(sender_n32f_port_listList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(sender_n32f_port_listList);
+        sender_n32f_port_listList = NULL;
     }
     return NULL;
 }

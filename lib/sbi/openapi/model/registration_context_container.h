@@ -12,6 +12,7 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_registration_context_container_s OpenAPI_registration_context_container_t;
 #include "access_type.h"
 #include "allowed_nssai.h"
 #include "ce_mode_b_ind.h"
@@ -28,8 +29,7 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_registration_context_container_s OpenAPI_registration_context_container_t;
-typedef struct OpenAPI_registration_context_container_s {
+struct OpenAPI_registration_context_container_s {
     struct OpenAPI_ue_context_s *ue_context;
     char *local_time_zone;
     OpenAPI_access_type_e an_type;
@@ -51,12 +51,14 @@ typedef struct OpenAPI_registration_context_container_s {
     struct OpenAPI_plmn_id_s *selected_plmn_id;
     bool is_iab_node_ind;
     int iab_node_ind;
+    bool is_mbsr_node_ind;
+    int mbsr_node_ind;
     struct OpenAPI_ce_mode_b_ind_s *ce_mode_b_ind;
     struct OpenAPI_lte_m_ind_s *lte_m_ind;
     bool is_authenticated_ind;
     int authenticated_ind;
     struct OpenAPI_npn_access_info_s *npn_access_info;
-} OpenAPI_registration_context_container_t;
+};
 
 OpenAPI_registration_context_container_t *OpenAPI_registration_context_container_create(
     OpenAPI_ue_context_t *ue_context,
@@ -80,6 +82,8 @@ OpenAPI_registration_context_container_t *OpenAPI_registration_context_container
     OpenAPI_plmn_id_t *selected_plmn_id,
     bool is_iab_node_ind,
     int iab_node_ind,
+    bool is_mbsr_node_ind,
+    int mbsr_node_ind,
     OpenAPI_ce_mode_b_ind_t *ce_mode_b_ind,
     OpenAPI_lte_m_ind_t *lte_m_ind,
     bool is_authenticated_ind,

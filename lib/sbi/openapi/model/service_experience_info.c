@@ -11,7 +11,7 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_create(
     OpenAPI_list_t *supis,
     OpenAPI_snssai_t *snssai,
     char *app_id,
-    OpenAPI_service_experience_type_t *srv_expc_type,
+    OpenAPI_service_experience_type_e srv_expc_type,
     OpenAPI_list_t *ue_locs,
     OpenAPI_upf_information_t *upf_info,
     char *dnai,
@@ -23,7 +23,8 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_create(
     char *nsi_id,
     bool is_ratio,
     int ratio,
-    OpenAPI_rat_freq_information_t *rat_freq
+    OpenAPI_rat_freq_information_t *rat_freq,
+    OpenAPI_pdu_session_info_1_t *pdu_ses_info
 )
 {
     OpenAPI_service_experience_info_t *service_experience_info_local_var = ogs_malloc(sizeof(OpenAPI_service_experience_info_t));
@@ -48,6 +49,7 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_create(
     service_experience_info_local_var->is_ratio = is_ratio;
     service_experience_info_local_var->ratio = ratio;
     service_experience_info_local_var->rat_freq = rat_freq;
+    service_experience_info_local_var->pdu_ses_info = pdu_ses_info;
 
     return service_experience_info_local_var;
 }
@@ -77,10 +79,6 @@ void OpenAPI_service_experience_info_free(OpenAPI_service_experience_info_t *ser
     if (service_experience_info->app_id) {
         ogs_free(service_experience_info->app_id);
         service_experience_info->app_id = NULL;
-    }
-    if (service_experience_info->srv_expc_type) {
-        OpenAPI_service_experience_type_free(service_experience_info->srv_expc_type);
-        service_experience_info->srv_expc_type = NULL;
     }
     if (service_experience_info->ue_locs) {
         OpenAPI_list_for_each(service_experience_info->ue_locs, node) {
@@ -116,6 +114,10 @@ void OpenAPI_service_experience_info_free(OpenAPI_service_experience_info_t *ser
     if (service_experience_info->rat_freq) {
         OpenAPI_rat_freq_information_free(service_experience_info->rat_freq);
         service_experience_info->rat_freq = NULL;
+    }
+    if (service_experience_info->pdu_ses_info) {
+        OpenAPI_pdu_session_info_1_free(service_experience_info->pdu_ses_info);
+        service_experience_info->pdu_ses_info = NULL;
     }
     ogs_free(service_experience_info);
 }
@@ -187,14 +189,8 @@ cJSON *OpenAPI_service_experience_info_convertToJSON(OpenAPI_service_experience_
     }
     }
 
-    if (service_experience_info->srv_expc_type) {
-    cJSON *srv_expc_type_local_JSON = OpenAPI_service_experience_type_convertToJSON(service_experience_info->srv_expc_type);
-    if (srv_expc_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_service_experience_info_convertToJSON() failed [srv_expc_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "srvExpcType", srv_expc_type_local_JSON);
-    if (item->child == NULL) {
+    if (service_experience_info->srv_expc_type != OpenAPI_service_experience_type_NULL) {
+    if (cJSON_AddStringToObject(item, "srvExpcType", OpenAPI_service_experience_type_ToString(service_experience_info->srv_expc_type)) == NULL) {
         ogs_error("OpenAPI_service_experience_info_convertToJSON() failed [srv_expc_type]");
         goto end;
     }
@@ -303,6 +299,19 @@ cJSON *OpenAPI_service_experience_info_convertToJSON(OpenAPI_service_experience_
     }
     }
 
+    if (service_experience_info->pdu_ses_info) {
+    cJSON *pdu_ses_info_local_JSON = OpenAPI_pdu_session_info_1_convertToJSON(service_experience_info->pdu_ses_info);
+    if (pdu_ses_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_service_experience_info_convertToJSON() failed [pdu_ses_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "pduSesInfo", pdu_ses_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_service_experience_info_convertToJSON() failed [pdu_ses_info]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -320,7 +329,7 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
     OpenAPI_snssai_t *snssai_local_nonprim = NULL;
     cJSON *app_id = NULL;
     cJSON *srv_expc_type = NULL;
-    OpenAPI_service_experience_type_t *srv_expc_type_local_nonprim = NULL;
+    OpenAPI_service_experience_type_e srv_expc_typeVariable = 0;
     cJSON *ue_locs = NULL;
     OpenAPI_list_t *ue_locsList = NULL;
     cJSON *upf_info = NULL;
@@ -336,6 +345,8 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
     cJSON *ratio = NULL;
     cJSON *rat_freq = NULL;
     OpenAPI_rat_freq_information_t *rat_freq_local_nonprim = NULL;
+    cJSON *pdu_ses_info = NULL;
+    OpenAPI_pdu_session_info_1_t *pdu_ses_info_local_nonprim = NULL;
     svc_exprc = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "svcExprc");
     if (!svc_exprc) {
         ogs_error("OpenAPI_service_experience_info_parseFromJSON() failed [svc_exprc]");
@@ -395,11 +406,11 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
 
     srv_expc_type = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "srvExpcType");
     if (srv_expc_type) {
-    srv_expc_type_local_nonprim = OpenAPI_service_experience_type_parseFromJSON(srv_expc_type);
-    if (!srv_expc_type_local_nonprim) {
-        ogs_error("OpenAPI_service_experience_type_parseFromJSON failed [srv_expc_type]");
+    if (!cJSON_IsString(srv_expc_type)) {
+        ogs_error("OpenAPI_service_experience_info_parseFromJSON() failed [srv_expc_type]");
         goto end;
     }
+    srv_expc_typeVariable = OpenAPI_service_experience_type_FromString(srv_expc_type->valuestring);
     }
 
     ue_locs = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "ueLocs");
@@ -502,6 +513,15 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
     }
     }
 
+    pdu_ses_info = cJSON_GetObjectItemCaseSensitive(service_experience_infoJSON, "pduSesInfo");
+    if (pdu_ses_info) {
+    pdu_ses_info_local_nonprim = OpenAPI_pdu_session_info_1_parseFromJSON(pdu_ses_info);
+    if (!pdu_ses_info_local_nonprim) {
+        ogs_error("OpenAPI_pdu_session_info_1_parseFromJSON failed [pdu_ses_info]");
+        goto end;
+    }
+    }
+
     service_experience_info_local_var = OpenAPI_service_experience_info_create (
         svc_exprc_local_nonprim,
         svc_exprc_variance ? true : false,
@@ -509,7 +529,7 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
         supis ? supisList : NULL,
         snssai ? snssai_local_nonprim : NULL,
         app_id && !cJSON_IsNull(app_id) ? ogs_strdup(app_id->valuestring) : NULL,
-        srv_expc_type ? srv_expc_type_local_nonprim : NULL,
+        srv_expc_type ? srv_expc_typeVariable : 0,
         ue_locs ? ue_locsList : NULL,
         upf_info ? upf_info_local_nonprim : NULL,
         dnai && !cJSON_IsNull(dnai) ? ogs_strdup(dnai->valuestring) : NULL,
@@ -521,7 +541,8 @@ OpenAPI_service_experience_info_t *OpenAPI_service_experience_info_parseFromJSON
         nsi_id && !cJSON_IsNull(nsi_id) ? ogs_strdup(nsi_id->valuestring) : NULL,
         ratio ? true : false,
         ratio ? ratio->valuedouble : 0,
-        rat_freq ? rat_freq_local_nonprim : NULL
+        rat_freq ? rat_freq_local_nonprim : NULL,
+        pdu_ses_info ? pdu_ses_info_local_nonprim : NULL
     );
 
     return service_experience_info_local_var;
@@ -540,10 +561,6 @@ end:
     if (snssai_local_nonprim) {
         OpenAPI_snssai_free(snssai_local_nonprim);
         snssai_local_nonprim = NULL;
-    }
-    if (srv_expc_type_local_nonprim) {
-        OpenAPI_service_experience_type_free(srv_expc_type_local_nonprim);
-        srv_expc_type_local_nonprim = NULL;
     }
     if (ue_locsList) {
         OpenAPI_list_for_each(ue_locsList, node) {
@@ -567,6 +584,10 @@ end:
     if (rat_freq_local_nonprim) {
         OpenAPI_rat_freq_information_free(rat_freq_local_nonprim);
         rat_freq_local_nonprim = NULL;
+    }
+    if (pdu_ses_info_local_nonprim) {
+        OpenAPI_pdu_session_info_1_free(pdu_ses_info_local_nonprim);
+        pdu_ses_info_local_nonprim = NULL;
     }
     return NULL;
 }

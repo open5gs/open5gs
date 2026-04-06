@@ -1,0 +1,2681 @@
+openapi: 3.0.1
+info:
+  title: NR NRM
+  version: 19.6.0
+  description: >-
+    OAS 3.0.1 specification of the NR NRM
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.541; 5G NRM, NR NRM
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.541/
+paths: {}
+components:
+  schemas:
+
+#-------- Definition of types-----------------------------------------------------
+
+    GnbId:
+      type: integer
+      minimum: 0
+      maximum: 4294967295
+      format: int64
+    GnbIdLength:
+      type: integer
+      minimum: 22
+      maximum: 32
+    GnbName:
+      type: string
+      maxLength: 150
+    GnbDuId:
+      type: integer
+      minimum: 0
+      maximum: 68719476735
+      format: int64
+    GnbCuUpId:
+      type: integer
+      minimum: 0
+      maximum: 68719476735
+      format: int64
+      readOnly: true
+
+    Sst:
+      type: integer
+      minimum: 0
+      maximum: 255
+    Snssai:
+      type: object
+      properties:
+        sst:
+          $ref: '#/components/schemas/Sst'
+        sd:
+          type: string
+          pattern: '^[A-Fa-f0-9]{6}$'
+
+    SatelliteId:
+      type: string
+      pattern: '^[0-9]{5}$'
+
+    PlmnIdList:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+    PlmnInfo:
+      type: object
+      properties:
+        plmnId:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+        snssai:
+          $ref: '#/components/schemas/Snssai'
+        sliceExpiryTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'          
+    PlmnInfoList:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/PlmnInfo'
+      minItems: 1
+    NPNIdentityList:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: 'TS28623_GenericNrm.yaml#/components/schemas/NpnId-Type'
+      minItems: 1
+    GgNBId:
+      type: object
+      properties:
+        plmnId:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+        gnbIdLength:
+          $ref: '#/components/schemas/GnbIdLength'
+        gnbId:
+          $ref: '#/components/schemas/GnbId'
+    GeNBId:
+      type: object
+      properties:
+        plmnId:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+        enbId:
+          type: integer
+          minimum: 0
+          maximum: 4194303
+
+    GgNBIdList:
+        type: array
+        uniqueItems: true
+        items: 
+          $ref: '#/components/schemas/GgNBId'
+
+    GeNBIdList:
+        type: array
+        uniqueItems: true
+        items: 
+          $ref: '#/components/schemas/GeNBId'
+
+    NrPci:
+      type: integer
+      maximum: 503
+    NRTAC:
+      $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Tac'
+    NRTACList:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Tac'
+    TaiList:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Tai'         
+    BackhaulAddress:
+      type: object
+      properties:
+        gnbId:
+          $ref: '#/components/schemas/GnbId'
+        tai:
+          $ref: "TS28623_GenericNrm.yaml#/components/schemas/Tai"
+    MappingSetIDBackhaulAddress:
+      type: object
+      properties:
+        setId:
+          type: integer
+        backhaulAddress:
+          $ref: '#/components/schemas/BackhaulAddress'
+    LoadTimeThreshold:
+      type: object
+      properties:
+        loadThreshold:
+          type: integer
+        timeDuration:
+          type: integer
+    IntraRatEsActivationOriginalCellLoadParameters:
+      $ref: '#/components/schemas/LoadTimeThreshold'
+    IntraRatEsActivationCandidateCellsLoadParameters:
+      $ref: '#/components/schemas/LoadTimeThreshold'
+    IntraRatEsDeactivationCandidateCellsLoadParameters:
+      $ref: '#/components/schemas/LoadTimeThreshold'
+    EsNotAllowedTimePeriod:
+      type: object
+      properties:
+        startTime:
+          type: string
+          description: >-
+            Time of day is in HH:MM or H:MM 24-hour format per UTC time zone.
+            Examples, 20:15, 20:15-08:00 (for 8 hours behind UTC).
+        endTime:
+          type: string
+          description: >-
+            Time of day is in HH:MM or H:MM 24-hour format per UTC time zone.
+            Examples, 20:15, 20:15-08:00 (for 8 hours behind UTC).
+        daysOfWeek:
+          type: string
+          enum:
+            - MONDAY
+            - TUESDAY
+            - WEDNESDAY
+            - THURSDAY
+            - FRIDAY
+            - SATURDAY
+            - SUNDAY
+    InterRatEsActivationOriginalCellParameters:
+      $ref: '#/components/schemas/LoadTimeThreshold'
+    InterRatEsActivationCandidateCellParameters:
+      $ref: '#/components/schemas/LoadTimeThreshold'
+    InterRatEsDeactivationCandidateCellParameters:
+      $ref: '#/components/schemas/LoadTimeThreshold'
+
+    UeAccProbabilityDist:
+      type: array
+      items:
+        $ref: '#/components/schemas/UeAccProbability'
+    UeAccProbability:
+      type: object
+      properties:
+        targetProbability:
+          type: integer
+          minimum: 0
+          maximum: 100
+        NumberOfPreamblesSent:
+          type: integer
+          minimum: 0
+          maximum: 200
+
+
+    UeAccDelayProbabilityDist:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/UeAccDelayProbability'
+
+    UeAccDelayProbability:
+      type: object
+      properties:
+        targetProbability:
+          type: integer
+          minimum: 0
+          maximum: 100
+        accessDelay:
+          type: integer
+          minimum: 10
+          maximum: 560
+
+    NRPciList:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/NrPci'
+      minItems: 0
+      maxItems: 1007
+
+    CSonPciList:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/NrPci'
+      minItems: 1
+      maxItems: 100
+
+    MaximumDeviationHoTrigger:
+      type: integer
+      minimum: -20
+      maximum: 20
+
+    MaximumDeviationHoTriggerLow:
+      type: integer
+      minimum: -20
+      maximum: 20
+
+    MaximumDeviationHoTriggerHigh:
+      type: integer
+      minimum: -20
+      maximum: 20
+
+    MinimumTimeBetweenHoTriggerChange:
+      type: integer
+      minimum: 0
+      maximum: 604800
+
+    TstoreUEcntxt:
+      type: integer
+      minimum: 0
+      maximum: 1023
+
+    CellState:
+      type: string
+      enum:
+        - IDLE
+        - INACTIVE
+        - ACTIVE
+      readOnly: true  
+    CyclicPrefix:
+      type: string
+      enum:
+        - NORMAL
+        - EXTENDED
+    TxDirection:
+      type: string
+      enum:
+        - DL
+        - UL
+        - DL_AND_UL
+    BwpContext:
+      type: string
+      enum:
+        - DL
+        - UL
+        - SUL
+    IsInitialBwp:
+      type: string
+      enum:
+        - INITIAL
+        - INITIAL_REDCAP
+        - OTHER
+    IsESCoveredBy:
+      type: string
+      enum:
+        - NO
+        - PARTIAL
+        - FULL
+    RRMPolicyMember:
+      type: object
+      properties:
+        plmnId:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+        snssai:
+          $ref: '#/components/schemas/Snssai'
+    RRMPolicyMemberList:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/RRMPolicyMember'
+      minItems: 1
+    AddressWithVlan:
+      type: object
+      properties:
+        iPAddress:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/IpAddr'
+        vlanId:
+          type: integer
+          minimum: 0
+          maximum: 4096
+    LocalAddress:
+      type: object
+      properties:
+        addressWithVlan:
+          $ref: '#/components/schemas/AddressWithVlan'
+        port:
+          type: integer
+          minimum: 0
+          maximum: 65535
+    RemoteAddress:
+      $ref: 'TS28623_ComDefs.yaml#/components/schemas/IpAddr'
+    QOffsetRange:
+      type: integer
+      default: 0
+      enum:
+        - -24
+        - -22
+        - -20
+        - -18
+        - -16
+        - -14
+        - -12
+        - -10
+        - -8
+        - -6
+        - -5
+        - -4
+        - -3
+        - -2
+        - -1
+        - 0
+        - 24
+        - 22
+        - 20
+        - 18
+        - 16
+        - 14
+        - 12
+        - 10
+        - 8
+        - 6
+        - 5
+        - 4
+        - 3
+        - 2
+        - 1
+    QOffsetFreq:
+      type: number
+      default: 0      
+    TReselectionNRSf:
+      type: integer
+      enum:
+        - 25
+        - 50
+        - 75
+        - 100
+    SsbPeriodicity:
+      type: integer
+      enum:
+        - 5
+        - 10
+        - 20
+        - 40
+        - 80
+        - 160
+    SsbDuration:
+      type: integer
+      enum:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+    SsbSubCarrierSpacing:
+      type: integer
+      enum:
+        - 15
+        - 30
+        - 120
+        - 240
+    CoverageShape:
+      type: integer
+      maximum: 65535
+    DigitalTilt:
+      type: integer
+      minimum: -900
+      maximum: 900
+    DigitalAzimuth:
+      type: integer
+      minimum: -1800
+      maximum: 1800
+    RSSetId:
+      type: integer
+      maximum: 4194303
+    
+    RSSetType:
+      type: string
+      enum:
+        - RS1
+        - RS2
+
+    FrequencyDomainPara:
+      type: object
+      properties:
+        rimRSSubcarrierSpacing:
+          type: integer
+        rIMRSBandwidth:
+         type: integer
+        nrofGlobalRIMRSFrequencyCandidates:
+          type: integer
+        rimRSCommonCarrierReferencePoint:
+         type: integer
+         minimum: 0
+         maximum: 3279165
+
+        rimRSStartingFrequencyOffsetIdList:
+          type: array
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 0
+            maximum: 550
+          minItems: 1
+          maxItems: 4
+          description: > 
+            It is a list of configured frequency offsets in units of resource blocks. 
+            Only 1,2 or 4 number of elements allowed in the array.
+    SequenceDomainPara:
+      type: object
+      properties:
+        nrofRIMRSSequenceCandidatesofRS1:
+         type: integer
+        rimRSScrambleIdListofRS1:
+          type: array
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 0
+            maximum: 1023
+          minItems: 1
+          maxItems: 8
+        nrofRIMRSSequenceCandidatesofRS2:
+         type: integer
+        rimRSScrambleIdListofRS2:
+          type: array
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 0
+            maximum: 1023
+          minItems: 1
+          maxItems: 8
+        enableEnoughNotEnoughIndication:
+          type: string
+          enum:
+            - ENABLE
+            - DISABLE
+          default: DISABLE                        
+        rIMRSScrambleTimerMultiplier:
+          type: integer
+        rIMRSScrambleTimerOffset:
+          type: integer
+
+    TimeDomainPara:
+      type: object
+      properties:
+        dlULSwitchingPeriod1:
+          type: string
+          enum:
+           - MS0P5
+           - MS0P625
+           - MS1
+           - MS1P25
+           - MS2
+           - MS2P5
+           - MS3
+           - MS4
+           - MS5
+           - MS10
+           - MS20
+        symbolOffsetOfReferencePoint1:
+           type: integer
+        dlULSwitchingPeriod2:
+          type: string
+          enum:
+           - MS0P5
+           - MS0P625
+           - MS1
+           - MS1P25
+           - MS2
+           - MS2P5
+           - MS3
+           - MS4
+           - MS5
+           - MS10
+           - MS20
+        symbolOffsetOfReferencePoint2:
+          type: integer
+        totalnrofSetIdofRS1:
+          type: integer
+        totalnrofSetIdofRS2:
+          type: integer
+        nrofConsecutiveRIMRS1:
+          type: integer
+        nrofConsecutiveRIMRS2:
+          type: integer
+        consecutiveRIMRS1List:
+          type: array
+          uniqueItems: true
+          items:
+            type: integer
+        consecutiveRIMRS2List:
+          type: array
+          uniqueItems: true
+          items:
+            type: integer
+        enablenearfarIndicationRS1:
+          type: string
+          enum:
+            - ENABLE
+            - DISABLE
+          default: DISABLE                      
+        enablenearfarIndicationRS2:
+          type: string
+          enum:
+            - ENABLE
+            - DISABLE
+          default: DISABLE                      
+
+    RimRSReportInfo:
+      type: object
+      properties:
+        detectedSetID:
+          type: integer
+        propagationDelay:
+          type: integer
+        functionalityOfRIMRS:
+          type: string
+          enum:
+            - RS1
+            - RS2
+            - RS1_FOR_ENOUGH_MITIGATION
+            - RS1_FOR_NOT_ENOUGH_MITIGATION         
+
+    RimRSReportConf:
+      type: object
+      properties:
+        reportIndicator:
+          type: string
+          enum:
+            - ENABLE
+            - DISABLE
+          default: DISABLE                      
+        reportInterval:
+           type: integer
+        nrofRIMRSReportInfo:
+          type: integer
+        maxPropagationDelay:
+          type: integer
+        rimRSReportInfoList:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RimRSReportInfo'
+    TceIDMappingInfo:
+      type: object
+      properties:
+        tceIPAddress:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/IpAddr'
+        tceID:
+          type: integer
+        pLMNTarget:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+    TceIDMappingInfoList:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/TceIDMappingInfo'
+      minItems: 1
+    ResourceType:
+      type: string
+      enum:
+        - PRB
+        - PRB_UL
+        - PRB_DL
+        - RRC_CONNECTED_USERS
+        - DRB    
+    ParameterRange:
+      type: object
+      properties:
+          maxValue:
+            type: integer
+          minValue:
+            type: integer
+    NTNTAClist:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/NRTAC'  
+    Ephemeris:
+      type: object
+      oneOf:
+        - required: [ positionVelocity ]
+        - required: [ orbital ]
+      required:
+        - satelliteId
+        - epochTime
+      properties:
+        satelliteId:
+          $ref: '#/components/schemas/SatelliteId'
+        epochTime:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+        positionVelocity:
+          $ref: '#/components/schemas/PositionVelocity'
+        orbital:
+          $ref: '#/components/schemas/Orbital'
+
+    EphemerisInfos:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/Ephemeris'
+      minItems: 1
+
+    PositionVelocity:
+      type: object
+      properties:
+        positionX:
+          type: integer
+          default: 0
+          minimum: 0
+          maximum: 604800
+        positionY:
+          type: integer
+          default: 0          
+          minimum: 0
+          maximum: 604800
+        positionZ:
+          type: integer
+          default: 0          
+          minimum: 0
+          maximum: 604800
+        velocityVX:
+          type: integer
+          default: 0          
+          minimum: -131072
+          maximum: 131071         
+        velocityVY:
+          type: integer
+          default: 0          
+          minimum: -131072
+          maximum: 131071           
+        velocityVZ:
+          type: integer
+          default: 0          
+          minimum: -131072
+          maximum: 131071
+
+    Orbital:
+      type: object
+      properties:
+          semiMajorAxis:
+            type: integer
+            default: 0            
+            minimum: 0
+            maximum: 8589934591 
+            format: int64
+          eccentricity:
+            type: integer
+            default: 0                 
+            minimum: -524288
+            maximum: 524287
+          periapsis:
+            type: integer
+            default: 0     
+            minimum: 0
+            maximum: 16777215
+          longitude:
+            type: integer
+            default: 0                 
+            minimum: 0
+            maximum: 2097151
+          inclination:
+            type: integer
+            default: 0                 
+            minimum: -524288
+            maximum: 524287
+          meanAnomaly:
+            type: integer
+            default: 0                 
+            minimum: 0
+            maximum: 16777215
+
+    MappedCellIdInfo:
+      type: object
+      properties:
+        ntnGeoArea:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+        mappedCellId:
+          $ref: 'TS28541_5GcNrm.yaml#/components/schemas/Ncgi'
+    MappedCellIdInfoList:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/MappedCellIdInfo'
+    QceIdMappingInfo:
+      type: object
+      properties:
+        qoECollectionEntityAddress:
+          oneOf:
+            - $ref: 'TS28623_ComDefs.yaml#/components/schemas/Ipv4Addr'
+            - $ref: 'TS28623_ComDefs.yaml#/components/schemas/Ipv6Addr'
+        qoECollectionEntityIdentity:
+          type: string
+        pLMNTarget:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+    QceIdMappingInfoList:
+      type: array
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/QceIdMappingInfo'
+      minItems: 1
+    MdtUserConsentReqList:
+      type: array
+      uniqueItems: true
+      items:
+        type: string
+        enum:
+          - M1
+          - M2
+          - M3
+          - M4
+          - M5
+          - M6
+          - M7
+          - M8
+          - M9
+          - MDT_UE_LOCATION
+    
+    NTNEntityConf:
+      type: object
+      properties:
+        nTNConfEntity:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        nTNConfList:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/AttributeNameValuePairSet'
+    LocationInfo:
+      type: object
+      properties:
+        gNBId:
+          type: integer
+        pLMNId:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+        cellLocalId:
+          type: integer
+        nRTAC:
+          type: string
+        tAI:
+          $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Tai'
+        geoArea:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'    
+    ServedAIOTAreaID:
+      type: object
+      properties:
+        pLMNId:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+        nID:
+          $ref: 'TS28541_5GcNrm.yaml#/components/schemas/Nid'
+        aIotAreaCode:
+          type: string
+    MnrOamIPConfig:
+      type: object
+      properties:
+        caraConfiguration:
+          $ref: '#/components/schemas/CaraConfiguration'
+        seGwConfiguration:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/HostAddr'
+        scsConfiguration:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/HostAddr'
+    CaraConfiguration:
+      type: object
+      properties:
+        caraAddress:
+          $ref: 'TS28623_ComDefs.yaml#/components/schemas/HostAddr'
+        portNumber:
+          type: integer
+        path:
+          type: string
+        subjectName:
+          type: string
+        protocol:
+          type: string
+          enum:
+            - HTTP
+            - HTTPS
+          default: HTTP
+
+#-------- Definition of types for name-containments ------
+    SubNetwork-ncO-NrNrm:
+      type: object
+      properties:
+        NRFrequency:
+          $ref: '#/components/schemas/NRFrequency-Multiple'
+        ExternalGNBCUCPFunction:
+          $ref: '#/components/schemas/GNBCUCPFunction-Multiple'
+        ExternalGNBCUUPFunction:
+          $ref: '#/components/schemas/ExternalGNBCUUPFunction-Multiple'
+        ExternalGNBDUFunction:
+          $ref: '#/components/schemas/ExternalGNBDUFunction-Multiple'
+        ExternalENBFunction:
+          $ref: '#/components/schemas/ExternalENBFunction-Multiple'
+        EUtranFrequency:
+          $ref: '#/components/schemas/EUtranFrequency-Multiple'
+        DESManagementFunction:
+          $ref: '#/components/schemas/DESManagementFunction-Single'
+        DRACHOptimizationFunction:
+          $ref: '#/components/schemas/DRACHOptimizationFunction-Single'
+        DMROFunction:
+          $ref: '#/components/schemas/DMROFunction-Single'
+        DLBOFunction:
+          $ref: '#/components/schemas/DLBOFunction-Single'
+        DPCIConfigurationFunction:
+          $ref: '#/components/schemas/DPCIConfigurationFunction-Single'
+        CPCIConfigurationFunction:
+          $ref: '#/components/schemas/CPCIConfigurationFunction-Single'
+        CESManagementFunction:
+          $ref: '#/components/schemas/CESManagementFunction-Single'
+        RedCapAccessCriteria:
+          $ref: '#/components/schemas/RedCapAccessCriteria-Single'
+        Configurable5QISet:
+          $ref: 'TS28541_5GcNrm.yaml#/components/schemas/Configurable5QISet-Multiple'
+        RimRSGlobal:
+          $ref: '#/components/schemas/RimRSGlobal-Single'
+        Dynamic5QISet:
+          $ref: 'TS28541_5GcNrm.yaml#/components/schemas/Dynamic5QISet-Multiple'
+        CCOFunction:
+          $ref: '#/components/schemas/CCOFunction-Single'
+        NTNFunction:
+          $ref: '#/components/schemas/NTNFunction-Single'
+        NRECMappingRule:
+          $ref: '#/components/schemas/NRECMappingRule-Multiple'
+        MWAB:
+          $ref: '#/components/schemas/MWAB-Multiple'
+        IAB:
+          $ref: '#/components/schemas/IAB-Multiple'
+
+    ManagedElement-ncO-NrNrm:
+      type: object
+      properties:
+        GNBDUFunction:
+          $ref: '#/components/schemas/GNBDUFunction-Multiple'
+        GNBCUUPFunction:
+          $ref: '#/components/schemas/GNBCUUPFunction-Multiple'
+        GNBCUCPFunction:
+          $ref: '#/components/schemas/GNBCUCPFunction-Multiple'
+        DESManagementFunction:
+          $ref: '#/components/schemas/DESManagementFunction-Single'
+        DRACHOptimizationFunction:
+          $ref: '#/components/schemas/DRACHOptimizationFunction-Single'
+        DMROFunction:
+          $ref: '#/components/schemas/DMROFunction-Single'
+        DLBOFunction:
+          $ref: '#/components/schemas/DLBOFunction-Single'
+        DPCIConfigurationFunction:
+          $ref: '#/components/schemas/DPCIConfigurationFunction-Single'
+        CPCIConfigurationFunction:
+          $ref: '#/components/schemas/CPCIConfigurationFunction-Single'
+        CESManagementFunction:
+          $ref: '#/components/schemas/CESManagementFunction-Single'
+        Configurable5QISet:
+          $ref: 'TS28541_5GcNrm.yaml#/components/schemas/Configurable5QISet-Multiple'
+        Dynamic5QISet:
+          $ref: 'TS28541_5GcNrm.yaml#/components/schemas/Dynamic5QISet-Multiple'
+        NTNFunction:
+          $ref: '#/components/schemas/NTNFunction-Single'
+        NRECMappingRule:
+          $ref: '#/components/schemas/NRECMappingRule-Multiple'
+        MWAB:
+          $ref: '#/components/schemas/MWAB-Multiple'
+        IAB:
+          $ref: '#/components/schemas/IAB-Multiple'
+
+#-------- Definition of abstract IOCs --------------------------------------------
+
+    RRMPolicy_-Attr:
+      type: object
+      properties:
+        resourceType:
+          $ref: '#/components/schemas/ResourceType'        
+        RRMPolicyMemberList:
+          $ref: '#/components/schemas/RRMPolicyMemberList'
+
+#-------- Definition of concrete IOCs --------------------------------------------
+
+    GNBDUFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    gnbDuId:
+                      $ref: '#/components/schemas/GnbDuId'
+                    gnbDuName:
+                      $ref: '#/components/schemas/GnbName'
+                    gnbId:
+                      $ref: '#/components/schemas/GnbId'
+                    gnbIdLength:
+                      $ref: '#/components/schemas/GnbIdLength'
+                    isOnboardSatellite:
+                      type: boolean
+                    onboardSatelliteId:
+                      $ref: '#/components/schemas/SatelliteId'
+                    rimRSReportConf:
+                      $ref: '#/components/schemas/RimRSReportConf'
+                    configurable5QISetRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                    dynamic5QISetRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+                    iABRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            RRMPolicyRatio:
+              $ref: '#/components/schemas/RRMPolicyRatio-Multiple'
+            NRCellDU:
+              $ref: '#/components/schemas/NRCellDU-Multiple'
+            BWP-Multiple:
+              $ref: '#/components/schemas/BWP-Multiple'
+            NRSectorCarrier-Multiple:
+              $ref: '#/components/schemas/NRSectorCarrier-Multiple'
+            EP_F1C:
+              $ref: '#/components/schemas/EP_F1C-Single'
+            EP_F1U:
+              $ref: '#/components/schemas/EP_F1U-Multiple'
+            DRACHOptimizationFunction:
+              $ref: '#/components/schemas/DRACHOptimizationFunction-Single'
+            OperatorDU:
+              $ref: '#/components/schemas/OperatorDU-Multiple'
+            BWPSet:
+              $ref: '#/components/schemas/BWPSet-Multiple'   
+            Configurable5QISet:
+              $ref: 'TS28541_5GcNrm.yaml#/components/schemas/Configurable5QISet-Multiple'
+            Dynamic5QISet:
+              $ref: 'TS28541_5GcNrm.yaml#/components/schemas/Dynamic5QISet-Multiple'
+            AIOTReader:
+              $ref: '#/components/schemas/AIOTReader-Multiple'
+
+    OperatorDU-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            gnbId:
+              $ref: '#/components/schemas/GnbId'
+            gnbIdLength:
+              $ref: '#/components/schemas/GnbIdLength'
+        - type: object
+          properties:
+            EP_F1C:
+              $ref: '#/components/schemas/EP_F1C-Single'
+            EP_F1U:
+              $ref: '#/components/schemas/EP_F1U-Multiple'
+            configurable5QISetRef:
+              description: This attribute is condition optional. The condition is NG-RAN Multi-Operator Core Network (NG-RAN MOCN) network sharing with operator specific 5QI is supported.
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+            dynamic5QISetRef:
+              description: This attribute is condition optional. The condition is NG-RAN Multi-Operator Core Network (NG-RAN MOCN) network sharing with operator specific 5QI is supported.            
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+            NROperatorCellDU:
+              $ref: '#/components/schemas/NROperatorCellDU-Multiple'
+    GNBCUUPFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    gnbId:
+                      $ref: '#/components/schemas/GnbId'
+                    gnbIdLength:
+                      $ref: '#/components/schemas/GnbIdLength'
+                    gnbCuUpId:
+                      $ref: '#/components/schemas/GnbCuUpId'
+                    isOnboardSatellite:
+                      type: boolean
+                    onboardSatelliteId:
+                      $ref: '#/components/schemas/SatelliteId'
+                    PlmnInfoList:
+                      $ref: '#/components/schemas/PlmnInfoList'
+                    configurable5QISetRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                    dynamic5QISetRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            RRMPolicyRatio:
+              $ref: '#/components/schemas/RRMPolicyRatio-Multiple'
+            EP_E1:
+              $ref: '#/components/schemas/EP_E1-Single'
+            EP_XnU:
+              $ref: '#/components/schemas/EP_XnU-Multiple'
+            EP_F1U:
+              $ref: '#/components/schemas/EP_F1U-Multiple'
+            EP_NgU:
+              $ref: '#/components/schemas/EP_NgU-Multiple'
+            EP_X2U:
+              $ref: '#/components/schemas/EP_X2U-Multiple'
+            EP_S1U:
+              $ref: '#/components/schemas/EP_S1U-Multiple'
+            Configurable5QISet:
+              $ref: 'TS28541_5GcNrm.yaml#/components/schemas/Configurable5QISet-Multiple'
+            Dynamic5QISet:
+              $ref: 'TS28541_5GcNrm.yaml#/components/schemas/Dynamic5QISet-Multiple'
+
+    GNBCUCPFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    gnbId:
+                      $ref: '#/components/schemas/GnbId'
+                    gnbIdLength:
+                      $ref: '#/components/schemas/GnbIdLength'
+                    gnbCuName:
+                      $ref: '#/components/schemas/GnbName'
+                    plmnId:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+                    x2BlockList:
+                      $ref: '#/components/schemas/GgNBIdList'
+                    xnBlockList:
+                      $ref: '#/components/schemas/GgNBIdList'
+                    x2AllowList:
+                      $ref: '#/components/schemas/GgNBIdList'
+                    xnAllowList:
+                      $ref: '#/components/schemas/GgNBIdList'
+                    x2HOBlockList:
+                      $ref: '#/components/schemas/GeNBIdList'
+                    xnHOBlockList:
+                      $ref: '#/components/schemas/GgNBIdList'
+                    mappingSetIDBackhaulAddressList:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        $ref: '#/components/schemas/MappingSetIDBackhaulAddress'
+                      minItems: 1
+                    isOnboardSatellite:
+                      type: boolean
+                    onboardSatelliteId:
+                      $ref: '#/components/schemas/SatelliteId'
+                    tceIDMappingInfoList:
+                      $ref: '#/components/schemas/TceIDMappingInfoList'
+                    configurable5QISetRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                    dynamic5QISetRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+                    ephemerisInfoSetRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+                    dCHOControl:
+                      type: boolean
+                    dDAPSHOControl:
+                      type: boolean
+                    mappedCellIdInfoList:
+                      $ref: '#/components/schemas/MappedCellIdInfoList'
+                    qceIdMappingInfoList:
+                      $ref: '#/components/schemas/QceIdMappingInfoList'
+                    mdtUserConsentReqList:
+                      $ref: '#/components/schemas/MdtUserConsentReqList'
+                    mWABRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                    nRECMappingRuleRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            RRMPolicyRatio:
+              $ref: '#/components/schemas/RRMPolicyRatio-Multiple'
+            NRCellCU:
+              $ref: '#/components/schemas/NRCellCU-Multiple'
+            EP_XnC:
+              $ref: '#/components/schemas/EP_XnC-Multiple'
+            EP_E1:
+              $ref: '#/components/schemas/EP_E1-Multiple'
+            EP_F1C:
+              $ref: '#/components/schemas/EP_F1C-Multiple'
+            EP_NgC:
+              $ref: '#/components/schemas/EP_NgC-Multiple'
+            EP_X2C:
+              $ref: '#/components/schemas/EP_X2C-Multiple'
+            DANRManagementFunction:
+              $ref: '#/components/schemas/DANRManagementFunction-Single'
+            DESManagementFunction:
+              $ref: '#/components/schemas/DESManagementFunction-Single'
+            DMROFunction:
+              $ref: '#/components/schemas/DMROFunction-Single'
+            DLBOFunction:
+              $ref: '#/components/schemas/DLBOFunction-Single'
+            Configurable5QISet:
+              $ref: 'TS28541_5GcNrm.yaml#/components/schemas/Configurable5QISet-Multiple'
+            Dynamic5QISet:
+              $ref: 'TS28541_5GcNrm.yaml#/components/schemas/Dynamic5QISet-Multiple'
+            NRNetwork:
+              $ref: '#/components/schemas/NRNetwork-Single'
+            EUtranNetwork:  
+              $ref: '#/components/schemas/EUtraNetwork-Single'
+
+    NRCellCU-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    cellLocalId:
+                      type: integer
+                    plmnInfoList:
+                      $ref: '#/components/schemas/PlmnInfoList'
+                    nRFrequencyRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnRo'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            RRMPolicyRatio:
+              $ref: '#/components/schemas/RRMPolicyRatio-Multiple'
+            NRCellRelation:
+              $ref: '#/components/schemas/NRCellRelation-Multiple'
+            EUtranCellRelation:
+              $ref: '#/components/schemas/EUtranCellRelation-Multiple'
+            NRFreqRelation:
+              $ref: '#/components/schemas/NRFreqRelation-Multiple'
+            EUtranFreqRelation:
+              $ref: '#/components/schemas/EUtranFreqRelation-Multiple'
+            DESManagementFunction:
+              $ref: '#/components/schemas/DESManagementFunction-Single'
+            DMROFunction:
+              $ref: '#/components/schemas/DMROFunction-Single'
+            DLBOFunction:
+              $ref: '#/components/schemas/DLBOFunction-Single'
+            CESManagementFunction:
+              $ref: '#/components/schemas/CESManagementFunction-Single'
+            DPCIConfigurationFunction:
+              $ref: '#/components/schemas/DPCIConfigurationFunction-Single'
+
+    NRCellDU-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    administrativeState:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/AdministrativeState'
+                    operationalState:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/OperationalState'
+                    cellLocalId:
+                      type: integer
+                    cellState:
+                      $ref: '#/components/schemas/CellState'
+                    plmnInfoInfoList:
+                      $ref: '#/components/schemas/PlmnInfoList'
+                    nPNIdentityList:
+                      $ref: '#/components/schemas/NPNIdentityList'
+                    nrPci:
+                      $ref: '#/components/schemas/NrPci'
+                    nRTAC:
+                      $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Tac'
+                    nTNTAClist:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Tac'
+                      minItems: 1
+                      maxItems: 12 
+                    arfcnDL:
+                      type: integer
+                    arfcnUL:
+                      type: integer
+                    arfcnSUL:
+                      type: integer
+                    bSChannelBwDL:
+                      type: integer
+                    bSChannelBwUL:
+                      type: integer
+                    bSChannelBwSUL:
+                      type: integer
+                    ssbFrequency:
+                      type: integer
+                      minimum: 0
+                      maximum: 3279165
+                    ssbPeriodicity:
+                      $ref: '#/components/schemas/SsbPeriodicity'
+                    ssbSubCarrierSpacing:
+                      $ref: '#/components/schemas/SsbSubCarrierSpacing'
+                    ssbOffset:
+                      type: integer
+                      minimum: 0
+                      maximum: 159
+                    ssbDuration:
+                      $ref: '#/components/schemas/SsbDuration'
+                    uECellBarredAccess:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        type: string
+                        enum:
+                          - REDCAP_1RX
+                          - REDCAP_2RX
+                          - EREDCAP_1RX
+                          - EREDCAP_2RX
+                    nRSectorCarrierRef:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                    bWPRef:
+                      description: "Condition is BWP sets are not supported"                      
+                      type: array
+                      uniqueItems: true
+                      items:
+                        $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                    bWPSetRef:
+                      description: "Condition is BWP sets are supported"
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'                    
+                    rimRSMonitoringStartTime:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+                    redCapAccessCriteriaRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                    rimRSMonitoringStopTime:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DateTime'
+                    rimRSMonitoringWindowDuration:
+                      type: integer
+                    rimRSMonitoringWindowStartingOffset:
+                      type: integer
+                    rimRSMonitoringWindowPeriodicity:
+                      type: integer
+                    rimRSMonitoringOccasionInterval:
+                      type: integer
+                    rimRSMonitoringOccasionStartingOffset:
+                      type: integer
+                    nRFrequencyRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                    victimSetRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                    aggressorSetRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            RRMPolicyRatio:
+              $ref: '#/components/schemas/RRMPolicyRatio-Multiple'
+            CPCIConfigurationFunction:
+              $ref: '#/components/schemas/CPCIConfigurationFunction-Single'
+            DRACHOptimizationFunction:
+              $ref: '#/components/schemas/DRACHOptimizationFunction-Single'
+
+    BWPSet-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            bWPList:
+              type: array
+              uniqueItems: true
+              items:
+                 $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+              maxItems: 12      
+
+
+    NROperatorCellDU-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            cellLocalId:
+              type: integer
+            administrativeState:
+              $ref: 'TS28623_ComDefs.yaml#/components/schemas/AdministrativeState'
+            plmnInfoList:
+              $ref: '#/components/schemas/PlmnInfoList'
+            nRTAC:
+              $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Tac'
+
+    NRFrequency-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+                type: object
+                properties:
+                  absoluteFrequencySSB:
+                    type: integer
+                    minimum: 0
+                    maximum: 3279165
+                  ssbSubCarrierSpacing:
+                    $ref: '#/components/schemas/SsbSubCarrierSpacing'
+                  multiFrequencyBandListNR:
+                    type: integer
+                    minimum: 1
+                    maximum: 256
+                    readOnly: true
+    EUtranFrequency-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                earfcnDL:
+                  type: integer
+                  minimum: 0
+                  maximum: 262143
+                multiBandInfoListEutra:
+                  type: integer
+                  minimum: 1
+                  maximum: 256
+
+    NRSectorCarrier-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    txDirection:
+                      $ref: '#/components/schemas/TxDirection'
+                    configuredMaxTxPower:
+                      type: integer
+                    arfcnDL:
+                      type: integer
+                    arfcnUL:
+                      type: integer
+                    bSChannelBwDL:
+                      type: integer
+                    bSChannelBwUL:
+                      type: integer
+                    sectorEquipmentFunctionRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            CommonBeamformingFunction:
+              $ref: '#/components/schemas/CommonBeamformingFunction-Single'
+    BWP-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    bwpContext:
+                      $ref: '#/components/schemas/BwpContext'
+                    isInitialBwp:
+                      $ref: '#/components/schemas/IsInitialBwp'
+                    subCarrierSpacing:
+                      type: integer
+                    cyclicPrefix:
+                      $ref: '#/components/schemas/CyclicPrefix'
+                    startRB:
+                      type: integer
+                    numberOfRBs:
+                      type: integer
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+    CommonBeamformingFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - type: object
+                  properties:
+                    coverageShape:
+                      $ref: '#/components/schemas/CoverageShape'
+                    digitalAzimuth:
+                      $ref: '#/components/schemas/DigitalAzimuth'
+                    digitalTilt:
+                      $ref: '#/components/schemas/DigitalTilt'                     
+        - type: object
+          properties:
+            Beam:
+              $ref: '#/components/schemas/Beam-Multiple'
+            CCOWeakCoverageParameters:
+              $ref: '#/components/schemas/CCOWeakCoverageParameters-Single'
+            CCOPilotPollutionParameters:
+              $ref: '#/components/schemas/CCOWeakCoverageParameters-Single'
+            CCOOvershootCoverageParameters:
+              $ref: '#/components/schemas/CCOOvershootCoverageParameters-Single'              
+                                       
+    Beam-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - type: object
+                  properties:
+                    beamIndex:
+                      type: integer
+                      readOnly: true  
+                    beamType:
+                      type: string
+                      readOnly: true
+                      enum:
+                        - SSB_BEAM  
+                    beamAzimuth:
+                      type: integer
+                      readOnly: true
+                      minimum: -1800
+                      maximum: 1800
+                    beamTilt:
+                      type: integer
+                      readOnly: true
+                      minimum: -900
+                      maximum: 900
+                    beamHorizWidth:
+                      type: integer
+                      readOnly: true
+                      minimum: 0
+                      maximum: 3599
+                    beamVertWidth:
+                      type: integer
+                      readOnly: true
+                      minimum: 0
+                      maximum: 1800
+    RRMPolicyRatio-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: '#/components/schemas/RRMPolicy_-Attr'
+                - type: object
+                  properties:
+                    rRMPolicyMaxRatio:
+                      type: integer
+                      default: 100
+                      minimum: 0
+                      maximum: 100
+                    rRMPolicyMinRatio:
+                      type: integer
+                      default: 0
+                      minimum: 0
+                      maximum: 100
+                    rRMPolicyDedicatedRatio:
+                      type: integer
+                      default: 0
+                      minimum: 0
+                      maximum: 100
+
+    NRCellRelation-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+                  type: object
+                  properties:
+                    nRTCI:
+                      type: integer
+                    cellIndividualOffset:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/QOffsetRange'
+                      minItems: 6
+                      maxItems: 6 
+                    adjacentNRCellRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                    nRFreqRelationRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+                    isRemoveAllowed:
+                      type: boolean
+                    isHOAllowed:
+                      type: boolean
+                    isESCoveredBy:
+                      $ref: '#/components/schemas/IsESCoveredBy'
+                    isENDCAllowed:
+                      type: boolean
+                    isMLBAllowed:
+                      type: boolean
+    EUtranCellRelation-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    adjacentEUtranCellRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+    NRFreqRelation-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+                  type: object
+                  properties:
+                    offsetMO:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/QOffsetRange'
+                      minItems: 6
+                      maxItems: 6 
+                    blockListEntry:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        type: integer
+                        minimum: 0
+                        maximum: 503
+                      maxItems: 16
+                    blockListEntryIdleMode:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        type: integer
+                        minimum: 0
+                        maximum: 1007
+                      maxItems: 16
+                    cellReselectionPriority:
+                      type: integer
+                    cellReselectionSubPriority:
+                      type: number
+                      minimum: 0.2
+                      maximum: 0.8
+                      multipleOf: 0.2
+                    CellReselectionRedcap:
+                      type: object
+                      properties:                      
+                        sSearchDeltaPStationary:
+                          type: integer
+                          enum:
+                            - 2
+                            - 3
+                            - 6
+                            - 9
+                            - 12
+                            - 5                            
+                        tSearchDeltaPStationary:
+                          type: integer
+                          enum:
+                            - 5
+                            - 10
+                            - 20
+                            - 30
+                            - 60
+                            - 120
+                            - 180
+                            - 240  
+                            - 300                        
+                        sSearchThresholdP2:
+                          type: integer
+                          minimum: 0
+                          maximum: 31 
+                        sSearchThresholdQ2:
+                          type: integer
+                          minimum: 0
+                          maximum: 31                          
+                    pMax:
+                      type: integer
+                      minimum: -30
+                      maximum: 33
+                    qOffsetFreq:
+                      $ref: '#/components/schemas/QOffsetFreq'
+                    qQualMin:
+                      type: number
+                    qRxLevMin:
+                      type: integer
+                      minimum: -140
+                      maximum: -44
+                    threshXHighP:
+                      type: integer
+                      minimum: 0
+                      maximum: 62
+                    threshXHighQ:
+                      type: integer
+                      minimum: 0
+                      maximum: 31
+                    threshXLowP:
+                      type: integer
+                      minimum: 0
+                      maximum: 62
+                    threshXLowQ:
+                      type: integer
+                      minimum: 0
+                      maximum: 31
+                    tReselectionNr:
+                      type: integer
+                      minimum: 0
+                      maximum: 7
+                    tReselectionNRSfHigh:
+                      $ref: '#/components/schemas/TReselectionNRSf'
+                    tReselectionNRSfMedium:
+                      $ref: '#/components/schemas/TReselectionNRSf'
+                    nRFrequencyRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+    EUtranFreqRelation-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                    cellIndividualOffset:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/QOffsetRange'
+                      minItems: 6
+                      maxItems: 6 
+                    blockListEntry:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        type: integer
+                        minimum: 0
+                        maximum: 503
+                      maxItems: 16
+                    blockListEntryIdleMode:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        type: integer
+                        minimum: 0
+                        maximum: 1007
+                      maxItems: 16
+                    cellReselectionPriority:
+                      type: integer
+                      default: 0                      
+                    cellReselectionSubPriority:
+                      type: number
+                      minimum: 0.2
+                      maximum: 0.8
+                      multipleOf: 0.2
+                    pMax:
+                      type: integer
+                      minimum: -30
+                      maximum: 33
+                    qOffsetFreq:
+                      $ref: '#/components/schemas/QOffsetFreq'
+                    qQualMin:
+                      type: number
+                    qRxLevMin:
+                      type: integer
+                      minimum: -140
+                      maximum: -44
+                    threshXHighP:
+                      type: integer
+                      minimum: 0
+                      maximum: 62
+                    threshXHighQ:
+                      type: integer
+                      minimum: 0
+                      maximum: 31
+                    threshXLowP:
+                      type: integer
+                      minimum: 0
+                      maximum: 62
+                    threshXLowQ:
+                      type: integer
+                      minimum: 0
+                      maximum: 31
+                    tReselectionEutran:
+                      type: integer
+                      minimum: 0
+                      maximum: 7
+                    tReselectionNRSfHigh:
+                      $ref: '#/components/schemas/TReselectionNRSf'
+                    tReselectionNRSfMedium:
+                      $ref: '#/components/schemas/TReselectionNRSf'
+                    eUTranFrequencyRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+    DANRManagementFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+                  type: object
+                  properties:
+                    intrasystemANRManagementSwitch:
+                      type: boolean
+                    intersystemANRManagementSwitch:
+                      type: boolean
+
+    DESManagementFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+                  type: object
+                  properties:
+                    desSwitch:
+                      type: boolean
+                    intraRatEsActivationOriginalCellLoadParameters:
+                      $ref: "#/components/schemas/IntraRatEsActivationOriginalCellLoadParameters"
+                    intraRatEsActivationCandidateCellsLoadParameters:
+                      $ref: "#/components/schemas/IntraRatEsActivationCandidateCellsLoadParameters"
+                    intraRatEsDeactivationCandidateCellsLoadParameters:
+                      $ref: "#/components/schemas/IntraRatEsDeactivationCandidateCellsLoadParameters"
+                    esNotAllowedTimePeriod:
+                      $ref: "#/components/schemas/EsNotAllowedTimePeriod"
+                    interRatEsActivationOriginalCellParameters:
+                      $ref: "#/components/schemas/InterRatEsActivationOriginalCellParameters"
+                    interRatEsActivationCandidateCellParameters:
+                      $ref: "#/components/schemas/InterRatEsActivationCandidateCellParameters"
+                    interRatEsDeactivationCandidateCellParameters:
+                      $ref: "#/components/schemas/InterRatEsDeactivationCandidateCellParameters"
+                    isProbingCapable:
+                      type: string
+                      readOnly: true
+                      enum:
+                         - YES
+                         - NO
+                    energySavingState:
+                      type: string
+                      readOnly: true
+                      enum:
+                         - IS_NOT_ENERGY_SAVING
+                         - IS_ENERGY_SAVING
+                    mLModelRefList:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'
+                    aIMLInferenceFunctionRefList:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'                        
+    DRACHOptimizationFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+                  type: object
+                  properties:
+                    drachOptimizationControl:
+                      type: boolean
+                    ueAccProbabilityDist:
+                      $ref: "#/components/schemas/UeAccProbabilityDist"
+                    ueAccDelayProbabilityDist:
+                      $ref: "#/components/schemas/UeAccDelayProbabilityDist"
+
+    DMROFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes: 
+                  type: object
+                  properties:
+                    dmroControl:
+                      type: boolean
+                    maximumDeviationHoTriggerLow:
+                      $ref: '#/components/schemas/MaximumDeviationHoTriggerLow'
+                    maximumDeviationHoTriggerHigh:
+                      $ref: '#/components/schemas/MaximumDeviationHoTriggerHigh'
+                    minimumTimeBetweenHoTriggerChange:
+                      $ref: '#/components/schemas/MinimumTimeBetweenHoTriggerChange'
+                    tstoreUEcntxt:
+                      $ref: '#/components/schemas/TstoreUEcntxt'
+                    mLModelRefList:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'
+                    aIMLInferenceFunctionRefList:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'                       
+    DLBOFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes: 
+                  type: object
+                  properties:
+                    dlboControl:
+                      type: boolean
+                    maximumDeviationHoTrigger:
+                          $ref: '#/components/schemas/MaximumDeviationHoTrigger'
+                    minimumTimeBetweenHoTriggerChange:
+                          $ref: '#/components/schemas/MinimumTimeBetweenHoTriggerChange'
+                    mLModelRefList:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'
+                    aIMLInferenceFunctionRefList:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'                        
+    DPCIConfigurationFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+                  type: object
+                  properties:
+                    dPciConfigurationControl:
+                      type: boolean
+                    nRPciList:
+                      $ref: "#/components/schemas/NRPciList"
+
+    CPCIConfigurationFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+                  type: object
+                  properties:
+                    cPciConfigurationControl:
+                      type: boolean
+                    cSonPciList:
+                      $ref: "#/components/schemas/CSonPciList"
+
+    CESManagementFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+                  type: object
+                  properties:
+                    cesSwitch:
+                      type: boolean
+                    intraRatEsActivationOriginalCellLoadParameters:
+                      $ref: "#/components/schemas/IntraRatEsActivationOriginalCellLoadParameters"
+                    intraRatEsActivationCandidateCellsLoadParameters:
+                      $ref: "#/components/schemas/IntraRatEsActivationCandidateCellsLoadParameters"
+                    intraRatEsDeactivationCandidateCellsLoadParameters:
+                      $ref: "#/components/schemas/IntraRatEsDeactivationCandidateCellsLoadParameters"
+                    esNotAllowedTimePeriod:
+                      $ref: "#/components/schemas/EsNotAllowedTimePeriod"
+                    interRatEsActivationOriginalCellParameters:
+                      $ref: "#/components/schemas/IntraRatEsActivationOriginalCellLoadParameters"
+                    interRatEsActivationCandidateCellParameters:
+                      $ref: "#/components/schemas/IntraRatEsActivationOriginalCellLoadParameters"
+                    interRatEsDeactivationCandidateCellParameters:
+                      $ref: "#/components/schemas/IntraRatEsActivationOriginalCellLoadParameters"
+                    energySavingControl:
+                      type: string
+                      enum:
+                         - TO_BE_ENERGY_SAVING
+                         - TO_BE_NOT_ENERGY_SAVING
+                    energySavingState:
+                      type: string
+                      enum:
+                         - IS_NOT_ENERGY_SAVING
+                         - IS_ENERGY_SAVING
+
+    RimRSGlobal-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                frequencyDomainPara:
+                  $ref: '#/components/schemas/FrequencyDomainPara'
+                sequenceDomainPara:
+                  $ref: '#/components/schemas/SequenceDomainPara'
+                timeDomainPara:
+                  $ref: '#/components/schemas/TimeDomainPara'
+            RimRSSet:
+              $ref: '#/components/schemas/RimRSSet-Multiple'
+    RedCapAccessCriteria-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                nRCellDURef:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnList'
+                criteriaConditonRef:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+    RimRSSet-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                setId:
+                  $ref: '#/components/schemas/RSSetId'
+                setType:
+                  $ref: '#/components/schemas/RSSetType'
+                nRCellDURefs:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'
+
+    ExternalGNBDUFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    gnbId:
+                      $ref: '#/components/schemas/GnbId'
+                    gnbIdLength:
+                      $ref: '#/components/schemas/GnbIdLength'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            EP_F1C:
+              $ref: '#/components/schemas/EP_F1C-Multiple'
+            EP_F1U:
+              $ref: '#/components/schemas/EP_F1U-Multiple'
+    NRNetwork-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            NRFrequency:
+              $ref: '#/components/schemas/NRFrequency-Multiple'
+            ExternalGNBCUCPFunction:
+              $ref: '#/components/schemas/ExternalGNBCUCPFunction-Multiple'
+            ExternalGNBCUUPFunction:
+              $ref: '#/components/schemas/ExternalGNBCUUPFunction-Multiple'
+            ExternalGNBDUFunction:
+              $ref: '#/components/schemas/ExternalGNBDUFunction-Multiple'
+
+
+    ExternalGNBCUUPFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    gnbId:
+                      $ref: '#/components/schemas/GnbId'
+                    gnbIdLength:
+                      $ref: '#/components/schemas/GnbIdLength'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            EP_E1:
+              $ref: '#/components/schemas/EP_E1-Multiple'
+            EP_F1U:
+              $ref: '#/components/schemas/EP_F1U-Multiple'
+            EP_XnU:
+              $ref: '#/components/schemas/EP_XnU-Multiple'
+    ExternalGNBCUCPFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: >-
+                    TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr
+                - type: object
+                  properties:
+                    gnbId:
+                      $ref: '#/components/schemas/GnbId'
+                    gnbIdLength:
+                      $ref: '#/components/schemas/GnbIdLength'
+                    plmnId:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            ExternalNRCellCU:
+              $ref: '#/components/schemas/ExternalNRCellCU-Multiple'
+            EP_XnC:
+              $ref: '#/components/schemas/EP_XnC-Multiple'
+            EP_E1:
+              $ref: '#/components/schemas/EP_E1-Multiple'
+            EP_F1C:
+              $ref: '#/components/schemas/EP_F1C-Multiple'
+    ExternalNRCellCU-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    cellLocalId:
+                      type: integer
+                    nrPci:
+                      $ref: '#/components/schemas/NrPci'
+                    plMNIdList:
+                      type: array
+                      uniqueItems: true
+                      items: 
+                        $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+                      minItems: 1
+                      maxItems: 12
+                    nRFrequencyRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+    EUtraNetwork-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            EUtranFrequency:
+              $ref: '#/components/schemas/EUtranFrequency-Multiple'
+            ExternalENBFunction:
+              $ref: '#/components/schemas/ExternalENBFunction-Multiple'
+
+    ExternalENBFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    eNBId:
+                      type: integer
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+        - type: object
+          properties:
+            ExternalEUTranCell:
+              $ref: '#/components/schemas/ExternalEUTranCell-Multiple'
+    ExternalEUTranCell-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    EUtranFrequencyRef:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-ncO'
+
+    EP_XnC-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/EP_RP-Attr'
+                - type: object
+                  properties:
+                    localAddress:
+                      $ref: '#/components/schemas/LocalAddress'
+                    remoteAddress:
+                      $ref: '#/components/schemas/RemoteAddress'
+    EP_E1-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/EP_RP-Attr'
+                - type: object
+                  properties:
+                    localAddress:
+                      $ref: '#/components/schemas/LocalAddress'
+                    remoteAddress:
+                      $ref: '#/components/schemas/RemoteAddress'
+    EP_F1C-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/EP_RP-Attr'
+                - type: object
+                  properties:
+                    localAddress:
+                      $ref: '#/components/schemas/LocalAddress'
+                    remoteAddress:
+                      $ref: '#/components/schemas/RemoteAddress'
+    EP_NgC-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/EP_RP-Attr'
+                - type: object
+                  properties:
+                    localAddress:
+                      $ref: '#/components/schemas/LocalAddress'
+                    remoteAddress:
+                      $ref: '#/components/schemas/RemoteAddress'
+    EP_X2C-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/EP_RP-Attr'
+                - type: object
+                  properties:
+                    localAddress:
+                      $ref: '#/components/schemas/LocalAddress'
+                    remoteAddress:
+                      $ref: '#/components/schemas/RemoteAddress'
+    EP_XnU-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/EP_RP-Attr'
+                - type: object
+                  properties:
+                    localAddress:
+                      $ref: '#/components/schemas/LocalAddress'
+                    remoteAddress:
+                      $ref: '#/components/schemas/RemoteAddress'
+    EP_F1U-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/EP_RP-Attr'
+                - type: object
+                  properties:
+                    localAddress:
+                      $ref: '#/components/schemas/LocalAddress'
+                    remoteAddress:
+                      $ref: '#/components/schemas/RemoteAddress'
+                    epTransportRefs:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'
+
+    EP_NgU-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/EP_RP-Attr'
+                - type: object
+                  properties:
+                    localAddress:
+                      $ref: '#/components/schemas/LocalAddress'
+                    remoteAddress:
+                      $ref: '#/components/schemas/RemoteAddress'
+                    epTransportRefs:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/DnListRo'
+
+    EP_X2U-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/EP_RP-Attr'
+                - type: object
+                  properties:
+                    localAddress:
+                      $ref: '#/components/schemas/LocalAddress'
+                    remoteAddress:
+                      $ref: '#/components/schemas/RemoteAddress'
+    EP_S1U-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/EP_RP-Attr'
+                - type: object
+                  properties:
+                    localAddress:
+                      $ref: '#/components/schemas/LocalAddress'
+                    remoteAddress:
+                      $ref: '#/components/schemas/RemoteAddress'
+    CCOFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                cCOControl:
+                  type: boolean
+                CCOWeakCoverageParameters:
+                  $ref: '#/components/schemas/CCOWeakCoverageParameters-Single'
+                CCOPilotPollutionParameters:
+                  $ref: '#/components/schemas/CCOPilotPollutionParameters-Single'  
+                CCOOvershootCoverageParameters-Single:
+                  $ref: '#/components/schemas/CCOOvershootCoverageParameters-Single'  
+    CCOParameters-Attr:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                coverageShapeList:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CoverageShape'
+                downlinkTransmitPowerRange:
+                  $ref: '#/components/schemas/ParameterRange'
+                antennaTiltRange:
+                  $ref: '#/components/schemas/ParameterRange'
+                antennaAzimuthRange:
+                  $ref: '#/components/schemas/ParameterRange'
+                digitalTiltRange:
+                  $ref: '#/components/schemas/ParameterRange'
+                digitalAzimuthRange:
+                  $ref: '#/components/schemas/ParameterRange'
+
+    CCOWeakCoverageParameters-Single:
+      $ref: '#/components/schemas/CCOParameters-Attr'
+
+    CCOPilotPollutionParameters-Single:
+      $ref: '#/components/schemas/CCOParameters-Attr'
+    
+    CCOOvershootCoverageParameters-Single:
+      $ref: '#/components/schemas/CCOParameters-Attr'
+    
+    NTNFunction-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                nTNpLMNInfoList:
+                  $ref: '#/components/schemas/PlmnInfoList'
+                nTNTAClist:
+                  $ref: '#/components/schemas/NRTACList'
+            EphemerisInfoSet:
+              $ref: '#/components/schemas/EphemerisInfoSet-Multiple'
+            nTNTimeBasedConfig:
+              $ref: '#/components/schemas/NTNTimeBasedConfig-Multiple'
+
+    EphemerisInfoSet-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - type: object
+                  properties:
+                    ephemerisInfos:
+                      $ref: '#/components/schemas/EphemerisInfos'
+    MWAB-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                mnrOamIPConfig:
+                  $ref: '#/components/schemas/MnrOamIPConfig'
+                administrativeState:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/AdministrativeState'
+                operationalState:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/OperationalState'     
+                allowedArea:
+                  type: array
+                  uniqueItems: true
+                  items:
+                    $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+                allowedTime:
+                  type: array
+                  uniqueItems: true
+                  items:
+                    $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow'
+                currentLocation:
+                  $ref: '#/components/schemas/LocationInfo'
+                   
+    NRECMappingRule-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - type: object
+                  properties:
+                    ecMRInputMinimumValue:
+                      type: integer
+                    ecMRInputMaximumValue:
+                      type: integer
+                    ecTimeInterval:
+                      type: integer
+    
+    NTNTimeBasedConfig-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - type: object
+                  properties:
+                    timeWindow:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/TimeWindow'
+                    nTNEntityConfigList:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        $ref: '#/components/schemas/NTNEntityConf'
+                      minItems: 1
+    AIOTReader-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              allOf:
+                - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/ManagedFunction-Attr'
+                - type: object
+                  properties:
+                    readerId:
+                      type: integer
+                    administrativeState:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/AdministrativeState'
+                    supportedAIOTServices:
+                        type: array
+                        uniqueItems: true
+                        items:
+                          type: string
+                          enum:
+                            - INVENTORY
+                            - COMMAND
+                    plmnId:
+                      $ref: 'TS28623_ComDefs.yaml#/components/schemas/PlmnId'
+                    servedAIOTAreas:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        $ref: '#/components/schemas/ServedAIOTAreaID'
+                    readerLocation:
+                      type: string
+                    nRSectorCarrierRef:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+    IAB-Single:
+      allOf:
+        - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+        - type: object
+          properties:
+            attributes:
+              type: object
+              properties:
+                mrnOamIPConfig:
+                  $ref: '#/components/schemas/MnrOamIPConfig'
+                currentLocation:
+                  $ref: '#/components/schemas/LocationInfo'
+                     
+
+#-------- Definition of JSON arrays for name-contained IOCs ----------------------
+
+    GNBDUFunction-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/GNBDUFunction-Single'
+    OperatorDU-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/OperatorDU-Single'    
+    GNBCUUPFunction-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/GNBCUUPFunction-Single'
+    GNBCUCPFunction-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/GNBCUCPFunction-Single'
+    BWPSet-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/BWPSet-Single'
+
+    NRCellDU-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/NRCellDU-Single'
+    
+    NROperatorCellDU-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/NROperatorCellDU-Single'
+        
+    NRCellCU-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/NRCellCU-Single'
+
+    NRFrequency-Multiple:
+      type: array
+      minItems: 1
+      items:
+        $ref: '#/components/schemas/NRFrequency-Single'
+    EUtranFrequency-Multiple:
+      type: array
+      minItems: 1
+      items:
+        $ref: '#/components/schemas/EUtranFrequency-Single'
+
+    NRSectorCarrier-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/NRSectorCarrier-Single'
+    BWP-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/BWP-Single'
+    Beam-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/Beam-Single'
+    RRMPolicyRatio-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/RRMPolicyRatio-Single'
+
+    NRCellRelation-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/NRCellRelation-Single'
+    EUtranCellRelation-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EUtranCellRelation-Single'
+    NRFreqRelation-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/NRFreqRelation-Single'
+    EUtranFreqRelation-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EUtranFreqRelation-Single'
+
+    RimRSSet-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/RimRSSet-Single'
+
+    ExternalGNBDUFunction-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ExternalGNBDUFunction-Single'
+    ExternalGNBCUUPFunction-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ExternalGNBCUUPFunction-Single'
+    ExternalGNBCUCPFunction-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ExternalGNBCUCPFunction-Single'
+    ExternalNRCellCU-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ExternalNRCellCU-Single'
+    
+    ExternalENBFunction-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ExternalENBFunction-Single'
+    ExternalEUTranCell-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ExternalEUTranCell-Single'
+
+    EP_E1-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EP_E1-Single'
+    EP_XnC-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EP_XnC-Single'
+    EP_F1C-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EP_F1C-Single'
+    RedCapAccessCriteria-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/RedCapAccessCriteria-Single'
+    EP_NgC-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EP_NgC-Single'
+    EP_X2C-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EP_X2C-Single'
+    EP_XnU-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EP_XnU-Single'
+    EP_F1U-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EP_F1U-Single'
+    EP_NgU-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EP_NgU-Single'
+    EP_X2U-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EP_X2U-Single'
+    EP_S1U-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EP_S1U-Single'
+    EphemerisInfoSet-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/EphemerisInfoSet-Single'
+    NRECMappingRule-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/NRECMappingRule-Single'
+    NTNTimeBasedConfig-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/NTNTimeBasedConfig-Single'
+    MWAB-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/MWAB-Single'
+    AIOTReader-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/AIOTReader-Single'
+
+    IAB-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/IAB-Single'
+
+#-------- Definitions in TS 28.541 for TS 28.532 ---------------------------------
+
+    resources-nrNrm:
+      oneOf:
+        - $ref: '#/components/schemas/GNBDUFunction-Single'
+        - $ref: '#/components/schemas/GNBCUUPFunction-Single'
+        - $ref: '#/components/schemas/GNBCUCPFunction-Single'
+        - $ref: '#/components/schemas/OperatorDU-Single'
+
+        - $ref: '#/components/schemas/NRCellCU-Single'
+        - $ref: '#/components/schemas/NRCellDU-Single'
+        - $ref: '#/components/schemas/NROperatorCellDU-Single'
+
+        - $ref: '#/components/schemas/NRNetwork-Single'
+        - $ref: '#/components/schemas/EUtraNetwork-Single'
+
+        - $ref: '#/components/schemas/NRFrequency-Single'
+        - $ref: '#/components/schemas/EUtranFrequency-Single'
+
+        - $ref: '#/components/schemas/NRSectorCarrier-Single'
+        - $ref: '#/components/schemas/BWP-Single'
+        - $ref: '#/components/schemas/BWPSet-Single'        
+        - $ref: '#/components/schemas/CommonBeamformingFunction-Single'
+        - $ref: '#/components/schemas/Beam-Single'
+        - $ref: '#/components/schemas/RRMPolicyRatio-Single'
+        
+        - $ref: '#/components/schemas/NRCellRelation-Single'
+        - $ref: '#/components/schemas/EUtranCellRelation-Single'
+        - $ref: '#/components/schemas/NRFreqRelation-Single'
+        - $ref: '#/components/schemas/EUtranFreqRelation-Single'
+
+        - $ref: '#/components/schemas/DANRManagementFunction-Single'
+        - $ref: '#/components/schemas/DESManagementFunction-Single'
+        - $ref: '#/components/schemas/DRACHOptimizationFunction-Single'
+        - $ref: '#/components/schemas/DMROFunction-Single'
+        - $ref: '#/components/schemas/DLBOFunction-Single'        
+        - $ref: '#/components/schemas/DPCIConfigurationFunction-Single'
+        - $ref: '#/components/schemas/CPCIConfigurationFunction-Single'
+        - $ref: '#/components/schemas/CESManagementFunction-Single'
+     
+        - $ref: '#/components/schemas/RimRSGlobal-Single'
+        - $ref: '#/components/schemas/RimRSSet-Single'
+        
+        - $ref: '#/components/schemas/ExternalGNBDUFunction-Single'
+        - $ref: '#/components/schemas/ExternalGNBCUUPFunction-Single'
+        - $ref: '#/components/schemas/ExternalGNBCUCPFunction-Single'
+        - $ref: '#/components/schemas/ExternalNRCellCU-Single'
+        - $ref: '#/components/schemas/ExternalENBFunction-Single'
+        - $ref: '#/components/schemas/ExternalEUTranCell-Single'
+
+        - $ref: '#/components/schemas/EP_XnC-Single'
+        - $ref: '#/components/schemas/EP_E1-Single'
+        - $ref: '#/components/schemas/EP_F1C-Single'
+        - $ref: '#/components/schemas/EP_NgC-Single'
+        - $ref: '#/components/schemas/EP_X2C-Single'
+        - $ref: '#/components/schemas/EP_XnU-Single'
+        - $ref: '#/components/schemas/EP_F1U-Single'
+        - $ref: '#/components/schemas/EP_NgU-Single'
+        - $ref: '#/components/schemas/EP_X2U-Single'
+        - $ref: '#/components/schemas/EP_S1U-Single'
+        - $ref: '#/components/schemas/CCOFunction-Single'
+        - $ref: '#/components/schemas/CCOWeakCoverageParameters-Single'
+        - $ref: '#/components/schemas/CCOPilotPollutionParameters-Single'
+        - $ref: '#/components/schemas/CCOOvershootCoverageParameters-Single'
+        - $ref: '#/components/schemas/NTNFunction-Single'
+        - $ref: '#/components/schemas/EphemerisInfoSet-Single'
+        - $ref: '#/components/schemas/MWAB-Single'
+        - $ref: '#/components/schemas/NRECMappingRule-Single'
+        - $ref: '#/components/schemas/NTNTimeBasedConfig-Single'
+        - $ref: '#/components/schemas/RedCapAccessCriteria-Single'
+        - $ref: '#/components/schemas/AIOTReader-Single'
+        - $ref: '#/components/schemas/IAB-Single'
+

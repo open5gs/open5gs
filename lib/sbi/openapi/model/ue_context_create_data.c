@@ -14,7 +14,8 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_create(
     OpenAPI_n2_info_content_t *ue_radio_capability_for_paging,
     OpenAPI_ng_ap_cause_t *ngap_cause,
     char *supported_features,
-    OpenAPI_plmn_id_nid_t *serving_network
+    OpenAPI_plmn_id_nid_t *serving_network,
+    OpenAPI_xr_device_with2_rx_e xr_device_with2_rx
 )
 {
     OpenAPI_ue_context_create_data_t *ue_context_create_data_local_var = ogs_malloc(sizeof(OpenAPI_ue_context_create_data_t));
@@ -30,6 +31,7 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_create(
     ue_context_create_data_local_var->ngap_cause = ngap_cause;
     ue_context_create_data_local_var->supported_features = supported_features;
     ue_context_create_data_local_var->serving_network = serving_network;
+    ue_context_create_data_local_var->xr_device_with2_rx = xr_device_with2_rx;
 
     return ue_context_create_data_local_var;
 }
@@ -227,6 +229,13 @@ cJSON *OpenAPI_ue_context_create_data_convertToJSON(OpenAPI_ue_context_create_da
     }
     }
 
+    if (ue_context_create_data->xr_device_with2_rx != OpenAPI_xr_device_with2_rx_NULL) {
+    if (cJSON_AddStringToObject(item, "xrDeviceWith2Rx", OpenAPI_xr_device_with2_rx_ToString(ue_context_create_data->xr_device_with2_rx)) == NULL) {
+        ogs_error("OpenAPI_ue_context_create_data_convertToJSON() failed [xr_device_with2_rx]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -253,6 +262,8 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     cJSON *supported_features = NULL;
     cJSON *serving_network = NULL;
     OpenAPI_plmn_id_nid_t *serving_network_local_nonprim = NULL;
+    cJSON *xr_device_with2_rx = NULL;
+    OpenAPI_xr_device_with2_rx_e xr_device_with2_rxVariable = 0;
     ue_context = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "ueContext");
     if (!ue_context) {
         ogs_error("OpenAPI_ue_context_create_data_parseFromJSON() failed [ue_context]");
@@ -364,6 +375,15 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
     }
     }
 
+    xr_device_with2_rx = cJSON_GetObjectItemCaseSensitive(ue_context_create_dataJSON, "xrDeviceWith2Rx");
+    if (xr_device_with2_rx) {
+    if (!cJSON_IsString(xr_device_with2_rx)) {
+        ogs_error("OpenAPI_ue_context_create_data_parseFromJSON() failed [xr_device_with2_rx]");
+        goto end;
+    }
+    xr_device_with2_rxVariable = OpenAPI_xr_device_with2_rx_FromString(xr_device_with2_rx->valuestring);
+    }
+
     ue_context_create_data_local_var = OpenAPI_ue_context_create_data_create (
         ue_context_local_nonprim,
         target_id_local_nonprim,
@@ -374,7 +394,8 @@ OpenAPI_ue_context_create_data_t *OpenAPI_ue_context_create_data_parseFromJSON(c
         ue_radio_capability_for_paging ? ue_radio_capability_for_paging_local_nonprim : NULL,
         ngap_cause ? ngap_cause_local_nonprim : NULL,
         supported_features && !cJSON_IsNull(supported_features) ? ogs_strdup(supported_features->valuestring) : NULL,
-        serving_network ? serving_network_local_nonprim : NULL
+        serving_network ? serving_network_local_nonprim : NULL,
+        xr_device_with2_rx ? xr_device_with2_rxVariable : 0
     );
 
     return ue_context_create_data_local_var;

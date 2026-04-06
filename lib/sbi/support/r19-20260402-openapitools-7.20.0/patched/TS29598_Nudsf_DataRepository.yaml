@@ -1,0 +1,2944 @@
+openapi: 3.0.0
+info:
+  title: Nudsf_DataRepository
+  version: 1.3.0
+  description: |
+    Nudsf Data Repository Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.598 UDSF Services, V19.4.0.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.598/'
+
+servers:
+  - url: '{apiRoot}/nudsf-dr/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nudsf-dr
+
+paths:
+
+  /{realmId}/{storageId}/records:
+    summary: Access to all Records of a Storage
+    description: >
+      root of all Records of a Storage
+    get:
+      summary:     Records search with get
+      description: Retrieve one or multiple Records based on filter
+      operationId: SearchRecord
+      tags:
+        - Record CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:record:read
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: limit-range
+          in: query
+          description: The most number of record references to fetch
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        - name: filter
+          in: query
+          description: Query filter using conditions on tags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchExpression'
+        - name: count-indicator
+          in: query
+          description: >
+            Indicates whether the number of records that matched the criteria shall be returned.
+          schema:
+            type: boolean
+            default: false
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        - name: retrieve-records
+          in: query
+          description: >
+            Indicates whether the UDSF is requested to include matching records within the response.
+          schema:
+            $ref: '#/components/schemas/RetrieveRecords'
+        - name: max-payload-size
+          in: query
+          description: Indicates the number of kilo octets the consumer is prepared to receive
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        - name: tag-count-filter
+          in: query
+          description: Indicates the parameters for advanced counting feature
+          schema:
+            $ref: '#/components/schemas/CountExpression'
+      responses:
+        '200':
+          $ref: '#/components/responses/RecordSearchResultBody'
+        '204':
+          description: >
+            The search condition does not match any Record.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary:     Bulk Deletion of Records
+      description: Delete multiple Records based on filter
+      operationId: BulkDeleteRecords
+      tags:
+        - Record CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:record:modify
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: filter
+          in: query
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchExpression'
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Successful case. Response contains RecordIdList.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordDeleteResponse'
+        '204':
+          description: Successful case.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /{realmId}/{storageId}/records/{recordId}:
+    summary: Access to a specific Record, identified by its RecordId
+    description: >
+      Access to a specific Record
+    get:
+      summary: Record access
+      description: retrieve one specific Record
+      operationId: GetRecord
+      tags:
+      - Record CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:record:read
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: recordId
+          in: path
+          description: Identifier of the Record
+          required: true
+          schema:
+            type: string
+            example: 'UserRecordValue000000001'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 9110, 13.1.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 9110, 13.1.3
+          schema:
+            type: string
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200' : #result ok
+          $ref: '#/components/responses/RecordBody'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '412':
+          $ref: '#/components/responses/412'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Create/Modify Record
+      description: Create or Modify a Record with a user provided RecordId
+      operationId: CreateOrModifyRecord
+      tags:
+        - Record CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:record:create
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier(name) of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: recordId
+          in: path
+          description: Identifier of the Record
+          required: true
+          schema:
+            type: string
+            example: UserRecordValue000000001
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 9110, 13.1.2
+          schema:
+            type: string
+        - name: If-Match
+          in: header
+          description: Record validator for conditional requests, as described in RFC 9110, 13.1.2
+          schema:
+            type: string
+        - name: get-previous
+          in: query
+          description: Retrieve the Record before update
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        $ref: '#/components/requestBodies/RecordBody'
+      callbacks:
+        recordExpired:
+          '{$request.body#/callbackReference}':
+            post:
+              parameters:
+                - name: Content-Location
+                  in: header
+                  description: The expired record URI
+                  schema:
+                    $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+              requestBody:
+                $ref: '#/components/requestBodies/RecordBody'
+              responses:
+                '204':
+                  description: Callback executed successfully
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      responses:
+        '200' : # Update with return
+          $ref: '#/components/responses/RecordBody'
+        '201':
+          description: >
+            Create case. The resource has been successfully created, location header indicates
+            the URI of the created Record.
+          content:
+            multipart/mixed:
+              schema:
+                $ref: '#/components/schemas/Record'
+              encoding:
+                meta: # The meta part shall be the first part and is mandatory but can be empty.
+                  contentType: application/json
+                  headers:
+                    Content-Id: # The meta part is identified by the 'meta' Content-Id header.
+                      schema:
+                        type: string
+                      required: true
+                blocks: # Zero or more block parts may follow the meta part
+                  contentType: '*/*' # Block parts can be of any type.
+                  headers:
+                    Content-Id: # Block identifier is defined by the Content-Id header.
+                      schema:
+                        type: string
+                      required: true
+                    Content-Transfer-Encoding:
+                      schema:
+                        type: string
+                      required: true
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '204': # Update without return
+          description: >
+            Update case. The resource has been successfully updated and no
+            additional content is included in the response message.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '408':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/408'
+        '409': 
+          $ref: '#/components/responses/409'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '412': # Return Record value if get-previous=true
+          $ref: '#/components/responses/RecordBody'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    
+    patch:
+      summary: Partial update Record
+      description: Partial update Record with a user provided RecordId
+      operationId: PatchRecord
+      tags:
+        - Record CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:record:modify
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier(name) of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: recordId
+          in: path
+          description: Identifier of the Record
+          required: true
+          schema:
+            type: string
+            example: UserRecordValue000000001
+        - name: If-Match
+          in: header
+          description: Record validator for conditional requests, as described in RFC 7232, 3.2
+          schema:
+            type: string
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        $ref: '#/components/requestBodies/RecordPatchBody'
+      callbacks:
+        recordExpired:
+          '{$request.body#/callbackReference}':
+            post:
+              parameters:
+                - name: Content-Location
+                  in: header
+                  description: The expired record URI
+                  schema:
+                    $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+              requestBody:
+                $ref: '#/components/requestBodies/RecordBody'
+              responses:
+                '204':
+                  description: Callback executed successfully
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      responses:
+        '204' : # Updated successfully
+          description: >
+            Successful case. The record has been successfully updated and no return is expected.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '408':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/408'
+        '409': 
+          $ref: '#/components/responses/409'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '412':
+          $ref: '#/components/responses/412'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '422': # One or more instructions could not be applied. Record is not modified
+          description: >
+            If one or more modification instructions cannot be applied,
+            no changes shall be made to record, the execution report is returned.
+          content:
+            application/json:
+              example:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete a Record with an user provided RecordId
+      operationId: DeleteRecord
+      tags:
+        - Record CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:record:modify
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier(name) of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: recordId
+          in: path
+          description: Identifier of the Record
+          required: true
+          schema:
+            type: string
+            example: UserRecordValue000000001
+        - name: If-Match
+          in: header
+          description: Record validator for conditional requests, as described in RFC 9110, 13.1.1
+          schema:
+            type: string
+        - name: get-previous
+          in: query
+          description: Retrieve the Record before delete
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          $ref: '#/components/responses/RecordBodyDelete'
+        '204':
+          description: Successful case.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '408':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/408'
+        '412': # Return return value if get-previous=true
+          $ref: '#/components/responses/RecordBody'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /{realmId}/{storageId}/records/{recordId}/meta:
+    summary: Access to the meta of a specific Record, identified by its RecordId
+    description: >
+      Access to the meta of a specific Record
+    get:
+      summary: Record's meta access
+      description: retrieve meta of a specific Record
+      operationId: GetMeta
+      tags:
+      - Record CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:record-meta:read
+      parameters:
+      - name: realmId
+        in: path
+        description: Identifier of the Realm
+        required: true
+        schema:
+          type: string
+          example: Realm01
+      - name: storageId
+        in: path
+        description: Identifier of the Storage
+        required: true
+        schema:
+          type: string
+          example: Storage01
+      - name: recordId
+        in: path
+        description: Identifier of the Record
+        required: true
+        schema:
+          type: string
+          example: 'UserRecordValue000000001'
+      - name: If-None-Match
+        in: header
+        description: Validator for conditional requests, as described in RFC 9110, 13.1.2
+        schema:
+          type: string
+      - name: If-Modified-Since
+        in: header
+        description: Validator for conditional requests, as described in RFC 9110, 13.1.3
+        schema:
+          type: string
+      - name: supported-features
+        in: query
+        description: Features required to be supported by the target NF
+        schema:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordMeta'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '412':
+          $ref: '#/components/responses/412'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch: # patch meta data
+      summary: Record's meta update
+      description: update meta of a specific Record
+      operationId: UpdateMeta
+      tags:
+      - Record CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:record-meta:modify
+      parameters:
+      - name: realmId
+        in: path
+        description: Identifier of the Realm
+        required: true
+        schema:
+          type: string
+          example: Realm01
+      - name: storageId
+        in: path
+        description: Identifier of the Storage
+        required: true
+        schema:
+          type: string
+          example: Storage01
+      - name: recordId
+        in: path
+        description: Identifier of the Record
+        required: true
+        schema:
+          type: string
+          example: 'UserRecordValue000000001'
+      - name: If-Match
+        in: header
+        description: Record validator for conditional requests, as described in RFC 9110, 13.1.1
+        schema:
+          type: string
+      - name: supported-features
+        in: query
+        description: Features required to be supported by the target NF
+        schema:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        description: Meta data to patch
+        content:
+          application/json-patch+json:
+            example: '[{ "op": "replace", "path": "/tags/ueId", "value": "450005" }, { "op": "remove", "path": "/tags/recordId" }]'
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '200':
+          description: >
+            One or more modification instructions have been discarded,
+            the execution report is returned in response PatchResult.
+          content:
+            application/json:
+              example:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '204':
+          description: >
+            Successful case. The meta has been successfully updated and no return is expected.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '408':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/408'
+        '409':
+          $ref: '#/components/responses/409'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '412':
+          $ref: '#/components/responses/412'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /{realmId}/{storageId}/records/{recordId}/blocks:
+    summary: Access to the Blocks of a specific Record, identified by its RecordId
+    description: >
+      Access to the Blocks of a specific Record
+    get:
+      summary: Record's Blocks access
+      description: retrieve all Blocks of a specific Record
+      operationId: GetBlockList
+      tags:
+      - Block CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:block:read
+      parameters:
+      - name: realmId
+        in: path
+        description: Identifier of the Realm
+        required: true
+        schema:
+          type: string
+          example: Realm01
+      - name: storageId
+        in: path
+        description: Identifier of the Storage
+        required: true
+        schema:
+          type: string
+          example: Storage01
+      - name: recordId
+        in: path
+        description: Identifier of the Record
+        required: true
+        schema:
+          type: string
+          example: 'UserRecordValue000000001'
+      - name: supported-features
+        in: query
+        description: Features required to be supported by the target NF
+        schema:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a successful request
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+          content:
+            multipart/parallel:
+              schema:
+                type: object
+                properties:
+                  blocks:
+                    type: array
+                    description: >
+                      an array of Block parts, can be empty
+                    items:
+                      $ref: '#/components/schemas/Block'
+              encoding:
+                blocks:
+                  contentType: '*/*' # Block content type can be of any type.
+                  headers:
+                    Content-Id: # Block identifier is defined by the Content-Id header.
+                      schema:
+                        type: string
+                      required: true
+                    Content-Transfer-Encoding:
+                      schema:
+                        type: string
+                      required: true
+        '204':
+          description: Successful response, the record contains no blocks
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '412':
+          $ref: '#/components/responses/412'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /{realmId}/{storageId}/records/{recordId}/blocks/{blockId}:
+    summary: Access to a Block of a specific Record, identified by its BlockId
+    description: >
+      Access to a specific Block of a specific Record
+    get:
+      summary: Retrieve a specific Block
+      description: retrieve a specific Block
+      operationId: GetBlock
+      tags:
+      - Block CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:block:read
+      parameters:
+      - name: realmId
+        in: path
+        description: Identifier of the Realm
+        required: true
+        schema:
+          type: string
+          example: Realm01
+      - name: storageId
+        in: path
+        description: Identifier of the Storage
+        required: true
+        schema:
+          type: string
+          example: Storage01
+      - name: recordId
+        in: path
+        description: Identifier of the Record
+        required: true
+        schema:
+          type: string
+          example: 'UserRecordValue000000001'
+      - name: blockId
+        in: path
+        description: Id of the Block
+        required: true
+        schema:
+          type: string
+          example: 'userDefjson01'
+      - name: If-None-Match
+        in: header
+        description: Validator for conditional requests, as described in RFC 9110, 13.1.2
+        schema:
+          type: string
+      - name: If-Modified-Since
+        in: header
+        description: Validator for conditional requests, as described in RFC 9110, 13.1.3
+        schema:
+          type: string
+      - name: supported-features
+        in: query
+        description: Features required to be supported by the target NF
+        schema:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          $ref: '#/components/responses/BlockBody'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '412':
+          $ref: '#/components/responses/412'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Create or Update a specific Block in a Record.
+      description: Create or update a specific Block, related to a Record
+      operationId: CreateOrModifyBlock
+      tags:
+      - Block CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:block:create
+      parameters:
+      - name: realmId
+        in: path
+        description: Identifier of the Realm
+        required: true
+        schema:
+          type: string
+          example: Realm01
+      - name: storageId
+        in: path
+        description: Identifier of the Storage
+        required: true
+        schema:
+          type: string
+          example: Storage01
+      - name: recordId
+        in: path
+        description: Identifier of the Record
+        required: true
+        schema:
+          type: string
+          example: 'UserRecordValue000000001'
+      - name: blockId
+        in: path
+        description: Id of the Block
+        required: true
+        schema:
+          type: string
+          example: 'userDefjson01'
+      - name: get-previous
+        in: query
+        description: Retrieve the Block before update
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: If-None-Match
+        in: header
+        description: Validator for conditional requests, as described in RFC 9110, 13.1.2
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        description: Record validator for conditional requests, as described in RFC 9110, 13.1.1
+        schema:
+          type: string
+      - name: supported-features
+        in: query
+        description: Features required to be supported by the target NF
+        schema:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        description: information on the Block to create
+        required: true
+        content:
+          '*/*':
+             schema:
+               $ref: '#/components/schemas/Block'
+      responses:
+        '200':
+          $ref: '#/components/responses/BlockBody'
+        '201':
+          description: >
+            Creation case. The Block has been successfully created.
+            Location header indicates the URI of the created Block.
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '204':
+          description: >
+            Successful case. The resource has been successfully updated.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '408':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/408'
+        '409': 
+          $ref: '#/components/responses/409'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '412': # Return previous Block value if get-previous=true
+          $ref: '#/components/responses/BlockBody'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete a specific Block. Then update the Record
+      description: delete a specific Block, related to a Record
+      operationId: DeleteBlock
+      tags:
+      - Block CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:block:modify
+      parameters:
+      - name: realmId
+        in: path
+        description: Identifier of the Realm
+        required: true
+        schema:
+          type: string
+          example: Realm01
+      - name: storageId
+        in: path
+        description: Identifier of the Storage
+        required: true
+        schema:
+          type: string
+          example: Storage01
+      - name: recordId
+        in: path
+        description: Identifier of the Record
+        required: true
+        schema:
+          type: string
+          example: 'UserRecordValue000000001'
+      - name: blockId
+        in: path
+        description: Id of the Block
+        required: true
+        schema:
+          type: string
+          example: 'userDefjson01'
+      - name: get-previous
+        in: query
+        description: Retrieve the Block before delete
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: If-Match
+        in: header
+        description: Record validator for conditional requests, as described in RFC 9110, 13.1.1
+        schema:
+          type: string
+      - name: supported-features
+        in: query
+        description: Features required to be supported by the target NF
+        schema:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          $ref: '#/components/responses/BlockBodyDelete'
+        '204':
+          description: >
+            Successful case. The Block has been successfully deleted.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '408':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/408'
+        '412': # Return previous Block value if get-previous=true
+          $ref: '#/components/responses/BlockBody'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /{realmId}/{storageId}/subs-to-notify:
+    summary: The notification subscription collection resource
+    description: >
+      Access to the subscription resource
+    get:
+      summary: Notification subscription retrieval
+      description: retrieve all notification subscriptions of the storage
+      operationId: GetNotificationSubscriptions
+      tags:
+      - NotificationSubscriptions CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:subscription:read
+      parameters:
+      - name: realmId
+        in: path
+        description: Identifier of the Realm
+        required: true
+        schema:
+          type: string
+          example: Realm01
+      - name: storageId
+        in: path
+        description: Identifier of the Storage
+        required: true
+        schema:
+          type: string
+          example: Storage01
+      - name: limit-range
+        in: query
+        description: The maximum number of NotificationSubscriptions to fetch
+        schema:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      - name: supported-features
+        in: query
+        description: Features required to be supported by the target NF
+        schema:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationSubscription'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /{realmId}/{storageId}/subs-to-notify/{subscriptionId}:
+    summary: The notification subscription resource
+    description: >
+      Access to the subscription resource
+    get:
+      summary: Notification subscription retrieval
+      description: retrieve a single notification subscription of the storage
+      operationId: GetNotificationSubscription
+      tags:
+      - NotificationSubscription CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:subscription:read
+      parameters:
+      - name: realmId
+        in: path
+        description: Identifier of the Realm
+        required: true
+        schema:
+          type: string
+          example: Realm01
+      - name: storageId
+        in: path
+        description: Identifier of the Storage
+        required: true
+        schema:
+          type: string
+          example: Storage01
+      - name: subscriptionId
+        in: path
+        description: Identifier of the NotificationSubscription
+        required: true
+        schema:
+          type: string
+          example: Subscription01
+      - name: supported-features
+        in: query
+        description: Features required to be supported by the target NF
+        schema:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      - name: If-None-Match
+        in: header
+        description: Validator for conditional requests, as described in RFC 9110, 13.1.2
+        schema:
+          type: string
+      - name: If-Modified-Since
+        in: header
+        description: Validator for conditional requests, as described in RFC 9110, 13.1.3
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Expected response to a valid request
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSubscription'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete a Notification Subscription of the storage
+      description: delete a single subscriptions of the storage
+      operationId: DeleteNotificationSubscription
+      tags:
+      - NotificationSubscription CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:subscription:modify
+      parameters:
+      - name: realmId
+        in: path
+        description: Identifier of the Realm
+        required: true
+        schema:
+          type: string
+          example: Realm01
+      - name: storageId
+        in: path
+        description: Identifier of the Storage
+        required: true
+        schema:
+          type: string
+          example: Storage01
+      - name: subscriptionId
+        in: path
+        description: Identifier of the NotificationSubscription
+        required: true
+        schema:
+          type: string
+          example: Subscription01
+      - name: client-id
+        in: query
+        description: Identifies the NF or NFSet
+        required: true
+        schema:
+          $ref: '#/components/schemas/ClientId'
+      - name: get-previous
+        in: query
+        description: Retrieve the NotificationSubscription before delete
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: If-Match
+        in: header
+        description: Record validator for conditional requests, as described in RFC 9110, 13.1.1
+        schema:
+          type: string
+      - name: supported-features
+        in: query
+        description: Features required to be supported by the target NF
+        schema:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Deleted NotificationSubscription if requested with get-previous
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificationSubscription'
+        '204':
+          description: >
+            Successful case. The SubscriptionNotification has been successfully deleted.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '408':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/408'
+        '412':
+          description: Return previous NotificationSubscription value if get-previous=true
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSubscription'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    patch: # patch NotificationSubscription data
+      summary: NotificationSubscription update
+      description: update a specific NotificationSubscription
+      operationId: UpdateNotificationSubscription
+      tags:
+      - NotificationSubscription CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:subscription:modify
+      parameters:
+      - name: realmId
+        in: path
+        description: Identifier of the Realm
+        required: true
+        schema:
+          type: string
+          example: Realm01
+      - name: storageId
+        in: path
+        description: Identifier of the Storage
+        required: true
+        schema:
+          type: string
+          example: Storage01
+      - name: subscriptionId
+        in: path
+        description: Identifier of the NotificationSubscription
+        required: true
+        schema:
+          type: string
+          example: Subscription01
+      - name: If-Match
+        in: header
+        description: Validator for conditional requests, as described in RFC 9110, 13.1.1
+        schema:
+          type: string
+      - name: supported-features
+        in: query
+        description: Features required to be supported by the target NF
+        schema:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        description: data to patch
+        content:
+          application/json-patch+json:
+            example: 'TBD'
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '200':
+          description: >
+            One or more modification instructions have been discarded,
+            the execution report is returned in response PatchResult.
+          content:
+            application/json:
+              example:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchResult'
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '204':
+          description: >
+            Successful case. The meta has been successfully updated and no return is expected.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '408':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/408'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: NotificationSubscription Create/Update
+      operationId: CreateAndUpdateNotificationSubscription
+      tags:
+        - NotificationSubscription CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:subscription:create
+      parameters:
+      - name: realmId
+        in: path
+        description: Identifier of the Realm
+        required: true
+        schema:
+          type: string
+          example: Realm01
+      - name: storageId
+        in: path
+        description: Identifier of the Storage
+        required: true
+        schema:
+          type: string
+          example: Storage01
+      - name: subscriptionId
+        in: path
+        description: Identifier of the NotificationSubscription
+        required: true
+        schema:
+          type: string
+          example: Subscription01
+      - name: supported-features
+        in: query
+        description: Features required to be supported by the target NF
+        schema:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      - name: If-None-Match
+        in: header
+        description: Validator for conditional requests, as described in RFC 9110, 13.1.2
+        schema:
+          type: string
+      - name: If-Match
+        in: header
+        description: Record validator for conditional requests, as described in RFC 9110, 13.1.1
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationSubscription'
+        required: true
+      responses:
+        '200' : # Update
+          description: Expected response to a valid update request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSubscription'
+        '201':
+          description: Expected response to a valid create request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSubscription'
+          headers:
+            Location:
+              description: >
+                'Contains the URI of the newly created resource according to
+                the structure: {apiRoot}/nudsf-dr/<apiVersion>/{realmId}/{storageId}
+                /subs-to-notify/{subscriptionId}'
+              required: true
+              schema:
+                type: string
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '408':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/408'
+        '409':
+          description: Conflict
+          content:
+           application/json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '412':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/412'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+      callbacks:
+        onDataChange:
+          '{$request.body#/callbackReference}':
+            post:
+              requestBody:
+                $ref: '#/components/requestBodies/RecordNotificationBody'
+              responses:
+                '204':
+                  description: Callback executed successfully
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+        subscriptionExpiryNotification:
+          '{$request.body#/expiryCallbackReference}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NotificationInfo'
+              responses:
+                '204':
+                  description: Successful Notification response
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '502':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /{realmId}/{storageId}/meta-schemas/{schemaId}:
+    summary: Access to a specific Meta Schema, identified by its SchemaId
+    description: >
+      Access to a specific Meta Schema
+    get:
+      summary: Meta Schema access
+      description: retrieve one specific Meta Schema
+      operationId: GetMetaSchema
+      tags:
+      - MetaSchema CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:meta-schema:read
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: schemaId
+          in: path
+          description: Identifier of the Meta Schema
+          required: true
+          schema:
+            $ref: '#/components/schemas/SchemaId'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 9110, 13.1.2
+          schema:
+            type: string
+        - name: If-Modified-Since
+          in: header
+          description: Validator for conditional requests, as described in RFC 9110, 13.1.3
+          schema:
+            type: string
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200' : #result ok
+          $ref: '#/components/responses/RecordBody'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Create/Modify Meta Schema
+      description: Create or Modify a Meta Schema with a user provided SchemaId
+      operationId: CreateOrModifyMetaSchema
+      tags:
+        - MetaSchema CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:meta-schema:create
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier(name) of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: schemaId
+          in: path
+          description: Identifier of the Meta Schema
+          required: true
+          schema:
+            $ref: '#/components/schemas/SchemaId'
+        - name: If-None-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 9110, 13.1.2
+          schema:
+            type: string
+        - name: If-Match
+          in: header
+          description: Validator for conditional requests, as described in RFC 9110, 13.1.1
+          schema:
+            type: string
+        - name: get-previous
+          in: query
+          description: Retrieve the Meta Schema before update
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetaSchema'
+        required: true
+      responses:
+        '200':
+          description: Update with return
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaSchema'
+        '201':
+          description: >
+            Create case. The resource has been successfully created, location header indicates
+            the URI of the created Meta Schema.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaSchema'
+          headers:
+            Location:
+              $ref: '#/components/headers/Location'
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '204': # Update without return
+          description: >
+            Update case. The resource has been successfully updated and no
+            additional content is included in the response message.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/Cache-Control'
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '408':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/408'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '412':
+          description: Return Meta Schema value if get-previous=true
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaSchema'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete a Meta Schema with an user provided SchemaId
+      operationId: DeleteMetaSchema
+      tags:
+        - MetaSchema CRUD
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+        - oAuth2ClientCredentials:
+          - nudsf-dr
+          - nudsf-dr:meta-schema:modify
+      parameters:
+        - name: realmId
+          in: path
+          description: Identifier(name) of the Realm
+          required: true
+          schema:
+            type: string
+            example: Realm01
+        - name: storageId
+          in: path
+          description: Identifier of the Storage
+          required: true
+          schema:
+            type: string
+            example: Storage01
+        - name: schemaId
+          in: path
+          description: Identifier of the Meta Schema
+          required: true
+          schema:
+            $ref: '#/components/schemas/SchemaId'
+        - name: If-Match
+          in: header
+          description: Record validator for conditional requests, as described in RFC 9110, 13.1.1
+          schema:
+            type: string
+        - name: get-previous
+          in: query
+          description: Retrieve the Meta Schema before delete
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: supported-features
+          in: query
+          description: Features required to be supported by the target NF
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaSchema'
+        '204':
+          description: Successful case.
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+            Last-Modified:
+              $ref: '#/components/headers/Last-Modified'
+        '304':
+          $ref: '#/components/responses/304'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '408':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/408'
+        '412':
+          description: Return Meta Schema value if get-previous=true
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetaSchema'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nudsf-dr: Access to the nudsf-dr API
+            nudsf-dr:record:read: Access to read records
+            nudsf-dr:record:modify: Access to update records
+            nudsf-dr:record:create: Access to create records
+            nudsf-dr:record-meta:read: Access to read a record's meta
+            nudsf-dr:record-meta:modify: Access to update a record's meta
+            nudsf-dr:block:read: Access to read blocks
+            nudsf-dr:block:modify: Access to update blocks
+            nudsf-dr:block:create: Access to create blocks
+            nudsf-dr:subscription:read: Access to read subscriptions
+            nudsf-dr:subscription:modify: Access to update subscriptions
+            nudsf-dr:subscription:create: Access to create subscriptions
+            nudsf-dr:meta-schema:read: Access to read meta schema
+            nudsf-dr:meta-schema:modify: Access to update meta schema
+            nudsf-dr:meta-schema:create: Access to create meta schema
+
+  schemas:
+    RecordSearchResultDescriptor:
+      description: Count and collection of Record references matching the providing filter.
+      type: object
+      properties:
+        count:      # The total number of elements found.
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        references: # The Record references found. If count-indicator is true, no references are sent back.
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        tagCountResult:
+          description: A map of TagCount (list of key-value pairs with unique indentifier as key)
+          type: object
+          items:
+            $ref: '#/components/schemas/TagCount'
+          example: {"advancedTagCount1" : {"tag1" : 1}, "advancedTagCount2" : {"tag2" : 2}}
+      required:
+        - count
+
+    RecordSearchResult:
+      description: Record search result
+      type: object
+      properties:
+        descriptor:
+          # json representation of the search result descriptor
+          $ref: '#/components/schemas/RecordSearchResultDescriptor'
+        matchingRecords:
+          # List of multipart data
+          type: array
+          description: list of Records
+          items:
+            $ref: '#/components/schemas/Record'
+      required:
+        - descriptor
+        - matchingRecords
+      example: >-
+        { "descriptor": { "count": 1, "references": [ "realmABC/storageXYZ/records/record123" ] }, "matchingRecords": [ { "meta": { "tags" : { "tag1" : ["value1"], "tag2" :["value2"] } }, "blocks": [ { "Content-Id": "record123/block1", "Content-Type": "text/plain", "content": "QmxvY2sgY29udGVudA==" } ] } ] }
+
+    RecordMeta:
+      description: Meta data of a Record
+      type: object
+      properties:
+        ttl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        callbackReference:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        tags:
+          type: object # dictionary type
+          description: >
+            A dictionary of {"tagName": [ "tagValue", ...] }. A tag name can be used
+            to retrieve a Record. The tagValue are unique.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+            uniqueItems: true
+            minItems: 1
+          minProperties: 1
+          example:  '{"ueId" : [ "455345", "455346" ], "recordId" : [ "1000106" ] }'
+      example: >-
+        { "tags" : {"ueId" : [ "455345", "455346" ], "recordId" : [ "1000106" ] }}
+        schemaId:
+          $ref: '#/components/schemas/SchemaId'
+
+    Record:
+      description: Definition of a Record
+      type: object
+      properties:
+        meta:
+          # json representation of the Meta Data
+          $ref: '#/components/schemas/RecordMeta'
+        blocks:
+          # List of multipart data
+          type: array
+          description: list of opaque Block's in this Record
+          items:
+            $ref: '#/components/schemas/Block'
+          minItems: 1
+      required:
+        - meta
+      example: >-
+        {"meta": { "tags" : {"tag1" : ["value1"], "tag2" :["value2"] } }, "blocks": [{"Content-Id": "userDefBinaryBlob", "Content-Type": "text/plain", "content": "QmxvY2sgY29udGVudA=="}, {"Content-Id": "userDefJsonBlob", "Content-Type": "application/json", "content": "{"key": "ftsimpletype-999550000000002", "value": "A3E71A78377179B5B91A;imsi-999550000000123"}]}
+
+    RecordPatch:
+      description: Definition of a Record Patch
+      type: object
+      properties:
+        patch:
+          # json patch as defined in RFC 6902
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+          minItems: 1
+        blocks:
+          # List of multipart data
+          type: array
+          description: list of opaque Block's being referred to by PatchItems
+          items:
+            $ref: '#/components/schemas/Block'
+          minItems: 1
+      required:
+        - patch
+      example: >-
+        {"patch": [{ "op": "add", "path": "/meta/callbackReference", "value": "https://example.com" }, { "op": "copy", "from": "/blocks/blockID1", "to": "/blocks/blockID2" }, { "op": "add", "path": "/blocks/blockID1", "value": "addedBlock1" }], "blocks": [{"Content-Id": "addedBlock1", "Content-Type": "text/plain", "content": "QmxvY2sgY29udGVudA=="}]}
+
+    RecordIdList:
+      description: List of Record IDs
+      type: object
+      properties:
+        recordIdList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - recordIdList
+
+    FailedRecordIdList:
+      description: List of Record IDs that failed to be deleted
+      type: object
+      properties:
+        failedRecordIdList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+
+    RecordDeleteResponse:
+      description: Response to record deletion
+      allOf:
+        - $ref: '#/components/schemas/RecordIdList'
+        - $ref: '#/components/schemas/FailedRecordIdList'
+
+    Block:
+      description: A Block can be of any type
+      example: >-
+        "QmxvY2sgY29udGVudA=="
+    NotificationSubscription:
+      description: Definition of a notification subscription
+      type: object
+      properties:
+        clientId:
+          $ref: '#/components/schemas/ClientId'
+        callbackReference:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        expiryCallbackReference:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        expiryNotification:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        subFilter:
+          $ref: '#/components/schemas/SubscriptionFilter'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - clientId
+        - callbackReference
+
+    RecordNotification:
+      description: Definition of a notification on a record
+      type: object
+      properties:
+        descriptor:
+          # json representation of the notification description
+          $ref: '#/components/schemas/NotificationDescription'
+        meta:
+          # json representation of the Meta Data
+          $ref: '#/components/schemas/RecordMeta'
+        blocks:
+          # List of multipart data
+          type: array
+          description: list of opaque Block's in this Record
+          items:
+            $ref: '#/components/schemas/Block'
+      required:
+        - descriptor
+        - meta
+      example: >-
+        {"descriptor": { "recordRef" : "...", "operationType" : "DELETED"}, "meta": { "tags" : {"tag1" : ["value1"], "tag2" :["value2"] } }, "blocks": [{"Content-Id": "userDefBinaryBlob", "Content-Type": "text/plain", "content": "QmxvY2sgY29udGVudA=="}, {"Content-Id": "userDefJsonBlob", "Content-Type": "application/json", "content": "{"key": "ftsimpletype-999550000000002", "value": "A3E71A78377179B5B91A;imsi-999550000000123"}]}
+
+    NotificationDescription:
+      description: Description of a record notification
+      type: object
+      properties:
+        recordRef:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        operationType:
+          $ref: '#/components/schemas/RecordOperation'
+        subscriptionId:
+          # unique identifier of the NotificationSubscription
+          type: string
+      required:
+        - recordRef
+        - operationType
+      example: >-
+        { "record" : "...", "operationType" : "DELETED"}
+
+    SubscriptionFilter:
+      description: A subscription filter
+      type: object
+      properties:
+        monitoredResourceUris:
+          type: array
+          description: list of resources applicable to the subscription
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+        operations:
+          type: array
+          description: list of resources applicable to the subscription
+          items:
+            $ref: '#/components/schemas/RecordOperation'
+          maxItems: 3
+
+    ClientId:
+      description: Defines the identity of the NF Consumer
+      type: object
+      properties:
+        nfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        nfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+
+    RecordOperation:
+      description: Indicate operation made on a record
+      anyOf:
+      - type: string
+        enum:
+          - CREATED
+          - UPDATED
+          - DELETED
+      - type: string
+
+    ConditionOperator:
+      description: TBD
+      anyOf:
+      - type: string
+        enum:
+          - AND
+          - OR
+          - NOT
+      - type: string
+
+    ComparisonOperator:
+      description: TBD
+      anyOf:
+        - type: string
+          enum:
+            # Equals
+            - EQ
+            # Not Equal
+            - NEQ
+            # Greater Than
+            - GT
+            # Greater Than or Equal
+            - GTE
+            # Less Than
+            - LT
+            # Less Than or Equal
+            - LTE
+        - type: string
+
+    CountExpression:
+      description: >
+        A map containing parameters for advanced counting feature with unique key for each request
+      type: object
+      properties:
+        tag:
+          type: string
+        countType:
+          $ref: '#/components/schemas/TagCountType'
+        filter:
+          $ref: '#/components/schemas/SearchExpression'
+      required:
+        - countType
+      example:
+        {"advancedTagCount1":{"tag" : "tag1", countType : UNIQUE_COUNT , "filter" : NULL}, "advancedTagCount2":{"tag" : "tag2", countType : AGGREGATE_COUNT, "filter" : NULL}}
+
+    TagCountType:
+      description: Indicate mode of tag count operations
+      anyOf:
+      - type: string
+        enum:
+          - UNIQUE_COUNT
+          - AGGREGATE_COUNT
+          - TOTAL_COUNT
+      - type: string
+
+    TagCount:
+      description: The TagCount result of a_Advanced Count request
+      type: object
+      properties:
+        tag:
+          type: string
+        count:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        valueCount:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValueCount'
+
+    ValueCount:
+      description: The AggregateCount map
+      type: object
+      properties:
+        value:
+          type: string
+        count:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+
+    SearchExpression:
+      description: A logical expression element
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/SearchCondition'
+        - $ref: '#/components/schemas/SearchComparison'
+        - $ref: '#/components/schemas/RecordIdList'
+      example:
+        { "cond": "OR", "units": [ { "op": "EQ", "tag" : "ueId", "value" : "455345" }, { "op": "EQ", "tag" : "supi", "value" : "imsi-999559807001001" } ] }
+
+    SearchCondition:
+      description: A logical condition
+      type: object
+      properties:
+        cond:
+          $ref: '#/components/schemas/ConditionOperator'
+        units:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchExpression'
+          minItems: 1
+        schemaId:
+          $ref: '#/components/schemas/SchemaId'
+      required:
+        - cond
+        - units
+      example:
+        { "cond": "OR", "units": [ { "op": "EQ", "tag" : "ueId", "value" : "455345" }, { "op": "EQ", "tag" : "supi", "value" : "imsi-999559807001001" } ] }
+
+    SearchComparison:
+      description: A comparison to apply on tag/values pairs.
+      type: object
+      properties:
+        op:
+          $ref: '#/components/schemas/ComparisonOperator'
+        tag:
+          type: string
+        value:
+          type: string
+      required:
+        - op
+        - tag
+        - value
+      example:
+        { "op": "EQ", "tag" : "supi", "value" : "imsi-999559807001001" }
+
+    MetaSchema:
+      description: Defines the Meta Schema
+      type: object
+      required:
+        - schemaId
+        - metaTags
+      properties:
+        schemaId:
+          $ref: '#/components/schemas/SchemaId'
+        metaTags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagType'
+
+    TagType:
+      description: Defines the Tag Type
+      type: object
+      required:
+        - tagName
+        - keyType
+      properties:
+        tagName:
+          type: string
+        keyType:
+          $ref: '#/components/schemas/KeyType'
+        sort:
+          type: boolean
+          default: false
+        presence:
+          type: boolean
+
+    SchemaId:
+      description: Represents the Identifier of a Meta schema.
+      type: string
+
+    KeyType:
+      description: Represents the type of a key.
+      anyOf:
+        - type: string
+          enum:
+          - UNIQUE_KEY
+          - SEARCH_KEY
+          - COUNT_KEY
+          - SEARCH_AND_COUNT_KEY
+          - OTHER_TAG
+        - type: string
+
+    RetrieveRecords:
+      description: Indicates the data to be retrieved.
+      anyOf:
+        - type: string
+          enum:
+          - ONLY_META
+          - META_AND_BLOCKS
+        - type: string
+
+    NotificationInfo:
+      type: object
+      required:
+        - expiredSubscriptions
+      properties:
+        expiredSubscriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationSubscription'
+          minItems: 1
+
+    ExtendedProblemDetails:
+      description: Extending problemDetails
+      allOf:
+        - $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        - $ref: '#/components/schemas/ProblemDetailsExtension'
+
+    ProblemDetailsExtension:
+      anyOf:
+        - $ref: '#/components/schemas/Record'
+        - $ref: '#/components/schemas/RecordMeta'
+
+  headers:
+    Cache-Control:
+      description: Cache-Control containing max-age, as described in RFC 9111, 5.2
+      schema:
+        type: string
+    ETag:
+      description: Entity Tag, containing a strong validator, as described in RFC 9110, 8.8.3
+      schema:
+        type: string
+    Last-Modified:
+      description: Timestamp for last modification of the resource, as described in RFC 9110, 8.8.2
+      schema:
+        type: string
+    Location:
+      description: Contains the URI of the newly created resource
+      required: true
+      schema:
+        type: string
+    Retry-After:
+      description: >
+        'Indicates the time the NF Consumer has to wait before making a new request.
+        It can be a non-negative integer (decimal number) indicating the number of
+        seconds the NF Consumer has to wait before making a new request or an
+        HTTP-date after which the AF can retry a new request.'
+      schema:
+        anyOf:
+          - type: integer
+          - type: string
+
+  requestBodies:
+    RecordBody:
+      description: >
+        The record multipart request body. The meta part shall be the first part
+        and is mandatory but can be empty and zero or more block parts may follow the meta part.
+      required: true
+      content:
+        multipart/mixed:
+          schema:
+            $ref: '#/components/schemas/Record'
+          encoding:
+            meta: # The meta part shall be the first part and is mandatory but can be empty
+              contentType: application/json
+              headers:
+                Content-Id:
+                  schema:
+                    type: string
+                  required: true
+            blocks: # 0 or more block parts may follow the meta part
+              contentType: '*/*' # Block part can be of any type
+              headers:
+                Content-Id: # Block identifier is defined by the Content-Id header.
+                  schema:
+                    type: string
+                  required: true
+                Content-Transfer-Encoding:
+                  schema:
+                    type: string
+                  required: true
+
+    RecordPatchBody:
+      description: >
+        The patch record multipart request body. The patch part shall be the first part
+        and is mandatory and zero or more block parts being referred to by patch items
+        may follow the patch part.
+      required: true
+      content:
+        multipart/mixed:
+          schema:
+            $ref: '#/components/schemas/RecordPatch'
+          encoding:
+            patch: # The patch part shall be the first part
+              contentType: application/json-patch+json
+              headers:
+                Content-Id:
+                  schema:
+                    type: string
+                  required: true
+            blocks: # 0 or more block parts may follow the patch part
+              contentType: '*/*' # Block part can be of any type
+              headers:
+                Content-Id: # Block identifier is defined by the Content-Id header.
+                  schema:
+                    type: string
+                  required: true
+                Content-Transfer-Encoding:
+                  schema:
+                    type: string
+                  required: true
+
+    RecordNotificationBody:
+      description: >
+        The record notification multipart request body. The descriptor part shall be the
+        first one, followed by record meta part and by zero or more block parts.
+      required: true
+      content:
+        multipart/mixed:
+          schema:
+            $ref: '#/components/schemas/RecordNotification'
+          encoding:
+            descriptor: # The descriptor part shall be the first part and is mandatory
+              contentType: application/json
+              headers:
+                Content-Id:
+                  schema:
+                    type: string
+                  required: true
+            meta: # The meta part shall be the second part and is mandatory but can be empty
+              contentType: application/json
+              headers:
+                Content-Id:
+                  schema:
+                    type: string
+                  required: true
+            blocks: # 0 or more block parts may follow the meta part
+              contentType: '*/*' # Block part can be of any type
+              headers:
+                Content-Id: # Block identifier is defined by the Content-Id header.
+                  schema:
+                    type: string
+                  required: true
+                Content-Transfer-Encoding:
+                  schema:
+                    type: string
+                  required: true
+
+  responses:
+    '304': # Etag response if the value might differ from that sent
+      description: Not Modified
+      content:
+        application/problem+json:
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        ETag:
+          $ref: '#/components/headers/ETag'
+        Retry-After:
+          $ref: '#/components/headers/Retry-After'
+
+    'RecordBody': #  Record value with associated headers
+      description: >
+        - 200 Update. The resource has been successfully updated and previous value
+          must be sent in the response message if requested.
+        - 200 Get. The resource exists, its value must be sent in the response message
+        - 412 Precondition Failed, the previous value must be sent in response message if requested.
+      content:
+        multipart/mixed:
+          schema:
+            $ref: '#/components/schemas/Record'
+          encoding:
+              meta: # The meta part shall be the first part and is mandatory but can be empty.
+                contentType: application/json
+                headers:
+                  Content-Id: # The meta part is identified by the 'meta' Content-Id header.
+                    schema:
+                      type: string
+                    required: true
+              blocks: # Zero or more block parts may follow the meta part
+                contentType: '*/*' # Block parts can be of any type.
+                headers:
+                  Content-Id: # Block identifier is defined by the Content-Id header.
+                    schema:
+                      type: string
+                    required: true
+                  Content-Transfer-Encoding:
+                    schema:
+                      type: string
+                    required: true
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        ETag:
+          $ref: '#/components/headers/ETag'
+        Last-Modified:
+          $ref: '#/components/headers/Last-Modified'
+
+    'RecordBodyDelete': #  Record value with associated headers
+      description: >
+        - 200 Delete. The resource has been successfully delete and previous value
+          must be sent in the response message if requested.
+      content:
+        multipart/mixed:
+          schema:
+            $ref: '#/components/schemas/Record'
+          encoding:
+              meta: # The meta part shall be the first par and is mandatory but can be empty.
+                contentType: application/json
+                headers:
+                  Content-Id: # The meta part is identified by the Content-Id header.
+                    schema:
+                      type: string
+                    required: true
+              blocks: # Zero or more block parts may follow the meta part.
+                contentType: '*/*' # Block parts can be of any type.
+                headers:
+                  Content-Id: # Block identifier is defined by the Content-Id header.
+                    schema:
+                      type: string
+                    required: true
+                  Content-Transfer-Encoding:
+                    schema:
+                      type: string
+                    required: true
+      headers:
+        ETag:
+          $ref: '#/components/headers/ETag'
+        Last-Modified:
+          $ref: '#/components/headers/Last-Modified'
+
+    'BlockBody': #  Block value with associated headers
+      description: >
+        - 200 Update: The resource has been successfully updated and previous value
+          must be sent in the response message if requested.
+        - 200 Get: The resource exists, its value must be sent in the response message
+        - 412 Precondition Failed: the previous value must be sent in response message if requested.
+      content:
+        '*/*':
+          schema:
+              $ref: '#/components/schemas/Block'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/Cache-Control'
+        ETag:
+          $ref: '#/components/headers/ETag'
+        Last-Modified:
+          $ref: '#/components/headers/Last-Modified'
+
+    'BlockBodyDelete': #  Block value with associated headers
+      description: >
+        - 200 Delete: The resource has been successfully delete and previous value
+          must be sent in the response message if requested.
+      content:
+        '*/*':
+          schema:
+              $ref: '#/components/schemas/Block'
+      headers:
+        ETag:
+          $ref: '#/components/headers/ETag'
+        Last-Modified:
+          $ref: '#/components/headers/Last-Modified'
+    'RecordSearchResultBody': # The record search result or multipart search/retrieve result response body
+      description: >-
+          - 200 Get. Records matching the search exist. The response shall include either a recordSearchResultDescriptor or a recordSearchResultDescriptor part followed by parts for the meta and blocks of all matching Records. 
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RecordSearchResultDescriptor'
+        multipart/mixed:
+          schema:
+            $ref: '#/components/schemas/RecordSearchResult'
+          encoding:
+            descriptor: # The descriptor part shall be the first part and is mandatory
+              contentType: application/json
+              headers:
+                Content-Id:
+                  schema:
+                    type: string
+                  required: true
+            meta: # 0 or more meta parts may follow the descriptor part
+              contentType: application/json
+              headers:
+                Content-Id:
+                  schema:
+                    type: string
+                  required: true
+            blocks: # 0 or more block parts may follow each meta part
+              contentType: '*/*' # Block part can be of any type
+              headers:
+                Content-Id: # Block identifier is defined by the Content-Id header.
+                  schema:
+                    type: string
+                  required: true
+                Content-Transfer-Encoding:
+                  schema:
+                    type: string
+                  required: true
+
+    '409':
+      description: Conflict
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ExtendedProblemDetails'
+    '412':
+      description: Precondition Failed
+      headers:
+        ETag:
+          $ref: '#/components/headers/ETag'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ExtendedProblemDetails'
+    '500':
+      description: Internal Server Error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ExtendedProblemDetails'

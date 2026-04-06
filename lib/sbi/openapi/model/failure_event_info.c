@@ -5,8 +5,8 @@
 #include "failure_event_info.h"
 
 OpenAPI_failure_event_info_t *OpenAPI_failure_event_info_create(
-    OpenAPI_nwdaf_event_t *event,
-    OpenAPI_nwdaf_failure_code_t *failure_code
+    OpenAPI_nwdaf_event_e event,
+    OpenAPI_nwdaf_failure_code_e failure_code
 )
 {
     OpenAPI_failure_event_info_t *failure_event_info_local_var = ogs_malloc(sizeof(OpenAPI_failure_event_info_t));
@@ -25,14 +25,6 @@ void OpenAPI_failure_event_info_free(OpenAPI_failure_event_info_t *failure_event
     if (NULL == failure_event_info) {
         return;
     }
-    if (failure_event_info->event) {
-        OpenAPI_nwdaf_event_free(failure_event_info->event);
-        failure_event_info->event = NULL;
-    }
-    if (failure_event_info->failure_code) {
-        OpenAPI_nwdaf_failure_code_free(failure_event_info->failure_code);
-        failure_event_info->failure_code = NULL;
-    }
     ogs_free(failure_event_info);
 }
 
@@ -47,32 +39,20 @@ cJSON *OpenAPI_failure_event_info_convertToJSON(OpenAPI_failure_event_info_t *fa
     }
 
     item = cJSON_CreateObject();
-    if (!failure_event_info->event) {
+    if (failure_event_info->event == OpenAPI_nwdaf_event_NULL) {
         ogs_error("OpenAPI_failure_event_info_convertToJSON() failed [event]");
         return NULL;
     }
-    cJSON *event_local_JSON = OpenAPI_nwdaf_event_convertToJSON(failure_event_info->event);
-    if (event_local_JSON == NULL) {
-        ogs_error("OpenAPI_failure_event_info_convertToJSON() failed [event]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "event", event_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "event", OpenAPI_nwdaf_event_ToString(failure_event_info->event)) == NULL) {
         ogs_error("OpenAPI_failure_event_info_convertToJSON() failed [event]");
         goto end;
     }
 
-    if (!failure_event_info->failure_code) {
+    if (failure_event_info->failure_code == OpenAPI_nwdaf_failure_code_NULL) {
         ogs_error("OpenAPI_failure_event_info_convertToJSON() failed [failure_code]");
         return NULL;
     }
-    cJSON *failure_code_local_JSON = OpenAPI_nwdaf_failure_code_convertToJSON(failure_event_info->failure_code);
-    if (failure_code_local_JSON == NULL) {
-        ogs_error("OpenAPI_failure_event_info_convertToJSON() failed [failure_code]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "failureCode", failure_code_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "failureCode", OpenAPI_nwdaf_failure_code_ToString(failure_event_info->failure_code)) == NULL) {
         ogs_error("OpenAPI_failure_event_info_convertToJSON() failed [failure_code]");
         goto end;
     }
@@ -86,46 +66,38 @@ OpenAPI_failure_event_info_t *OpenAPI_failure_event_info_parseFromJSON(cJSON *fa
     OpenAPI_failure_event_info_t *failure_event_info_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *event = NULL;
-    OpenAPI_nwdaf_event_t *event_local_nonprim = NULL;
+    OpenAPI_nwdaf_event_e eventVariable = 0;
     cJSON *failure_code = NULL;
-    OpenAPI_nwdaf_failure_code_t *failure_code_local_nonprim = NULL;
+    OpenAPI_nwdaf_failure_code_e failure_codeVariable = 0;
     event = cJSON_GetObjectItemCaseSensitive(failure_event_infoJSON, "event");
     if (!event) {
         ogs_error("OpenAPI_failure_event_info_parseFromJSON() failed [event]");
         goto end;
     }
-    event_local_nonprim = OpenAPI_nwdaf_event_parseFromJSON(event);
-    if (!event_local_nonprim) {
-        ogs_error("OpenAPI_nwdaf_event_parseFromJSON failed [event]");
+    if (!cJSON_IsString(event)) {
+        ogs_error("OpenAPI_failure_event_info_parseFromJSON() failed [event]");
         goto end;
     }
+    eventVariable = OpenAPI_nwdaf_event_FromString(event->valuestring);
 
     failure_code = cJSON_GetObjectItemCaseSensitive(failure_event_infoJSON, "failureCode");
     if (!failure_code) {
         ogs_error("OpenAPI_failure_event_info_parseFromJSON() failed [failure_code]");
         goto end;
     }
-    failure_code_local_nonprim = OpenAPI_nwdaf_failure_code_parseFromJSON(failure_code);
-    if (!failure_code_local_nonprim) {
-        ogs_error("OpenAPI_nwdaf_failure_code_parseFromJSON failed [failure_code]");
+    if (!cJSON_IsString(failure_code)) {
+        ogs_error("OpenAPI_failure_event_info_parseFromJSON() failed [failure_code]");
         goto end;
     }
+    failure_codeVariable = OpenAPI_nwdaf_failure_code_FromString(failure_code->valuestring);
 
     failure_event_info_local_var = OpenAPI_failure_event_info_create (
-        event_local_nonprim,
-        failure_code_local_nonprim
+        eventVariable,
+        failure_codeVariable
     );
 
     return failure_event_info_local_var;
 end:
-    if (event_local_nonprim) {
-        OpenAPI_nwdaf_event_free(event_local_nonprim);
-        event_local_nonprim = NULL;
-    }
-    if (failure_code_local_nonprim) {
-        OpenAPI_nwdaf_failure_code_free(failure_code_local_nonprim);
-        failure_code_local_nonprim = NULL;
-    }
     return NULL;
 }
 

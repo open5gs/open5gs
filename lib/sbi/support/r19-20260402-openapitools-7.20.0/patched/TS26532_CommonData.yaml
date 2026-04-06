@@ -1,0 +1,143 @@
+openapi: 3.0.0
+info:
+  title: Data Collection and Reporting Common Data Types
+  version: 2.1.1
+  description: |
+    Data Collection and Reporting Common Data Types
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+tags:
+  - name: Data Collection and Reporting Common Data Types
+    description: 'Data Collection and Reporting: Common Data Types'
+externalDocs:
+  description: 'TS 26.532 V18.5.0; Data Collection and Reporting; Protocols and Formats'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.532/'
+paths: {}
+components:
+  schemas:
+    #################################
+    # Clause 5.4.1: Simple data types
+    #################################
+
+    #####################################
+    # Clause 5.4.2: Structured data types
+    #####################################
+
+    DataSamplingRule:
+      description: "Instructions on how UE data is to be sampled by the data collection client."
+      type: object
+      properties:
+        contextIds:
+          readOnly: true
+          type: array
+          minItems: 1
+          items:
+            type: string
+            minLength: 1
+        samplingPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        locationFilter:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+      required:
+        - contextIds
+
+    DataReportingCondition:
+      description: "A condition that triggers data reporting by a data collection client to the Data Collection AF."
+      type: object
+      properties:
+        contextIds:
+          readOnly: true
+          type: array
+          minItems: 1
+          items:
+            type: string
+            minLength: 1
+        type:
+          $ref: '#/components/schemas/DataReportingConditionType'
+        period:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        parameter:
+          type: string
+        threshold:
+          anyOf:
+          - $ref: 'TS29571_CommonData.yaml#/components/schemas/Double'
+          - $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+          - $ref: 'TS29571_CommonData.yaml#/components/schemas/Int32'
+          - $ref: 'TS29571_CommonData.yaml#/components/schemas/Int64'
+          - $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint16'
+          - $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+          - $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint64'
+          - $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        reportWhenBelow:
+          type: boolean
+        eventTrigger:
+          $ref: '#/components/schemas/DataReportingEventTrigger'
+      required:
+        - contextIds
+        - type
+
+    DataReportingRule:
+      description: "Instructions on how collected UE data is to be reported by the data collection client to the Data Collection AF."
+      type: object
+      properties:
+        contextIds:
+          readOnly: true
+          type: array
+          minItems: 1
+          items:
+            type: string
+            minLength: 1
+        reportingProbability:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/Percentage'
+        reportingFormat:
+          deprecated: true
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        dataPackagingStrategy:
+          type: string
+      required:
+        - contextIds
+
+    #####################################
+    # Clause 5.4.3: Enumerated data types
+    #####################################
+
+    DataCollectionClientType:
+      description: "Indicating a type of data collection client that reports UE data to the Data Collection AF."
+      anyOf:
+        - type: string
+          enum:
+            - DIRECT
+            - INDIRECT
+            - APPLICATION_SERVER
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+
+    DataReportingConditionType:
+      description: "The type of condition that triggers reporting by a data collection client to the Data Collection AF."
+      anyOf:
+      - type: string
+        enum:
+          - INTERVAL
+          - THRESHOLD
+          - EVENT
+      - type: string
+        description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+
+    DataReportingEventTrigger:
+      description: "The type of event that triggers reporting by a data collection client to the Data Collection AF."
+      anyOf:
+      - type: string
+        enum:
+          - LOCATION
+          - DESTINATION
+      - type: string
+        description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.

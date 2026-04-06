@@ -12,20 +12,20 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_ip_end_point_s OpenAPI_ip_end_point_t;
 #include "transport_protocol.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ip_end_point_s OpenAPI_ip_end_point_t;
-typedef struct OpenAPI_ip_end_point_s {
+struct OpenAPI_ip_end_point_s {
     char *ipv4_address;
     char *ipv6_address;
     OpenAPI_transport_protocol_e transport;
     bool is_port;
     int port;
-} OpenAPI_ip_end_point_t;
+};
 
 OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_create(
     char *ipv4_address,

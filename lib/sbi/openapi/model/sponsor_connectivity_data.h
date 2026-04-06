@@ -12,18 +12,20 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_sponsor_connectivity_data_s OpenAPI_sponsor_connectivity_data_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sponsor_connectivity_data_s OpenAPI_sponsor_connectivity_data_t;
-typedef struct OpenAPI_sponsor_connectivity_data_s {
+struct OpenAPI_sponsor_connectivity_data_s {
     OpenAPI_list_t *asp_ids;
-} OpenAPI_sponsor_connectivity_data_t;
+    char *supp_feat;
+};
 
 OpenAPI_sponsor_connectivity_data_t *OpenAPI_sponsor_connectivity_data_create(
-    OpenAPI_list_t *asp_ids
+    OpenAPI_list_t *asp_ids,
+    char *supp_feat
 );
 void OpenAPI_sponsor_connectivity_data_free(OpenAPI_sponsor_connectivity_data_t *sponsor_connectivity_data);
 OpenAPI_sponsor_connectivity_data_t *OpenAPI_sponsor_connectivity_data_parseFromJSON(cJSON *sponsor_connectivity_dataJSON);

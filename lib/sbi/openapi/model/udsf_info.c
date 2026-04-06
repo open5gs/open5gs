@@ -42,7 +42,7 @@ void OpenAPI_udsf_info_free(OpenAPI_udsf_info_t *udsf_info)
         OpenAPI_list_for_each(udsf_info->storage_id_ranges, node) {
             OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
-            ogs_free(localKeyValue->value);
+            OpenAPI_identity_range_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(udsf_info->storage_id_ranges);
@@ -172,8 +172,6 @@ OpenAPI_udsf_info_t *OpenAPI_udsf_info_parseFromJSON(cJSON *udsf_infoJSON)
             OpenAPI_map_t *localMapKeyPair = NULL;
             cJSON_ArrayForEach(storage_id_ranges_local_map, storage_id_ranges) {
                 cJSON *localMapObject = storage_id_ranges_local_map;
-                double *localDouble = NULL;
-                int *localInt = NULL;
                 if (cJSON_IsObject(localMapObject)) {
                     localMapKeyPair = OpenAPI_map_create(
                         ogs_strdup(localMapObject->string), OpenAPI_identity_range_parseFromJSON(localMapObject));
@@ -205,9 +203,9 @@ end:
     }
     if (storage_id_rangesList) {
         OpenAPI_list_for_each(storage_id_rangesList, node) {
-            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*) node->data;
+            OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
             ogs_free(localKeyValue->key);
-            ogs_free(localKeyValue->value);
+            OpenAPI_identity_range_free(localKeyValue->value);
             OpenAPI_map_free(localKeyValue);
         }
         OpenAPI_list_free(storage_id_rangesList);

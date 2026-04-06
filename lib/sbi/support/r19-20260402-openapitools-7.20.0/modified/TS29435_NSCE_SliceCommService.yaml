@@ -1,0 +1,352 @@
+openapi: 3.0.0
+
+info:
+  title: NSCE Server Network Slice Communication Service
+  version: 1.1.0
+  description: |
+    NSCE Server Network Slice Communication Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.435 V19.3.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Network Slice Capability Enablement (NSCE) Server Service(s); Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.435/
+
+servers:
+  - url: '{apiRoot}/nsce-scs/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /services:
+    post:
+      summary: Request the creation of a Slice Related Communication Service.
+      operationId: CreateSliceCommServ
+      tags:
+        - Slice Related Communication Services (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SliceCommService'
+      responses:
+        '201':
+          description: >
+            Created. The Slice Related Communication Service is successfully created and a
+            representation of the created Individual Slice Related Communication Service resource
+            shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceCommService'
+          headers:
+            Location:
+              description: >
+                Contains the URI of the created Individual Slice Related Communication Service
+                resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /services/{servId}:
+    parameters:
+      - name: servId
+        in: path
+        description: >
+          Represents the identifier of the Individual Slice Related Communication Service resource.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Slice Related Communication Service resource.
+      operationId: GetIndSliceCommServ
+      tags:
+        - Individual Slice Related Communication Service (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Slice Related Communication Service resource shall be
+            returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceCommService'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Slice Related Communication Service resource.
+      operationId: UpdateIndSliceCommServ
+      tags:
+        - Individual Slice Related Communication Service (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SliceCommService'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Slice Related Communication Service resource is successfully updated
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceCommService'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Slice Related Communication Service resource.
+      operationId: ModifyIndSliceCommServ
+      tags:
+        - Individual Slice Related Communication Service (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/SliceCommServicePatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Slice Related Communication Service resource is successfully modified
+            and a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SliceCommService'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Slice Related Communication Service resource.
+      operationId: DeleteIndSliceCommServ
+      tags:
+        - Individual Slice Related Communication Service (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Slice Related Communication Service resource is successfully
+            deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+
+    SliceCommService:
+      description: >
+        Represents a Slice Related Communication Service.
+      type: object
+      properties:
+        valServName:
+          type: string
+        valServId:
+          type: string
+        areaOfInterest:
+          $ref: 'TS29435_NSCE_NSInfoDelivery.yaml#/components/schemas/ServArea'
+        servProfile:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ServReq'
+          minProperties: 1
+          description: >
+            Represents the requested VAL service profile containing the application requirements of
+            the VAL service to be supported.
+            The key of the map shall be any unique string encoded value.
+        sliceInfo:
+          $ref: '#/components/schemas/NetSliceInfo'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - valServName
+        - valServId
+        - areaOfInterest
+        - servProfile
+
+    SliceCommServicePatch:
+      description: >
+        Represents the requested modifications to a Slice Related Communication Service.
+      type: object
+      properties:
+        areaOfInterest:
+          $ref: 'TS29435_NSCE_NSInfoDelivery.yaml#/components/schemas/ServArea'
+        servProfile:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ServReq'
+          minProperties: 1
+          nullable: true
+          description: >
+            Represents the updated requested VAL service profile containing the application
+            requirements of the VAL service to be supported.
+            The key of the map shall be any unique string encoded value and shall be set to the same
+            value as the one provided during the creation of the corresponding Slice Related
+            Communication Service.
+
+    ServReq:
+      description: >
+        Represents a set of application service requirements.
+      type: object
+      properties:
+        reqName:
+          type: string
+        reqValue:
+          type: string
+      required:
+        - reqName
+        - reqValue
+
+    NetSliceInfo:
+      description: >
+        Represents network slice related information.
+      type: object
+      properties:
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        attributes:
+          $ref: 'TS28541_SliceNrm.yaml#/components/schemas/ServiceProfile'
+      anyOf:
+        - required: [snssai]
+        - required: [attributes]
+
+
+# SIMPLE DATA TYPES
+#
+
+#
+# ENUMERATIONS
+#

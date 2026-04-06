@@ -10,6 +10,7 @@ OpenAPI_pcf_for_ue_binding_t *OpenAPI_pcf_for_ue_binding_create(
     char *pcf_for_ue_fqdn,
     OpenAPI_list_t *pcf_for_ue_ip_end_points,
     char *pcf_id,
+    char *recovery_time,
     char *pcf_set_id,
     OpenAPI_binding_level_e bind_level,
     char *supp_feat
@@ -23,6 +24,7 @@ OpenAPI_pcf_for_ue_binding_t *OpenAPI_pcf_for_ue_binding_create(
     pcf_for_ue_binding_local_var->pcf_for_ue_fqdn = pcf_for_ue_fqdn;
     pcf_for_ue_binding_local_var->pcf_for_ue_ip_end_points = pcf_for_ue_ip_end_points;
     pcf_for_ue_binding_local_var->pcf_id = pcf_id;
+    pcf_for_ue_binding_local_var->recovery_time = recovery_time;
     pcf_for_ue_binding_local_var->pcf_set_id = pcf_set_id;
     pcf_for_ue_binding_local_var->bind_level = bind_level;
     pcf_for_ue_binding_local_var->supp_feat = supp_feat;
@@ -59,6 +61,10 @@ void OpenAPI_pcf_for_ue_binding_free(OpenAPI_pcf_for_ue_binding_t *pcf_for_ue_bi
     if (pcf_for_ue_binding->pcf_id) {
         ogs_free(pcf_for_ue_binding->pcf_id);
         pcf_for_ue_binding->pcf_id = NULL;
+    }
+    if (pcf_for_ue_binding->recovery_time) {
+        ogs_free(pcf_for_ue_binding->recovery_time);
+        pcf_for_ue_binding->recovery_time = NULL;
     }
     if (pcf_for_ue_binding->pcf_set_id) {
         ogs_free(pcf_for_ue_binding->pcf_set_id);
@@ -128,6 +134,13 @@ cJSON *OpenAPI_pcf_for_ue_binding_convertToJSON(OpenAPI_pcf_for_ue_binding_t *pc
     }
     }
 
+    if (pcf_for_ue_binding->recovery_time) {
+    if (cJSON_AddStringToObject(item, "recoveryTime", pcf_for_ue_binding->recovery_time) == NULL) {
+        ogs_error("OpenAPI_pcf_for_ue_binding_convertToJSON() failed [recovery_time]");
+        goto end;
+    }
+    }
+
     if (pcf_for_ue_binding->pcf_set_id) {
     if (cJSON_AddStringToObject(item, "pcfSetId", pcf_for_ue_binding->pcf_set_id) == NULL) {
         ogs_error("OpenAPI_pcf_for_ue_binding_convertToJSON() failed [pcf_set_id]");
@@ -163,6 +176,7 @@ OpenAPI_pcf_for_ue_binding_t *OpenAPI_pcf_for_ue_binding_parseFromJSON(cJSON *pc
     cJSON *pcf_for_ue_ip_end_points = NULL;
     OpenAPI_list_t *pcf_for_ue_ip_end_pointsList = NULL;
     cJSON *pcf_id = NULL;
+    cJSON *recovery_time = NULL;
     cJSON *pcf_set_id = NULL;
     cJSON *bind_level = NULL;
     OpenAPI_binding_level_e bind_levelVariable = 0;
@@ -225,6 +239,14 @@ OpenAPI_pcf_for_ue_binding_t *OpenAPI_pcf_for_ue_binding_parseFromJSON(cJSON *pc
     }
     }
 
+    recovery_time = cJSON_GetObjectItemCaseSensitive(pcf_for_ue_bindingJSON, "recoveryTime");
+    if (recovery_time) {
+    if (!cJSON_IsString(recovery_time) && !cJSON_IsNull(recovery_time)) {
+        ogs_error("OpenAPI_pcf_for_ue_binding_parseFromJSON() failed [recovery_time]");
+        goto end;
+    }
+    }
+
     pcf_set_id = cJSON_GetObjectItemCaseSensitive(pcf_for_ue_bindingJSON, "pcfSetId");
     if (pcf_set_id) {
     if (!cJSON_IsString(pcf_set_id) && !cJSON_IsNull(pcf_set_id)) {
@@ -256,6 +278,7 @@ OpenAPI_pcf_for_ue_binding_t *OpenAPI_pcf_for_ue_binding_parseFromJSON(cJSON *pc
         pcf_for_ue_fqdn && !cJSON_IsNull(pcf_for_ue_fqdn) ? ogs_strdup(pcf_for_ue_fqdn->valuestring) : NULL,
         pcf_for_ue_ip_end_points ? pcf_for_ue_ip_end_pointsList : NULL,
         pcf_id && !cJSON_IsNull(pcf_id) ? ogs_strdup(pcf_id->valuestring) : NULL,
+        recovery_time && !cJSON_IsNull(recovery_time) ? ogs_strdup(recovery_time->valuestring) : NULL,
         pcf_set_id && !cJSON_IsNull(pcf_set_id) ? ogs_strdup(pcf_set_id->valuestring) : NULL,
         bind_level ? bind_levelVariable : 0,
         supp_feat && !cJSON_IsNull(supp_feat) ? ogs_strdup(supp_feat->valuestring) : NULL

@@ -17,6 +17,8 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_create(
     OpenAPI_access_token_err_t *access_token_error,
     OpenAPI_access_token_req_t *access_token_request,
     char *nrf_id,
+    OpenAPI_list_t *supported_api_versions,
+    OpenAPI_no_profile_match_info_t *no_profile_match_info,
     bool is_remote_error,
     int remote_error,
     bool is_max_waiting_time,
@@ -38,6 +40,8 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_create(
     transfer_mt_data_error_local_var->access_token_error = access_token_error;
     transfer_mt_data_error_local_var->access_token_request = access_token_request;
     transfer_mt_data_error_local_var->nrf_id = nrf_id;
+    transfer_mt_data_error_local_var->supported_api_versions = supported_api_versions;
+    transfer_mt_data_error_local_var->no_profile_match_info = no_profile_match_info;
     transfer_mt_data_error_local_var->is_remote_error = is_remote_error;
     transfer_mt_data_error_local_var->remote_error = remote_error;
     transfer_mt_data_error_local_var->is_max_waiting_time = is_max_waiting_time;
@@ -95,6 +99,17 @@ void OpenAPI_transfer_mt_data_error_free(OpenAPI_transfer_mt_data_error_t *trans
     if (transfer_mt_data_error->nrf_id) {
         ogs_free(transfer_mt_data_error->nrf_id);
         transfer_mt_data_error->nrf_id = NULL;
+    }
+    if (transfer_mt_data_error->supported_api_versions) {
+        OpenAPI_list_for_each(transfer_mt_data_error->supported_api_versions, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(transfer_mt_data_error->supported_api_versions);
+        transfer_mt_data_error->supported_api_versions = NULL;
+    }
+    if (transfer_mt_data_error->no_profile_match_info) {
+        OpenAPI_no_profile_match_info_free(transfer_mt_data_error->no_profile_match_info);
+        transfer_mt_data_error->no_profile_match_info = NULL;
     }
     ogs_free(transfer_mt_data_error);
 }
@@ -208,6 +223,33 @@ cJSON *OpenAPI_transfer_mt_data_error_convertToJSON(OpenAPI_transfer_mt_data_err
     }
     }
 
+    if (transfer_mt_data_error->supported_api_versions) {
+    cJSON *supported_api_versionsList = cJSON_AddArrayToObject(item, "supportedApiVersions");
+    if (supported_api_versionsList == NULL) {
+        ogs_error("OpenAPI_transfer_mt_data_error_convertToJSON() failed [supported_api_versions]");
+        goto end;
+    }
+    OpenAPI_list_for_each(transfer_mt_data_error->supported_api_versions, node) {
+        if (cJSON_AddStringToObject(supported_api_versionsList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_transfer_mt_data_error_convertToJSON() failed [supported_api_versions]");
+            goto end;
+        }
+    }
+    }
+
+    if (transfer_mt_data_error->no_profile_match_info) {
+    cJSON *no_profile_match_info_local_JSON = OpenAPI_no_profile_match_info_convertToJSON(transfer_mt_data_error->no_profile_match_info);
+    if (no_profile_match_info_local_JSON == NULL) {
+        ogs_error("OpenAPI_transfer_mt_data_error_convertToJSON() failed [no_profile_match_info]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "noProfileMatchInfo", no_profile_match_info_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_transfer_mt_data_error_convertToJSON() failed [no_profile_match_info]");
+        goto end;
+    }
+    }
+
     if (transfer_mt_data_error->is_remote_error) {
     if (cJSON_AddBoolToObject(item, "remoteError", transfer_mt_data_error->remote_error) == NULL) {
         ogs_error("OpenAPI_transfer_mt_data_error_convertToJSON() failed [remote_error]");
@@ -244,6 +286,10 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
     cJSON *access_token_request = NULL;
     OpenAPI_access_token_req_t *access_token_request_local_nonprim = NULL;
     cJSON *nrf_id = NULL;
+    cJSON *supported_api_versions = NULL;
+    OpenAPI_list_t *supported_api_versionsList = NULL;
+    cJSON *no_profile_match_info = NULL;
+    OpenAPI_no_profile_match_info_t *no_profile_match_info_local_nonprim = NULL;
     cJSON *remote_error = NULL;
     cJSON *max_waiting_time = NULL;
     type = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "type");
@@ -352,6 +398,36 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
     }
     }
 
+    supported_api_versions = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "supportedApiVersions");
+    if (supported_api_versions) {
+        cJSON *supported_api_versions_local = NULL;
+        if (!cJSON_IsArray(supported_api_versions)) {
+            ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [supported_api_versions]");
+            goto end;
+        }
+
+        supported_api_versionsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(supported_api_versions_local, supported_api_versions) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(supported_api_versions_local)) {
+                ogs_error("OpenAPI_transfer_mt_data_error_parseFromJSON() failed [supported_api_versions]");
+                goto end;
+            }
+            OpenAPI_list_add(supported_api_versionsList, ogs_strdup(supported_api_versions_local->valuestring));
+        }
+    }
+
+    no_profile_match_info = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "noProfileMatchInfo");
+    if (no_profile_match_info) {
+    no_profile_match_info_local_nonprim = OpenAPI_no_profile_match_info_parseFromJSON(no_profile_match_info);
+    if (!no_profile_match_info_local_nonprim) {
+        ogs_error("OpenAPI_no_profile_match_info_parseFromJSON failed [no_profile_match_info]");
+        goto end;
+    }
+    }
+
     remote_error = cJSON_GetObjectItemCaseSensitive(transfer_mt_data_errorJSON, "remoteError");
     if (remote_error) {
     if (!cJSON_IsBool(remote_error)) {
@@ -381,6 +457,8 @@ OpenAPI_transfer_mt_data_error_t *OpenAPI_transfer_mt_data_error_parseFromJSON(c
         access_token_error ? access_token_error_local_nonprim : NULL,
         access_token_request ? access_token_request_local_nonprim : NULL,
         nrf_id && !cJSON_IsNull(nrf_id) ? ogs_strdup(nrf_id->valuestring) : NULL,
+        supported_api_versions ? supported_api_versionsList : NULL,
+        no_profile_match_info ? no_profile_match_info_local_nonprim : NULL,
         remote_error ? true : false,
         remote_error ? remote_error->valueint : 0,
         max_waiting_time ? true : false,
@@ -403,6 +481,17 @@ end:
     if (access_token_request_local_nonprim) {
         OpenAPI_access_token_req_free(access_token_request_local_nonprim);
         access_token_request_local_nonprim = NULL;
+    }
+    if (supported_api_versionsList) {
+        OpenAPI_list_for_each(supported_api_versionsList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(supported_api_versionsList);
+        supported_api_versionsList = NULL;
+    }
+    if (no_profile_match_info_local_nonprim) {
+        OpenAPI_no_profile_match_info_free(no_profile_match_info_local_nonprim);
+        no_profile_match_info_local_nonprim = NULL;
     }
     return NULL;
 }

@@ -4,84 +4,27 @@
 #include <stdio.h>
 #include "analytics_subset.h"
 
-OpenAPI_analytics_subset_t *OpenAPI_analytics_subset_create(
-)
+char* OpenAPI_analytics_subset_ToString(OpenAPI_analytics_subset_e analytics_subset)
 {
-    OpenAPI_analytics_subset_t *analytics_subset_local_var = ogs_malloc(sizeof(OpenAPI_analytics_subset_t));
-    ogs_assert(analytics_subset_local_var);
-
-
-    return analytics_subset_local_var;
+    const char *analytics_subsetArray[] =  { "NULL", "NUM_OF_UE_REG", "NUM_OF_PDU_SESS_ESTBL", "RES_USAGE", "NUM_OF_EXCEED_RES_USAGE_LOAD_LEVEL_THR", "PERIOD_OF_EXCEED_RES_USAGE_LOAD_LEVEL_THR", "EXCEED_LOAD_LEVEL_THR_IND", "LIST_OF_TOP_APP_UL", "LIST_OF_TOP_APP_DL", "NF_STATUS", "NF_RESOURCE_USAGE", "NF_LOAD", "NF_PEAK_LOAD", "NF_LOAD_AVG_IN_AOI", "DISPER_AMOUNT", "DISPER_CLASS", "RANKING", "PERCENTILE_RANKING", "RSSI", "RTT", "TRAFFIC_INFO", "NUMBER_OF_UES", "APP_LIST_FOR_UE_COMM", "N4_SESS_INACT_TIMER_FOR_UE_COMM", "AVG_TRAFFIC_RATE", "MAX_TRAFFIC_RATE", "AGG_TRAFFIC_RATE", "VAR_TRAFFIC_RATE", "AVG_PACKET_DELAY", "MAX_PACKET_DELAY", "VAR_PACKET_DELAY", "AVG_PACKET_LOSS_RATE", "MAX_PACKET_LOSS_RATE", "VAR_PACKET_LOSS_RATE", "UE_LOCATION", "LIST_OF_HIGH_EXP_UE", "LIST_OF_MEDIUM_EXP_UE", "LIST_OF_LOW_EXP_UE", "AVG_UL_PKT_DROP_RATE", "VAR_UL_PKT_DROP_RATE", "AVG_DL_PKT_DROP_RATE", "VAR_DL_PKT_DROP_RATE", "AVG_UL_PKT_DELAY", "VAR_UL_PKT_DELAY", "AVG_DL_PKT_DELAY", "VAR_DL_PKT_DELAY", "TRAFFIC_MATCH_TD", "TRAFFIC_UNMATCH_TD", "NUMBER_OF_UE", "UE_GEOG_DIST", "UE_DIRECTION", "AVG_E2E_UL_PKT_DELAY", "VAR_E2E_UL_PKT_DELAY", "AVG_E2E_DL_PKT_DELAY", "VAR_E2E_DL_PKT_DELAY", "AVG_E2E_UL_PKT_LOSS_RATE", "VAR_E2E_UL_PKT_LOSS_RATE", "AVG_E2E_DL_PKT_LOSS_RATE", "VAR_E2E_DL_PKT_LOSS_RATE", "E2E_DATA_VOL_TRANS_TIME_FOR_UE_LIST", "NUM_OF_UE", "MOV_UE_RATIO", "AVR_SPEED", "SPEED_THRESHOLD", "MOV_UE_DIRECTION", "IN_OUT_PERCENT", "TIME_TO_COLLISION" };
+    size_t sizeofArray = sizeof(analytics_subsetArray) / sizeof(analytics_subsetArray[0]);
+    if (analytics_subset < sizeofArray)
+        return (char *)analytics_subsetArray[analytics_subset];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_analytics_subset_free(OpenAPI_analytics_subset_t *analytics_subset)
+OpenAPI_analytics_subset_e OpenAPI_analytics_subset_FromString(char* analytics_subset)
 {
-    OpenAPI_lnode_t *node = NULL;
-
-    if (NULL == analytics_subset) {
-        return;
+    int stringToReturn = 0;
+    const char *analytics_subsetArray[] =  { "NULL", "NUM_OF_UE_REG", "NUM_OF_PDU_SESS_ESTBL", "RES_USAGE", "NUM_OF_EXCEED_RES_USAGE_LOAD_LEVEL_THR", "PERIOD_OF_EXCEED_RES_USAGE_LOAD_LEVEL_THR", "EXCEED_LOAD_LEVEL_THR_IND", "LIST_OF_TOP_APP_UL", "LIST_OF_TOP_APP_DL", "NF_STATUS", "NF_RESOURCE_USAGE", "NF_LOAD", "NF_PEAK_LOAD", "NF_LOAD_AVG_IN_AOI", "DISPER_AMOUNT", "DISPER_CLASS", "RANKING", "PERCENTILE_RANKING", "RSSI", "RTT", "TRAFFIC_INFO", "NUMBER_OF_UES", "APP_LIST_FOR_UE_COMM", "N4_SESS_INACT_TIMER_FOR_UE_COMM", "AVG_TRAFFIC_RATE", "MAX_TRAFFIC_RATE", "AGG_TRAFFIC_RATE", "VAR_TRAFFIC_RATE", "AVG_PACKET_DELAY", "MAX_PACKET_DELAY", "VAR_PACKET_DELAY", "AVG_PACKET_LOSS_RATE", "MAX_PACKET_LOSS_RATE", "VAR_PACKET_LOSS_RATE", "UE_LOCATION", "LIST_OF_HIGH_EXP_UE", "LIST_OF_MEDIUM_EXP_UE", "LIST_OF_LOW_EXP_UE", "AVG_UL_PKT_DROP_RATE", "VAR_UL_PKT_DROP_RATE", "AVG_DL_PKT_DROP_RATE", "VAR_DL_PKT_DROP_RATE", "AVG_UL_PKT_DELAY", "VAR_UL_PKT_DELAY", "AVG_DL_PKT_DELAY", "VAR_DL_PKT_DELAY", "TRAFFIC_MATCH_TD", "TRAFFIC_UNMATCH_TD", "NUMBER_OF_UE", "UE_GEOG_DIST", "UE_DIRECTION", "AVG_E2E_UL_PKT_DELAY", "VAR_E2E_UL_PKT_DELAY", "AVG_E2E_DL_PKT_DELAY", "VAR_E2E_DL_PKT_DELAY", "AVG_E2E_UL_PKT_LOSS_RATE", "VAR_E2E_UL_PKT_LOSS_RATE", "AVG_E2E_DL_PKT_LOSS_RATE", "VAR_E2E_DL_PKT_LOSS_RATE", "E2E_DATA_VOL_TRANS_TIME_FOR_UE_LIST", "NUM_OF_UE", "MOV_UE_RATIO", "AVR_SPEED", "SPEED_THRESHOLD", "MOV_UE_DIRECTION", "IN_OUT_PERCENT", "TIME_TO_COLLISION" };
+    size_t sizeofArray = sizeof(analytics_subsetArray) / sizeof(analytics_subsetArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(analytics_subset, analytics_subsetArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    ogs_free(analytics_subset);
-}
-
-cJSON *OpenAPI_analytics_subset_convertToJSON(OpenAPI_analytics_subset_t *analytics_subset)
-{
-    cJSON *item = NULL;
-    OpenAPI_lnode_t *node = NULL;
-
-    if (analytics_subset == NULL) {
-        ogs_error("OpenAPI_analytics_subset_convertToJSON() failed [AnalyticsSubset]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_analytics_subset_t *OpenAPI_analytics_subset_parseFromJSON(cJSON *analytics_subsetJSON)
-{
-    OpenAPI_analytics_subset_t *analytics_subset_local_var = NULL;
-    OpenAPI_lnode_t *node = NULL;
-    analytics_subset_local_var = OpenAPI_analytics_subset_create (
-    );
-
-    return analytics_subset_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_analytics_subset_t *OpenAPI_analytics_subset_copy(OpenAPI_analytics_subset_t *dst, OpenAPI_analytics_subset_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_analytics_subset_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_analytics_subset_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_analytics_subset_free(dst);
-    dst = OpenAPI_analytics_subset_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

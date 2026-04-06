@@ -6,7 +6,6 @@
 
 OpenAPI_atom_t *OpenAPI_atom_create(
     char *attr,
-    bool is_value_null,
     OpenAPI_any_type_t *value,
     bool is_negative,
     int negative
@@ -16,7 +15,6 @@ OpenAPI_atom_t *OpenAPI_atom_create(
     ogs_assert(atom_local_var);
 
     atom_local_var->attr = attr;
-    atom_local_var->is_value_null = is_value_null;
     atom_local_var->value = value;
     atom_local_var->is_negative = is_negative;
     atom_local_var->negative = negative;
@@ -123,7 +121,6 @@ OpenAPI_atom_t *OpenAPI_atom_parseFromJSON(cJSON *atomJSON)
 
     atom_local_var = OpenAPI_atom_create (
         ogs_strdup(attr->valuestring),
-        value && cJSON_IsNull(value) ? true : false,
         value_local_object,
         negative ? true : false,
         negative ? negative->valueint : 0

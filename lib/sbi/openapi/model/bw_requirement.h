@@ -12,19 +12,19 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_bw_requirement_s OpenAPI_bw_requirement_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_bw_requirement_s OpenAPI_bw_requirement_t;
-typedef struct OpenAPI_bw_requirement_s {
+struct OpenAPI_bw_requirement_s {
     char *app_id;
     char *mar_bw_dl;
     char *mar_bw_ul;
     char *mir_bw_dl;
     char *mir_bw_ul;
-} OpenAPI_bw_requirement_t;
+};
 
 OpenAPI_bw_requirement_t *OpenAPI_bw_requirement_create(
     char *app_id,

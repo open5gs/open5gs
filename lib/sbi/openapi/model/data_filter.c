@@ -5,7 +5,7 @@
 #include "data_filter.h"
 
 OpenAPI_data_filter_t *OpenAPI_data_filter_create(
-    OpenAPI_data_ind_t *data_ind,
+    OpenAPI_data_ind_e data_ind,
     OpenAPI_list_t *dnns,
     OpenAPI_list_t *snssais,
     OpenAPI_list_t *internal_group_ids,
@@ -16,7 +16,10 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_create(
     OpenAPI_list_t *ue_macs,
     bool is_any_ue_ind,
     int any_ue_ind,
-    OpenAPI_list_t *dnn_snssai_infos
+    OpenAPI_list_t *dnn_snssai_infos,
+    OpenAPI_list_t *dnais,
+    OpenAPI_list_t *roam_ue_plmn_ids,
+    OpenAPI_list_t *roam_ue_net_descs
 )
 {
     OpenAPI_data_filter_t *data_filter_local_var = ogs_malloc(sizeof(OpenAPI_data_filter_t));
@@ -34,6 +37,9 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_create(
     data_filter_local_var->is_any_ue_ind = is_any_ue_ind;
     data_filter_local_var->any_ue_ind = any_ue_ind;
     data_filter_local_var->dnn_snssai_infos = dnn_snssai_infos;
+    data_filter_local_var->dnais = dnais;
+    data_filter_local_var->roam_ue_plmn_ids = roam_ue_plmn_ids;
+    data_filter_local_var->roam_ue_net_descs = roam_ue_net_descs;
 
     return data_filter_local_var;
 }
@@ -44,10 +50,6 @@ void OpenAPI_data_filter_free(OpenAPI_data_filter_t *data_filter)
 
     if (NULL == data_filter) {
         return;
-    }
-    if (data_filter->data_ind) {
-        OpenAPI_data_ind_free(data_filter->data_ind);
-        data_filter->data_ind = NULL;
     }
     if (data_filter->dnns) {
         OpenAPI_list_for_each(data_filter->dnns, node) {
@@ -112,6 +114,27 @@ void OpenAPI_data_filter_free(OpenAPI_data_filter_t *data_filter)
         OpenAPI_list_free(data_filter->dnn_snssai_infos);
         data_filter->dnn_snssai_infos = NULL;
     }
+    if (data_filter->dnais) {
+        OpenAPI_list_for_each(data_filter->dnais, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(data_filter->dnais);
+        data_filter->dnais = NULL;
+    }
+    if (data_filter->roam_ue_plmn_ids) {
+        OpenAPI_list_for_each(data_filter->roam_ue_plmn_ids, node) {
+            OpenAPI_plmn_id_free(node->data);
+        }
+        OpenAPI_list_free(data_filter->roam_ue_plmn_ids);
+        data_filter->roam_ue_plmn_ids = NULL;
+    }
+    if (data_filter->roam_ue_net_descs) {
+        OpenAPI_list_for_each(data_filter->roam_ue_net_descs, node) {
+            OpenAPI_network_description_1_free(node->data);
+        }
+        OpenAPI_list_free(data_filter->roam_ue_net_descs);
+        data_filter->roam_ue_net_descs = NULL;
+    }
     ogs_free(data_filter);
 }
 
@@ -126,17 +149,11 @@ cJSON *OpenAPI_data_filter_convertToJSON(OpenAPI_data_filter_t *data_filter)
     }
 
     item = cJSON_CreateObject();
-    if (!data_filter->data_ind) {
+    if (data_filter->data_ind == OpenAPI_data_ind_NULL) {
         ogs_error("OpenAPI_data_filter_convertToJSON() failed [data_ind]");
         return NULL;
     }
-    cJSON *data_ind_local_JSON = OpenAPI_data_ind_convertToJSON(data_filter->data_ind);
-    if (data_ind_local_JSON == NULL) {
-        ogs_error("OpenAPI_data_filter_convertToJSON() failed [data_ind]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "dataInd", data_ind_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "dataInd", OpenAPI_data_ind_ToString(data_filter->data_ind)) == NULL) {
         ogs_error("OpenAPI_data_filter_convertToJSON() failed [data_ind]");
         goto end;
     }
@@ -278,6 +295,52 @@ cJSON *OpenAPI_data_filter_convertToJSON(OpenAPI_data_filter_t *data_filter)
     }
     }
 
+    if (data_filter->dnais) {
+    cJSON *dnaisList = cJSON_AddArrayToObject(item, "dnais");
+    if (dnaisList == NULL) {
+        ogs_error("OpenAPI_data_filter_convertToJSON() failed [dnais]");
+        goto end;
+    }
+    OpenAPI_list_for_each(data_filter->dnais, node) {
+        if (cJSON_AddStringToObject(dnaisList, "", (char*)node->data) == NULL) {
+            ogs_error("OpenAPI_data_filter_convertToJSON() failed [dnais]");
+            goto end;
+        }
+    }
+    }
+
+    if (data_filter->roam_ue_plmn_ids) {
+    cJSON *roam_ue_plmn_idsList = cJSON_AddArrayToObject(item, "roamUePlmnIds");
+    if (roam_ue_plmn_idsList == NULL) {
+        ogs_error("OpenAPI_data_filter_convertToJSON() failed [roam_ue_plmn_ids]");
+        goto end;
+    }
+    OpenAPI_list_for_each(data_filter->roam_ue_plmn_ids, node) {
+        cJSON *itemLocal = OpenAPI_plmn_id_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_data_filter_convertToJSON() failed [roam_ue_plmn_ids]");
+            goto end;
+        }
+        cJSON_AddItemToArray(roam_ue_plmn_idsList, itemLocal);
+    }
+    }
+
+    if (data_filter->roam_ue_net_descs) {
+    cJSON *roam_ue_net_descsList = cJSON_AddArrayToObject(item, "roamUeNetDescs");
+    if (roam_ue_net_descsList == NULL) {
+        ogs_error("OpenAPI_data_filter_convertToJSON() failed [roam_ue_net_descs]");
+        goto end;
+    }
+    OpenAPI_list_for_each(data_filter->roam_ue_net_descs, node) {
+        cJSON *itemLocal = OpenAPI_network_description_1_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_data_filter_convertToJSON() failed [roam_ue_net_descs]");
+            goto end;
+        }
+        cJSON_AddItemToArray(roam_ue_net_descsList, itemLocal);
+    }
+    }
+
 end:
     return item;
 }
@@ -287,7 +350,7 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
     OpenAPI_data_filter_t *data_filter_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
     cJSON *data_ind = NULL;
-    OpenAPI_data_ind_t *data_ind_local_nonprim = NULL;
+    OpenAPI_data_ind_e data_indVariable = 0;
     cJSON *dnns = NULL;
     OpenAPI_list_t *dnnsList = NULL;
     cJSON *snssais = NULL;
@@ -307,16 +370,22 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
     cJSON *any_ue_ind = NULL;
     cJSON *dnn_snssai_infos = NULL;
     OpenAPI_list_t *dnn_snssai_infosList = NULL;
+    cJSON *dnais = NULL;
+    OpenAPI_list_t *dnaisList = NULL;
+    cJSON *roam_ue_plmn_ids = NULL;
+    OpenAPI_list_t *roam_ue_plmn_idsList = NULL;
+    cJSON *roam_ue_net_descs = NULL;
+    OpenAPI_list_t *roam_ue_net_descsList = NULL;
     data_ind = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "dataInd");
     if (!data_ind) {
         ogs_error("OpenAPI_data_filter_parseFromJSON() failed [data_ind]");
         goto end;
     }
-    data_ind_local_nonprim = OpenAPI_data_ind_parseFromJSON(data_ind);
-    if (!data_ind_local_nonprim) {
-        ogs_error("OpenAPI_data_ind_parseFromJSON failed [data_ind]");
+    if (!cJSON_IsString(data_ind)) {
+        ogs_error("OpenAPI_data_filter_parseFromJSON() failed [data_ind]");
         goto end;
     }
+    data_indVariable = OpenAPI_data_ind_FromString(data_ind->valuestring);
 
     dnns = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "dnns");
     if (dnns) {
@@ -521,8 +590,77 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
         }
     }
 
+    dnais = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "dnais");
+    if (dnais) {
+        cJSON *dnais_local = NULL;
+        if (!cJSON_IsArray(dnais)) {
+            ogs_error("OpenAPI_data_filter_parseFromJSON() failed [dnais]");
+            goto end;
+        }
+
+        dnaisList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(dnais_local, dnais) {
+            double *localDouble = NULL;
+            int *localInt = NULL;
+            if (!cJSON_IsString(dnais_local)) {
+                ogs_error("OpenAPI_data_filter_parseFromJSON() failed [dnais]");
+                goto end;
+            }
+            OpenAPI_list_add(dnaisList, ogs_strdup(dnais_local->valuestring));
+        }
+    }
+
+    roam_ue_plmn_ids = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "roamUePlmnIds");
+    if (roam_ue_plmn_ids) {
+        cJSON *roam_ue_plmn_ids_local = NULL;
+        if (!cJSON_IsArray(roam_ue_plmn_ids)) {
+            ogs_error("OpenAPI_data_filter_parseFromJSON() failed [roam_ue_plmn_ids]");
+            goto end;
+        }
+
+        roam_ue_plmn_idsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(roam_ue_plmn_ids_local, roam_ue_plmn_ids) {
+            if (!cJSON_IsObject(roam_ue_plmn_ids_local)) {
+                ogs_error("OpenAPI_data_filter_parseFromJSON() failed [roam_ue_plmn_ids]");
+                goto end;
+            }
+            OpenAPI_plmn_id_t *roam_ue_plmn_idsItem = OpenAPI_plmn_id_parseFromJSON(roam_ue_plmn_ids_local);
+            if (!roam_ue_plmn_idsItem) {
+                ogs_error("No roam_ue_plmn_idsItem");
+                goto end;
+            }
+            OpenAPI_list_add(roam_ue_plmn_idsList, roam_ue_plmn_idsItem);
+        }
+    }
+
+    roam_ue_net_descs = cJSON_GetObjectItemCaseSensitive(data_filterJSON, "roamUeNetDescs");
+    if (roam_ue_net_descs) {
+        cJSON *roam_ue_net_descs_local = NULL;
+        if (!cJSON_IsArray(roam_ue_net_descs)) {
+            ogs_error("OpenAPI_data_filter_parseFromJSON() failed [roam_ue_net_descs]");
+            goto end;
+        }
+
+        roam_ue_net_descsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(roam_ue_net_descs_local, roam_ue_net_descs) {
+            if (!cJSON_IsObject(roam_ue_net_descs_local)) {
+                ogs_error("OpenAPI_data_filter_parseFromJSON() failed [roam_ue_net_descs]");
+                goto end;
+            }
+            OpenAPI_network_description_1_t *roam_ue_net_descsItem = OpenAPI_network_description_1_parseFromJSON(roam_ue_net_descs_local);
+            if (!roam_ue_net_descsItem) {
+                ogs_error("No roam_ue_net_descsItem");
+                goto end;
+            }
+            OpenAPI_list_add(roam_ue_net_descsList, roam_ue_net_descsItem);
+        }
+    }
+
     data_filter_local_var = OpenAPI_data_filter_create (
-        data_ind_local_nonprim,
+        data_indVariable,
         dnns ? dnnsList : NULL,
         snssais ? snssaisList : NULL,
         internal_group_ids ? internal_group_idsList : NULL,
@@ -533,15 +671,14 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON)
         ue_macs ? ue_macsList : NULL,
         any_ue_ind ? true : false,
         any_ue_ind ? any_ue_ind->valueint : 0,
-        dnn_snssai_infos ? dnn_snssai_infosList : NULL
+        dnn_snssai_infos ? dnn_snssai_infosList : NULL,
+        dnais ? dnaisList : NULL,
+        roam_ue_plmn_ids ? roam_ue_plmn_idsList : NULL,
+        roam_ue_net_descs ? roam_ue_net_descsList : NULL
     );
 
     return data_filter_local_var;
 end:
-    if (data_ind_local_nonprim) {
-        OpenAPI_data_ind_free(data_ind_local_nonprim);
-        data_ind_local_nonprim = NULL;
-    }
     if (dnnsList) {
         OpenAPI_list_for_each(dnnsList, node) {
             ogs_free(node->data);
@@ -604,6 +741,27 @@ end:
         }
         OpenAPI_list_free(dnn_snssai_infosList);
         dnn_snssai_infosList = NULL;
+    }
+    if (dnaisList) {
+        OpenAPI_list_for_each(dnaisList, node) {
+            ogs_free(node->data);
+        }
+        OpenAPI_list_free(dnaisList);
+        dnaisList = NULL;
+    }
+    if (roam_ue_plmn_idsList) {
+        OpenAPI_list_for_each(roam_ue_plmn_idsList, node) {
+            OpenAPI_plmn_id_free(node->data);
+        }
+        OpenAPI_list_free(roam_ue_plmn_idsList);
+        roam_ue_plmn_idsList = NULL;
+    }
+    if (roam_ue_net_descsList) {
+        OpenAPI_list_for_each(roam_ue_net_descsList, node) {
+            OpenAPI_network_description_1_free(node->data);
+        }
+        OpenAPI_list_free(roam_ue_net_descsList);
+        roam_ue_net_descsList = NULL;
     }
     return NULL;
 }

@@ -12,13 +12,13 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_observed_redundant_trans_exp_s OpenAPI_observed_redundant_trans_exp_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_observed_redundant_trans_exp_s OpenAPI_observed_redundant_trans_exp_t;
-typedef struct OpenAPI_observed_redundant_trans_exp_s {
+struct OpenAPI_observed_redundant_trans_exp_s {
     bool is_avg_pkt_drop_rate_ul;
     int avg_pkt_drop_rate_ul;
     bool is_var_pkt_drop_rate_ul;
@@ -35,7 +35,23 @@ typedef struct OpenAPI_observed_redundant_trans_exp_s {
     int avg_pkt_delay_dl;
     bool is_var_pkt_delay_dl;
     float var_pkt_delay_dl;
-} OpenAPI_observed_redundant_trans_exp_t;
+    bool is_avg_e2e_pkt_delay_ul;
+    int avg_e2e_pkt_delay_ul;
+    bool is_var_e2e_pkt_delay_ul;
+    float var_e2e_pkt_delay_ul;
+    bool is_avg_e2e_pkt_delay_dl;
+    int avg_e2e_pkt_delay_dl;
+    bool is_var_e2e_pkt_delay_dl;
+    float var_e2e_pkt_delay_dl;
+    bool is_avg_e2e_pkt_loss_rate_ul;
+    int avg_e2e_pkt_loss_rate_ul;
+    bool is_var_e2e_pkt_loss_rate_ul;
+    float var_e2e_pkt_loss_rate_ul;
+    bool is_avg_e2e_pkt_loss_rate_dl;
+    int avg_e2e_pkt_loss_rate_dl;
+    bool is_var_e2e_pkt_loss_rate_dl;
+    float var_e2e_pkt_loss_rate_dl;
+};
 
 OpenAPI_observed_redundant_trans_exp_t *OpenAPI_observed_redundant_trans_exp_create(
     bool is_avg_pkt_drop_rate_ul,
@@ -53,7 +69,23 @@ OpenAPI_observed_redundant_trans_exp_t *OpenAPI_observed_redundant_trans_exp_cre
     bool is_avg_pkt_delay_dl,
     int avg_pkt_delay_dl,
     bool is_var_pkt_delay_dl,
-    float var_pkt_delay_dl
+    float var_pkt_delay_dl,
+    bool is_avg_e2e_pkt_delay_ul,
+    int avg_e2e_pkt_delay_ul,
+    bool is_var_e2e_pkt_delay_ul,
+    float var_e2e_pkt_delay_ul,
+    bool is_avg_e2e_pkt_delay_dl,
+    int avg_e2e_pkt_delay_dl,
+    bool is_var_e2e_pkt_delay_dl,
+    float var_e2e_pkt_delay_dl,
+    bool is_avg_e2e_pkt_loss_rate_ul,
+    int avg_e2e_pkt_loss_rate_ul,
+    bool is_var_e2e_pkt_loss_rate_ul,
+    float var_e2e_pkt_loss_rate_ul,
+    bool is_avg_e2e_pkt_loss_rate_dl,
+    int avg_e2e_pkt_loss_rate_dl,
+    bool is_var_e2e_pkt_loss_rate_dl,
+    float var_e2e_pkt_loss_rate_dl
 );
 void OpenAPI_observed_redundant_trans_exp_free(OpenAPI_observed_redundant_trans_exp_t *observed_redundant_trans_exp);
 OpenAPI_observed_redundant_trans_exp_t *OpenAPI_observed_redundant_trans_exp_parseFromJSON(cJSON *observed_redundant_trans_expJSON);

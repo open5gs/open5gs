@@ -12,17 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_subscription_context_s OpenAPI_subscription_context_t;
 #include "subscr_cond.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_subscription_context_s OpenAPI_subscription_context_t;
-typedef struct OpenAPI_subscription_context_s {
+struct OpenAPI_subscription_context_s {
     char *subscription_id;
     struct OpenAPI_subscr_cond_s *subscr_cond;
-} OpenAPI_subscription_context_t;
+};
 
 OpenAPI_subscription_context_t *OpenAPI_subscription_context_create(
     char *subscription_id,

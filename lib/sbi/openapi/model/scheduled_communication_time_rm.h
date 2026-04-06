@@ -1,7 +1,7 @@
 /*
  * scheduled_communication_time_rm.h
  *
- * This data type is defined in the same way as the &#39;ScheduledCommunicationTime&#39; data type, but with the OpenAPI &#39;nullable: true&#39; property. 
+ * 
  */
 
 #ifndef _OpenAPI_scheduled_communication_time_rm_H_
@@ -12,19 +12,17 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
-#include "null_value.h"
-#include "scheduled_communication_time.h"
+typedef struct OpenAPI_scheduled_communication_time_rm_s OpenAPI_scheduled_communication_time_rm_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_scheduled_communication_time_rm_s OpenAPI_scheduled_communication_time_rm_t;
-typedef struct OpenAPI_scheduled_communication_time_rm_s {
+struct OpenAPI_scheduled_communication_time_rm_s {
     OpenAPI_list_t *days_of_week;
     char *time_of_day_start;
     char *time_of_day_end;
-} OpenAPI_scheduled_communication_time_rm_t;
+};
 
 OpenAPI_scheduled_communication_time_rm_t *OpenAPI_scheduled_communication_time_rm_create(
     OpenAPI_list_t *days_of_week,

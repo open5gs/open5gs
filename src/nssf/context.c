@@ -229,7 +229,8 @@ int nssf_context_parse_config(void)
                                             }
 
                                             memset(&h, 0, sizeof(h));
-                                            h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_DISC;
+                                            h.service.name = OpenAPI_service_name_ToString(
+                                                    OpenAPI_service_name_nnrf_disc);
                                             h.api.version =
                                                 (char *)OGS_SBI_API_V1;
                                             h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_NF_INSTANCES;

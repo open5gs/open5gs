@@ -1,0 +1,41 @@
+/*
+ * pp5g_mbs_group_profile_data.h
+ *
+ * 
+ */
+
+#ifndef _OpenAPI_pp5g_mbs_group_profile_data_H_
+#define _OpenAPI_pp5g_mbs_group_profile_data_H_
+
+#include <string.h>
+#include "../external/cJSON.h"
+#include "../include/list.h"
+#include "../include/keyValuePair.h"
+#include "../include/binary.h"
+typedef struct OpenAPI_pp5g_mbs_group_profile_data_s OpenAPI_pp5g_mbs_group_profile_data_t;
+#include "allowed_mbs_info.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct OpenAPI_pp5g_mbs_group_profile_data_s {
+    OpenAPI_list_t* allowed_mbs_infos;
+    char *supported_features;
+};
+
+OpenAPI_pp5g_mbs_group_profile_data_t *OpenAPI_pp5g_mbs_group_profile_data_create(
+    OpenAPI_list_t* allowed_mbs_infos,
+    char *supported_features
+);
+void OpenAPI_pp5g_mbs_group_profile_data_free(OpenAPI_pp5g_mbs_group_profile_data_t *pp5g_mbs_group_profile_data);
+OpenAPI_pp5g_mbs_group_profile_data_t *OpenAPI_pp5g_mbs_group_profile_data_parseFromJSON(cJSON *pp5g_mbs_group_profile_dataJSON);
+cJSON *OpenAPI_pp5g_mbs_group_profile_data_convertToJSON(OpenAPI_pp5g_mbs_group_profile_data_t *pp5g_mbs_group_profile_data);
+OpenAPI_pp5g_mbs_group_profile_data_t *OpenAPI_pp5g_mbs_group_profile_data_copy(OpenAPI_pp5g_mbs_group_profile_data_t *dst, OpenAPI_pp5g_mbs_group_profile_data_t *src);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _OpenAPI_pp5g_mbs_group_profile_data_H_ */
+

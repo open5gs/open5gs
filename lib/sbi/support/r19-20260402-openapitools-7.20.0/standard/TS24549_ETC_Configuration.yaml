@@ -1,0 +1,128 @@
+openapi: 3.0.0
+
+info:
+  title: ETC_Configuration
+  version: 1.1.0
+  description: |
+    API for event triggered network slice adaptation configuration.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 24.549 V19.1.0 Application Data Analytics Enablement Service; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/24_series/24.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/su_nsc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 5.2.4 of 3GPP TS 29.122.
+
+paths:
+  /val-services/{valServiceId}/configurations/{configurationId}:
+    put:
+      description: >
+        Perfomrs event triggered network slice adaptation.
+      operationId: EventTriggeredNetworkAdaptation
+      tags:
+        - Event triggered network adaptation (Document)
+      parameters:
+        - name: valServiceId
+          description: String identifies a VAL service resource.
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: configurationId
+          description: String identifies a configuration resource.
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NwSliceAdptEvent'
+      responses:
+        '204':
+          description: >
+            No Content. The requested network slice adaptation is successfully processed.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    NwSliceAdptEvent:
+      description: >
+        Represents the event associated with triggered network slice adaptation
+        with the underlying network.
+      type: object
+      properties:
+        valUeIds:
+          type: array
+          minItems: 1
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ValTargetUe'
+        sliceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        appReqs:
+          $ref: '#/components/schemas/AppReqs'
+      required:
+        - valUeIds
+        - sliceId
+
+    AppReqs:
+      description: Represents requirements for the requested application.
+      type: object
+      properties:
+        timeIntervals:
+          type: array
+          minItems: 1
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        area:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'

@@ -12,23 +12,25 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_mbs_subscription_data_1_s OpenAPI_mbs_subscription_data_1_t;
 #include "mbs_session_id_1.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_mbs_subscription_data_1_s OpenAPI_mbs_subscription_data_1_t;
-typedef struct OpenAPI_mbs_subscription_data_1_s {
+struct OpenAPI_mbs_subscription_data_1_s {
     bool is_mbs_allowed;
     int mbs_allowed;
     OpenAPI_list_t *mbs_session_id_list;
-} OpenAPI_mbs_subscription_data_1_t;
+    OpenAPI_list_t *ue_mbs_assistance_info;
+};
 
 OpenAPI_mbs_subscription_data_1_t *OpenAPI_mbs_subscription_data_1_create(
     bool is_mbs_allowed,
     int mbs_allowed,
-    OpenAPI_list_t *mbs_session_id_list
+    OpenAPI_list_t *mbs_session_id_list,
+    OpenAPI_list_t *ue_mbs_assistance_info
 );
 void OpenAPI_mbs_subscription_data_1_free(OpenAPI_mbs_subscription_data_1_t *mbs_subscription_data_1);
 OpenAPI_mbs_subscription_data_1_t *OpenAPI_mbs_subscription_data_1_parseFromJSON(cJSON *mbs_subscription_data_1JSON);

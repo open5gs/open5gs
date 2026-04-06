@@ -1,0 +1,1088 @@
+openapi: 3.0.0
+
+info:
+  title: SM Server Spatial Map Management Service
+  version: 1.0.1
+  description: |
+    API for Spatial Map Management Service.
+    ©2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: >
+    3GPP TS 29.437 V19.1.0; Service Enabler Architecture Layer for Verticals (SEAL);
+    Metaverse Enablement Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.437/
+
+servers:
+  - url: "{apiRoot}/ssm-smm/v1"
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549.
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+paths:
+  /spatial-maps:
+    post:
+      summary: Create a new Spatial Map.
+      operationId: CreateSpatialMap
+      tags:
+        - Spatial Maps (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpatialMapCreateReq'
+      responses:
+        '201':
+          description: >
+            Created. The Spatial Map is successfully created and a representation of the created
+            Individual Spatial Map resource shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialMap'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '202':
+          description: >
+            Accepted. The SM server has accepted the request and processing it.
+            The assigned Spatial Map Identifier shall be returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialMapTempResp'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        SpatialMapsNotif:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SpatialMapsNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Spatial Maps Notification is successfully
+                    received and acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    get:
+      summary: Retrieve spatial map information.
+      operationId: GetSpatialMap
+      tags:
+        - Spatial Maps (Collection)
+      parameters:
+        - name: svc-id
+          in: query
+          description: >
+            Contains the VAL application service identifier.
+          schema:
+            type: string
+          required: true
+        - name: map-id
+          in: query
+          description: >
+            Contains the identifier of the spatial map.
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialMapId'
+        - name: map-layer-list
+          in: query
+          description: >
+            Contains a list of spatial map layers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialMapLayers'
+        - name: aug-with
+          in: query
+          description: >
+            Contains the information augmented with the spatial map layers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AugmentLayerList'
+      responses:
+        '200':
+          description: >
+            OK. The requested spatial map information is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialMapRetResp'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /spatial-maps/{spatialMapId}:
+    parameters:
+      - name: spatialMapId
+        in: path
+        description: >
+          Represents the identifier of the Individual Spatial Map.
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Retrieve an existing Individual Spatial Map Resource.
+      operationId: GetIndSpatialMap
+      tags:
+        - Individual Spatial Map (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Spatial Map resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialMap'
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Update an existing Individual Spatial Map resource.
+      operationId: UpdateIndSpatialMap
+      tags:
+        - Individual Spatial Map (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpatialMap'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Spatial Map resource is successfully updated and
+            a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialMap'
+        '204':
+          description: >
+            No Content. The Individual Spatial Map resource is successfully updated and no
+            content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Modify an existing Individual Spatial Map resource.
+      operationId: ModifyIndSpatialMap
+      tags:
+        - Individual Spatial Map (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpatialMapPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Spatial Map resource is successfully modified and
+            a representation of the updated resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialMap'
+        '204':
+          description: >
+            No Content. The Individual Spatial Map resource is successfully modified and no
+            content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Delete an existing Individual Spatial Map resource.
+      operationId: DeleteIndSpatialMap
+      tags:
+        - Individual Spatial Map (Document)
+      responses:
+        '204':
+          description: >
+            No Content. The Individual Spatial Map resource is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions:
+    post:
+      summary: Create a new Spatial Maps Subscription.
+      operationId: CreateSpatialMapsSubs
+      tags:
+        - Spatial Maps Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpatialMapsSub'
+      responses:
+        '201':
+          description: >
+            Created. The Spatial Maps Subscription is successfully created and a
+            representation of the created Individual Spatial Maps Subscription
+            resource shall be returned in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialMapsSub'
+          headers:
+            Location:
+              description: Contains the URI of the newly created resource.
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      callbacks:
+        SpatialMapsNotif:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SpatialMapsNotif'
+              responses:
+                '204':
+                  description: >
+                    No Content. The Spatial Maps Notification is successfully
+                    received and acknowledged.
+                '307':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+                '308':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    parameters:
+      - name: subscriptionId
+        in: path
+        description: >
+          Represents the identifier of the Spatial Maps Subscription.
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Retrieve an existing Individual Spatial Maps Subscription resource.
+      operationId: GetIndSpatialMapsSubs
+      tags:
+        - Individual Spatial Maps Subscription (Document)
+      responses:
+        '200':
+          description: >
+            OK. The requested Individual Spatial Maps Subscription
+            resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialMapsSub'
+        '307':  
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Request the update of an existing Individual Spatial Maps Subscription resource.
+      operationId: UpdateIndSpatialMapsSubs
+      tags:
+        - Individual Spatial Maps Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpatialMapsSub'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Spatial Maps Subscription resource is successfully
+            updated and a representation of the updated resource shall be returned in the
+            response
+            body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialMapsSub'
+        '204':
+          description: >
+            No Content. The Individual Spatial Maps Subscription resource is
+            successfully updated and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Request the modification of an existing Individual Spatial Maps Subscription resource.
+      operationId: ModifyIndSpatialMapsSubs
+      tags:
+        - Individual Spatial Maps Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/SpatialMapsSubPatch'
+      responses:
+        '200':
+          description: >
+            OK. The Individual Spatial Maps Subscription resource is successfully
+            modified and a representation of the updated resource shall be returned in the
+            response
+            body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialMapsSub'
+        '204':
+          description: >
+            No Content. The Individual Spatial Maps Subscription resource is
+            successfully modified and no content is returned in the response body.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Request the deletion of an existing Individual Spatial Maps Subscription resource.
+      operationId: DeleteIndSpatialMapsSubs
+      tags:
+        - Individual Spatial Maps Subscription (Document)
+      responses:
+        '204':
+          description: >
+            The Individual Spatial Maps Subscription resource
+            is successfully deleted.
+        '307':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: "{tokenUrl}"
+          scopes: {}
+
+  schemas:
+
+#
+# STRUCTURED DATA TYPES
+#
+    SpatialMapCreateReq:
+      description: >
+        Represents the spatial map creation request.
+      type: object
+      properties:
+        svcId:
+           type: string
+        areaInt:
+            $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+        notifUri:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        mapInf:
+            $ref: '#/components/schemas/SpatialMapCreateInfo'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - svcId
+        - areaInt
+
+    SpatialMapCreateInfo:
+      description: >
+        Represents the spatial map information to create.
+      type: object
+      properties:
+        allwEnt:
+          $ref: 'TS29437_SS_SAnManagement.yaml#/components/schemas/AllowedRules'
+        lyrInf:
+          type: array
+          items:
+            $ref: '#/components/schemas/MapLayerInfo'
+          minItems: 1
+        augLyrInf:
+          type: array
+          items:
+            $ref: '#/components/schemas/AugmentLayerInfo'
+          minItems: 1
+      anyOf:
+        - required: [allwEnt]
+        - required: [lyrInf]
+        - required: [augLyrInf]
+
+    AugmentLayerInfo:
+      description: >
+        Represents the augmented spatial map layer information.
+      type: object
+      properties:
+        augWith:
+          $ref: '#/components/schemas/AugmentLayer'
+        augLyrDet:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - augWith
+
+    SpatialMap:
+      description: >
+        Represents the spatial map resource representation.
+      type: object
+      properties:
+        svcId:
+           type: string
+        smProf:
+          $ref: '#/components/schemas/SpatialMapProfile'
+        augLyrInf:
+          $ref: '#/components/schemas/AugmentLayerInfo'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - smProf
+
+    SpatialMapProfile:
+      description: >
+        Represents the spatial map profile information.
+      type: object
+      properties:
+        mapId:
+          $ref: '#/components/schemas/SpatialMapId'
+        mapCov:
+          $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+        allwEnt:
+          $ref: 'TS29437_SS_SAnManagement.yaml#/components/schemas/AllowedRules'
+        mapLyrList:
+           $ref: '#/components/schemas/SpatialMapLayers'
+        objList:
+          type: array
+          items:
+            $ref: '#/components/schemas/MapObjectInfo'
+          minItems: 1
+      required:
+        - mapId
+        - mapCov
+        - mapLyrList
+
+    SpatialMapLayers:
+      description: >
+        Represents the spatial map layers information.
+      type: object
+      properties:
+        lyrList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpatialMapLayerInfo'
+          minItems: 1
+      required:
+        - lyrList
+
+    SpatialMapLayerInfo:
+      description: >
+        Represents the individual spatial map layer.
+      type: object
+      properties:
+        mapLyrId:
+          type: string
+        mapLyrInf:
+          $ref: '#/components/schemas/MapLayerInfo'
+      required:
+        - mapLyrId
+
+    MapLayerInfo:
+      description: >
+        Represents the layer specific information of an spatial map layer.
+      type: object
+      properties:
+        area:
+          $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+        mapAsc:
+          type: string
+      anyOf:
+        - required: [area]
+        - required: [mapAsc]
+
+    MapObjectInfo:
+      description: >
+        Represents the spatial map object.
+      type: object
+      properties:
+        objId:
+          type: string
+        objType:
+          type: string
+        objPos:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/Local3dPointUncertaintyEllipsoid'
+        objInf:
+          type: string
+      required:
+        - objId
+        - objType
+
+    SpatialMapPatch:
+      description: >
+        Represents the partial spatial map resource representation.
+      type: object
+      properties:
+        svcId:
+          type: string
+        smProf:
+          $ref: '#/components/schemas/SpatialMapProfile'
+        augLyrInf:
+          type: array
+          items:
+            $ref: '#/components/schemas/AugmentLayerInfo'
+          minItems: 1
+
+    SpatialMapRetResp:
+      description: >
+        Represents the spatial map information returned in response.
+      type: object
+      properties:
+        svcId:
+          type: string
+        mapInf:
+          $ref: '#/components/schemas/SpatialMapProfile'
+        augLyrInf:
+          $ref: '#/components/schemas/AugmentLayerInfo'
+      required:
+        - mapInf
+
+    SpatialMapsSub:
+      description: >
+        Represents the spatial map events subscription request.
+      type: object
+      properties:
+        eventSubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MapEventSub'
+          minItems: 1
+        svcId:
+          type: string
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        report:
+          $ref: '#/components/schemas/SpatialMapsNotif'
+        reportReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - eventSubs
+        - svcId
+        - notifUri
+
+    MapEventSub:
+      description: >
+        Represents the spatial map event subscription details.
+      type: object
+      properties:
+        event:
+            $ref: '#/components/schemas/MapEvent'
+        mapId:
+          $ref: '#/components/schemas/TargetSpatialMaps'
+        evntFltr:
+          $ref: '#/components/schemas/EventFilter'
+      required:
+        - event
+        - mapId
+
+    TargetSpatialMaps:
+      description: >
+        Represents the target spatial maps for events.
+      type: object
+      properties:
+        mapIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpatialMapId'
+          minItems: 1
+        area:
+          $ref: 'TS29558_Eecs_EESRegistration.yaml#/components/schemas/ServiceArea'
+        locInfo:
+          $ref: 'TS29122_MonitoringEvent.yaml#/components/schemas/LocationInfo'
+        pose:
+          $ref: 'TS29437_SS_SAnManagement.yaml#/components/schemas/Pose'
+      anyOf:
+        - required: [mapIds]
+        - required: [locInfo]
+        - required: [area]
+        - required: [pose]
+
+    EventFilter:
+      description: >
+        Represents the event filters for spatial map events subscription.
+      type: object
+      properties:
+        objList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        layers:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      anyOf:
+        - required: [objList]
+        - required: [layers]
+
+    SpatialMapsSubPatch:
+      description: >
+        Represents the spatial map event subscription modification.
+      type: object
+      properties:
+        eventSubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/MapEventSub'
+          minItems: 1
+        notifUri:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        reportReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        expTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+
+    SpatialMapsNotif:
+      description: >
+        Represents the spatial maps event notification.
+      type: object
+      properties:
+        subId:
+          type: string
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/MapsReport'
+          minItems: 1
+      required:
+        - subId
+        - reports
+
+    MapsReport:
+      description: >
+        Represents the spatial map event report details.
+      type: object
+      properties:
+        mapIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpatialMapId'
+          minItems: 1
+        event:
+          $ref: '#/components/schemas/MapEvent'
+        objDet:
+          type: array
+          items:
+            $ref: '#/components/schemas/MapObjectChangeReport'
+          minItems: 1
+        lyrDet:
+          $ref: '#/components/schemas/SpatialMapLayers'
+      required:
+        - mapIds
+        - event
+
+    MapObjectChangeReport:
+      description: >
+        Represents the map object change details.
+      type: object
+      properties:
+        objInf:
+          $ref: '#/components/schemas/MapObjectInfo'
+        objChgEvnt:
+          $ref: '#/components/schemas/MapObjectChangeEvent'
+      required:
+        - objInf
+
+    SpatialMapTempResp:
+      description: >
+        Represents the SM server has accepted the request and processing it. The assigned 
+        Spatial Map Identifier shall be returned.
+      type: object
+      properties:
+        mapId:
+          $ref: '#/components/schemas/SpatialMapId'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - mapId
+
+    AugmentLayerList:
+      description: >
+        Represents the list of augment layer values.
+      type: object
+      properties:
+        augLyrs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AugmentLayer'
+          minItems: 1
+      required:
+        - augLyrs
+
+# SIMPLE DATA TYPES
+#
+    SpatialMapId:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+#
+# ENUMERATIONS
+#
+    AugmentLayer:
+      anyOf:
+      - type: string
+        enum:
+        - VAL_USERS
+        - SPATIAL_ANCHORS
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the
+          enumeration but is not used to encode content defined in the present version of
+          this API.
+      description: |
+        Represents the type of entity.  
+        Possible values are:  
+          - VAL_SERVER: Indicates that the spatial map layer augment information is VAL users.
+          - VAL_CLIENT: Indicates that the spatial map layer augment information is Spatial
+            Anchors.
+
+    MapEvent:
+      anyOf:
+      - type: string
+        enum:
+        - CHANGE_OF_OBJECTS
+        - LAYERS_MODIFICATION
+        - SPATIAL_MAP_READY
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the
+          enumeration but is not used to encode content defined in the present version of
+          this API.
+      description: |
+        Represents the type of entity.  
+        Possible values are:
+          - CHANGE_OF_OBJECTS: Indicates that the spatial map event is change of objects.
+          - LAYERS_MODIFICATION: Indicates that the spatial map event is modification of spatial
+            map layers.
+          - SPATIAL_MAP_READY: Indicates that the spatial map event is spatial map ready.
+
+    MapObjectChangeEvent:
+      anyOf:
+      - type: string
+        enum:
+        - ADDED
+        - REMOVED
+        - CHANGED_POSTION
+        - CHANGED_DIRECTION
+        - ANY_OTHER
+      - type: string
+        description: >
+          This string provides forward-compatibility with future extensions to the
+          enumeration but is not used to encode content defined in the present version of
+          this API.
+      description: |
+        Represents the type of entity.  
+        Possible values are:
+          - ADDED: Indicates that the spatial map object is added.
+          - REMOVED: Indicates that the spatial map object is removed.
+          - CHANGED_POSTION: Indicates that the spatial map object is changed position.
+          - CHANGED_DIRECTION: Indicates that the spatial map object is changed direction.
+          - ANY_OTHER: Indicates that the spatial map object is any other.
+# Data types describing alternative data types or combinations of data types:
+#

@@ -12,16 +12,16 @@
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
+typedef struct OpenAPI_an_gw_address_s OpenAPI_an_gw_address_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct OpenAPI_an_gw_address_s OpenAPI_an_gw_address_t;
-typedef struct OpenAPI_an_gw_address_s {
+struct OpenAPI_an_gw_address_s {
     char *an_gw_ipv4_addr;
     char *an_gw_ipv6_addr;
-} OpenAPI_an_gw_address_t;
+};
 
 OpenAPI_an_gw_address_t *OpenAPI_an_gw_address_create(
     char *an_gw_ipv4_addr,

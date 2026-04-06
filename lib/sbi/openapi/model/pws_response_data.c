@@ -8,7 +8,9 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_create(
     int ngap_message_type,
     int serial_number,
     int message_identifier,
-    OpenAPI_list_t *unknown_tai_list
+    OpenAPI_list_t *unknown_tai_list,
+    bool is_n2_pws_sub_miss_ind,
+    int n2_pws_sub_miss_ind
 )
 {
     OpenAPI_pws_response_data_t *pws_response_data_local_var = ogs_malloc(sizeof(OpenAPI_pws_response_data_t));
@@ -18,6 +20,8 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_create(
     pws_response_data_local_var->serial_number = serial_number;
     pws_response_data_local_var->message_identifier = message_identifier;
     pws_response_data_local_var->unknown_tai_list = unknown_tai_list;
+    pws_response_data_local_var->is_n2_pws_sub_miss_ind = is_n2_pws_sub_miss_ind;
+    pws_response_data_local_var->n2_pws_sub_miss_ind = n2_pws_sub_miss_ind;
 
     return pws_response_data_local_var;
 }
@@ -81,6 +85,13 @@ cJSON *OpenAPI_pws_response_data_convertToJSON(OpenAPI_pws_response_data_t *pws_
     }
     }
 
+    if (pws_response_data->is_n2_pws_sub_miss_ind) {
+    if (cJSON_AddBoolToObject(item, "n2PwsSubMissInd", pws_response_data->n2_pws_sub_miss_ind) == NULL) {
+        ogs_error("OpenAPI_pws_response_data_convertToJSON() failed [n2_pws_sub_miss_ind]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -94,6 +105,7 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
     cJSON *message_identifier = NULL;
     cJSON *unknown_tai_list = NULL;
     OpenAPI_list_t *unknown_tai_listList = NULL;
+    cJSON *n2_pws_sub_miss_ind = NULL;
     ngap_message_type = cJSON_GetObjectItemCaseSensitive(pws_response_dataJSON, "ngapMessageType");
     if (!ngap_message_type) {
         ogs_error("OpenAPI_pws_response_data_parseFromJSON() failed [ngap_message_type]");
@@ -148,6 +160,14 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
         }
     }
 
+    n2_pws_sub_miss_ind = cJSON_GetObjectItemCaseSensitive(pws_response_dataJSON, "n2PwsSubMissInd");
+    if (n2_pws_sub_miss_ind) {
+    if (!cJSON_IsBool(n2_pws_sub_miss_ind)) {
+        ogs_error("OpenAPI_pws_response_data_parseFromJSON() failed [n2_pws_sub_miss_ind]");
+        goto end;
+    }
+    }
+
     pws_response_data_local_var = OpenAPI_pws_response_data_create (
         
         ngap_message_type->valuedouble,
@@ -155,7 +175,9 @@ OpenAPI_pws_response_data_t *OpenAPI_pws_response_data_parseFromJSON(cJSON *pws_
         serial_number->valuedouble,
         
         message_identifier->valuedouble,
-        unknown_tai_list ? unknown_tai_listList : NULL
+        unknown_tai_list ? unknown_tai_listList : NULL,
+        n2_pws_sub_miss_ind ? true : false,
+        n2_pws_sub_miss_ind ? n2_pws_sub_miss_ind->valueint : 0
     );
 
     return pws_response_data_local_var;

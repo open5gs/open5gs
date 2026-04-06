@@ -1,0 +1,74 @@
+openapi: 3.0.0
+info:
+  title: 'Media Delivery: Notifications'
+  version: 1.1.1
+  description: |
+    Media Delivery: Notifications
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: 'Media Delivery: Notifications'
+    description: 'Media Delivery: Asynchronous MQTT notifications sent by the Media AF at reference points M3 and M5'
+
+externalDocs:
+  description: 'TS 26.510 V18.4.0; Media Delivery; Interactions and APIs for media session handling'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.510/'
+
+paths: {}
+
+components:
+  schemas:
+    NotificationMessage:
+      description: 'A message sent by the Media AF on an MQTT notification channel.'
+      type: object
+      required:
+        - type
+        - reason
+      oneOf:
+        - required: [serviceAccessInformation]
+        - required: [dynamicPolicy]
+        - required: [networkAssistanceSession]
+      properties:
+        type:
+          $ref: '#/components/schemas/NotificationMessageType'
+        reason:
+          $ref: '#/components/schemas/NotificationReason'
+        entityTag:
+          type: string
+          minLength: 1
+        lastModified:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        serviceAccessInformation:
+          $ref: 'TS26510_Maf_SessionHandling_ServiceAccessInformation.yaml#/components/schemas/ServiceAccessInformationResource'
+        dynamicPolicy:
+          $ref: 'TS26510_Maf_SessionHandling_DynamicPolicy.yaml#/components/schemas/DynamicPolicy'
+        networkAssistanceSession:
+          $ref: 'TS26510_Maf_SessionHandling_NetworkAssistance.yaml#/components/schemas/NetworkAssistanceSession'
+
+    NotificationMessageType:
+      description: 'Enumeration of notification message types.'
+      anyOf:
+        - type: string
+          enum:
+            - NOTIFICATION_SERVICE_ACCESS_INFORMATION
+            - NOTIFICATION_DYNAMIC_POLICY_INSTANCE
+            - NOTIFICATION_NETWORK_ASSISTANCE_SESSION
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.
+
+    NotificationReason:
+      description: 'Enumeration of notification reasons.'
+      anyOf:
+        - type: string
+          enum:
+            - NOTIFICATION_REASON_PROVISIONING_UPDATE
+            - NOTIFICATION_REASON_BACKGROUBND_DATA_TRANSFER_CANCELLATION
+        - type: string
+          description: >
+            This string provides forward-compatibility with future
+            extensions to the enumeration but is not used to encode
+            content defined in the present version of this API.

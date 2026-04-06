@@ -7,18 +7,20 @@
 OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_create(
     char *af_instance_id,
     int reference_id,
-    OpenAPI_stationary_indication_rm_t *stationary_indication,
+    OpenAPI_stationary_indication_e stationary_indication,
     bool is_communication_duration_time_null,
     bool is_communication_duration_time,
     int communication_duration_time,
-    OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type,
+    OpenAPI_scheduled_communication_type_e scheduled_communication_type,
     bool is_periodic_time_null,
     bool is_periodic_time,
     int periodic_time,
+    bool is_scheduled_communication_time_null,
     OpenAPI_scheduled_communication_time_rm_t *scheduled_communication_time,
     bool is_expected_umts_null,
     OpenAPI_list_t *expected_umts,
-    OpenAPI_traffic_profile_rm_t *traffic_profile,
+    OpenAPI_traffic_profile_e traffic_profile,
+    bool is_battery_indication_null,
     OpenAPI_battery_indication_rm_t *battery_indication,
     char *validity_time,
     char *mtc_provider_information
@@ -37,10 +39,12 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_create(
     expected_ue_behaviour_local_var->is_periodic_time_null = is_periodic_time_null;
     expected_ue_behaviour_local_var->is_periodic_time = is_periodic_time;
     expected_ue_behaviour_local_var->periodic_time = periodic_time;
+    expected_ue_behaviour_local_var->is_scheduled_communication_time_null = is_scheduled_communication_time_null;
     expected_ue_behaviour_local_var->scheduled_communication_time = scheduled_communication_time;
     expected_ue_behaviour_local_var->is_expected_umts_null = is_expected_umts_null;
     expected_ue_behaviour_local_var->expected_umts = expected_umts;
     expected_ue_behaviour_local_var->traffic_profile = traffic_profile;
+    expected_ue_behaviour_local_var->is_battery_indication_null = is_battery_indication_null;
     expected_ue_behaviour_local_var->battery_indication = battery_indication;
     expected_ue_behaviour_local_var->validity_time = validity_time;
     expected_ue_behaviour_local_var->mtc_provider_information = mtc_provider_information;
@@ -59,14 +63,6 @@ void OpenAPI_expected_ue_behaviour_free(OpenAPI_expected_ue_behaviour_t *expecte
         ogs_free(expected_ue_behaviour->af_instance_id);
         expected_ue_behaviour->af_instance_id = NULL;
     }
-    if (expected_ue_behaviour->stationary_indication) {
-        OpenAPI_stationary_indication_rm_free(expected_ue_behaviour->stationary_indication);
-        expected_ue_behaviour->stationary_indication = NULL;
-    }
-    if (expected_ue_behaviour->scheduled_communication_type) {
-        OpenAPI_scheduled_communication_type_rm_free(expected_ue_behaviour->scheduled_communication_type);
-        expected_ue_behaviour->scheduled_communication_type = NULL;
-    }
     if (expected_ue_behaviour->scheduled_communication_time) {
         OpenAPI_scheduled_communication_time_rm_free(expected_ue_behaviour->scheduled_communication_time);
         expected_ue_behaviour->scheduled_communication_time = NULL;
@@ -77,10 +73,6 @@ void OpenAPI_expected_ue_behaviour_free(OpenAPI_expected_ue_behaviour_t *expecte
         }
         OpenAPI_list_free(expected_ue_behaviour->expected_umts);
         expected_ue_behaviour->expected_umts = NULL;
-    }
-    if (expected_ue_behaviour->traffic_profile) {
-        OpenAPI_traffic_profile_rm_free(expected_ue_behaviour->traffic_profile);
-        expected_ue_behaviour->traffic_profile = NULL;
     }
     if (expected_ue_behaviour->battery_indication) {
         OpenAPI_battery_indication_rm_free(expected_ue_behaviour->battery_indication);
@@ -122,14 +114,8 @@ cJSON *OpenAPI_expected_ue_behaviour_convertToJSON(OpenAPI_expected_ue_behaviour
         goto end;
     }
 
-    if (expected_ue_behaviour->stationary_indication) {
-    cJSON *stationary_indication_local_JSON = OpenAPI_stationary_indication_rm_convertToJSON(expected_ue_behaviour->stationary_indication);
-    if (stationary_indication_local_JSON == NULL) {
-        ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [stationary_indication]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "stationaryIndication", stationary_indication_local_JSON);
-    if (item->child == NULL) {
+    if (expected_ue_behaviour->stationary_indication != OpenAPI_stationary_indication_NULL) {
+    if (cJSON_AddStringToObject(item, "stationaryIndication", OpenAPI_stationary_indication_ToString(expected_ue_behaviour->stationary_indication)) == NULL) {
         ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [stationary_indication]");
         goto end;
     }
@@ -147,14 +133,8 @@ cJSON *OpenAPI_expected_ue_behaviour_convertToJSON(OpenAPI_expected_ue_behaviour
         }
     }
 
-    if (expected_ue_behaviour->scheduled_communication_type) {
-    cJSON *scheduled_communication_type_local_JSON = OpenAPI_scheduled_communication_type_rm_convertToJSON(expected_ue_behaviour->scheduled_communication_type);
-    if (scheduled_communication_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [scheduled_communication_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "scheduledCommunicationType", scheduled_communication_type_local_JSON);
-    if (item->child == NULL) {
+    if (expected_ue_behaviour->scheduled_communication_type != OpenAPI_scheduled_communication_type_NULL) {
+    if (cJSON_AddStringToObject(item, "scheduledCommunicationType", OpenAPI_scheduled_communication_type_ToString(expected_ue_behaviour->scheduled_communication_type)) == NULL) {
         ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [scheduled_communication_type]");
         goto end;
     }
@@ -183,6 +163,11 @@ cJSON *OpenAPI_expected_ue_behaviour_convertToJSON(OpenAPI_expected_ue_behaviour
         ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [scheduled_communication_time]");
         goto end;
     }
+    } else if (expected_ue_behaviour->is_scheduled_communication_time_null) {
+        if (cJSON_AddNullToObject(item, "scheduledCommunicationTime") == NULL) {
+            ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [scheduled_communication_time]");
+            goto end;
+        }
     }
 
     if (expected_ue_behaviour->expected_umts) {
@@ -206,14 +191,8 @@ cJSON *OpenAPI_expected_ue_behaviour_convertToJSON(OpenAPI_expected_ue_behaviour
         }
     }
 
-    if (expected_ue_behaviour->traffic_profile) {
-    cJSON *traffic_profile_local_JSON = OpenAPI_traffic_profile_rm_convertToJSON(expected_ue_behaviour->traffic_profile);
-    if (traffic_profile_local_JSON == NULL) {
-        ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [traffic_profile]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "trafficProfile", traffic_profile_local_JSON);
-    if (item->child == NULL) {
+    if (expected_ue_behaviour->traffic_profile != OpenAPI_traffic_profile_NULL) {
+    if (cJSON_AddStringToObject(item, "trafficProfile", OpenAPI_traffic_profile_ToString(expected_ue_behaviour->traffic_profile)) == NULL) {
         ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [traffic_profile]");
         goto end;
     }
@@ -230,6 +209,11 @@ cJSON *OpenAPI_expected_ue_behaviour_convertToJSON(OpenAPI_expected_ue_behaviour
         ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [battery_indication]");
         goto end;
     }
+    } else if (expected_ue_behaviour->is_battery_indication_null) {
+        if (cJSON_AddNullToObject(item, "batteryIndication") == NULL) {
+            ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed [battery_indication]");
+            goto end;
+        }
     }
 
     if (expected_ue_behaviour->validity_time) {
@@ -257,17 +241,17 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
     cJSON *af_instance_id = NULL;
     cJSON *reference_id = NULL;
     cJSON *stationary_indication = NULL;
-    OpenAPI_stationary_indication_rm_t *stationary_indication_local_nonprim = NULL;
+    OpenAPI_stationary_indication_e stationary_indicationVariable = 0;
     cJSON *communication_duration_time = NULL;
     cJSON *scheduled_communication_type = NULL;
-    OpenAPI_scheduled_communication_type_rm_t *scheduled_communication_type_local_nonprim = NULL;
+    OpenAPI_scheduled_communication_type_e scheduled_communication_typeVariable = 0;
     cJSON *periodic_time = NULL;
     cJSON *scheduled_communication_time = NULL;
     OpenAPI_scheduled_communication_time_rm_t *scheduled_communication_time_local_nonprim = NULL;
     cJSON *expected_umts = NULL;
     OpenAPI_list_t *expected_umtsList = NULL;
     cJSON *traffic_profile = NULL;
-    OpenAPI_traffic_profile_rm_t *traffic_profile_local_nonprim = NULL;
+    OpenAPI_traffic_profile_e traffic_profileVariable = 0;
     cJSON *battery_indication = NULL;
     OpenAPI_battery_indication_rm_t *battery_indication_local_nonprim = NULL;
     cJSON *validity_time = NULL;
@@ -294,11 +278,11 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
 
     stationary_indication = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "stationaryIndication");
     if (stationary_indication) {
-    stationary_indication_local_nonprim = OpenAPI_stationary_indication_rm_parseFromJSON(stationary_indication);
-    if (!stationary_indication_local_nonprim) {
-        ogs_error("OpenAPI_stationary_indication_rm_parseFromJSON failed [stationary_indication]");
+    if (!cJSON_IsString(stationary_indication)) {
+        ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [stationary_indication]");
         goto end;
     }
+    stationary_indicationVariable = OpenAPI_stationary_indication_FromString(stationary_indication->valuestring);
     }
 
     communication_duration_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "communicationDurationTime");
@@ -313,11 +297,11 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
 
     scheduled_communication_type = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "scheduledCommunicationType");
     if (scheduled_communication_type) {
-    scheduled_communication_type_local_nonprim = OpenAPI_scheduled_communication_type_rm_parseFromJSON(scheduled_communication_type);
-    if (!scheduled_communication_type_local_nonprim) {
-        ogs_error("OpenAPI_scheduled_communication_type_rm_parseFromJSON failed [scheduled_communication_type]");
+    if (!cJSON_IsString(scheduled_communication_type)) {
+        ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [scheduled_communication_type]");
         goto end;
     }
+    scheduled_communication_typeVariable = OpenAPI_scheduled_communication_type_FromString(scheduled_communication_type->valuestring);
     }
 
     periodic_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "periodicTime");
@@ -332,10 +316,12 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
 
     scheduled_communication_time = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "scheduledCommunicationTime");
     if (scheduled_communication_time) {
+    if (!cJSON_IsNull(scheduled_communication_time)) {
     scheduled_communication_time_local_nonprim = OpenAPI_scheduled_communication_time_rm_parseFromJSON(scheduled_communication_time);
     if (!scheduled_communication_time_local_nonprim) {
         ogs_error("OpenAPI_scheduled_communication_time_rm_parseFromJSON failed [scheduled_communication_time]");
         goto end;
+    }
     }
     }
 
@@ -367,19 +353,21 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
 
     traffic_profile = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "trafficProfile");
     if (traffic_profile) {
-    traffic_profile_local_nonprim = OpenAPI_traffic_profile_rm_parseFromJSON(traffic_profile);
-    if (!traffic_profile_local_nonprim) {
-        ogs_error("OpenAPI_traffic_profile_rm_parseFromJSON failed [traffic_profile]");
+    if (!cJSON_IsString(traffic_profile)) {
+        ogs_error("OpenAPI_expected_ue_behaviour_parseFromJSON() failed [traffic_profile]");
         goto end;
     }
+    traffic_profileVariable = OpenAPI_traffic_profile_FromString(traffic_profile->valuestring);
     }
 
     battery_indication = cJSON_GetObjectItemCaseSensitive(expected_ue_behaviourJSON, "batteryIndication");
     if (battery_indication) {
+    if (!cJSON_IsNull(battery_indication)) {
     battery_indication_local_nonprim = OpenAPI_battery_indication_rm_parseFromJSON(battery_indication);
     if (!battery_indication_local_nonprim) {
         ogs_error("OpenAPI_battery_indication_rm_parseFromJSON failed [battery_indication]");
         goto end;
+    }
     }
     }
 
@@ -403,18 +391,20 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
         ogs_strdup(af_instance_id->valuestring),
         
         reference_id->valuedouble,
-        stationary_indication ? stationary_indication_local_nonprim : NULL,
+        stationary_indication ? stationary_indicationVariable : 0,
         communication_duration_time && cJSON_IsNull(communication_duration_time) ? true : false,
         communication_duration_time ? true : false,
         communication_duration_time ? communication_duration_time->valuedouble : 0,
-        scheduled_communication_type ? scheduled_communication_type_local_nonprim : NULL,
+        scheduled_communication_type ? scheduled_communication_typeVariable : 0,
         periodic_time && cJSON_IsNull(periodic_time) ? true : false,
         periodic_time ? true : false,
         periodic_time ? periodic_time->valuedouble : 0,
+        scheduled_communication_time && cJSON_IsNull(scheduled_communication_time) ? true : false,
         scheduled_communication_time ? scheduled_communication_time_local_nonprim : NULL,
         expected_umts && cJSON_IsNull(expected_umts) ? true : false,
         expected_umts ? expected_umtsList : NULL,
-        traffic_profile ? traffic_profile_local_nonprim : NULL,
+        traffic_profile ? traffic_profileVariable : 0,
+        battery_indication && cJSON_IsNull(battery_indication) ? true : false,
         battery_indication ? battery_indication_local_nonprim : NULL,
         validity_time && !cJSON_IsNull(validity_time) ? ogs_strdup(validity_time->valuestring) : NULL,
         mtc_provider_information && !cJSON_IsNull(mtc_provider_information) ? ogs_strdup(mtc_provider_information->valuestring) : NULL
@@ -422,14 +412,6 @@ OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_parseFromJSON(cJS
 
     return expected_ue_behaviour_local_var;
 end:
-    if (stationary_indication_local_nonprim) {
-        OpenAPI_stationary_indication_rm_free(stationary_indication_local_nonprim);
-        stationary_indication_local_nonprim = NULL;
-    }
-    if (scheduled_communication_type_local_nonprim) {
-        OpenAPI_scheduled_communication_type_rm_free(scheduled_communication_type_local_nonprim);
-        scheduled_communication_type_local_nonprim = NULL;
-    }
     if (scheduled_communication_time_local_nonprim) {
         OpenAPI_scheduled_communication_time_rm_free(scheduled_communication_time_local_nonprim);
         scheduled_communication_time_local_nonprim = NULL;
@@ -440,10 +422,6 @@ end:
         }
         OpenAPI_list_free(expected_umtsList);
         expected_umtsList = NULL;
-    }
-    if (traffic_profile_local_nonprim) {
-        OpenAPI_traffic_profile_rm_free(traffic_profile_local_nonprim);
-        traffic_profile_local_nonprim = NULL;
     }
     if (battery_indication_local_nonprim) {
         OpenAPI_battery_indication_rm_free(battery_indication_local_nonprim);

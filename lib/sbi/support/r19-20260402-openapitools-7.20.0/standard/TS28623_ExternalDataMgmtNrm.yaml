@@ -1,0 +1,81 @@
+openapi: 3.0.1
+info:
+  title: External data management NRM
+  version: 19.5.0
+  description: >-
+    OAS 3.0.1 definition of the External data type NRM fragment
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 28.623; Generic NRM, External data type NRM fragment
+  url: http://www.3gpp.org/ftp/Specs/archive/28_series/28.623/
+paths: {}
+components:
+  schemas:
+  #-------- Definition of types for name-containments ------
+    SubNetwork-ncO-ExternalDataMgmtNrm:
+      type: object
+      properties:
+        ExternalDataType:
+          $ref: '#/components/schemas/ExternalDataType-Multiple'
+    
+
+#-------- Definition of types-----------------------------------------------------
+
+    ExternalDataScope:
+      type: object
+      properties:
+        geoAreas:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/GeoArea'
+        objectInstancesIncluded:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+        objectInstancesExcluded:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: 'TS28623_ComDefs.yaml#/components/schemas/Dn'
+
+#-------- Definition of concrete IOCs --------------------------------------------
+
+    ExternalDataType-Single:
+      allOf:
+      - $ref: 'TS28623_GenericNrm.yaml#/components/schemas/Top'
+      - type: object
+        properties:
+          attributes:
+            type: object
+            properties:
+              externalDataType:
+                type: string
+              mediaLocation: 
+                type: array
+                uniqueItems: true
+                items:
+                  $ref: 'TS28623_ComDefs.yaml#/components/schemas/Uri'
+              externalDataTypeSchema:
+                type: string
+              externalDataScope:
+                type: array
+                uniqueItems: true
+                items:
+                  $ref: '#/components/schemas/ExternalDataScope'
+
+#-------- Definition of YAML arrays for name-contained IOCs ----------------------
+
+    ExternalDataType-Multiple:
+      type: array
+      items:
+        $ref: '#/components/schemas/ExternalDataType-Single'
+
+#-------- Definitions in TS 28.623 for TS 28.532 ---------------------------------
+    resources-externalDataMgmtNrm:
+      oneOf:
+       - $ref: '#/components/schemas/ExternalDataType-Single'
+     
+       

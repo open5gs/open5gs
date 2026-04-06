@@ -1,0 +1,162 @@
+openapi: 3.0.0
+info:
+  title: Maf_SessionHandling_MetricsReporting
+  version: 1.1.0
+  description: |
+    Media Delivery: Metrics Reporting API
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+tags:
+  - name: Maf_SessionHandling_MetricsReporting
+    description: 'Media Delivery: Metrics Reporting API'
+
+externalDocs:
+  description: 'TS 26.510 V19.0.0; Media Delivery; Interactions and APIs for media session handling'
+  url: 'https://www.3gpp.org/ftp/Specs/archive/26_series/26.510/'
+
+servers:
+  - url: '{apiRoot}/3gpp-maf-session-handling/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: See 3GPP TS 26.510 clause 7.1.3.
+
+security:
+  - {}
+  - OAuth2: []
+
+paths:
+  /provisioning-sessions/{provisioningSessionId}/metrics-reporting/{metricsReportingConfigurationId}:
+    parameters:
+      - name: provisioningSessionId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The resource identifier of an existing Provisioning Session.'
+      - name: metricsReportingConfigurationId
+        in: path
+        required: true
+        schema:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        description: 'The resource identifier of a Metrics Configuration in the specified Provisioning Session.'
+    post:
+      operationId: submitMetricsReport
+      summary: 'Submit a Metrics Report'
+      security:
+        - OAuth2:
+          - metrics-report_submit
+      requestBody:
+        description: 'A Metrics Report'
+        required: true
+        content:
+          application/3gpdash-qoe-report+xml:
+            schema:
+              type: string
+              format: xml
+          application/3gpp-media-delivery-metrics-report+json:
+            schema:
+              $ref: '#/components/schemas/MetricsReport'
+              format: json
+          application/*:
+            schema:
+              type: string
+      responses:
+        '202': # Accepted: The request is well-formed but the message body has not yet been fully processed
+          description: 'Metrics Report Accepted'
+        '204': # No Content: The request is well-formed and the message body has been processed successfully
+          description: 'Metrics Report Successful'
+        '400': # Bad Request: The syntax of the HTTP request is malformed in a way not covered by one of the following more specific client errors
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401': # Unauthorized
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403': # Forbidden: Metrics reporting is not provisioned
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '411': # Length Required
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': # Payload Too Large
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '414': # URI Too Long
+          $ref: 'TS29571_CommonData.yaml#/components/responses/414'
+        '415': # Unsupported Media Type
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '500': # Internal Server Error
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503': # Service Unavailable
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            metrics-report_submit: Submit a metrics report
+        authorizationCode:
+          authorizationUrl: '{authorizationUrl}'
+          tokenUrl: '{tokenUrl}'
+          scopes:
+            metrics-report_submit: Submit a metrics report
+
+  schemas:
+    MetricsReport:
+      description: 'A timestamped report of QoE metrics pertaining to one or more media delivery sessions'
+      type: object
+      required:
+        - reportTimestamp
+        - sessions
+      properties:
+        reportTimestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricsSession'
+          minItems: 0
+
+    MetricsSession:
+      description: 'A set of metrics samples pertaining to a particular media delivery session'
+      type: object
+      required:
+        - clientId
+        - provisioingSessionId
+        - sessionId
+      properties:
+        clientId:
+          type: string
+        provisioningSessionId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/ResourceId'
+        sessionId:
+          $ref: 'TS26510_CommonData.yaml#/components/schemas/MediaDeliverySessionId'
+        contentId:
+          type: string
+          description: 'Identifying the content currently being consumed in the media delivery session.'
+        samples:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricsSample'
+          minItems: 0
+
+    MetricsSample:
+      description: 'An abstract timestamped sample of one or more metrics'
+      type: object
+      required:
+        - sampleTimestamp
+      anyOf:
+        - required: [mediaStreamingClientData]
+      properties:
+        sampleTimestamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        sliceInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dataNetworkName:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        mediaStreamingClientData:
+          allOf:
+            - $ref: 'TS26512_ClientData.yaml#/components/schemas/MediaStreamingClientData'
+            - description: 'Client data for the 5G Media Streaming System. See clause 11.4.3.3 of TS 26.512.'

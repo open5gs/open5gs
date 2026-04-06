@@ -1,0 +1,191 @@
+openapi: 3.0.0
+
+info:
+  title: Npanf_ProseKey
+  version: 1.2.0
+  description: |
+    PAnF ProseKey Service.  
+    © 2025, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.553 V19.2.0; 5G System; 5G ProSe Anchor Services; Stage 3.
+  url: https://www.3gpp.org/ftp/Specs/archive/29_series/29.553/
+
+servers:
+  - url: '{apiRoot}/npanf-prosekey/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - npanf-prosekey
+
+paths:
+  /prose-keys/register:
+    post:
+      summary: Register the Prose Key
+      operationId: ProseKeyRegistration
+      tags:
+        - prosekey registration
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - npanf_prosekey
+        - oAuth2ClientCredentials:
+          - npanf_prosekey
+          - npanf_prosekey:register:invoke
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProseContextInfo'
+        required: true
+      responses:
+        '204':
+          description: Successful Response
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+  /prose-keys/retrieve:
+    post:
+      summary: retrieve the prose key
+      operationId: ProseKeyRetrieval
+      tags:
+        - Prose Key Retrieval
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - npanf_prosekey
+        - oAuth2ClientCredentials:
+          - npanf_prosekey
+          - npanf_prosekey:retrieve:invoke
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProseKeyRequest'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProseKeyResponse'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npanf-prosekey: Access to the Npanf_ProseKey API
+            npanf-prosekey:register:invoke: Access to invoke register Prose Context
+            npanf-prosekey:retrieve:invoke: Access to invoke retrieve CP-PRUK
+
+  schemas:
+#
+#  Structured Data Types
+#
+    ProseContextInfo:
+      description: Prose Context Info.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        5gPruk:
+          $ref: '#/components/schemas/5GPruk'
+        5gPrukId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5GPrukId'
+        relayServiceCode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RelayServiceCode'
+      required:
+        - supi
+        - 5gPruk
+        - 5gPrukId
+        - relayServiceCode
+
+    ProseKeyRequest:
+      description: Prose Key Request.
+      type: object
+      properties:
+        5gPrukId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5GPrukId'
+        relayServiceCode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RelayServiceCode'
+      required:
+        - 5gPrukId
+        - relayServiceCode
+
+    ProseKeyResponse:
+      description: Prose Key Response.
+      type: object
+      properties:
+        5gPruk:
+          $ref: '#/components/schemas/5GPruk'
+      required:
+        - 5gPruk
+
+#
+#  Simple Data Types
+#
+    5GPruk:
+      description: ProSe Remote User Key over Control Plane
+      type: string
+      pattern: '^[A-Fa-f0-9]{64}$'
+
+#
+#  Enumeration Data Types
+#

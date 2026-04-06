@@ -5,13 +5,17 @@
 #include "modification_notification.h"
 
 OpenAPI_modification_notification_t *OpenAPI_modification_notification_create(
-    OpenAPI_list_t *notify_items
+    OpenAPI_list_t *notify_items,
+    char *subscription_id,
+    OpenAPI_guami_t *old_guami
 )
 {
     OpenAPI_modification_notification_t *modification_notification_local_var = ogs_malloc(sizeof(OpenAPI_modification_notification_t));
     ogs_assert(modification_notification_local_var);
 
     modification_notification_local_var->notify_items = notify_items;
+    modification_notification_local_var->subscription_id = subscription_id;
+    modification_notification_local_var->old_guami = old_guami;
 
     return modification_notification_local_var;
 }
@@ -29,6 +33,14 @@ void OpenAPI_modification_notification_free(OpenAPI_modification_notification_t 
         }
         OpenAPI_list_free(modification_notification->notify_items);
         modification_notification->notify_items = NULL;
+    }
+    if (modification_notification->subscription_id) {
+        ogs_free(modification_notification->subscription_id);
+        modification_notification->subscription_id = NULL;
+    }
+    if (modification_notification->old_guami) {
+        OpenAPI_guami_free(modification_notification->old_guami);
+        modification_notification->old_guami = NULL;
     }
     ogs_free(modification_notification);
 }
@@ -62,6 +74,26 @@ cJSON *OpenAPI_modification_notification_convertToJSON(OpenAPI_modification_noti
         cJSON_AddItemToArray(notify_itemsList, itemLocal);
     }
 
+    if (modification_notification->subscription_id) {
+    if (cJSON_AddStringToObject(item, "subscriptionId", modification_notification->subscription_id) == NULL) {
+        ogs_error("OpenAPI_modification_notification_convertToJSON() failed [subscription_id]");
+        goto end;
+    }
+    }
+
+    if (modification_notification->old_guami) {
+    cJSON *old_guami_local_JSON = OpenAPI_guami_convertToJSON(modification_notification->old_guami);
+    if (old_guami_local_JSON == NULL) {
+        ogs_error("OpenAPI_modification_notification_convertToJSON() failed [old_guami]");
+        goto end;
+    }
+    cJSON_AddItemToObject(item, "oldGuami", old_guami_local_JSON);
+    if (item->child == NULL) {
+        ogs_error("OpenAPI_modification_notification_convertToJSON() failed [old_guami]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -72,6 +104,9 @@ OpenAPI_modification_notification_t *OpenAPI_modification_notification_parseFrom
     OpenAPI_lnode_t *node = NULL;
     cJSON *notify_items = NULL;
     OpenAPI_list_t *notify_itemsList = NULL;
+    cJSON *subscription_id = NULL;
+    cJSON *old_guami = NULL;
+    OpenAPI_guami_t *old_guami_local_nonprim = NULL;
     notify_items = cJSON_GetObjectItemCaseSensitive(modification_notificationJSON, "notifyItems");
     if (!notify_items) {
         ogs_error("OpenAPI_modification_notification_parseFromJSON() failed [notify_items]");
@@ -98,8 +133,27 @@ OpenAPI_modification_notification_t *OpenAPI_modification_notification_parseFrom
             OpenAPI_list_add(notify_itemsList, notify_itemsItem);
         }
 
+    subscription_id = cJSON_GetObjectItemCaseSensitive(modification_notificationJSON, "subscriptionId");
+    if (subscription_id) {
+    if (!cJSON_IsString(subscription_id) && !cJSON_IsNull(subscription_id)) {
+        ogs_error("OpenAPI_modification_notification_parseFromJSON() failed [subscription_id]");
+        goto end;
+    }
+    }
+
+    old_guami = cJSON_GetObjectItemCaseSensitive(modification_notificationJSON, "oldGuami");
+    if (old_guami) {
+    old_guami_local_nonprim = OpenAPI_guami_parseFromJSON(old_guami);
+    if (!old_guami_local_nonprim) {
+        ogs_error("OpenAPI_guami_parseFromJSON failed [old_guami]");
+        goto end;
+    }
+    }
+
     modification_notification_local_var = OpenAPI_modification_notification_create (
-        notify_itemsList
+        notify_itemsList,
+        subscription_id && !cJSON_IsNull(subscription_id) ? ogs_strdup(subscription_id->valuestring) : NULL,
+        old_guami ? old_guami_local_nonprim : NULL
     );
 
     return modification_notification_local_var;
@@ -110,6 +164,10 @@ end:
         }
         OpenAPI_list_free(notify_itemsList);
         notify_itemsList = NULL;
+    }
+    if (old_guami_local_nonprim) {
+        OpenAPI_guami_free(old_guami_local_nonprim);
+        old_guami_local_nonprim = NULL;
     }
     return NULL;
 }

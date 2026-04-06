@@ -1,0 +1,160 @@
+openapi: 3.0.0
+
+info:
+  version: '1.1.1'
+  title: 'UPF GET UE Private IP address and Identifiers Service'
+  description: |
+    Nupf_GetUEPrivateIPaddrAndIdentifiers Service.  
+    © 2026, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.564 V19.6.0; 5G System; 5G System; User Plane Function Services; Stage 3
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.564/'
+
+servers:
+  - url: '{apiRoot}/nupf-gueip/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - nupf-gueip
+
+paths:
+  /ue-ip-info:
+    get:
+      summary: Search UeIpInfo for a PDU session from the UeIpInfo
+      operationId: SearchUeIpInfo
+      tags:
+        - UE IP Info_Get 
+      parameters:
+        - name: snssai
+          in: query
+          description: Slice of the PDU session 
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        - name: dnn
+          in: query
+          description: Dnn of the PDU session
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        - name: ue-ipv4-address
+          in: query
+          description: IPv4 address of the UE
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        - name: ue-ipv6-prefix
+          in: query
+          description: IPv6 prefix of the UE
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        - name: port-number
+          in: query
+          description: UDP or TCP port associated with the public address
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 65535
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UeIpInfo'
+        '307':
+          description: Temporary Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target UPF
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/RedirectResponse'
+          headers:
+            Location:
+              description: The URI pointing to the resource located on the redirect target UPF
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nupf-gueip: Access to the Nupf_GetUEPrivateIPaddrAndIdentifiers API
+
+  schemas:
+    UeIpInfo:
+      description: a UE IP Address Info for a PDU session
+      type: object
+      properties:
+        privateIpv4Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipDomain:
+          type: string
+        privateIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        publicIpv4Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        publicIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        portNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint16'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        hplmnSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        hrsboInd:
+          type: boolean
+          enum:
+           - true

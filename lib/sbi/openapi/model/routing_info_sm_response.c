@@ -9,7 +9,9 @@ OpenAPI_routing_info_sm_response_t *OpenAPI_routing_info_sm_response_create(
     OpenAPI_smsf_registration_t *smsf3_gpp,
     OpenAPI_smsf_registration_t *smsf_non3_gpp,
     OpenAPI_ip_sm_gw_info_t *ip_sm_gw,
-    OpenAPI_sms_router_info_t *sms_router
+    OpenAPI_sms_router_info_t *sms_router,
+    bool is_mps_msg_indication,
+    int mps_msg_indication
 )
 {
     OpenAPI_routing_info_sm_response_t *routing_info_sm_response_local_var = ogs_malloc(sizeof(OpenAPI_routing_info_sm_response_t));
@@ -20,6 +22,8 @@ OpenAPI_routing_info_sm_response_t *OpenAPI_routing_info_sm_response_create(
     routing_info_sm_response_local_var->smsf_non3_gpp = smsf_non3_gpp;
     routing_info_sm_response_local_var->ip_sm_gw = ip_sm_gw;
     routing_info_sm_response_local_var->sms_router = sms_router;
+    routing_info_sm_response_local_var->is_mps_msg_indication = is_mps_msg_indication;
+    routing_info_sm_response_local_var->mps_msg_indication = mps_msg_indication;
 
     return routing_info_sm_response_local_var;
 }
@@ -124,6 +128,13 @@ cJSON *OpenAPI_routing_info_sm_response_convertToJSON(OpenAPI_routing_info_sm_re
     }
     }
 
+    if (routing_info_sm_response->is_mps_msg_indication) {
+    if (cJSON_AddBoolToObject(item, "mpsMsgIndication", routing_info_sm_response->mps_msg_indication) == NULL) {
+        ogs_error("OpenAPI_routing_info_sm_response_convertToJSON() failed [mps_msg_indication]");
+        goto end;
+    }
+    }
+
 end:
     return item;
 }
@@ -141,6 +152,7 @@ OpenAPI_routing_info_sm_response_t *OpenAPI_routing_info_sm_response_parseFromJS
     OpenAPI_ip_sm_gw_info_t *ip_sm_gw_local_nonprim = NULL;
     cJSON *sms_router = NULL;
     OpenAPI_sms_router_info_t *sms_router_local_nonprim = NULL;
+    cJSON *mps_msg_indication = NULL;
     supi = cJSON_GetObjectItemCaseSensitive(routing_info_sm_responseJSON, "supi");
     if (supi) {
     if (!cJSON_IsString(supi) && !cJSON_IsNull(supi)) {
@@ -185,12 +197,22 @@ OpenAPI_routing_info_sm_response_t *OpenAPI_routing_info_sm_response_parseFromJS
     }
     }
 
+    mps_msg_indication = cJSON_GetObjectItemCaseSensitive(routing_info_sm_responseJSON, "mpsMsgIndication");
+    if (mps_msg_indication) {
+    if (!cJSON_IsBool(mps_msg_indication)) {
+        ogs_error("OpenAPI_routing_info_sm_response_parseFromJSON() failed [mps_msg_indication]");
+        goto end;
+    }
+    }
+
     routing_info_sm_response_local_var = OpenAPI_routing_info_sm_response_create (
         supi && !cJSON_IsNull(supi) ? ogs_strdup(supi->valuestring) : NULL,
         smsf3_gpp ? smsf3_gpp_local_nonprim : NULL,
         smsf_non3_gpp ? smsf_non3_gpp_local_nonprim : NULL,
         ip_sm_gw ? ip_sm_gw_local_nonprim : NULL,
-        sms_router ? sms_router_local_nonprim : NULL
+        sms_router ? sms_router_local_nonprim : NULL,
+        mps_msg_indication ? true : false,
+        mps_msg_indication ? mps_msg_indication->valueint : 0
     );
 
     return routing_info_sm_response_local_var;

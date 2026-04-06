@@ -5,17 +5,17 @@
 #include "smsf_info.h"
 
 OpenAPI_smsf_info_t *OpenAPI_smsf_info_create(
-    char *smsf_instance_id,
-    OpenAPI_plmn_id_t *plmn_id,
-    char *smsf_set_id
+    bool is_roaming_ue_ind,
+    int roaming_ue_ind,
+    OpenAPI_list_t *remote_plmn_range_list
 )
 {
     OpenAPI_smsf_info_t *smsf_info_local_var = ogs_malloc(sizeof(OpenAPI_smsf_info_t));
     ogs_assert(smsf_info_local_var);
 
-    smsf_info_local_var->smsf_instance_id = smsf_instance_id;
-    smsf_info_local_var->plmn_id = plmn_id;
-    smsf_info_local_var->smsf_set_id = smsf_set_id;
+    smsf_info_local_var->is_roaming_ue_ind = is_roaming_ue_ind;
+    smsf_info_local_var->roaming_ue_ind = roaming_ue_ind;
+    smsf_info_local_var->remote_plmn_range_list = remote_plmn_range_list;
 
     return smsf_info_local_var;
 }
@@ -27,17 +27,12 @@ void OpenAPI_smsf_info_free(OpenAPI_smsf_info_t *smsf_info)
     if (NULL == smsf_info) {
         return;
     }
-    if (smsf_info->smsf_instance_id) {
-        ogs_free(smsf_info->smsf_instance_id);
-        smsf_info->smsf_instance_id = NULL;
-    }
-    if (smsf_info->plmn_id) {
-        OpenAPI_plmn_id_free(smsf_info->plmn_id);
-        smsf_info->plmn_id = NULL;
-    }
-    if (smsf_info->smsf_set_id) {
-        ogs_free(smsf_info->smsf_set_id);
-        smsf_info->smsf_set_id = NULL;
+    if (smsf_info->remote_plmn_range_list) {
+        OpenAPI_list_for_each(smsf_info->remote_plmn_range_list, node) {
+            OpenAPI_plmn_range_free(node->data);
+        }
+        OpenAPI_list_free(smsf_info->remote_plmn_range_list);
+        smsf_info->remote_plmn_range_list = NULL;
     }
     ogs_free(smsf_info);
 }
@@ -53,34 +48,26 @@ cJSON *OpenAPI_smsf_info_convertToJSON(OpenAPI_smsf_info_t *smsf_info)
     }
 
     item = cJSON_CreateObject();
-    if (!smsf_info->smsf_instance_id) {
-        ogs_error("OpenAPI_smsf_info_convertToJSON() failed [smsf_instance_id]");
-        return NULL;
-    }
-    if (cJSON_AddStringToObject(item, "smsfInstanceId", smsf_info->smsf_instance_id) == NULL) {
-        ogs_error("OpenAPI_smsf_info_convertToJSON() failed [smsf_instance_id]");
+    if (smsf_info->is_roaming_ue_ind) {
+    if (cJSON_AddBoolToObject(item, "roamingUeInd", smsf_info->roaming_ue_ind) == NULL) {
+        ogs_error("OpenAPI_smsf_info_convertToJSON() failed [roaming_ue_ind]");
         goto end;
+    }
     }
 
-    if (!smsf_info->plmn_id) {
-        ogs_error("OpenAPI_smsf_info_convertToJSON() failed [plmn_id]");
-        return NULL;
-    }
-    cJSON *plmn_id_local_JSON = OpenAPI_plmn_id_convertToJSON(smsf_info->plmn_id);
-    if (plmn_id_local_JSON == NULL) {
-        ogs_error("OpenAPI_smsf_info_convertToJSON() failed [plmn_id]");
+    if (smsf_info->remote_plmn_range_list) {
+    cJSON *remote_plmn_range_listList = cJSON_AddArrayToObject(item, "remotePlmnRangeList");
+    if (remote_plmn_range_listList == NULL) {
+        ogs_error("OpenAPI_smsf_info_convertToJSON() failed [remote_plmn_range_list]");
         goto end;
     }
-    cJSON_AddItemToObject(item, "plmnId", plmn_id_local_JSON);
-    if (item->child == NULL) {
-        ogs_error("OpenAPI_smsf_info_convertToJSON() failed [plmn_id]");
-        goto end;
-    }
-
-    if (smsf_info->smsf_set_id) {
-    if (cJSON_AddStringToObject(item, "smsfSetId", smsf_info->smsf_set_id) == NULL) {
-        ogs_error("OpenAPI_smsf_info_convertToJSON() failed [smsf_set_id]");
-        goto end;
+    OpenAPI_list_for_each(smsf_info->remote_plmn_range_list, node) {
+        cJSON *itemLocal = OpenAPI_plmn_range_convertToJSON(node->data);
+        if (itemLocal == NULL) {
+            ogs_error("OpenAPI_smsf_info_convertToJSON() failed [remote_plmn_range_list]");
+            goto end;
+        }
+        cJSON_AddItemToArray(remote_plmn_range_listList, itemLocal);
     }
     }
 
@@ -92,50 +79,55 @@ OpenAPI_smsf_info_t *OpenAPI_smsf_info_parseFromJSON(cJSON *smsf_infoJSON)
 {
     OpenAPI_smsf_info_t *smsf_info_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
-    cJSON *smsf_instance_id = NULL;
-    cJSON *plmn_id = NULL;
-    OpenAPI_plmn_id_t *plmn_id_local_nonprim = NULL;
-    cJSON *smsf_set_id = NULL;
-    smsf_instance_id = cJSON_GetObjectItemCaseSensitive(smsf_infoJSON, "smsfInstanceId");
-    if (!smsf_instance_id) {
-        ogs_error("OpenAPI_smsf_info_parseFromJSON() failed [smsf_instance_id]");
+    cJSON *roaming_ue_ind = NULL;
+    cJSON *remote_plmn_range_list = NULL;
+    OpenAPI_list_t *remote_plmn_range_listList = NULL;
+    roaming_ue_ind = cJSON_GetObjectItemCaseSensitive(smsf_infoJSON, "roamingUeInd");
+    if (roaming_ue_ind) {
+    if (!cJSON_IsBool(roaming_ue_ind)) {
+        ogs_error("OpenAPI_smsf_info_parseFromJSON() failed [roaming_ue_ind]");
         goto end;
     }
-    if (!cJSON_IsString(smsf_instance_id)) {
-        ogs_error("OpenAPI_smsf_info_parseFromJSON() failed [smsf_instance_id]");
-        goto end;
     }
 
-    plmn_id = cJSON_GetObjectItemCaseSensitive(smsf_infoJSON, "plmnId");
-    if (!plmn_id) {
-        ogs_error("OpenAPI_smsf_info_parseFromJSON() failed [plmn_id]");
-        goto end;
-    }
-    plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
-    if (!plmn_id_local_nonprim) {
-        ogs_error("OpenAPI_plmn_id_parseFromJSON failed [plmn_id]");
-        goto end;
-    }
+    remote_plmn_range_list = cJSON_GetObjectItemCaseSensitive(smsf_infoJSON, "remotePlmnRangeList");
+    if (remote_plmn_range_list) {
+        cJSON *remote_plmn_range_list_local = NULL;
+        if (!cJSON_IsArray(remote_plmn_range_list)) {
+            ogs_error("OpenAPI_smsf_info_parseFromJSON() failed [remote_plmn_range_list]");
+            goto end;
+        }
 
-    smsf_set_id = cJSON_GetObjectItemCaseSensitive(smsf_infoJSON, "smsfSetId");
-    if (smsf_set_id) {
-    if (!cJSON_IsString(smsf_set_id) && !cJSON_IsNull(smsf_set_id)) {
-        ogs_error("OpenAPI_smsf_info_parseFromJSON() failed [smsf_set_id]");
-        goto end;
-    }
+        remote_plmn_range_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(remote_plmn_range_list_local, remote_plmn_range_list) {
+            if (!cJSON_IsObject(remote_plmn_range_list_local)) {
+                ogs_error("OpenAPI_smsf_info_parseFromJSON() failed [remote_plmn_range_list]");
+                goto end;
+            }
+            OpenAPI_plmn_range_t *remote_plmn_range_listItem = OpenAPI_plmn_range_parseFromJSON(remote_plmn_range_list_local);
+            if (!remote_plmn_range_listItem) {
+                ogs_error("No remote_plmn_range_listItem");
+                goto end;
+            }
+            OpenAPI_list_add(remote_plmn_range_listList, remote_plmn_range_listItem);
+        }
     }
 
     smsf_info_local_var = OpenAPI_smsf_info_create (
-        ogs_strdup(smsf_instance_id->valuestring),
-        plmn_id_local_nonprim,
-        smsf_set_id && !cJSON_IsNull(smsf_set_id) ? ogs_strdup(smsf_set_id->valuestring) : NULL
+        roaming_ue_ind ? true : false,
+        roaming_ue_ind ? roaming_ue_ind->valueint : 0,
+        remote_plmn_range_list ? remote_plmn_range_listList : NULL
     );
 
     return smsf_info_local_var;
 end:
-    if (plmn_id_local_nonprim) {
-        OpenAPI_plmn_id_free(plmn_id_local_nonprim);
-        plmn_id_local_nonprim = NULL;
+    if (remote_plmn_range_listList) {
+        OpenAPI_list_for_each(remote_plmn_range_listList, node) {
+            OpenAPI_plmn_range_free(node->data);
+        }
+        OpenAPI_list_free(remote_plmn_range_listList);
+        remote_plmn_range_listList = NULL;
     }
     return NULL;
 }

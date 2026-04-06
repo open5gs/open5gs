@@ -301,7 +301,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_assert(af_sess->dnn);
 
     af_local_discover_and_send(
-            OGS_SBI_SERVICE_TYPE_NBSF_MANAGEMENT,
+            OpenAPI_service_name_nbsf_management,
             af_sess, NULL,
             af_nbsf_management_build_discover);
 
