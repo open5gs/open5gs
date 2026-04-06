@@ -543,8 +543,7 @@ static _MHD_Result access_handler(
         if (ogs_sbi_header_get(request->http.headers, "Content-Length") ||
             ogs_sbi_header_get(request->http.headers, "Transfer-Encoding")) {
 
-            // FIXME : check if POST_DATA is on MHD_POSTDATA_KIND
-
+            /* FIXME : check if POST_DATA is on MHD_POSTDATA_KIND */
             return MHD_YES;
         }
 
@@ -552,28 +551,42 @@ static _MHD_Result access_handler(
     }
 
     if (*upload_data_size != 0) {
+        char *content = NULL;
         size_t offset = 0;
+        size_t new_length = 0;
+
+        if (*upload_data_size > OGS_MAX_SDU_LEN -
+                request->http.content_length) {
+            ogs_error("Payload too large : Content-Length[%d], "
+                    "upload_data_size[%d]",
+                    (int)request->http.content_length,
+                    (int)*upload_data_size);
+            *upload_data_size = 0;
+            return MHD_NO;
+        }
+
+        new_length = request->http.content_length + *upload_data_size;
+        offset = request->http.content_length;
 
         if (request->http.content == NULL) {
-            request->http.content_length = *upload_data_size;
-            request->http.content =
-                (char*)ogs_malloc(request->http.content_length + 1);
-            ogs_assert(request->http.content);
+            ogs_assert(request->http.content_length == 0);
+
+            content = ogs_malloc(new_length + 1);
         } else {
-            offset = request->http.content_length;
-            if ((request->http.content_length +
-                        *upload_data_size) > OGS_MAX_SDU_LEN) {
-                ogs_error("Overflow : Content-Length[%d], upload_data_size[%d]",
-                            (int)request->http.content_length,
-                            (int)*upload_data_size);
-                *upload_data_size = 0;
-                return MHD_YES;
-            }
-            request->http.content_length += *upload_data_size;
-            request->http.content = (char *)ogs_realloc(
-                    request->http.content, request->http.content_length + 1);
-            ogs_assert(request->http.content);
+            content = ogs_realloc(request->http.content, new_length + 1);
         }
+
+        if (!content) {
+            ogs_error("Memory allocation failed : Content-Length[%d], "
+                    "upload_data_size[%d]",
+                    (int)request->http.content_length,
+                    (int)*upload_data_size);
+            *upload_data_size = 0;
+            return MHD_NO;
+        }
+
+        request->http.content = content;
+        request->http.content_length = new_length;
 
         memcpy(request->http.content + offset, upload_data, *upload_data_size);
         request->http.content[request->http.content_length] = '\0';
