@@ -709,6 +709,16 @@ void ngap_handle_uplink_nas_transport(
         return;
     }
 
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
@@ -872,6 +882,16 @@ void ngap_handle_ue_radio_capability_info_indication(
         return;
     }
 
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
@@ -970,6 +990,16 @@ void ngap_handle_initial_context_setup_response(
 
     if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
         r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
@@ -1256,6 +1286,16 @@ void ngap_handle_initial_context_setup_failure(
         return;
     }
 
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
@@ -1384,6 +1424,11 @@ void ngap_handle_ue_context_modification_response(
             ogs_warn("Invalid AMF_UE_NGAP_ID");
         }
 
+        if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+            ogs_warn("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) "
+                    "[0x%llx]", (long long)amf_ue_ngap_id);
+        }
+
         ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
         if (!ran_ue)
             ogs_warn("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
@@ -1449,6 +1494,11 @@ void ngap_handle_ue_context_modification_failure(
 
         if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
             ogs_warn("Invalid AMF_UE_NGAP_ID");
+        }
+
+        if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+            ogs_warn("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) "
+                    "[0x%llx]", (long long)amf_ue_ngap_id);
         }
 
         ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
@@ -1545,6 +1595,16 @@ void ngap_handle_ue_context_release_request(
 
     if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
         r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
@@ -1722,6 +1782,16 @@ void ngap_handle_ue_context_release_complete(
 
     if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
         r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
@@ -1949,6 +2019,16 @@ void ngap_handle_pdu_session_resource_setup_response(
 
     if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
         r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
@@ -2278,6 +2358,16 @@ void ngap_handle_pdu_session_resource_modify_response(
         return;
     }
 
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
@@ -2458,6 +2548,16 @@ void ngap_handle_pdu_session_resource_release_response(
 
     if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
         r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
@@ -2810,6 +2910,16 @@ void ngap_handle_path_switch_request(
 
     if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
         r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
@@ -3187,6 +3297,16 @@ void ngap_handle_handover_required(
 
     if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
         r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
@@ -3575,6 +3695,16 @@ void ngap_handle_handover_request_ack(
         return;
     }
 
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     target_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
     if (!target_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
@@ -3793,6 +3923,16 @@ void ngap_handle_handover_failure(
         return;
     }
 
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
+        r = ngap_send_error_indication(gnb, NULL, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     target_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
     if (!target_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
@@ -3911,6 +4051,16 @@ void ngap_handle_handover_cancel(
 
     if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
         r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
@@ -4070,6 +4220,16 @@ void ngap_handle_uplink_ran_status_transfer(
         return;
     }
 
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     source_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
     if (!source_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
@@ -4186,6 +4346,16 @@ void ngap_handle_handover_notification(
 
     if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
+        r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+        ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) [0x%llx]",
+                (long long)amf_ue_ngap_id);
         r = ngap_send_error_indication(gnb, (uint64_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
@@ -4739,6 +4909,12 @@ void ngap_handle_ng_reset(
                     continue;
                 }
 
+                if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+                    ogs_error("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) "
+                            "[0x%llx]", (long long)amf_ue_ngap_id);
+                    continue;
+                }
+
                 ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
 
                 if (!ran_ue) {
@@ -4873,6 +5049,11 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
         if (asn_INTEGER2uint64(AMF_UE_NGAP_ID, &amf_ue_ngap_id) != 0) {
             ogs_warn("Invalid AMF_UE_NGAP_ID");
+        }
+
+        if (amf_ue_ngap_id > MAX_AMF_UE_NGAP_ID) {
+            ogs_warn("Overflow AMF_UE_NGAP_ID(2^40-1, 0xffffffffff) "
+                    "[0x%llx]", (long long)amf_ue_ngap_id);
         }
 
         ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);

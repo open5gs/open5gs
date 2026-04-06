@@ -178,6 +178,7 @@ struct ran_ue_s {
     /* UE identity */
 #define INVALID_UE_NGAP_ID 0xffffffffffffffffULL /* Initial value of ran_ue_ngap_id */
     uint64_t        ran_ue_ngap_id; /* RAN-UE-NGAP-ID received from RAN */
+#define MAX_AMF_UE_NGAP_ID 0xffffffffffULL
     uint64_t        amf_ue_ngap_id; /* AMF-UE-NGAP-ID received from AMF */
 
     uint16_t        gnb_ostream_id; /* SCTP output stream id for eNB */
