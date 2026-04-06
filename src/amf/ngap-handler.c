@@ -5096,10 +5096,14 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
             xact_count = amf_sess_xact_count(amf_ue);
 
-            amf_sbi_send_deactivate_all_sessions(
-                    ran_ue, amf_ue,
-                    AMF_REMOVE_N2_CONTEXT_BY_ERROR_INDICATION,
-                    Cause->present, (int)Cause->choice.radioNetwork);
+            if (!Cause) {
+                ogs_error("ErrorIndication without Cause IE");
+            } else {
+                amf_sbi_send_deactivate_all_sessions(
+                        ran_ue, amf_ue,
+                        AMF_REMOVE_N2_CONTEXT_BY_ERROR_INDICATION,
+                        Cause->present, (int)Cause->choice.radioNetwork);
+            }
 
             if (amf_sess_xact_count(amf_ue) == xact_count) {
                 ogs_debug("    SUPI[%s]", amf_ue->supi);
