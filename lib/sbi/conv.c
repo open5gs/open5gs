@@ -1186,6 +1186,12 @@ int ogs_sbi_parse_plmn_list(
             ogs_assert(PlmnId->mcc);
             ogs_assert(PlmnId->mnc);
 
+            if (num_of_plmn_list >= OGS_MAX_NUM_OF_PLMN) {
+                ogs_warn("Exceeded maximum PLMN list size (%d)",
+                        OGS_MAX_NUM_OF_PLMN);
+                break;
+            }
+
             ogs_plmn_id_build(plmn_list + num_of_plmn_list,
                     atoi(PlmnId->mcc), atoi(PlmnId->mnc), strlen(PlmnId->mnc));
 
