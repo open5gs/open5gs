@@ -447,26 +447,55 @@ int ogs_pco_parse(ogs_pco_t *pco, unsigned char *data, int data_len)
 
     memset(pco, 0, sizeof(ogs_pco_t));
 
+    if (data_len < 1) {
+        ogs_error("PCO/EPCO too short [%d]", data_len);
+        return -EINVAL;
+    }
+
     pco->ext = source->ext;
     pco->configuration_protocol = source->configuration_protocol;
     size++;
 
     while(size < data_len && i < OGS_MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID) {
         ogs_pco_id_t *id = &pco->ids[i];
-        ogs_assert(size + sizeof(id->id) <= data_len);
+
+        if (size + (int)sizeof(id->id) > data_len) {
+            ogs_error("PCO/EPCO truncated before Container-ID "
+                    "[offset:%d len:%d]", size, data_len);
+            return -EINVAL;
+        }
         memcpy(&id->id, data + size, sizeof(id->id));
         id->id = be16toh(id->id);
         size += sizeof(id->id);
 
-        ogs_assert(size + sizeof(id->len) <= data_len);
+        if (size + (int)sizeof(id->len) > data_len) {
+            ogs_error("PCO/EPCO truncated before Container-Length "
+                    "[id:0x%x offset:%d len:%d]",
+                    id->id, size, data_len);
+            return -EINVAL;
+        }
         memcpy(&id->len, data + size, sizeof(id->len));
         size += sizeof(id->len);
+
+        if (size + id->len > data_len) {
+            ogs_error("PCO/EPCO truncated Container data "
+                    "[id:0x%x container-len:%u offset:%d len:%d]",
+                    id->id, id->len, size, data_len);
+            return -EINVAL;
+        }
 
         id->data = data + size;
         size += id->len;
 
         i++;
     }
+
+    if (size < data_len) {
+        ogs_error("PCO/EPCO exceeds maximum number of containers "
+                "[%d]", OGS_MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID);
+        return -EINVAL;
+    }
+
     pco->num_of_id = i;
     ogs_expect(size == data_len);
 

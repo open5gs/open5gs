@@ -212,6 +212,16 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_SMF_REGISTRATIONS)
                 if (message.h.resource.component[3]) {
                     uint8_t psi = atoi(message.h.resource.component[3]);
+                    if (psi == OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
+                        ogs_error("PDU Session Identitiy unassigned [%s]",
+                                message.h.resource.component[3]);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                &message, "PDU Session Identitiy unassigned",
+                                message.h.resource.component[3], NULL));
+                        break;
+                    }
 
                     sess = udm_sess_find_by_psi(udm_ue, psi);
                     if (!sess) {
@@ -354,15 +364,17 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                     break;
 
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
-                    if (message.res_status ==
-                            OGS_SBI_HTTP_STATUS_NO_CONTENT) {
-                        ogs_sbi_subscription_data_remove(subscription_data);
-                    } else {
+                    if (message.res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT)
+                        ogs_info("[%s] Subscription deleted",
+                                subscription_data->id ?
+                                    subscription_data->id : "Unknown");
+                    else
                         ogs_error("[%s] HTTP response error [%d]",
                                 subscription_data->id ?
                                     subscription_data->id : "Unknown",
                                 message.res_status);
-                    }
+
+                    ogs_sbi_subscription_data_remove(subscription_data);
                     break;
 
                 DEFAULT

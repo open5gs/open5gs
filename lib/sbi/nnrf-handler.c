@@ -50,7 +50,7 @@ void ogs_nnrf_nfm_handle_nf_register(
         nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
 
     if (NFProfile->plmn_list) {
-        nf_instance->num_of_plmn_id = 0;
+        ogs_local_conf()->num_of_serving_plmn_id = 0;
         OpenAPI_list_for_each(NFProfile->plmn_list, node) {
             OpenAPI_plmn_id_t *PlmnId = node->data;
             if (PlmnId) {
@@ -418,7 +418,11 @@ static void handle_smf_info(
     OpenAPI_list_for_each(sNssaiSmfInfoList, node) {
         sNssaiSmfInfoItem = node->data;
         if (sNssaiSmfInfoItem) {
-            ogs_assert(nf_info->smf.num_of_slice < OGS_MAX_NUM_OF_SLICE);
+            if (nf_info->smf.num_of_slice >= OGS_MAX_NUM_OF_SLICE) {
+                ogs_error("OVERFLOW Slice [%d:%d]",
+                        nf_info->smf.num_of_slice, OGS_MAX_NUM_OF_SLICE);
+                break;
+            }
 
             DnnSmfInfoList = sNssaiSmfInfoItem->dnn_smf_info_list;
             OpenAPI_list_for_each(DnnSmfInfoList, node2) {
@@ -467,7 +471,11 @@ static void handle_smf_info(
         TaiItem = node->data;
         if (TaiItem && TaiItem->plmn_id && TaiItem->tac) {
             ogs_5gs_tai_t *nr_tai = NULL;
-            ogs_assert(nf_info->smf.num_of_nr_tai < OGS_MAX_NUM_OF_TAI);
+            if (nf_info->smf.num_of_nr_tai >= OGS_MAX_NUM_OF_TAI) {
+                ogs_error("OVERFLOW TAI [%d:%d]",
+                        nf_info->smf.num_of_nr_tai, OGS_MAX_NUM_OF_TAI);
+                break;
+            }
 
             nr_tai = &nf_info->smf.nr_tai[nf_info->smf.num_of_nr_tai];
             ogs_assert(nr_tai);
@@ -502,7 +510,11 @@ static void handle_smf_info(
                         TacRangeItem->start && TacRangeItem->end) {
                     int tac_index = nf_info->smf.nr_tai_range
                         [nf_info->smf.num_of_nr_tai_range].num_of_tac_range;
-                    ogs_assert(tac_index < OGS_MAX_NUM_OF_TAI);
+                    if (tac_index >= OGS_MAX_NUM_OF_TAI) {
+                        ogs_error("OVERFLOW TAI [%d:%d]",
+                                tac_index, OGS_MAX_NUM_OF_TAI);
+                        break;
+                    }
 
                     nf_info->smf.nr_tai_range
                         [nf_info->smf.num_of_nr_tai_range].
@@ -576,6 +588,11 @@ static void handle_scp_info(
     OpenAPI_list_for_each(ScpInfo->scp_domain_info_list, node) {
         DomainInfoMap = node->data;
         if (DomainInfoMap && DomainInfoMap->key && DomainInfoMap->value) {
+            if (scp_info.num_of_domain >= OGS_MAX_NUM_OF_SCP_DOMAIN) {
+                ogs_warn("Exceeded maximum SCP domains (%d)",
+                        OGS_MAX_NUM_OF_SCP_DOMAIN);
+                break;
+            }
             scp_info.domain[scp_info.num_of_domain].name =
                 ogs_strdup(DomainInfoMap->key);
             DomainInfo = DomainInfoMap->value;
@@ -615,7 +632,8 @@ static void handle_scp_info(
         }
     }
 
-    if (scp_info.http.presence || scp_info.https.presence) {
+    if (scp_info.http.presence || scp_info.https.presence ||
+        scp_info.num_of_domain) {
         nf_info = ogs_sbi_nf_info_add(
                 &nf_instance->nf_info_list, OpenAPI_nf_type_SCP);
         ogs_assert(nf_info);
@@ -714,7 +732,11 @@ static void handle_amf_info(
     OpenAPI_list_for_each(GuamiList, node) {
         GuamiAmfInfoItem = node->data;
         if (GuamiAmfInfoItem) {
-            ogs_assert(nf_info->amf.num_of_guami < OGS_MAX_NUM_OF_SERVED_GUAMI);
+            if (nf_info->amf.num_of_guami >= OGS_MAX_NUM_OF_SERVED_GUAMI) {
+                ogs_error("OVERFLOW Guami [%d:%d]",
+                        nf_info->amf.num_of_guami, OGS_MAX_NUM_OF_SERVED_GUAMI);
+                break;
+            }
 
             if (GuamiAmfInfoItem->amf_id && GuamiAmfInfoItem->plmn_id &&
                     GuamiAmfInfoItem->plmn_id->mnc &&
@@ -753,9 +775,6 @@ static void handle_amf_info(
         TaiRangeItem = node->data;
         if (TaiRangeItem && TaiRangeItem->plmn_id &&
                 TaiRangeItem->tac_range_list) {
-            ogs_assert(nf_info->amf.num_of_nr_tai_range <
-                    OGS_MAX_NUM_OF_TAI);
-
             if (nf_info->amf.num_of_nr_tai_range >= OGS_MAX_NUM_OF_TAI) {
                 ogs_error("OVERFLOW TaiRangeItem [%d:%d]",
                         nf_info->amf.num_of_nr_tai_range, OGS_MAX_NUM_OF_TAI);

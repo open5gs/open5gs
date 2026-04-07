@@ -3,7 +3,7 @@ ARG tag=latest
 ARG username=acetcom
 FROM ${username}/${dist}-${tag}-open5gs-base
 
-MAINTAINER Sukchan Lee <acetcom@gmail.com>
+LABEL org.opencontainers.image.authors="Sukchan Lee <acetcom@gmail.com>"
 
 COPY setup.sh /root
 

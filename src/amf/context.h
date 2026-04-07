@@ -178,6 +178,7 @@ struct ran_ue_s {
     /* UE identity */
 #define INVALID_UE_NGAP_ID 0xffffffffffffffffULL /* Initial value of ran_ue_ngap_id */
     uint64_t        ran_ue_ngap_id; /* RAN-UE-NGAP-ID received from RAN */
+#define MAX_AMF_UE_NGAP_ID 0xffffffffffULL
     uint64_t        amf_ue_ngap_id; /* AMF-UE-NGAP-ID received from AMF */
 
     uint16_t        gnb_ostream_id; /* SCTP output stream id for eNB */
@@ -427,6 +428,9 @@ struct amf_ue_s {
     } while(0)
     int             security_context_available;
     int             mac_failed;
+
+    /* Authentication synch failure counter */
+    uint8_t auth_synch_fail_count;
 
     /* flag: 1 = allow restoration of context, 0 = disallow */
     bool            can_restore_context;
@@ -913,25 +917,31 @@ typedef struct amf_sess_s {
     ogs_pool_id_t   amf_ue_id;
 
     /*
-     * RAN-UE identifier associated with this session.
+     * RAN-UE identifier currently associated with this session.
+     *
+     * NOTE:
+     * This field represents the latest RAN UE NGAP ID known for the session.
+     * It may change during procedures such as NG context release and
+     * re-establishment.
      *
      * IMPORTANT:
      * - During SBI Client operations (e.g., AMF sending requests to SMF/PCF),
-     *   the RAN-UE may change before the asynchronous SBI response arrives
-     *   (e.g., NG Context release/re-establishment). Because of this, the
-     *   SBI transaction (ogs_sbi_xact_t) stores its own snapshot of the
-     *   RAN-UE ID inside xact->assoc_id[].
+     *   the RAN-UE may change before the asynchronous SBI response arrives.
+     *   To avoid using a stale or incorrect RAN-UE, the SBI transaction
+     *   (ogs_sbi_xact_t) stores a snapshot in xact->user_data.
      *
-     *   When processing SBI Client responses, the AMF must use the snapshot
-     *   stored in xact->assoc_id[AMF_ASSOC_RAN_UE_ID] instead of
-     *   this session field.
+     *   When handling SBI Client responses, the AMF MUST use the snapshot
+     *   stored in the SBI transaction instead of this session field.
      *
      * - For SBI Server operations (e.g., Namf callbacks where the AMF
      *   receives requests from SMF), there is no transaction-specific
      *   snapshot. In such cases, the current session value (sess->ran_ue_id)
      *   is used.
+     *
+     * This design helps prevent RAN-UE mismatches observed in Issue #2839,
+     * where concurrent UE procedures could result in NAS being sent to the
+     * wrong RAN UE.
      */
-#define AMF_ASSOC_RAN_UE_ID 1
     ogs_pool_id_t   ran_ue_id;
 
     ogs_s_nssai_t s_nssai;

@@ -2,7 +2,7 @@ ARG dist=fedora
 ARG tag=latest
 FROM ${dist}:${tag}
 
-MAINTAINER Sukchan Lee <acetcom@gmail.com>
+LABEL org.opencontainers.image.authors="Sukchan Lee <acetcom@gmail.com>"
 
 RUN dnf -y install \
         python3 \

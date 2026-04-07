@@ -1,4 +1,4 @@
-/*
+/* 3GPP TS 29.272 S6a
  * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
@@ -89,6 +89,11 @@ extern "C" {
 #define OGS_DIAM_S6A_SUBDATA_OP_DET_BARRING             (1 << 10)
 #define OGS_DIAM_S6A_SUBDATA_ALL                        0xFFFFFFFF
 
+/* 7.3.162 SMS-Register-Request, see also 3GPP TS 23.272 C.8 "Registration of MME for SMS" */
+#define OGS_DIAM_S6A_SMS_REGISTER_REQUIRED              0
+#define OGS_DIAM_S6A_SMS_REGISTER_NOT_PREFERRED         1
+#define OGS_DIAM_S6A_SMS_REGISTER_NO_PREFERENCE         2
+
 extern struct dict_object *ogs_diam_s6a_application;
 
 extern struct dict_object *ogs_diam_s6a_cmd_air;
@@ -158,6 +163,8 @@ extern struct dict_object *ogs_diam_s6a_software_version;
 
 extern struct dict_object *ogs_diam_s6a_msisdn;
 extern struct dict_object *ogs_diam_s6a_a_msisdn;
+
+extern struct dict_object *ogs_diam_s6a_sms_register_request;
 
 extern struct dict_object *ogs_diam_s6a_supported_features;
 extern struct dict_object *ogs_diam_s6a_feature_list_id;

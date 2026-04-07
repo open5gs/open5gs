@@ -85,8 +85,20 @@ void mme_send_delete_session_or_detach(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0));
             } else {
-                ogs_warn("[%s] MME-UE Context Removed", mme_ue->imsi_bcd);
-                MME_UE_REMOVE_WITH_PAGING_FAIL(mme_ue);
+            /*
+             * No S1 context exists (eNB UE context already gone).
+             *
+             * Historically, this path removed the UE context immediately.
+             * That can free mme_ue while EMM FSM is still handling the timer
+             * event, which may lead to invalid FSM transitions or assertions.
+             *
+             * Defer UE removal to EMM FSM by setting ue_context_will_remove.
+             * The caller will transition to emm_state_ue_context_will_remove,
+             * and the removal will be performed on state entry.
+             */
+                ogs_warn("[%s] No S1 Context - defer UE removal to FSM",
+                    mme_ue->imsi_bcd);
+                mme_ue->ue_context_will_remove = true;
             }
         }
         break;
@@ -403,6 +415,22 @@ void mme_send_tau_accept_and_check_release(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
     ogs_assert(enb_ue);
+
+    /*
+     * If BCS mismatch deleted all sessions, InitialContextSetup is impossible
+     * (requires E-RABs). Fall back to DownlinkNASTransport to deliver TAU
+     * Accept without bearer setup. The UE reported no bearers via BCS,
+     * so it can re-establish PDN connectivity after TAU completes.
+     */
+    if (mme_ue->tracking_area_update_accept_proc ==
+            S1AP_ProcedureCode_id_InitialContextSetup &&
+            ogs_list_count(&mme_ue->sess_list) == 0) {
+        ogs_warn("[%s] No sessions after BCS cleanup; "
+                "downgrade InitialContextSetup to DownlinkNASTransport",
+                mme_ue->imsi_bcd);
+        mme_ue->tracking_area_update_accept_proc =
+            S1AP_ProcedureCode_id_downlinkNASTransport;
+    }
 
     r = nas_eps_send_tau_accept(mme_ue,
             mme_ue->tracking_area_update_accept_proc);

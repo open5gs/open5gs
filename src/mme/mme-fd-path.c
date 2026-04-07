@@ -1,4 +1,4 @@
-/*
+/* 3GPP TS 29.272 S6a
  * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
@@ -424,8 +424,13 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                     ogs_assert(ret == 0);
                     switch(hdr->avp_code) {
                     case OGS_DIAM_S6A_AVP_CODE_SERVED_PARTY_IP_ADDRESS:
+                        memset(&addr, 0, sizeof(addr));
                         ret = fd_msg_avp_value_interpret(avpch3, &addr.sa);
-                        ogs_assert(ret == 0);
+                        if (ret != 0) {
+                            ogs_warn("Ignore malformed "
+                                    "Served-Party-IP-Address AVP");
+                            break;
+                        }
 
                         if (addr.ogs_sa_family == AF_INET) {
                             session->ue_ip.addr = addr.sin.sin_addr.s_addr;
@@ -451,7 +456,8 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                                     "IPv6. Ignoring...", session->session_type);
                             }
                         } else {
-                            ogs_error("Invalid family[%d]",
+                            ogs_warn("Invalid family[%d] in "
+                                    "Served-Party-IP-Address",
                                     addr.ogs_sa_family);
                         }
                         break;
@@ -613,27 +619,27 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                         ogs_assert(ret == 0);
                         switch(hdr->avp_code) {
                         case OGS_DIAM_S6A_AVP_CODE_MIP_HOME_AGENT_ADDRESS:
+                            memset(&addr, 0, sizeof(addr));
                             ret = fd_msg_avp_value_interpret(avpch4,
                                     &addr.sa);
-                            ogs_assert(ret == 0);
-                            if (addr.ogs_sa_family == AF_INET)
-                            {
+                            if (ret != 0) {
+                                ogs_warn("Ignore malformed "
+                                    "MIP-Home-Agent-Address AVP");
+                                break;
+                            }
+                            if (addr.ogs_sa_family == AF_INET) {
                                 session->smf_ip.ipv4 = 1;
                                 session->smf_ip.addr =
                                     addr.sin.sin_addr.s_addr;
-                            }
-                            else if (addr.ogs_sa_family == AF_INET6)
-                            {
+                            } else if (addr.ogs_sa_family == AF_INET6) {
                                 session->smf_ip.ipv6 = 1;
                                 memcpy(session->smf_ip.addr6,
                                     addr.sin6.sin6_addr.s6_addr,
                                     OGS_IPV6_LEN);
-                            }
-                            else
-                            {
-                                ogs_error("Invald family:%d",
+                            } else {
+                                ogs_warn("Invald family[%d] "
+                                        "in MIP-Home-Agent-Address",
                                         addr.ogs_sa_family);
-                                error++;
                             }
                             break;
                         case OGS_DIAM_S6A_AVP_CODE_MIP_HOME_AGENT_HOST:
@@ -1261,7 +1267,7 @@ cleanup:
 }
 
 /* MME Sends Update Location Request to HSS */
-void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
+void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue, uint32_t extra_ulr_flags)
 {
     int ret;
 
@@ -1300,6 +1306,11 @@ void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
             CONSTSTRLEN(OGS_DIAM_S6A_APP_SID_OPT));
     ogs_assert(ret == 0);
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
+    ogs_assert(ret == 0);
+
+    /* Set Vendor-Specific-Application-Id AVP */
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            req, OGS_DIAM_S6A_APPLICATION_ID);
     ogs_assert(ret == 0);
 
     /* Set the Auth-Session-State AVP */
@@ -1367,8 +1378,9 @@ void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     /* Set the ULR-Flags */
     ret = fd_msg_avp_new(ogs_diam_s6a_ulr_flags, 0, &avp);
     ogs_assert(ret == 0);
-    val.u32 = OGS_DIAM_S6A_ULR_S6A_S6D_INDICATOR;
-    val.u32 |= OGS_DIAM_S6A_ULR_INITIAL_ATTACH_IND;
+    val.u32 = OGS_DIAM_S6A_ULR_S6A_S6D_INDICATOR |
+              OGS_DIAM_S6A_ULR_INITIAL_ATTACH_IND |
+              extra_ulr_flags;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -1393,9 +1405,16 @@ void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
-    /* Set Vendor-Specific-Application-Id AVP */
-    ret = ogs_diam_message_vendor_specific_appid_set(
-            req, OGS_DIAM_S6A_APPLICATION_ID);
+    /* Set the SMS-Register-Request */
+    ret = fd_msg_avp_new(ogs_diam_s6a_sms_register_request, 0, &avp);
+    ogs_assert(ret == 0);
+    /* "SMS in MME" (3GPP TS 23.272 Annex C) not supported yet.
+     * We do support SGs interface though, so signal that,
+     * see 3GPP TS 23.272 C.8. */
+    val.u32 = OGS_DIAM_S6A_SMS_REGISTER_NOT_PREFERRED;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
     ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);

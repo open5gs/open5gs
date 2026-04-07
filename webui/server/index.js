@@ -23,7 +23,11 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 
 const csrf = require('lusca').csrf();
-const secret = process.env.SECRET_KEY || 'change-me';
+
+require('./ensure-secret')();
+
+const secret = process.env.SECRET_KEY;
+
 
 const api = require('./routes');
 

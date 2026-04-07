@@ -226,24 +226,53 @@ ogs_uint24_t ogs_uint24_from_string(char *str, int base)
 
 uint64_t ogs_uint64_from_string(char *str, int base)
 {
-    uint64_t x;
+    char *end = NULL;
+    unsigned long long v;
 
     ogs_assert(str);
 
-    if (strlen(str) == 0)
+    if (str[0] == '\0') {
+    /* SupportedFeatures/OpenAPI allows empty string; treat as success(0). */
+        errno = 0;
         return 0;
-
-    errno = 0;
-    x = strtoll(str, NULL, base);
-
-    if ((errno == ERANGE && (x == LONG_MAX || x == LONG_MIN)) ||
-            (errno != 0 && x == 0)) {
-        ogs_log_message(OGS_LOG_FATAL, ogs_errno, "strtoll()) failed [%lld]",
-                (long long)x);
-        ogs_assert_if_reached();
     }
 
-    return x;
+    /* reject negative for uint64 */
+    if (str[0] == '-') {
+        errno = EINVAL;
+        ogs_log_message(OGS_LOG_ERROR, ogs_errno,
+                "strtoull() failed (negative) [%s]", str);
+        return 0;
+    }
+
+    errno = 0;
+    v = strtoull(str, &end, base);
+
+    /* no digits parsed */
+    if (end == str) {
+        errno = EINVAL;
+        ogs_log_message(OGS_LOG_ERROR, ogs_errno,
+                "strtoull() failed (no digits) [%s]", str);
+        return 0;
+    }
+
+    /* trailing garbage */
+    if (*end != '\0') {
+        errno = EINVAL;
+        ogs_log_message(OGS_LOG_ERROR, ogs_errno,
+                "strtoull() failed (trailing) [%s]", str);
+        return 0;
+    }
+
+    /* overflow/underflow */
+    if (errno == ERANGE) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_errno,
+                "strtoull() failed (range) [%s]", str);
+        return 0;
+    }
+
+    errno = 0;  /* success */
+    return (uint64_t)v;
 }
 
 double *ogs_alloc_double(double value)

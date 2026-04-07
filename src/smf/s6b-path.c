@@ -1,5 +1,5 @@
 /* 3GPP TS 29.273 section 9
- * Copyright (C) 2019-2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -387,7 +387,10 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
     ogs_assert(ret == 0);
-    ogs_assert(new == 0);
+    if (new != 0) {
+        ogs_error("Session should already exist, but new session flag is set");
+        goto cleanup;
+    }
 
     ogs_debug("    Search the session");
 
@@ -730,7 +733,10 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
     ogs_assert(ret == 0);
-    ogs_assert(new == 0);
+    if (new != 0) {
+        ogs_error("Session should already exist, but new session flag is set");
+        goto cleanup;
+    }
 
     ogs_debug("    Search the session");
 

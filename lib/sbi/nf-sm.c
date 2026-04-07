@@ -275,6 +275,52 @@ void ogs_sbi_nf_state_will_register(ogs_fsm_t *s, ogs_event_t *e)
     }
 }
 
+static bool nf_status_subscription_exists(
+        const char *req_nf_instance_id,
+        OpenAPI_nf_type_e nf_type,
+        const char *service_name)
+{
+    ogs_sbi_subscription_data_t *s = NULL;
+    bool same_nf_type = false;
+    bool same_service_name = false;
+    bool nf_type_present = false;
+    bool service_name_present = false;
+
+    ogs_assert(req_nf_instance_id);
+
+    nf_type_present = (nf_type != OpenAPI_nf_type_NULL);
+    service_name_present = (service_name != NULL);
+
+    ogs_list_for_each(&ogs_sbi_self()->subscription_data_list, s) {
+        if (!s->req_nf_instance_id)
+            continue;
+
+        if (strcmp(s->req_nf_instance_id, req_nf_instance_id) != 0)
+            continue;
+
+        if (s->flags & OGS_SBI_SUBSCRIPTION_DELETE_SENT)
+            continue;
+
+        same_nf_type = false;
+        same_service_name = false;
+
+        if (nf_type_present &&
+            s->subscr_cond.nf_type != OpenAPI_nf_type_NULL &&
+            s->subscr_cond.nf_type == nf_type)
+            same_nf_type = true;
+
+        if (service_name_present &&
+            s->subscr_cond.service_name &&
+            strcmp(s->subscr_cond.service_name, service_name) == 0)
+            same_service_name = true;
+
+        if (same_nf_type || same_service_name)
+            return true;
+    }
+
+    return false;
+}
+
 void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -308,6 +354,15 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
 
             ogs_list_for_each(
                 &ogs_sbi_self()->subscription_spec_list, subscription_spec) {
+                if (nf_status_subscription_exists(
+                            ogs_sbi_self()->nf_instance->id,
+                            subscription_spec->subscr_cond.nf_type,
+                            subscription_spec->subscr_cond.service_name)) {
+                    ogs_warn("[%s] NF status subscription already exists, skip",
+                            ogs_sbi_self()->nf_instance->id);
+                    continue;
+                }
+
                 ogs_nnrf_nfm_send_nf_status_subscribe(
                         ogs_sbi_self()->nf_instance->nf_type,
                         ogs_sbi_self()->nf_instance->id,
@@ -432,6 +487,20 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
                     NF_INSTANCE_ID(ogs_sbi_self()->nf_instance),
                     OpenAPI_nf_type_ToString(
                         NF_INSTANCE_TYPE(ogs_sbi_self()->nf_instance)));
+
+
+        /*
+         * In case of NF re-registration due to heartbeat loss, clear any
+         * local subscription bookkeeping tied to the current NF instance id.
+         *
+         * This prevents unbounded growth of subscription_data entries when
+         * re-registration and re-subscription loops happen (e.g., docker-compose
+         * timing/race), which could otherwise exhaust subscription_data_pool.
+         */
+            if (ogs_sbi_self()->nf_instance && ogs_sbi_self()->nf_instance->id)
+                ogs_sbi_subscription_data_delete_and_remove_all_by_nf_instance_id(
+                        ogs_sbi_self()->nf_instance->id);
+
             OGS_FSM_TRAN(s, &ogs_sbi_nf_state_will_register);
             break;
 

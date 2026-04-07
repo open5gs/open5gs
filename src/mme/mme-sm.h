@@ -43,6 +43,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e);
 void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e);
 void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e);
 void emm_state_registered(ogs_fsm_t *s, mme_event_t *e);
+void emm_state_ue_context_will_remove(ogs_fsm_t *s, mme_event_t *e);
 void emm_state_exception(ogs_fsm_t *s, mme_event_t *e);
 
 void esm_state_initial(ogs_fsm_t *s, mme_event_t *e);

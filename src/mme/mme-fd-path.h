@@ -37,7 +37,7 @@ void mme_s6a_send_air_from_gn(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
     ogs_gtp_xact_t *gtp_xact);
 
 /* MME Sends Update Location Request to HSS */
-void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
+void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue, uint32_t extra_ulr_flags);
 /* MME Sends Purge UE Request to HSS */
 void mme_s6a_send_pur(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
 

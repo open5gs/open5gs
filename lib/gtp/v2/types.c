@@ -304,7 +304,11 @@ int16_t ogs_gtp2_parse_tft(ogs_gtp2_tft_t *tft, ogs_tlv_octet_t *octet)
 
     memset(tft, 0, sizeof(ogs_gtp2_tft_t));
 
-    ogs_assert(size+sizeof(tft->flags) <= octet->len);
+    if (size + (int)sizeof(tft->flags) > octet->len) {
+        ogs_error("TFT: size[%d]+flags[%d] > IE Length[%d]",
+                size, (int)sizeof(tft->flags), octet->len);
+        return size;
+    }
     memcpy(&tft->flags, (unsigned char *)octet->data+size, sizeof(tft->flags));
     size++;
 
@@ -319,7 +323,11 @@ int16_t ogs_gtp2_parse_tft(ogs_gtp2_tft_t *tft, ogs_tlv_octet_t *octet)
 
     for (i = 0; i < tft->num_of_packet_filter &&
                 i < OGS_MAX_NUM_OF_FLOW_IN_GTP ; i++) {
-        ogs_assert(size+sizeof(tft->pf[i].flags) <= octet->len);
+        if (size + (int)sizeof(tft->pf[i].flags) > octet->len) {
+            ogs_error("TFT: size[%d]+pf[%d].flags[%d] > IE Length[%d]",
+                    size, i, (int)sizeof(tft->pf[i].flags), octet->len);
+            return size;
+        }
         memcpy(&tft->pf[i].flags, (unsigned char *)octet->data+size,
                 sizeof(tft->pf[i].flags));
         size += sizeof(tft->pf[i].flags);
@@ -327,29 +335,70 @@ int16_t ogs_gtp2_parse_tft(ogs_gtp2_tft_t *tft, ogs_tlv_octet_t *octet)
         if (tft->code == OGS_GTP2_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING)
             continue;
 
-        ogs_assert(size+sizeof(tft->pf[i].precedence) <= octet->len);
+        if (size + (int)sizeof(tft->pf[i].precedence) > octet->len) {
+            ogs_error("TFT: size[%d]+pf[%d].precedence[%d] > IE Length[%d]",
+                    size, i, (int)sizeof(tft->pf[i].precedence), octet->len);
+            return size;
+        }
         memcpy(&tft->pf[i].precedence, (unsigned char *)octet->data+size,
                 sizeof(tft->pf[i].precedence));
         size += sizeof(tft->pf[i].precedence);
 
-        ogs_assert(size+sizeof(tft->pf[i].content.length) <= octet->len);
+        if (size + (int)sizeof(tft->pf[i].content.length) > octet->len) {
+            ogs_error("TFT: size[%d]+pf[%d].content.length[%d] > IE Length[%d]",
+                    size, i, (int)sizeof(tft->pf[i].content.length),
+                    octet->len);
+            return size;
+        }
         memcpy(&tft->pf[i].content.length, (unsigned char *)octet->data+size,
                 sizeof(tft->pf[i].content.length));
         size += sizeof(tft->pf[i].content.length);
 
+        /*
+         * Critical validation:
+         * content.length must not exceed remaining IE length.
+         * This prevents out-of-bounds reads/crash for malformed TFT/TAD.
+         */
+        if ((int)tft->pf[i].content.length > (octet->len - size)) {
+            ogs_error("TFT: pf[%d].content.length[%u] > remaining[%d] "
+                    "(size[%d], IE[%d])", i, tft->pf[i].content.length,
+                    octet->len - size, size, octet->len);
+            return size;
+        }
+
         j = 0; len = 0;
         while(len < tft->pf[i].content.length) {
-            ogs_assert(size+len+sizeof(tft->pf[i].content.component[j].type) <=
+            int comp_max = (int)(sizeof(tft->pf[i].content.component) /
+                                 sizeof(tft->pf[i].content.component[0]));
+            if (j >= comp_max) {
+                ogs_error("TFT: pf[%d] too many components (j[%d] >= max[%d])",
+                        i, j, comp_max);
+                return size;
+            }
+            if (size + len + (int)sizeof(tft->pf[i].content.component[j].type) >
+                octet->len) {
+                ogs_error("TFT: size[%d]+len[%d]+pf[%d].component[%d]."
+                        "type[%d] > IE Length[%d]",
+                        size, len, i, j,
+                        (int)sizeof(tft->pf[i].content.component[j].type),
                         octet->len);
+                return size;
+            }
             memcpy(&tft->pf[i].content.component[j].type,
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].type));
             len += sizeof(tft->pf[i].content.component[j].type);
             switch(tft->pf[i].content.component[j].type) {
             case OGS_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE:
-                ogs_assert(size+len+
-                        sizeof(tft->pf[i].content.component[j].proto) <=
-                        octet->len);
+                if (size + len +
+                    (int)sizeof(tft->pf[i].content.component[j].proto) >
+                    octet->len) {
+                    ogs_error("TFT: size[%d]+len[%d]+pf[%d].component[%d]."
+                            "proto[%d] > IE Length[%d]", size, len, i, j,
+                            (int)sizeof(tft->pf[i].content.component[j].proto),
+                            octet->len);
+                    return size;
+                }
                 memcpy(&tft->pf[i].content.component[j].proto,
                         (unsigned char *)octet->data+size+len,
                         sizeof(tft->pf[i].content.component[j].proto));
@@ -357,17 +406,33 @@ int16_t ogs_gtp2_parse_tft(ogs_gtp2_tft_t *tft, ogs_tlv_octet_t *octet)
                 break;
             case OGS_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE:
             case OGS_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE:
-                ogs_assert(size+len+
-                        sizeof(tft->pf[i].content.component[j].ipv4.addr) <=
-                        octet->len);
+                if (size + len +
+                    (int)sizeof(tft->pf[i].content.component[j].ipv4.addr) >
+                    octet->len) {
+                    ogs_error("TFT: size[%d]+len[%d]+pf[%d].component[%d]."
+                            "ipv4.addr[%d] > IE Length[%d]",
+                            size, len, i, j,
+                            (int)sizeof(tft->pf[i].content.component[j].
+                                ipv4.addr),
+                            octet->len);
+                    return size;
+                }
                 memcpy(&tft->pf[i].content.component[j].ipv4.addr,
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].ipv4.addr));
                 len += sizeof(tft->pf[i].content.component[j].ipv4.addr);
 
-                ogs_assert(size+len+
-                    sizeof(tft->pf[i].content.component[j].ipv4.mask) <=
-                    octet->len);
+                if (size + len +
+                    (int)sizeof(tft->pf[i].content.component[j].ipv4.mask) >
+                    octet->len) {
+                    ogs_error("TFT: size[%d]+len[%d]+pf[%d].component[%d]."
+                            "ipv4.mask[%d] > IE Length[%d]",
+                            size, len, i, j,
+                            (int)sizeof(tft->pf[i].content.component[j].
+                                ipv4.mask),
+                            octet->len);
+                    return size;
+                }
                 memcpy(&tft->pf[i].content.component[j].ipv4.mask,
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].ipv4.mask));
@@ -375,17 +440,33 @@ int16_t ogs_gtp2_parse_tft(ogs_gtp2_tft_t *tft, ogs_tlv_octet_t *octet)
                 break;
             case OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE:
             case OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE:
-                ogs_assert(size+len+
-                    sizeof(tft->pf[i].content.component[j].ipv6.addr) <=
-                    octet->len);
+                if (size + len + (int)sizeof(tft->pf[i].content.component[j].
+                        ipv6.addr) >
+                    octet->len) {
+                    ogs_error("TFT: size[%d]+len[%d]+pf[%d].component[%d]."
+                            "ipv6.addr[%d] > IE Length[%d]",
+                            size, len, i, j,
+                            (int)sizeof(tft->pf[i].content.component[j].
+                                ipv6.addr),
+                            octet->len);
+                    return size;
+                }
                 memcpy(&tft->pf[i].content.component[j].ipv6.addr,
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].ipv6.addr));
                 len += sizeof(tft->pf[i].content.component[j].ipv6.addr);
 
-                ogs_assert(size+len+
-                    sizeof(tft->pf[i].content.component[j].ipv6.prefixlen) <=
-                        octet->len);
+                if (size + len + (int)sizeof(tft->pf[i].content.component[j].
+                        ipv6.prefixlen) >
+                    octet->len) {
+                    ogs_error("TFT: size[%d]+len[%d]+pf[%d].component[%d]."
+                            "ipv6.prefixlen[%d] > IE Length[%d]",
+                            size, len, i, j,
+                            (int)sizeof(tft->pf[i].content.component[j].
+                                ipv6.prefixlen),
+                            octet->len);
+                    return size;
+                }
                 memcpy(&tft->pf[i].content.component[j].ipv6.prefixlen,
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].ipv6.prefixlen));
@@ -393,17 +474,33 @@ int16_t ogs_gtp2_parse_tft(ogs_gtp2_tft_t *tft, ogs_tlv_octet_t *octet)
                 break;
             case OGS_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE:
             case OGS_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE:
-                ogs_assert(size+len+
-                    sizeof(tft->pf[i].content.component[j].ipv6_mask.addr) <=
-                        octet->len);
+                if (size + len + (int)sizeof(tft->pf[i].content.component[j].
+                        ipv6_mask.addr) >
+                    octet->len) {
+                    ogs_error("TFT: size[%d]+len[%d]+pf[%d].component[%d]."
+                            "ipv6_mask.addr[%d] > IE Length[%d]",
+                            size, len, i, j,
+                            (int)sizeof(tft->pf[i].content.component[j].
+                                ipv6_mask.addr),
+                            octet->len);
+                    return size;
+                }
                 memcpy(&tft->pf[i].content.component[j].ipv6_mask.addr,
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].ipv6_mask.addr));
                 len += sizeof(tft->pf[i].content.component[j].ipv6_mask.addr);
 
-                ogs_assert(size+len+
-                    sizeof(tft->pf[i].content.component[j].ipv6_mask.mask) <=
-                        octet->len);
+                if (size + len + (int)sizeof(tft->pf[i].content.component[j].
+                        ipv6_mask.mask) >
+                    octet->len) {
+                    ogs_error("TFT: size[%d]+len[%d]+pf[%d].component[%d]."
+                            "ipv6_mask.mask[%d] > IE Length[%d]",
+                            size, len, i, j,
+                            (int)sizeof(tft->pf[i].content.component[j].
+                                ipv6_mask.mask),
+                            octet->len);
+                    return size;
+                }
                 memcpy(&tft->pf[i].content.component[j].ipv6_mask.mask,
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].ipv6_mask.mask));
@@ -411,9 +508,17 @@ int16_t ogs_gtp2_parse_tft(ogs_gtp2_tft_t *tft, ogs_tlv_octet_t *octet)
                 break;
             case OGS_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE:
             case OGS_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE:
-                ogs_assert(size+len+
-                    sizeof(tft->pf[i].content.component[j].port.low) <=
-                        octet->len);
+                if (size + len + (int)sizeof(tft->pf[i].content.component[j].
+                        port.low) >
+                    octet->len) {
+                    ogs_error("TFT: size[%d]+len[%d]+pf[%d].component[%d]."
+                            "port.low[%d] > IE Length[%d]",
+                            size, len, i, j,
+                            (int)sizeof(tft->pf[i].content.component[j].
+                                port.low),
+                            octet->len);
+                    return size;
+                }
                 memcpy(&tft->pf[i].content.component[j].port.low,
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].port.low));
@@ -423,9 +528,17 @@ int16_t ogs_gtp2_parse_tft(ogs_gtp2_tft_t *tft, ogs_tlv_octet_t *octet)
                 break;
             case OGS_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE:
             case OGS_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE:
-                ogs_assert(size+len+
-                    sizeof(tft->pf[i].content.component[j].port.low) <=
-                        octet->len);
+                if (size + len + (int)sizeof(tft->pf[i].content.component[j].
+                        port.low) >
+                    octet->len) {
+                    ogs_error("TFT: size[%d]+len[%d]+pf[%d].component[%d]."
+                            "port.low[%d] > IE Length[%d]",
+                            size, len, i, j,
+                            (int)sizeof(tft->pf[i].content.component[j].
+                                port.low),
+                            octet->len);
+                    return size;
+                }
                 memcpy(&tft->pf[i].content.component[j].port.low,
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].port.low));
@@ -433,9 +546,17 @@ int16_t ogs_gtp2_parse_tft(ogs_gtp2_tft_t *tft, ogs_tlv_octet_t *octet)
                     be16toh(tft->pf[i].content.component[j].port.low);
                 len += sizeof(tft->pf[i].content.component[j].port.low);
 
-                ogs_assert(size+len+
-                    sizeof(tft->pf[i].content.component[j].port.high) <=
-                        octet->len);
+                if (size + len + (int)sizeof(tft->pf[i].content.component[j].
+                        port.high) >
+                    octet->len) {
+                    ogs_error("TFT: size[%d]+len[%d]+pf[%d].component[%d]."
+                            "port.high[%d] > IE Length[%d]",
+                            size, len, i, j,
+                            (int)sizeof(tft->pf[i].content.component[j].
+                                port.high),
+                            octet->len);
+                    return size;
+                }
                 memcpy(&tft->pf[i].content.component[j].port.high,
                     (unsigned char *)octet->data+size+len,
                     sizeof(tft->pf[i].content.component[j].port.high));

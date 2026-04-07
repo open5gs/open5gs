@@ -99,10 +99,15 @@ void sgwc_s5c_handle_create_session_response(
      ********************/
     ogs_assert(s5c_xact);
     s11_xact = ogs_gtp_xact_find_by_id(s5c_xact->assoc_xact_id);
-    ogs_assert(s11_xact);
 
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
+
+    if (!s11_xact) {
+        ogs_error("No S11 Transaction (assoc_xact_id=%u)",
+                s5c_xact->assoc_xact_id);
+        return;
+    }
 
     /************************
      * Getting Cause Value
@@ -147,6 +152,11 @@ void sgwc_s5c_handle_create_session_response(
     if (rsp->pdn_address_allocation.presence == 0) {
         ogs_error("No PDN Address Allocation [Cause:%d]", session_cause);
         cause_value = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
+    } else if (rsp->pdn_address_allocation.len < OGS_PAA_IPV4_LEN ||
+            rsp->pdn_address_allocation.len > OGS_PAA_IPV4V6_LEN) {
+        ogs_error("Invalid PAA IE [Length:%d]",
+                rsp->pdn_address_allocation.len);
+        cause_value = OGS_GTP2_CAUSE_INVALID_LENGTH;
     } else {
         memcpy(&sess->paa, rsp->pdn_address_allocation.data,
                 rsp->pdn_address_allocation.len);
@@ -350,11 +360,16 @@ void sgwc_s5c_handle_modify_bearer_response(
      ********************/
     ogs_assert(s5c_xact);
     s11_xact = ogs_gtp_xact_find_by_id(s5c_xact->assoc_xact_id);
-    ogs_assert(s11_xact);
-    modify_action = s5c_xact->modify_action;
 
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
+
+    if (!s11_xact) {
+        ogs_error("No S11 Transaction (assoc_xact_id=%u)",
+                s5c_xact->assoc_xact_id);
+        return;
+    }
+    modify_action = s5c_xact->modify_action;
 
     /************************
      * Getting Cause Value
@@ -444,6 +459,27 @@ void sgwc_s5c_handle_modify_bearer_response(
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     if (modify_action == OGS_GTP_MODIFY_IN_PATH_SWITCH_REQUEST) {
+        sgwc_bearer_t *bearer = NULL;
+        sgwc_tunnel_t *ul_tunnel = NULL;
+
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            ul_tunnel = sgwc_ul_tunnel_in_bearer(bearer);
+
+            /* Defensive check: UL tunnel remote IP must be initialized */
+            if (!ul_tunnel ||
+                (!ul_tunnel->remote_ip.ipv4 && !ul_tunnel->remote_ip.ipv6)) {
+
+                ogs_error("ModifyBearerResponse missing PGW S5U address "
+                        "(SEID=%u, bearer=%u)", sess->id, bearer->ebi);
+
+                ogs_gtp_send_error_message(
+                        s11_xact, sgwc_ue ? sgwc_ue->mme_s11_teid : 0,
+                        OGS_GTP2_CREATE_SESSION_RESPONSE_TYPE,
+                        OGS_GTP2_CAUSE_MANDATORY_IE_MISSING);
+                return;
+            }
+        }
+
         ogs_assert(OGS_OK ==
             sgwc_gtp_send_create_session_response(sess, s11_xact));
     } else {
@@ -491,10 +527,15 @@ void sgwc_s5c_handle_delete_session_response(
      ********************/
     ogs_assert(s5c_xact);
     s11_xact = ogs_gtp_xact_find_by_id(s5c_xact->assoc_xact_id);
-    ogs_assert(s11_xact);
 
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
+
+    if (!s11_xact) {
+        ogs_error("No S11 Transaction (assoc_xact_id=%u)",
+                s5c_xact->assoc_xact_id);
+        return;
+    }
 
     /************************
      * Getting Cause Value
@@ -964,6 +1005,7 @@ void sgwc_s5c_handle_bearer_resource_failure_indication(
         sgwc_sess_t *sess, ogs_gtp_xact_t *s5c_xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp2_message_t *message)
 {
+    int rv;
     uint8_t cause_value = 0;
     ogs_gtp_xact_t *s11_xact = NULL;
     ogs_gtp2_bearer_resource_failure_indication_t *ind = NULL;
@@ -981,7 +1023,15 @@ void sgwc_s5c_handle_bearer_resource_failure_indication(
      ********************/
     ogs_assert(s5c_xact);
     s11_xact = ogs_gtp_xact_find_by_id(s5c_xact->assoc_xact_id);
-    ogs_assert(s11_xact);
+
+    rv = ogs_gtp_xact_commit(s5c_xact);
+    ogs_expect(rv == OGS_OK);
+
+    if (!s11_xact) {
+        ogs_error("No S11 Transaction (assoc_xact_id=%u)",
+                s5c_xact->assoc_xact_id);
+        return;
+    }
 
     /************************
      * Check Session Context

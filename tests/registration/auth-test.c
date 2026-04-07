@@ -349,7 +349,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send Authentication failure - MAC failure */
     gmmbuf = testgmm_build_authentication_failure(
-            test_ue, OGS_5GMM_CAUSE_MAC_FAILURE, 0);
+            test_ue, OGS_5GMM_CAUSE_SYNCH_FAILURE, 0x11223344);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);

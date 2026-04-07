@@ -145,7 +145,7 @@ static int epoll_add(ogs_poll_t *poll)
     rv = epoll_ctl(context->epfd, op, poll->fd, &ee);
     if (rv < 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "epoll_ctl[%d] failed", op);
+                "epoll_ctl[%d] failed(%d)", op, rv);
         return OGS_ERROR;
     }
 

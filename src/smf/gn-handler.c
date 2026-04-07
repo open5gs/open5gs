@@ -109,6 +109,10 @@ uint8_t smf_gn_handle_create_pdp_context_request(
         ogs_error("No User Location Info");
         cause_value = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
     }
+    if (req->end_user_address.presence == 0) {
+        ogs_error("No End User Address");
+        cause_value = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
+    }
 
     if (!ogs_diam_is_relay_or_app_advertised(OGS_DIAM_GX_APPLICATION_ID)) {
         ogs_error("No Gx Diameter Peer");
@@ -137,7 +141,10 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     rv = ogs_gtp1_gsn_addr_to_ip(req->sgsn_address_for_signalling.data,
                                  req->sgsn_address_for_signalling.len,
                                   &sess->sgw_s5c_ip);
-    ogs_assert(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("Invalid SGSN Address for signalling");
+        return OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+    }
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
@@ -179,7 +186,8 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     }
 
     /* Common Flags 7.7.48 */
-    if (req->common_flags.presence) {
+    if (req->common_flags.presence &&
+        req->common_flags.len >= sizeof(ogs_gtp1_common_flags_t)) {
         sess->gtp.v1.common_flags = *(ogs_gtp1_common_flags_t*)req->common_flags.data;
     }
 
@@ -234,6 +242,12 @@ uint8_t smf_gn_handle_create_pdp_context_request(
 
     /* Set IMEI(SV) */
     if (req->imei.presence && req->imei.len > 0) {
+        if (req->imei.len > sizeof(smf_ue->imeisv)) {
+            ogs_error("IMEI(SV) wrong size %u > %zu",
+                    req->imei.len, sizeof(smf_ue->imeisv));
+            return OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+        }
+
         smf_ue->imeisv_len = req->imei.len;
         memcpy(smf_ue->imeisv,
             (uint8_t*)req->imei.data, smf_ue->imeisv_len);
@@ -246,8 +260,10 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     ogs_assert(eua);
     rv = ogs_gtp1_eua_to_ip(eua, req->end_user_address.len, &sess->session.ue_ip,
             &sess->ue_session_type);
-    if(rv != OGS_OK)
+    if (rv != OGS_OK) {
+        ogs_error("Invalid End User Address");
         return OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+    }
 
     /* Initially Set Session Type from UE */
     sess->session.session_type = sess->ue_session_type;
@@ -269,7 +285,10 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     rv = ogs_gtp1_gsn_addr_to_ip(req->sgsn_address_for_user_traffic.data,
                                  req->sgsn_address_for_user_traffic.len,
                                  &bearer->sgw_s5u_ip);
-    ogs_assert(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("Invalid SGSN Address for user traffic");
+        return OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+    }
     ogs_debug("    SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
             bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
     if (qos_pdec->data_octet6_to_13_present) {
@@ -412,7 +431,8 @@ void smf_gn_handle_update_pdp_context_request(
     }
 
     /* Common Flags 7.7.48 */
-    if (req->common_flags.presence) {
+    if (req->common_flags.presence &&
+        req->common_flags.len >= sizeof(ogs_gtp1_common_flags_t)) {
         sess->gtp.v1.common_flags = *(ogs_gtp1_common_flags_t*)req->common_flags.data;
     } else {
         /* Reset it to overwrite what was received during CreatePDPCtxReq time */
@@ -424,8 +444,14 @@ void smf_gn_handle_update_pdp_context_request(
         sess->sgw_s5c_teid = req->tunnel_endpoint_identifier_control_plane.u32;
         rv = ogs_gtp1_gsn_addr_to_ip(req->sgsn_address_for_control_plane.data,
                                      req->sgsn_address_for_control_plane.len,
-                                      &sess->sgw_s5c_ip);
-        ogs_assert(rv == OGS_OK);
+                                     &sess->sgw_s5c_ip);
+        if (rv != OGS_OK) {
+            ogs_error("Invalid SGSN Address for control plane");
+            ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
+                    OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE,
+                    OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT);
+            return;
+        }
         ogs_debug("    Updated SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
                 sess->sgw_s5c_teid, sess->smf_n4_teid);
     }
@@ -435,7 +461,14 @@ void smf_gn_handle_update_pdp_context_request(
     rv = ogs_gtp1_gsn_addr_to_ip(req->sgsn_address_for_user_traffic.data,
                                  req->sgsn_address_for_user_traffic.len,
                                  &bearer->sgw_s5u_ip);
-    ogs_assert(rv == OGS_OK);
+
+    if (rv != OGS_OK) {
+        ogs_error("Invalid SGSN Address for user traffic");
+        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
+                OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE,
+                OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT);
+        return;
+    }
     ogs_debug("    Updated SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
             bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
 
@@ -445,6 +478,7 @@ void smf_gn_handle_update_pdp_context_request(
     qos_pdec = &sess->gtp.v1.qos_pdec;
     rv = ogs_gtp1_parse_qos_profile(qos_pdec, &req->quality_of_service_profile);
     if(rv < 0) {
+        ogs_error("ogs_gtp1_parse_qos_profile() failed");
         ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
                 OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE,
                 OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT);
@@ -499,7 +533,7 @@ void smf_gn_handle_update_pdp_context_request(
     /* Update remote TEID and GTP-U IP address on the UPF. UpdatePDPContextResp
      * will be sent when UPF answers back this request
      */
-     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
+    ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
         ogs_pfcp_far_t *far = pdr->far;
         ogs_assert(far);
 
@@ -510,10 +544,17 @@ void smf_gn_handle_update_pdp_context_request(
             continue;
 
         if (pdr->id == bearer->dl_pdr->id) {
-            rv = ogs_pfcp_ip_to_outer_header_creation(&bearer->sgw_s5u_ip,
-                                                &far->outer_header_creation,
-                                                &far->outer_header_creation_len);
-            ogs_assert(rv == OGS_OK);
+            rv = ogs_pfcp_ip_to_outer_header_creation(
+                    &bearer->sgw_s5u_ip,
+                    &far->outer_header_creation,
+                    &far->outer_header_creation_len);
+            if (rv != OGS_OK) {
+                ogs_error("PFCP outer header creation failed");
+                ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
+                        OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE,
+                        OGS_GTP1_CAUSE_SYSTEM_FAILURE);
+                return;
+            }
             far->outer_header_creation.teid = bearer->sgw_s5u_teid;
         }
     }
@@ -522,7 +563,13 @@ void smf_gn_handle_update_pdp_context_request(
             OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE,
             OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
             OGS_GTP1_CAUSE_REACTIACTION_REQUESTED);
-    ogs_assert(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("PFCP Session Modification Request failed");
+        ogs_gtp1_send_error_message(xact, sess->sgw_s5c_teid,
+                OGS_GTP1_UPDATE_PDP_CONTEXT_RESPONSE_TYPE,
+                OGS_GTP1_CAUSE_SYSTEM_FAILURE);
+        return;
+    }
 
     /* TODO: TS 29.061: Upon reception of an UpdatePDPContextRequest from the
        SGSN, the GGSN may send an Accounting Request (Interim) to the Diameter

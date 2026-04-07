@@ -193,7 +193,12 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
 
     xact->tm_peer = ogs_timer_add(ogs_app()->timer_mgr, peer_timeout,
             OGS_UINT_TO_POINTER(xact->id));
-    ogs_assert(xact->tm_peer);
+    if (!xact->tm_peer) {
+        ogs_error("Maximum number of xact->tm_peer[%lld] reached",
+                    (long long)ogs_app()->pool.timer);
+        ogs_gtp_xact_delete(xact);
+        return NULL;
+    }
 
     ogs_list_add(&xact->gnode->local_list, xact);
 
@@ -258,7 +263,12 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
 
     xact->tm_peer = ogs_timer_add(ogs_app()->timer_mgr, peer_timeout,
             OGS_UINT_TO_POINTER(xact->id));
-    ogs_assert(xact->tm_peer);
+    if (!xact->tm_peer) {
+        ogs_error("Maximum number of xact->tm_peer[%lld] reached",
+                    (long long)ogs_app()->pool.timer);
+        ogs_gtp_xact_delete(xact);
+        return NULL;
+    }
 
     ogs_list_add(&xact->gnode->remote_list, xact);
 

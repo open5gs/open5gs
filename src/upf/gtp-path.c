@@ -151,7 +151,7 @@ static void _gtpv1_tun_recv_common_cb(
         if (replybuf) {
             if (ogs_tun_write(fd, replybuf) != OGS_OK)
                 ogs_warn("ogs_tun_write() for reply failed");
-            
+
             ogs_pkbuf_free(replybuf);
             goto cleanup;
         }
@@ -703,6 +703,12 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             far->dst_if_type_presence == true &&
             far->dst_if_type == OGS_PFCP_3GPP_INTERFACE_TYPE_N6) {
 
+            upf_sess_t *dst_sess = NULL;
+            ogs_pfcp_pdr_t *dl_pdr = NULL;
+            ogs_pfcp_pdr_t *dl_fallback_pdr = NULL;
+            ogs_pfcp_far_t *dl_far = NULL;
+            ogs_pfcp_user_plane_report_t dl_report;
+
             if (!subnet) {
 #if 0 /* It's redundant log message */
                 ogs_error("[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
@@ -719,6 +725,103 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             for (i = 0; i < pdr->num_of_urr; i++)
                 upf_sess_urr_acc_add(sess, pdr->urr[i], pkbuf->len, true);
 
+            /*
+             * If destined to another UE on the same subnet,
+             * hairpin back out.
+             *
+             * subnet is already resolved from the source UE
+             * (sess->ipv4->subnet or sess->ipv6->subnet).
+             * A cheap subnet check gates the session lookup so that
+             * normal internet traffic does not touch the hash table.
+             */
+            if (ip_h->ip_v == 4 && subnet->family == AF_INET) {
+                if (ogs_unlikely(
+                        (ip_h->ip_dst.s_addr & subnet->sub.mask[0]) ==
+                        subnet->sub.sub[0]))
+                    dst_sess = upf_sess_find_by_ipv4(ip_h->ip_dst.s_addr);
+            } else if (ip_h->ip_v == 6 && subnet->family == AF_INET6) {
+                struct ip6_hdr *ip6_h = (struct ip6_hdr *)ip_h;
+                uint32_t *dst6 = (void *)ip6_h->ip6_dst.s6_addr;
+
+                if (ogs_unlikely(
+                    (dst6[0] & subnet->sub.mask[0]) == subnet->sub.sub[0] &&
+                    (dst6[1] & subnet->sub.mask[1]) == subnet->sub.sub[1] &&
+                    (dst6[2] & subnet->sub.mask[2]) == subnet->sub.sub[2] &&
+                    (dst6[3] & subnet->sub.mask[3]) == subnet->sub.sub[3]))
+                    dst_sess = upf_sess_find_by_ipv6(dst6);
+            }
+
+            if (ogs_unlikely(dst_sess != NULL) && dst_sess != sess) {
+                memset(&dl_report, 0, sizeof(dl_report));
+
+                ogs_list_for_each(&dst_sess->pfcp.pdr_list, dl_pdr) {
+                    dl_far = dl_pdr->far;
+                    ogs_assert(dl_far);
+
+                    /* Check if PDR is Downlink */
+                    if (dl_pdr->src_if != OGS_PFCP_INTERFACE_CORE)
+                        continue;
+
+                    /* Save the Fallback PDR : Lowest presedence downlink PDR */
+                    dl_fallback_pdr = dl_pdr;
+
+                    /* Check if FAR is Downlink */
+                    if (dl_far->dst_if != OGS_PFCP_INTERFACE_ACCESS)
+                        continue;
+
+                    /* Check if Outer header creation */
+                    if (dl_far->outer_header_creation.gtpu4 == 0 &&
+                        dl_far->outer_header_creation.gtpu6 == 0)
+                        continue;
+
+                    /* Check if Rule List in PDR */
+                    if (ogs_list_first(&dl_pdr->rule_list) &&
+                        ogs_pfcp_pdr_rule_find_by_packet(
+                            dl_pdr, pkbuf) == NULL)
+                        continue;
+
+                    break;
+                }
+
+                if (!dl_pdr)
+                    dl_pdr = dl_fallback_pdr;
+
+                if (dl_pdr) {
+                    /* Increment dl octets + pkts */
+                    for (i = 0; i < dl_pdr->num_of_urr; i++)
+                        upf_sess_urr_acc_add(
+                            dst_sess, dl_pdr->urr[i],
+                            pkbuf->len, false);
+
+                    ogs_assert(true == ogs_pfcp_up_handle_pdr(
+                        dl_pdr, OGS_GTPU_MSGTYPE_GPDU,
+                        0, NULL, pkbuf, &dl_report));
+
+                    if (dl_report.type.downlink_data_report) {
+                        upf_sess_t *dl_sess = NULL;
+
+                        ogs_assert(dl_pdr->sess);
+                        dl_sess = UPF_SESS(dl_pdr->sess);
+                        ogs_assert(dl_sess);
+
+                        dl_report.downlink_data.pdr_id = dl_pdr->id;
+                        if (dl_pdr->qer && dl_pdr->qer->qfi)
+                            dl_report.downlink_data.qfi =
+                                dl_pdr->qer->qfi; /* for 5GC */
+
+                        ogs_assert(OGS_OK ==
+                            upf_pfcp_send_session_report_request(dl_sess, &dl_report));
+                    }
+
+                    /*
+                    * The ogs_pfcp_up_handle_pdr() function
+                    * buffers or frees the Packet Buffer(pkbuf) memory.
+                    */
+                    return;
+                }
+                /* No matching downlink PDR - fall through to TUN */
+            }
+
             if (dev->is_tap) {
                 ogs_assert(eth_type);
                 eth_type = htobe16(eth_type);
@@ -730,7 +833,6 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 memcpy(pkbuf->data, dev->mac_addr, ETHER_ADDR_LEN);
             }
 
-            /* TODO: if destined to another UE, hairpin back out. */
             if (ogs_tun_write(dev->fd, pkbuf) != OGS_OK)
                 ogs_warn("ogs_tun_write() failed");
 

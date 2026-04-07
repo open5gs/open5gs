@@ -798,6 +798,23 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                                 amf_self()->time.t3512.value + 240));
                 }
 
+            } else if (state == AMF_REMOVE_N2_CONTEXT_BY_ERROR_INDICATION) {
+                if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
+
+                    if (ran_ue) {
+                        ogs_debug("    SUPI[%s]", amf_ue->supi);
+                        amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
+                        ran_ue_remove(ran_ue);
+                    } else {
+                        ogs_warn("[%s] RAN-NG Context has already been removed",
+                                amf_ue->supi);
+                    }
+
+                    ogs_timer_start(amf_ue->mobile_reachable.timer,
+                            ogs_time_from_sec(
+                                amf_self()->time.t3512.value + 240));
+                }
+                
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL) {
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
 
@@ -1228,6 +1245,9 @@ int amf_nsmf_pdusession_handle_release_sm_context(
                      * 6. UEContextReleaseComplete
                      */
                     if (UDM_SDM_SUBSCRIBED(amf_ue)) {
+                        ogs_info("[%s] UDM_SDM_SUCSCRIBED "
+                                "in de_registered",
+                                amf_ue->supi);
                         r = amf_ue_sbi_discover_and_send(
                                 OGS_SBI_SERVICE_TYPE_NUDM_SDM, NULL,
                                 amf_nudm_sdm_build_subscription_delete,
@@ -1235,6 +1255,8 @@ int amf_nsmf_pdusession_handle_release_sm_context(
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
                     } else if (PCF_AM_POLICY_ASSOCIATED(amf_ue)) {
+                        ogs_info("[%s] PCF_AM_POLICY_ASSOCIATED "
+                                "in de_registered", amf_ue->supi);
                         r = amf_ue_sbi_discover_and_send(
                                 OGS_SBI_SERVICE_TYPE_NPCF_AM_POLICY_CONTROL,
                                 NULL,
@@ -1243,6 +1265,7 @@ int amf_nsmf_pdusession_handle_release_sm_context(
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
                     } else {
+                        ogs_info("[%s] Deregistration Accept in de_registered", amf_ue->supi);
                         r = nas_5gs_send_de_registration_accept(amf_ue);
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
@@ -1250,24 +1273,25 @@ int amf_nsmf_pdusession_handle_release_sm_context(
 
                 } else if (OGS_FSM_CHECK(&amf_ue->sm,
                             gmm_state_authentication)) {
-                    ogs_fatal("Release SM Context in authentication");
-                    ogs_assert_if_reached();
+                    ogs_warn("[%s] Release SM Context in authentication",
+                            amf_ue->supi);
                 } else if (OGS_FSM_CHECK(
                             &amf_ue->sm, gmm_state_security_mode)) {
-                    ogs_fatal("Release SM Context in security-mode");
-                    ogs_assert_if_reached();
+                    ogs_warn("[%s] Release SM Context in security-mode",
+                            amf_ue->supi);
                 } else if (OGS_FSM_CHECK(&amf_ue->sm,
                                 gmm_state_initial_context_setup)) {
-                    ogs_fatal("Release SM Context in initial-context-setup");
-                    ogs_assert_if_reached();
+                    ogs_warn("[%s] Release SM Context in "
+                            "initial-context-setup", amf_ue->supi);
                 } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
-                    ogs_fatal("Release SM Context in registered");
-                    ogs_assert_if_reached();
+                    ogs_warn("[%s] Release SM Context in registered",
+                            amf_ue->supi);
                 } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
-                    ogs_fatal("Release SM Context in exception");
-                    ogs_assert_if_reached();
+                    ogs_warn("[%s] Release SM Context in exception",
+                            amf_ue->supi);
                 } else {
-                    ogs_fatal("Release SM Context : INVALID STATE");
+                    ogs_fatal("[%s] Release SM Context : INVALID STATE",
+                            amf_ue->supi);
                     ogs_assert_if_reached();
                 }
 

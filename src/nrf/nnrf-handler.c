@@ -125,6 +125,23 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
 
     ogs_sbi_client_associate(nf_instance);
 
+    /* ---------------------------------------------------------- */
+    /* Validate usable endpoint after association                 */
+    /* ---------------------------------------------------------- */
+    if (!nf_instance_has_usable_client(nf_instance)) {
+
+        ogs_error("NFProfile has no usable endpoint: id=%s type=%s",
+            nf_instance->id,
+            OpenAPI_nf_type_ToString(nf_instance->nf_type));
+
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
+                "NFProfile has no usable endpoint", nf_instance->id, NULL));
+
+        return false;
+    }
+
     switch (nf_instance->nf_type) {
     case OpenAPI_nf_type_SEPP:
         ogs_sbi_self()->sepp_instance = nf_instance;
@@ -841,6 +858,13 @@ bool nrf_nnrf_handle_nf_status_unsubscribe(
                 NULL));
         return false;
     }
+
+    ogs_info("[%s] Removing local subscription data after NRF unsubscribe "
+            "[duration:%lld,validity:%d.%06d]",
+            subscription_data->id,
+            (long long)subscription_data->validity_duration,
+            (int)ogs_time_sec(subscription_data->validity_duration),
+            (int)ogs_time_usec(subscription_data->validity_duration));
 
     ogs_assert(subscription_data->id);
     ogs_sbi_subscription_data_remove(subscription_data);

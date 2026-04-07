@@ -1,7 +1,7 @@
 /* Gy Interface, 3GPP TS 32.299
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
- * Copyright (C) 2025 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2025-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -1006,7 +1006,10 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
     ogs_assert(ret == 0);
-    ogs_assert(new == 0);
+    if (new != 0) {
+        ogs_error("Session should already exist, but new session flag is set");
+        goto cleanup;
+    }
 
     ogs_debug("    Search the Gy session");
 

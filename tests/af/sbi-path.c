@@ -84,6 +84,7 @@ void af_sbi_discover_and_send(
     r = ogs_sbi_discover_and_send(xact);
     if (r != OGS_OK) {
         ogs_error("af_sbi_discover_and_send() failed");
+        ogs_sbi_xact_remove(xact);
         return;
     }
 }
