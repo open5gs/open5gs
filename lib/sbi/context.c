@@ -2672,6 +2672,16 @@ void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact)
     if (xact->target_apiroot)
         ogs_free(xact->target_apiroot);
 
+    /*
+     * Release optional user context attached to the transaction.
+     * The transaction owns this memory and is responsible for
+     * freeing it when the transaction is destroyed.
+     */
+    if (xact->user_data) {
+        if (xact->user_data_free)
+            xact->user_data_free(xact->user_data);
+    }
+
     ogs_list_remove(&sbi_object->xact_list, xact);
     ogs_pool_id_free(&xact_pool, xact);
 }

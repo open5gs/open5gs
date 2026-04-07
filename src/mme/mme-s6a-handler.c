@@ -338,9 +338,8 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
         }
         break;
     default:
-        ogs_fatal("Unsupported Cancellation-Type [%d]",
+        ogs_error("Unsupported Cancellation-Type [%d]",
             clr_message->cancellation_type);
-        ogs_assert_if_reached();
         break;
     }
 }

@@ -798,6 +798,23 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                                 amf_self()->time.t3512.value + 240));
                 }
 
+            } else if (state == AMF_REMOVE_N2_CONTEXT_BY_ERROR_INDICATION) {
+                if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
+
+                    if (ran_ue) {
+                        ogs_debug("    SUPI[%s]", amf_ue->supi);
+                        amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
+                        ran_ue_remove(ran_ue);
+                    } else {
+                        ogs_warn("[%s] RAN-NG Context has already been removed",
+                                amf_ue->supi);
+                    }
+
+                    ogs_timer_start(amf_ue->mobile_reachable.timer,
+                            ogs_time_from_sec(
+                                amf_self()->time.t3512.value + 240));
+                }
+                
             } else if (state == AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL) {
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
 

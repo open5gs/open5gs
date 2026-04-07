@@ -39,6 +39,8 @@ void amf_nnrf_handle_nf_discover(
     ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
 
+    ogs_pool_id_t ran_ue_id = OGS_INVALID_POOL_ID;
+
     OpenAPI_search_result_t *SearchResult = NULL;
 
     ogs_assert(recvmsg);
@@ -74,9 +76,16 @@ void amf_nnrf_handle_nf_discover(
         amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
         ogs_assert(amf_ue);
 
-        ogs_assert(xact->assoc_id[AMF_ASSOC_RAN_UE_ID] >= OGS_MIN_POOL_ID &&
-                xact->assoc_id[AMF_ASSOC_RAN_UE_ID] <= OGS_MAX_POOL_ID);
-        ran_ue = ran_ue_find_by_id(xact->assoc_id[AMF_ASSOC_RAN_UE_ID]);
+        if (xact->user_data) {
+            amf_sbi_xact_ctx_t *ctx = xact->user_data;
+
+            if (ctx->ran_ue_id != OGS_INVALID_POOL_ID)
+                ran_ue_id = ctx->ran_ue_id;
+        }
+
+        ogs_assert(ran_ue_id >= OGS_MIN_POOL_ID &&
+                ran_ue_id <= OGS_MAX_POOL_ID);
+        ran_ue = ran_ue_find_by_id(ran_ue_id);
         ogs_assert(ran_ue);
     } else {
         ogs_fatal("(NF discover) Not implemented [%s:%d]",

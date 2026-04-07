@@ -60,7 +60,7 @@ static void test1_func(abts_case *tc, void *data)
     mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000000001");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -740,7 +740,7 @@ static void test2_func(abts_case *tc, void *data)
     mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000000002");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -1215,7 +1215,7 @@ static void test3_func(abts_case *tc, void *data)
     mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000000003");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -1670,7 +1670,7 @@ static void test4_func(abts_case *tc, void *data)
     mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000000004");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -2296,7 +2296,7 @@ static void test5_func(abts_case *tc, void *data)
     mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000000005");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -3013,7 +3013,7 @@ static void test6_func(abts_case *tc, void *data)
     mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000000006");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -3550,7 +3550,7 @@ static void test7_func(abts_case *tc, void *data)
     mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000000007");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -4015,7 +4015,7 @@ static void test8_func(abts_case *tc, void *data)
     mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000000008");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;

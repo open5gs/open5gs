@@ -72,6 +72,8 @@ ogs_sbi_request_t *amf_namf_comm_build_ue_context_transfer(
     char *ue_context_id = NULL;
 
     ogs_assert(amf_ue);
+    ogs_assert(amf_ue->nas.access_type);
+    ogs_assert(amf_ue->nas.registration.value);
 
     ue_context_id = amf_ue_to_context_id(amf_ue);
     ogs_assert(ue_context_id);

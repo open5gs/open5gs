@@ -588,6 +588,11 @@ static void handle_scp_info(
     OpenAPI_list_for_each(ScpInfo->scp_domain_info_list, node) {
         DomainInfoMap = node->data;
         if (DomainInfoMap && DomainInfoMap->key && DomainInfoMap->value) {
+            if (scp_info.num_of_domain >= OGS_MAX_NUM_OF_SCP_DOMAIN) {
+                ogs_warn("Exceeded maximum SCP domains (%d)",
+                        OGS_MAX_NUM_OF_SCP_DOMAIN);
+                break;
+            }
             scp_info.domain[scp_info.num_of_domain].name =
                 ogs_strdup(DomainInfoMap->key);
             DomainInfo = DomainInfoMap->value;

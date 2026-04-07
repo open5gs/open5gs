@@ -209,7 +209,20 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
             sizeof(ogs_nas_5gs_registration_type_t));
     amf_ue->nas.message_type = OGS_NAS_5GS_REGISTRATION_REQUEST;
 
-    if (registration_type->value == OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL) {
+    /*
+     * TS 24.501 Table 9.11.3.7.1:
+     * Unused registration-type encodings shall be interpreted as
+     * "initial registration" by the network.
+     *
+     * Normalize here so subsequent transfer logic has a stable basis.
+     */
+    if (amf_ue->nas.registration.value == 0) {
+        ogs_error("Normalize reg_type[0] to INITIAL");
+        amf_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
+    }
+
+    if (amf_ue->nas.registration.value ==
+            OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL) {
         /*
          * Issue #2040
          *
@@ -579,24 +592,14 @@ bool gmm_registration_request_from_old_amf(amf_ue_t *amf_ue,
         return false;
     }
 
-    /*
-     * TODO : FIXME
-     *
-     * Typically, UEs send 5G-GUTIs with all 0. In such cases,
-     * we need to prevent context transfer betwen AMFs by the N14 interface
-     * because they are not included in served_guami.
-     *
-     * We don't yet know how to check for 5G GUTI conformance,
-     * so we've implemented the following as a temporary solution.
+    /* Robustness: many devices (and fuzzers) send a "placeholder" 5G-GUTI
+     * (AMF-ID zero + M-TMSI zero). Treat it as non-actionable for context
+     * transfer regardless of PLMN digits, and fall back to Identity Request /
+     * normal registration handling.
      */
-    if ((amf_ue->old_guti.amf_id.region == 0 &&
-         amf_ue->old_guti.amf_id.set2 == 0) &&
-        (amf_ue->old_guti.nas_plmn_id.mcc1 == 0 &&
-         amf_ue->old_guti.nas_plmn_id.mcc2 == 0 &&
-         amf_ue->old_guti.nas_plmn_id.mcc3 == 0) &&
-        (amf_ue->old_guti.nas_plmn_id.mnc1 == 0 &&
-         amf_ue->old_guti.nas_plmn_id.mnc2 == 0 &&
-         amf_ue->old_guti.nas_plmn_id.mnc3 == 0)) {
+    if (amf_ue->old_guti.amf_id.region == 0 &&
+        amf_ue->old_guti.amf_id.set2 == 0 &&
+        amf_ue->old_guti.m_tmsi == 0) {
         return false;
     }
 

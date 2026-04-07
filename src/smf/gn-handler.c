@@ -186,7 +186,8 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     }
 
     /* Common Flags 7.7.48 */
-    if (req->common_flags.presence) {
+    if (req->common_flags.presence &&
+        req->common_flags.len >= sizeof(ogs_gtp1_common_flags_t)) {
         sess->gtp.v1.common_flags = *(ogs_gtp1_common_flags_t*)req->common_flags.data;
     }
 
@@ -241,6 +242,12 @@ uint8_t smf_gn_handle_create_pdp_context_request(
 
     /* Set IMEI(SV) */
     if (req->imei.presence && req->imei.len > 0) {
+        if (req->imei.len > sizeof(smf_ue->imeisv)) {
+            ogs_error("IMEI(SV) wrong size %u > %zu",
+                    req->imei.len, sizeof(smf_ue->imeisv));
+            return OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+        }
+
         smf_ue->imeisv_len = req->imei.len;
         memcpy(smf_ue->imeisv,
             (uint8_t*)req->imei.data, smf_ue->imeisv_len);
@@ -424,7 +431,8 @@ void smf_gn_handle_update_pdp_context_request(
     }
 
     /* Common Flags 7.7.48 */
-    if (req->common_flags.presence) {
+    if (req->common_flags.presence &&
+        req->common_flags.len >= sizeof(ogs_gtp1_common_flags_t)) {
         sess->gtp.v1.common_flags = *(ogs_gtp1_common_flags_t*)req->common_flags.data;
     } else {
         /* Reset it to overwrite what was received during CreatePDPCtxReq time */

@@ -424,8 +424,13 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                     ogs_assert(ret == 0);
                     switch(hdr->avp_code) {
                     case OGS_DIAM_S6A_AVP_CODE_SERVED_PARTY_IP_ADDRESS:
+                        memset(&addr, 0, sizeof(addr));
                         ret = fd_msg_avp_value_interpret(avpch3, &addr.sa);
-                        ogs_assert(ret == 0);
+                        if (ret != 0) {
+                            ogs_warn("Ignore malformed "
+                                    "Served-Party-IP-Address AVP");
+                            break;
+                        }
 
                         if (addr.ogs_sa_family == AF_INET) {
                             session->ue_ip.addr = addr.sin.sin_addr.s_addr;
@@ -451,7 +456,8 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                                     "IPv6. Ignoring...", session->session_type);
                             }
                         } else {
-                            ogs_error("Invalid family[%d]",
+                            ogs_warn("Invalid family[%d] in "
+                                    "Served-Party-IP-Address",
                                     addr.ogs_sa_family);
                         }
                         break;
@@ -613,27 +619,27 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
                         ogs_assert(ret == 0);
                         switch(hdr->avp_code) {
                         case OGS_DIAM_S6A_AVP_CODE_MIP_HOME_AGENT_ADDRESS:
+                            memset(&addr, 0, sizeof(addr));
                             ret = fd_msg_avp_value_interpret(avpch4,
                                     &addr.sa);
-                            ogs_assert(ret == 0);
-                            if (addr.ogs_sa_family == AF_INET)
-                            {
+                            if (ret != 0) {
+                                ogs_warn("Ignore malformed "
+                                    "MIP-Home-Agent-Address AVP");
+                                break;
+                            }
+                            if (addr.ogs_sa_family == AF_INET) {
                                 session->smf_ip.ipv4 = 1;
                                 session->smf_ip.addr =
                                     addr.sin.sin_addr.s_addr;
-                            }
-                            else if (addr.ogs_sa_family == AF_INET6)
-                            {
+                            } else if (addr.ogs_sa_family == AF_INET6) {
                                 session->smf_ip.ipv6 = 1;
                                 memcpy(session->smf_ip.addr6,
                                     addr.sin6.sin6_addr.s6_addr,
                                     OGS_IPV6_LEN);
-                            }
-                            else
-                            {
-                                ogs_error("Invald family:%d",
+                            } else {
+                                ogs_warn("Invald family[%d] "
+                                        "in MIP-Home-Agent-Address",
                                         addr.ogs_sa_family);
-                                error++;
                             }
                             break;
                         case OGS_DIAM_S6A_AVP_CODE_MIP_HOME_AGENT_HOST:

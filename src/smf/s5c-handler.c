@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -96,6 +96,7 @@ uint8_t smf_s5c_handle_create_session_request(
     char buf2[OGS_ADDRSTRLEN];
 
     int i, rv;
+    int bearer_count;
     uint8_t cause_value = 0;
 
     ogs_gtp2_uli_t uli;
@@ -318,9 +319,16 @@ uint8_t smf_s5c_handle_create_session_request(
     sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
     ogs_assert(sgw_s5c_teid);
     /* sess->sgw_s5c_teid has already been updated in SMF-SM */
-    ogs_assert(sess->sgw_s5c_teid == be32toh(sgw_s5c_teid->teid));
+    if (sess->sgw_s5c_teid != be32toh(sgw_s5c_teid->teid)) {
+        ogs_error("SGW-S5C TEID mismatch (sess=0x%x, msg=0x%x)",
+                sess->sgw_s5c_teid, be32toh(sgw_s5c_teid->teid));
+        return OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
+    }
     rv = ogs_gtp2_f_teid_to_ip(sgw_s5c_teid, &sess->sgw_s5c_ip);
-    ogs_assert(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("Invalid SGW-S5C TEID");
+        return OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+    }
 
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
@@ -329,17 +337,40 @@ uint8_t smf_s5c_handle_create_session_request(
     smf_bearer_remove_all(sess);
 
     /* Setup Bearer */
+    bearer_count = 0;
+
     for (i = 0; i < OGS_BEARER_PER_UE; i++) {
         if (req->bearer_contexts_to_be_created[i].presence == 0)
             break;
+
+        bearer_count++;
+
+        if (bearer_count > 1) {
+            ogs_error("Unexpected multiple Bearer Contexts in "
+                    "Create Session Request");
+            smf_bearer_remove_all(sess);
+            return OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+        }
+
         if (req->bearer_contexts_to_be_created[i].eps_bearer_id.presence == 0) {
             ogs_error("No EPS Bearer ID");
-            break;
+            smf_bearer_remove_all(sess);
+            return OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
         }
+        if (smf_bearer_find_by_ebi(sess,
+                    req->bearer_contexts_to_be_created[i].eps_bearer_id.u8)) {
+            ogs_error("Duplicate EPS Bearer ID [%u] in "
+                    "Create Session Request",
+                    req->bearer_contexts_to_be_created[i].eps_bearer_id.u8);
+            smf_bearer_remove_all(sess);
+            return OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+        }
+
         if (req->bearer_contexts_to_be_created[i].
                 bearer_level_qos.presence == 0) {
             ogs_error("No Bearer QoS");
-            break;
+            smf_bearer_remove_all(sess);
+            return OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
         }
 
         decoded = ogs_gtp2_parse_bearer_qos(&bearer_qos,
@@ -347,6 +378,7 @@ uint8_t smf_s5c_handle_create_session_request(
         if (GTP2_BEARER_QOS_LEN != decoded) {
             ogs_error("Invalid Bearer QoS IE in Create Session Request "
                     "(decoded=%d, expected=%d)", decoded, GTP2_BEARER_QOS_LEN);
+            smf_bearer_remove_all(sess);
             return OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
         }
 
@@ -363,8 +395,11 @@ uint8_t smf_s5c_handle_create_session_request(
             ogs_assert(sgw_s5u_teid);
             bearer->sgw_s5u_teid = be32toh(sgw_s5u_teid->teid);
             rv = ogs_gtp2_f_teid_to_ip(sgw_s5u_teid, &bearer->sgw_s5u_ip);
-            ogs_assert(rv == OGS_OK);
-
+            if (rv != OGS_OK) {
+                ogs_error("Invalid SGW-S5U TEID");
+                smf_bearer_remove_all(sess);
+                return OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+            }
             break;
         case OGS_GTP2_RAT_TYPE_WLAN:
             sgw_s5u_teid = req->bearer_contexts_to_be_created[i].
@@ -372,7 +407,11 @@ uint8_t smf_s5c_handle_create_session_request(
             ogs_assert(sgw_s5u_teid);
             bearer->sgw_s5u_teid = be32toh(sgw_s5u_teid->teid);
             rv = ogs_gtp2_f_teid_to_ip(sgw_s5u_teid, &bearer->sgw_s5u_ip);
-            ogs_assert(rv == OGS_OK);
+            if (rv != OGS_OK) {
+                ogs_error("Invalid SGW-S5U TEID");
+                smf_bearer_remove_all(sess);
+                return OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+            }
             break;
         default:
             ogs_error("Unknown RAT Type [%d]", sess->gtp_rat_type);
@@ -391,6 +430,12 @@ uint8_t smf_s5c_handle_create_session_request(
             sess->session.qos.arp.pre_emption_vulnerability =
                             bearer_qos.pre_emption_vulnerability;
         }
+    }
+
+    if (bearer_count == 0) {
+        ogs_error("No Bearer Context");
+        smf_bearer_remove_all(sess);
+        return OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
     /* Set AMBR if available */

@@ -56,7 +56,7 @@ static void test_two_qos_flows(abts_case *tc, void *data)
     mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000000001");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;
@@ -477,7 +477,7 @@ static void test_keep_tunnel(abts_case *tc, void *data)
     mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
     mobile_identity_suci.home_network_pki_value = 0;
 
-    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000000002");
     ogs_assert(test_ue);
 
     test_ue->nr_cgi.cell_id = 0x40001;

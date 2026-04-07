@@ -903,14 +903,17 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
                     if (sbi_message.res_status ==
-                            OGS_SBI_HTTP_STATUS_NO_CONTENT) {
-                        ogs_sbi_subscription_data_remove(subscription_data);
-                    } else {
+                            OGS_SBI_HTTP_STATUS_NO_CONTENT)
+                        ogs_info("[%s] Subscription deleted",
+                                subscription_data->id ?
+                                    subscription_data->id : "Unknown");
+                    else
                         ogs_error("[%s] HTTP response error [%d]",
                                 subscription_data->id ?
                                     subscription_data->id : "Unknown",
                                 sbi_message.res_status);
-                    }
+
+                    ogs_sbi_subscription_data_remove(subscription_data);
                     break;
 
                 DEFAULT

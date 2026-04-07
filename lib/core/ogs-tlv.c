@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2026 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * This file is part of Open5GS.
@@ -510,7 +510,7 @@ ogs_tlv_t *ogs_tlv_parse_block(uint32_t length, void *data, uint8_t mode)
     if (length != (pos - blk)) {
         ogs_error("ogs_tlv_parse_block() failed[LEN:%d,MODE:%d]", length, mode);
         ogs_error("POS[%p] BLK[%p] POS-BLK[%d]", pos, blk, (int)(pos - blk));
-        ogs_log_hexdump(OGS_LOG_FATAL, data, length);
+        ogs_log_hexdump(OGS_LOG_ERROR, data, ogs_min(length, 512));
 
         ogs_tlv_free_all(root);
         return NULL;

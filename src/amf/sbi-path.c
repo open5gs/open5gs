@@ -154,6 +154,11 @@ int amf_ue_sbi_discover_and_send(
     return OGS_OK;
 }
 
+static void amf_sbi_xact_ctx_free(void *data)
+{
+    ogs_free(data);
+}
+
 int amf_sess_sbi_discover_and_send(
         ogs_sbi_service_type_e service_type,
         ogs_sbi_discovery_option_t *discovery_option,
@@ -168,6 +173,32 @@ int amf_sess_sbi_discover_and_send(
     ogs_assert(sess);
     ogs_assert(build);
 
+/*
+ * RAN-UE identifier currently associated with this session.
+ *
+ * NOTE:
+ * This field represents the latest RAN UE NGAP ID known for the session.
+ * It may change during procedures such as NG context release and
+ * re-establishment.
+ *
+ * IMPORTANT:
+ * - During SBI Client operations (e.g., AMF sending requests to SMF/PCF),
+ *   the RAN-UE may change before the asynchronous SBI response arrives.
+ *   To avoid using a stale or incorrect RAN-UE, the SBI transaction
+ *   (ogs_sbi_xact_t) stores a snapshot in xact->user_data.
+ *
+ *   When handling SBI Client responses, the AMF MUST use the snapshot
+ *   stored in the SBI transaction instead of this session field.
+ *
+ * - For SBI Server operations (e.g., Namf callbacks where the AMF
+ *   receives requests from SMF), there is no transaction-specific
+ *   snapshot. In such cases, the current session value (sess->ran_ue_id)
+ *   is used.
+ *
+ * This design helps prevent RAN-UE mismatches observed in Issue #2839,
+ * where concurrent UE procedures could result in NAS being sent to the
+ * wrong RAN UE.
+ */
     if (ran_ue) {
         sess->ran_ue_id = ran_ue->id;
     } else
@@ -179,24 +210,33 @@ int amf_sess_sbi_discover_and_send(
     if (!xact) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
         r = nas_5gs_send_back_gsm_message(
-                ran_ue_find_by_id(sess->ran_ue_id), sess,
+                ran_ue, sess,
                 OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return OGS_ERROR;
     }
 
-    xact->state = state;
+    /* Bind per-xact AMF context */
+    if (ran_ue) {
+        amf_sbi_xact_ctx_t *ctx = NULL;
 
-    if (ran_ue)
-        xact->assoc_id[AMF_ASSOC_RAN_UE_ID] = ran_ue->id;
+        ctx = ogs_calloc(1, sizeof(*ctx));
+        ogs_assert(ctx);
+
+        ctx->ran_ue_id = ran_ue->id;
+        xact->user_data = ctx;
+        xact->user_data_free = amf_sbi_xact_ctx_free;
+    }
+
+    xact->state = state;
 
     rv = ogs_sbi_discover_and_send(xact);
     if (rv != OGS_OK) {
         ogs_error("amf_sess_sbi_discover_and_send() failed");
         ogs_sbi_xact_remove(xact);
         r = nas_5gs_send_back_gsm_message(
-                ran_ue_find_by_id(sess->ran_ue_id), sess,
+                ran_ue, sess,
                 OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -223,6 +263,8 @@ static int client_discover_cb(
     ran_ue_t *ran_ue = NULL;
     amf_sess_t *sess = NULL;
 
+    ogs_pool_id_t ran_ue_id = OGS_INVALID_POOL_ID;
+
     ogs_sbi_discovery_option_t *v_discovery_option = NULL;
 
     int current_state, next_state = AMF_CREATE_SM_CONTEXT_NO_STATE;
@@ -238,9 +280,15 @@ static int client_discover_cb(
         return OGS_ERROR;
     }
 
-    if (xact->assoc_id[AMF_ASSOC_RAN_UE_ID] >= OGS_MIN_POOL_ID &&
-        xact->assoc_id[AMF_ASSOC_RAN_UE_ID] <= OGS_MAX_POOL_ID)
-        ran_ue = ran_ue_find_by_id(xact->assoc_id[AMF_ASSOC_RAN_UE_ID]);
+    if (xact->user_data) {
+        amf_sbi_xact_ctx_t *ctx = xact->user_data;
+
+        if (ctx->ran_ue_id != OGS_INVALID_POOL_ID)
+            ran_ue_id = ctx->ran_ue_id;
+    }
+
+    if (ran_ue_id >= OGS_MIN_POOL_ID && ran_ue_id <= OGS_MAX_POOL_ID)
+        ran_ue = ran_ue_find_by_id(ran_ue_id);
 
     service_type = xact->service_type;
     ogs_assert(service_type);
@@ -505,10 +553,19 @@ int amf_sess_sbi_discover_by_nsi(
         return OGS_ERROR;
     }
 
-    xact->state = state;
+    /* Bind per-xact AMF context */
+    if (ran_ue) {
+        amf_sbi_xact_ctx_t *ctx = NULL;
 
-    if (ran_ue)
-        xact->assoc_id[AMF_ASSOC_RAN_UE_ID] = ran_ue->id;
+        ctx = ogs_calloc(1, sizeof(*ctx));
+        ogs_assert(ctx);
+
+        ctx->ran_ue_id = ran_ue->id;
+        xact->user_data = ctx;
+        xact->user_data_free = amf_sbi_xact_ctx_free;
+    }
+
+    xact->state = state;
 
     return ogs_sbi_client_send_request(
             client, client_discover_cb, xact->request,

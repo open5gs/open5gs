@@ -31,6 +31,17 @@
 extern "C" {
 #endif
 
+typedef struct amf_sbi_xact_ctx_s {
+    /*
+     * Snapshot of the RAN-UE identifier associated with the
+     * SBI transaction at the time the request was sent.
+     *
+     * This is required because the session's current RAN-UE
+     * may change before the asynchronous response arrives.
+     */
+    ogs_pool_id_t ran_ue_id;
+} amf_sbi_xact_ctx_t;
+
 int amf_sbi_open(void);
 void amf_sbi_close(void);
 
@@ -63,6 +74,7 @@ bool amf_sbi_send_request(
 #define AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED         51
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL              52
 #define AMF_REMOVE_S1_CONTEXT_BY_RESET_PARTIAL          53
+#define AMF_REMOVE_N2_CONTEXT_BY_ERROR_INDICATION       54
 
 /*
  * TS23.502

@@ -31,12 +31,21 @@ int16_t ogs_gtp1_parse_uli(ogs_gtp1_uli_t *uli, ogs_tlv_octet_t *octet)
 
     memset(uli, 0, sizeof(ogs_gtp1_uli_t));
 
+    if (octet->len < 1) {
+        ogs_error("ULI IE too short [%u]", octet->len);
+        return 0;
+    }
+
     uli->geo_loc_type = source->geo_loc_type;
     size++;
 
     switch (uli->geo_loc_type) {
     case OGS_GTP1_GEO_LOC_TYPE_CGI:
-        ogs_assert(size + sizeof(uli->cgi) <= octet->len);
+        if (size + (int)sizeof(uli->cgi) > octet->len) {
+            ogs_error("ULI CGI too short [%d+%zu > %u]",
+                    size, sizeof(uli->cgi), octet->len);
+            return 0;
+        }
         memcpy(&uli->cgi,
                 (unsigned char *)octet->data + size, sizeof(uli->cgi));
         uli->cgi.lac = be16toh(uli->cgi.lac);
@@ -44,7 +53,11 @@ int16_t ogs_gtp1_parse_uli(ogs_gtp1_uli_t *uli, ogs_tlv_octet_t *octet)
         size += sizeof(uli->cgi);
         break;
     case OGS_GTP1_GEO_LOC_TYPE_SAI:
-        ogs_assert(size + sizeof(uli->sai) <= octet->len);
+        if (size + (int)sizeof(uli->sai) > octet->len) {
+            ogs_error("ULI SAI too short [%d+%zu > %u]",
+                    size, sizeof(uli->sai), octet->len);
+            return 0;
+        }
         memcpy(&uli->sai,
                 (unsigned char *)octet->data + size, sizeof(uli->sai));
         uli->sai.lac = be16toh(uli->sai.lac);
@@ -52,7 +65,11 @@ int16_t ogs_gtp1_parse_uli(ogs_gtp1_uli_t *uli, ogs_tlv_octet_t *octet)
         size += sizeof(uli->sai);
         break;
     case OGS_GTP1_GEO_LOC_TYPE_RAI:
-        ogs_assert(size + sizeof(uli->rai) <= octet->len);
+        if (size + (int)sizeof(uli->rai) > octet->len) {
+            ogs_error("ULI RAI too short [%d+%zu > %u]",
+                    size, sizeof(uli->rai), octet->len);
+            return 0;
+        }
         memcpy(&uli->rai,
                 (unsigned char *)octet->data + size, sizeof(uli->rai));
         uli->rai.lac = be16toh(uli->rai.lac);
@@ -65,7 +82,11 @@ int16_t ogs_gtp1_parse_uli(ogs_gtp1_uli_t *uli, ogs_tlv_octet_t *octet)
         return 0;
     }
 
-    ogs_assert(size == octet->len);
+    if (size != octet->len) {
+        ogs_error("Mismatch IE Length[%d] != Decoded[%d]", octet->len, size);
+        return 0;
+    }
+
     return size;
 }
 int16_t ogs_gtp1_build_uli(
@@ -414,6 +435,8 @@ static int decode_quintuple(ogs_gtp1_auth_quintuplet_t *decoded, uint8_t *data, 
 
     CHECK_SPACE_ERR(1);
     decoded->xres_len = *ptr++;
+    if (decoded->xres_len > OGS_MAX_RES_LEN)
+        return OGS_ERROR;
     CHECK_SPACE_ERR(decoded->xres_len);
     memcpy(&decoded->xres[0], ptr, decoded->xres_len);
     ptr += decoded->xres_len;
@@ -428,6 +451,8 @@ static int decode_quintuple(ogs_gtp1_auth_quintuplet_t *decoded, uint8_t *data, 
 
     CHECK_SPACE_ERR(1);
     decoded->autn_len = *ptr++;
+    if (decoded->autn_len > OGS_AUTN_LEN)
+        return OGS_ERROR;
     CHECK_SPACE_ERR(decoded->autn_len);
     memcpy(&decoded->autn[0], ptr, decoded->autn_len);
     ptr += decoded->autn_len;
@@ -473,6 +498,8 @@ int ogs_gtp1_parse_mm_context(
     decoded->ksi = *ptr & 0x07;
     ptr++;
     decoded->num_vectors = (*ptr >> 3) & 0x07;
+    if (decoded->num_vectors > OGS_ARRAY_SIZE(decoded->auth_quintuplets))
+        return OGS_ERROR;
     decoded->used_cipher = *ptr & 0x07;
     ptr++;
 

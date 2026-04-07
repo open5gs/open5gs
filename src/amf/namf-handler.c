@@ -1634,7 +1634,7 @@ static ogs_nas_ue_security_capability_t
 
     memset(&ue_security_capability, 0, sizeof(ue_security_capability));
     ue_security_capability_octets_string =
-            (char*) ogs_calloc(sizeof(ue_security_capability), sizeof(char));
+            (char*) ogs_calloc(sizeof(ue_security_capability) + 1, sizeof(char));
     ogs_assert(ue_security_capability_octets_string);
 
     ogs_base64_decode(ue_security_capability_octets_string, encoded);
