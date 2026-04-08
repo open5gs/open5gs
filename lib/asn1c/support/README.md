@@ -1,31 +1,19 @@
 Use mounse07410(vlm_master) git's fork for asn1c
 
-commit e0c4a3eafa9f1861dd7dac1000953eb2850e47e4 (HEAD -> vlm_master, origin/vlm_master, origin/HEAD)
-Merge: ce10a57a 665a2278
-Author: Mouse <mouse07410@users.noreply.github.com>
-Date:   Sun Feb 11 17:13:22 2024 -0500
+commit 5baed98c03a2da619ef9b9d5c73f567ee0ce4d76 (HEAD -> vlm_master, origin/vlm_master, origin/HEAD)
+Merge: f07a28d4 b87598f5
+Author: Mouse <5923577+mouse07410@users.noreply.github.com>
+Date:   Mon Mar 30 15:04:31 2026 -0400
 
-    Merge pull request #177 from v0-e/integer-2-int64
-
-    INTEGER to 64-bit native integer methods
-
-commit 665a227804e18c3fa6b46ab55aeedd7379f1ed29
-Author: v0-e <xyz.vieira@gmail.com>
-Date:   Wed Feb 7 15:29:18 2024 +0000
-
-    INTEGER <-> (u)int64_t tests
-
-commit 81cc4e47a665c51faff2d2c2fb2ba39066009356
-Author: v0-e <xyz.vieira@gmail.com>
-Date:   Wed Feb 7 15:28:09 2024 +0000
-
-    INTEGER to (u)int64_t
+    Merge pull request #485 from mouse07410/copilot/fix-run-sh-compilation-error
+    
+    Fix uninitialized `char ch` causing clang -Werror build failure in XER/JER decoders
 
 ===========================================
 user@host ~/Documents/git/my$ \
     git clone https://github.com/mouse07410/asn1c.git
 user@host ~/Documents/git/my$ \
-    git checkout e0c4a3eafa9f1861dd7dac1000953eb2850e47e4
+    git checkout 5baed98c03a2da619ef9b9d5c73f567ee0ce4d76
 
 OR
 
@@ -138,7 +126,7 @@ diff -u asn_internal.h ~/asn_internal.h
  #define	REALLOC(oldptr, size)	realloc(oldptr, size)
  #define	FREEMEM(ptr)		free(ptr)
 +#else
-+#include "ogs-core.h"
++#include "proto/ogs-proto.h"
 +
 +static ogs_inline void *ogs_asn_malloc(size_t size, const char *file_line)
 +{
@@ -188,6 +176,11 @@ Check meson.build
 user@host ~/Documents/git/open5gs/lib/asn1c/s1ap$ \
 user@host ~/Documents/git/open5gs/lib/asn1c/ngap$ \
     cat Makefile.am.libasncodec
+
+To remove `   /  ` in Makefile.am.libasncode
+---------------------
+%s/\s*\\\s*$//g
+---------------------
 
 Remove unnecessary files
 ===========================================
