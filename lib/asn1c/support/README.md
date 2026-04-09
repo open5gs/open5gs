@@ -38,13 +38,15 @@ ASN.1 encoder/decoder
 user@host ~/documents/git/open5gs/lib/asn1c/s1ap$ \
     ASN1C_PREFIX=S1AP_ ../../../../my/asn1c/asn1c/asn1c -pdu=all \
     -fcompound-names -findirect-choice -fno-include-deps \
-    -no-gen-BER -no-gen-XER -no-gen-OER -no-gen-UPER -no-gen-JER \
+    -no-gen-BER -no-gen-XER -no-gen-JER -no-gen-CBOR \
+    -no-gen-OER -no-gen-UPER \
     ../support/s1ap-r17.3.0/36413-h30.asn
 
 user@host ~/Documents/git/open5gs/lib/asn1c/ngap$ \
     ASN1C_PREFIX=NGAP_ ../../../../my/asn1c/asn1c/asn1c -pdu=all \
     -fcompound-names -findirect-choice -fno-include-deps \
-    -no-gen-BER -no-gen-XER -no-gen-OER -no-gen-UPER -no-gen-JER \
+    -no-gen-BER -no-gen-XER -no-gen-JER -no-gen-CBOR \
+    -no-gen-OER -no-gen-UPER \
     ../support/ngap-r17.3.0/38413-h30.asn
 
 Fix NGAP_RANNodeNameUTF8String.c (Issues #994 - APC_EXTENSIBLE)
