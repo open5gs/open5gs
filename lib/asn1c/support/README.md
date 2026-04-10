@@ -44,7 +44,7 @@ user@host ~/documents/git/open5gs/lib/asn1c/s1ap$ \
 
 user@host ~/documents/git/open5gs/lib/asn1c/s1ap$ \
     ../../../../my/asn1c/asn1c/asn1c -pdu=all \
-    -fprefix=S1AP_ -fcompound-names -findirect-choice -fno-include-deps \
+    -fprefix=S1AP_ -fcompound-names -findirect-choice \
     -no-gen-BER -no-gen-XER -no-gen-JER -no-gen-CBOR \
     -no-gen-OER -no-gen-UPER \
     ../support/s1ap-r17.3.0/36413-h30.asn
@@ -52,6 +52,12 @@ user@host ~/documents/git/open5gs/lib/asn1c/s1ap$ \
 user@host ~/Documents/git/open5gs/lib/asn1c/ngap$ \
     ASN1C_PREFIX=NGAP_ ../../../../my/asn1c/asn1c/asn1c -pdu=all \
     -fcompound-names -findirect-choice -fno-include-deps \
+    -no-gen-BER -no-gen-XER -no-gen-JER -no-gen-CBOR \
+    -no-gen-OER -no-gen-UPER \
+    ../support/ngap-r17.3.0/38413-h30.asn
+
+    ../../../../my/asn1c/asn1c/asn1c -pdu=all \
+    -fprefix=S1AP_ -fcompound-names -findirect-choice \
     -no-gen-BER -no-gen-XER -no-gen-JER -no-gen-CBOR \
     -no-gen-OER -no-gen-UPER \
     ../support/ngap-r17.3.0/38413-h30.asn
