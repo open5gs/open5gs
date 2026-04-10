@@ -130,7 +130,8 @@ libasn1c_common_cc_flags = ['-DASN_DISABLE_BER_SUPPORT',
                             '-DASN_DISABLE_XER_SUPPORT',
                             '-DASN_DISABLE_OER_SUPPORT',
                             '-DASN_DISABLE_UPER_SUPPORT',
-                            '-DASN_DISABLE_JER_SUPPORT']
+                            '-DASN_DISABLE_JER_SUPPORT',
+                            '-DASN_DISABLE_CBOR_SUPPORT']
 
 #libasn1c_common_cc_flags += cc.get_supported_arguments([
 #    '-Wno-parentheses-equality',
