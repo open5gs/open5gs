@@ -17,6 +17,7 @@ static const ber_tlv_tag_t asn_DEF_OBJECT_IDENTIFIER_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (6 << 2))
 };
 asn_TYPE_operation_t asn_OP_OBJECT_IDENTIFIER = {
+    .kind = ASN_KIND_PRIMITIVE,
     ASN__PRIMITIVE_TYPE_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     OBJECT_IDENTIFIER_print,
@@ -72,7 +73,14 @@ asn_TYPE_operation_t asn_OP_OBJECT_IDENTIFIER = {
 #else
     0,
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
+    0,  /* Use generic outmost tag fetcher */
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+    OCTET_STRING_decode_cbor,    /* Reuse OCTET STRING decoder (raw DER bytes) */
+    OCTET_STRING_encode_cbor,    /* Reuse OCTET STRING encoder (raw DER bytes) */
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
 };
 asn_TYPE_descriptor_t asn_DEF_OBJECT_IDENTIFIER = {
     "OBJECT IDENTIFIER",
@@ -91,6 +99,9 @@ asn_TYPE_descriptor_t asn_DEF_OBJECT_IDENTIFIER = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
         0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
         OBJECT_IDENTIFIER_constraint
     },
     0, 0,  /* No members */

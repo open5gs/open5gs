@@ -24,13 +24,13 @@ libasn1c_common_sources = files('''
     constr_CHOICE.h
     ENUMERATED.h
     ENUMERATED.c
+    INTEGER.h
+    NativeEnumerated.h
     GraphicString.h
     GraphicString.c
-    INTEGER.h
     INTEGER.c
     NULL.h
     NULL.c
-    NativeEnumerated.h
     NativeEnumerated.c
     NativeInteger.h
     NativeInteger.c
@@ -41,8 +41,6 @@ libasn1c_common_sources = files('''
     ObjectDescriptor.c
     PrintableString.h
     PrintableString.c
-    UTF8String.h
-    UTF8String.c
     VisibleString.h
     VisibleString.c
     asn_SEQUENCE_OF.h
@@ -111,7 +109,7 @@ libasn1c_common_sources = files('''
     NativeInteger_print.c
     OBJECT_IDENTIFIER_print.c
     OCTET_STRING_print.c
-    UTF8String_print.c
+    OPEN_TYPE_print.c
     constr_CHOICE_print.c
     constr_SEQUENCE_print.c
     constr_SET_OF_print.c
@@ -123,7 +121,6 @@ libasn1c_common_sources = files('''
     NativeInteger_rfill.c
     OBJECT_IDENTIFIER_rfill.c
     OCTET_STRING_rfill.c
-    UTF8String_rfill.c
     constr_CHOICE_rfill.c
     constr_SEQUENCE_rfill.c
     constr_SET_OF_rfill.c

@@ -69,6 +69,10 @@ jer_type_encoder_f CHOICE_encode_jer;
 oer_type_decoder_f CHOICE_decode_oer;
 oer_type_encoder_f CHOICE_encode_oer;
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+cbor_type_decoder_f CHOICE_decode_cbor;
+cbor_type_encoder_f CHOICE_encode_cbor;
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 per_type_decoder_f CHOICE_decode_uper;

@@ -16,6 +16,14 @@ typedef struct OCTET_STRING {
 	size_t size;	/* Size of the buffer */
 
 	asn_struct_ctx_t _asn_ctx;	/* Parsing across buffer boundaries */
+
+	/* XER decoder state for stateful decoders (Base64, etc.) */
+	struct {
+		uint32_t accumulated_value;  /* Accumulated bits during decoding */
+		int bits_collected;          /* Number of bits in accumulated_value */
+		int padding_seen;            /* Whether padding was encountered */
+		int decoder_initialized;     /* Whether decoder state is valid */
+	} _xer_decode_state;
 } OCTET_STRING_t;
 
 extern asn_TYPE_descriptor_t asn_DEF_OCTET_STRING;
@@ -42,8 +50,12 @@ der_type_encoder_f OCTET_STRING_encode_der;
 xer_type_decoder_f OCTET_STRING_decode_xer_hex;     /* Hexadecimal */
 xer_type_decoder_f OCTET_STRING_decode_xer_binary;  /* 01010111010 */
 xer_type_decoder_f OCTET_STRING_decode_xer_utf8;    /* ASCII/UTF-8 */
+xer_type_decoder_f OCTET_STRING_decode_xer_base64;  /* Base64 */
+xer_type_decoder_f OCTET_STRING_decode_xer_auto;    /* Auto-detect hex or Base64 */
+xer_type_decoder_f BIT_STRING_decode_xer_binary_or_hex;  /* Auto-detect binary or hex for BIT STRING */
 xer_type_encoder_f OCTET_STRING_encode_xer;
 xer_type_encoder_f OCTET_STRING_encode_xer_utf8;
+xer_type_encoder_f OCTET_STRING_encode_xer_base64;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
@@ -57,6 +69,12 @@ jer_type_encoder_f OCTET_STRING_encode_jer_utf8;
 oer_type_decoder_f OCTET_STRING_decode_oer;
 oer_type_encoder_f OCTET_STRING_encode_oer;
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+cbor_type_decoder_f OCTET_STRING_decode_cbor;
+cbor_type_encoder_f OCTET_STRING_encode_cbor;
+cbor_type_decoder_f OCTET_STRING_decode_cbor_utf8;  /* ASCII/UTF-8 */
+cbor_type_encoder_f OCTET_STRING_encode_cbor_utf8;
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 per_type_decoder_f OCTET_STRING_decode_uper;

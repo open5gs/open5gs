@@ -33,7 +33,7 @@ der_type_encoder_f SEQUENCE_OF_encode_der;
 #endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_XER_SUPPORT)
-#define SEQUENCE_OF_decode_xer SET_OF_decode_xer
+xer_type_decoder_f SEQUENCE_OF_decode_xer;
 xer_type_encoder_f SEQUENCE_OF_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
@@ -46,6 +46,10 @@ jer_type_encoder_f SEQUENCE_OF_encode_jer;
 #define SEQUENCE_OF_decode_oer SET_OF_decode_oer
 #define SEQUENCE_OF_encode_oer SET_OF_encode_oer
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+cbor_type_decoder_f SEQUENCE_OF_decode_cbor;
+cbor_type_encoder_f SEQUENCE_OF_encode_cbor;
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 #define SEQUENCE_OF_decode_uper SET_OF_decode_uper
@@ -61,6 +65,13 @@ per_type_encoder_f SEQUENCE_OF_encode_aper;
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
 
 extern asn_TYPE_operation_t asn_OP_SEQUENCE_OF;
+
+/*
+ * Generic descriptor for anonymous SEQUENCE OF (placeholder only).
+ * Not a concrete "OF T" for runtime encoding/decoding. Concrete OF types
+ * generated for specific elements still have their own descriptors.
+ */
+extern asn_TYPE_descriptor_t asn_DEF_SEQUENCE_OF;
 
 #ifdef __cplusplus
 }

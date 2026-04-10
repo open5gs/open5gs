@@ -78,11 +78,23 @@ typedef	unsigned int	uint32_t;
 #else	/* !defined(__vxworks) */
 
 #include <inttypes.h>	/* C99 specifies this file */
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h> /* for ntohl() */
+#define	sys_ntohl(foo)	ntohl(foo)
+#else /* !_HAVE_ARPA_INET_H */
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h> /* for ntohl() */
-#endif
 #define	sys_ntohl(foo)	ntohl(foo)
+#else /* !_HAVE_NETINET_IN_H */
+/* Here's the definition of ntohl() */
+#define sys_ntohl(l)   ((((l) << 24)  & 0xff000000)    \
+            | (((l) << 8) & 0xff0000)  \
+            | (((l) >> 8)  & 0xff00)   \
+            | ((l >> 24) & 0xff))
+#endif /* HAVE_NETINET_IN_H */
+#endif /* HAVE_ARPA_INET_H */
 #endif	/* defined(__vxworks) */
+
 
 #endif	/* _WIN32 */
 
@@ -154,9 +166,13 @@ typedef	unsigned int	uint32_t;
 #define ASN_PRI_SSIZE "zd"
 #define ASN_PRIuMAX PRIuMAX
 #define ASN_PRIdMAX PRIdMAX
+#define ASN_PRIu64 PRIu64
+#define ASN_PRId64 PRId64
 #else
 #define ASN_PRI_SIZE "lu"
 #define ASN_PRI_SSIZE "ld"
+#define ASN_PRIu64 "llu"
+#define ASN_PRId64 "lld"
 #if LLONG_MAX > LONG_MAX
 #define ASN_PRIuMAX "llu"
 #define ASN_PRIdMAX "lld"

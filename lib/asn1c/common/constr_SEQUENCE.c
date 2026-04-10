@@ -7,6 +7,7 @@
 #include <constr_SEQUENCE.h>
 
 asn_TYPE_operation_t asn_OP_SEQUENCE = {
+    .kind = ASN_KIND_SEQUENCE,
     SEQUENCE_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     SEQUENCE_print,
@@ -62,14 +63,21 @@ asn_TYPE_operation_t asn_OP_SEQUENCE = {
 #else
     0,
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
+    0  /* Use generic outmost tag fetcher */,
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+    SEQUENCE_decode_cbor,
+    SEQUENCE_encode_cbor,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
 };
 
 void
 SEQUENCE_free(const asn_TYPE_descriptor_t *td, void *sptr,
               enum asn_struct_free_method method) {
     size_t edx;
-    const asn_SEQUENCE_specifics_t *specs; 
+    const asn_SEQUENCE_specifics_t *specs;
     asn_struct_ctx_t *ctx; /* Decoder context */
 
 	if(!td || !sptr)
@@ -205,7 +213,7 @@ SEQUENCE_copy(const asn_TYPE_descriptor_t *td, void **aptr,
                  const void *bptr) {
     if(!td) return -1;
 
-    const asn_SEQUENCE_specifics_t *specs = 
+    const asn_SEQUENCE_specifics_t *specs =
         (const asn_SEQUENCE_specifics_t *)td->specifics;
     size_t edx;
     void *st = *aptr;        /* Target structure */

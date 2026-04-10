@@ -20,6 +20,7 @@ static const ber_tlv_tag_t asn_DEF_NativeInteger_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (2 << 2))
 };
 asn_TYPE_operation_t asn_OP_NativeInteger = {
+    .kind = ASN_KIND_PRIMITIVE,
     NativeInteger_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     NativeInteger_print,
@@ -75,7 +76,14 @@ asn_TYPE_operation_t asn_OP_NativeInteger = {
 #else
     0,
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
+    0  /* Use generic outmost tag fetcher */,
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+    NativeInteger_decode_cbor,
+    NativeInteger_encode_cbor,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
 };
 asn_TYPE_descriptor_t asn_DEF_NativeInteger = {
     "INTEGER",  /* The ASN.1 type is still INTEGER */
@@ -92,6 +100,9 @@ asn_TYPE_descriptor_t asn_DEF_NativeInteger = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
         0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
         asn_generic_no_constraint
     },
     0, 0,  /* No members */
