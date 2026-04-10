@@ -57,7 +57,7 @@ user@host ~/Documents/git/open5gs/lib/asn1c/ngap$ \
     ../support/ngap-r17.3.0/38413-h30.asn
 
     ../../../../my/asn1c/asn1c/asn1c -pdu=all \
-    -fprefix=S1AP_ -fcompound-names -findirect-choice \
+    -fprefix=NGAP_ -fcompound-names -findirect-choice \
     -no-gen-BER -no-gen-XER -no-gen-JER -no-gen-CBOR \
     -no-gen-OER -no-gen-UPER \
     ../support/ngap-r17.3.0/38413-h30.asn
