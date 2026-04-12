@@ -63,6 +63,8 @@ void upf_context_init(void)
     ogs_assert(self.ipv4_hash);
     self.ipv6_hash = ogs_hash_make();
     ogs_assert(self.ipv6_hash);
+    self.mac_hash = ogs_hash_make();
+    ogs_assert(self.mac_hash);
 
     context_initialized = 1;
 }
@@ -92,6 +94,8 @@ void upf_context_final(void)
     ogs_hash_destroy(self.ipv4_hash);
     ogs_assert(self.ipv6_hash);
     ogs_hash_destroy(self.ipv6_hash);
+    ogs_assert(self.mac_hash);
+    ogs_hash_destroy(self.mac_hash);
 
     free_upf_route_trie_node(self.ipv4_framed_routes);
     free_upf_route_trie_node(self.ipv6_framed_routes);
@@ -242,6 +246,11 @@ int upf_sess_remove(upf_sess_t *sess)
         ogs_pfcp_ue_ip_free(sess->ipv6);
     }
 
+    if (sess->has_mac) {
+        ogs_hash_set(self.mac_hash, sess->mac_addr, ETHER_ADDR_LEN, NULL);
+        sess->has_mac = false;
+    }
+
     upf_sess_set_ue_ipv4_framed_routes(sess, NULL);
     upf_sess_set_ue_ipv6_framed_routes(sess, NULL);
 
@@ -354,6 +363,22 @@ upf_sess_t *upf_sess_find_by_ipv6(uint32_t *addr6)
             trie = trie->left;
     }
     return ret;
+}
+
+upf_sess_t *upf_sess_find_by_mac(const uint8_t *mac)
+{
+    ogs_assert(mac != NULL);
+    return ogs_hash_get(self.mac_hash, mac, ETHER_ADDR_LEN);
+}
+
+void upf_sess_register_mac(upf_sess_t *sess, const uint8_t *mac)
+{
+    ogs_assert(sess != NULL);
+    ogs_assert(mac != NULL);
+
+    memcpy(sess->mac_addr, mac, ETHER_ADDR_LEN);
+    sess->has_mac = true;
+    ogs_hash_set(self.mac_hash, sess->mac_addr, ETHER_ADDR_LEN, sess);
 }
 
 upf_sess_t *upf_sess_find_by_id(ogs_pool_id_t id)

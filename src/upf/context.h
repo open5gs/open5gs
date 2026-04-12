@@ -26,6 +26,10 @@
 #include <net/if.h>
 #endif
 
+#ifdef HAVE_NET_ETHERNET_H
+#include <net/ethernet.h>
+#endif
+
 #include "ogs-gtp.h"
 #include "ogs-pfcp.h"
 #include "ogs-app.h"
@@ -53,6 +57,7 @@ typedef struct upf_context_s {
     ogs_hash_t *smf_n4_f_seid_hash; /* hash table (SMF-N4-F-SEID) */
     ogs_hash_t *ipv4_hash;  /* hash table (IPv4 Address) */
     ogs_hash_t *ipv6_hash;  /* hash table (IPv6 Address) */
+    ogs_hash_t *mac_hash;   /* hash table (MAC Address) */
 
     /* IPv4 framed routes trie */
     struct upf_route_trie_node *ipv4_framed_routes;
@@ -124,6 +129,9 @@ typedef struct upf_sess_s {
     /* Accounting: */
     upf_sess_urr_acc_t urr_acc[OGS_MAX_NUM_OF_URR]; /* FIXME: This probably needs to be mved to a hashtable or alike */
     char            *apn_dnn;            /* APN/DNN Item */
+    /* Learned Ethernet MAC address (optional) */
+    uint8_t         mac_addr[ETHER_ADDR_LEN];
+    bool            has_mac;
 } upf_sess_t;
 
 void upf_context_init(void);
@@ -143,6 +151,8 @@ upf_sess_t *upf_sess_find_by_upf_n4_seid(uint64_t seid);
 upf_sess_t *upf_sess_find_by_ipv4(uint32_t addr);
 upf_sess_t *upf_sess_find_by_ipv6(uint32_t *addr6);
 upf_sess_t *upf_sess_find_by_id(ogs_pool_id_t id);
+upf_sess_t *upf_sess_find_by_mac(const uint8_t *mac);
+void upf_sess_register_mac(upf_sess_t *sess, const uint8_t *mac);
 
 uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
         uint8_t session_type, ogs_pfcp_pdr_t *pdr);

@@ -118,10 +118,19 @@ static void _gtpv1_tun_recv_common_cb(
     }
 
     if (has_eth) {
+        uint8_t src_mac[ETHER_ADDR_LEN];
+        uint8_t dst_mac[ETHER_ADDR_LEN];
         ogs_pkbuf_t *replybuf = NULL;
         uint16_t eth_type = _get_eth_type(recvbuf->data, recvbuf->len);
         uint8_t size;
-
+        /* capture Ethernet src/dst for learning/hairpin */
+        if (recvbuf->len >= ETHER_HDR_LEN) {
+            memcpy(dst_mac, recvbuf->data, ETHER_ADDR_LEN);
+            memcpy(src_mac, recvbuf->data + ETHER_ADDR_LEN, ETHER_ADDR_LEN);
+        } else {
+            memset(src_mac, 0, ETHER_ADDR_LEN);
+            memset(dst_mac, 0, ETHER_ADDR_LEN);
+        }
         if (eth_type == ETHERTYPE_ARP) {
             if (is_arp_req(recvbuf->data, recvbuf->len) &&
                     upf_sess_find_by_ipv4(
@@ -161,11 +170,19 @@ static void _gtpv1_tun_recv_common_cb(
             goto cleanup;
         }
         ogs_pkbuf_pull(recvbuf, ETHER_HDR_LEN);
+        /* Learn source MAC -> session mapping (if we can resolve session by IP) */
+        /* Save a copy before payload is processed. */
     }
 
     sess = upf_sess_find_by_ue_ip_address(recvbuf);
     if (!sess)
         goto cleanup;
+
+    /* If ethernet source MAC is available, register it to this session */
+    if (has_eth && sess) {
+        /* src_mac captured earlier */
+        upf_sess_register_mac(sess, src_mac);
+    }
 
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
         far = pdr->far;
@@ -734,7 +751,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
              * A cheap subnet check gates the session lookup so that
              * normal internet traffic does not touch the hash table.
              */
-            if (ip_h->ip_v == 4 && subnet->family == AF_INET) {
+                if (ip_h->ip_v == 4 && subnet->family == AF_INET) {
                 if (ogs_unlikely(
                         (ip_h->ip_dst.s_addr & subnet->sub.mask[0]) ==
                         subnet->sub.sub[0]))
@@ -820,6 +837,45 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                     return;
                 }
                 /* No matching downlink PDR - fall through to TUN */
+            }
+
+            /* Minimal L2 hairpin: if destination MAC maps to a local session,
+             * forward the Ethernet frame directly to that session's TAP device.
+             * This bypasses PFCP/FAR handling and implements simple MAC learning
+             * + direct TAP delivery for same-subnet UEs.
+             */
+            if (has_eth) {
+                upf_sess_t *mac_dst_sess = upf_sess_find_by_mac(dst_mac);
+                if (mac_dst_sess && mac_dst_sess != sess) {
+                    ogs_pkbuf_t *sendbuf = ogs_pkbuf_copy(recvbuf);
+                    if (sendbuf) {
+                        ogs_pfcp_subnet_t *dst_sub = NULL;
+                        ogs_pfcp_dev_t *dst_dev = NULL;
+
+                        if (mac_dst_sess->ipv4 && mac_dst_sess->ipv4->subnet)
+                            dst_sub = mac_dst_sess->ipv4->subnet;
+                        else if (mac_dst_sess->ipv6 && mac_dst_sess->ipv6->subnet)
+                            dst_sub = mac_dst_sess->ipv6->subnet;
+
+                        if (dst_sub)
+                            dst_dev = dst_sub->dev;
+
+                        if (dst_dev) {
+                            uint16_t et = htobe16(eth_type);
+                            ogs_pkbuf_push(sendbuf, sizeof(et));
+                            memcpy(sendbuf->data, &et, sizeof(et));
+                            ogs_pkbuf_push(sendbuf, ETHER_ADDR_LEN);
+                            memcpy(sendbuf->data, src_mac, ETHER_ADDR_LEN);
+                            ogs_pkbuf_push(sendbuf, ETHER_ADDR_LEN);
+                            memcpy(sendbuf->data, mac_dst_sess->mac_addr, ETHER_ADDR_LEN);
+
+                            if (ogs_tun_write(dst_dev->fd, sendbuf) != OGS_OK)
+                                ogs_warn("ogs_tun_write() failed for L2 hairpin");
+                        }
+                        ogs_pkbuf_free(sendbuf);
+                        return;
+                    }
+                }
             }
 
             if (dev->is_tap) {
