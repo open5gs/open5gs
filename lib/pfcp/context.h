@@ -418,6 +418,7 @@ ogs_pfcp_node_t *ogs_pfcp_node_find(ogs_list_t *list,
     ogs_pfcp_node_id_t *node_id, ogs_sockaddr_t *from);
 int ogs_pfcp_node_merge(ogs_pfcp_node_t *node,
     ogs_pfcp_node_id_t *node_id, ogs_sockaddr_t *from);
+int ogs_pfcp_node_refresh_config_dns(ogs_pfcp_node_t *node);
 void ogs_pfcp_node_remove(ogs_list_t *list, ogs_pfcp_node_t *node);
 void ogs_pfcp_node_remove_all(ogs_list_t *list);
 bool ogs_pfcp_node_id_compare(

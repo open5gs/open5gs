@@ -602,8 +602,72 @@ void ogs_gtp_node_free(ogs_gtp_node_t *node)
 
     ogs_gtp_xact_delete_all(node);
 
+    if (node->hostname)
+        ogs_free(node->hostname);
     ogs_freeaddrinfo(node->sa_list);
     ogs_pool_free(&pool, node);
+}
+
+void ogs_gtp_node_set_hostname(ogs_gtp_node_t *node,
+        const char *hostname, uint16_t port)
+{
+    ogs_assert(node);
+
+    if (node->hostname)
+        ogs_free(node->hostname);
+
+    node->hostname = hostname ? ogs_strdup(hostname) : NULL;
+    node->hostname_port = port;
+}
+
+int ogs_gtp_node_refresh_dns(ogs_gtp_node_t *node)
+{
+    int rv;
+    ogs_sockaddr_t *new_list = NULL;
+
+    ogs_assert(node);
+
+    if (!node->hostname)
+        return OGS_OK;
+
+    ogs_info("GTP DNS refresh: re-resolving [%s]:%d (old %s)",
+            node->hostname, node->hostname_port,
+            ogs_sockaddr_to_string_static(node->sa_list));
+
+    rv = ogs_getaddrinfo(&new_list, AF_UNSPEC,
+            node->hostname, node->hostname_port, 0);
+    if (rv != OGS_OK || !new_list) {
+        ogs_warn("GTP DNS refresh failed for [%s]:%d – keeping old address",
+                node->hostname, node->hostname_port);
+        return OGS_OK;
+    }
+
+    ogs_freeaddrinfo(node->sa_list);
+    node->sa_list = new_list;
+
+    /*
+     * Re-run connect logic: pick the first sa_list entry matching an
+     * existing IPv4/IPv6 socket and update node->addr accordingly.
+     */
+    if (node->sock) {
+        ogs_sockaddr_t *addr = node->sa_list;
+        while (addr) {
+            if ((addr->ogs_sa_family == AF_INET &&
+                        node->sock->family == AF_INET) ||
+                (addr->ogs_sa_family == AF_INET6 &&
+                        node->sock->family == AF_INET6)) {
+                memcpy(&node->addr, addr, sizeof(node->addr));
+                break;
+            }
+            addr = addr->next;
+        }
+    }
+
+    ogs_info("GTP DNS refresh: resolved [%s]:%d -> %s",
+            node->hostname, node->hostname_port,
+            ogs_sockaddr_to_string_static(node->sa_list));
+
+    return OGS_OK;
 }
 
 ogs_gtp_node_t *ogs_gtp_node_add_by_f_teid(

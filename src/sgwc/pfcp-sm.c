@@ -73,6 +73,8 @@ void sgwc_pfcp_state_will_associate(ogs_fsm_t *s, sgwc_event_t *e)
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
         if (node->t_association) {
+            ogs_pfcp_node_refresh_config_dns(node);
+
             ogs_timer_start(node->t_association,
                     ogs_local_conf()->time.message.pfcp.association_interval);
 
@@ -91,6 +93,8 @@ void sgwc_pfcp_state_will_associate(ogs_fsm_t *s, sgwc_event_t *e)
         case SGWC_TIMER_PFCP_ASSOCIATION:
             node = e->pfcp_node;
             ogs_assert(node);
+
+            ogs_pfcp_node_refresh_config_dns(node);
 
             ogs_warn("Retry association with peer failed %s",
                     ogs_sockaddr_to_string_static(node->addr_list));

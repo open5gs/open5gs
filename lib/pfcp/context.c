@@ -1114,6 +1114,53 @@ int ogs_pfcp_node_merge(ogs_pfcp_node_t *node,
     return OGS_OK;
 }
 
+/******************************************************************************
+ * ogs_pfcp_node_refresh_config_dns()
+ *  - Re-resolve the hostname stored in config_addr (if any).
+ *  - Called when re-entering will_associate after a peer loss so that a
+ *    restarted peer (new pod IP behind same K8s Service DNS name) is found.
+ *  - On resolution failure the existing addr_list is kept (graceful fallback).
+ ******************************************************************************/
+int ogs_pfcp_node_refresh_config_dns(ogs_pfcp_node_t *node)
+{
+    int rv;
+    ogs_sockaddr_t *new_list = NULL;
+    const char *hostname = NULL;
+    uint16_t port;
+
+    ogs_assert(node);
+
+    if (!node->config_addr)
+        return OGS_OK;
+
+    hostname = node->config_addr->hostname;
+    if (!hostname)
+        return OGS_OK;
+
+    port = OGS_PORT(node->config_addr);
+
+    ogs_info("PFCP DNS refresh: re-resolving [%s]:%d (old %s)",
+            hostname, port,
+            ogs_sockaddr_to_string_static(node->addr_list));
+
+    rv = ogs_getaddrinfo(&new_list, AF_UNSPEC, hostname, port, 0);
+    if (rv != OGS_OK || !new_list) {
+        ogs_warn("PFCP DNS refresh failed for [%s]:%d – keeping old address",
+                hostname, port);
+        return OGS_OK;
+    }
+
+    ogs_freeaddrinfo(node->addr_list);
+    node->addr_list = new_list;
+    node->current_addr = NULL;
+
+    ogs_info("PFCP DNS refresh: resolved [%s]:%d -> %s",
+            hostname, port,
+            ogs_sockaddr_to_string_static(node->addr_list));
+
+    return OGS_OK;
+}
+
 void ogs_pfcp_node_remove(ogs_list_t *list, ogs_pfcp_node_t *node)
 {
     ogs_assert(list);

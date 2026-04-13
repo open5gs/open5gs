@@ -67,6 +67,9 @@ typedef struct ogs_gtp_node_s {
     ogs_lnode_t     node;           /* A node of list_t */
     void            *data_ptr;      /* Can be used by app */
 
+    char            *hostname;      /* Original hostname from config (if any) */
+    uint16_t        hostname_port;  /* Port associated with hostname */
+
     ogs_sockaddr_t  *sa_list;       /* Socket Address List Candidate */
 
     ogs_sock_t      *sock;          /* Socket Instance */
@@ -91,6 +94,9 @@ int ogs_gtp_context_parse_config(const char *local, const char *remote);
 
 ogs_gtp_node_t *ogs_gtp_node_new(ogs_sockaddr_t *sa_list);
 void ogs_gtp_node_free(ogs_gtp_node_t *node);
+void ogs_gtp_node_set_hostname(ogs_gtp_node_t *node,
+        const char *hostname, uint16_t port);
+int ogs_gtp_node_refresh_dns(ogs_gtp_node_t *node);
 
 ogs_gtp_node_t *ogs_gtp_node_add_by_f_teid(
         ogs_list_t *list, ogs_gtp2_f_teid_t *f_teid, uint16_t port);

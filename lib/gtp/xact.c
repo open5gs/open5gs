@@ -841,6 +841,8 @@ static void response_timeout(void *data)
                 OGS_ADDR(&xact->gnode->addr, buf),
                 OGS_PORT(&xact->gnode->addr));
 
+        ogs_gtp_node_refresh_dns(xact->gnode);
+
         if (xact->cb)
             xact->cb(xact, xact->data);
 

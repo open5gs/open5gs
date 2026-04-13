@@ -926,6 +926,20 @@ int mme_context_parse_config(void)
                                         sgw = mme_sgw_add(addr);
                                         ogs_assert(sgw);
 
+                                        if (num > 0 && hostname[0]) {
+                                            struct in6_addr tmp;
+                                            if (ogs_inet_pton(AF_INET,
+                                                    hostname[0], &tmp) !=
+                                                    OGS_OK &&
+                                                ogs_inet_pton(AF_INET6,
+                                                    hostname[0], &tmp) !=
+                                                    OGS_OK) {
+                                                ogs_gtp_node_set_hostname(
+                                                        &sgw->gnode,
+                                                        hostname[0], port);
+                                            }
+                                        }
+
                                         sgw->num_of_tac = num_of_tac;
                                         if (num_of_tac != 0)
                                             memcpy(sgw->tac,
