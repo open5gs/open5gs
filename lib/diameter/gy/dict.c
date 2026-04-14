@@ -148,10 +148,14 @@ int ogs_dict_gy_entry(char *conffile)
   /* Applications section */
   {
   {
-    //struct dict_object * vendor;
-    //CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_VENDOR, VENDOR_BY_NAME, "3GPP", &vendor, ENOENT));
-    struct dict_application_data app_data = { OGS_DIAM_GY_APPLICATION_ID, "Gy" };
-    CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &app_data, NULL, NULL));
+    struct dict_object *appobj = NULL;
+    application_id_t id = OGS_DIAM_GY_APPLICATION_ID;
+    int ret = fd_dict_search(fd_g_config->cnf_dict, DICT_APPLICATION,
+            APPLICATION_BY_ID, (void *)&id, &appobj, 0);
+    if (ret != 0 || !appobj) {
+      struct dict_application_data app_data = { OGS_DIAM_GY_APPLICATION_ID, "Gy" };
+      CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &app_data, NULL, NULL));
+    }
   }
 
   }
