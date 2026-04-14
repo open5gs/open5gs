@@ -24,6 +24,15 @@ int fd_rtdisp_init(void);
 int fd_ext_load(void);
 int fd_msg_init(void);
 
+/* Mirrors struct fd_connect_host from fdcore-internal.h
+ * (not part of the public libfdcore API). Used to populate
+ * pic_connect_hosts so that p_cnx.c can re-resolve DNS names
+ * on reconnect. */
+struct fd_connect_host {
+    struct fd_list chain;
+    char *         hostname;
+};
+
 static int diam_config_apply(ogs_diam_config_t *fd_config)
 {
     struct addrinfo hints, *ai;
@@ -50,7 +59,7 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
     if (ret)
     {
         ogs_error("getaddrinfo() [%s] failed(%d:%s)",
-                fd_config->cnf_addr, errno, strerror(errno));
+                fd_config->cnf_addr, ret, gai_strerror(ret));
         return OGS_ERROR;
     }
 
@@ -95,20 +104,44 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
         fddpi.pi_diamid = (DiamId_t)fd_config->conn[i].identity;
 
         fd_list_init( &fddpi.pi_endpoints, NULL );
+        fd_list_init( &fddpi.config.pic_connect_hosts, NULL );
 
         memset(&hints, 0, sizeof(hints));
         hints.ai_flags = AI_ADDRCONFIG | AI_NUMERICHOST;
         ret = getaddrinfo(fd_config->conn[i].addr, NULL, &hints, &ai);
+        if (ret == EAI_NONAME) {
+            disc = EP_FL_DISC;
+            hints.ai_flags &= ~AI_NUMERICHOST;
+            ret = getaddrinfo(fd_config->conn[i].addr, NULL, &hints, &ai);
+        }
         if (ret)
         {
             ogs_error("getaddrinfo() [%s] failed(%d:%s)",
-                    fd_config->conn[i].addr, errno, strerror(errno));
+                    fd_config->conn[i].addr, ret, gai_strerror(ret));
             return OGS_ERROR;
         }
 
-        CHECK_FCT_DO( fd_ep_add_merge(
-                &fddpi.pi_endpoints, ai->ai_addr, ai->ai_addrlen,
-                EP_FL_CONF | (disc ?: EP_ACCEPTALL) ), return OGS_ERROR);
+        if (disc) {
+            struct addrinfo *aip;
+            struct fd_connect_host *host = NULL;
+            host = malloc(sizeof(*host));
+            ogs_assert(host);
+            fd_list_init(&host->chain, NULL);
+            host->hostname = strdup(fd_config->conn[i].addr);
+            ogs_assert(host->hostname);
+            fd_list_insert_before(
+                    &fddpi.config.pic_connect_hosts, &host->chain);
+
+            for (aip = ai; aip != NULL; aip = aip->ai_next) {
+                CHECK_FCT_DO( fd_ep_add_merge( &fddpi.pi_endpoints,
+                        aip->ai_addr, aip->ai_addrlen,
+                        EP_FL_DISC ), return OGS_ERROR);
+            }
+        } else {
+            CHECK_FCT_DO( fd_ep_add_merge( &fddpi.pi_endpoints,
+                    ai->ai_addr, ai->ai_addrlen,
+                    EP_FL_CONF | EP_ACCEPTALL ), return OGS_ERROR);
+        }
         CHECK_FCT_DO( fd_peer_add ( &fddpi, NULL, NULL, NULL ),
                 return OGS_ERROR);
 
