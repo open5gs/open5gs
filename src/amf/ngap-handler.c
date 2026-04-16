@@ -425,6 +425,15 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
     amf_gnb_set_gnb_id(gnb, gnb_id);
 
+    /* Capture the gNB ID bit length from the NGAP BIT STRING so that the
+     * NR Cell Identity (36-bit = gNB ID || Cell ID) can be split correctly
+     * later on. The NGAP gNB-ID IE is a BIT STRING of SIZE(22..32). */
+    if (globalGNB_ID->gNB_ID.present == NGAP_GNB_ID_PR_gNB_ID) {
+        BIT_STRING_t *bs = &globalGNB_ID->gNB_ID.choice.gNB_ID;
+        uint8_t bits = (uint8_t)(bs->size * 8 - bs->bits_unused);
+        amf_gnb_set_gnb_id_length(gnb, bits);
+    }
+
     gnb->state.ng_setup_success = true;
     r = ngap_send_ng_setup_response(gnb);
     ogs_expect(r == OGS_OK);
@@ -4557,6 +4566,12 @@ void ngap_handle_ran_configuration_update(
                 OGS_ADDR(gnb->sctp.addr, buf), gnb_id);
 
         amf_gnb_set_gnb_id(gnb, gnb_id);
+
+        if (globalGNB_ID->gNB_ID.present == NGAP_GNB_ID_PR_gNB_ID) {
+            BIT_STRING_t *bs = &globalGNB_ID->gNB_ID.choice.gNB_ID;
+            uint8_t bits = (uint8_t)(bs->size * 8 - bs->bits_unused);
+            amf_gnb_set_gnb_id_length(gnb, bits);
+        }
     }
 
     if (SupportedTAList) {

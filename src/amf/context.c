@@ -1343,6 +1343,22 @@ int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id)
     return OGS_OK;
 }
 
+void amf_gnb_set_gnb_id_length(amf_gnb_t *gnb, uint8_t gnb_id_length)
+{
+    ogs_assert(gnb);
+
+    /* Per 3GPP TS 38.413, gNB ID length is between 22 and 32 bits. Accept
+     * only values in that range; ignore anything out-of-spec so that
+     * consumers can rely on a nonzero value meaning "validated". */
+    if (gnb_id_length < 22 || gnb_id_length > 32) {
+        ogs_warn("Ignoring out-of-range gNB ID length [%u]",
+                (unsigned)gnb_id_length);
+        return;
+    }
+
+    gnb->gnb_id_length = gnb_id_length;
+}
+
 int amf_gnb_sock_type(ogs_sock_t *sock)
 {
     ogs_socknode_t *snode = NULL;

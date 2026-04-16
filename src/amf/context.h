@@ -141,6 +141,9 @@ typedef struct amf_gnb_s {
 
     bool            gnb_id_presence;
     uint32_t        gnb_id;     /* gNB_ID received from gNB */
+    uint8_t         gnb_id_length; /* gNB_ID BIT STRING length (22..32),
+                                    * derived from NGAP GlobalGNB-ID.
+                                    * 0 if not yet populated. */
     ogs_plmn_id_t   plmn_id;    /* gNB PLMN-ID received from gNB */
     ogs_sctp_sock_t sctp;       /* SCTP socket */
 
@@ -965,6 +968,7 @@ void amf_gnb_remove_all(void);
 amf_gnb_t *amf_gnb_find_by_addr(ogs_sockaddr_t *addr);
 amf_gnb_t *amf_gnb_find_by_gnb_id(uint32_t gnb_id);
 int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id);
+void amf_gnb_set_gnb_id_length(amf_gnb_t *gnb, uint8_t gnb_id_length);
 int amf_gnb_sock_type(ogs_sock_t *sock);
 amf_gnb_t *amf_gnb_find_by_id(ogs_pool_id_t id);
 

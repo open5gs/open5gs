@@ -222,9 +222,27 @@ static int add_gnb(cJSON *parent, const amf_ue_t *ue)
 
     ran_ue_t *ran = ran_ue_find_by_id(ue->ran_ue_id);
     if (ran) {
-        uint64_t nci = ue->nr_cgi.cell_id & 0xFFFFFFFFFULL; /* 36-bit */
-        uint32_t gnb_id  = (uint32_t)((nci >> 14) & 0x3FFFFF);
-        uint32_t cell_id = (uint32_t)(nci & 0x3FFF);
+        /*
+         * NCI (36-bit) = (gNB ID << cell_id_bits) | Cell ID, where gNB
+         * ID length is operator-configurable (22..32 bits). Use the
+         * gNB ID and bit length captured from the NGAP GlobalGNB-ID
+         * BIT STRING at NG Setup time so the split is correct for any
+         * idLength (e.g. UERANSIM defaults to 32). If the gNB context
+         * is not available, fall back to the legacy 22-bit assumption.
+         */
+        uint64_t nci     = ue->nr_cgi.cell_id & 0xFFFFFFFFFULL; /* 36-bit */
+        uint32_t gnb_id;
+        uint32_t cell_id;
+
+        amf_gnb_t *gnb_ctx = amf_gnb_find_by_id(ran->gnb_id);
+        if (gnb_ctx && gnb_ctx->gnb_id_presence && gnb_ctx->gnb_id_length) {
+            int cell_id_bits = 36 - gnb_ctx->gnb_id_length;
+            gnb_id  = gnb_ctx->gnb_id;
+            cell_id = (uint32_t)(nci & ((1ULL << cell_id_bits) - 1));
+        } else {
+            gnb_id  = (uint32_t)((nci >> 14) & 0x3FFFFF);
+            cell_id = (uint32_t)(nci & 0x3FFF);
+        }
 
         cJSON *a = cJSON_CreateNumber((double)ran->amf_ue_ngap_id);
         cJSON *r = cJSON_CreateNumber((double)ran->ran_ue_ngap_id);
@@ -294,9 +312,23 @@ static int add_location(cJSON *parent, const amf_ue_t *ue)
         if (!p) { cJSON_Delete(cgi); cJSON_Delete(loc); return -1; }
         cJSON_AddItemToObjectCS(cgi, "plmn", p);
 
+        /*
+         * Same bit-split rationale as add_gnb(): prefer the gNB ID and
+         * bit length cached at NG Setup time; otherwise fall back to
+         * the legacy 22-bit assumption.
+         */
         uint64_t nci     = ue->nr_cgi.cell_id & 0xFFFFFFFFFULL; /* 36-bit */
         uint32_t gnb_id  = (uint32_t)((nci >> 14) & 0x3FFFFF);
         uint32_t cell_id = (uint32_t)(nci & 0x3FFF);
+
+        ran_ue_t *ran_loc = ran_ue_find_by_id(ue->ran_ue_id);
+        amf_gnb_t *gnb_ctx = ran_loc ?
+                amf_gnb_find_by_id(ran_loc->gnb_id) : NULL;
+        if (gnb_ctx && gnb_ctx->gnb_id_presence && gnb_ctx->gnb_id_length) {
+            int cell_id_bits = 36 - gnb_ctx->gnb_id_length;
+            gnb_id  = gnb_ctx->gnb_id;
+            cell_id = (uint32_t)(nci & ((1ULL << cell_id_bits) - 1));
+        }
 
         cJSON *n = cJSON_CreateNumber((double)nci);
         cJSON *g = cJSON_CreateNumber((double)gnb_id);
