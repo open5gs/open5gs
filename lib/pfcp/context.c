@@ -1154,6 +1154,17 @@ int ogs_pfcp_node_refresh_config_dns(ogs_pfcp_node_t *node)
     node->addr_list = new_list;
     node->current_addr = NULL;
 
+    /*
+     * Reset the cached Node ID so that ogs_pfcp_node_find() falls back to
+     * addr_list matching.  Without this, a peer that restarts on a new IP
+     * (e.g. Kubernetes pod reschedule) is not found because node_id still
+     * holds the old IP, causing Association Setup Responses to be dropped.
+     */
+    memset(&node->node_id, 0, sizeof(node->node_id));
+    node->node_id.type = OGS_PFCP_NODE_ID_UNKNOWN;
+
+    node->remote_recovery = 0;
+
     ogs_info("PFCP DNS refresh: resolved [%s]:%d -> %s",
             hostname, port,
             ogs_sockaddr_to_string_static(node->addr_list));
