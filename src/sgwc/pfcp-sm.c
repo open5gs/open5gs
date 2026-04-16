@@ -260,16 +260,18 @@ void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e)
             }
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
-            ogs_warn("PFCP[REQ] has already been associated %s",
+            ogs_warn("PFCP[REQ] re-association while associated %s",
                 ogs_sockaddr_to_string_static(node->addr_list));
             ogs_pfcp_cp_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
+            OGS_FSM_TRAN(s, sgwc_pfcp_state_associated);
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE:
-            ogs_warn("PFCP[RSP] has already been associated %s",
+            ogs_warn("PFCP[RSP] re-association while associated %s",
                 ogs_sockaddr_to_string_static(node->addr_list));
             ogs_pfcp_cp_handle_association_setup_response(node, xact,
                     &message->pfcp_association_setup_response);
+            OGS_FSM_TRAN(s, sgwc_pfcp_state_associated);
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
             if (!message->h.seid_presence) ogs_error("No SEID");
