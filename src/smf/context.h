@@ -597,6 +597,11 @@ typedef struct smf_sess_s {
         /* Whether Gy Final-Unit-Indication was received.
          * Triggers session release upon Rx of next PFCP Report Req */
         bool final_unit;
+        /* Wall-clock anchor for the Gy charging session (set when CCR-I is
+         * sent). Used to sanity-clamp CC-Time (RFC 4006 8.21) so the SMF
+         * can never emit a duration that exceeds the real session lifetime,
+         * even if the UPF misreports Duration-Measurement. See gy-path.c. */
+        ogs_time_t start_time;
         /* Snapshot of measurement when last report was sent: */
         struct {
             uint64_t ul_octets;

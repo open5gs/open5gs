@@ -169,6 +169,31 @@ uint32_t smf_gy_handle_cca_initial_request(
     /* Associate acconting URR each direction PDR: */
     ogs_pfcp_pdr_associate_urr(bearer->ul_pdr, bearer->urr);
     ogs_pfcp_pdr_associate_urr(bearer->dl_pdr, bearer->urr);
+
+    /* #region CNAAS-GY-DBG - Bug 2 investigation: log what the SMF will
+     * program into the UPF via CREATE_URR on the upcoming PFCP Session
+     * Establishment Request. If `vol_quota=1 tot=10485760` appears here
+     * but no PFCP Session Report Request ever arrives afterwards for this
+     * URR, the UPF is not enforcing the Volume-Quota we programmed. */
+    {
+        ogs_pfcp_urr_t *urr = bearer->urr;
+        ogs_warn("[CNAAS-GY-DBG] Programming URR from Gy CCA-I: "
+                 "urr_id=%u meas_method=0x%02x rep_triggers=%06x "
+                 "vol_quota(flags=0x%02x,tot=%" PRIu64 ") "
+                 "time_quota=%us time_threshold=%us istm=%u "
+                 "pdr(ul_num_urr=%d,dl_num_urr=%d)",
+                 urr->id, urr->meas_method,
+                 ((uint32_t)urr->rep_triggers.reptri_5 << 16) |
+                  ((uint32_t)urr->rep_triggers.reptri_6 << 8) |
+                  ((uint32_t)urr->rep_triggers.reptri_7),
+                 urr->vol_quota.flags, urr->vol_quota.total_volume,
+                 urr->time_quota, urr->time_threshold,
+                 urr->meas_info.istm,
+                 bearer->ul_pdr ? bearer->ul_pdr->num_of_urr : -1,
+                 bearer->dl_pdr ? bearer->dl_pdr->num_of_urr : -1);
+    }
+    /* #endregion CNAAS-GY-DBG */
+
     return ER_DIAMETER_SUCCESS;
 }
 

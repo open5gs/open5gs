@@ -161,11 +161,54 @@ static void fill_used_service_unit(smf_sess_t *sess,
 
     /* Tariff-Change-Usage */
 
-    /* CC-Time, RFC4006 8.21 */
+    /* CC-Time, RFC4006 8.21
+     *
+     * Defensive clamp: CC-Time is a duration in seconds, not a timestamp.
+     * Certain UPF builds (upstream open5gs <= 2.7.6 at time of writing)
+     * can emit a PFCP Duration-Measurement that is actually the current
+     * Unix wall-clock in seconds (e.g. 1776420008 → 2026-04-17). Forwarding
+     * such a value on Gy produces nonsensical OCS billing.
+     *
+     * We therefore bound the reported delta by the real time elapsed since
+     * the Gy charging session was opened (sess->gy.start_time). Anything
+     * larger is capped; anything negative is reset to 0. This also protects
+     * against monotonicity issues after a UPF restart.
+     */
     ret = fd_msg_avp_new(ogs_diam_gy_cc_time, 0, &avpch2);
     ogs_assert(ret == 0);
-    val.u32 = sess->gy.duration - sess->gy.last_report.duration;
-    sess->gy.last_report.duration = sess->gy.duration;
+    {
+        uint64_t reported_delta = 0;
+        if (sess->gy.duration > sess->gy.last_report.duration)
+            reported_delta =
+                sess->gy.duration - sess->gy.last_report.duration;
+
+        uint64_t max_delta = UINT32_MAX;
+        if (sess->gy.start_time) {
+            ogs_time_t now = ogs_time_now();
+            if (now > sess->gy.start_time) {
+                max_delta =
+                    (uint64_t)((now - sess->gy.start_time) /
+                               OGS_USEC_PER_SEC);
+                /* Allow a small grace so a report arriving a moment after
+                 * measurement is not clipped by a fraction of a second. */
+                max_delta += 2;
+            } else {
+                max_delta = 0;
+            }
+        }
+
+        if (reported_delta > max_delta) {
+            ogs_warn("[Gy] Clamping out-of-range CC-Time delta "
+                     "(reported=%" PRIu64 "s, max=%" PRIu64 "s); "
+                     "UPF Duration-Measurement is likely miscalculated.",
+                     reported_delta, max_delta);
+            reported_delta = max_delta;
+        }
+        val.u32 = (uint32_t)reported_delta;
+        /* Advance the last-report marker using the clamped value so the
+         * accumulator stays consistent with what we actually emitted. */
+        sess->gy.last_report.duration += reported_delta;
+    }
     ret = fd_msg_avp_setvalue (avpch2, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
@@ -736,9 +779,15 @@ void smf_gy_send_ccr(smf_sess_t *sess, ogs_pool_id_t xact_id,
 
     sess_data->cc_request_type = cc_request_type;
     if (cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST ||
-        cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_EVENT_REQUEST)
+        cc_request_type == OGS_DIAM_GY_CC_REQUEST_TYPE_EVENT_REQUEST) {
         sess_data->cc_request_number = 0;
-    else
+        /* Anchor wall-clock start of the Gy charging session. This is the
+         * upper bound for the CC-Time (RFC 4006 8.21) values we will emit
+         * on subsequent UPDATE_REQUEST / TERMINATION_REQUEST messages, and
+         * is used to detect and clamp out-of-range Duration-Measurement
+         * values coming from the UPF. */
+        sess->gy.start_time = ogs_time_now();
+    } else
         sess_data->cc_request_number++;
 
     ogs_debug("    CC Request Type[%d] Number[%d]",

@@ -36,10 +36,22 @@ static void upf_n4_handle_create_urr(upf_sess_t *sess, ogs_pfcp_tlv_create_urr_t
         if (!urr)
             return;
 
-        /* TODO: enable counters somewhere else if ISTM not set, upon first pkt received */
-        if (urr->meas_info.istm) {
-            upf_sess_urr_acc_timers_setup(sess, urr);
-        }
+        /*
+         * Always initialise the accounting anchor for this URR, regardless
+         * of whether Inactive Stage Trigger Metering (ISTM) is set.
+         *
+         * Previously this was gated by `urr->meas_info.istm`, which left
+         * `urr_acc->time_start` at 0 for volume-only URRs. Any subsequent
+         * usage report then computed
+         *   dur_measurement = now - ogs_time_from_ntp32(0) = now_unix_seconds
+         * and exported that wall-clock timestamp as PFCP Duration
+         * Measurement, which was in turn encoded verbatim into the Gy
+         * CC-Time (420) AVP (RFC 4006 8.21 — a duration in seconds, not a
+         * timestamp). The time-based sub-timers inside the setup function
+         * are each already guarded by their own trigger condition, so
+         * calling it unconditionally is safe.
+         */
+        upf_sess_urr_acc_timers_setup(sess, urr);
     }
 }
 

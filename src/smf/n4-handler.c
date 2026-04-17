@@ -1589,6 +1589,27 @@ uint8_t smf_n4_handle_session_report_request(
 
     ogs_debug("Session Report Request");
 
+    /* #region CNAAS-GY-DBG - Bug 2 investigation: record every PFCP Session
+     * Report Request arriving from the UPF, and in particular which
+     * sub-reports are present. If the UPF is correctly enforcing the
+     * Volume-Quota we programmed (Gy CCA-I Granted-Service-Unit), we expect
+     * to see usage_report=1 shortly after the UE consumes the granted
+     * 10 MB. If no such log ever appears while the UE is downloading, the
+     * UPF's volume-quota trigger is not firing (datapath bypass, wrong
+     * URR-to-PDR association, or missing Reporting-Triggers bit). */
+    if (pfcp_req->report_type.presence) {
+        uint8_t rt = pfcp_req->report_type.u8;
+        ogs_warn("[CNAAS-GY-DBG] PFCP Session Report Request rx "
+                 "(report_type=0x%02x: DLDR=%d USAR=%d ERIR=%d UPIR=%d)",
+                 rt,
+                 (rt >> 0) & 0x1, (rt >> 1) & 0x1,
+                 (rt >> 2) & 0x1, (rt >> 3) & 0x1);
+    } else {
+        ogs_warn("[CNAAS-GY-DBG] PFCP Session Report Request rx "
+                 "(report_type IE missing)");
+    }
+    /* #endregion CNAAS-GY-DBG */
+
     cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
     if (!sess) {
@@ -1756,10 +1777,33 @@ uint8_t smf_n4_handle_session_report_request(
                     &rep_trig, &use_rep->usage_report_trigger);
             sess->gy.reporting_reason =
                 smf_pfcp_urr_usage_report_trigger2diam_gy_reporting_reason(&rep_trig);
+
+            /* #region CNAAS-GY-DBG - Bug 2 investigation */
+            ogs_warn("[CNAAS-GY-DBG] UsageReport URR=%u trig=%u "
+                     "dur=%us vol(total=%" PRIu64 ",ul=%" PRIu64
+                     ",dl=%" PRIu64 ") acc(ul=%" PRIu64 ",dl=%" PRIu64
+                     ",dur=%us) reason=%u",
+                     urr_id,
+                     use_rep->usage_report_trigger.presence ?
+                         use_rep->usage_report_trigger.u24 : 0,
+                     use_rep->duration_measurement.u32,
+                     volume.total_volume,
+                     volume.uplink_volume,
+                     volume.downlink_volume,
+                     sess->gy.ul_octets, sess->gy.dl_octets,
+                     (uint32_t)sess->gy.duration,
+                     sess->gy.reporting_reason);
+            /* #endregion CNAAS-GY-DBG */
         }
         switch (smf_use_gy_iface()) {
         case 1:
             if (!sess->gy.final_unit) {
+                /* #region CNAAS-GY-DBG - Bug 2 investigation */
+                ogs_warn("[CNAAS-GY-DBG] Triggering Gy CCR-UPDATE "
+                         "(ul=%" PRIu64 ",dl=%" PRIu64 ",reason=%u)",
+                         sess->gy.ul_octets, sess->gy.dl_octets,
+                         sess->gy.reporting_reason);
+                /* #endregion CNAAS-GY-DBG */
                 smf_gy_send_ccr(
                         sess, pfcp_xact->id,
                         OGS_DIAM_GY_CC_REQUEST_TYPE_UPDATE_REQUEST);

@@ -739,8 +739,17 @@ void upf_sess_urr_acc_fill_usage_report(upf_sess_t *sess, const ogs_pfcp_urr_t *
 
     if (urr_acc->last_report.timestamp)
         last_report_timestamp = urr_acc->last_report.timestamp;
-    else
+    else if (urr_acc->time_start)
         last_report_timestamp = ogs_time_from_ntp32(urr_acc->time_start);
+    else
+        /*
+         * Defence in depth: if neither last_report.timestamp nor time_start
+         * was initialised (previously possible when ISTM was not set on a
+         * volume-only URR), anchor the duration to "now" so the emitted
+         * PFCP Duration Measurement is 0 rather than the current Unix
+         * wall-clock (which used to leak out as CC-Time = 17xxxxxxxx on Gy).
+         */
+        last_report_timestamp = now;
 
     report->type.usage_report = 1;
     report->usage_report[idx].id = urr->id;
