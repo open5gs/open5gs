@@ -1204,9 +1204,21 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
     /* Parse message AVPs */
     ret = fd_msg_browse(*msg, MSG_BRW_FIRST_CHILD, &avp, NULL);
     ogs_assert(ret == 0);
+    /* #region CNAAS-GY-DBG - Bug 2 investigation: log every top-level AVP
+     * we encounter in the Gy CCA so we can tell whether
+     * Multiple-Services-Credit-Control (456) ever arrives at all. */
+    ogs_warn("[CNAAS-GY-DBG] CCA top-level AVPs begin (req_type=%u result=%u)",
+             gy_message->cc_request_type, gy_message->result_code);
+    /* #endregion CNAAS-GY-DBG */
     while (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
+        /* #region CNAAS-GY-DBG */
+        ogs_warn("[CNAAS-GY-DBG]   top AVP code=%u vendor=%u len=%zu",
+                 hdr->avp_code, hdr->avp_vendor,
+                 (size_t)hdr->avp_value ?
+                    (hdr->avp_value->os.len ? hdr->avp_value->os.len : 0) : 0);
+        /* #endregion CNAAS-GY-DBG */
         switch (hdr->avp_code) {
         case AC_SESSION_ID:
         case AC_ORIGIN_HOST:
@@ -1232,11 +1244,19 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
         case OGS_DIAM_GY_AVP_CODE_SUPPORTED_FEATURES:
             break;
         case OGS_DIAM_GY_AVP_CODE_MULTIPLE_SERVICES_CREDIT_CONTROL:
+            /* #region CNAAS-GY-DBG */
+            ogs_warn("[CNAAS-GY-DBG]   -> Multiple-Services-Credit-Control "
+                     "grouped AVP found");
+            /* #endregion CNAAS-GY-DBG */
             ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
             ogs_assert(ret == 0);
             while (avpch1) {
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
                 ogs_assert(ret == 0);
+                /* #region CNAAS-GY-DBG */
+                ogs_warn("[CNAAS-GY-DBG]        MSCC sub AVP code=%u "
+                         "vendor=%u", hdr->avp_code, hdr->avp_vendor);
+                /* #endregion CNAAS-GY-DBG */
                 switch (hdr->avp_code) {
                 case AC_RESULT_CODE:
                     gy_message->cca.result_code = hdr->avp_value->u32;
@@ -1249,6 +1269,21 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
                         ogs_error("Failed to decode granted service unit");
                         goto cleanup;
                     }
+                    /* #region CNAAS-GY-DBG */
+                    ogs_warn("[CNAAS-GY-DBG]        GSU decoded: "
+                             "cc_total_present=%d cc_total=%" PRIu64
+                             " cc_input_present=%d cc_input=%" PRIu64
+                             " cc_output_present=%d cc_output=%" PRIu64
+                             " cc_time_present=%d cc_time=%u",
+                             gy_message->cca.granted.cc_total_octets_present,
+                             gy_message->cca.granted.cc_total_octets,
+                             gy_message->cca.granted.cc_input_octets_present,
+                             gy_message->cca.granted.cc_input_octets,
+                             gy_message->cca.granted.cc_output_octets_present,
+                             gy_message->cca.granted.cc_output_octets,
+                             gy_message->cca.granted.cc_time_present,
+                             gy_message->cca.granted.cc_time);
+                    /* #endregion CNAAS-GY-DBG */
                     break;
                 case OGS_DIAM_GY_AVP_CODE_VALIDITY_TIME:
                     gy_message->cca.validity_time = hdr->avp_value->u32;
