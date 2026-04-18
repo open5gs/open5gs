@@ -122,6 +122,7 @@ int ogs_sctp_rto_info(ogs_sock_t *sock, ogs_sockopt_t *option);
 int ogs_sctp_initmsg(ogs_sock_t *sock, ogs_sockopt_t *option);
 int ogs_sctp_nodelay(ogs_sock_t *sock, int on);
 int ogs_sctp_so_linger(ogs_sock_t *sock, int l_linger);
+int ogs_sctp_abort(ogs_sock_t *sock);
 
 int ogs_sctp_sendmsg(ogs_sock_t *sock, const void *msg, size_t len,
         ogs_sockaddr_t *to, uint32_t ppid, uint16_t stream_no);
