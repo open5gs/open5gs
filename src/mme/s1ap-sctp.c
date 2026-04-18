@@ -219,11 +219,30 @@ void s1ap_recv_handler(ogs_sock_t *sock)
         {
             mme_enb_t *enb;
             size_t hdr_len = sizeof(struct sctp_send_failed);
-            const uint8_t *failed_payload =
-                (const uint8_t *)not + hdr_len;
-            ssize_t failed_len = (ssize_t)size - (ssize_t)hdr_len;
+            size_t total_len;
+            const uint8_t *failed_payload;
+            ssize_t failed_len;
 
-            ogs_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, E:%d, L:%zd]",
+            /* Guard against a malformed/short notification before any
+             * arithmetic that could underflow into a huge size_t. */
+            if ((size_t)size < hdr_len) {
+                ogs_error("SCTP_SEND_FAILED: recv size (%d) "
+                        "smaller than notification header (%zu)",
+                        size, hdr_len);
+                break;
+            }
+
+            /* Prefer ssf_length (RFC 4960: total notification length)
+             * but fall back to the recvmsg() return when it looks wrong
+             * (zero, truncated, or claims more than was actually read). */
+            total_len = not->sn_send_failed.ssf_length;
+            if (total_len < hdr_len || total_len > (size_t)size)
+                total_len = (size_t)size;
+
+            failed_payload = (const uint8_t *)not + hdr_len;
+            failed_len = (ssize_t)total_len - (ssize_t)hdr_len;
+
+            ogs_debug("SCTP_SEND_FAILED:[T:%d, F:0x%x, E:%d, L:%zd]",
                     not->sn_send_failed.ssf_type,
                     not->sn_send_failed.ssf_flags,
                     not->sn_send_failed.ssf_error,
@@ -465,10 +484,22 @@ static void s1ap_handle_send_failed(mme_enb_t *enb,
     ogs_assert(data);
 
     enb->sctp_send_failed_count++;
-    ogs_warn("    IP[%s] ENB_ID[%d] path degraded: "
-            "SCTP_SEND_FAILED count=%u error=%u",
-            OGS_ADDR(enb->sctp.addr, buf), enb->enb_id,
-            enb->sctp_send_failed_count, error);
+    /* Under a sustained SCTP stall the kernel fires one SCTP_SEND_FAILED
+     * per queued chunk — potentially hundreds within seconds. Emit the
+     * operator-visible warning only on the first failure and every 100
+     * failures thereafter; the rest land on debug so the per-UE release
+     * line below remains the primary signal. */
+    if (enb->sctp_send_failed_count == 1 ||
+        (enb->sctp_send_failed_count % 100) == 0) {
+        ogs_warn("    IP[%s] ENB_ID[%d] path degraded: "
+                "SCTP_SEND_FAILED count=%u error=%u",
+                OGS_ADDR(enb->sctp.addr, buf), enb->enb_id,
+                enb->sctp_send_failed_count, error);
+    } else {
+        ogs_debug("    IP[%s] ENB_ID[%d] SCTP_SEND_FAILED count=%u error=%u",
+                OGS_ADDR(enb->sctp.addr, buf), enb->enb_id,
+                enb->sctp_send_failed_count, error);
+    }
 
     pkbuf = ogs_pkbuf_alloc(NULL, data_len);
     if (!pkbuf) {
@@ -510,7 +541,7 @@ static void s1ap_handle_send_failed(mme_enb_t *enb,
         goto out;
     }
 
-    ogs_warn("    Local UE Context Release: "
+    ogs_info("    Local UE Context Release: "
             "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
