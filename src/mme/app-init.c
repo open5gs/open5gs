@@ -19,6 +19,7 @@
 
 #include "ogs-sctp.h"
 #include "ogs-app.h"
+#include "s1ap-path.h"
 
 int app_initialize(const char *const argv[])
 {
@@ -31,6 +32,8 @@ int app_initialize(const char *const argv[])
         return rv;
     }
     ogs_info("MME initialize...done");
+
+    s1ap_sctp_health_check_init();
 
     return OGS_OK;
 }

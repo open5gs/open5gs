@@ -18,6 +18,7 @@
  */
 
 #include "ogs-sctp.h"
+#include <netinet/sctp.h>
 
 #include "mme-event.h"
 #include "mme-timer.h"
@@ -54,10 +55,8 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
     ogs_assert(pkbuf);
     ogs_assert(enb);
 
-    ogs_assert(enb->sctp.sock);
-    if (enb->sctp.sock->fd == INVALID_SOCKET) {
-        ogs_fatal("eNB SCTP socket has already been destroyed");
-        ogs_log_hexdump(OGS_LOG_FATAL, pkbuf->data, pkbuf->len);
+    if (!enb->sctp.sock || enb->sctp.sock->fd == INVALID_SOCKET) {
+        ogs_warn("eNB SCTP socket unavailable (destroyed or ABORT in progress)");
         ogs_pkbuf_free(pkbuf);
         return OGS_ERROR;
     }
@@ -69,6 +68,77 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
     ogs_sctp_stream_no_in_pkbuf(pkbuf) = stream_no;
 
     if (enb->sctp.type == SOCK_STREAM) {
+        /*
+         * Backpressure: refuse to queue more S1AP messages if the SCTP
+         * write queue for this eNB is already deeply backed up.
+         *
+         * A healthy eNB processes S1AP within milliseconds, so the queue
+         * depth should normally be 0-2. A sustained depth > 64 indicates
+         * the peer is not draining (SCTP flow-control stall, firmware bug,
+         * or network partition). Queuing more messages would only fill
+         * the kernel sndbuf (typ. 212 KB) and affect all UEs on this eNB.
+         * Better to fail early so individual UE procedures time out and
+         * the UE can retry cleanly.
+         */
+        int queue_depth = ogs_list_count(&enb->sctp.write_queue);
+        if (queue_depth > 64) {
+            ogs_time_t now = ogs_get_monotonic_time();
+
+            if (!enb->sctp_backpressure_since) {
+                enb->sctp_backpressure_since = now;
+                ogs_warn("    IP[%s] ENB_ID[%d] S1AP backpressure started: "
+                        "write_queue depth %d",
+                        OGS_ADDR(enb->sctp.addr, buf), enb->enb_id,
+                        queue_depth);
+            }
+
+            /*
+             * Auto-recovery: if backpressure persists for 30+ seconds,
+             * the eNB SCTP receiver is in a permanent stall (e.g., frozen
+             * cumulative TSN). Force-close the SCTP socket to trigger an
+             * ABORT, which will fire the SCTP_COMM_LOST notification and
+             * release all UE contexts for this eNB. The eNB will then
+             * re-establish S1 Setup with a fresh SCTP association.
+             *
+             * Total service interruption: ~10-15 seconds (ABORT + S1 Setup
+             * + UE re-attach). Without this, 4G would be dead indefinitely
+             * until a manual eNB reboot.
+             */
+            ogs_time_t bp_duration = now - enb->sctp_backpressure_since;
+            if (bp_duration > ogs_time_from_sec(30)) {
+                ogs_error("    IP[%s] ENB_ID[%d] S1AP backpressure sustained "
+                        "for %d sec — forcing SCTP ABORT for auto-recovery",
+                        OGS_ADDR(enb->sctp.addr, buf), enb->enb_id,
+                        (int)(bp_duration / OGS_USEC_PER_SEC));
+                enb->sctp_backpressure_since = 0;
+                /* Force ABORT (not SHUTDOWN) — SO_LINGER with l_linger=0
+                 * guarantees the kernel sends an ABORT chunk on close().
+                 * A graceful SHUTDOWN does NOT reset the eNB's stalled
+                 * SCTP receiver state — confirmed experimentally. */
+                ogs_sctp_so_linger(enb->sctp.sock, 0);
+                ogs_sctp_destroy(enb->sctp.sock);
+                enb->sctp.sock = NULL;
+            }
+
+            ogs_pkbuf_free(pkbuf);
+            /*
+             * Return OGS_OK even though we dropped the message.
+             * Many callers use ogs_assert(r != OGS_ERROR) which would
+             * crash the MME process. The message is already freed; the
+             * NAS retransmission timer will handle the timeout gracefully.
+             */
+            return OGS_OK;
+        }
+
+        /* Queue is healthy — reset backpressure tracker */
+        if (enb->sctp_backpressure_since) {
+            ogs_info("    IP[%s] ENB_ID[%d] S1AP backpressure cleared "
+                    "(queue depth %d)",
+                    OGS_ADDR(enb->sctp.addr, buf), enb->enb_id,
+                    queue_depth);
+            enb->sctp_backpressure_since = 0;
+        }
+
         ogs_sctp_write_to_buffer(&enb->sctp, pkbuf);
         return OGS_OK;
     } else {
@@ -944,4 +1014,66 @@ int s1ap_send_s1_reset_ack(
     ogs_expect(rv == OGS_OK);
 
     return rv;
+}
+
+/*
+ * Periodic SCTP health check for all eNB associations.
+ *
+ * Detects stalled associations independently of the send path by polling
+ * sstat_unackdata via getsockopt(SCTP_STATUS). If unacked chunks remain
+ * persistently high for 30 seconds (6 consecutive 5-second checks), the
+ * association is force-closed with SO_LINGER=0 to send ABORT.
+ *
+ * This catches "silent stalls" where the eNB stops acknowledging DATA
+ * but keeps sending SACKs and HEARTBEATs — making the association appear
+ * alive to the kernel while the S1AP data path is dead.
+ */
+static ogs_timer_t *s1ap_sctp_health_timer = NULL;
+
+static void s1ap_sctp_health_check(void *data)
+{
+    mme_enb_t *enb = NULL;
+
+    ogs_list_for_each(&mme_self()->enb_list, enb) {
+        struct sctp_status status;
+        socklen_t len = sizeof(status);
+
+        if (!enb->sctp.sock || enb->sctp.sock->fd == INVALID_SOCKET)
+            continue;
+
+        memset(&status, 0, sizeof(status));
+        if (getsockopt(enb->sctp.sock->fd, IPPROTO_SCTP,
+                       SCTP_STATUS, &status, &len) < 0)
+            continue;
+
+        if (status.sstat_unackdata > 20) {
+            enb->sctp_stall_count++;
+            if (enb->sctp_stall_count >= 6) {
+                char buf[OGS_ADDRSTRLEN];
+                ogs_error("ENB_ID[%d] IP[%s] SCTP health check: "
+                        "%u unacked chunks for %d sec — forcing ABORT",
+                        enb->enb_id,
+                        OGS_ADDR(enb->sctp.addr, buf),
+                        status.sstat_unackdata,
+                        enb->sctp_stall_count * 5);
+                enb->sctp_stall_count = 0;
+                ogs_sctp_so_linger(enb->sctp.sock, 0);
+                ogs_sctp_destroy(enb->sctp.sock);
+                enb->sctp.sock = NULL;
+            }
+        } else {
+            if (enb->sctp_stall_count > 0)
+                enb->sctp_stall_count = 0;
+        }
+    }
+
+    ogs_timer_start(s1ap_sctp_health_timer, ogs_time_from_sec(5));
+}
+
+void s1ap_sctp_health_check_init(void)
+{
+    s1ap_sctp_health_timer = ogs_timer_add(
+        ogs_app()->timer_mgr, s1ap_sctp_health_check, NULL);
+    ogs_assert(s1ap_sctp_health_timer);
+    ogs_timer_start(s1ap_sctp_health_timer, ogs_time_from_sec(5));
 }

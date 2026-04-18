@@ -271,6 +271,10 @@ typedef struct mme_enb_s {
 
     ogs_list_t      enb_ue_list;
 
+    /* SCTP backpressure tracking for stall auto-recovery */
+    ogs_time_t      sctp_backpressure_since;
+    uint8_t         sctp_stall_count;       /* consecutive health check failures */
+
 } mme_enb_t;
 
 typedef struct mme_emerg_s {
