@@ -18,7 +18,8 @@
  */
 
 #include "ogs-sctp.h"
-#include <netinet/sctp.h>
+#include <sys/ioctl.h>
+#include <linux/sockios.h>
 
 #include "mme-event.h"
 #include "mme-timer.h"
@@ -111,11 +112,12 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
                         OGS_ADDR(enb->sctp.addr, buf), enb->enb_id,
                         (int)(bp_duration / OGS_USEC_PER_SEC));
                 enb->sctp_backpressure_since = 0;
-                /* Force ABORT (not SHUTDOWN) — SO_LINGER with l_linger=0
-                 * guarantees the kernel sends an ABORT chunk on close().
-                 * A graceful SHUTDOWN does NOT reset the eNB's stalled
-                 * SCTP receiver state — confirmed experimentally. */
-                ogs_sctp_so_linger(enb->sctp.sock, 0);
+                /* Force ABORT (not SHUTDOWN) — a graceful SHUTDOWN does NOT
+                 * reset the eNB's stalled SCTP receiver state (confirmed
+                 * experimentally). SCTP_ABORT flag on sctp_sendmsg() sends
+                 * an ABORT chunk targeted at this association only, without
+                 * the global socket-state side-effects of SO_LINGER(0). */
+                ogs_sctp_abort(enb->sctp.sock);
                 ogs_sctp_destroy(enb->sctp.sock);
                 enb->sctp.sock = NULL;
             }
@@ -1020,13 +1022,15 @@ int s1ap_send_s1_reset_ack(
  * Periodic SCTP health check for all eNB associations.
  *
  * Detects stalled associations independently of the send path by polling
- * sstat_unackdata via getsockopt(SCTP_STATUS). If unacked chunks remain
- * persistently high for 30 seconds (6 consecutive 5-second checks), the
- * association is force-closed with SO_LINGER=0 to send ABORT.
+ * unacked bytes via ioctl(SIOCOUTQ). If unacked bytes remain persistently
+ * above 64 KB for 30 seconds (6 consecutive 5-second checks), the
+ * association is aborted via SCTP_ABORT (targeted, no socket-wide state
+ * change) and then destroyed.
  *
- * This catches "silent stalls" where the eNB stops acknowledging DATA
- * but keeps sending SACKs and HEARTBEATs — making the association appear
- * alive to the kernel while the S1AP data path is dead.
+ * Uses ioctl(SIOCOUTQ) instead of getsockopt(SCTP_STATUS) because the
+ * latter locks the socket (lock_sock) and disrupts SCTP fast-path
+ * processing on resource-constrained eNBs. SIOCOUTQ is a lightweight,
+ * protocol-agnostic query with no SCTP-specific side effects.
  */
 static ogs_timer_t *s1ap_sctp_health_timer = NULL;
 
@@ -1035,29 +1039,26 @@ static void s1ap_sctp_health_check(void *data)
     mme_enb_t *enb = NULL;
 
     ogs_list_for_each(&mme_self()->enb_list, enb) {
-        struct sctp_status status;
-        socklen_t len = sizeof(status);
+        int unacked_bytes = 0;
 
         if (!enb->sctp.sock || enb->sctp.sock->fd == INVALID_SOCKET)
             continue;
 
-        memset(&status, 0, sizeof(status));
-        if (getsockopt(enb->sctp.sock->fd, IPPROTO_SCTP,
-                       SCTP_STATUS, &status, &len) < 0)
+        if (ioctl(enb->sctp.sock->fd, SIOCOUTQ, &unacked_bytes) < 0)
             continue;
 
-        if (status.sstat_unackdata > 20) {
+        if (unacked_bytes > 65536) {
             enb->sctp_stall_count++;
             if (enb->sctp_stall_count >= 6) {
                 char buf[OGS_ADDRSTRLEN];
                 ogs_error("ENB_ID[%d] IP[%s] SCTP health check: "
-                        "%u unacked chunks for %d sec — forcing ABORT",
+                        "%d unacked bytes for %d sec — forcing ABORT",
                         enb->enb_id,
                         OGS_ADDR(enb->sctp.addr, buf),
-                        status.sstat_unackdata,
+                        unacked_bytes,
                         enb->sctp_stall_count * 5);
                 enb->sctp_stall_count = 0;
-                ogs_sctp_so_linger(enb->sctp.sock, 0);
+                ogs_sctp_abort(enb->sctp.sock);
                 ogs_sctp_destroy(enb->sctp.sock);
                 enb->sctp.sock = NULL;
             }
