@@ -31,6 +31,7 @@
 #include "nsmf-handler.h"
 #include "npcf-handler.h"
 #include "nsmf-handler.h"
+#include "admin-handler.h"
 #include "binding.h"
 
 void smf_state_initial(ogs_fsm_t *s, smf_event_t *e)
@@ -782,6 +783,62 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_SDMSUBSCRIPTION_NOTIFY)
                 smf_nsmf_callback_handle_sdm_data_change_notify(
                         stream, &sbi_message);
+                break;
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message.h.resource.component[0]);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                        "Invalid resource name",
+                        sbi_message.h.resource.component[0], NULL));
+            END
+            break;
+
+        /*
+         * Non-3GPP admin service: force-release of a single PDU session
+         * identified by its smContextRef, used by operator OAM tooling
+         * (EP5G reconciler) to clean up stranded sessions that the peer
+         * AMF or MME no longer knows about. See src/smf/admin-handler.c.
+         *
+         * URL layout: DELETE /admin/v1/pdu-sessions/{smContextRef}
+         *   service.name            = "admin"
+         *   api.version             = "v1"
+         *   resource.component[0]   = "pdu-sessions"
+         *   resource.component[1]   = smContextRef
+         *
+         * Opt-in via smf.yaml `admin.enabled: true`. When disabled we
+         * answer 404 rather than 403 so a probe cannot distinguish
+         * "endpoint forbidden" from "endpoint not present".
+         */
+        CASE("admin")
+            if (!smf_self()->admin_config.enabled) {
+                ogs_info("admin endpoint disabled (admin.enabled not "
+                        "set in smf.yaml) — responding 404");
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_NOT_FOUND, &sbi_message,
+                        "Not Found", NULL, NULL));
+                break;
+            }
+
+            SWITCH(sbi_message.h.resource.component[0])
+            CASE("pdu-sessions")
+                SWITCH(sbi_message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    smf_admin_handle_delete_sm_context(
+                            stream, &sbi_message);
+                    break;
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]",
+                            sbi_message.h.method);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED,
+                            &sbi_message,
+                            "Invalid HTTP method",
+                            sbi_message.h.method, NULL));
+                END
                 break;
             DEFAULT
                 ogs_error("Invalid resource name [%s]",

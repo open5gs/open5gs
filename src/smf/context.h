@@ -64,6 +64,15 @@ typedef struct smf_ctf_config_s {
 
 int smf_ctf_config_init(smf_ctf_config_t *ctf_config);
 
+/*
+ * Opt-in toggle for the non-3GPP /admin/v1/pdu-sessions/{ref} endpoint.
+ * Defaults to off. When disabled, requests are answered with 404 so the
+ * endpoint's existence remains invisible to probes.
+ */
+typedef struct smf_admin_config_s {
+    bool enabled;
+} smf_admin_config_t;
+
 typedef struct smf_nsmf_pdusession_param_s {
     OpenAPI_request_indication_e request_indication;
 
@@ -121,6 +130,7 @@ typedef struct smf_nsmf_pdusession_param_s {
 
 typedef struct smf_context_s {
     smf_ctf_config_t    ctf_config;
+    smf_admin_config_t  admin_config;
     const char*         diam_conf_path;   /* SMF Diameter conf path */
     ogs_diam_config_t   *diam_config;     /* SMF Diameter config */
 

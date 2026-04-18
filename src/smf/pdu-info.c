@@ -514,6 +514,17 @@ static cJSON *build_single_pdu_object(const smf_sess_t *sess, int *any_active, i
     cJSON *pdu = cJSON_CreateObject();
     if (!pdu) return NULL;
 
+    /* Session handle for operator tooling: the same smContextRef the SMF
+     * uses in its SBI resource URLs. Exposed here so OAM scripts can
+     * correlate a /pdu-info entry with
+     * DELETE /admin/v1/pdu-sessions/{smContextRef} when a stranded
+     * session needs to be force-released. */
+    if (sess->sm_context_ref) {
+        cJSON *ref = cJSON_CreateString(sess->sm_context_ref);
+        if (!ref) { cJSON_Delete(pdu); return NULL; }
+        cJSON_AddItemToObjectCS(pdu, "sm_context_ref", ref);
+    }
+
     /* 5G vs LTE fields */
     const bool is5g = looks_5g_sess(sess);
     if (is5g) {
