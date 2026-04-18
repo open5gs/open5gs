@@ -1065,6 +1065,25 @@ int amf_context_parse_config(void)
                         } else
                             ogs_warn("unknown key `%s`", time_key);
                     }
+                } else if (!strcmp(amf_key, "admin")) {
+                    ogs_yaml_iter_t admin_iter;
+                    ogs_yaml_iter_recurse(&amf_iter, &admin_iter);
+                    while (ogs_yaml_iter_next(&admin_iter)) {
+                        const char *admin_key =
+                            ogs_yaml_iter_key(&admin_iter);
+                        ogs_assert(admin_key);
+                        if (!strcmp(admin_key, "enabled")) {
+                            const char *v =
+                                ogs_yaml_iter_value(&admin_iter);
+                            if (v && (!strcmp(v, "true") ||
+                                        !strcmp(v, "yes") ||
+                                        !strcmp(v, "1")))
+                                self.admin_config.enabled = true;
+                            else
+                                self.admin_config.enabled = false;
+                        } else
+                            ogs_warn("unknown key `%s`", admin_key);
+                    }
                 } else if (!strcmp(amf_key, "default")) {
                     /* handle config in sbi library */
                 } else if (!strcmp(amf_key, "sbi")) {
