@@ -18,8 +18,14 @@
  */
 
 #include "ogs-sctp.h"
+
+/* SIOCOUTQ is a Linux ioctl — on BSD/macOS/Windows the symbol lives
+ * elsewhere or doesn't exist. The SCTP health check below returns early
+ * on non-Linux platforms so Open5GS keeps building portably. */
+#ifdef __linux__
 #include <sys/ioctl.h>
 #include <linux/sockios.h>
+#endif
 
 #include "mme-event.h"
 #include "mme-timer.h"
@@ -1036,6 +1042,7 @@ static ogs_timer_t *s1ap_sctp_health_timer = NULL;
 
 static void s1ap_sctp_health_check(void *data)
 {
+#ifdef __linux__
     mme_enb_t *enb = NULL;
 
     ogs_list_for_each(&mme_self()->enb_list, enb) {
@@ -1067,6 +1074,13 @@ static void s1ap_sctp_health_check(void *data)
                 enb->sctp_stall_count = 0;
         }
     }
+#else
+    /* Non-Linux platforms don't expose SIOCOUTQ; the SCTP stack's own
+     * backpressure (via s1ap_send_to_enb write_queue count) remains in
+     * effect — this timer is a belt-and-suspenders second signal, not
+     * the primary stall-detector. */
+    (void)data;
+#endif
 
     ogs_timer_start(s1ap_sctp_health_timer, ogs_time_from_sec(5));
 }
