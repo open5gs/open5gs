@@ -1074,6 +1074,7 @@ static smf_ue_t *smf_ue_add(void)
 smf_ue_t *smf_ue_add_by_supi(char *supi)
 {
     smf_ue_t *smf_ue;
+    const char *bare;
 
     ogs_assert(supi);
 
@@ -1086,12 +1087,70 @@ smf_ue_t *smf_ue_add_by_supi(char *supi)
     ogs_assert(smf_ue->supi);
     ogs_hash_set(self.supi_hash, smf_ue->supi, strlen(smf_ue->supi), smf_ue);
 
+    /*
+     * Also index this UE in imsi_hash so a later 4G attach via
+     * smf_ue_find_by_imsi() returns the same smf_ue_t rather than
+     * creating a second one for the same physical subscriber.
+     *
+     * SUPI per 3GPP TS 23.003 §5 takes several forms ("imsi-<digits>",
+     * "nai-…", "gli-…", "gci-…"); only the IMSI form has a meaningful
+     * BCD encoding compatible with the GTPv2-C Create Session Request
+     * IMSI IE produced on the 4G path. For non-IMSI SUPIs the UE stays
+     * indexed only in supi_hash — a 4G attach cannot collide with a
+     * non-IMSI 5G context on the same physical subscriber anyway.
+     *
+     * Without this dual indexing, 4G and 5G attaches for the same UE
+     * end up on distinct smf_ue_t objects whose sess_list is not
+     * visible to the other RAT's session-create code, so a stale
+     * source-RAT PDU session can linger across a 4G<->5G transition
+     * in violation of TS 23.501 §5.6.1 ("at most one active PDU
+     * session per (SUPI, DNN)").
+     *
+     * Input validation is mandatory before BCD encoding because supi
+     * is sourced from external SBI traffic and ogs_bcd_to_buffer()
+     * performs no bounds check: it writes (strlen(in)+1)/2 bytes into
+     * smf_ue->imsi[OGS_MAX_IMSI_LEN] and treats every byte as a digit
+     * via (in[i] - 0x30). An over-length or non-digit SUPI would
+     * corrupt the surrounding context_t fields.
+     */
+    bare = supi;
+    if (strncmp(bare, "imsi-", 5) == 0) {
+        size_t digit_count, i;
+        bool valid;
+
+        bare += 5;
+        digit_count = strlen(bare);
+        valid = digit_count > 0 && digit_count <= OGS_MAX_IMSI_LEN * 2;
+        for (i = 0; valid && i < digit_count; i++) {
+            if (bare[i] < '0' || bare[i] > '9')
+                valid = false;
+        }
+
+        if (valid) {
+            int imsi_len = 0;
+            ogs_bcd_to_buffer(bare, smf_ue->imsi, &imsi_len);
+            if (imsi_len > 0) {
+                smf_ue->imsi_len = imsi_len;
+                ogs_buffer_to_bcd(smf_ue->imsi, smf_ue->imsi_len,
+                        smf_ue->imsi_bcd);
+                ogs_hash_set(self.imsi_hash, smf_ue->imsi,
+                        smf_ue->imsi_len, smf_ue);
+            }
+        } else {
+            ogs_error("SUPI [%s] IMSI portion length %zu invalid "
+                    "(must be 1..%d numeric digits) — skipping "
+                    "imsi_hash dual-index",
+                    supi, digit_count, OGS_MAX_IMSI_LEN * 2);
+        }
+    }
+
     return smf_ue;
 }
 
 smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
 {
     smf_ue_t *smf_ue;
+    char supi[OGS_MAX_IMSI_BCD_LEN + sizeof("imsi-")];
 
     ogs_assert(imsi);
     ogs_assert(imsi_len);
@@ -1103,6 +1162,17 @@ smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
     memcpy(smf_ue->imsi, imsi, smf_ue->imsi_len);
     ogs_buffer_to_bcd(smf_ue->imsi, smf_ue->imsi_len, smf_ue->imsi_bcd);
     ogs_hash_set(self.imsi_hash, smf_ue->imsi, smf_ue->imsi_len, smf_ue);
+
+    /*
+     * Also index this UE in supi_hash so a later 5G attach via
+     * smf_ue_find_by_supi() returns the same smf_ue_t. Mirror of
+     * the companion logic in smf_ue_add_by_supi(); see there for
+     * the full rationale and spec references.
+     */
+    ogs_snprintf(supi, sizeof(supi), "imsi-%s", smf_ue->imsi_bcd);
+    smf_ue->supi = ogs_strdup(supi);
+    ogs_assert(smf_ue->supi);
+    ogs_hash_set(self.supi_hash, smf_ue->supi, strlen(smf_ue->supi), smf_ue);
 
     return smf_ue;
 }
