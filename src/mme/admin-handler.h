@@ -58,7 +58,8 @@ void mme_admin_process_sbi_server_event(ogs_event_t *e);
  * Response: 204 No Content on accepted; detach runs asynchronously.
  */
 void mme_admin_handle_delete_ue_context(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message,
+        ogs_sbi_request_t *request);
 
 #ifdef __cplusplus
 }

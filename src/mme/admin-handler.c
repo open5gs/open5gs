@@ -33,7 +33,8 @@
  */
 
 static void handle_admin_route(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message,
+        ogs_sbi_request_t *request);
 
 int mme_admin_server_open(void)
 {
@@ -111,7 +112,7 @@ void mme_admin_process_sbi_server_event(ogs_event_t *e)
                     "Not Found", NULL, NULL));
             break;
         }
-        handle_admin_route(stream, &sbi_message);
+        handle_admin_route(stream, &sbi_message, sbi_request);
         break;
 
     DEFAULT
@@ -126,13 +127,14 @@ void mme_admin_process_sbi_server_event(ogs_event_t *e)
 }
 
 static void handle_admin_route(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message,
+        ogs_sbi_request_t *request)
 {
     SWITCH(message->h.resource.component[0])
     CASE("ue-contexts")
         SWITCH(message->h.method)
         CASE(OGS_SBI_HTTP_METHOD_DELETE)
-            mme_admin_handle_delete_ue_context(stream, message);
+            mme_admin_handle_delete_ue_context(stream, message, request);
             break;
         DEFAULT
             ogs_error("Invalid HTTP method [%s]", message->h.method);
@@ -154,7 +156,8 @@ static void handle_admin_route(
 }
 
 void mme_admin_handle_delete_ue_context(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message,
+        ogs_sbi_request_t *request)
 {
     mme_ue_t *mme_ue = NULL;
     ogs_sbi_message_t sendmsg;
@@ -186,6 +189,52 @@ void mme_admin_handle_delete_ue_context(
                 OGS_SBI_HTTP_STATUS_NOT_FOUND, message,
                 "mme_ue_id not found", id_str, NULL));
         return;
+    }
+
+    /*
+     * Force-purge opt-in (?purge=true): skip all NAS signalling and
+     * tear the MME-side context down locally. Intended for operator
+     * cleanup of stale contexts left behind by UEs that cannot or
+     * will not respond to the standard detach flow:
+     *   - NB-IoT / LTE-M UEs in Power Saving Mode (PSM) or extended
+     *     DRX (eDRX) that may sleep for up to ~14 days — a Paging
+     *     or Detach Request would time out and the operator wants
+     *     deterministic cleanup within a shorter window.
+     *   - UEs that have physically left coverage without ever sending
+     *     a Detach Request (implicit leave).
+     *
+     * Semantics on the UE side:
+     *   - Local context removed, GUTI no longer indexed in MME.
+     *   - On next UE contact with the old GUTI, MME replies with an
+     *     Identity Request (TS 24.301 §5.4.4). UE supplies its IMSI;
+     *     a fresh attach procedure ensues — spec-compliant.
+     *
+     * Safety: the explicit query parameter is opt-in only. Without
+     * ?purge=true the default flow (paged-detach / immediate Detach
+     * Request) runs as before. Audit log emitted at WARNING level so
+     * purge actions are retrievable via `journalctl -u open5gs-mmed`.
+     */
+    if (request && request->http.params) {
+        const char *purge_str = ogs_sbi_header_get(
+                request->http.params, "purge");
+        if (purge_str && strcasecmp(purge_str, "true") == 0) {
+            ogs_warn("[%s] Admin force-purge: mme_ue_id=%s — removing "
+                    "local context without NAS signalling. UE will "
+                    "IMSI-attach on next contact "
+                    "(TS 24.301 §5.4.4 Identity Request)",
+                    mme_ue->imsi_bcd[0] ? mme_ue->imsi_bcd : "unknown",
+                    id_str);
+
+            memset(&sendmsg, 0, sizeof(sendmsg));
+            response = ogs_sbi_build_response(
+                    &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            ogs_assert(response);
+            ogs_assert(true ==
+                ogs_sbi_server_send_response(stream, response));
+
+            mme_ue_remove(mme_ue);
+            return;
+        }
     }
 
     /*
