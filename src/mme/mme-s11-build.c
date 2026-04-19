@@ -17,7 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <arpa/inet.h>
+
 #include "mme-context.h"
+#include "mme-s-naptr.h"
 
 #include "mme-s11-build.h"
 
@@ -142,24 +145,109 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
         req->pgw_s5_s8_address_for_control_plane_or_pmip.data =
             &pgw_s5c_teid;
     } else {
-        ogs_sockaddr_t *pgw_addr = NULL;
+        /*
+         * PGW/SMF address not provisioned by HSS.
+         *
+         * Resolution order:
+         *   1. S-NAPTR DNS (3GPP TS 29.303) — only when mme.s5s8.dns is
+         *      configured in mme.yaml.  Completely optional: if omitted, or
+         *      if DNS resolution fails for any reason, the MME falls through
+         *      transparently to the static configuration below.
+         *   2. Static PGW list from mme.yaml matched by APN / Cell-ID / TAC.
+         *   3. First PGW in the static list (last-resort).
+         */
+        ogs_sockaddr_t *pgw_addr  = NULL;
         ogs_sockaddr_t *pgw_addr6 = NULL;
+        bool dns_used = false;
 
-        pgw_addr = mme_pgw_addr_find_by_apn_enb(
-                &mme_self()->pgw_list, AF_INET, sess);
-        pgw_addr6 = mme_pgw_addr_find_by_apn_enb(
-                &mme_self()->pgw_list, AF_INET6, sess);
-        if (!pgw_addr && !pgw_addr6) {
-            pgw_addr = mme_self()->pgw_addr;
-            pgw_addr6 = mme_self()->pgw_addr6;
+        /*
+         * --- Path 1: S-NAPTR DNS (optional, TS 29.303) ---
+         *
+         * On the FIRST Create Session Request for this session, resolve ALL
+         * PGW candidates via DNS and store them in sess->pgw_candidates.
+         * On RETRY attempts (pgw_candidates.list already set), just advance
+         * to the next candidate — do not re-query DNS.
+         *
+         * This implements TS 23.401 §5.3.2.1: the MME shall try the next
+         * DNS-resolved candidate before rejecting the UE.
+         */
+        if (mme_self()->s5s8_dns[0] && session->name) {
+            mme_ue_t *mme_ue_tmp = mme_ue_find_by_id(sess->mme_ue_id);
+            if (mme_ue_tmp) {
+                if (!sess->pgw_candidates.list) {
+                    /*
+                     * First attempt: run S-NAPTR resolution and populate the
+                     * candidate array.  Use the home PLMN ID from IMSI/hssmap
+                     * so the APN-FQDN targets the subscriber's home network
+                     * DNS zone per TS 23.003 §19.4.2.
+                     */
+                    const ogs_plmn_id_t *home_plmn_id =
+                        (mme_ue_tmp->hssmap)
+                            ? &mme_ue_tmp->hssmap->plmn_id
+                            : &mme_ue_tmp->tai.plmn_id;
+
+                    sess->pgw_candidates.list =
+                        mme_s_naptr_resolve_candidates(
+                                session->name, home_plmn_id,
+                                &sess->pgw_candidates.count);
+                    sess->pgw_candidates.index = 0;
+                }
+
+                if (sess->pgw_candidates.list &&
+                    sess->pgw_candidates.index < sess->pgw_candidates.count) {
+                    dns_used = true;
+                }
+            }
         }
 
-        rv = ogs_gtp2_sockaddr_to_f_teid(
-                pgw_addr, pgw_addr6, &pgw_s5c_teid, &len);
-        ogs_assert(rv == OGS_OK);
-        req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
-        req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &pgw_s5c_teid;
-        req->pgw_s5_s8_address_for_control_plane_or_pmip.len = len;
+        if (dns_used) {
+            /*
+             * DNS discovery succeeded — use the current candidate.
+             * index 0 on first attempt; incremented by retry machinery
+             * in mme-gtp-path.c (timeout) and mme-s11-handler.c (fail:).
+             */
+            ogs_sockaddr_t *cand =
+                &sess->pgw_candidates.list[sess->pgw_candidates.index];
+
+            ogs_debug("S-NAPTR: using PGW candidate [%d/%d] %s:%u",
+                      sess->pgw_candidates.index + 1,
+                      sess->pgw_candidates.count,
+                      inet_ntoa(cand->sin.sin_addr),
+                      OGS_GTPV2_C_UDP_PORT);
+
+            pgw_s5c_teid.ipv4 = 1;
+            pgw_s5c_teid.addr = cand->sin.sin_addr.s_addr;
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.data =
+                &pgw_s5c_teid;
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
+                OGS_GTP2_F_TEID_IPV4_LEN;
+        } else {
+            /*
+             * --- Path 2 & 3: static config ---
+             * Reached when:
+             *   (a) s5s8.dns is not configured (DNS feature disabled), OR
+             *   (b) DNS resolution failed — already warned by
+             *       mme_s_naptr_resolve_candidates().
+             * Either way this is normal operation; no additional warning needed.
+             */
+            pgw_addr = mme_pgw_addr_find_by_apn_enb(
+                    &mme_self()->pgw_list, AF_INET, sess);
+            pgw_addr6 = mme_pgw_addr_find_by_apn_enb(
+                    &mme_self()->pgw_list, AF_INET6, sess);
+            if (!pgw_addr && !pgw_addr6) {
+                pgw_addr  = mme_self()->pgw_addr;
+                pgw_addr6 = mme_self()->pgw_addr6;
+            }
+
+            rv = ogs_gtp2_sockaddr_to_f_teid(
+                    pgw_addr, pgw_addr6, &pgw_s5c_teid, &len);
+            ogs_assert(rv == OGS_OK);
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.data =
+                &pgw_s5c_teid;
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.len = len;
+        }
     }
 
     req->access_point_name.presence = 1;

@@ -169,6 +169,9 @@ typedef struct mme_context_s {
     struct {
         const char *dnn;            /* Emergency APN */
     } emergency;
+
+    /* S5/S8 DNS servers for S-NAPTR PGW discovery (TS 29.303, IPv4 only) */
+    const char *s5s8_dns[2];        /* primary, secondary */
 } mme_context_t;
 
 typedef struct mme_sgsn_route_s {
@@ -926,6 +929,24 @@ typedef struct mme_sess_s {
 
     /* Save Extended Protocol Configuration Options from PGW */
     ogs_tlv_octet_t pgw_epco;
+
+    /*
+     * DNS-resolved PGW candidates for TS 23.401 §5.3.2.1 retry.
+     *
+     * Populated on the first Create Session Request when S-NAPTR DNS
+     * discovery is configured (mme.s5s8.dns in mme.yaml).  index 0 is the
+     * initially-preferred candidate (chosen at random); subsequent entries
+     * are tried in order on each transient failure.
+     *
+     * Memory: list is heap-allocated by mme_s_naptr_resolve_candidates() and
+     * freed in mme_sess_remove().  list == NULL means DNS was not used or has
+     * not yet been resolved for this session.
+     */
+    struct {
+        ogs_sockaddr_t *list;   /* heap array of candidates, or NULL */
+        int             count;  /* total entries in list[]            */
+        int             index;  /* current candidate index (0-based)  */
+    } pgw_candidates;
 } mme_sess_t;
 
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \

@@ -188,6 +188,37 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
             ogs_warn("No S1 Context");
         }
         break;
+    case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
+        /*
+         * 3GPP TS 23.401 §5.3.2.1: if the Create Session Request times out,
+         * retry with the next DNS-resolved PGW candidate before rejecting the
+         * UE.  The candidate array was populated by mme_s_naptr_resolve_candidates()
+         * in mme-s11-build.c on the first attempt.
+         *
+         * If no more candidates are available (static config path, or all DNS
+         * candidates exhausted), fall through to release the UE context.
+         */
+        if (sess->pgw_candidates.list &&
+            sess->pgw_candidates.index + 1 < sess->pgw_candidates.count) {
+            sess->pgw_candidates.index++;
+            ogs_warn("[%s] CSR timeout — retrying with PGW candidate [%d/%d]",
+                     mme_ue->imsi_bcd,
+                     sess->pgw_candidates.index + 1,
+                     sess->pgw_candidates.count);
+            r = mme_gtp_send_create_session_request(
+                    enb_ue, sess, xact->create_action);
+            ogs_expect(r == OGS_OK);
+            /* Log the timeout but not as an error — retry is in flight */
+            ogs_warn("GTP Timeout (retry) : IMSI[%s] Message-Type[%d]",
+                    mme_ue->imsi_bcd, type);
+            return;  /* retry sent — do not release UE context yet */
+        }
+        /* No more candidates — release UE context */
+        if (enb_ue)
+            mme_send_delete_session_or_mme_ue_context_release(enb_ue, mme_ue);
+        else
+            ogs_error("No S1 Context");
+        break;
     case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
         /* Nothing to do */
         break;

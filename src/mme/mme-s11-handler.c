@@ -173,6 +173,32 @@ void mme_s11_handle_echo_response(
     /* Not Implemented */
 }
 
+/*
+ * is_transient_gtp_cause() - classify a GTPv2 cause code as transient.
+ *
+ * A transient cause indicates a temporary PGW/SMF unavailability that may be
+ * resolved by retrying with a different PGW candidate per 3GPP TS 23.401
+ * §5.3.2.1.  Permanent causes (e.g. APN not supported, subscriber barred) are
+ * not retried — they would fail identically on any other PGW.
+ *
+ * Returns true for causes that warrant a retry with the next candidate.
+ */
+static bool is_transient_gtp_cause(uint8_t cause)
+{
+    switch (cause) {
+    case OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING:                   /* 100 */
+    case OGS_GTP2_CAUSE_NO_RESOURCES_AVAILABLE:                       /*  73 */
+    case OGS_GTP2_CAUSE_SERVICE_NOT_SUPPORTED:                        /*  68 */
+    case OGS_GTP2_CAUSE_SYSTEM_FAILURE:                               /*  72 */
+    case OGS_GTP2_CAUSE_GTP_C_ENTITY_CONGESTION:                      /* 120 */
+    case OGS_GTP2_CAUSE_TEMPORARILY_REJECTED_DUE_TO_HANDOVER_IN_PROGRESS: /* 110 */
+    case OGS_GTP2_CAUSE_TIMED_OUT_REQUEST:                            /* 122 */
+        return true;
+    default:
+        return false;
+    }
+}
+
 static void mme_s11_create_session_fail(
         enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         int create_action, uint8_t fail_cause,
@@ -608,6 +634,30 @@ void mme_s11_handle_create_session_response(
     return;
 
 fail:
+    /*
+     * 3GPP TS 23.401 §5.3.2.1: on a transient failure, retry the Create
+     * Session Request with the next DNS-resolved PGW candidate before
+     * rejecting the UE.
+     *
+     * A transient cause indicates temporary PGW unavailability; a permanent
+     * cause (e.g. APN not supported) would fail on any other PGW too, so
+     * we fall through immediately to mme_s11_create_session_fail().
+     */
+    if (sess && is_transient_gtp_cause(fail_cause) &&
+        sess->pgw_candidates.list &&
+        sess->pgw_candidates.index + 1 < sess->pgw_candidates.count) {
+        int r;
+        sess->pgw_candidates.index++;
+        ogs_warn("[%s] CSR rejected cause[%d] — retrying with PGW "
+                 "candidate [%d/%d]",
+                 mme_ue ? mme_ue->imsi_bcd : "?", fail_cause,
+                 sess->pgw_candidates.index + 1,
+                 sess->pgw_candidates.count);
+        r = mme_gtp_send_create_session_request(enb_ue, sess, create_action);
+        ogs_expect(r == OGS_OK);
+        return;
+    }
+
     mme_s11_create_session_fail(enb_ue, mme_ue,
             create_action, fail_cause, fail_reason);
     return;
