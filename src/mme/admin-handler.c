@@ -21,6 +21,9 @@
 #include "mme-sm.h"
 #include "mme-event.h"
 #include "nas-path.h"
+#include "s1ap-path.h"
+
+#include "S1AP_CNDomain.h"
 
 /*
  * The ogs_sbi server library calls our handler (ogs_sbi_server_handler,
@@ -205,19 +208,51 @@ void mme_admin_handle_delete_ue_context(
     }
 
     /*
-     * V1 intentionally serves only ECM-CONNECTED UEs. ECM-IDLE would
-     * require paging the UE first (S1AP Paging with type=DETACH_TO_UE);
-     * that path exists but adds a second round-trip and a failure
-     * branch (UE unreachable). Defer to a follow-up patch.
+     * ECM-IDLE path: the UE is not reachable for an immediate NAS
+     * Detach Request. Trigger S1AP Paging; the standard MME paging
+     * machinery (T3413 retry, paging-response handling in emm-sm.c)
+     * takes over. When the UE responds with a Service Request, the
+     * `admin_detach_pending` flag set here tells the EMM state machine
+     * to send the Detach Request right after the Service Request's
+     * Initial Context Setup completes — completing the paged-detach
+     * flow.
+     *
+     * If the UE never responds, T3413 expires and the MME performs
+     * Implicit Detach (existing behaviour) which tears the context
+     * down locally. No extra timer needed in this handler.
+     *
+     * HTTP 202 Accepted signals async completion — the caller can
+     * poll /ue-info to observe the UE disappear when the flow
+     * finishes (order of seconds to T3413-bounded). 204 would be
+     * misleading because the detach has only been initiated, not
+     * confirmed.
      */
     if (!ECM_CONNECTED(mme_ue)) {
-        ogs_warn("[%s] Admin release: mme_ue_id=%s is ECM-IDLE; "
-                "paged-detach not implemented in V1 — returning 409",
+        int pr;
+        ogs_warn("[%s] Admin-paged detach: mme_ue_id=%s is ECM-IDLE, "
+                "triggering S1AP Paging — Detach Request will follow "
+                "on Service Request response (or Implicit Detach on "
+                "T3413 expiry)",
                 mme_ue->imsi_bcd, id_str);
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_CONFLICT, message,
-                "UE is ECM-IDLE", id_str, NULL));
+
+        mme_ue->admin_detach_pending = true;
+        pr = s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
+        if (pr != OGS_OK) {
+            mme_ue->admin_detach_pending = false;
+            ogs_error("[%s] s1ap_send_paging() failed [%d] — aborting "
+                    "paged-detach", mme_ue->imsi_bcd, pr);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, message,
+                    "Paging failed", id_str, NULL));
+            return;
+        }
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+        response = ogs_sbi_build_response(
+                &sendmsg, OGS_SBI_HTTP_STATUS_ACCEPTED);
+        ogs_assert(response);
+        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
         return;
     }
 

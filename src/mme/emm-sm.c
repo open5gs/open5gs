@@ -440,6 +440,33 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
             OGS_FSM_TRAN(s, &emm_state_registered);
+
+            /*
+             * Paged-detach completion: the admin endpoint
+             * (DELETE /admin/v1/ue-contexts/{id}) paged this UE while
+             * it was ECM-IDLE and set admin_detach_pending. Now that
+             * the UE has responded with a Service Request and the
+             * NAS/S1 signalling connection is being re-established,
+             * send the Detach Request to complete the admin action.
+             * TS 24.301 §5.5.2.3 — MME-initiated detach, re-attach
+             * required, the Initial Context Setup just fired provides
+             * the carrier for the Detach Request NAS message.
+             */
+            if (mme_ue->admin_detach_pending) {
+                mme_ue->admin_detach_pending = false;
+                ogs_warn("[%s] Admin-paged detach: UE responded to "
+                        "paging, sending Detach Request now",
+                        mme_ue->imsi_bcd);
+                memset(&mme_ue->nas_eps.detach, 0,
+                        sizeof(ogs_nas_detach_type_t));
+                mme_ue->nas_eps.detach.value =
+                    OGS_NAS_DETACH_TYPE_TO_UE_RE_ATTACH_REQUIRED;
+                mme_ue->nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE;
+                r = nas_eps_send_detach_request(mme_ue);
+                if (r != OGS_OK)
+                    ogs_error("[%s] nas_eps_send_detach_request() "
+                            "failed [%d]", mme_ue->imsi_bcd, r);
+            }
             break;
         }
 
@@ -754,6 +781,31 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                         mme_ue->nas_eps.update.active_flag);
                     mme_send_tau_accept_and_check_release(enb_ue, mme_ue);
                 }
+            }
+
+            /*
+             * Paged-detach completion on TAU-wakeup path:
+             * per 3GPP TS 24.301 §5.6.2.2.1, a UE in ECM-IDLE that has
+             * moved to a TAI not in its TAI-List responds to paging
+             * with a TAU Request instead of a Service Request. Mirror
+             * the Service-Request-branch completion so the admin-paged
+             * detach works regardless of which NAS message the UE
+             * wakes up with.
+             */
+            if (mme_ue->admin_detach_pending) {
+                mme_ue->admin_detach_pending = false;
+                ogs_warn("[%s] Admin-paged detach: UE responded to "
+                        "paging with TAU Request, sending Detach "
+                        "Request now", mme_ue->imsi_bcd);
+                memset(&mme_ue->nas_eps.detach, 0,
+                        sizeof(ogs_nas_detach_type_t));
+                mme_ue->nas_eps.detach.value =
+                    OGS_NAS_DETACH_TYPE_TO_UE_RE_ATTACH_REQUIRED;
+                mme_ue->nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE;
+                r = nas_eps_send_detach_request(mme_ue);
+                if (r != OGS_OK)
+                    ogs_error("[%s] nas_eps_send_detach_request() "
+                            "failed [%d]", mme_ue->imsi_bcd, r);
             }
 
             if (MME_NEXT_GUTI_IS_AVAILABLE(mme_ue)) {

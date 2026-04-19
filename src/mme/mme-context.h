@@ -855,6 +855,17 @@ struct mme_ue_s {
 
     mme_csmap_t     *csmap;
     mme_hssmap_t    *hssmap;
+
+    /*
+     * Set by the admin endpoint (DELETE /admin/v1/ue-contexts/{id})
+     * when a UE is in ECM-IDLE and cannot accept an immediate Detach
+     * Request. The admin handler triggers S1AP Paging; when the UE
+     * responds with a Service Request, the EMM state machine checks
+     * this flag and sends a NAS Detach Request (re-attach required)
+     * right after the Initial Context Setup — completing the
+     * paged-detach flow per 3GPP TS 24.301 §5.5.2.3.
+     */
+    bool            admin_detach_pending;
 };
 
 #define MME_UE_REMOVE_WITH_PAGING_FAIL(__mME) \
