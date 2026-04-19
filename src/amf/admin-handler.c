@@ -22,7 +22,8 @@
 #include "nas-path.h"
 
 void amf_admin_handle_delete_ue_context(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message,
+        ogs_sbi_request_t *request)
 {
     amf_ue_t *amf_ue = NULL;
     ogs_sbi_message_t sendmsg;
@@ -54,6 +55,58 @@ void amf_admin_handle_delete_ue_context(
                 OGS_SBI_HTTP_STATUS_NOT_FOUND, message,
                 "amf_ue_id not found", id_str, NULL));
         return;
+    }
+
+    /*
+     * Force-purge opt-in (?purge=true): skip all NAS signalling and
+     * tear the AMF-side context down locally. Mirrors the MME admin
+     * endpoint's purge semantics on the 5GC side.
+     *
+     * Motivating cases:
+     *   - UE left 5G coverage (e.g. gNB radio off). The default
+     *     Deregistration path fails with "NG context has already been
+     *     removed" (OGS_NOTFOUND in src/amf/nas-path.c), which the V1
+     *     admin handler swallows — but without removing the local
+     *     amf_ue. Purge closes that gap.
+     *   - NB-IoT / LTE-M 5GC-capable UEs in PSM / eDRX that may sleep
+     *     for up to ~14 days. Paging + NAS Deregistration would time
+     *     out on T3513; operators need deterministic cleanup within
+     *     shorter windows.
+     *   - Cross-RAT artefacts: UE moved 5G → 4G without clean
+     *     Deregistration; AMF holds stale 5GMM-REGISTERED context
+     *     until T3512 (~58 min) implicit-deregister fires.
+     *
+     * UE-side recovery:
+     *   - Local context removed, 5G-GUTI no longer indexed.
+     *   - On next 5G contact with the old 5G-GUTI, AMF replies with
+     *     Identity Request (TS 24.501 §5.4.3). UE supplies its SUCI;
+     *     standard Registration procedure follows — spec-compliant.
+     *
+     * Safety: opt-in via explicit query parameter. Without
+     * ?purge=true the existing default flow (Deregistration Request)
+     * runs unchanged. Audit log emitted at WARNING level so purge
+     * actions are retrievable via `journalctl -u open5gs-amfd`.
+     */
+    if (request && request->http.params) {
+        const char *purge_str = ogs_sbi_header_get(
+                request->http.params, "purge");
+        if (purge_str && strcasecmp(purge_str, "true") == 0) {
+            ogs_warn("[%s] Admin force-purge: amf_ue_id=%s — removing "
+                    "local context without NAS signalling. UE will "
+                    "SUCI-register on next 5G contact "
+                    "(TS 24.501 §5.4.3 Identity Request)",
+                    amf_ue->supi ? amf_ue->supi : "unknown", id_str);
+
+            memset(&sendmsg, 0, sizeof(sendmsg));
+            response = ogs_sbi_build_response(
+                    &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            ogs_assert(response);
+            ogs_assert(true ==
+                ogs_sbi_server_send_response(stream, response));
+
+            amf_ue_remove(amf_ue);
+            return;
+        }
     }
 
     /*

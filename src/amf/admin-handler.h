@@ -42,7 +42,8 @@ extern "C" {
  * have nowhere to go.
  */
 void amf_admin_handle_delete_ue_context(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message,
+        ogs_sbi_request_t *request);
 
 #ifdef __cplusplus
 }

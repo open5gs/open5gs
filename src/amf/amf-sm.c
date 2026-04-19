@@ -338,7 +338,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 SWITCH(sbi_message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)
                     amf_admin_handle_delete_ue_context(
-                            stream, &sbi_message);
+                            stream, &sbi_message, sbi_request);
                     break;
                 DEFAULT
                     ogs_error("Invalid HTTP method [%s]",
