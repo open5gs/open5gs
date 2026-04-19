@@ -176,6 +176,18 @@ static cJSON *build_location(const mme_ue_t *ue)
     if (!cJSON_AddNumberToObject(tai, "tac", (double)ue->tai.tac)) { cJSON_Delete(tai); goto end; }
 
     cJSON_AddItemToObjectCS(loc, "tai", tai);
+
+    /* Last location update timestamp (epoch microseconds, ogs_time_t).
+     * A value of 0 means the location has not yet been updated (i.e.
+     * the UE has not completed Initial Attach / TAU / Handover /
+     * Service Request response since the context was created).
+     * Updated on Initial Attach, TAU, Handover and Service Request responses;
+     * bounded by Periodic TAU (T3412). Field name matches the AMF
+     * `/ue-info` and SMF `/pdu-info` exposures so OAM tooling sees a
+     * single key across all three NFs. */
+    if (!cJSON_AddNumberToObject(loc, "ue_location_timestamp",
+            (double)ue->ue_location_timestamp)) goto end;
+
     return loc;
 
 end:
