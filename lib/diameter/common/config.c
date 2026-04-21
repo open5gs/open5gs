@@ -114,7 +114,11 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
             hints.ai_flags &= ~AI_NUMERICHOST;
             ret = getaddrinfo(fd_config->conn[i].addr, NULL, &hints, &ai);
         }
-        if (ret)
+        /* Tolerate unresolvable hostnames: keep the peer so fdcore can
+         * re-resolve DNS at connect time (see pic_connect_hosts /
+         * p_cnx.c). Only bail out if the peer address is a literal IP
+         * that failed to parse. */
+        if (ret && !disc)
         {
             ogs_error("getaddrinfo() [%s] failed(%d:%s)",
                     fd_config->conn[i].addr, ret, gai_strerror(ret));
@@ -122,7 +126,6 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
         }
 
         if (disc) {
-            struct addrinfo *aip;
             struct fd_connect_host *host = NULL;
             host = malloc(sizeof(*host));
             ogs_assert(host);
@@ -132,10 +135,18 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
             fd_list_insert_before(
                     &fddpi.config.pic_connect_hosts, &host->chain);
 
-            for (aip = ai; aip != NULL; aip = aip->ai_next) {
-                CHECK_FCT_DO( fd_ep_add_merge( &fddpi.pi_endpoints,
-                        aip->ai_addr, aip->ai_addrlen,
-                        EP_FL_DISC ), return OGS_ERROR);
+            if (!ret) {
+                struct addrinfo *aip;
+                for (aip = ai; aip != NULL; aip = aip->ai_next) {
+                    CHECK_FCT_DO( fd_ep_add_merge( &fddpi.pi_endpoints,
+                            aip->ai_addr, aip->ai_addrlen,
+                            EP_FL_DISC ), return OGS_ERROR);
+                }
+            } else {
+                ogs_info("ConnectTo host '%s' unresolvable (%s), "
+                        "will retry at connect time",
+                        fd_config->conn[i].addr, gai_strerror(ret));
+                ai = NULL;
             }
         } else {
             CHECK_FCT_DO( fd_ep_add_merge( &fddpi.pi_endpoints,
@@ -145,7 +156,7 @@ static int diam_config_apply(ogs_diam_config_t *fd_config)
         CHECK_FCT_DO( fd_peer_add ( &fddpi, NULL, NULL, NULL ),
                 return OGS_ERROR);
 
-        freeaddrinfo(ai);
+        if (ai) freeaddrinfo(ai);
     }
 
     /********************************************************************
