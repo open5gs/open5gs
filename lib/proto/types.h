@@ -149,6 +149,11 @@ extern "C" {
 #define OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
 /* 3GPP TS 24.007 Table 11.2.3.1c.1: */
 #define OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED 0
+/* 3GPP TS 24.501 §9.4 + §11.2.3.1: PDU session identity is a 1-octet
+ * value; spec-valid range is 1..255, with 0 reserved as "unassigned".
+ * (TS 29.571 §5.4.4.3 PduSessionId: integer 0..255.) Distinct from the
+ * 4-bit EBI in EPS — do not conflate. */
+#define OGS_NAS_PDU_SESSION_IDENTITY_MAX 255
 
 #define OGS_ACCESS_TYPE_3GPP 1
 #define OGS_ACCESS_TYPE_NON_3GPP 2

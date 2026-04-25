@@ -1563,6 +1563,15 @@ smf_sess_t *smf_sess_add_by_sm_context(ogs_sbi_message_t *message)
         return NULL;
     }
 
+    if (SmContextCreateData->pdu_session_id < 1 ||
+            SmContextCreateData->pdu_session_id >
+            OGS_NAS_PDU_SESSION_IDENTITY_MAX) {
+        ogs_error("PDU session identity %d out of valid range [1..%d]",
+                SmContextCreateData->pdu_session_id,
+                OGS_NAS_PDU_SESSION_IDENTITY_MAX);
+        return NULL;
+    }
+
     smf_ue = smf_ue_find_by_supi(SmContextCreateData->supi);
     if (!smf_ue) {
         smf_ue = smf_ue_add_by_supi(SmContextCreateData->supi);
@@ -1613,6 +1622,15 @@ smf_sess_t *smf_sess_add_by_pdu_session(ogs_sbi_message_t *message)
     if (PduSessionCreateData->pdu_session_id ==
             OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
         ogs_error("PDU session identitiy is unassigned");
+        return NULL;
+    }
+
+    if (PduSessionCreateData->pdu_session_id < 1 ||
+            PduSessionCreateData->pdu_session_id >
+            OGS_NAS_PDU_SESSION_IDENTITY_MAX) {
+        ogs_error("PDU session identity %d out of valid range [1..%d]",
+                PduSessionCreateData->pdu_session_id,
+                OGS_NAS_PDU_SESSION_IDENTITY_MAX);
         return NULL;
     }
 
