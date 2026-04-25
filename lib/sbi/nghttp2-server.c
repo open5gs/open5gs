@@ -1626,7 +1626,11 @@ static int on_begin_headers(nghttp2_session *session,
     }
 
     stream = stream_add(sbi_sess, frame->hd.stream_id);
-    ogs_assert(stream);
+    if (!stream) {
+        ogs_error("stream_add() failed (pool exhausted), "
+                "refusing stream %d", frame->hd.stream_id);
+        return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
+    }
     ogs_debug("STREAM added [%d]", frame->hd.stream_id);
 
     nghttp2_session_set_stream_user_data(session, frame->hd.stream_id, stream);
