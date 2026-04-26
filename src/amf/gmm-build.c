@@ -127,7 +127,8 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
         OGS_NAS_5GS_REGISTRATION_ACCEPT_5GS_NETWORK_FEATURE_SUPPORT_PRESENT;
     network_feature_support->length = 2;
     network_feature_support->
-        ims_voice_over_ps_session_over_3gpp_access_indicator = 1;
+        ims_voice_over_ps_session_over_3gpp_access_indicator =
+            amf_ue_voice_over_ps_supported(amf_ue) ? 1 : 0;
 
     /* Set T3512 : Mandatory in Open5GS */
     ogs_assert(amf_self()->time.t3512.value);

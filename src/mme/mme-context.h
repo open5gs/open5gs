@@ -1154,6 +1154,12 @@ bool mme_sess_have_active_eps_bearers(mme_sess_t *sess);
 bool mme_ue_have_session_release_pending(mme_ue_t *mme_ue);
 bool mme_sess_have_session_release_pending(mme_sess_t *sess);
 
+/* True if this UE's subscription includes an IMS-flagged APN.
+ * Returns true unconditionally when the global vops_per_apn flag is
+ * disabled, preserving the historical hardcoded =1 behaviour for
+ * the EPS Network Feature Support IE. */
+bool mme_ue_voice_over_ps_supported(mme_ue_t *mme_ue);
+
 int mme_ue_xact_count(mme_ue_t *mme_ue, uint8_t org);
 
 /*
