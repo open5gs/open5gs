@@ -214,6 +214,41 @@ int amf_nudm_sdm_handle_provisioned(
                             DnnInfoList = SubscribedSnssaiInfo->dnn_infos;
                             if (DnnInfoList) {
                                 OpenAPI_list_for_each(DnnInfoList, node2) {
+                                    /*
+                                     * slice->session[] is sized by
+                                     * OGS_MAX_NUM_OF_SESS (max active PDU
+                                     * sessions per UE), but a UDM-provisioned
+                                     * S-NSSAI may carry up to OGS_MAX_NUM_OF_DNN
+                                     * subscribed DNNs. Subscribers configured
+                                     * with more DNNs than max-sessions would
+                                     * overflow the array, leak ogs_strdup'ed
+                                     * session names, and ultimately trip
+                                     *   amf_clear_subscribed_info: Assertion
+                                     *   `slice[i].num_of_session <=
+                                     *    OGS_MAX_NUM_OF_SESS' failed.
+                                     * on UE re-registration or AMF restart.
+                                     *
+                                     * Bound the cache at OGS_MAX_NUM_OF_SESS
+                                     * (preserving the array's intended
+                                     * semantics) and emit a warning so the
+                                     * operator notices subscribers that
+                                     * exceed the per-UE session budget. If
+                                     * more DNNs per UE are needed, raise
+                                     * OGS_MAX_NUM_OF_SESS at build time
+                                     * rather than letting the cache overflow.
+                                     */
+                                    if (slice->num_of_session >=
+                                            OGS_MAX_NUM_OF_SESS) {
+                                        ogs_warn("[%s] subscriber has more "
+                                                "provisioned DNNs than "
+                                                "OGS_MAX_NUM_OF_SESS=%d; "
+                                                "truncating at S-NSSAI "
+                                                "[SST:%d SD:0x%x]",
+                                                amf_ue->supi,
+                                                OGS_MAX_NUM_OF_SESS,
+                                                s_nssai.sst, s_nssai.sd.v);
+                                        break;
+                                    }
                                     DnnInfo = node2->data;
                                     if (DnnInfo) {
                                         ogs_session_t *session =
