@@ -36,19 +36,36 @@
 #endif
 
 static int decode_ipv6_header(
-        struct ip6_hdr *ip6_h, uint8_t *proto, uint16_t *hlen)
+        struct ip6_hdr *ip6_h, size_t buflen,
+        uint8_t *proto, uint16_t *hlen)
 {
     int done = 0;
-    uint8_t *p, *jp, *endp;
+    uint8_t *p, *jp, *endp, *bufend;
     uint8_t nxt;          /* Next Header */
 
     ogs_assert(ip6_h);
     ogs_assert(proto);
     ogs_assert(hlen);
 
+    if (buflen < sizeof(*ip6_h)) {
+        ogs_error("IPv6 buffer too short [%zu < %zu]",
+                buflen, sizeof(*ip6_h));
+        return OGS_ERROR;
+    }
+
+    bufend = (uint8_t *)ip6_h + buflen;
     nxt = ip6_h->ip6_nxt;
     p = (uint8_t *)ip6_h + sizeof(*ip6_h);
     endp = p + be16toh(ip6_h->ip6_plen);
+
+    /*
+     * The packet's declared payload length may exceed the buffer we
+     * actually received (truncated capture, malformed input, hostile
+     * GTP-U); cap endp at the real buffer end so the header walk can
+     * never read past it.
+     */
+    if (endp > bufend)
+        endp = bufend;
 
     jp = p + sizeof(struct ip6_hbh);
     while (p == endp) { /* Jumbo Frame */
@@ -60,24 +77,48 @@ static int decode_ipv6_header(
             return OGS_ERROR;   /* Drop packet safely */
         }
 
+        if (jp + sizeof(struct ip6_opt_jumbo) > bufend) {
+            ogs_error("Truncated IPv6 jumbo option");
+            return OGS_ERROR;
+        }
+
         jumbo = (struct ip6_opt_jumbo *)jp;
         memcpy(&jp_len, jumbo->ip6oj_jumbo_len, sizeof(jp_len));
         jp_len = be32toh(jp_len);
         switch (jumbo->ip6oj_type) {
         case IP6OPT_JUMBO:
             endp = p + jp_len;
+            if (endp > bufend)
+                endp = bufend;
             break;
         case 0:
             jp++;
             break;
         default:
+            if (jp_len > (uint32_t)(bufend - jp) ||
+                    jp + sizeof(struct ip6_opt) + jp_len > bufend) {
+                ogs_error("Truncated IPv6 jumbo PadN option");
+                return OGS_ERROR;
+            }
             jp += (sizeof(struct ip6_opt) + jp_len);
             break;
+        }
+
+        if (jp >= bufend) {
+            ogs_error("IPv6 jumbo option walk reached buffer end");
+            return OGS_ERROR;
         }
     }
 
     while (p < endp) {
         struct ip6_ext *ext = (struct ip6_ext *)p;
+        size_t step = 0;
+
+        if ((size_t)(endp - p) < sizeof(struct ip6_ext)) {
+            ogs_error("Truncated IPv6 extension header");
+            return OGS_ERROR;
+        }
+
         switch (nxt) {
         case IPPROTO_HOPOPTS:
         case IPPROTO_ROUTING:
@@ -87,13 +128,13 @@ static int decode_ipv6_header(
         case 140: /* shim6 */
         case 253: /* testing, experimental */
         case 254: /* testing, experimental */
-            p += ((ext->ip6e_len << 3) + 8);
+            step = ((size_t)ext->ip6e_len << 3) + 8;
             break;
         case IPPROTO_FRAGMENT:
-            p += sizeof(struct ip6_frag);
+            step = sizeof(struct ip6_frag);
             break;
         case IPPROTO_AH:
-            p += ((ext->ip6e_len + 2) << 2);
+            step = ((size_t)ext->ip6e_len + 2) << 2;
             break;
         default: /* Upper Layer */
             done = 1;
@@ -103,7 +144,13 @@ static int decode_ipv6_header(
         if (done)
             break;
 
+        if (step == 0 || step > (size_t)(endp - p)) {
+            ogs_error("Invalid IPv6 extension header step [%zu]", step);
+            return OGS_ERROR;
+        }
+
         nxt = ext->ip6e_nxt;
+        p += step;
     }
 
     *proto = nxt;
@@ -138,26 +185,55 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
         ipfw = &rule->ipfw;
         ogs_assert(ipfw);
 
+        if (pkbuf->len < 1) {
+            ogs_error("Empty packet while matching PDR");
+            continue;
+        }
+
         ip_h = (struct ip *)pkbuf->data;
         if (ip_h->ip_v == 4) {
+            if (pkbuf->len < sizeof(struct ip)) {
+                ogs_error("Truncated IPv4 packet [len:%d]", pkbuf->len);
+                ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+                continue;
+            }
             ip_h = (struct ip *)pkbuf->data;
             ip6_h = NULL;
 
             proto = ip_h->ip_p;
             ip_hlen = (ip_h->ip_hl)*4;
 
+            if (ip_hlen < sizeof(struct ip) || ip_hlen > pkbuf->len) {
+                ogs_error("Invalid IPv4 header length [ihl:%d len:%d]",
+                        ip_hlen, pkbuf->len);
+                ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+                continue;
+            }
+
             src_addr = (void *)&ip_h->ip_src.s_addr;
             dst_addr = (void *)&ip_h->ip_dst.s_addr;
             addr_len = OGS_IPV4_LEN;
         } else if (ip_h->ip_v == 6) {
+            if (pkbuf->len < sizeof(struct ip6_hdr)) {
+                ogs_error("Truncated IPv6 packet [len:%d]", pkbuf->len);
+                ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+                continue;
+            }
             ip_h = NULL;
             ip6_h = (struct ip6_hdr *)pkbuf->data;
 
-            if (OGS_OK != decode_ipv6_header(ip6_h, &proto, &ip_hlen)) {
+            if (OGS_OK != decode_ipv6_header(
+                    ip6_h, pkbuf->len, &proto, &ip_hlen)) {
                 /* Drop malformed IPv6 packet gracefully */
                 ogs_error("Malformed IPv6 packet while matching PDR [plen:%d]",
                         pkbuf->len);
                 ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+                continue;
+            }
+
+            if (ip_hlen > pkbuf->len) {
+                ogs_error("IPv6 header walk overran buffer [hlen:%d len:%d]",
+                        ip_hlen, pkbuf->len);
                 continue;
             }
 
@@ -218,8 +294,15 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
 
             if (ipfw->proto == proto) {
                 if (ipfw->proto == IPPROTO_TCP) {
-                    struct tcphdr *tcph =
-                        (struct tcphdr *)((char *)pkbuf->data + ip_hlen);
+                    struct tcphdr *tcph;
+
+                    if (pkbuf->len < ip_hlen + sizeof(struct tcphdr)) {
+                        ogs_error("Truncated TCP header [hlen:%d len:%d]",
+                                ip_hlen, pkbuf->len);
+                        continue;
+                    }
+                    tcph = (struct tcphdr *)
+                        ((char *)pkbuf->data + ip_hlen);
 
                     /* Source port */
                     if (ipfw->port.src.low &&
@@ -247,8 +330,15 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
                     return rule;
 
                 } else if (ipfw->proto == IPPROTO_UDP) {
-                    struct udphdr *udph =
-                        (struct udphdr *)((char *)pkbuf->data + ip_hlen);
+                    struct udphdr *udph;
+
+                    if (pkbuf->len < ip_hlen + sizeof(struct udphdr)) {
+                        ogs_error("Truncated UDP header [hlen:%d len:%d]",
+                                ip_hlen, pkbuf->len);
+                        continue;
+                    }
+                    udph = (struct udphdr *)
+                        ((char *)pkbuf->data + ip_hlen);
 
                     /* Source port */
                     if (ipfw->port.src.low &&
