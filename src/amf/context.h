@@ -974,7 +974,12 @@ void ran_ue_switch_to_gnb(ran_ue_t *ran_ue, amf_gnb_t *new_gnb);
 ran_ue_t *ran_ue_find_by_ran_ue_ngap_id(
         amf_gnb_t *gnb, uint64_t ran_ue_ngap_id);
 ran_ue_t *ran_ue_find(uint32_t index);
-ran_ue_t *ran_ue_find_by_amf_ue_ngap_id(uint64_t amf_ue_ngap_id);
+/* Per TS 38.413 §10.6 — gnb scopes the lookup so a UE-associated
+ * NGAP message resolves only to a UE owned by the sending gNB.
+ * Pass NULL gnb only for internal AMF paths (not driven by an
+ * incoming NGAP message) where cross-gNB visibility is intentional. */
+ran_ue_t *ran_ue_find_by_amf_ue_ngap_id(
+        amf_gnb_t *gnb, uint64_t amf_ue_ngap_id);
 ran_ue_t *ran_ue_find_by_id(ogs_pool_id_t id);
 
 void amf_ue_new_guti(amf_ue_t *amf_ue);

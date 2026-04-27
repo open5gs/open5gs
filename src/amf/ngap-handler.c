@@ -719,7 +719,7 @@ void ngap_handle_uplink_nas_transport(
         return;
     }
 
-    ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -892,7 +892,7 @@ void ngap_handle_ue_radio_capability_info_indication(
         return;
     }
 
-    ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -1007,7 +1007,7 @@ void ngap_handle_initial_context_setup_response(
         return;
     }
 
-    ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -1296,7 +1296,7 @@ void ngap_handle_initial_context_setup_failure(
         return;
     }
 
-    ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -1429,7 +1429,7 @@ void ngap_handle_ue_context_modification_response(
                     "[0x%llx]", (long long)amf_ue_ngap_id);
         }
 
-        ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+        ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
         if (!ran_ue)
             ogs_warn("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                     (long long)amf_ue_ngap_id);
@@ -1501,7 +1501,7 @@ void ngap_handle_ue_context_modification_failure(
                     "[0x%llx]", (long long)amf_ue_ngap_id);
         }
 
-        ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+        ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
         if (!ran_ue)
             ogs_warn("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                     (long long)amf_ue_ngap_id);
@@ -1612,7 +1612,7 @@ void ngap_handle_ue_context_release_request(
         return;
     }
 
-    ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_warn("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -1799,7 +1799,7 @@ void ngap_handle_ue_context_release_complete(
         return;
     }
 
-    ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -2036,7 +2036,7 @@ void ngap_handle_pdu_session_resource_setup_response(
         return;
     }
 
-    ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -2368,7 +2368,7 @@ void ngap_handle_pdu_session_resource_modify_response(
         return;
     }
 
-    ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -2565,7 +2565,7 @@ void ngap_handle_pdu_session_resource_release_response(
         return;
     }
 
-    ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -2927,7 +2927,7 @@ void ngap_handle_path_switch_request(
         return;
     }
 
-    ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -3314,7 +3314,7 @@ void ngap_handle_handover_required(
         return;
     }
 
-    source_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    source_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!source_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -3705,7 +3705,7 @@ void ngap_handle_handover_request_ack(
         return;
     }
 
-    target_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    target_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!target_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -3933,7 +3933,7 @@ void ngap_handle_handover_failure(
         return;
     }
 
-    target_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    target_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!target_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -4068,7 +4068,7 @@ void ngap_handle_handover_cancel(
         return;
     }
 
-    source_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    source_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!source_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -4230,7 +4230,7 @@ void ngap_handle_uplink_ran_status_transfer(
         return;
     }
 
-    source_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    source_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!source_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -4363,7 +4363,7 @@ void ngap_handle_handover_notification(
         return;
     }
 
-    target_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+    target_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
     if (!target_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
@@ -4915,7 +4915,7 @@ void ngap_handle_ng_reset(
                     continue;
                 }
 
-                ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+                ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
 
                 if (!ran_ue) {
                     ogs_warn("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
@@ -5056,7 +5056,7 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                     "[0x%llx]", (long long)amf_ue_ngap_id);
         }
 
-        ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
+        ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
         if (!ran_ue)
             ogs_warn("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                     (long long)amf_ue_ngap_id);
