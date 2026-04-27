@@ -1245,11 +1245,17 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                             OGS_PFCP_MODIFY_UE_REQUESTED|
                                             sess->nsmf_param.pfcp_flags, 0));
                             } else {
-                                ogs_fatal("Invalid [upCnxState:%d]"
-                                        "[pfcp_flags:0x%llx]",
+                                ogs_error("Invalid HsmfUpdateData "
+                                        "[upCnxState:%d][pfcp_flags:0x%llx]",
                                         sess->nsmf_param.up_cnx_state,
                                         (long long)sess->nsmf_param.pfcp_flags);
-                                ogs_assert_if_reached();
+                                ogs_assert(true ==
+                                    ogs_sbi_server_send_error(stream,
+                                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                        sbi_message,
+                                        "Invalid HsmfUpdateData",
+                                        "Unhandled upCnxState/pfcp_flags "
+                                        "combination", NULL));
                             }
                             break;
                         case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
