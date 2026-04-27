@@ -2927,7 +2927,20 @@ void ngap_handle_path_switch_request(
         return;
     }
 
-    ran_ue = ran_ue_find_by_amf_ue_ngap_id(gnb, amf_ue_ngap_id);
+    /*
+     * Xn Handover (TS 38.413 §9.2.3.1):
+     *
+     * The PathSwitchRequest is sent by the Target-gNB but carries the
+     * SourceAMF-UE-NGAP-ID IE — i.e. a UE-association ID that the AMF
+     * originally allocated against the Source-gNB. The AMF was not
+     * involved in the Xn-side handover, so the resolved ran_ue still
+     * belongs to the Source-gNB until ran_ue_switch_to_gnb() below
+     * moves it to the Target-gNB. Pass NULL to bypass the per-gNB
+     * scoping check; the security model for Xn handover is enforced
+     * at the Xn interface and the SecurityContext IE, not by the
+     * AMF lookup primitive.
+     */
+    ran_ue = ran_ue_find_by_amf_ue_ngap_id(NULL, amf_ue_ngap_id);
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
