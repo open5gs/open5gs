@@ -743,7 +743,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
 
                 /* check BCS regardless of active_flag */
                 if (mme_ue->tracking_area_update_request_presencemask &
-                    OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE) {
+                    OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_PRESENT) {
                     ogs_info("[%s] TAU accept(active_flag=%d, BCS check)",
                         mme_ue->imsi_bcd,
                         mme_ue->nas_eps.update.active_flag);
