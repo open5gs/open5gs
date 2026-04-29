@@ -152,7 +152,7 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
         /* check BCS regardless of active_flag */
         if (mme_ue->tracking_area_update_request_presencemask &
-            OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE) {
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_PRESENT) {
             ogs_info("[%s] LU accept + TAU accept(active_flag=%d, BCS)",
                 mme_ue->imsi_bcd,
                 mme_ue->nas_eps.update.active_flag);
@@ -317,7 +317,7 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
         /* check BCS regardless of active_flag */
         if (mme_ue->tracking_area_update_request_presencemask &
-            OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE) {
+            OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EPS_BEARER_CONTEXT_STATUS_PRESENT) {
             ogs_info("[%s] LU reject + TAU accept(active_flag=%d, BCS)",
                 mme_ue->imsi_bcd,
                 mme_ue->nas_eps.update.active_flag);
