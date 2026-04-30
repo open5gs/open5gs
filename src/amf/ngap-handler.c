@@ -732,6 +732,27 @@ void ngap_handle_uplink_nas_transport(
         return;
     }
 
+    /* 3GPP TS 38.413 clause 10.6: if a received message (other than the
+     * first / first-returned / last) carries an AP ID inconsistent with
+     * the value stored for the UE-associated logical NG-connection, the
+     * AMF shall initiate the Error Indication procedure with the received
+     * AP IDs and locally release the connection. */
+    if (RAN_UE_NGAP_ID && (uint64_t)*RAN_UE_NGAP_ID != ran_ue->ran_ue_ngap_id) {
+        ogs_error("Inconsistent RAN_UE_NGAP_ID: stored[%lld] received[%lld] "
+                "AMF_UE_NGAP_ID[%lld]",
+                (long long)ran_ue->ran_ue_ngap_id,
+                (long long)*RAN_UE_NGAP_ID,
+                (long long)amf_ue_ngap_id);
+        r = ngap_send_error_indication(
+                gnb, (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
+                NGAP_Cause_PR_radioNetwork,
+                NGAP_CauseRadioNetwork_inconsistent_remote_UE_NGAP_ID);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        ran_ue_remove(ran_ue);
+        return;
+    }
+
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
         ogs_error("Cannot find AMF-UE Context [%lld]",
