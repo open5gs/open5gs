@@ -18,6 +18,7 @@
  */
 
 #include "sbi-path.h"
+#include "metrics.h"
 
 static ogs_thread_t *thread;
 static void nrf_main(void *data);
@@ -31,6 +32,8 @@ int nrf_initialize(void)
     rv = ogs_app_parse_local_conf(APP_NAME);
     if (rv != OGS_OK) return rv;
 
+    nrf_metrics_init();
+
     ogs_sbi_context_init(OpenAPI_nf_type_NRF);
     nrf_context_init();
 
@@ -42,6 +45,9 @@ int nrf_initialize(void)
     if (rv != OGS_OK) return rv;
 
     rv = nrf_context_parse_config();
+    if (rv != OGS_OK) return rv;
+
+    rv = ogs_metrics_context_parse_config(APP_NAME);
     if (rv != OGS_OK) return rv;
 
     rv = nrf_sbi_open();
@@ -86,6 +92,8 @@ void nrf_terminate(void)
 
     nrf_context_final();
     ogs_sbi_context_final();
+
+    nrf_metrics_final();
 }
 
 static void nrf_main(void *data)
