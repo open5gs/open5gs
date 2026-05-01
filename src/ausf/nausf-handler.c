@@ -20,6 +20,7 @@
 #include "sbi-path.h"
 #include "nnrf-handler.h"
 #include "nausf-handler.h"
+#include "metrics.h"
 
 bool ausf_nausf_auth_handle_authenticate(ausf_ue_t *ausf_ue,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
@@ -31,6 +32,9 @@ bool ausf_nausf_auth_handle_authenticate(ausf_ue_t *ausf_ue,
     ogs_assert(ausf_ue);
     ogs_assert(stream);
     ogs_assert(recvmsg);
+
+    /* TS 28.552 §5.21.3 — count each authentication request received */
+    ausf_metrics_inst_global_inc(AUSF_METR_GLOB_CTR_AUTH_REQ);
 
     AuthenticationInfo = recvmsg->AuthenticationInfo;
     if (!AuthenticationInfo) {
@@ -103,8 +107,12 @@ bool ausf_nausf_auth_handle_authenticate_confirmation(ausf_ue_t *ausf_ue,
         ogs_log_hexdump(OGS_LOG_WARN, ausf_ue->xres_star, OGS_MAX_RES_LEN);
 
         ausf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_FAILURE;
+        /* TS 28.552 §5.21.3 — RES* mismatch: authentication failed */
+        ausf_metrics_inst_global_inc(AUSF_METR_GLOB_CTR_AUTH_FAIL);
     } else {
         ausf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_SUCCESS;
+        /* TS 28.552 §5.21.3 — RES* match: authentication succeeded */
+        ausf_metrics_inst_global_inc(AUSF_METR_GLOB_CTR_AUTH_SUCC);
     }
 
     r = ausf_sbi_discover_and_send(

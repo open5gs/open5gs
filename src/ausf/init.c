@@ -18,6 +18,7 @@
  */
 
 #include "sbi-path.h"
+#include "metrics.h"
 
 static ogs_thread_t *thread;
 static void ausf_main(void *data);
@@ -31,6 +32,8 @@ int ausf_initialize(void)
     rv = ogs_app_parse_local_conf(APP_NAME);
     if (rv != OGS_OK) return rv;
 
+    ausf_metrics_init();
+
     ogs_sbi_context_init(OpenAPI_nf_type_AUSF);
     ausf_context_init();
 
@@ -39,6 +42,9 @@ int ausf_initialize(void)
     if (rv != OGS_OK) return rv;
 
     rv = ogs_sbi_context_parse_config(APP_NAME, "nrf", "scp");
+    if (rv != OGS_OK) return rv;
+
+    rv = ogs_metrics_context_parse_config(APP_NAME);
     if (rv != OGS_OK) return rv;
 
     rv = ausf_context_parse_config();
@@ -92,6 +98,8 @@ void ausf_terminate(void)
 
     ausf_context_final();
     ogs_sbi_context_final();
+
+    ausf_metrics_final();
 }
 
 static void ausf_main(void *data)
