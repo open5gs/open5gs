@@ -220,14 +220,17 @@ static void _gtpv1_tun_recv_common_cb(
      * Issue #2210, Discussion #2208, #2209
      *
      * Metrics reduce data plane performance.
-     * It should not be used on the UPF/SGW-U data plane
-     * until this issue is resolved.
+     * Byte-volume counters are only updated when
+     * metrics.enable_dataplane_metrics is true in upf.yaml.
      */
-#if 0
-    upf_metrics_inst_global_inc(UPF_METR_GLOB_CTR_GTP_OUTDATAPKTN3UPF);
-    upf_metrics_inst_by_qfi_add(pdr->qer->qfi,
-        UPF_METR_CTR_GTP_OUTDATAVOLUMEQOSLEVELN3UPF, recvbuf->len);
-#endif
+    if (upf_self()->dataplane_metrics_enabled) {
+        upf_metrics_inst_global_inc(UPF_METR_GLOB_CTR_GTP_OUTDATAPKTN3UPF);
+        upf_metrics_inst_global_add(
+            UPF_METR_GLOB_CTR_GTP_OUTDATAVOLUMEN3UPF, recvbuf->len);
+        if (pdr->qer)
+            upf_metrics_inst_by_qfi_add(pdr->qer->qfi,
+                UPF_METR_CTR_GTP_OUTDATAVOLUMEQOSLEVELN3UPF, recvbuf->len);
+    }
 
     if (report.type.downlink_data_report) {
         ogs_assert(pdr->sess);
@@ -392,14 +395,16 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
          * Issue #2210, Discussion #2208, #2209
          *
          * Metrics reduce data plane performance.
-         * It should not be used on the UPF/SGW-U data plane
-         * until this issue is resolved.
+         * Byte-volume counters are only updated when
+         * metrics.enable_dataplane_metrics is true in upf.yaml.
          */
-#if 0
-        upf_metrics_inst_global_inc(UPF_METR_GLOB_CTR_GTP_INDATAPKTN3UPF);
-        upf_metrics_inst_by_qfi_add(header_desc.qos_flow_identifier,
+        if (upf_self()->dataplane_metrics_enabled) {
+            upf_metrics_inst_global_inc(UPF_METR_GLOB_CTR_GTP_INDATAPKTN3UPF);
+            upf_metrics_inst_global_add(
+                UPF_METR_GLOB_CTR_GTP_INDATAVOLUMEN3UPF, pkbuf->len);
+            upf_metrics_inst_by_qfi_add(header_desc.qos_flow_identifier,
                 UPF_METR_CTR_GTP_INDATAVOLUMEQOSLEVELN3UPF, pkbuf->len);
-#endif
+        }
 
         pfcp_object = ogs_pfcp_object_find_by_teid(header_desc.teid);
         if (!pfcp_object) {

@@ -213,6 +213,11 @@ upf:
     server:
       - address: 127.0.0.7
         port: 9090
+    # TS 28.552 §5.22.4 — N3 byte-volume Prometheus counters.
+    # Disabled by default: prom_client_c per-metric mutex causes contention
+    # at high packet rates (see Issue #2210).  Set to true only when the
+    # throughput is below ~1 Gbps or when profiling is acceptable.
+    enable_dataplane_metrics: false
 
 hss:
   freeDiameter:

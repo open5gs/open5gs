@@ -61,6 +61,21 @@ upf_metrics_spec_def_t upf_metrics_spec_def_global[_UPF_METR_GLOB_MAX] = {
     .name = "fivegs_ep_n3_gtp_outdatapktn3upf",
     .description = "Number of outgoing GTP data packets on the N3 interface",
 },
+/*
+ * TS 28.552 §5.22.4 — N3 data volume counters.
+ * Only published when metrics.enable_dataplane_metrics is true in upf.yaml.
+ * Default: disabled (avoids prom_client_c mutex overhead at high pps).
+ */
+[UPF_METR_GLOB_CTR_GTP_INDATAVOLUMEN3UPF] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_ep_n3_gtp_indatavolumen3upf",
+    .description = "Bytes of incoming GTP data on the N3 interface",
+},
+[UPF_METR_GLOB_CTR_GTP_OUTDATAVOLUMEN3UPF] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "fivegs_ep_n3_gtp_outdatavolumen3upf",
+    .description = "Bytes of outgoing GTP data on the N3 interface",
+},
 [UPF_METR_GLOB_CTR_SM_N4SESSIONESTABREQ] = {
     .type = OGS_METRICS_METRIC_TYPE_COUNTER,
     .name = "fivegs_upffunction_sm_n4sessionestabreq",

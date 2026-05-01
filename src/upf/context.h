@@ -60,6 +60,15 @@ typedef struct upf_context_s {
     struct upf_route_trie_node *ipv6_framed_routes;
 
     ogs_list_t sess_list;
+
+    /*
+     * TS 28.552 §5.22.4 — per-packet N3 byte-volume metric gate.
+     * When true, fivegs_ep_n3_gtp_in/outdatavolumen3upf counters are
+     * updated on every forwarded packet.  Default: false (disabled) to
+     * avoid prom_client_c per-metric mutex contention at high pps.
+     * Set via metrics.enable_dataplane_metrics in upf.yaml.
+     */
+    bool dataplane_metrics_enabled;
 } upf_context_t;
 
 /* trie mapping from IP framed routes to session. */

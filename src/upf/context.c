@@ -158,7 +158,24 @@ int upf_context_parse_config(void)
                 } else if (!strcmp(upf_key, "session")) {
                     /* handle config in pfcp library */
                 } else if (!strcmp(upf_key, "metrics")) {
-                    /* handle config in metrics library */
+                    ogs_yaml_iter_t metrics_iter;
+                    ogs_yaml_iter_recurse(&upf_iter, &metrics_iter);
+                    while (ogs_yaml_iter_next(&metrics_iter)) {
+                        const char *metrics_key =
+                            ogs_yaml_iter_key(&metrics_iter);
+                        ogs_assert(metrics_key);
+                        if (!strcmp(metrics_key,
+                                    "enable_dataplane_metrics")) {
+                            const char *v =
+                                ogs_yaml_iter_value(&metrics_iter);
+                            if (v && !strcmp(v, "true"))
+                                self.dataplane_metrics_enabled = true;
+                            else
+                                self.dataplane_metrics_enabled = false;
+                        } else
+                            ogs_warn("unknown metrics key `%s`",
+                                    metrics_key);
+                    }
                 } else
                     ogs_warn("unknown key `%s`", upf_key);
             }
