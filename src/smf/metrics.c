@@ -10,6 +10,7 @@ typedef struct smf_metrics_spec_def_s {
     int initial_val;
     unsigned int num_labels;
     const char **labels;
+    ogs_metrics_histogram_params_t histogram_params;
 } smf_metrics_spec_def_t;
 
 /* Helper generic functions: */
@@ -40,7 +41,7 @@ static int smf_metrics_init_spec(ogs_metrics_context_t *ctx,
         dst[i] = ogs_metrics_spec_new(ctx, src[i].type,
                 src[i].name, src[i].description,
                 src[i].initial_val, src[i].num_labels, src[i].labels,
-                NULL);
+                &src[i].histogram_params);
     }
     return OGS_OK;
 }
@@ -135,6 +136,24 @@ smf_metrics_spec_def_t smf_metrics_spec_def_global[_SMF_METR_GLOB_MAX] = {
     .type = OGS_METRICS_METRIC_TYPE_GAUGE,
     .name = "pfcp_peers_active",
     .description = "Active PFCP peers",
+},
+/* Global Histograms: */
+[SMF_METR_GLOB_HIST_PDU_SESS_SETUP_TIME] = {
+    /*
+     * TS 28.552 §5.22.3.1 Table 5.22.3.1-2
+     * PDU session establishment latency (milliseconds).
+     * Exponential buckets: [10, 20, 40, 80, 160, 320, 640, 1280] ms.
+     */
+    .type = OGS_METRICS_METRIC_TYPE_HISTOGRAM,
+    .name = "fivegs_smffunction_sm_pdusessionestabreqlatency",
+    .description =
+        "Time of PDU session establishment procedure at the SMF (ms)",
+    .histogram_params = {
+        .type = OGS_METRICS_HISTOGRAM_BUCKET_TYPE_EXPONENTIAL,
+        .count = 8,
+        .exp.start = 10,
+        .exp.factor = 2,
+    },
 },
 };
 int smf_metrics_init_inst_global(void)
