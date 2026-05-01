@@ -459,6 +459,13 @@ typedef struct smf_sess_s {
     ogs_nr_cgi_t    nr_cgi;
     ogs_time_t      ue_location_timestamp;
 
+    /*
+     * TS 28.552 §5.22.3.1 — PDU session establishment latency histogram.
+     * Recorded at PDU session create request receipt (Nsmf_PDUSession_CreateSMContext).
+     * Cleared on session removal.
+     */
+    ogs_time_t      pdu_session_start; /* ogs_time_now() at create */
+
 #define HOME_ROUTED_ROAMING_IN_VSMF(__sESS) \
     ((__sESS) && (__sESS)->h_smf_uri)
     char            *h_smf_uri;

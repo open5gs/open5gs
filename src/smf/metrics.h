@@ -26,20 +26,38 @@ typedef enum smf_metric_type_global_s {
     SMF_METR_GLOB_GAUGE_GTP_PEERS_ACTIVE,
     SMF_METR_GLOB_GAUGE_PFCP_SESSIONS_ACTIVE,
     SMF_METR_GLOB_GAUGE_PFCP_PEERS_ACTIVE,
+    /* TS 28.552 §5.22.3.1 — PDU session establishment latency histogram */
+    SMF_METR_GLOB_HIST_PDU_SESS_SETUP_TIME,
     _SMF_METR_GLOB_MAX,
 } smf_metric_type_global_t;
 extern ogs_metrics_inst_t *smf_metrics_inst_global[_SMF_METR_GLOB_MAX];
 int smf_metrics_init_inst_global(void);
 int smf_metrics_free_inst_global(void);
 
-static inline void smf_metrics_inst_global_set(smf_metric_type_global_t t, int val)
+static inline void smf_metrics_inst_global_set(
+        smf_metric_type_global_t t, int val)
 { ogs_metrics_inst_set(smf_metrics_inst_global[t], val); }
-static inline void smf_metrics_inst_global_add(smf_metric_type_global_t t, int val)
+static inline void smf_metrics_inst_global_add(
+        smf_metric_type_global_t t, int val)
 { ogs_metrics_inst_add(smf_metrics_inst_global[t], val); }
 static inline void smf_metrics_inst_global_inc(smf_metric_type_global_t t)
 { ogs_metrics_inst_inc(smf_metrics_inst_global[t]); }
 static inline void smf_metrics_inst_global_dec(smf_metric_type_global_t t)
 { ogs_metrics_inst_dec(smf_metrics_inst_global[t]); }
+
+/*
+ * TS 28.552 §5.22.3.1 — Observe PDU session setup latency (ms).
+ * Call when PDU Session Establishment Accept has been sent to the AMF.
+ * latency_ms must be non-negative; negative values are clamped to 0.
+ */
+static inline void smf_metrics_pdu_sess_setup_time_observe(
+        ogs_time_t latency_ms)
+{
+    if (latency_ms < 0) latency_ms = 0;
+    ogs_metrics_inst_add(
+        smf_metrics_inst_global[SMF_METR_GLOB_HIST_PDU_SESS_SETUP_TIME],
+        (int)latency_ms);
+}
 
 /* GTP NODE */
 typedef enum smf_metric_type_gtp_node_s {

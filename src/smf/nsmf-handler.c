@@ -24,6 +24,7 @@
 #include "local-path.h"
 #include "gsm-handler.h"
 #include "nsmf-handler.h"
+#include "metrics.h"
 
 bool smf_nsmf_handle_create_sm_context(
     smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
@@ -605,6 +606,9 @@ bool smf_nsmf_handle_create_sm_context(
     if (sess->n1SmBufFromUe) ogs_pkbuf_free(sess->n1SmBufFromUe);
     sess->n1SmBufFromUe = ogs_pkbuf_copy(n1smbuf);
     ogs_assert(sess->n1SmBufFromUe);
+
+    /* TS 28.552 §5.22.3.1 — record PDU session create request timestamp */
+    sess->pdu_session_start = ogs_time_now();
 
     ogs_assert(OGS_OK ==
             smf_5gc_pfcp_send_session_establishment_request(sess, NULL, 0));

@@ -36,6 +36,7 @@
 #include "ngap-path.h"
 #include "fd-path.h"
 #include "local-path.h"
+#include "metrics.h"
 
 static uint8_t gtp_cause_from_diameter(uint8_t gtp_version,
         const uint32_t dia_err, const uint32_t *dia_exp_err)
@@ -836,6 +837,12 @@ void smf_gsm_state_wait_pfcp_establishment(ogs_fsm_t *s, smf_event_t *e)
                                 "failed");
                         OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
                         return;
+                    }
+                    /* TS 28.552 §5.22.3.1 — PDU session setup latency */
+                    if (sess->pdu_session_start) {
+                        ogs_time_t latency_ms = ogs_time_to_msec(
+                                ogs_time_now() - sess->pdu_session_start);
+                        smf_metrics_pdu_sess_setup_time_observe(latency_ms);
                     }
                     param.n2smbuf =
                         ngap_build_pdu_session_resource_setup_request_transfer(
