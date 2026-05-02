@@ -520,6 +520,28 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_fsm_dispatch(&bearer->sm, e);
         break;
 
+    case MME_EVENT_ADMIN_UE_PURGE:
+        /*
+         * Deferred purge from DELETE /admin/v1/ue-contexts/{id}?purge=true.
+         * Re-resolve the pool id from a clean stack frame so state
+         * teardown never runs from inside the SBI handler. Silently
+         * no-op if the context disappeared in the meantime — another
+         * code path (ordinary detach, T3412 expiry, peer Cancel)
+         * may have raced us to the cleanup.
+         */
+        mme_ue = mme_ue_find_by_id(e->mme_ue_id);
+        if (!mme_ue) {
+            ogs_info("Admin purge: mme_ue_id=%d already gone — no-op",
+                    (int)e->mme_ue_id);
+            break;
+        }
+        ogs_warn("[%s] Admin purge: removing local context for "
+                "mme_ue_id=%d (deferred from SBI handler)",
+                mme_ue->imsi_bcd[0] ? mme_ue->imsi_bcd : "unknown",
+                (int)e->mme_ue_id);
+        mme_ue_remove(mme_ue);
+        break;
+
     case MME_EVENT_S6A_MESSAGE:
         s6a_message = e->s6a_message;
         ogs_assert(s6a_message);

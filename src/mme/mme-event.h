@@ -53,6 +53,8 @@ typedef enum {
     MME_EVENT_GN_MESSAGE,
     MME_EVENT_GN_TIMER,
 
+    MME_EVENT_ADMIN_UE_PURGE,
+
     MAX_NUM_OF_MME_EVENT,
 
 } mme_event_e;
@@ -105,6 +107,16 @@ typedef struct mme_event_s {
 } mme_event_t;
 
 OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(mme_event_t));
+
+/*
+ * The admin SBI handler in mme-init.c reads the event id via
+ * ((ogs_event_t *)e)->id before deciding whether to dispatch through
+ * the FSM. That cast is well-defined only as long as the int id field
+ * lives at offset 0 of both layouts. Open5GS keeps ogs_event_t and
+ * mme_event_t in sync by convention; this static assert turns that
+ * convention into a compile-time guarantee.
+ */
+OGS_STATIC_ASSERT(offsetof(mme_event_t, id) == offsetof(ogs_event_t, id));
 
 void mme_event_term(void);
 

@@ -45,6 +45,13 @@ void amf_admin_handle_delete_ue_context(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message,
         ogs_sbi_request_t *request);
 
+/*
+ * Internal helper: post a deferred amf_ue_remove() onto the main app
+ * event queue (AMF_EVENT_ADMIN_UE_PURGE). Used by the ?purge=true
+ * path to keep state teardown out of the SBI handler's stack frame.
+ */
+void amf_admin_post_purge(ogs_pool_id_t amf_ue_id);
+
 #ifdef __cplusplus
 }
 #endif

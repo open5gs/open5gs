@@ -36,6 +36,31 @@ static void handle_admin_route(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message,
         ogs_sbi_request_t *request);
 
+/*
+ * Post a deferred-purge event so the heavy mme_ue_remove() cleanup
+ * runs from the main loop on a clean stack frame — never from inside
+ * the SBI handler. The pool id is opaque to ogs_app()->queue;
+ * mme_state_operational() re-resolves it via mme_ue_find_by_id() and
+ * silently no-ops if the context has already been removed by another
+ * code path between the POST and dispatch.
+ */
+void mme_admin_post_purge(ogs_pool_id_t mme_ue_id)
+{
+    mme_event_t *e;
+    int rv;
+
+    e = mme_event_new(MME_EVENT_ADMIN_UE_PURGE);
+    ogs_assert(e);
+    e->mme_ue_id = mme_ue_id;
+
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed [%d] — admin purge dropped "
+                "for mme_ue_id=%d", rv, (int)mme_ue_id);
+        mme_event_free(e);
+    }
+}
+
 int mme_admin_server_open(void)
 {
     if (!mme_self()->admin_config.enabled) {
@@ -232,7 +257,25 @@ void mme_admin_handle_delete_ue_context(
             ogs_assert(true ==
                 ogs_sbi_server_send_response(stream, response));
 
-            mme_ue_remove(mme_ue);
+            /*
+             * Defer mme_ue_remove() to the next main-loop tick via a
+             * MME_EVENT_ADMIN_UE_PURGE event. Calling mme_ue_remove()
+             * synchronously from the SBI handler would tear down a
+             * context that the same call frame still holds a pointer
+             * to, and Open5GS dispatches admin SBI events from
+             * mme_main() before any other queued events for this UE
+             * have been drained — running the heavy cleanup from a
+             * clean stack frame, after the 204 has already been put on
+             * the wire, eliminates re-entrancy concerns and matches
+             * the pattern used by every other state-teardown trigger
+             * in the MME (timer expiry, S6a peer Cancel, etc.).
+             *
+             * The event carries the mme_ue's pool id (not a raw
+             * pointer); the FSM handler re-resolves it via
+             * mme_ue_find_by_id() and bails out gracefully if the
+             * context disappeared in the meantime.
+             */
+            mme_admin_post_purge((ogs_pool_id_t)mme_ue->id);
             return;
         }
     }

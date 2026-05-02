@@ -19,7 +19,33 @@
 
 #include "admin-handler.h"
 #include "amf-sm.h"
+#include "event.h"
 #include "nas-path.h"
+
+/*
+ * Post a deferred-purge event so the heavy amf_ue_remove() cleanup
+ * runs from the main loop on a clean stack frame — never from inside
+ * the SBI handler. The pool id is opaque to ogs_app()->queue;
+ * amf_state_operational() re-resolves it via amf_ue_find_by_id() and
+ * silently no-ops if the context has already been removed by another
+ * code path between the POST and dispatch.
+ */
+void amf_admin_post_purge(ogs_pool_id_t amf_ue_id)
+{
+    amf_event_t *e;
+    int rv;
+
+    e = amf_event_new(AMF_EVENT_ADMIN_UE_PURGE);
+    ogs_assert(e);
+    e->amf_ue_id = amf_ue_id;
+
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed [%d] — admin purge dropped "
+                "for amf_ue_id=%d", rv, (int)amf_ue_id);
+        ogs_event_free(e);
+    }
+}
 
 void amf_admin_handle_delete_ue_context(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message,
@@ -104,7 +130,23 @@ void amf_admin_handle_delete_ue_context(
             ogs_assert(true ==
                 ogs_sbi_server_send_response(stream, response));
 
-            amf_ue_remove(amf_ue);
+            /*
+             * Defer amf_ue_remove() to the next main-loop tick via an
+             * AMF_EVENT_ADMIN_UE_PURGE event. Calling amf_ue_remove()
+             * synchronously from the SBI handler would tear down the
+             * context from inside the FSM dispatch frame that brought
+             * us here; running the heavy cleanup from a clean stack
+             * frame (after the 204 has already been put on the wire)
+             * eliminates re-entrancy concerns and matches the
+             * teardown convention for every other state-removing
+             * trigger in the AMF (timer expiry, UDM Cancel, etc.).
+             *
+             * The event carries the amf_ue's pool id (not a raw
+             * pointer); the FSM handler re-resolves it via
+             * amf_ue_find_by_id() and bails out gracefully if the
+             * context disappeared in the meantime.
+             */
+            amf_admin_post_purge((ogs_pool_id_t)amf_ue->id);
             return;
         }
     }

@@ -1077,6 +1077,28 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         ogs_free(addr);
 
         break;
+    case AMF_EVENT_ADMIN_UE_PURGE:
+        /*
+         * Deferred purge from DELETE /admin/v1/ue-contexts/{id}?purge=true.
+         * Re-resolve the pool id from a clean stack frame so state
+         * teardown never runs from inside the SBI handler. Silently
+         * no-op if the context disappeared in the meantime — another
+         * code path (UDM Cancel, T3512 expiry, ordinary deregistration)
+         * may have raced us to the cleanup.
+         */
+        amf_ue = amf_ue_find_by_id(e->amf_ue_id);
+        if (!amf_ue) {
+            ogs_info("Admin purge: amf_ue_id=%d already gone — no-op",
+                    (int)e->amf_ue_id);
+            break;
+        }
+        ogs_warn("[%s] Admin purge: removing local context for "
+                "amf_ue_id=%d (deferred from SBI handler)",
+                amf_ue->supi ? amf_ue->supi : "unknown",
+                (int)e->amf_ue_id);
+        amf_ue_remove(amf_ue);
+        break;
+
     case AMF_EVENT_NGAP_MESSAGE:
         sock = e->ngap.sock;
         ogs_assert(sock);
