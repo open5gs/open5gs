@@ -401,6 +401,71 @@ int gsm_handle_pdu_session_modification_qos_flow_descriptions(
         return OGS_ERROR;
     }
 
+    /*
+     * Pass 1 — pre-validation.
+     *
+     * Every QoS-flow parameter the inner switch dispatches on
+     * (identifier + bitrate unit) must be checked BEFORE any
+     * mutation of qos_flow state in Pass 2. A malformed
+     * description encountered mid-loop after one or more valid
+     * descriptions had already been applied would otherwise
+     * leave the SMF with bitrate updates committed locally while
+     * the UE rejects the entire Modification Request — a state
+     * drift that can only be unwound by detach/re-attach.
+     *
+     * Validates:
+     *  - parameter identifier is one of the spec-defined values
+     *    (TS 24.501 §9.11.4.12: 5QI, GFBR uplink/downlink,
+     *    MFBR uplink/downlink). Closes #4430.
+     *  - bitrate unit is in the spec-defined range
+     *    OGS_NAS_BR_UNIT_1K..OGS_NAS_BR_UNIT_256P
+     *    (TS 24.501 §9.11.4.13). Closes #4511.
+     */
+    for (i = 0; i < num_of_description; i++) {
+        for (j = 0; j < qos_flow_description[i].num_of_parameter; j++) {
+            ogs_nas_bitrate_t *br =
+                &qos_flow_description[i].param[j].br;
+
+            switch(qos_flow_description[i].param[j].identifier) {
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI:
+                /* No bitrate field; nothing to validate. */
+                break;
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_UPLINK:
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_DOWNLINK:
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_UPLINK:
+            case OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_DOWNLINK:
+                if (br->unit < OGS_NAS_BR_UNIT_1K ||
+                    br->unit > OGS_NAS_BR_UNIT_256P) {
+                    ogs_error("[%s:%d] Invalid bitrate unit [%d] in "
+                            "qos_flow parameter [%d] at "
+                            "description[%d] index[%d]",
+                            smf_ue->supi, sess->psi, br->unit,
+                            qos_flow_description[i].param[j].identifier,
+                            i, j);
+                    return OGS_ERROR;
+                }
+                break;
+            default:
+                ogs_error("[%s:%d] Unknown qos_flow parameter "
+                        "identifier [%d] at description[%d] index[%d]",
+                        smf_ue->supi, sess->psi,
+                        qos_flow_description[i].param[j].identifier,
+                        i, j);
+                return OGS_ERROR;
+            }
+        }
+    }
+
+    /*
+     * Pass 2 — apply the validated descriptions.
+     *
+     * Pass 1 has already proven that every parameter identifier
+     * is in the dispatch set and every bitrate unit is in the
+     * spec range. The default branch below is therefore an
+     * engineering invariant, not reachable from peer input;
+     * keep ogs_assert_if_reached() as a guard-rail in case a
+     * future Pass 1 extension forgets a case.
+     */
     for (i = 0; i < num_of_description; i++) {
         smf_bearer_t *qos_flow =
             smf_qos_flow_find_by_qfi(
@@ -433,7 +498,7 @@ int gsm_handle_pdu_session_modification_qos_flow_descriptions(
                 break;
             default:
                 ogs_fatal("Unknown qos_flow parameter identifier [%d]",
-                        qos_flow_description[i].param[i].identifier);
+                        qos_flow_description[i].param[j].identifier);
                 ogs_assert_if_reached();
             }
         }
