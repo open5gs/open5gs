@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -35,59 +35,86 @@ ogs_pkbuf_t *test_s1ap_build_s1_setup_request(
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode = S1AP_ProcedureCode_id_S1Setup;
     initiatingMessage->criticality = S1AP_Criticality_reject;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_S1SetupRequest;
 
-    S1SetupRequest = &initiatingMessage->value.choice.S1SetupRequest;
+    initiatingMessage->value.choice.S1SetupRequest =
+        CALLOC(1, sizeof(*S1SetupRequest));
+    S1SetupRequest = initiatingMessage->value.choice.S1SetupRequest;
+    ogs_assert(S1SetupRequest);
 
-    ie = CALLOC(1, sizeof(S1AP_S1SetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&S1SetupRequest->protocolIEs, ie);
+    S1SetupRequest->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_S1SetupRequest);
+    ogs_assert(S1SetupRequest->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(S1SetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_Global_ENB_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_S1SetupRequestIEs__value_PR_Global_ENB_ID;
 
-    Global_ENB_ID = &ie->value.choice.Global_ENB_ID;
+    ie->value.choice.Global_ENB_ID =
+        CALLOC(1, sizeof(*Global_ENB_ID));
+    Global_ENB_ID = ie->value.choice.Global_ENB_ID;
+    ogs_assert(Global_ENB_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_S1SetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&S1SetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(S1SetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_SupportedTAs;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_S1SetupRequestIEs__value_PR_SupportedTAs;
 
-    SupportedTAs = &ie->value.choice.SupportedTAs;
+    ie->value.choice.SupportedTAs =
+        CALLOC(1, sizeof(*SupportedTAs));
+    SupportedTAs = ie->value.choice.SupportedTAs;
+    ogs_assert(SupportedTAs);
 
-    ie = CALLOC(1, sizeof(S1AP_S1SetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&S1SetupRequest->protocolIEs, ie);
-    
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(S1SetupRequest->protocolIEs, ie);
+
     ie->id = S1AP_ProtocolIE_ID_id_DefaultPagingDRX;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_S1SetupRequestIEs__value_PR_PagingDRX;
 
-    PagingDRX = &ie->value.choice.PagingDRX;
+    ie->value.choice.PagingDRX = CALLOC(1, sizeof(*PagingDRX));
+    PagingDRX = ie->value.choice.PagingDRX;
+    ogs_assert(PagingDRX);
 
-    ogs_s1ap_uint32_to_ENB_ID(present, enb_id, &Global_ENB_ID->eNB_ID);
+    Global_ENB_ID->eNB_ID =
+        CALLOC(1, sizeof(*Global_ENB_ID->eNB_ID));
+    ogs_assert(Global_ENB_ID->eNB_ID);
+    ogs_s1ap_uint32_to_ENB_ID(present, enb_id, Global_ENB_ID->eNB_ID);
     ogs_s1ap_buffer_to_OCTET_STRING(
             &test_self()->e_tai.plmn_id, OGS_PLMN_ID_LEN,
             &Global_ENB_ID->pLMNidentity);
 
-    SupportedTAs_Item = (S1AP_SupportedTAs_Item_t *)
-        CALLOC(1, sizeof(S1AP_SupportedTAs_Item_t));
+    SupportedTAs_Item =
+        CALLOC(1, sizeof(*SupportedTAs_Item));
+    ogs_assert(SupportedTAs_Item);
     ogs_asn_uint16_to_OCTET_STRING(
             test_self()->e_tai.tac, &SupportedTAs_Item->tAC);
-    PLMNidentity = (S1AP_PLMNidentity_t *)
-        CALLOC(1, sizeof(S1AP_PLMNidentity_t));
+    PLMNidentity = CALLOC(1, sizeof(*PLMNidentity));
+    ogs_assert(PLMNidentity);
     ogs_s1ap_buffer_to_OCTET_STRING(
             &test_self()->e_tai.plmn_id, OGS_PLMN_ID_LEN, PLMNidentity);
-    ASN_SEQUENCE_ADD(&SupportedTAs_Item->broadcastPLMNs.list, PLMNidentity);
+    SupportedTAs_Item->broadcastPLMNs =
+        CALLOC(1, sizeof(*SupportedTAs_Item->broadcastPLMNs));
+    ogs_assert(SupportedTAs_Item->broadcastPLMNs);
+    ASN_SEQUENCE_ADD(SupportedTAs_Item->broadcastPLMNs, PLMNidentity);
 
-    ASN_SEQUENCE_ADD(&SupportedTAs->list, SupportedTAs_Item);
+    ASN_SEQUENCE_ADD(SupportedTAs, SupportedTAs_Item);
 
     *PagingDRX = S1AP_PagingDRX_v64;
 
@@ -119,63 +146,87 @@ ogs_pkbuf_t *test_s1ap_build_initial_ue_message(
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode = S1AP_ProcedureCode_id_initialUEMessage;
     initiatingMessage->criticality = S1AP_Criticality_ignore;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_InitialUEMessage;
 
-    InitialUEMessage = &initiatingMessage->value.choice.InitialUEMessage;
+    initiatingMessage->value.choice.InitialUEMessage =
+        CALLOC(1, sizeof(*InitialUEMessage));
+    InitialUEMessage = initiatingMessage->value.choice.InitialUEMessage;
+    ogs_assert(InitialUEMessage);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialUEMessage_IEs_t));
-    ASN_SEQUENCE_ADD(&InitialUEMessage->protocolIEs, ie);
+    InitialUEMessage->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_InitialUEMessage);
+    ogs_assert(InitialUEMessage->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialUEMessage->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_InitialUEMessage_IEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     test_ue->enb_ue_s1ap_id++;
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_InitialUEMessage_IEs_t));
-    ASN_SEQUENCE_ADD(&InitialUEMessage->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialUEMessage->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_NAS_PDU;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_InitialUEMessage_IEs__value_PR_NAS_PDU;
 
-    NAS_PDU = &ie->value.choice.NAS_PDU;
+    ie->value.choice.NAS_PDU = CALLOC(1, sizeof(*NAS_PDU));
+    NAS_PDU = ie->value.choice.NAS_PDU;
+    ogs_assert(NAS_PDU);
 
     NAS_PDU->size = emmbuf->len;
     NAS_PDU->buf = CALLOC(NAS_PDU->size, sizeof(uint8_t));
+    ogs_assert(NAS_PDU->buf);
     memcpy(NAS_PDU->buf, emmbuf->data, NAS_PDU->size);
     ogs_pkbuf_free(emmbuf);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialUEMessage_IEs_t));
-    ASN_SEQUENCE_ADD(&InitialUEMessage->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialUEMessage->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_TAI;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_InitialUEMessage_IEs__value_PR_TAI;
 
-    TAI = &ie->value.choice.TAI;
+    ie->value.choice.TAI =
+        CALLOC(1, sizeof(*TAI));
+    TAI = ie->value.choice.TAI;
+    ogs_assert(TAI);
 
     ogs_asn_uint16_to_OCTET_STRING(test_ue->e_tai.tac, &TAI->tAC);
     ogs_s1ap_buffer_to_OCTET_STRING(
             &test_ue->e_tai.plmn_id, OGS_PLMN_ID_LEN, &TAI->pLMNidentity);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialUEMessage_IEs_t));
-    ASN_SEQUENCE_ADD(&InitialUEMessage->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialUEMessage->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_EUTRAN_CGI;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_InitialUEMessage_IEs__value_PR_EUTRAN_CGI;
 
-    EUTRAN_CGI = &ie->value.choice.EUTRAN_CGI;
+    ie->value.choice.EUTRAN_CGI =
+        CALLOC(1, sizeof(*EUTRAN_CGI));
+    EUTRAN_CGI = ie->value.choice.EUTRAN_CGI;
+    ogs_assert(EUTRAN_CGI);
 
     ogs_s1ap_buffer_to_OCTET_STRING(
             &test_ue->e_cgi.plmn_id,
@@ -190,15 +241,18 @@ ogs_pkbuf_t *test_s1ap_build_initial_ue_message(
     EUTRAN_CGI->cell_ID.buf[3] = (test_ue->e_cgi.cell_id);
     EUTRAN_CGI->cell_ID.bits_unused = 4;
 
-    ie = CALLOC(1, sizeof(S1AP_InitialUEMessage_IEs_t));
-    ASN_SEQUENCE_ADD(&InitialUEMessage->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialUEMessage->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_RRC_Establishment_Cause;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_InitialUEMessage_IEs__value_PR_RRC_Establishment_Cause;
 
-    RRC_Establishment_Cause = &ie->value.choice.RRC_Establishment_Cause;
+    ie->value.choice.RRC_Establishment_Cause = CALLOC(1, sizeof(*RRC_Establishment_Cause));
+    RRC_Establishment_Cause = ie->value.choice.RRC_Establishment_Cause;
+    ogs_assert(RRC_Establishment_Cause);
 
     *RRC_Establishment_Cause = cause;
 
@@ -207,14 +261,18 @@ ogs_pkbuf_t *test_s1ap_build_initial_ue_message(
         S1AP_M_TMSI_t *m_TMSI = NULL;
         S1AP_S_TMSI_t *S_TMSI = NULL;
 
-        ie = CALLOC(1, sizeof(S1AP_InitialUEMessage_IEs_t));
-        ASN_SEQUENCE_ADD(&InitialUEMessage->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialUEMessage->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_S_TMSI;
         ie->criticality = S1AP_Criticality_reject;
         ie->value.present = S1AP_InitialUEMessage_IEs__value_PR_S_TMSI;
 
-        S_TMSI = &ie->value.choice.S_TMSI;
+        ie->value.choice.S_TMSI =
+            CALLOC(1, sizeof(*S_TMSI));
+        S_TMSI = ie->value.choice.S_TMSI;
+        ogs_assert(S_TMSI);
 
         mMEC = &S_TMSI->mMEC;
         m_TMSI = &S_TMSI->m_TMSI;
@@ -224,14 +282,18 @@ ogs_pkbuf_t *test_s1ap_build_initial_ue_message(
     }
 
     if (test_ue->initial_ue_param.gummei_id) {
-        ie = CALLOC(1, sizeof(S1AP_InitialUEMessage_IEs_t));
-        ASN_SEQUENCE_ADD(&InitialUEMessage->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialUEMessage->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_GUMMEI_ID;
         ie->criticality = S1AP_Criticality_reject;
         ie->value.present = S1AP_InitialUEMessage_IEs__value_PR_GUMMEI;
 
-        GUMMEI = &ie->value.choice.GUMMEI;
+        ie->value.choice.GUMMEI =
+            CALLOC(1, sizeof(*GUMMEI));
+        GUMMEI = ie->value.choice.GUMMEI;
+        ogs_assert(GUMMEI);
         ogs_s1ap_buffer_to_OCTET_STRING(
                 &test_ue->e_cgi.plmn_id,
                 OGS_PLMN_ID_LEN, &GUMMEI->pLMN_Identity);
@@ -244,14 +306,17 @@ ogs_pkbuf_t *test_s1ap_build_initial_ue_message(
     }
 
     if (test_ue->initial_ue_param.gummei_type) {
-        ie = CALLOC(1, sizeof(S1AP_InitialUEMessage_IEs_t));
-        ASN_SEQUENCE_ADD(&InitialUEMessage->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialUEMessage->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_GUMMEIType;
         ie->criticality = S1AP_Criticality_reject;
         ie->value.present = S1AP_InitialUEMessage_IEs__value_PR_GUMMEIType;
 
-        GUMMEIType = &ie->value.choice.GUMMEIType;
+        ie->value.choice.GUMMEIType = CALLOC(1, sizeof(*GUMMEIType));
+        GUMMEIType = ie->value.choice.GUMMEIType;
+        ogs_assert(GUMMEIType);
 
         *GUMMEIType = test_ue->initial_ue_param.gummei.type;
     }
@@ -282,63 +347,86 @@ ogs_pkbuf_t *test_s1ap_build_uplink_nas_transport(
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode =
         S1AP_ProcedureCode_id_uplinkNASTransport;
     initiatingMessage->criticality = S1AP_Criticality_ignore;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_UplinkNASTransport;
 
-    UplinkNASTransport = &initiatingMessage->value.choice.UplinkNASTransport;
+    initiatingMessage->value.choice.UplinkNASTransport =
+        CALLOC(1, sizeof(*UplinkNASTransport));
+    UplinkNASTransport = initiatingMessage->value.choice.UplinkNASTransport;
+    ogs_assert(UplinkNASTransport);
 
-    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    UplinkNASTransport->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_UplinkNASTransport);
+    ogs_assert(UplinkNASTransport->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_UplinkNASTransport_IEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_UplinkNASTransport_IEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_NAS_PDU;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_UplinkNASTransport_IEs__value_PR_NAS_PDU;
 
-    NAS_PDU = &ie->value.choice.NAS_PDU;
+    ie->value.choice.NAS_PDU = CALLOC(1, sizeof(*NAS_PDU));
+    NAS_PDU = ie->value.choice.NAS_PDU;
+    ogs_assert(NAS_PDU);
 
     NAS_PDU->size = nasbuf->len;
     NAS_PDU->buf = CALLOC(NAS_PDU->size, sizeof(uint8_t));
+    ogs_assert(NAS_PDU->buf);
     memcpy(NAS_PDU->buf, nasbuf->data, NAS_PDU->size);
     ogs_pkbuf_free(nasbuf);
 
-    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_EUTRAN_CGI;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_UplinkNASTransport_IEs__value_PR_EUTRAN_CGI;
 
-    EUTRAN_CGI = &ie->value.choice.EUTRAN_CGI;
+    ie->value.choice.EUTRAN_CGI =
+        CALLOC(1, sizeof(*EUTRAN_CGI));
+    EUTRAN_CGI = ie->value.choice.EUTRAN_CGI;
+    ogs_assert(EUTRAN_CGI);
 
     ogs_s1ap_buffer_to_OCTET_STRING(
             &test_ue->e_cgi.plmn_id,
@@ -353,30 +441,41 @@ ogs_pkbuf_t *test_s1ap_build_uplink_nas_transport(
     EUTRAN_CGI->cell_ID.buf[3] = (test_ue->e_cgi.cell_id);
     EUTRAN_CGI->cell_ID.bits_unused = 4;
 
-    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_TAI;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_UplinkNASTransport_IEs__value_PR_TAI;
 
-    TAI = &ie->value.choice.TAI;
+    ie->value.choice.TAI =
+        CALLOC(1, sizeof(*TAI));
+    TAI = ie->value.choice.TAI;
+    ogs_assert(TAI);
 
     ogs_asn_uint16_to_OCTET_STRING(test_ue->e_tai.tac, &TAI->tAC);
     ogs_s1ap_buffer_to_OCTET_STRING(
             &test_ue->e_tai.plmn_id, OGS_PLMN_ID_LEN, &TAI->pLMNidentity);
 
     if (test_ue->nr_cgi.cell_id) {
-        ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
-        ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_PSCellInformation;
         ie->criticality = S1AP_Criticality_ignore;
         ie->value.present =
             S1AP_UplinkNASTransport_IEs__value_PR_PSCellInformation;
 
-        PSCellInformation = &ie->value.choice.PSCellInformation;
-        nCGI = &PSCellInformation->nCGI;
+        ie->value.choice.PSCellInformation =
+            CALLOC(1, sizeof(*PSCellInformation));
+        PSCellInformation = ie->value.choice.PSCellInformation;
+        ogs_assert(PSCellInformation);
+        PSCellInformation->nCGI =
+            CALLOC(1, sizeof(*nCGI));
+        ogs_assert(PSCellInformation->nCGI);
+        nCGI = PSCellInformation->nCGI;
         ogs_s1ap_buffer_to_OCTET_STRING(
                 &test_ue->e_cgi.plmn_id, OGS_PLMN_ID_LEN, &nCGI->pLMNIdentity);
 
@@ -410,56 +509,75 @@ ogs_pkbuf_t *tests1ap_build_ue_radio_capability_info_indication(
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode =
         S1AP_ProcedureCode_id_UECapabilityInfoIndication;
     initiatingMessage->criticality = S1AP_Criticality_ignore;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_UECapabilityInfoIndication;
 
-    UECapabilityInfoIndication =
-        &initiatingMessage->value.choice.UECapabilityInfoIndication;
+    initiatingMessage->value.choice.UECapabilityInfoIndication =
+        CALLOC(1, sizeof(*UECapabilityInfoIndication));
 
-    ie = CALLOC(1, sizeof(S1AP_UECapabilityInfoIndicationIEs_t));
-    ASN_SEQUENCE_ADD(&UECapabilityInfoIndication->protocolIEs, ie);
+    UECapabilityInfoIndication = initiatingMessage->value.choice.UECapabilityInfoIndication;
+    ogs_assert(UECapabilityInfoIndication);
+
+    UECapabilityInfoIndication->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_UECapabilityInfoIndication);
+    ogs_assert(UECapabilityInfoIndication->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UECapabilityInfoIndication->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_UECapabilityInfoIndicationIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_UECapabilityInfoIndicationIEs_t));
-    ASN_SEQUENCE_ADD(&UECapabilityInfoIndication->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UECapabilityInfoIndication->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_UECapabilityInfoIndicationIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_UECapabilityInfoIndicationIEs_t));
-    ASN_SEQUENCE_ADD(&UECapabilityInfoIndication->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UECapabilityInfoIndication->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_UERadioCapability;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_UECapabilityInfoIndicationIEs__value_PR_UERadioCapability;
 
-    UERadioCapability = &ie->value.choice.UERadioCapability;
+    ie->value.choice.UERadioCapability = CALLOC(1, sizeof(*UERadioCapability));
+    UERadioCapability = ie->value.choice.UERadioCapability;
+    ogs_assert(UERadioCapability);
 
     ogs_hex_from_string(_capability_captured, tmp, sizeof(tmp));
 
     UERadioCapability->size = 40;
     UERadioCapability->buf = CALLOC(UERadioCapability->size, sizeof(uint8_t));
+    ogs_assert(UERadioCapability->buf);
     memcpy(UERadioCapability->buf, tmp, UERadioCapability->size);
 
     return ogs_s1ap_encode(&pdu);
@@ -493,63 +611,85 @@ ogs_pkbuf_t *test_s1ap_build_initial_context_setup_response(test_ue_t *test_ue)
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
     pdu.choice.successfulOutcome =
-        CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+        CALLOC(1, sizeof(*successfulOutcome));
 
     successfulOutcome = pdu.choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
     successfulOutcome->procedureCode =
         S1AP_ProcedureCode_id_InitialContextSetup;
     successfulOutcome->criticality = S1AP_Criticality_reject;
     successfulOutcome->value.present =
         S1AP_SuccessfulOutcome__value_PR_InitialContextSetupResponse;
 
-    InitialContextSetupResponse =
-        &successfulOutcome->value.choice.InitialContextSetupResponse;
+    successfulOutcome->value.choice.InitialContextSetupResponse =
+        CALLOC(1, sizeof(*InitialContextSetupResponse));
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupResponseIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupResponse->protocolIEs, ie);
+    InitialContextSetupResponse = successfulOutcome->value.choice.InitialContextSetupResponse;
+    ogs_assert(InitialContextSetupResponse);
+
+    InitialContextSetupResponse->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_InitialContextSetupResponse);
+    ogs_assert(InitialContextSetupResponse->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_InitialContextSetupResponseIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupResponseIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupResponse->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_InitialContextSetupResponseIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupResponseIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupResponse->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_E_RABSetupListCtxtSURes;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_InitialContextSetupResponseIEs__value_PR_E_RABSetupListCtxtSURes;
 
-    E_RABSetupListCtxtSURes = &ie->value.choice.E_RABSetupListCtxtSURes;
+    ie->value.choice.E_RABSetupListCtxtSURes =
+        CALLOC(1, sizeof(*E_RABSetupListCtxtSURes));
+    E_RABSetupListCtxtSURes = ie->value.choice.E_RABSetupListCtxtSURes;
+    ogs_assert(E_RABSetupListCtxtSURes);
 
     ogs_list_for_each(&test_ue->sess_list, sess) {
         ogs_list_for_each(&sess->bearer_list, bearer) {
-        item = CALLOC(1, sizeof(S1AP_E_RABSetupItemCtxtSUResIEs_t));
-        ASN_SEQUENCE_ADD(&E_RABSetupListCtxtSURes->list, item);
+        item = CALLOC(1, sizeof(*item));
+        ogs_assert(item);
+        ASN_SEQUENCE_ADD(E_RABSetupListCtxtSURes, item);
 
         item->id = S1AP_ProtocolIE_ID_id_E_RABSetupItemCtxtSURes;
         item->criticality = S1AP_Criticality_ignore;
         item->value.present =
             S1AP_E_RABSetupItemCtxtSUResIEs__value_PR_E_RABSetupItemCtxtSURes;
 
-        e_rab = &item->value.choice.E_RABSetupItemCtxtSURes;
+        item->value.choice.E_RABSetupItemCtxtSURes =
+            CALLOC(1, sizeof(*e_rab));
+        e_rab = item->value.choice.E_RABSetupItemCtxtSURes;
+        ogs_assert(e_rab);
 
         e_rab->e_RAB_ID = bearer->ebi;
 
@@ -586,50 +726,68 @@ ogs_pkbuf_t *test_s1ap_build_initial_context_setup_failure(test_ue_t *test_ue,
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_unsuccessfulOutcome;
     pdu.choice.unsuccessfulOutcome =
-        CALLOC(1, sizeof(S1AP_UnsuccessfulOutcome_t));
+        CALLOC(1, sizeof(*unsuccessfulOutcome));
 
     unsuccessfulOutcome = pdu.choice.unsuccessfulOutcome;
+    ogs_assert(unsuccessfulOutcome);
     unsuccessfulOutcome->procedureCode =
         S1AP_ProcedureCode_id_InitialContextSetup;
     unsuccessfulOutcome->criticality = S1AP_Criticality_reject;
     unsuccessfulOutcome->value.present =
         S1AP_UnsuccessfulOutcome__value_PR_InitialContextSetupFailure;
 
-    InitialContextSetupFailure =
-        &unsuccessfulOutcome->value.choice.InitialContextSetupFailure;
+    unsuccessfulOutcome->value.choice.InitialContextSetupFailure =
+        CALLOC(1, sizeof(*InitialContextSetupFailure));
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupFailureIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupFailure->protocolIEs, ie);
+    InitialContextSetupFailure = unsuccessfulOutcome->value.choice.InitialContextSetupFailure;
+    ogs_assert(InitialContextSetupFailure);
+
+    InitialContextSetupFailure->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_InitialContextSetupFailure);
+    ogs_assert(InitialContextSetupFailure->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupFailure->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_InitialContextSetupFailureIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupFailureIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupFailure->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupFailure->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_InitialContextSetupFailureIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupFailureIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupFailure->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupFailure->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_Cause;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_InitialContextSetupFailureIEs__value_PR_Cause;
 
-    Cause = &ie->value.choice.Cause;
+    ie->value.choice.Cause =
+        CALLOC(1, sizeof(*Cause));
+    Cause = ie->value.choice.Cause;
+    ogs_assert(Cause);
 
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
@@ -651,39 +809,53 @@ ogs_pkbuf_t *test_s1ap_build_ue_context_modification_response(
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
     pdu.choice.successfulOutcome =
-        CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+        CALLOC(1, sizeof(*successfulOutcome));
 
     successfulOutcome = pdu.choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
     successfulOutcome->procedureCode =
         S1AP_ProcedureCode_id_UEContextModification;
     successfulOutcome->criticality = S1AP_Criticality_reject;
     successfulOutcome->value.present =
         S1AP_SuccessfulOutcome__value_PR_UEContextModificationResponse;
 
-    UEContextModificationResponse =
-        &successfulOutcome->value.choice.UEContextModificationResponse;
+    successfulOutcome->value.choice.UEContextModificationResponse =
+        CALLOC(1, sizeof(*UEContextModificationResponse));
 
-    ie = CALLOC(1, sizeof(S1AP_UEContextModificationResponseIEs_t));
-    ASN_SEQUENCE_ADD(&UEContextModificationResponse->protocolIEs, ie);
+    UEContextModificationResponse = successfulOutcome->value.choice.UEContextModificationResponse;
+    ogs_assert(UEContextModificationResponse);
+
+    UEContextModificationResponse->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_UEContextModificationResponse);
+    ogs_assert(UEContextModificationResponse->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UEContextModificationResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_UEContextModificationResponseIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_UEContextModificationResponseIEs_t));
-    ASN_SEQUENCE_ADD(&UEContextModificationResponse->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UEContextModificationResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_UEContextModificationResponseIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
@@ -706,50 +878,69 @@ ogs_pkbuf_t *test_s1ap_build_ue_context_release_request(test_ue_t *test_ue,
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode =
         S1AP_ProcedureCode_id_UEContextReleaseRequest;
     initiatingMessage->criticality = S1AP_Criticality_ignore;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_UEContextReleaseRequest;
 
-    UEContextReleaseRequest =
-        &initiatingMessage->value.choice.UEContextReleaseRequest;
+    initiatingMessage->value.choice.UEContextReleaseRequest =
+        CALLOC(1, sizeof(*UEContextReleaseRequest));
 
-    ie = CALLOC(1, sizeof(S1AP_UEContextReleaseRequest_IEs_t));
-    ASN_SEQUENCE_ADD(&UEContextReleaseRequest->protocolIEs, ie);
+    UEContextReleaseRequest = initiatingMessage->value.choice.UEContextReleaseRequest;
+    ogs_assert(UEContextReleaseRequest);
+
+    UEContextReleaseRequest->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_UEContextReleaseRequest);
+    ogs_assert(UEContextReleaseRequest->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UEContextReleaseRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_UEContextReleaseRequest_IEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_UEContextReleaseRequest_IEs_t));
-    ASN_SEQUENCE_ADD(&UEContextReleaseRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UEContextReleaseRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_UEContextReleaseRequest_IEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_UEContextReleaseRequest_IEs_t));
-    ASN_SEQUENCE_ADD(&UEContextReleaseRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UEContextReleaseRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_Cause;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_UEContextReleaseRequest_IEs__value_PR_Cause;
 
-    Cause = &ie->value.choice.Cause;
+    ie->value.choice.Cause =
+        CALLOC(1, sizeof(*Cause));
+    Cause = ie->value.choice.Cause;
+    ogs_assert(Cause);
 
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
@@ -771,38 +962,53 @@ ogs_pkbuf_t *test_s1ap_build_ue_context_release_complete(test_ue_t *test_ue)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
-    pdu.choice.successfulOutcome = CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+    pdu.choice.successfulOutcome =
+        CALLOC(1, sizeof(*successfulOutcome));
 
     successfulOutcome = pdu.choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
     successfulOutcome->procedureCode =
         S1AP_ProcedureCode_id_UEContextRelease;
     successfulOutcome->criticality = S1AP_Criticality_reject;
     successfulOutcome->value.present =
         S1AP_SuccessfulOutcome__value_PR_UEContextReleaseComplete;
 
-    UEContextReleaseComplete =
-        &successfulOutcome->value.choice.UEContextReleaseComplete;
+    successfulOutcome->value.choice.UEContextReleaseComplete =
+        CALLOC(1, sizeof(*UEContextReleaseComplete));
 
-    ie = CALLOC(1, sizeof(S1AP_UEContextReleaseComplete_IEs_t));
-    ASN_SEQUENCE_ADD(&UEContextReleaseComplete->protocolIEs, ie);
+    UEContextReleaseComplete = successfulOutcome->value.choice.UEContextReleaseComplete;
+    ogs_assert(UEContextReleaseComplete);
+
+    UEContextReleaseComplete->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_UEContextReleaseComplete);
+    ogs_assert(UEContextReleaseComplete->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UEContextReleaseComplete->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_UEContextReleaseComplete_IEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_UEContextReleaseComplete_IEs_t));
-    ASN_SEQUENCE_ADD(&UEContextReleaseComplete->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UEContextReleaseComplete->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_UEContextReleaseComplete_IEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
     return ogs_s1ap_encode(&pdu);
@@ -839,57 +1045,80 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_setup_response(test_bearer_t *bearer)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
-    pdu.choice.successfulOutcome = CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+    pdu.choice.successfulOutcome =
+        CALLOC(1, sizeof(*successfulOutcome));
 
     successfulOutcome = pdu.choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
     successfulOutcome->procedureCode = S1AP_ProcedureCode_id_E_RABSetup;
     successfulOutcome->criticality = S1AP_Criticality_reject;
     successfulOutcome->value.present =
         S1AP_SuccessfulOutcome__value_PR_E_RABSetupResponse;
 
-    E_RABSetupResponse = &successfulOutcome->value.choice.E_RABSetupResponse;
+    successfulOutcome->value.choice.E_RABSetupResponse =
+        CALLOC(1, sizeof(*E_RABSetupResponse));
+    E_RABSetupResponse = successfulOutcome->value.choice.E_RABSetupResponse;
+    ogs_assert(E_RABSetupResponse);
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABSetupResponseIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABSetupResponse->protocolIEs, ie);
+    E_RABSetupResponse->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_E_RABSetupResponse);
+    ogs_assert(E_RABSetupResponse->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABSetupResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_E_RABSetupResponseIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABSetupResponseIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABSetupResponse->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABSetupResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_E_RABSetupResponseIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABSetupResponseIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABSetupResponse->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABSetupResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_E_RABSetupListBearerSURes;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_E_RABSetupResponseIEs__value_PR_E_RABSetupListBearerSURes;
 
-    E_RABSetupListBearerSURes = &ie->value.choice.E_RABSetupListBearerSURes;
+    ie->value.choice.E_RABSetupListBearerSURes =
+        CALLOC(1, sizeof(*E_RABSetupListBearerSURes));
+    E_RABSetupListBearerSURes = ie->value.choice.E_RABSetupListBearerSURes;
+    ogs_assert(E_RABSetupListBearerSURes);
 
-    item = CALLOC(1, sizeof(S1AP_E_RABSetupItemBearerSUResIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABSetupListBearerSURes->list, item);
+    item = CALLOC(1, sizeof(*item));
+    ogs_assert(item);
+    ASN_SEQUENCE_ADD(E_RABSetupListBearerSURes, item);
 
     item->id = S1AP_ProtocolIE_ID_id_E_RABSetupItemBearerSURes;
     item->criticality = S1AP_Criticality_ignore;
     item->value.present =
         S1AP_E_RABSetupItemBearerSUResIEs__value_PR_E_RABSetupItemBearerSURes;
 
-    e_rab = &item->value.choice.E_RABSetupItemBearerSURes;
+    item->value.choice.E_RABSetupItemBearerSURes =
+        CALLOC(1, sizeof(*e_rab));
+    e_rab = item->value.choice.E_RABSetupItemBearerSURes;
+    ogs_assert(e_rab);
 
     e_rab->e_RAB_ID = bearer->ebi;
 
@@ -935,59 +1164,84 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_failed_setup_response(
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
-    pdu.choice.successfulOutcome = CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+    pdu.choice.successfulOutcome =
+        CALLOC(1, sizeof(*successfulOutcome));
 
     successfulOutcome = pdu.choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
     successfulOutcome->procedureCode = S1AP_ProcedureCode_id_E_RABSetup;
     successfulOutcome->criticality = S1AP_Criticality_reject;
     successfulOutcome->value.present =
         S1AP_SuccessfulOutcome__value_PR_E_RABSetupResponse;
 
-    E_RABSetupResponse = &successfulOutcome->value.choice.E_RABSetupResponse;
+    successfulOutcome->value.choice.E_RABSetupResponse =
+        CALLOC(1, sizeof(*E_RABSetupResponse));
+    E_RABSetupResponse = successfulOutcome->value.choice.E_RABSetupResponse;
+    ogs_assert(E_RABSetupResponse);
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABSetupResponseIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABSetupResponse->protocolIEs, ie);
+    E_RABSetupResponse->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_E_RABSetupResponse);
+    ogs_assert(E_RABSetupResponse->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABSetupResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_E_RABSetupResponseIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABSetupResponseIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABSetupResponse->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABSetupResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_E_RABSetupResponseIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABSetupResponseIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABSetupResponse->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABSetupResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_E_RABFailedToSetupListBearerSURes;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_E_RABSetupResponseIEs__value_PR_E_RABList;
 
-    E_RABList = &ie->value.choice.E_RABList;
+    ie->value.choice.E_RABList =
+        CALLOC(1, sizeof(*E_RABList));
+    E_RABList = ie->value.choice.E_RABList;
+    ogs_assert(E_RABList);
 
-    item = CALLOC(1, sizeof(S1AP_E_RABItemIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABList->list, item);
+    item = CALLOC(1, sizeof(*item));
+    ogs_assert(item);
+    ASN_SEQUENCE_ADD(E_RABList, item);
 
     item->id = S1AP_ProtocolIE_ID_id_E_RABItem;
     item->criticality = S1AP_Criticality_reject;
     item->value.present = S1AP_E_RABItemIEs__value_PR_E_RABItem;
 
-    e_rab = &item->value.choice.E_RABItem;
+    item->value.choice.E_RABItem =
+        CALLOC(1, sizeof(*e_rab));
+    e_rab = item->value.choice.E_RABItem;
+    ogs_assert(e_rab);
 
     e_rab->e_RAB_ID = bearer->ebi;
-    e_rab->cause.present = group;
-    e_rab->cause.choice.radioNetwork = cause;
+    e_rab->cause = CALLOC(1, sizeof(*e_rab->cause));
+    ogs_assert(e_rab->cause);
+    e_rab->cause->present = group;
+    e_rab->cause->choice.radioNetwork = cause;
 
     return ogs_s1ap_encode(&pdu);
 }
@@ -1019,56 +1273,79 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_modify_response(test_bearer_t *bearer)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
-    pdu.choice.successfulOutcome = CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+    pdu.choice.successfulOutcome =
+        CALLOC(1, sizeof(*successfulOutcome));
 
     successfulOutcome = pdu.choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
     successfulOutcome->procedureCode = S1AP_ProcedureCode_id_E_RABModify;
     successfulOutcome->criticality = S1AP_Criticality_reject;
     successfulOutcome->value.present =
         S1AP_SuccessfulOutcome__value_PR_E_RABModifyResponse;
 
-    E_RABModifyResponse = &successfulOutcome->value.choice.E_RABModifyResponse;
+    successfulOutcome->value.choice.E_RABModifyResponse =
+        CALLOC(1, sizeof(*E_RABModifyResponse));
+    E_RABModifyResponse = successfulOutcome->value.choice.E_RABModifyResponse;
+    ogs_assert(E_RABModifyResponse);
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABModifyResponseIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABModifyResponse->protocolIEs, ie);
+    E_RABModifyResponse->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_E_RABModifyResponse);
+    ogs_assert(E_RABModifyResponse->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABModifyResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_E_RABModifyResponseIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABModifyResponseIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABModifyResponse->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABModifyResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_E_RABModifyResponseIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABModifyResponseIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABModifyResponse->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABModifyResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_E_RABModifyListBearerModRes;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_E_RABModifyResponseIEs__value_PR_E_RABModifyListBearerModRes;
 
-    E_RABModifyListBearerModRes = &ie->value.choice.E_RABModifyListBearerModRes;
+    ie->value.choice.E_RABModifyListBearerModRes =
+        CALLOC(1, sizeof(*E_RABModifyListBearerModRes));
+    E_RABModifyListBearerModRes = ie->value.choice.E_RABModifyListBearerModRes;
+    ogs_assert(E_RABModifyListBearerModRes);
 
-    item = CALLOC(1, sizeof(S1AP_E_RABModifyItemBearerModResIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABModifyListBearerModRes->list, item);
+    item = CALLOC(1, sizeof(*item));
+    ogs_assert(item);
+    ASN_SEQUENCE_ADD(E_RABModifyListBearerModRes, item);
 
     item->id = S1AP_ProtocolIE_ID_id_E_RABModifyItemBearerModRes;
     item->criticality = S1AP_Criticality_ignore;
     item->value.present = S1AP_E_RABModifyItemBearerModResIEs__value_PR_E_RABModifyItemBearerModRes;
 
-    e_rab = &item->value.choice.E_RABModifyItemBearerModRes;
+    item->value.choice.E_RABModifyItemBearerModRes =
+        CALLOC(1, sizeof(*e_rab));
+    e_rab = item->value.choice.E_RABModifyItemBearerModRes;
+    ogs_assert(e_rab);
 
     e_rab->e_RAB_ID = bearer->ebi;
 
@@ -1102,59 +1379,82 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_release_response(test_bearer_t *bearer)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
-    pdu.choice.successfulOutcome = CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+    pdu.choice.successfulOutcome =
+        CALLOC(1, sizeof(*successfulOutcome));
 
     successfulOutcome = pdu.choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
     successfulOutcome->procedureCode = S1AP_ProcedureCode_id_E_RABRelease;
     successfulOutcome->criticality = S1AP_Criticality_reject;
     successfulOutcome->value.present =
         S1AP_SuccessfulOutcome__value_PR_E_RABReleaseResponse;
 
-    E_RABReleaseResponse =
-        &successfulOutcome->value.choice.E_RABReleaseResponse;
+    successfulOutcome->value.choice.E_RABReleaseResponse =
+        CALLOC(1, sizeof(*E_RABReleaseResponse));
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABReleaseResponseIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABReleaseResponse->protocolIEs, ie);
+    E_RABReleaseResponse = successfulOutcome->value.choice.E_RABReleaseResponse;
+    ogs_assert(E_RABReleaseResponse);
+
+    E_RABReleaseResponse->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_E_RABReleaseResponse);
+    ogs_assert(E_RABReleaseResponse->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABReleaseResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_E_RABReleaseResponseIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABReleaseResponseIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABReleaseResponse->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABReleaseResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_E_RABReleaseResponseIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABReleaseResponseIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABReleaseResponse->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABReleaseResponse->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_E_RABReleaseListBearerRelComp;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_E_RABReleaseResponseIEs__value_PR_E_RABReleaseListBearerRelComp;
 
-    E_RABReleaseListBearerRelComp =
-        &ie->value.choice.E_RABReleaseListBearerRelComp;
+    ie->value.choice.E_RABReleaseListBearerRelComp =
+        CALLOC(1, sizeof(*E_RABReleaseListBearerRelComp));
 
-    item = CALLOC(1, sizeof(S1AP_E_RABReleaseItemBearerRelCompIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABReleaseListBearerRelComp->list, item);
+    E_RABReleaseListBearerRelComp = ie->value.choice.E_RABReleaseListBearerRelComp;
+    ogs_assert(E_RABReleaseListBearerRelComp);
+
+    item = CALLOC(1, sizeof(*item));
+    ogs_assert(item);
+    ASN_SEQUENCE_ADD(E_RABReleaseListBearerRelComp, item);
 
     item->id = S1AP_ProtocolIE_ID_id_E_RABReleaseItemBearerRelComp;
     item->criticality = S1AP_Criticality_ignore;
     item->value.present =
         S1AP_E_RABReleaseItemBearerRelCompIEs__value_PR_E_RABReleaseItemBearerRelComp;
 
-    e_rab = &item->value.choice.E_RABReleaseItemBearerRelComp;
+    item->value.choice.E_RABReleaseItemBearerRelComp =
+        CALLOC(1, sizeof(*e_rab));
+    e_rab = item->value.choice.E_RABReleaseItemBearerRelComp;
+    ogs_assert(e_rab);
 
     e_rab->e_RAB_ID = bearer->ebi;
 
@@ -1175,51 +1475,71 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_modification_indication(test_ue_t *test_ue)
     S1AP_E_RABModificationIndicationIEs_t *ie = NULL;
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
-    S1AP_E_RABToBeModifiedListBearerModInd_t
-        *E_RABToBeModifiedListBearerModInd = NULL;
+    S1AP_E_RABToBeModifiedListBearerModInd_t *E_RABToBeModifiedListBearerModInd = NULL;
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode =
         S1AP_ProcedureCode_id_E_RABModificationIndication;
     initiatingMessage->criticality = S1AP_Criticality_reject;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_E_RABModificationIndication;
 
-    E_RABModificationIndication =
-        &initiatingMessage->value.choice.E_RABModificationIndication;
+    initiatingMessage->value.choice.E_RABModificationIndication =
+        CALLOC(1, sizeof(*E_RABModificationIndication));
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABModificationIndicationIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABModificationIndication->protocolIEs, ie);
+    E_RABModificationIndication = initiatingMessage->value.choice.E_RABModificationIndication;
+    ogs_assert(E_RABModificationIndication);
+
+    E_RABModificationIndication->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_E_RABModificationIndication);
+    ogs_assert(E_RABModificationIndication->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABModificationIndication->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_E_RABModificationIndicationIEs__value_PR_MME_UE_S1AP_ID;
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABModificationIndicationIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABModificationIndication->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABModificationIndication->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_E_RABModificationIndicationIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_E_RABModificationIndicationIEs_t));
-    ASN_SEQUENCE_ADD(&E_RABModificationIndication->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(E_RABModificationIndication->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_E_RABToBeModifiedListBearerModInd;
     ie->criticality = S1AP_Criticality_reject;
-    ie->value.present = S1AP_E_RABModificationIndicationIEs__value_PR_E_RABToBeModifiedListBearerModInd;
+    ie->value.present =
+        S1AP_E_RABModificationIndicationIEs__value_PR_E_RABToBeModifiedListBearerModInd;
 
+    ie->value.choice.E_RABToBeModifiedListBearerModInd =
+        ogs_asn_calloc_constructed(
+                &asn_DEF_S1AP_E_RABToBeModifiedListBearerModInd);
     E_RABToBeModifiedListBearerModInd =
-        &ie->value.choice.E_RABToBeModifiedListBearerModInd;
+            ie->value.choice.E_RABToBeModifiedListBearerModInd;
+    ogs_assert(E_RABToBeModifiedListBearerModInd);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
@@ -1234,14 +1554,19 @@ ogs_pkbuf_t *test_s1ap_build_e_rab_modification_indication(test_ue_t *test_ue)
             int len;
 
             item = CALLOC(1,
-                    sizeof(S1AP_E_RABToBeModifiedItemBearerModIndIEs_t));
-            ASN_SEQUENCE_ADD(&E_RABToBeModifiedListBearerModInd->list, item);
+                    sizeof(*item));
+            ogs_assert(item);
+            ASN_SEQUENCE_ADD(E_RABToBeModifiedListBearerModInd, item);
 
             item->id = S1AP_ProtocolIE_ID_id_E_RABToBeModifiedItemBearerModInd;
             item->criticality = S1AP_Criticality_reject;
-            item->value.present = S1AP_E_RABToBeModifiedItemBearerModIndIEs__value_PR_E_RABToBeModifiedItemBearerModInd;
+            item->value.present =
+                S1AP_E_RABToBeModifiedItemBearerModIndIEs__value_PR_E_RABToBeModifiedItemBearerModInd;
 
-            e_rab = &item->value.choice.E_RABToBeModifiedItemBearerModInd;
+            item->value.choice.E_RABToBeModifiedItemBearerModInd =
+                CALLOC(1, sizeof(*e_rab));
+            e_rab = item->value.choice.E_RABToBeModifiedItemBearerModInd;
+            ogs_assert(e_rab);
 
             e_rab->e_RAB_ID = bearer->ebi;
 
@@ -1283,71 +1608,103 @@ ogs_pkbuf_t *test_s1ap_build_path_switch_request(test_ue_t *test_ue)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode = S1AP_ProcedureCode_id_PathSwitchRequest;
     initiatingMessage->criticality = S1AP_Criticality_reject;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_PathSwitchRequest;
 
-    PathSwitchRequest = &initiatingMessage->value.choice.PathSwitchRequest;
+    initiatingMessage->value.choice.PathSwitchRequest =
+        CALLOC(1, sizeof(*PathSwitchRequest));
+    PathSwitchRequest = initiatingMessage->value.choice.PathSwitchRequest;
+    ogs_assert(PathSwitchRequest);
 
-    ie = CALLOC(1, sizeof(S1AP_PathSwitchRequestIEs_t));
-    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+    PathSwitchRequest->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_PathSwitchRequest);
+    ogs_assert(PathSwitchRequest->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(PathSwitchRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_PathSwitchRequestIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_PathSwitchRequestIEs_t));
-    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(PathSwitchRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_E_RABToBeSwitchedDLList;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_PathSwitchRequestIEs__value_PR_E_RABToBeSwitchedDLList;
 
-    E_RABToBeSwitchedDLList = &ie->value.choice.E_RABToBeSwitchedDLList;
+    ie->value.choice.E_RABToBeSwitchedDLList =
+        ogs_asn_calloc_constructed(
+                &asn_DEF_S1AP_E_RABToBeSwitchedDLList);
+    E_RABToBeSwitchedDLList = ie->value.choice.E_RABToBeSwitchedDLList;
+    ogs_assert(E_RABToBeSwitchedDLList);
 
-    ie = CALLOC(1, sizeof(S1AP_PathSwitchRequestIEs_t));
-    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(PathSwitchRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_SourceMME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_PathSwitchRequestIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_PathSwitchRequestIEs_t));
-    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(PathSwitchRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_EUTRAN_CGI;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_PathSwitchRequestIEs__value_PR_EUTRAN_CGI;
 
-    EUTRAN_CGI = &ie->value.choice.EUTRAN_CGI;
+    ie->value.choice.EUTRAN_CGI =
+        CALLOC(1, sizeof(*EUTRAN_CGI));
+    EUTRAN_CGI = ie->value.choice.EUTRAN_CGI;
+    ogs_assert(EUTRAN_CGI);
 
-    ie = CALLOC(1, sizeof(S1AP_PathSwitchRequestIEs_t));
-    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(PathSwitchRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_TAI;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_PathSwitchRequestIEs__value_PR_TAI;
 
-    TAI = &ie->value.choice.TAI;
+    ie->value.choice.TAI =
+        CALLOC(1, sizeof(*TAI));
+    TAI = ie->value.choice.TAI;
+    ogs_assert(TAI);
 
-    ie = CALLOC(1, sizeof(S1AP_PathSwitchRequestIEs_t));
-    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(PathSwitchRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_PathSwitchRequestIEs__value_PR_UESecurityCapabilities;
 
-    UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
+    ie->value.choice.UESecurityCapabilities =
+        CALLOC(1, sizeof(*UESecurityCapabilities));
+    UESecurityCapabilities = ie->value.choice.UESecurityCapabilities;
+    ogs_assert(UESecurityCapabilities);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
@@ -1361,14 +1718,18 @@ ogs_pkbuf_t *test_s1ap_build_path_switch_request(test_ue_t *test_ue)
             ogs_ip_t ip;
             int len;
 
-            item = CALLOC(1, sizeof(S1AP_E_RABToBeSwitchedDLItemIEs_t));
-            ASN_SEQUENCE_ADD(&E_RABToBeSwitchedDLList->list, item);
+            item = CALLOC(1, sizeof(*item));
+            ogs_assert(item);
+            ASN_SEQUENCE_ADD(E_RABToBeSwitchedDLList, item);
 
             item->id = S1AP_ProtocolIE_ID_id_E_RABToBeSwitchedDLItem;
             item->criticality = S1AP_Criticality_reject;
             item->value.present = S1AP_E_RABToBeSwitchedDLItemIEs__value_PR_E_RABToBeSwitchedDLItem;
 
-            e_rab = &item->value.choice.E_RABToBeSwitchedDLItem;
+            item->value.choice.E_RABToBeSwitchedDLItem =
+                CALLOC(1, sizeof(*e_rab));
+            e_rab = item->value.choice.E_RABToBeSwitchedDLItem;
+            ogs_assert(e_rab);
 
             e_rab->e_RAB_ID = bearer->ebi;
 
@@ -1404,8 +1765,8 @@ ogs_pkbuf_t *test_s1ap_build_path_switch_request(test_ue_t *test_ue)
             &test_ue->e_tai.plmn_id, OGS_PLMN_ID_LEN, &TAI->pLMNidentity);
 
     UESecurityCapabilities->encryptionAlgorithms.size = 2;
-    UESecurityCapabilities->encryptionAlgorithms.buf = 
-        CALLOC(UESecurityCapabilities->encryptionAlgorithms.size, 
+    UESecurityCapabilities->encryptionAlgorithms.buf =
+        CALLOC(UESecurityCapabilities->encryptionAlgorithms.size,
                     sizeof(uint8_t));
     UESecurityCapabilities->encryptionAlgorithms.bits_unused = 0;
     UESecurityCapabilities->encryptionAlgorithms.buf[0] = (0x70 << 1);
@@ -1454,96 +1815,138 @@ ogs_pkbuf_t *test_s1ap_build_handover_required(
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode =
         S1AP_ProcedureCode_id_HandoverPreparation;
     initiatingMessage->criticality = S1AP_Criticality_reject;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_HandoverRequired;
 
-    HandoverRequired = &initiatingMessage->value.choice.HandoverRequired;
+    initiatingMessage->value.choice.HandoverRequired =
+        CALLOC(1, sizeof(*HandoverRequired));
+    HandoverRequired = initiatingMessage->value.choice.HandoverRequired;
+    ogs_assert(HandoverRequired);
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverRequiredIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverRequired->protocolIEs, ie);
+    HandoverRequired->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_HandoverRequired);
+    ogs_assert(HandoverRequired->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverRequired->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_HandoverRequiredIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverRequiredIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverRequired->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverRequired->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_HandoverRequiredIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverRequiredIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverRequired->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverRequired->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_HandoverType;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_HandoverRequiredIEs__value_PR_HandoverType;
 
-    HandoverType = &ie->value.choice.HandoverType;
+    ie->value.choice.HandoverType = CALLOC(1, sizeof(*HandoverType));
+    HandoverType = ie->value.choice.HandoverType;
+    ogs_assert(HandoverType);
 
     *HandoverType = handover_type;
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverRequiredIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverRequired->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverRequired->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_Cause;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_HandoverRequiredIEs__value_PR_Cause;
 
-    Cause = &ie->value.choice.Cause;
+    ie->value.choice.Cause =
+        CALLOC(1, sizeof(*Cause));
+    Cause = ie->value.choice.Cause;
+    ogs_assert(Cause);
 
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverRequiredIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverRequired->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverRequired->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_TargetID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_HandoverRequiredIEs__value_PR_TargetID;
 
-    TargetID = &ie->value.choice.TargetID;
+    ie->value.choice.TargetID =
+        CALLOC(1, sizeof(*TargetID));
+    TargetID = ie->value.choice.TargetID;
+    ogs_assert(TargetID);
 
     TargetID->present = S1AP_TargetID_PR_targeteNB_ID;
-    targeteNB_ID = CALLOC(1, sizeof(S1AP_TargeteNB_ID_t));
+    targeteNB_ID = CALLOC(1, sizeof(*targeteNB_ID));
+    ogs_assert(targeteNB_ID);
     TargetID->choice.targeteNB_ID = targeteNB_ID;
 
-    global_ENB_ID = &targeteNB_ID->global_ENB_ID;
+    targeteNB_ID->global_ENB_ID =
+        CALLOC(1, sizeof(*global_ENB_ID));
+    ogs_assert(targeteNB_ID->global_ENB_ID);
+    global_ENB_ID = targeteNB_ID->global_ENB_ID;
     ogs_s1ap_buffer_to_OCTET_STRING(
             &test_ue->e_tai.plmn_id, OGS_PLMN_ID_LEN,
             &global_ENB_ID->pLMNidentity);
-    ogs_s1ap_uint32_to_ENB_ID(present, enb_id, &global_ENB_ID->eNB_ID);
+    global_ENB_ID->eNB_ID =
+        CALLOC(1, sizeof(*global_ENB_ID->eNB_ID));
+    ogs_assert(global_ENB_ID->eNB_ID);
+    ogs_s1ap_uint32_to_ENB_ID(present, enb_id, global_ENB_ID->eNB_ID);
 
-    selected_TAI = &targeteNB_ID->selected_TAI;
+    targeteNB_ID->selected_TAI =
+        CALLOC(1, sizeof(*selected_TAI));
+    ogs_assert(targeteNB_ID->selected_TAI);
+    selected_TAI = targeteNB_ID->selected_TAI;
     ogs_asn_uint16_to_OCTET_STRING(test_ue->e_tai.tac, &selected_TAI->tAC);
     ogs_s1ap_buffer_to_OCTET_STRING(
             &test_ue->e_tai.plmn_id,
             OGS_PLMN_ID_LEN, &selected_TAI->pLMNidentity);
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverRequiredIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverRequired->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverRequired->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_Source_ToTarget_TransparentContainer;
     ie->criticality = S1AP_Criticality_reject;
-    ie->value.present = S1AP_HandoverRequiredIEs__value_PR_Source_ToTarget_TransparentContainer;
+    ie->value.present =
+        S1AP_HandoverRequiredIEs__value_PR_Source_ToTarget_TransparentContainer;
+
+    ie->value.choice.Source_ToTarget_TransparentContainer =
+        CALLOC(1, sizeof(*Source_ToTarget_TransparentContainer));
 
     Source_ToTarget_TransparentContainer =
-        &ie->value.choice.Source_ToTarget_TransparentContainer;
+        ie->value.choice.Source_ToTarget_TransparentContainer;
+    ogs_assert(Source_ToTarget_TransparentContainer);
 
     ogs_hex_from_string(_container, tmp, sizeof(tmp));
 
@@ -1585,51 +1988,69 @@ ogs_pkbuf_t *test_s1ap_build_handover_request_ack(test_ue_t *test_ue)
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
     pdu.choice.successfulOutcome =
-        CALLOC(1, sizeof(S1AP_SuccessfulOutcome_t));
+        CALLOC(1, sizeof(*successfulOutcome));
 
     successfulOutcome = pdu.choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
     successfulOutcome->procedureCode = S1AP_ProcedureCode_id_HandoverResourceAllocation;
     successfulOutcome->criticality = S1AP_Criticality_reject;
     successfulOutcome->value.present =
         S1AP_SuccessfulOutcome__value_PR_HandoverRequestAcknowledge;
 
-    HandoverRequestAcknowledge =
-        &successfulOutcome->value.choice.HandoverRequestAcknowledge;
+    successfulOutcome->value.choice.HandoverRequestAcknowledge =
+        CALLOC(1, sizeof(*HandoverRequestAcknowledge));
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverRequestAcknowledgeIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverRequestAcknowledge->protocolIEs, ie);
+    HandoverRequestAcknowledge = successfulOutcome->value.choice.HandoverRequestAcknowledge;
+    ogs_assert(HandoverRequestAcknowledge);
+
+    HandoverRequestAcknowledge->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_HandoverRequestAcknowledge);
+    ogs_assert(HandoverRequestAcknowledge->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverRequestAcknowledge->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_HandoverRequestAcknowledgeIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverRequestAcknowledgeIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverRequestAcknowledge->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverRequestAcknowledge->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_HandoverRequestAcknowledgeIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     test_ue->enb_ue_s1ap_id++;
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverRequestAcknowledgeIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverRequestAcknowledge->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverRequestAcknowledge->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_E_RABAdmittedList;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_HandoverRequestAcknowledgeIEs__value_PR_E_RABAdmittedList;
 
-    E_RABAdmittedList = &ie->value.choice.E_RABAdmittedList;
+    ie->value.choice.E_RABAdmittedList =
+        ogs_asn_calloc_constructed(&asn_DEF_S1AP_E_RABAdmittedList);
+    E_RABAdmittedList = ie->value.choice.E_RABAdmittedList;
+    ogs_assert(E_RABAdmittedList);
     ogs_list_for_each(&test_ue->sess_list, sess) {
         ogs_list_for_each(&sess->bearer_list, bearer) {
             S1AP_E_RABAdmittedItemIEs_t *item = NULL;
@@ -1639,15 +2060,19 @@ ogs_pkbuf_t *test_s1ap_build_handover_request_ack(test_ue_t *test_ue)
             ogs_ip_t ip;
             int len;
 
-            item = CALLOC(1, sizeof(S1AP_E_RABAdmittedItemIEs_t));
-            ASN_SEQUENCE_ADD(&E_RABAdmittedList->list, item);
+            item = CALLOC(1, sizeof(*item));
+            ogs_assert(item);
+            ASN_SEQUENCE_ADD(E_RABAdmittedList, item);
 
             item->id = S1AP_ProtocolIE_ID_id_E_RABAdmittedItem;
             item->criticality = S1AP_Criticality_ignore;
             item->value.present =
                 S1AP_E_RABAdmittedItemIEs__value_PR_E_RABAdmittedItem;
 
-            e_rab = &item->value.choice.E_RABAdmittedItem;
+            item->value.choice.E_RABAdmittedItem =
+                CALLOC(1, sizeof(*e_rab));
+            e_rab = item->value.choice.E_RABAdmittedItem;
+            ogs_assert(e_rab);
 
             e_rab->e_RAB_ID = bearer->ebi;
 
@@ -1664,36 +2089,42 @@ ogs_pkbuf_t *test_s1ap_build_handover_request_ack(test_ue_t *test_ue)
                     bearer->enb_s1u_teid, &e_rab->gTP_TEID);
 
             e_rab->dL_transportLayerAddress =
-                (S1AP_TransportLayerAddress_t *)
-                CALLOC(1, sizeof(S1AP_TransportLayerAddress_t));
+                CALLOC(1, sizeof(*e_rab->dL_transportLayerAddress));
+            ogs_assert(e_rab->dL_transportLayerAddress);
             rv = ogs_asn_ip_to_BIT_STRING(&ip, e_rab->dL_transportLayerAddress);
             ogs_assert(rv == OGS_OK);
-            e_rab->dL_gTP_TEID = (S1AP_GTP_TEID_t *)
-                CALLOC(1, sizeof(S1AP_GTP_TEID_t));
+            e_rab->dL_gTP_TEID = CALLOC(1, sizeof(*e_rab->dL_gTP_TEID));
+            ogs_assert(e_rab->dL_gTP_TEID);
             ogs_asn_uint32_to_OCTET_STRING(
                     bearer->enb_s1u_teid+10, e_rab->dL_gTP_TEID);
 
             e_rab->uL_TransportLayerAddress =
-                (S1AP_TransportLayerAddress_t *)
-                CALLOC(1, sizeof(S1AP_TransportLayerAddress_t));
+                CALLOC(1, sizeof(*e_rab->uL_TransportLayerAddress));
+            ogs_assert(e_rab->uL_TransportLayerAddress);
             rv = ogs_asn_ip_to_BIT_STRING(&ip, e_rab->uL_TransportLayerAddress);
             ogs_assert(rv == OGS_OK);
-            e_rab->uL_GTP_TEID = (S1AP_GTP_TEID_t *)
-                CALLOC(1, sizeof(S1AP_GTP_TEID_t));
+            e_rab->uL_GTP_TEID = CALLOC(1, sizeof(*e_rab->uL_GTP_TEID));
+            ogs_assert(e_rab->uL_GTP_TEID);
             ogs_asn_uint32_to_OCTET_STRING(
                     bearer->enb_s1u_teid+20, e_rab->uL_GTP_TEID);
         }
     }
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverRequestAcknowledgeIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverRequestAcknowledge->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverRequestAcknowledge->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_Target_ToSource_TransparentContainer;
     ie->criticality = S1AP_Criticality_ignore;
-    ie->value.present = S1AP_HandoverRequestAcknowledgeIEs__value_PR_Target_ToSource_TransparentContainer;
+    ie->value.present =
+        S1AP_HandoverRequestAcknowledgeIEs__value_PR_Target_ToSource_TransparentContainer;
+
+    ie->value.choice.Target_ToSource_TransparentContainer =
+        CALLOC(1, sizeof(*Target_ToSource_TransparentContainer));
 
     Target_ToSource_TransparentContainer =
-        &ie->value.choice.Target_ToSource_TransparentContainer;
+        ie->value.choice.Target_ToSource_TransparentContainer;
+    ogs_assert(Target_ToSource_TransparentContainer);
 
     ogs_s1ap_buffer_to_OCTET_STRING(
             ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 132,
@@ -1726,68 +2157,106 @@ ogs_pkbuf_t *test_s1ap_build_enb_status_transfer(test_ue_t *test_ue)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode =
         S1AP_ProcedureCode_id_eNBStatusTransfer;
     initiatingMessage->criticality = S1AP_Criticality_ignore;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_ENBStatusTransfer;
 
-    ENBStatusTransfer = &initiatingMessage->value.choice.ENBStatusTransfer;
+    initiatingMessage->value.choice.ENBStatusTransfer =
+        CALLOC(1, sizeof(*ENBStatusTransfer));
+    ENBStatusTransfer = initiatingMessage->value.choice.ENBStatusTransfer;
+    ogs_assert(ENBStatusTransfer);
 
-    ie = CALLOC(1, sizeof(S1AP_ENBStatusTransferIEs_t));
-    ASN_SEQUENCE_ADD(&ENBStatusTransfer->protocolIEs, ie);
+    ENBStatusTransfer->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_ENBStatusTransfer);
+    ogs_assert(ENBStatusTransfer->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(ENBStatusTransfer->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_ENBStatusTransferIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_ENBStatusTransferIEs_t));
-    ASN_SEQUENCE_ADD(&ENBStatusTransfer->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(ENBStatusTransfer->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_ENBStatusTransferIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_ENBStatusTransferIEs_t));
-    ASN_SEQUENCE_ADD(&ENBStatusTransfer->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(ENBStatusTransfer->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_StatusTransfer_TransparentContainer;
     ie->criticality = S1AP_Criticality_reject;
-    ie->value.present = S1AP_ENBStatusTransferIEs__value_PR_ENB_StatusTransfer_TransparentContainer;
+    ie->value.present =
+        S1AP_ENBStatusTransferIEs__value_PR_ENB_StatusTransfer_TransparentContainer;
+
+    ie->value.choice.ENB_StatusTransfer_TransparentContainer =
+        CALLOC(1, sizeof(*ENB_StatusTransfer_TransparentContainer));
 
     ENB_StatusTransfer_TransparentContainer =
-        &ie->value.choice.ENB_StatusTransfer_TransparentContainer;
+        ie->value.choice.ENB_StatusTransfer_TransparentContainer;
+    ogs_assert(ENB_StatusTransfer_TransparentContainer);
+
+    ENB_StatusTransfer_TransparentContainer->
+        bearers_SubjectToStatusTransferList =
+            CALLOC(1, sizeof(*Bearers_SubjectToStatusTransferList));
+    ogs_assert(ENB_StatusTransfer_TransparentContainer->
+        bearers_SubjectToStatusTransferList);
 
     Bearers_SubjectToStatusTransferList =
-        &ENB_StatusTransfer_TransparentContainer->
+        ENB_StatusTransfer_TransparentContainer->
         bearers_SubjectToStatusTransferList;
 
     ogs_list_for_each(&test_ue->sess_list, sess) {
         ogs_list_for_each(&sess->bearer_list, bearer) {
             ie2 = CALLOC(
-                    1, sizeof(S1AP_Bearers_SubjectToStatusTransfer_ItemIEs_t));
-            ASN_SEQUENCE_ADD(&Bearers_SubjectToStatusTransferList->list, ie2);
+                    1, sizeof(*ie2));
+            ogs_assert(ie2);
+            ASN_SEQUENCE_ADD(Bearers_SubjectToStatusTransferList, ie2);
 
             ie2->id =
                 S1AP_ProtocolIE_ID_id_Bearers_SubjectToStatusTransfer_Item;
             ie2->criticality = S1AP_Criticality_ignore;
-            ie2->value.present = S1AP_Bearers_SubjectToStatusTransfer_ItemIEs__value_PR_Bearers_SubjectToStatusTransfer_Item;
+            ie2->value.present =
+                S1AP_Bearers_SubjectToStatusTransfer_ItemIEs__value_PR_Bearers_SubjectToStatusTransfer_Item;
 
-            item = &ie2->value.choice.Bearers_SubjectToStatusTransfer_Item;
+            ie2->value.choice.Bearers_SubjectToStatusTransfer_Item =
+                CALLOC(1, sizeof(*item));
+            item = ie2->value.choice.Bearers_SubjectToStatusTransfer_Item;
+            ogs_assert(item);
             item->e_RAB_ID = bearer->ebi;
-            item->uL_COUNTvalue.pDCP_SN = 75;
-            item->dL_COUNTvalue.pDCP_SN = 17;
+            item->uL_COUNTvalue =
+                CALLOC(1, sizeof(*item->uL_COUNTvalue));
+            ogs_assert(item->uL_COUNTvalue);
+            item->dL_COUNTvalue =
+                CALLOC(1, sizeof(*item->dL_COUNTvalue));
+            ogs_assert(item->dL_COUNTvalue);
+            item->uL_COUNTvalue->pDCP_SN = 75;
+            item->dL_COUNTvalue->pDCP_SN = 17;
         }
     }
 
@@ -1808,47 +2277,66 @@ ogs_pkbuf_t *test_s1ap_build_handover_notify(test_ue_t *test_ue)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode =
         S1AP_ProcedureCode_id_HandoverNotification;
     initiatingMessage->criticality = S1AP_Criticality_ignore;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_HandoverNotify;
 
-    HandoverNotify = &initiatingMessage->value.choice.HandoverNotify;
+    initiatingMessage->value.choice.HandoverNotify =
+        CALLOC(1, sizeof(*HandoverNotify));
+    HandoverNotify = initiatingMessage->value.choice.HandoverNotify;
+    ogs_assert(HandoverNotify);
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverNotifyIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverNotify->protocolIEs, ie);
+    HandoverNotify->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_HandoverNotify);
+    ogs_assert(HandoverNotify->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverNotify->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_HandoverNotifyIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverNotifyIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverNotify->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverNotify->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_HandoverNotifyIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverNotifyIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverNotify->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverNotify->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_EUTRAN_CGI;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_HandoverNotifyIEs__value_PR_EUTRAN_CGI;
 
-    EUTRAN_CGI = &ie->value.choice.EUTRAN_CGI;
+    ie->value.choice.EUTRAN_CGI =
+        CALLOC(1, sizeof(*EUTRAN_CGI));
+    EUTRAN_CGI = ie->value.choice.EUTRAN_CGI;
+    ogs_assert(EUTRAN_CGI);
 
     ogs_s1ap_buffer_to_OCTET_STRING(
             &test_ue->e_cgi.plmn_id,
@@ -1863,14 +2351,18 @@ ogs_pkbuf_t *test_s1ap_build_handover_notify(test_ue_t *test_ue)
     EUTRAN_CGI->cell_ID.buf[3] = (test_ue->e_cgi.cell_id);
     EUTRAN_CGI->cell_ID.bits_unused = 4;
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverNotifyIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverNotify->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverNotify->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_TAI;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_HandoverNotifyIEs__value_PR_TAI;
 
-    TAI = &ie->value.choice.TAI;
+    ie->value.choice.TAI =
+        CALLOC(1, sizeof(*TAI));
+    TAI = ie->value.choice.TAI;
+    ogs_assert(TAI);
 
     ogs_asn_uint16_to_OCTET_STRING(test_ue->e_tai.tac, &TAI->tAC);
     ogs_s1ap_buffer_to_OCTET_STRING(
@@ -1894,46 +2386,65 @@ ogs_pkbuf_t *test_s1ap_build_handover_cancel(test_ue_t *test_ue,
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode = S1AP_ProcedureCode_id_HandoverCancel;
     initiatingMessage->criticality = S1AP_Criticality_reject;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_HandoverCancel;
 
-    HandoverCancel = &initiatingMessage->value.choice.HandoverCancel;
+    initiatingMessage->value.choice.HandoverCancel =
+        CALLOC(1, sizeof(*HandoverCancel));
+    HandoverCancel = initiatingMessage->value.choice.HandoverCancel;
+    ogs_assert(HandoverCancel);
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverCancelIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverCancel->protocolIEs, ie);
+    HandoverCancel->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_HandoverCancel);
+    ogs_assert(HandoverCancel->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverCancel->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_HandoverCancelIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverCancelIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverCancel->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverCancel->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_HandoverCancelIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID = CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
     *ENB_UE_S1AP_ID = test_ue->enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverCancelIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverCancel->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverCancel->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_Cause;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_HandoverCancelIEs__value_PR_Cause;
 
-    Cause = &ie->value.choice.Cause;
+    ie->value.choice.Cause =
+        CALLOC(1, sizeof(*Cause));
+    Cause = ie->value.choice.Cause;
+    ogs_assert(Cause);
 
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
@@ -1957,37 +2468,52 @@ ogs_pkbuf_t *test_s1ap_build_handover_failure(test_ue_t *test_ue,
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_unsuccessfulOutcome;
     pdu.choice.unsuccessfulOutcome =
-        CALLOC(1, sizeof(S1AP_UnsuccessfulOutcome_t));
+        CALLOC(1, sizeof(*unsuccessfulOutcome));
 
     unsuccessfulOutcome = pdu.choice.unsuccessfulOutcome;
+    ogs_assert(unsuccessfulOutcome);
     unsuccessfulOutcome->procedureCode =
         S1AP_ProcedureCode_id_HandoverResourceAllocation;
     unsuccessfulOutcome->criticality = S1AP_Criticality_reject;
     unsuccessfulOutcome->value.present =
         S1AP_UnsuccessfulOutcome__value_PR_HandoverFailure;
 
-    HandoverFailure = &unsuccessfulOutcome->value.choice.HandoverFailure;
+    unsuccessfulOutcome->value.choice.HandoverFailure =
+        CALLOC(1, sizeof(*HandoverFailure));
+    HandoverFailure = unsuccessfulOutcome->value.choice.HandoverFailure;
+    ogs_assert(HandoverFailure);
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverFailureIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverFailure->protocolIEs, ie);
+    HandoverFailure->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_S1AP_HandoverFailure);
+    ogs_assert(HandoverFailure->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverFailure->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_HandoverFailureIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID = CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
     *MME_UE_S1AP_ID = test_ue->mme_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_HandoverFailureIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverFailure->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(HandoverFailure->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_Cause;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_HandoverFailureIEs__value_PR_Cause;
 
-    Cause = &ie->value.choice.Cause;
+    ie->value.choice.Cause =
+        CALLOC(1, sizeof(*Cause));
+    Cause = ie->value.choice.Cause;
+    ogs_assert(Cause);
 
     Cause->present = group;
     Cause->choice.radioNetwork = cause;

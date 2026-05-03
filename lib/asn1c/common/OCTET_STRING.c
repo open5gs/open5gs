@@ -19,6 +19,7 @@ asn_OCTET_STRING_specifics_t asn_SPC_OCTET_STRING_specs = {
     ASN_OSUBV_STR
 };
 asn_TYPE_operation_t asn_OP_OCTET_STRING = {
+    .kind = ASN_KIND_PRIMITIVE,
     OCTET_STRING_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     OCTET_STRING_print,  /* OCTET STRING generally means a non-ascii sequence */
@@ -35,8 +36,8 @@ asn_TYPE_operation_t asn_OP_OCTET_STRING = {
     0,
 #endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
 #if !defined(ASN_DISABLE_XER_SUPPORT)
-    OCTET_STRING_decode_xer_hex,
-    OCTET_STRING_encode_xer,
+    OCTET_STRING_decode_xer_auto,    /* Auto-detect hex or Base64 format for decoding */
+    OCTET_STRING_encode_xer_base64,  /* Per X.693, Base64 is the default encoding for OCTET STRING */
 #else
     0,
     0,
@@ -74,7 +75,14 @@ asn_TYPE_operation_t asn_OP_OCTET_STRING = {
 #else
     0,
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
+    0  /* Use generic outmost tag fetcher */,
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+    OCTET_STRING_decode_cbor,
+    OCTET_STRING_encode_cbor,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
 };
 asn_TYPE_descriptor_t asn_DEF_OCTET_STRING = {
     "OCTET STRING",  /* Canonical name */
@@ -93,6 +101,9 @@ asn_TYPE_descriptor_t asn_DEF_OCTET_STRING = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
         0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
         asn_generic_no_constraint
     },
     0, 0,  /* No members */
@@ -202,6 +213,16 @@ OCTET_STRING_new_fromBuf(const asn_TYPE_descriptor_t *td, const char *str,
                       : &asn_SPC_OCTET_STRING_specs;
     OCTET_STRING_t *st;
 
+    /* 
+     * Sanity check: struct_size should be at least as large as OCTET_STRING_t.
+     * If it's smaller, accessing OCTET_STRING_t fields could cause memory corruption.
+     */
+    if(specs->struct_size < sizeof(OCTET_STRING_t)) {
+        ASN_DEBUG("Type descriptor %s has struct_size %u which is smaller than OCTET_STRING_t (%zu)",
+                  td->name ? td->name : "unknown", specs->struct_size, sizeof(OCTET_STRING_t));
+        return NULL;
+    }
+
 	st = (OCTET_STRING_t *)CALLOC(1, specs->struct_size);
 	if(st && str && OCTET_STRING_fromBuf(st, str, len)) {
 		FREEMEM(st);
@@ -253,7 +274,7 @@ OCTET_STRING_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
 int
 OCTET_STRING_copy(const asn_TYPE_descriptor_t *td, void **aptr,
                      const void *bptr) {
-    const asn_OCTET_STRING_specifics_t *specs = 
+    const asn_OCTET_STRING_specifics_t *specs =
         td->specifics ? (const asn_OCTET_STRING_specifics_t *)td->specifics
                       : &asn_SPC_OCTET_STRING_specs;
     OCTET_STRING_t *a = *aptr;

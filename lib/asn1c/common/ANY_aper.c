@@ -98,6 +98,11 @@ ANY_to_type_aper(ANY_t *st, asn_TYPE_descriptor_t *td, void **struct_ptr) {
     }
 }
 
+int
+ANY_to_type_aper_checked(ANY_t *st, asn_TYPE_descriptor_t *td, void **struct_ptr) {
+ 	return ANY_to_type_aper(st, td, struct_ptr) == 0 && *struct_ptr != 0 ? 0 : -1;
+}
+
 asn_dec_rval_t
 ANY_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
                 const asn_TYPE_descriptor_t *td,
@@ -132,7 +137,7 @@ ANY_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         int ret;
 
         /* Get the PER length */
-        raw_len = aper_get_length(pd, -1, -1, 0, &repeat);
+        raw_len = aper_get_length(pd, -1, -1, -1, &repeat);
         if(raw_len < 0) RETURN(RC_WMORE);
         if(raw_len == 0 && st->buf) break;
 

@@ -48,17 +48,27 @@ static void ngap_message_test1(abts_case *tc, void *data)
     successfulOutcome->value.present =
         NGAP_SuccessfulOutcome__value_PR_NGResetAcknowledge;
 
-    NGResetAcknowledge = &successfulOutcome->value.choice.NGResetAcknowledge;
+    NGResetAcknowledge = CALLOC(1, sizeof(*NGResetAcknowledge));
+    ogs_assert(NGResetAcknowledge);
+    successfulOutcome->value.choice.NGResetAcknowledge = NGResetAcknowledge;
+
+    NGResetAcknowledge->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_NGAP_NGResetAcknowledge);
+    ogs_assert(NGResetAcknowledge->protocolIEs);
 
     ie = CALLOC(1, sizeof(NGAP_NGResetAcknowledgeIEs_t));
-    ASN_SEQUENCE_ADD(&NGResetAcknowledge->protocolIEs, ie);
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(NGResetAcknowledge->protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_UE_associatedLogicalNG_connectionList;
     ie->criticality = NGAP_Criticality_reject;
     ie->value.present = NGAP_NGResetAcknowledgeIEs__value_PR_UE_associatedLogicalNG_connectionList;
 
     UE_associatedLogicalNG_connectionList =
-        &ie->value.choice.UE_associatedLogicalNG_connectionList;
+        CALLOC(1, sizeof(*UE_associatedLogicalNG_connectionList));
+    ogs_assert(UE_associatedLogicalNG_connectionList);
+    ie->value.choice.UE_associatedLogicalNG_connectionList =
+        UE_associatedLogicalNG_connectionList;
 
     ran_ue_ngap_id = 1;
     amf_ue_ngap_id = 2;
@@ -187,11 +197,6 @@ static void ngap_message_test4(abts_case *tc, void *data)
 static ogs_pkbuf_t *build_uplink_nas_transport(
         uint64_t ran_ue_ngap_id, uint64_t amf_ue_ngap_id, ogs_pkbuf_t *gmmbuf)
 {
-    const char *payload =
-        "7e005c00 0d0199f9 07f0ff00 00000020"
-        "3190";
-    char hexbuf[OGS_HUGE_LEN];
-
     NGAP_NGAP_PDU_t pdu;
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_UplinkNASTransport_t *UplinkNASTransport = NULL;
@@ -210,6 +215,9 @@ static ogs_pkbuf_t *build_uplink_nas_transport(
 
     ogs_assert(gmmbuf);
 
+    memset(&nr_cgi, 0, sizeof(nr_cgi));
+    memset(&nr_tai, 0, sizeof(nr_tai));
+
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
     pdu.choice.initiatingMessage =
@@ -222,45 +230,62 @@ static ogs_pkbuf_t *build_uplink_nas_transport(
     initiatingMessage->value.present =
         NGAP_InitiatingMessage__value_PR_UplinkNASTransport;
 
-    UplinkNASTransport =
-        &initiatingMessage->value.choice.UplinkNASTransport;
+    UplinkNASTransport = CALLOC(1, sizeof(*UplinkNASTransport));
+    ogs_assert(UplinkNASTransport);
+    initiatingMessage->value.choice.UplinkNASTransport = UplinkNASTransport;
+
+    UplinkNASTransport->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_NGAP_UplinkNASTransport);
+    ogs_assert(UplinkNASTransport->protocolIEs);
 
     ie = CALLOC(1, sizeof(NGAP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
     ie->criticality = NGAP_Criticality_reject;
     ie->value.present = NGAP_UplinkNASTransport_IEs__value_PR_AMF_UE_NGAP_ID;
 
-    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+    AMF_UE_NGAP_ID = CALLOC(1, sizeof(*AMF_UE_NGAP_ID));
+    ogs_assert(AMF_UE_NGAP_ID);
+    ie->value.choice.AMF_UE_NGAP_ID = AMF_UE_NGAP_ID;
 
     ie = CALLOC(1, sizeof(NGAP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
     ie->criticality = NGAP_Criticality_reject;
     ie->value.present = NGAP_UplinkNASTransport_IEs__value_PR_RAN_UE_NGAP_ID;
 
-    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+    RAN_UE_NGAP_ID = CALLOC(1, sizeof(*RAN_UE_NGAP_ID));
+    ogs_assert(RAN_UE_NGAP_ID);
+    ie->value.choice.RAN_UE_NGAP_ID = RAN_UE_NGAP_ID;
 
     ie = CALLOC(1, sizeof(NGAP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_NAS_PDU;
     ie->criticality = NGAP_Criticality_reject;
     ie->value.present = NGAP_UplinkNASTransport_IEs__value_PR_NAS_PDU;
 
-    NAS_PDU = &ie->value.choice.NAS_PDU;
+    NAS_PDU = CALLOC(1, sizeof(*NAS_PDU));
+    ogs_assert(NAS_PDU);
+    ie->value.choice.NAS_PDU = NAS_PDU;
 
     ie = CALLOC(1, sizeof(NGAP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_UserLocationInformation;
     ie->criticality = NGAP_Criticality_ignore;
     ie->value.present =
         NGAP_UplinkNASTransport_IEs__value_PR_UserLocationInformation;
 
-    UserLocationInformation = &ie->value.choice.UserLocationInformation;
+    UserLocationInformation = CALLOC(1, sizeof(*UserLocationInformation));
+    ogs_assert(UserLocationInformation);
+    ie->value.choice.UserLocationInformation = UserLocationInformation;
 
     asn_uint642INTEGER(AMF_UE_NGAP_ID, amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = ran_ue_ngap_id;
@@ -271,12 +296,17 @@ static ogs_pkbuf_t *build_uplink_nas_transport(
     ogs_pkbuf_free(gmmbuf);
 
     userLocationInformationNR =
-            CALLOC(1, sizeof(NGAP_UserLocationInformationNR_t));
+            CALLOC(1, sizeof(*userLocationInformationNR));
+    ogs_assert(userLocationInformationNR);
 
-    nR_CGI = &userLocationInformationNR->nR_CGI;
+    nR_CGI = CALLOC(1, sizeof(*nR_CGI));
+    ogs_assert(nR_CGI);
+    userLocationInformationNR->nR_CGI = nR_CGI;
     ogs_ngap_nr_cgi_to_ASN(&nr_cgi, nR_CGI);
 
-    tAI = &userLocationInformationNR->tAI;
+    tAI = CALLOC(1, sizeof(*tAI));
+    ogs_assert(tAI);
+    userLocationInformationNR->tAI = tAI;
     ogs_ngap_5gs_tai_to_ASN(&nr_tai, tAI);
 
     UserLocationInformation->present =
@@ -302,9 +332,9 @@ static void ngap_message_test5_issues2934(abts_case *tc, void *data)
 
     int i;
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
-    NGAP_DownlinkNASTransport_t *DownlinkNASTransport = NULL;
+    NGAP_UplinkNASTransport_t *UplinkNASTransport = NULL;
 
-    NGAP_DownlinkNASTransport_IEs_t *ie = NULL;
+    NGAP_UplinkNASTransport_IEs_t *ie = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_NAS_PDU_t *NAS_PDU = NULL;
@@ -340,20 +370,19 @@ static void ngap_message_test5_issues2934(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, ngapbuf->len * 8, dec_ret.consumed);
 
     initiatingMessage = message.choice.initiatingMessage;
-    DownlinkNASTransport =
-        &initiatingMessage->value.choice.DownlinkNASTransport;
+    UplinkNASTransport = initiatingMessage->value.choice.UplinkNASTransport;
 
-    for (i = 0; i < DownlinkNASTransport->protocolIEs.list.count; i++) {
-        ie = DownlinkNASTransport->protocolIEs.list.array[i];
+    for (i = 0; i < OGS_ASN_LIST_COUNT(UplinkNASTransport->protocolIEs); i++) {
+        ie = OGS_ASN_LIST_GET(UplinkNASTransport->protocolIEs, i);
         switch (ie->id) {
         case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
-            AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+            AMF_UE_NGAP_ID = ie->value.choice.AMF_UE_NGAP_ID;
             break;
         case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
-            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            RAN_UE_NGAP_ID = ie->value.choice.RAN_UE_NGAP_ID;
             break;
         case NGAP_ProtocolIE_ID_id_NAS_PDU:
-            NAS_PDU = &ie->value.choice.NAS_PDU;
+            NAS_PDU = ie->value.choice.NAS_PDU;
             break;
         default:
             break;

@@ -84,8 +84,17 @@ aper_decode(const asn_codec_ctx_t *opt_codec_ctx,
 				  rval.consumed, pd.moved);
 		assert(rval.consumed == pd.moved);
 	} else {
-		/* PER codec is not a restartable */
-		rval.consumed = 0;
+		/* Calculate actual consumed bits even for non-OK results */
+		rval.consumed = ((pd.buffer - (const uint8_t *)buffer) << 3)
+		+ pd.nboff - skip_bits;
+		/* For RC_WMORE, report actual consumption to avoid infinite loops */
+		if(rval.code == RC_WMORE && rval.consumed == 0 && pd.moved > 0) {
+			rval.consumed = pd.moved;
+		}
+		/* PER codec is not a restartable for RC_FAIL */
+		if(rval.code == RC_FAIL) {
+			rval.consumed = 0;
+		}
 	}
 	return rval;
 }

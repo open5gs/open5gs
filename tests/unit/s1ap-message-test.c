@@ -20,6 +20,7 @@
 #include "ogs-s1ap.h"
 #include "core/abts.h"
 
+
 static void s1ap_message_test1(abts_case *tc, void *data)
 {
     /* S1SetupRequest */
@@ -223,57 +224,84 @@ static void s1ap_message_test8(abts_case *tc, void *data)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*pdu.choice.initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode =
         S1AP_ProcedureCode_id_InitialContextSetup;
     initiatingMessage->criticality = S1AP_Criticality_reject;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_InitialContextSetupRequest;
 
+    initiatingMessage->value.choice.InitialContextSetupRequest =
+        CALLOC(1, sizeof(*InitialContextSetupRequest));
     InitialContextSetupRequest =
-        &initiatingMessage->value.choice.InitialContextSetupRequest;
+        initiatingMessage->value.choice.InitialContextSetupRequest;
+    ogs_assert(InitialContextSetupRequest);
+    InitialContextSetupRequest->protocolIEs =
+        ogs_asn_calloc_protocol_ies(
+                &asn_DEF_S1AP_InitialContextSetupRequest);
+    ogs_assert(InitialContextSetupRequest->protocolIEs);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID =
+        CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID =
+        CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_uEaggregateMaximumBitrate;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_UEAggregateMaximumBitrate;
 
-    UEAggregateMaximumBitrate = &ie->value.choice.UEAggregateMaximumBitrate;
+    ie->value.choice.UEAggregateMaximumBitrate =
+        CALLOC(1, sizeof(*UEAggregateMaximumBitrate));
+    UEAggregateMaximumBitrate =
+        ie->value.choice.UEAggregateMaximumBitrate;
+    ogs_assert(UEAggregateMaximumBitrate);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupListCtxtSUReq;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
     S1AP_InitialContextSetupRequestIEs__value_PR_E_RABToBeSetupListCtxtSUReq;
 
-    E_RABToBeSetupListCtxtSUReq = &ie->value.choice.E_RABToBeSetupListCtxtSUReq;
+    ie->value.choice.E_RABToBeSetupListCtxtSUReq =
+        CALLOC(1, sizeof(*E_RABToBeSetupListCtxtSUReq));
+    E_RABToBeSetupListCtxtSUReq =
+        ie->value.choice.E_RABToBeSetupListCtxtSUReq;
+    ogs_assert(E_RABToBeSetupListCtxtSUReq);
 
     *MME_UE_S1AP_ID = 215;
     *ENB_UE_S1AP_ID = 248;
@@ -288,24 +316,40 @@ static void s1ap_message_test8(abts_case *tc, void *data)
     {
         S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t *item = NULL;
         S1AP_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
+        S1AP_E_RABLevelQoSParameters_t *e_RABlevelQoSParameters = NULL;
+        S1AP_AllocationAndRetentionPriority_t *allocationRetentionPriority = NULL;
 
-        item = CALLOC(1, sizeof(S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t));
-        ASN_SEQUENCE_ADD(&E_RABToBeSetupListCtxtSUReq->list, item);
+        item = CALLOC(1, sizeof(*item));
+        ogs_assert(item);
+        ASN_SEQUENCE_ADD(E_RABToBeSetupListCtxtSUReq, item);
 
         item->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq;
         item->criticality = S1AP_Criticality_reject;
-        item->value.present = S1AP_E_RABToBeSetupItemCtxtSUReqIEs__value_PR_E_RABToBeSetupItemCtxtSUReq;
+        item->value.present =
+            S1AP_E_RABToBeSetupItemCtxtSUReqIEs__value_PR_E_RABToBeSetupItemCtxtSUReq;
 
-        e_rab = &item->value.choice.E_RABToBeSetupItemCtxtSUReq;
+        item->value.choice.E_RABToBeSetupItemCtxtSUReq =
+            CALLOC(1, sizeof(*e_rab));
+        e_rab = item->value.choice.E_RABToBeSetupItemCtxtSUReq;
+        ogs_assert(e_rab);
 
         e_rab->e_RAB_ID = 5;
-        e_rab->e_RABlevelQoSParameters.qCI = 9;
+        e_rab->e_RABlevelQoSParameters =
+            CALLOC(1, sizeof(*e_RABlevelQoSParameters));
+        e_RABlevelQoSParameters = e_rab->e_RABlevelQoSParameters;
+        ogs_assert(e_RABlevelQoSParameters);
+        e_RABlevelQoSParameters->allocationRetentionPriority =
+            CALLOC(1, sizeof(*allocationRetentionPriority));
+        allocationRetentionPriority =
+            e_RABlevelQoSParameters->allocationRetentionPriority;
+        ogs_assert(allocationRetentionPriority);
+        e_RABlevelQoSParameters->qCI = 9;
 
-        e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        allocationRetentionPriority->
             priorityLevel = 8;
-        e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        allocationRetentionPriority->
             pre_emptionCapability = 1;
-        e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        allocationRetentionPriority->
             pre_emptionVulnerability = 1;
 
         ogs_ip_t sgw_s1u_ip;
@@ -320,15 +364,19 @@ static void s1ap_message_test8(abts_case *tc, void *data)
                 4458, &e_rab->gTP_TEID);
     }
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_UESecurityCapabilities;
 
-    UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
+    ie->value.choice.UESecurityCapabilities =
+        CALLOC(1, sizeof(*UESecurityCapabilities));
+    UESecurityCapabilities = ie->value.choice.UESecurityCapabilities;
+    ogs_assert(UESecurityCapabilities);
 
     UESecurityCapabilities->encryptionAlgorithms.size = 2;
     UESecurityCapabilities->encryptionAlgorithms.buf =
@@ -350,18 +398,23 @@ static void s1ap_message_test8(abts_case *tc, void *data)
             "0b542ba0fbfd88a7 36f37f1b4f4b1a6d";
         uint8_t kenb[32];
 
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_SecurityKey;
         ie->criticality = S1AP_Criticality_reject;
         ie->value.present =
             S1AP_InitialContextSetupRequestIEs__value_PR_SecurityKey;
 
-        SecurityKey = &ie->value.choice.SecurityKey;
+        ie->value.choice.SecurityKey =
+            CALLOC(1, sizeof(*SecurityKey));
+        SecurityKey = ie->value.choice.SecurityKey;
+        ogs_assert(SecurityKey);
 
         SecurityKey->size = 32;
         SecurityKey->buf = CALLOC(SecurityKey->size, sizeof(uint8_t));
+        ogs_assert(SecurityKey->buf);
         SecurityKey->bits_unused = 0;
         ogs_hex_from_string(kenb_string, kenb, sizeof(kenb));
         memcpy(SecurityKey->buf, kenb, SecurityKey->size);
@@ -509,15 +562,18 @@ static void s1ap_message_test8(abts_case *tc, void *data)
             "e500892d 93";
         uint8_t radio[TEST8_RADIO_SIZE];
 
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_UERadioCapability;
         ie->criticality = S1AP_Criticality_ignore;
         ie->value.present =
             S1AP_InitialContextSetupRequestIEs__value_PR_UERadioCapability;
 
-        UERadioCapability = &ie->value.choice.UERadioCapability;
+        ie->value.choice.UERadioCapability =
+            CALLOC(1, sizeof(*UERadioCapability));
+        UERadioCapability = ie->value.choice.UERadioCapability;
 
         ogs_assert(UERadioCapability);
         ogs_hex_from_string(radio_string, radio, sizeof(radio));
@@ -530,31 +586,41 @@ static void s1ap_message_test8(abts_case *tc, void *data)
             "86740905 00ffff03";
         uint8_t masked[8];
 
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_Masked_IMEISV;
         ie->criticality = S1AP_Criticality_ignore;
         ie->value.present =
             S1AP_InitialContextSetupRequestIEs__value_PR_Masked_IMEISV;
 
-        Masked_IMEISV = &ie->value.choice.Masked_IMEISV;
+        ie->value.choice.Masked_IMEISV =
+            CALLOC(1, sizeof(*Masked_IMEISV));
+        Masked_IMEISV = ie->value.choice.Masked_IMEISV;
+        ogs_assert(Masked_IMEISV);
 
         Masked_IMEISV->size = 8;
         Masked_IMEISV->buf = CALLOC(Masked_IMEISV->size, sizeof(uint8_t));
+        ogs_assert(Masked_IMEISV->buf);
         Masked_IMEISV->bits_unused = 0;
         ogs_hex_from_string(masked_string, masked, sizeof(masked));
         memcpy(Masked_IMEISV->buf, masked, Masked_IMEISV->size);
     }
     {
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_NRUESecurityCapabilities;
         ie->criticality = S1AP_Criticality_ignore;
         ie->value.present = S1AP_InitialContextSetupRequestIEs__value_PR_NRUESecurityCapabilities;
 
-        NRUESecurityCapabilities = &ie->value.choice.NRUESecurityCapabilities;
+        ie->value.choice.NRUESecurityCapabilities =
+        CALLOC(1, sizeof(*NRUESecurityCapabilities));
+        NRUESecurityCapabilities =
+            ie->value.choice.NRUESecurityCapabilities;
+        ogs_assert(NRUESecurityCapabilities);
 
         NRUESecurityCapabilities->nRencryptionAlgorithms.size = 2;
         NRUESecurityCapabilities->nRencryptionAlgorithms.buf =
@@ -599,57 +665,84 @@ static void s1ap_message_test9(abts_case *tc, void *data)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*pdu.choice.initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode =
         S1AP_ProcedureCode_id_InitialContextSetup;
     initiatingMessage->criticality = S1AP_Criticality_reject;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_InitialContextSetupRequest;
 
+    initiatingMessage->value.choice.InitialContextSetupRequest =
+        CALLOC(1, sizeof(*InitialContextSetupRequest));
     InitialContextSetupRequest =
-        &initiatingMessage->value.choice.InitialContextSetupRequest;
+        initiatingMessage->value.choice.InitialContextSetupRequest;
+    ogs_assert(InitialContextSetupRequest);
+    InitialContextSetupRequest->protocolIEs =
+        ogs_asn_calloc_protocol_ies(
+                &asn_DEF_S1AP_InitialContextSetupRequest);
+    ogs_assert(InitialContextSetupRequest->protocolIEs);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID =
+        CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID =
+        CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_uEaggregateMaximumBitrate;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_UEAggregateMaximumBitrate;
 
-    UEAggregateMaximumBitrate = &ie->value.choice.UEAggregateMaximumBitrate;
+    ie->value.choice.UEAggregateMaximumBitrate =
+        CALLOC(1, sizeof(*UEAggregateMaximumBitrate));
+    UEAggregateMaximumBitrate =
+        ie->value.choice.UEAggregateMaximumBitrate;
+    ogs_assert(UEAggregateMaximumBitrate);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupListCtxtSUReq;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
     S1AP_InitialContextSetupRequestIEs__value_PR_E_RABToBeSetupListCtxtSUReq;
 
-    E_RABToBeSetupListCtxtSUReq = &ie->value.choice.E_RABToBeSetupListCtxtSUReq;
+    ie->value.choice.E_RABToBeSetupListCtxtSUReq =
+        CALLOC(1, sizeof(*E_RABToBeSetupListCtxtSUReq));
+    E_RABToBeSetupListCtxtSUReq =
+        ie->value.choice.E_RABToBeSetupListCtxtSUReq;
+    ogs_assert(E_RABToBeSetupListCtxtSUReq);
 
     *MME_UE_S1AP_ID = 205;
     *ENB_UE_S1AP_ID = 5888;
@@ -664,24 +757,40 @@ static void s1ap_message_test9(abts_case *tc, void *data)
     {
         S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t *item = NULL;
         S1AP_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
+        S1AP_E_RABLevelQoSParameters_t *e_RABlevelQoSParameters = NULL;
+        S1AP_AllocationAndRetentionPriority_t *allocationRetentionPriority = NULL;
 
-        item = CALLOC(1, sizeof(S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t));
-        ASN_SEQUENCE_ADD(&E_RABToBeSetupListCtxtSUReq->list, item);
+        item = CALLOC(1, sizeof(*item));
+        ogs_assert(item);
+        ASN_SEQUENCE_ADD(E_RABToBeSetupListCtxtSUReq, item);
 
         item->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq;
         item->criticality = S1AP_Criticality_reject;
-        item->value.present = S1AP_E_RABToBeSetupItemCtxtSUReqIEs__value_PR_E_RABToBeSetupItemCtxtSUReq;
+        item->value.present =
+            S1AP_E_RABToBeSetupItemCtxtSUReqIEs__value_PR_E_RABToBeSetupItemCtxtSUReq;
 
-        e_rab = &item->value.choice.E_RABToBeSetupItemCtxtSUReq;
+        item->value.choice.E_RABToBeSetupItemCtxtSUReq =
+            CALLOC(1, sizeof(*e_rab));
+        e_rab = item->value.choice.E_RABToBeSetupItemCtxtSUReq;
+        ogs_assert(e_rab);
 
         e_rab->e_RAB_ID = 5;
-        e_rab->e_RABlevelQoSParameters.qCI = 9;
+        e_rab->e_RABlevelQoSParameters =
+            CALLOC(1, sizeof(*e_RABlevelQoSParameters));
+        e_RABlevelQoSParameters = e_rab->e_RABlevelQoSParameters;
+        ogs_assert(e_RABlevelQoSParameters);
+        e_RABlevelQoSParameters->allocationRetentionPriority =
+            CALLOC(1, sizeof(*allocationRetentionPriority));
+        allocationRetentionPriority =
+            e_RABlevelQoSParameters->allocationRetentionPriority;
+        ogs_assert(allocationRetentionPriority);
+        e_RABlevelQoSParameters->qCI = 9;
 
-        e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        allocationRetentionPriority->
             priorityLevel = 8;
-        e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        allocationRetentionPriority->
             pre_emptionCapability = 1;
-        e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        allocationRetentionPriority->
             pre_emptionVulnerability = 1;
 
         ogs_ip_t sgw_s1u_ip;
@@ -696,15 +805,19 @@ static void s1ap_message_test9(abts_case *tc, void *data)
                 4400, &e_rab->gTP_TEID);
     }
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_UESecurityCapabilities;
 
-    UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
+    ie->value.choice.UESecurityCapabilities =
+        CALLOC(1, sizeof(*UESecurityCapabilities));
+    UESecurityCapabilities = ie->value.choice.UESecurityCapabilities;
+    ogs_assert(UESecurityCapabilities);
 
     UESecurityCapabilities->encryptionAlgorithms.size = 2;
     UESecurityCapabilities->encryptionAlgorithms.buf =
@@ -726,18 +839,23 @@ static void s1ap_message_test9(abts_case *tc, void *data)
             "11596aba 6a8c38be 2a4e0ead 9fdf2c67";
         uint8_t kenb[32];
 
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_SecurityKey;
         ie->criticality = S1AP_Criticality_reject;
         ie->value.present =
             S1AP_InitialContextSetupRequestIEs__value_PR_SecurityKey;
 
-        SecurityKey = &ie->value.choice.SecurityKey;
+        ie->value.choice.SecurityKey =
+            CALLOC(1, sizeof(*SecurityKey));
+        SecurityKey = ie->value.choice.SecurityKey;
+        ogs_assert(SecurityKey);
 
         SecurityKey->size = 32;
         SecurityKey->buf = CALLOC(SecurityKey->size, sizeof(uint8_t));
+        ogs_assert(SecurityKey->buf);
         SecurityKey->bits_unused = 0;
         ogs_hex_from_string(kenb_string, kenb, sizeof(kenb));
         memcpy(SecurityKey->buf, kenb, SecurityKey->size);
@@ -885,15 +1003,18 @@ static void s1ap_message_test9(abts_case *tc, void *data)
             "9eb04610 d0";
         uint8_t radio[TEST9_RADIO_SIZE];
 
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_UERadioCapability;
         ie->criticality = S1AP_Criticality_ignore;
         ie->value.present =
             S1AP_InitialContextSetupRequestIEs__value_PR_UERadioCapability;
 
-        UERadioCapability = &ie->value.choice.UERadioCapability;
+        ie->value.choice.UERadioCapability =
+            CALLOC(1, sizeof(*UERadioCapability));
+        UERadioCapability = ie->value.choice.UERadioCapability;
 
         ogs_assert(UERadioCapability);
         ogs_hex_from_string(radio_string, radio, sizeof(radio));
@@ -906,31 +1027,41 @@ static void s1ap_message_test9(abts_case *tc, void *data)
             "86740905 00ffff03";
         uint8_t masked[8];
 
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_Masked_IMEISV;
         ie->criticality = S1AP_Criticality_ignore;
         ie->value.present =
             S1AP_InitialContextSetupRequestIEs__value_PR_Masked_IMEISV;
 
-        Masked_IMEISV = &ie->value.choice.Masked_IMEISV;
+        ie->value.choice.Masked_IMEISV =
+            CALLOC(1, sizeof(*Masked_IMEISV));
+        Masked_IMEISV = ie->value.choice.Masked_IMEISV;
+        ogs_assert(Masked_IMEISV);
 
         Masked_IMEISV->size = 8;
         Masked_IMEISV->buf = CALLOC(Masked_IMEISV->size, sizeof(uint8_t));
+        ogs_assert(Masked_IMEISV->buf);
         Masked_IMEISV->bits_unused = 0;
         ogs_hex_from_string(masked_string, masked, sizeof(masked));
         memcpy(Masked_IMEISV->buf, masked, Masked_IMEISV->size);
     }
     {
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_NRUESecurityCapabilities;
         ie->criticality = S1AP_Criticality_ignore;
         ie->value.present = S1AP_InitialContextSetupRequestIEs__value_PR_NRUESecurityCapabilities;
 
-        NRUESecurityCapabilities = &ie->value.choice.NRUESecurityCapabilities;
+        ie->value.choice.NRUESecurityCapabilities =
+        CALLOC(1, sizeof(*NRUESecurityCapabilities));
+        NRUESecurityCapabilities =
+            ie->value.choice.NRUESecurityCapabilities;
+        ogs_assert(NRUESecurityCapabilities);
 
         NRUESecurityCapabilities->nRencryptionAlgorithms.size = 2;
         NRUESecurityCapabilities->nRencryptionAlgorithms.buf =
@@ -975,57 +1106,84 @@ static void s1ap_message_test10(abts_case *tc, void *data)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*pdu.choice.initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode =
         S1AP_ProcedureCode_id_InitialContextSetup;
     initiatingMessage->criticality = S1AP_Criticality_reject;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_InitialContextSetupRequest;
 
+    initiatingMessage->value.choice.InitialContextSetupRequest =
+        CALLOC(1, sizeof(*InitialContextSetupRequest));
     InitialContextSetupRequest =
-        &initiatingMessage->value.choice.InitialContextSetupRequest;
+        initiatingMessage->value.choice.InitialContextSetupRequest;
+    ogs_assert(InitialContextSetupRequest);
+    InitialContextSetupRequest->protocolIEs =
+        ogs_asn_calloc_protocol_ies(
+                &asn_DEF_S1AP_InitialContextSetupRequest);
+    ogs_assert(InitialContextSetupRequest->protocolIEs);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID =
+        CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID =
+        CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_uEaggregateMaximumBitrate;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_UEAggregateMaximumBitrate;
 
-    UEAggregateMaximumBitrate = &ie->value.choice.UEAggregateMaximumBitrate;
+    ie->value.choice.UEAggregateMaximumBitrate =
+        CALLOC(1, sizeof(*UEAggregateMaximumBitrate));
+    UEAggregateMaximumBitrate =
+        ie->value.choice.UEAggregateMaximumBitrate;
+    ogs_assert(UEAggregateMaximumBitrate);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupListCtxtSUReq;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
     S1AP_InitialContextSetupRequestIEs__value_PR_E_RABToBeSetupListCtxtSUReq;
 
-    E_RABToBeSetupListCtxtSUReq = &ie->value.choice.E_RABToBeSetupListCtxtSUReq;
+    ie->value.choice.E_RABToBeSetupListCtxtSUReq =
+        CALLOC(1, sizeof(*E_RABToBeSetupListCtxtSUReq));
+    E_RABToBeSetupListCtxtSUReq =
+        ie->value.choice.E_RABToBeSetupListCtxtSUReq;
+    ogs_assert(E_RABToBeSetupListCtxtSUReq);
 
     *MME_UE_S1AP_ID = 205;
     *ENB_UE_S1AP_ID = 5888;
@@ -1040,24 +1198,40 @@ static void s1ap_message_test10(abts_case *tc, void *data)
     {
         S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t *item = NULL;
         S1AP_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
+        S1AP_E_RABLevelQoSParameters_t *e_RABlevelQoSParameters = NULL;
+        S1AP_AllocationAndRetentionPriority_t *allocationRetentionPriority = NULL;
 
-        item = CALLOC(1, sizeof(S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t));
-        ASN_SEQUENCE_ADD(&E_RABToBeSetupListCtxtSUReq->list, item);
+        item = CALLOC(1, sizeof(*item));
+        ogs_assert(item);
+        ASN_SEQUENCE_ADD(E_RABToBeSetupListCtxtSUReq, item);
 
         item->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq;
         item->criticality = S1AP_Criticality_reject;
-        item->value.present = S1AP_E_RABToBeSetupItemCtxtSUReqIEs__value_PR_E_RABToBeSetupItemCtxtSUReq;
+        item->value.present =
+            S1AP_E_RABToBeSetupItemCtxtSUReqIEs__value_PR_E_RABToBeSetupItemCtxtSUReq;
 
-        e_rab = &item->value.choice.E_RABToBeSetupItemCtxtSUReq;
+        item->value.choice.E_RABToBeSetupItemCtxtSUReq =
+            CALLOC(1, sizeof(*e_rab));
+        e_rab = item->value.choice.E_RABToBeSetupItemCtxtSUReq;
+        ogs_assert(e_rab);
 
         e_rab->e_RAB_ID = 5;
-        e_rab->e_RABlevelQoSParameters.qCI = 9;
+        e_rab->e_RABlevelQoSParameters =
+            CALLOC(1, sizeof(*e_RABlevelQoSParameters));
+        e_RABlevelQoSParameters = e_rab->e_RABlevelQoSParameters;
+        ogs_assert(e_RABlevelQoSParameters);
+        e_RABlevelQoSParameters->allocationRetentionPriority =
+            CALLOC(1, sizeof(*allocationRetentionPriority));
+        allocationRetentionPriority =
+            e_RABlevelQoSParameters->allocationRetentionPriority;
+        ogs_assert(allocationRetentionPriority);
+        e_RABlevelQoSParameters->qCI = 9;
 
-        e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        allocationRetentionPriority->
             priorityLevel = 8;
-        e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        allocationRetentionPriority->
             pre_emptionCapability = 1;
-        e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        allocationRetentionPriority->
             pre_emptionVulnerability = 1;
 
         ogs_ip_t sgw_s1u_ip;
@@ -1072,15 +1246,19 @@ static void s1ap_message_test10(abts_case *tc, void *data)
                 4400, &e_rab->gTP_TEID);
     }
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_UESecurityCapabilities;
 
-    UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
+    ie->value.choice.UESecurityCapabilities =
+        CALLOC(1, sizeof(*UESecurityCapabilities));
+    UESecurityCapabilities = ie->value.choice.UESecurityCapabilities;
+    ogs_assert(UESecurityCapabilities);
 
     UESecurityCapabilities->encryptionAlgorithms.size = 2;
     UESecurityCapabilities->encryptionAlgorithms.buf =
@@ -1102,18 +1280,23 @@ static void s1ap_message_test10(abts_case *tc, void *data)
             "bf2279a2 0b63f2fa fb515915 82b1e774";
         uint8_t kenb[32];
 
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_SecurityKey;
         ie->criticality = S1AP_Criticality_reject;
         ie->value.present =
             S1AP_InitialContextSetupRequestIEs__value_PR_SecurityKey;
 
-        SecurityKey = &ie->value.choice.SecurityKey;
+        ie->value.choice.SecurityKey =
+            CALLOC(1, sizeof(*SecurityKey));
+        SecurityKey = ie->value.choice.SecurityKey;
+        ogs_assert(SecurityKey);
 
         SecurityKey->size = 32;
         SecurityKey->buf = CALLOC(SecurityKey->size, sizeof(uint8_t));
+        ogs_assert(SecurityKey->buf);
         SecurityKey->bits_unused = 0;
         ogs_hex_from_string(kenb_string, kenb, sizeof(kenb));
         memcpy(SecurityKey->buf, kenb, SecurityKey->size);
@@ -1261,15 +1444,18 @@ static void s1ap_message_test10(abts_case *tc, void *data)
             "9eb04610 d0";
         uint8_t radio[TEST10_RADIO_SIZE];
 
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_UERadioCapability;
         ie->criticality = S1AP_Criticality_ignore;
         ie->value.present =
             S1AP_InitialContextSetupRequestIEs__value_PR_UERadioCapability;
 
-        UERadioCapability = &ie->value.choice.UERadioCapability;
+        ie->value.choice.UERadioCapability =
+            CALLOC(1, sizeof(*UERadioCapability));
+        UERadioCapability = ie->value.choice.UERadioCapability;
 
         ogs_assert(UERadioCapability);
         ogs_hex_from_string(radio_string, radio, sizeof(radio));
@@ -1282,31 +1468,41 @@ static void s1ap_message_test10(abts_case *tc, void *data)
             "35514310 00ffff07";
         uint8_t masked[8];
 
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_Masked_IMEISV;
         ie->criticality = S1AP_Criticality_ignore;
         ie->value.present =
             S1AP_InitialContextSetupRequestIEs__value_PR_Masked_IMEISV;
 
-        Masked_IMEISV = &ie->value.choice.Masked_IMEISV;
+        ie->value.choice.Masked_IMEISV =
+            CALLOC(1, sizeof(*Masked_IMEISV));
+        Masked_IMEISV = ie->value.choice.Masked_IMEISV;
+        ogs_assert(Masked_IMEISV);
 
         Masked_IMEISV->size = 8;
         Masked_IMEISV->buf = CALLOC(Masked_IMEISV->size, sizeof(uint8_t));
+        ogs_assert(Masked_IMEISV->buf);
         Masked_IMEISV->bits_unused = 0;
         ogs_hex_from_string(masked_string, masked, sizeof(masked));
         memcpy(Masked_IMEISV->buf, masked, Masked_IMEISV->size);
     }
     {
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_NRUESecurityCapabilities;
         ie->criticality = S1AP_Criticality_ignore;
         ie->value.present = S1AP_InitialContextSetupRequestIEs__value_PR_NRUESecurityCapabilities;
 
-        NRUESecurityCapabilities = &ie->value.choice.NRUESecurityCapabilities;
+        ie->value.choice.NRUESecurityCapabilities =
+        CALLOC(1, sizeof(*NRUESecurityCapabilities));
+        NRUESecurityCapabilities =
+            ie->value.choice.NRUESecurityCapabilities;
+        ogs_assert(NRUESecurityCapabilities);
 
         NRUESecurityCapabilities->nRencryptionAlgorithms.size = 2;
         NRUESecurityCapabilities->nRencryptionAlgorithms.buf =

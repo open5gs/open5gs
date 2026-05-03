@@ -59,36 +59,50 @@ OCTET_STRING_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     switch(specs->subvariant) {
-    default:
+    case ASN_OSUBV_ANY:
+    case ASN_OSUBV_STR:
+        canonical_unit_bits = unit_bits = 8;
+        if(cval->flags & APC_CONSTRAINED) {
+            /* follow power of 2 rule */
+            if (cval->range_bits <= 2) {
+        		unit_bits = 2;
+            } else {
+        	if (cval->range_bits <= 4) {
+           		unit_bits = 4;
+           		/* otherwise, unit_bits = 8; */
+        	}
+	   }
+           /* unit_bits = cval->range_bits; */
+           ASN_DEBUG("APER decoding ASN_OSUBV_STR range_bits = %d unit_bits = %d\n",
+            	cval->range_bits, unit_bits);
+        }
+        bpc = OS__BPC_CHAR;
+        break;
+    case ASN_OSUBV_U16:
+        canonical_unit_bits = unit_bits = 16;
+        if(cval->flags & APC_CONSTRAINED) {
+            unit_bits = cval->range_bits;
+            ASN_DEBUG("APER decoding ASN_OSUBV_U16 range_bits = %d\n", cval->range_bits);
+        }
+        bpc = OS__BPC_U16;
+        break;
+    case ASN_OSUBV_U32:
+        canonical_unit_bits = unit_bits = 32;
+        if(cval->flags & APC_CONSTRAINED) {
+            unit_bits = cval->range_bits;
+            ASN_DEBUG("APER decoding ASN_OSUBV_U32 range_bits = %d\n", cval->range_bits);
+        }
+        bpc = OS__BPC_U32;
+        break;
 /*
     case ASN_OSUBV_ANY:
         ASN_DEBUG("Unrecognized subvariant %d", specs->subvariant);
         RETURN(RC_FAIL);
 */
     case ASN_OSUBV_BIT:
+    default:
         canonical_unit_bits = unit_bits = 1;
         bpc = OS__BPC_BIT;
-        break;
-    case ASN_OSUBV_ANY:
-    case ASN_OSUBV_STR:
-        canonical_unit_bits = unit_bits = 8;
-/*
-        if(cval->flags & APC_CONSTRAINED)
-            unit_bits = cval->range_bits;
-*/
-        bpc = OS__BPC_CHAR;
-        break;
-    case ASN_OSUBV_U16:
-        canonical_unit_bits = unit_bits = 16;
-        if(cval->flags & APC_CONSTRAINED)
-            unit_bits = cval->range_bits;
-        bpc = OS__BPC_U16;
-        break;
-    case ASN_OSUBV_U32:
-        canonical_unit_bits = unit_bits = 32;
-        if(cval->flags & APC_CONSTRAINED)
-            unit_bits = cval->range_bits;
-        bpc = OS__BPC_U32;
         break;
     }
 
@@ -268,41 +282,53 @@ OCTET_STRING_encode_aper(const asn_TYPE_descriptor_t *td,
     ct_extensible = csiz->flags & APC_EXTENSIBLE;
 
     switch(specs->subvariant) {
-        default:
-/*
-        case ASN_OSUBV_ANY:
-            ASN__ENCODE_FAILED;
-*/
-        case ASN_OSUBV_BIT:
-            canonical_unit_bits = unit_bits = 1;
-            bpc = OS__BPC_BIT;
-            sizeinunits = st->size * 8 - (st->bits_unused & 0x07);
-            ASN_DEBUG("BIT STRING of %d bytes",
-                      sizeinunits);
-        break;
-        case ASN_OSUBV_ANY:
+    case ASN_OSUBV_ANY:
     case ASN_OSUBV_STR:
         canonical_unit_bits = unit_bits = 8;
-/*
-        if(cval->flags & APC_CONSTRAINED)
-            unit_bits = 8;
-*/
+        if(cval->flags & APC_CONSTRAINED) {
+        	/* follow power of 2 rule */
+        	if (cval->range_bits <= 2) {
+        		unit_bits = 2;
+        	} else {
+        		if (cval->range_bits <= 4)
+        			unit_bits = 4;
+        		/* otherwise, unit_bits = 8; */
+        	}
+            	/* unit_bits = cval->range_bits; */
+            	ASN_DEBUG("APER encoding ASN_OSUBV_STR range_bits = %d unit_bits = %d\n", 
+            		cval->range_bits, unit_bits);
+        }
         bpc = OS__BPC_CHAR;
         sizeinunits = st->size;
         break;
     case ASN_OSUBV_U16:
         canonical_unit_bits = unit_bits = 16;
-        if(cval->flags & APC_CONSTRAINED)
+        if(cval->flags & APC_CONSTRAINED) {
             unit_bits = cval->range_bits;
+            ASN_DEBUG("APER encoding ASN_OSUBV_U16 range_bits = %d\n", cval->range_bits);
+        }
         bpc = OS__BPC_U16;
         sizeinunits = st->size / 2;
         break;
     case ASN_OSUBV_U32:
         canonical_unit_bits = unit_bits = 32;
-        if(cval->flags & APC_CONSTRAINED)
+        if(cval->flags & APC_CONSTRAINED) {
             unit_bits = cval->range_bits;
+            ASN_DEBUG("APER encoding ASN_OSUBV_U32 range_bits = %d\n", cval->range_bits);
+        }
         bpc = OS__BPC_U32;
         sizeinunits = st->size / 4;
+        break;
+/*
+    case ASN_OSUBV_ANY:
+        ASN__ENCODE_FAILED;
+*/
+    case ASN_OSUBV_BIT:
+    default:
+        canonical_unit_bits = unit_bits = 1;
+        bpc = OS__BPC_BIT;
+        sizeinunits = st->size * 8 - (st->bits_unused & 0x07);
+        ASN_DEBUG("BIT STRING of %d bytes", sizeinunits);
         break;
     }
 

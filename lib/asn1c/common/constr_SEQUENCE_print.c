@@ -5,6 +5,7 @@
  */
 #include <asn_internal.h>
 #include <constr_SEQUENCE.h>
+#include <OPEN_TYPE.h>
 
 int
 SEQUENCE_print(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
@@ -43,8 +44,12 @@ SEQUENCE_print(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
             return -1;
 
         /* Print the member itself */
-        ret = elm->type->op->print_struct(elm->type, memb_ptr, ilevel + 1,
-                                          cb, app_key);
+        if(elm->flags & ATF_OPEN_TYPE) {
+            ret = OPEN_TYPE_print_member(td, sptr, elm, ilevel + 1, cb, app_key);
+        } else {
+            ret = elm->type->op->print_struct(elm->type, memb_ptr, ilevel + 1,
+                                              cb, app_key);
+        }
         if(ret) return ret;
     }
 

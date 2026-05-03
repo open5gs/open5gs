@@ -19,6 +19,9 @@ SET_OF_encode_aper(const asn_TYPE_descriptor_t *td,
 
     if(!sptr) ASN__ENCODE_FAILED;
 
+    /* Check recursion depth to prevent stack overflow */
+    APER_ENCODER_RECURSION_DEPTH_INC();
+
     list = _A_CSET_FROM_VOID(sptr);
 
     er.encoded = 0;
@@ -40,9 +43,13 @@ SET_OF_encode_aper(const asn_TYPE_descriptor_t *td,
                   ct->flags & APC_EXTENSIBLE ? "ext" : "fix");
         if(ct->flags & APC_EXTENSIBLE) {
             /* Declare whether size is in extension root */
-            if(per_put_few_bits(po, not_in_root, 1)) ASN__ENCODE_FAILED;
+            if(per_put_few_bits(po, not_in_root, 1)) {
+                APER_ENCODER_RECURSION_DEPTH_DEC();
+                ASN__ENCODE_FAILED;
+            }
             if(not_in_root) ct = 0;
         } else if(not_in_root && ct->effective_bits >= 0) {
+            APER_ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;
         }
 
@@ -55,6 +62,7 @@ SET_OF_encode_aper(const asn_TYPE_descriptor_t *td,
             ASN__ENCODE_FAILED;*/
 
         if (aper_put_length(po, ct->lower_bound, ct->upper_bound, list->count - ct->lower_bound, 0) < 0) {
+            APER_ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;
         }
     }
@@ -73,7 +81,10 @@ SET_OF_encode_aper(const asn_TYPE_descriptor_t *td,
         } else {
             may_encode =
                 aper_put_length(po, -1, -1, list->count - seq, &need_eom);
-            if(may_encode < 0) ASN__ENCODE_FAILED;
+            if(may_encode < 0) {
+                APER_ENCODER_RECURSION_DEPTH_DEC();
+                ASN__ENCODE_FAILED;
+            }
         }
 
         while(may_encode--) {
@@ -83,12 +94,22 @@ SET_OF_encode_aper(const asn_TYPE_descriptor_t *td,
                 break;
             }
         }
-        if(need_eom && (aper_put_length(po, -1, -1, 0, NULL) < 0))
+        if(need_eom && (aper_put_length(po, -1, -1, 0, NULL) < 0)) {
+            APER_ENCODER_RECURSION_DEPTH_DEC();
             ASN__ENCODE_FAILED;  /* End of Message length */
+        }
     }
+
+    /* If element's count is zero, we still need to output size 0 */
+    if (!list->count)
+        if(aper_put_length(po, -1, -1, 0, NULL) < 0) {
+            APER_ENCODER_RECURSION_DEPTH_DEC();
+            ASN__ENCODE_FAILED;
+        }
 
     SET_OF__encode_sorted_free(encoded_els, list->count);
 
+    APER_ENCODER_RECURSION_DEPTH_DEC();
     ASN__ENCODED_OK(er);
 }
 
@@ -143,10 +164,11 @@ SET_OF_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         int i;
         if(nelems < 0) {
             if (ct)
-                nelems = aper_get_length(pd, ct->lower_bound, ct->upper_bound,
+                nelems = aper_get_length(pd, ct->lower_bound ? ct->lower_bound : 0, 
+                                         ct->upper_bound ? ct->upper_bound : -1,
                                          ct->effective_bits, &repeat);
             else
-                nelems = aper_get_length(pd, -1, -1, -1, &repeat);
+                nelems = aper_get_length(pd, 0, -1, -1, &repeat);
             ASN_DEBUG("Got to decode %d elements (eff %d)",
                       (int)nelems, (int)(ct ? ct->effective_bits : -1));
             if(nelems < 0) ASN__DECODE_STARVED;

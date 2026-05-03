@@ -2189,6 +2189,8 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
     uint8_t pfcp_cause, gtp_cause;
     ogs_gtp_xact_t *gtp_xact = NULL;
 
+    ogs_pkbuf_t *n1smbuf = NULL;
+
     ogs_assert(s);
     ogs_assert(e);
 
@@ -2684,8 +2686,6 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                 sbi_message->h.service.name);
         switch (service_name_id) {
         case OpenAPI_service_name_npcf_smpolicycontrol:
-            ogs_pkbuf_t *n1smbuf = NULL;
-
             stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
             ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
                     stream_id <= OGS_MAX_POOL_ID);
@@ -2978,6 +2978,7 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
     smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
+    ogs_pkbuf_t *n1smbuf = NULL;
 
     ogs_nas_5gs_message_t *nas_message = NULL;
 
@@ -3290,8 +3291,6 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OpenAPI_service_name_npcf_smpolicycontrol:
-            ogs_pkbuf_t *n1smbuf = NULL;
-
             ogs_error("[%s:%d] state [%d] res_status [%d]",
                 smf_ue->supi, sess->psi,
                 e->h.sbi.state, sbi_message->res_status);

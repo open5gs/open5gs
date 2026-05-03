@@ -48,6 +48,11 @@ jer_type_decoder_f ANY_decode_jer;
 jer_type_encoder_f ANY_encode_jer;
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+#define ANY_decode_oer OCTET_STRING_decode_oer
+#define ANY_encode_oer OCTET_STRING_encode_oer
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 per_type_decoder_f ANY_decode_uper;
 per_type_encoder_f ANY_encode_uper;
@@ -73,6 +78,7 @@ ANY_t *ANY_new_fromType_aper(asn_TYPE_descriptor_t *td, void *sptr);
 int ANY_to_type(ANY_t *, asn_TYPE_descriptor_t *td, void **struct_ptr);
 #if !defined(ASN_DISABLE_APER_SUPPORT)
 int ANY_to_type_aper(ANY_t *, asn_TYPE_descriptor_t *td, void **struct_ptr);
+int ANY_to_type_aper_checked(ANY_t *, asn_TYPE_descriptor_t *td, void **struct_ptr);
 #endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
 
 #define	ANY_fromBuf(s, buf, size)	OCTET_STRING_fromBuf((s), (buf), (size))

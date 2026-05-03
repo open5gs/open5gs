@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -18,6 +18,64 @@
  */
 
 #include "message.h"
+
+#include "constr_SEQUENCE.h"
+#include "constr_SET.h"
+#include "constr_CHOICE.h"
+#include "constr_SET_OF.h"
+
+void *ogs_asn_calloc_constructed(const asn_TYPE_descriptor_t *td)
+{
+    size_t size = 0;
+    void *ptr = NULL;
+
+    ogs_assert(td);
+    ogs_assert(td->op);
+
+    switch (td->op->kind) {
+    case ASN_KIND_SEQUENCE:
+        ogs_assert(td->specifics);
+        size = ((const asn_SEQUENCE_specifics_t *)td->specifics)->struct_size;
+        break;
+    case ASN_KIND_SET:
+        ogs_assert(td->specifics);
+        size = ((const asn_SET_specifics_t *)td->specifics)->struct_size;
+        break;
+    case ASN_KIND_CHOICE:
+        ogs_assert(td->specifics);
+        size = ((const asn_CHOICE_specifics_t *)td->specifics)->struct_size;
+        break;
+    case ASN_KIND_SEQUENCE_OF:
+    case ASN_KIND_SET_OF:
+        ogs_assert(td->specifics);
+        size = ((const asn_SET_OF_specifics_t *)td->specifics)->struct_size;
+        break;
+    default:
+        ogs_fatal("ASN.1 descriptor [%s] kind:%d is not constructed; "
+                "use CALLOC() when the concrete pointer type is available",
+                td->name ? td->name : "unknown", td->op->kind);
+        ogs_assert_if_reached();
+    }
+
+    ogs_assert(size);
+
+    ptr = CALLOC(1, size);
+    ogs_assert(ptr);
+
+    return ptr;
+}
+
+void *ogs_asn_calloc_protocol_ies(const asn_TYPE_descriptor_t *parent_td)
+{
+    ogs_assert(parent_td);
+    ogs_assert(parent_td->elements);
+    ogs_assert(parent_td->elements_count > 0);
+    ogs_assert(parent_td->elements[0].name);
+    ogs_assert(strcmp(parent_td->elements[0].name, "protocolIEs") == 0);
+    ogs_assert(parent_td->elements[0].type);
+
+    return ogs_asn_calloc_constructed(parent_td->elements[0].type);
+}
 
 ogs_pkbuf_t *ogs_asn_encode(const asn_TYPE_descriptor_t *td, void *sptr)
 {

@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -24,13 +24,13 @@ libasn1c_common_sources = files('''
     constr_CHOICE.h
     ENUMERATED.h
     ENUMERATED.c
+    INTEGER.h
+    NativeEnumerated.h
     GraphicString.h
     GraphicString.c
-    INTEGER.h
     INTEGER.c
     NULL.h
     NULL.c
-    NativeEnumerated.h
     NativeEnumerated.c
     NativeInteger.h
     NativeInteger.c
@@ -52,6 +52,7 @@ libasn1c_common_sources = files('''
     constr_CHOICE.c
     constr_SEQUENCE.h
     constr_SEQUENCE.c
+    constr_SET.h
     constr_SEQUENCE_OF.h
     constr_SEQUENCE_OF.c
     constr_SET_OF.h
@@ -111,6 +112,7 @@ libasn1c_common_sources = files('''
     NativeInteger_print.c
     OBJECT_IDENTIFIER_print.c
     OCTET_STRING_print.c
+    OPEN_TYPE_print.c
     UTF8String_print.c
     constr_CHOICE_print.c
     constr_SEQUENCE_print.c
@@ -133,7 +135,8 @@ libasn1c_common_cc_flags = ['-DASN_DISABLE_BER_SUPPORT',
                             '-DASN_DISABLE_XER_SUPPORT',
                             '-DASN_DISABLE_OER_SUPPORT',
                             '-DASN_DISABLE_UPER_SUPPORT',
-                            '-DASN_DISABLE_JER_SUPPORT']
+                            '-DASN_DISABLE_JER_SUPPORT',
+                            '-DASN_DISABLE_CBOR_SUPPORT']
 
 #libasn1c_common_cc_flags += cc.get_supported_arguments([
 #    '-Wno-parentheses-equality',

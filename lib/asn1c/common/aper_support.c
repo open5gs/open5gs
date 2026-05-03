@@ -28,10 +28,20 @@ aper_get_length(asn_per_data_t *pd, ssize_t lb, ssize_t ub,
 		return aper_get_constrained_whole_number(pd, lb, ub);
 	}
 
+	/* Only align for unconstrained length determinants that require it.
+	 * For SET OF/SEQUENCE OF with unconstrained size, alignment should
+	 * be done only when the length encoding format requires it.
+	 */
+	if(ebits >= 0) {
+		if (aper_get_align(pd) < 0)
+			return -1;
+		return per_get_few_bits(pd, ebits);
+	}
+
+	/* For truly unconstrained lengths, alignment is needed before
+	 * reading the length determinant according to X.691 */
 	if (aper_get_align(pd) < 0)
 		return -1;
-
-	if(ebits >= 0) return per_get_few_bits(pd, ebits);
 
 	value = per_get_few_bits(pd, 8);
 	if(value < 0) return -1;
@@ -140,7 +150,7 @@ aper_get_constrained_whole_number(asn_per_data_t *pd, long lb, long ub) {
 
 	/* X.691 2002 10.5.7.2 - The one-octet case. */
 	if (range == 256) {
-		if (aper_get_align(pd))
+		if (aper_get_align(pd) < 0)
 			return -1;
 		value = per_get_few_bits(pd, 8);
 		if (value < 0 || value >= range)
@@ -150,7 +160,7 @@ aper_get_constrained_whole_number(asn_per_data_t *pd, long lb, long ub) {
 
 	/* X.691 2002 10.5.7.3 - The two-octet case. */
 	if (range <= 65536) {
-		if (aper_get_align(pd))
+		if (aper_get_align(pd) < 0)
 			return -1;
 		value = per_get_few_bits(pd, 16);
 		if (value < 0 || value >= range)
@@ -174,7 +184,7 @@ aper_get_constrained_whole_number(asn_per_data_t *pd, long lb, long ub) {
 		ASN_DEBUG("todo: aper_get_constrained_whole_number: value_len > 4");
 		return -1;
 	}
-	if (aper_get_align(pd))
+	if (aper_get_align(pd) < 0)
 		return -1;
 	value = per_get_few_bits(pd, value_len * 8);
 	if (value < 0 || value >= range)
@@ -300,6 +310,13 @@ aper_put_nsnnwn(asn_per_outp_t *po, int number) {
 int
 aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub, long number) {
 	assert(ub >= lb);
+	
+	/* Check for overflow in range calculation */
+	if (ub > LONG_MAX - 1 || (ub - lb) > LONG_MAX - 1) {
+		/* Range too large to calculate safely */
+		return -1;
+	}
+	
 	long range = ub - lb + 1;
 	long value = number - lb;
 	int range_len;
@@ -317,9 +334,12 @@ aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub, long num
 	/* X.691 2002 10.5.7.1 - The bit-field case. */
 	if (range <= 255) {
 		int bitfield_size = 8;
-		for (bitfield_size = 8; bitfield_size >= 2; bitfield_size--)
-			if ((range - 1) & (1 << (bitfield_size-1)))
+		for (bitfield_size = 8; bitfield_size >= 2; bitfield_size--) {
+			/* Defensive check: ensure shift is within safe range */
+			if ((bitfield_size-1) < (int)(sizeof(int) * 8) && 
+			    ((range - 1) & (1 << (bitfield_size-1))))
 				break;
+		}
 		return per_put_few_bits(po, value, bitfield_size);
 	}
 
@@ -342,12 +362,22 @@ aper_put_constrained_whole_number(asn_per_outp_t *po, long lb, long ub, long num
 	/* and so length determinant is stored as X.691 2002 10.9.3.3 */
 	/* number of bytes to store the range */
 	for (range_len = 3; ; range_len++) {
+		/* Prevent undefined behavior: limit shift to safe range for int */
+		if (8 * range_len >= (int)(sizeof(int) * 8)) {
+			/* Range too large to encode safely */
+			return -1;
+		}
 		int bits = 1 << (8 * range_len);
 		if (range - 1 < bits)
 			break;
 	}
 	/* number of bytes to store the value */
 	for (value_len = 1; ; value_len++) {
+		/* Prevent undefined behavior: limit shift to safe range for long */
+		if (8 * value_len >= (int)(sizeof(long) * 8)) {
+			/* Value too large to encode safely */
+			return -1;
+		}
 		long bits = ((long)1) << (8 * value_len);
 		if (value < bits)
 			break;

@@ -9,7 +9,7 @@
 /*
  * Version of the ASN.1 infrastructure shipped with compiler.
  */
-int get_asn1c_environment_version() { return ASN1C_ENVIRONMENT_VERSION; }
+int get_asn1c_environment_version(void) { return ASN1C_ENVIRONMENT_VERSION; }
 
 static asn_app_consume_bytes_f _print2fp;
 

@@ -45,17 +45,26 @@ ogs_pkbuf_t *ogs_ngap_build_error_indication(
     initiatingMessage->value.present =
         NGAP_InitiatingMessage__value_PR_ErrorIndication;
 
-    ErrorIndication = &initiatingMessage->value.choice.ErrorIndication;
+    ErrorIndication = CALLOC(1, sizeof(*ErrorIndication));
+    ogs_assert(ErrorIndication);
+    initiatingMessage->value.choice.ErrorIndication = ErrorIndication;
+
+    ErrorIndication->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_NGAP_ErrorIndication);
+    ogs_assert(ErrorIndication->protocolIEs);
 
     if (amf_ue_ngap_id) {
         ie = CALLOC(1, sizeof(NGAP_ErrorIndicationIEs_t));
-        ASN_SEQUENCE_ADD(&ErrorIndication->protocolIEs, ie);
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(ErrorIndication->protocolIEs, ie);
 
         ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
         ie->criticality = NGAP_Criticality_ignore;
         ie->value.present = NGAP_ErrorIndicationIEs__value_PR_AMF_UE_NGAP_ID;
 
-        AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+        AMF_UE_NGAP_ID = CALLOC(1, sizeof(*AMF_UE_NGAP_ID));
+        ogs_assert(AMF_UE_NGAP_ID);
+        ie->value.choice.AMF_UE_NGAP_ID = AMF_UE_NGAP_ID;
 
         asn_uint642INTEGER(AMF_UE_NGAP_ID, *amf_ue_ngap_id);
         ogs_debug("    AMF_UE_NGAP_ID[%lld]", (long long)*amf_ue_ngap_id);
@@ -63,26 +72,32 @@ ogs_pkbuf_t *ogs_ngap_build_error_indication(
 
     if (ran_ue_ngap_id) {
         ie = CALLOC(1, sizeof(NGAP_ErrorIndicationIEs_t));
-        ASN_SEQUENCE_ADD(&ErrorIndication->protocolIEs, ie);
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(ErrorIndication->protocolIEs, ie);
 
         ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
         ie->criticality = NGAP_Criticality_ignore;
         ie->value.present = NGAP_ErrorIndicationIEs__value_PR_RAN_UE_NGAP_ID;
 
-        RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+        RAN_UE_NGAP_ID = CALLOC(1, sizeof(*RAN_UE_NGAP_ID));
+        ogs_assert(RAN_UE_NGAP_ID);
+        ie->value.choice.RAN_UE_NGAP_ID = RAN_UE_NGAP_ID;
 
         *RAN_UE_NGAP_ID = *ran_ue_ngap_id;
         ogs_debug("    RAN_UE_NGAP_ID[%lld]", (long long)*ran_ue_ngap_id);
     }
 
     ie = CALLOC(1, sizeof(NGAP_ErrorIndicationIEs_t));
-    ASN_SEQUENCE_ADD(&ErrorIndication->protocolIEs, ie);
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(ErrorIndication->protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_Cause;
     ie->criticality = NGAP_Criticality_ignore;
     ie->value.present = NGAP_ErrorIndicationIEs__value_PR_Cause;
 
-    Cause = &ie->value.choice.Cause;
+    Cause = CALLOC(1, sizeof(*Cause));
+    ogs_assert(Cause);
+    ie->value.choice.Cause = Cause;
 
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
@@ -116,25 +131,37 @@ ogs_pkbuf_t *ogs_ngap_build_ng_reset(
     initiatingMessage->criticality = NGAP_Criticality_reject;
     initiatingMessage->value.present = NGAP_InitiatingMessage__value_PR_NGReset;
 
-    NGReset = &initiatingMessage->value.choice.NGReset;
+    NGReset = CALLOC(1, sizeof(*NGReset));
+    ogs_assert(NGReset);
+    initiatingMessage->value.choice.NGReset = NGReset;
+
+    NGReset->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_NGAP_NGReset);
+    ogs_assert(NGReset->protocolIEs);
 
     ie = CALLOC(1, sizeof(NGAP_NGResetIEs_t));
-    ASN_SEQUENCE_ADD(&NGReset->protocolIEs, ie);
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(NGReset->protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_Cause;
     ie->criticality = NGAP_Criticality_ignore;
     ie->value.present = NGAP_NGResetIEs__value_PR_Cause;
 
-    Cause = &ie->value.choice.Cause;
+    Cause = CALLOC(1, sizeof(*Cause));
+    ogs_assert(Cause);
+    ie->value.choice.Cause = Cause;
 
     ie = CALLOC(1, sizeof(NGAP_NGResetIEs_t));
-    ASN_SEQUENCE_ADD(&NGReset->protocolIEs, ie);
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(NGReset->protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_ResetType;
     ie->criticality = NGAP_Criticality_reject;
     ie->value.present = NGAP_NGResetIEs__value_PR_ResetType;
 
-    ResetType = &ie->value.choice.ResetType;
+    ResetType = CALLOC(1, sizeof(*ResetType));
+    ogs_assert(ResetType);
+    ie->value.choice.ResetType = ResetType;
 
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
@@ -203,29 +230,36 @@ ogs_pkbuf_t *ogs_ngap_build_ng_reset_ack(
     successfulOutcome->value.present =
         NGAP_SuccessfulOutcome__value_PR_NGResetAcknowledge;
 
-    NGResetAcknowledge = &successfulOutcome->value.choice.NGResetAcknowledge;
+    NGResetAcknowledge = CALLOC(1, sizeof(*NGResetAcknowledge));
     ogs_assert(NGResetAcknowledge);
+    successfulOutcome->value.choice.NGResetAcknowledge = NGResetAcknowledge;
 
-    if (partOfNG_Interface && partOfNG_Interface->list.count) {
+    NGResetAcknowledge->protocolIEs =
+        ogs_asn_calloc_protocol_ies(&asn_DEF_NGAP_NGResetAcknowledge);
+    ogs_assert(NGResetAcknowledge->protocolIEs);
+
+    if (partOfNG_Interface && OGS_ASN_LIST_COUNT(partOfNG_Interface)) {
         int i = 0;
         NGAP_UE_associatedLogicalNG_connectionList_t *list = NULL;
 
         ie = CALLOC(1, sizeof(NGAP_NGResetAcknowledgeIEs_t));
         ogs_assert(ie);
-        ASN_SEQUENCE_ADD(&NGResetAcknowledge->protocolIEs, ie);
+        ASN_SEQUENCE_ADD(NGResetAcknowledge->protocolIEs, ie);
 
         ie->id = NGAP_ProtocolIE_ID_id_UE_associatedLogicalNG_connectionList;
         ie->criticality = NGAP_Criticality_ignore;
         ie->value.present = NGAP_NGResetAcknowledgeIEs__value_PR_UE_associatedLogicalNG_connectionList;
 
-        list = &ie->value.choice.UE_associatedLogicalNG_connectionList;
+        list = CALLOC(1, sizeof(*list));
+        ogs_assert(list);
+        ie->value.choice.UE_associatedLogicalNG_connectionList = list;
 
-        for (i = 0; i < partOfNG_Interface->list.count; i++) {
+        for (i = 0; i < OGS_ASN_LIST_COUNT(partOfNG_Interface); i++) {
             NGAP_UE_associatedLogicalNG_connectionItem_t *item = NULL;
             uint64_t amf_ue_ngap_id = 0;
             uint64_t ran_ue_ngap_id = 0;
 
-            item = partOfNG_Interface->list.array[i];
+            item = OGS_ASN_LIST_GET(partOfNG_Interface, i);
             ogs_assert(item);
 
             if (item->aMF_UE_NGAP_ID == NULL &&

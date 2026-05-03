@@ -32,9 +32,16 @@ static void fill_qos_level_parameters(
     NGAP_QosCharacteristics_t *qosCharacteristics = NULL;
     NGAP_NonDynamic5QIDescriptor_t *nonDynamic5QI = NULL;
 
+    ogs_assert(params);
+    ogs_assert(qos);
+
     /* Allocation and Retention Priority */
-    allocationAndRetentionPriority =
-        &params->allocationAndRetentionPriority;
+    if (!params->allocationAndRetentionPriority) {
+        params->allocationAndRetentionPriority =
+            CALLOC(1, sizeof(*params->allocationAndRetentionPriority));
+        ogs_assert(params->allocationAndRetentionPriority);
+    }
+    allocationAndRetentionPriority = params->allocationAndRetentionPriority;
 
     allocationAndRetentionPriority->priorityLevelARP = qos->arp.priority_level;
     if (qos->arp.pre_emption_capability == OGS_5GC_PRE_EMPTION_ENABLED)
@@ -45,7 +52,12 @@ static void fill_qos_level_parameters(
             NGAP_Pre_emptionVulnerability_pre_emptable;
 
     /* Non-Dynamic 5QI Descriptor */
-    qosCharacteristics = &params->qosCharacteristics;
+    if (!params->qosCharacteristics) {
+        params->qosCharacteristics =
+            CALLOC(1, sizeof(*params->qosCharacteristics));
+        ogs_assert(params->qosCharacteristics);
+    }
+    qosCharacteristics = params->qosCharacteristics;
     qosCharacteristics->choice.nonDynamic5QI = nonDynamic5QI =
         CALLOC(1, sizeof(struct NGAP_NonDynamic5QIDescriptor));
     ogs_assert(nonDynamic5QI);
@@ -95,7 +107,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     NGAP_PDUSessionResourceSetupRequestTransfer_t message;
 
     NGAP_PDUSessionResourceSetupRequestTransferIEs_t *ie = NULL;
-    NGAP_PDUSessionAggregateMaximumBitRate_t *PDUSessionAggregateMaximumBitRate;
+    NGAP_PDUSessionAggregateMaximumBitRate_t *PDUSessionAggregateMaximumBitRate = NULL;
     NGAP_UPTransportLayerInformation_t *UPTransportLayerInformation = NULL;
     NGAP_GTPTunnel_t *gTPTunnel = NULL;
     NGAP_DataForwardingNotPossible_t *DataForwardingNotPossible = NULL;
@@ -108,19 +120,25 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 
     ogs_debug("PDUSessionResourceSetupRequestTransfer");
     memset(&message, 0, sizeof(NGAP_PDUSessionResourceSetupRequestTransfer_t));
+    message.protocolIEs = ogs_asn_calloc_protocol_ies(
+            &asn_DEF_NGAP_PDUSessionResourceSetupRequestTransfer);
+    ogs_assert(message.protocolIEs);
 
     if (sess->session.ambr.downlink || sess->session.ambr.uplink) {
         ie = CALLOC(1,
                 sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
         ogs_assert(ie);
-        ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+        ASN_SEQUENCE_ADD(message.protocolIEs, ie);
 
         ie->id = NGAP_ProtocolIE_ID_id_PDUSessionAggregateMaximumBitRate;
         ie->criticality = NGAP_Criticality_reject;
         ie->value.present = NGAP_PDUSessionResourceSetupRequestTransferIEs__value_PR_PDUSessionAggregateMaximumBitRate;
 
         PDUSessionAggregateMaximumBitRate =
-            &ie->value.choice.PDUSessionAggregateMaximumBitRate;
+            CALLOC(1, sizeof(*PDUSessionAggregateMaximumBitRate));
+        ogs_assert(PDUSessionAggregateMaximumBitRate);
+        ie->value.choice.PDUSessionAggregateMaximumBitRate =
+            PDUSessionAggregateMaximumBitRate;
 
         asn_uint642INTEGER(&PDUSessionAggregateMaximumBitRate->
             pDUSessionAggregateMaximumBitRateUL, sess->session.ambr.uplink);
@@ -130,13 +148,15 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 
     ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
     ogs_assert(ie);
-    ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+    ASN_SEQUENCE_ADD(message.protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_UL_NGU_UP_TNLInformation;
     ie->criticality = NGAP_Criticality_reject;
     ie->value.present = NGAP_PDUSessionResourceSetupRequestTransferIEs__value_PR_UPTransportLayerInformation;
 
-    UPTransportLayerInformation = &ie->value.choice.UPTransportLayerInformation;
+    UPTransportLayerInformation = CALLOC(1, sizeof(*UPTransportLayerInformation));
+    ogs_assert(UPTransportLayerInformation);
+    ie->value.choice.UPTransportLayerInformation = UPTransportLayerInformation;
 
     gTPTunnel = CALLOC(1, sizeof(struct NGAP_GTPTunnel));
     ogs_assert(gTPTunnel);
@@ -154,13 +174,15 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
         ie = CALLOC(1,
                 sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
         ogs_assert(ie);
-        ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+        ASN_SEQUENCE_ADD(message.protocolIEs, ie);
 
         ie->id = NGAP_ProtocolIE_ID_id_DataForwardingNotPossible;
         ie->criticality = NGAP_Criticality_reject;
         ie->value.present = NGAP_PDUSessionResourceSetupRequestTransferIEs__value_PR_DataForwardingNotPossible;
 
-        DataForwardingNotPossible = &ie->value.choice.DataForwardingNotPossible;
+        DataForwardingNotPossible = CALLOC(1, sizeof(*DataForwardingNotPossible));
+        ogs_assert(DataForwardingNotPossible);
+        ie->value.choice.DataForwardingNotPossible = DataForwardingNotPossible;
 
         *DataForwardingNotPossible =
             NGAP_DataForwardingNotPossible_data_forwarding_not_possible;
@@ -168,13 +190,15 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 
     ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
     ogs_assert(ie);
-    ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+    ASN_SEQUENCE_ADD(message.protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_PDUSessionType;
     ie->criticality = NGAP_Criticality_reject;
     ie->value.present = NGAP_PDUSessionResourceSetupRequestTransferIEs__value_PR_PDUSessionType;
 
-    PDUSessionType = &ie->value.choice.PDUSessionType;
+    PDUSessionType = CALLOC(1, sizeof(*PDUSessionType));
+    ogs_assert(PDUSessionType);
+    ie->value.choice.PDUSessionType = PDUSessionType;
 
     *PDUSessionType = OGS_PDU_SESSION_TYPE_IPV4;
     switch (sess->session.session_type) {
@@ -198,13 +222,15 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
         ie = CALLOC(1,
                 sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
         ogs_assert(ie);
-        ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+        ASN_SEQUENCE_ADD(message.protocolIEs, ie);
 
         ie->id = NGAP_ProtocolIE_ID_id_SecurityIndication;
         ie->criticality = NGAP_Criticality_reject;
         ie->value.present = NGAP_PDUSessionResourceSetupRequestTransferIEs__value_PR_SecurityIndication;
 
-        SecurityIndication = &ie->value.choice.SecurityIndication;
+        SecurityIndication = CALLOC(1, sizeof(*SecurityIndication));
+        ogs_assert(SecurityIndication);
+        ie->value.choice.SecurityIndication = SecurityIndication;
 
         SecurityIndication->integrityProtectionIndication =
                 smf_integrity_protection_indication_value2enum(
@@ -242,14 +268,13 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 
             if (smf_self()->security_indication.
                     maximum_integrity_protected_data_rate_downlink) {
-                NGAP_ProtocolExtensionContainer_11905P297_t
+                NGAP_ProtocolExtensionContainer_14713P376_t
                     *extContainer = NULL;
                 NGAP_SecurityIndication_ExtIEs_t *extIe = NULL;
                 NGAP_MaximumIntegrityProtectedDataRate_t
                     *MaximumIntegrityProtectedDataRate = NULL;
 
-                extContainer = CALLOC(1,
-                        sizeof(NGAP_ProtocolExtensionContainer_11905P297_t));
+                extContainer = CALLOC(1, sizeof(*extContainer));
                 ogs_assert(extContainer);
                 SecurityIndication->iE_Extensions =
                     (struct NGAP_ProtocolExtensionContainer *)extContainer;
@@ -264,8 +289,10 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
                 extIe->extensionValue.present = NGAP_SecurityIndication_ExtIEs__extensionValue_PR_MaximumIntegrityProtectedDataRate;
 
                 MaximumIntegrityProtectedDataRate =
-                    &extIe->extensionValue.choice.
-                        MaximumIntegrityProtectedDataRate;
+                    CALLOC(1, sizeof(*MaximumIntegrityProtectedDataRate));
+                ogs_assert(MaximumIntegrityProtectedDataRate);
+                extIe->extensionValue.choice.MaximumIntegrityProtectedDataRate =
+                    MaximumIntegrityProtectedDataRate;
 
                 *MaximumIntegrityProtectedDataRate =
                 smf_maximum_integrity_protected_data_rate_downlink_value2enum(
@@ -278,13 +305,15 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 
     ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
     ogs_assert(ie);
-    ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+    ASN_SEQUENCE_ADD(message.protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_QosFlowSetupRequestList;
     ie->criticality = NGAP_Criticality_reject;
     ie->value.present = NGAP_PDUSessionResourceSetupRequestTransferIEs__value_PR_QosFlowSetupRequestList;
 
-    QosFlowSetupRequestList = &ie->value.choice.QosFlowSetupRequestList;
+    QosFlowSetupRequestList = CALLOC(1, sizeof(*QosFlowSetupRequestList));
+    ogs_assert(QosFlowSetupRequestList);
+    ie->value.choice.QosFlowSetupRequestList = QosFlowSetupRequestList;
 
     if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
         OpenAPI_list_t *qosFlowsSetupList = NULL;
@@ -341,9 +370,14 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
             QosFlowSetupRequestItem);
 
         QosFlowSetupRequestItem->qosFlowIdentifier = qosFlowSetupItem->qfi;
+        QosFlowSetupRequestItem->qosFlowLevelQosParameters =
+            CALLOC(1,
+                    sizeof(*QosFlowSetupRequestItem->
+                        qosFlowLevelQosParameters));
+        ogs_assert(QosFlowSetupRequestItem->qosFlowLevelQosParameters);
 
         fill_qos_level_parameters(
-                &QosFlowSetupRequestItem->qosFlowLevelQosParameters,
+                QosFlowSetupRequestItem->qosFlowLevelQosParameters,
                 &qos, true);
 
     } else {
@@ -355,9 +389,14 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
                 QosFlowSetupRequestItem);
 
             QosFlowSetupRequestItem->qosFlowIdentifier = qos_flow->qfi;
+            QosFlowSetupRequestItem->qosFlowLevelQosParameters =
+                CALLOC(1,
+                        sizeof(*QosFlowSetupRequestItem->
+                            qosFlowLevelQosParameters));
+            ogs_assert(QosFlowSetupRequestItem->qosFlowLevelQosParameters);
 
             fill_qos_level_parameters(
-                    &QosFlowSetupRequestItem->qosFlowLevelQosParameters,
+                    QosFlowSetupRequestItem->qosFlowLevelQosParameters,
                     &qos_flow->qos, true);
         }
     }
@@ -382,17 +421,23 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
 
     ogs_debug("PDUSessionResourceModifyRequestTransfer");
     memset(&message, 0, sizeof(NGAP_PDUSessionResourceModifyRequestTransfer_t));
+    message.protocolIEs = ogs_asn_calloc_protocol_ies(
+            &asn_DEF_NGAP_PDUSessionResourceModifyRequestTransfer);
+    ogs_assert(message.protocolIEs);
 
     ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceModifyRequestTransferIEs_t));
     ogs_assert(ie);
-    ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+    ASN_SEQUENCE_ADD(message.protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_QosFlowAddOrModifyRequestList;
     ie->criticality = NGAP_Criticality_reject;
     ie->value.present = NGAP_PDUSessionResourceModifyRequestTransferIEs__value_PR_QosFlowAddOrModifyRequestList;
 
     QosFlowAddOrModifyRequestList =
-        &ie->value.choice.QosFlowAddOrModifyRequestList;
+        CALLOC(1, sizeof(*QosFlowAddOrModifyRequestList));
+    ogs_assert(QosFlowAddOrModifyRequestList);
+    ie->value.choice.QosFlowAddOrModifyRequestList =
+        QosFlowAddOrModifyRequestList;
 
     /* Home-Routed V-SMF: QoS flow */
     if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
@@ -528,15 +573,21 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_request_transfer(
 
     ogs_debug("PDUSessionResourceModifyRequestTransfer");
     memset(&message, 0, sizeof(NGAP_PDUSessionResourceModifyRequestTransfer_t));
+    message.protocolIEs = ogs_asn_calloc_protocol_ies(
+            &asn_DEF_NGAP_PDUSessionResourceModifyRequestTransfer);
+    ogs_assert(message.protocolIEs);
 
     ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceModifyRequestTransferIEs_t));
-    ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(message.protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_QosFlowToReleaseList;
     ie->criticality = NGAP_Criticality_reject;
     ie->value.present = NGAP_PDUSessionResourceModifyRequestTransferIEs__value_PR_QosFlowListWithCause;
 
-    QosFlowListWithCause = &ie->value.choice.QosFlowListWithCause;
+    QosFlowListWithCause = CALLOC(1, sizeof(*QosFlowListWithCause));
+    ogs_assert(QosFlowListWithCause);
+    ie->value.choice.QosFlowListWithCause = QosFlowListWithCause;
 
     /* Home-Routed V-SMF: QoS flow */
     if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
@@ -547,6 +598,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_request_transfer(
             if (qosFlowRelRequestItem) {
 
                 QosFlowWithCauseItem = CALLOC(1, sizeof(*QosFlowWithCauseItem));
+                ogs_assert(QosFlowWithCauseItem);
                 ASN_SEQUENCE_ADD(&QosFlowListWithCause->list,
                         QosFlowWithCauseItem);
 
@@ -554,7 +606,10 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_request_transfer(
 
                 *qosFlowIdentifier = qosFlowRelRequestItem->qfi;
 
-                Cause = &QosFlowWithCauseItem->cause;
+                QosFlowWithCauseItem->cause =
+                    CALLOC(1, sizeof(*QosFlowWithCauseItem->cause));
+                ogs_assert(QosFlowWithCauseItem->cause);
+                Cause = QosFlowWithCauseItem->cause;
                 Cause->present = group;
                 Cause->choice.radioNetwork = cause;
             }
@@ -564,13 +619,17 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_request_transfer(
                 &sess->qos_flow_to_modify_list, qos_flow, to_modify_node) {
 
             QosFlowWithCauseItem = CALLOC(1, sizeof(*QosFlowWithCauseItem));
+            ogs_assert(QosFlowWithCauseItem);
             ASN_SEQUENCE_ADD(&QosFlowListWithCause->list, QosFlowWithCauseItem);
 
             qosFlowIdentifier = &QosFlowWithCauseItem->qosFlowIdentifier;
 
             *qosFlowIdentifier = qos_flow->qfi;
 
-            Cause = &QosFlowWithCauseItem->cause;
+            QosFlowWithCauseItem->cause =
+                CALLOC(1, sizeof(*QosFlowWithCauseItem->cause));
+            ogs_assert(QosFlowWithCauseItem->cause);
+            Cause = QosFlowWithCauseItem->cause;
             Cause->present = group;
             Cause->choice.radioNetwork = cause;
 
@@ -597,7 +656,9 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command_transfer(
 
     ogs_debug("    Group[%d] Cause[%d]", group, (int)cause);
 
-    Cause = &message.cause;
+    message.cause = CALLOC(1, sizeof(*message.cause));
+    ogs_assert(message.cause);
+    Cause = message.cause;
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
 

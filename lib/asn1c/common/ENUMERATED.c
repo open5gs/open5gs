@@ -13,6 +13,7 @@ static const ber_tlv_tag_t asn_DEF_ENUMERATED_tags[] = {
     (ASN_TAG_CLASS_UNIVERSAL | (10 << 2))
 };
 asn_TYPE_operation_t asn_OP_ENUMERATED = {
+    .kind = ASN_KIND_PRIMITIVE,
     ASN__PRIMITIVE_TYPE_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
     INTEGER_print,  /* Implemented in terms of INTEGER */
@@ -37,7 +38,7 @@ asn_TYPE_operation_t asn_OP_ENUMERATED = {
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
     ENUMERATED_decode_jer,
-    INTEGER_encode_jer,
+    ENUMERATED_encode_jer,
 #else
     0,
     0,
@@ -68,7 +69,14 @@ asn_TYPE_operation_t asn_OP_ENUMERATED = {
 #else
     0,
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
-    0  /* Use generic outmost tag fetcher */
+    0  /* Use generic outmost tag fetcher */,
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+    ENUMERATED_decode_cbor,
+    ENUMERATED_encode_cbor,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
 };
 asn_TYPE_descriptor_t asn_DEF_ENUMERATED = {
     "ENUMERATED",
@@ -85,6 +93,9 @@ asn_TYPE_descriptor_t asn_DEF_ENUMERATED = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
         0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
         asn_generic_no_constraint
     },
     0, 0,  /* No members */

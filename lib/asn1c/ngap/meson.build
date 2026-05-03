@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -71,6 +71,9 @@ libasn1c_ngap_sources = files('''
     NGAP_UplinkNASTransport.c
     NGAP_NASNonDeliveryIndication.c
     NGAP_RerouteNASRequest.c
+    NGAP_NGRemovalRequest.c
+    NGAP_NGRemovalResponse.c
+    NGAP_NGRemovalFailure.c
     NGAP_NGSetupRequest.c
     NGAP_NGSetupResponse.c
     NGAP_NGSetupFailure.c
@@ -104,6 +107,7 @@ libasn1c_ngap_sources = files('''
     NGAP_CellTrafficTrace.c
     NGAP_LocationReportingControl.c
     NGAP_LocationReportingFailureIndication.c
+    NGAP_Aerial-UE-FlightInformationOngoingReporting-failed.c
     NGAP_LocationReport.c
     NGAP_UETNLABindingReleaseRequest.c
     NGAP_UERadioCapabilityInfoIndication.c
@@ -126,6 +130,9 @@ libasn1c_ngap_sources = files('''
     NGAP_BroadcastSessionReleaseRequest.c
     NGAP_BroadcastSessionReleaseRequired.c
     NGAP_BroadcastSessionReleaseResponse.c
+    NGAP_BroadcastSessionTransportRequest.c
+    NGAP_BroadcastSessionTransportResponse.c
+    NGAP_BroadcastSessionTransportFailure.c
     NGAP_DistributionSetupRequest.c
     NGAP_DistributionSetupResponse.c
     NGAP_DistributionSetupFailure.c
@@ -140,9 +147,61 @@ libasn1c_ngap_sources = files('''
     NGAP_MulticastSessionUpdateResponse.c
     NGAP_MulticastSessionUpdateFailure.c
     NGAP_MulticastGroupPaging.c
+    NGAP_TimingSynchronisationStatusRequest.c
+    NGAP_TimingSynchronisationStatusResponse.c
+    NGAP_TimingSynchronisationStatusFailure.c
+    NGAP_TimingSynchronisationStatusReport.c
+    NGAP_MTCommunicationHandlingRequest.c
+    NGAP_MTCommunicationHandlingResponse.c
+    NGAP_MTCommunicationHandlingFailure.c
+    NGAP_RANPagingRequest.c
+    NGAP_InventoryRequest.c
+    NGAP_InventoryResponse.c
+    NGAP_InventoryFailure.c
+    NGAP_InventoryReport.c
+    NGAP_CommandRequest.c
+    NGAP_CommandResponse.c
+    NGAP_CommandFailure.c
+    NGAP_AIOTSessionReleaseCommand.c
+    NGAP_AIOTSessionReleaseComplete.c
+    NGAP_AIOTSessionReleaseRequest.c
     NGAP_AdditionalDLUPTNLInformationForHOList.c
     NGAP_AdditionalDLUPTNLInformationForHOItem.c
     NGAP_AdditionalQosFlowInformation.c
+    NGAP_AerialUEsubscriptionInformation.c
+    NGAP_AdditionalULI.c
+    NGAP_A2X-PC5-FlowBitRates.c
+    NGAP_A2X-PC5-QoS-Flow-List.c
+    NGAP_A2X-PC5-QoS-Flow-Item.c
+    NGAP_A2X-PC5-QoS-Parameters.c
+    NGAP_AdditionalCancelledlocationReportingReferenceIDList.c
+    NGAP_AdditionalCancelledlocationReportingReferenceIDItem.c
+    NGAP_AIoTAreaID.c
+    NGAP_AIoT-CorrelationIdentifier.c
+    NGAP_AIoT-FollowonCommandIndication.c
+    NGAP_RAN-AIOT-Device-NGAP-ID.c
+    NGAP_AIoT-CommandAssistanceInformation.c
+    NGAP_AIoT-DeviceIdentificationRequested.c
+    NGAP_AIoT-DeviceReportList.c
+    NGAP_AIoT-DeviceReportItem.c
+    NGAP_AIOTFIdentifier.c
+    NGAP_AIOTFName.c
+    NGAP_AIOTFNameVisibleString.c
+    NGAP_AIOTFNameUTF8String.c
+    NGAP_AIoT-InventoryAssistanceInformation.c
+    NGAP_AIoT-NASPDU.c
+    NGAP_AIoT-SecurityInfo.c
+    NGAP_AIoT-ReaderReportList.c
+    NGAP_AIoT-ReaderReportItem.c
+    NGAP_AIoT-ReaderIndex.c
+    NGAP_AIoT-RequestedReaderList.c
+    NGAP_AIoT-RequestedReaderItem.c
+    NGAP_AIoT-RequestedAIoTAreaList.c
+    NGAP_AIoT-RequestedServiceAreaInformation.c
+    NGAP_AIOTSessionReleaseCommandTransfer.c
+    NGAP_AIOTSessionReleaseCompleteTransfer.c
+    NGAP_AIOTSessionReleaseRequestTransfer.c
+    NGAP_AIoT-Support.c
     NGAP_AllocationAndRetentionPriority.c
     NGAP_Allowed-CAG-List-per-PLMN.c
     NGAP_AllowedNSSAI.c
@@ -154,6 +213,7 @@ libasn1c_ngap_sources = files('''
     NGAP_AlternativeQoSParaSetNotifyIndex.c
     NGAP_AlternativeQoSParaSetList.c
     NGAP_AlternativeQoSParaSetItem.c
+    NGAP_AssistanceInformationQoE-Meas.c
     NGAP_AMFName.c
     NGAP_AMFNameVisibleString.c
     NGAP_AMFNameUTF8String.c
@@ -187,6 +247,8 @@ libasn1c_ngap_sources = files('''
     NGAP_AssociatedMBSQosFlowSetuporModifyRequestItem.c
     NGAP_AssociatedQosFlowList.c
     NGAP_AssociatedQosFlowItem.c
+    NGAP_AssociatedSessionID.c
+    NGAP_AUN3DeviceAccessInfo.c
     NGAP_AuthenticatedIndication.c
     NGAP_AveragingWindow.c
     NGAP_AreaScopeOfMDT-NR.c
@@ -194,6 +256,8 @@ libasn1c_ngap_sources = files('''
     NGAP_AreaScopeOfNeighCellsList.c
     NGAP_AreaScopeOfNeighCellsItem.c
     NGAP_AreaScopeOfQMC.c
+    NGAP_AvailableBitrateReportThresholdList.c
+    NGAP_AvailableBitrateReportThresholdItem.c
     NGAP_AvailableRANVisibleQoEMetrics.c
     NGAP_BeamMeasurementsReportConfiguration.c
     NGAP_BeamMeasurementsReportQuantity.c
@@ -202,13 +266,20 @@ libasn1c_ngap_sources = files('''
     NGAP_BroadcastCompletedAreaList.c
     NGAP_BroadcastPLMNList.c
     NGAP_BroadcastPLMNItem.c
+    NGAP_BroadcastTransportFailureTransfer.c
+    NGAP_BroadcastTransportRequestTransfer.c
+    NGAP_BroadcastTransportResponseTransfer.c
     NGAP_BluetoothMeasurementConfiguration.c
     NGAP_BluetoothMeasConfigNameList.c
     NGAP_BluetoothMeasConfigNameItem.c
     NGAP_BluetoothMeasConfig.c
     NGAP_BluetoothName.c
     NGAP_BurstArrivalTime.c
+    NGAP_BurstArrivalTimeWindow.c
     NGAP_CAG-ID.c
+    NGAP_CandidateRelayUEInformationList.c
+    NGAP_CandidateRelayUEInformationItem.c
+    NGAP_CandidateRelayUE-ID.c
     NGAP_CancelAllWarningMessages.c
     NGAP_CancelledCellsInEAI-EUTRA.c
     NGAP_CancelledCellsInEAI-EUTRA-Item.c
@@ -244,11 +315,19 @@ libasn1c_ngap_sources = files('''
     NGAP_CellType.c
     NGAP_CEmodeBSupport-Indicator.c
     NGAP_CEmodeBrestricted.c
+    NGAP_ClockAccuracy.c
+    NGAP_ClockQualityAcceptanceIndication.c
+    NGAP_ClockQualityAcceptanceCriteria.c
+    NGAP_ClockQualityReportingControlInfo.c
+    NGAP_ClockQualityDetailLevel.c
     NGAP_CNAssistedRANTuning.c
     NGAP_CNsubgroupID.c
     NGAP_CNTypeRestrictionsForEquivalent.c
     NGAP_CNTypeRestrictionsForEquivalentItem.c
     NGAP_CNTypeRestrictionsForServing.c
+    NGAP_CommandRequestTransfer.c
+    NGAP_CommandResponseTransfer.c
+    NGAP_CommandFailureTransfer.c
     NGAP_CommonNetworkInstance.c
     NGAP_CompletedCellsInEAI-EUTRA.c
     NGAP_CompletedCellsInEAI-EUTRA-Item.c
@@ -263,6 +342,7 @@ libasn1c_ngap_sources = files('''
     NGAP_ConfidentialityProtectionResult.c
     NGAP_ConfiguredTACIndication.c
     NGAP_CoreNetworkAssistanceInformationForInactive.c
+    NGAP_CN-MT-CommunicationHandling.c
     NGAP_COUNTValueForPDCP-SN12.c
     NGAP_COUNTValueForPDCP-SN18.c
     NGAP_CoverageEnhancementLevel.c
@@ -270,12 +350,15 @@ libasn1c_ngap_sources = files('''
     NGAP_CriticalityDiagnostics.c
     NGAP_CriticalityDiagnostics-IE-List.c
     NGAP_CriticalityDiagnostics-IE-Item.c
+    NGAP_C-RNTI.c
     NGAP_CellBasedMDT-NR.c
     NGAP_CellIdListforMDT-NR.c
     NGAP_CellBasedMDT-EUTRA.c
     NGAP_CellBasedQMC.c
     NGAP_CellIdListforQMC.c
     NGAP_CellIdListforMDT-EUTRA.c
+    NGAP_CAGListforMDT.c
+    NGAP_CAGListforMDTItem.c
     NGAP_DataCodingScheme.c
     NGAP_DataForwardingAccepted.c
     NGAP_DataForwardingNotPossible.c
@@ -289,9 +372,11 @@ libasn1c_ngap_sources = files('''
     NGAP_DataForwardingResponseERABListItem.c
     NGAP_DelayCritical.c
     NGAP_DL-CP-SecurityInformation.c
+    NGAP_DL-Signalling.c
     NGAP_DL-NAS-MAC.c
     NGAP_DLForwarding.c
     NGAP_DL-NGU-TNLInformationReused.c
+    NGAP_DLPDUSetInformationMarkingSupportIndication.c
     NGAP_DirectForwardingPathAvailability.c
     NGAP_DRB-ID.c
     NGAP_DRBsSubjectToStatusTransferList.c
@@ -308,9 +393,20 @@ libasn1c_ngap_sources = files('''
     NGAP_EarlyMeasurement.c
     NGAP_EarlyStatusTransfer-TransparentContainer.c
     NGAP_ProcedureStageChoice.c
+    NGAP_DLDiscarding.c
+    NGAP_DRBsSubjectToDLDiscarding-List.c
+    NGAP_DRBsSubjectToDLDiscarding-Item.c
+    NGAP_DLCountChoice.c
     NGAP_FirstDLCount.c
     NGAP_DRBsSubjectToEarlyStatusTransfer-List.c
     NGAP_DRBsSubjectToEarlyStatusTransfer-Item.c
+    NGAP_ECNMarkingorCongestionInformationReportingRequest.c
+    NGAP_ECNMarkingAtRANRequest.c
+    NGAP_ECNMarkingAtUPFRequest.c
+    NGAP_CongestionInformationRequest.c
+    NGAP_ECNMarkingorCongestionInformationReportingStatus.c
+    NGAP_ECNMarkingorCongestionInformationReportingStatus-Item.c
+    NGAP_ActivationStatus.c
     NGAP_EDT-Session.c
     NGAP_EmergencyAreaID.c
     NGAP_EmergencyAreaIDBroadcastEUTRA.c
@@ -338,6 +434,7 @@ libasn1c_ngap_sources = files('''
     NGAP_E-RAB-ID.c
     NGAP_E-RABInformationList.c
     NGAP_E-RABInformationItem.c
+    NGAP_ERedCapIndication.c
     NGAP_EUTRACellIdentity.c
     NGAP_EUTRA-CGI.c
     NGAP_EUTRA-CGIList.c
@@ -369,13 +466,23 @@ libasn1c_ngap_sources = files('''
     NGAP_EventTrigger.c
     NGAP_EventL1LoggedMDTConfig.c
     NGAP_MeasurementThresholdL1LoggedMDT.c
+    NGAP_EquivalentSNPNsList.c
+    NGAP_EquivalentSNPNsItem.c
     NGAP_FailureIndication.c
+    NGAP_FiveGCAction.c
     NGAP_FiveG-ProSeAuthorized.c
     NGAP_FiveGProSeDirectDiscovery.c
     NGAP_FiveGProSeDirectCommunication.c
     NGAP_FiveGProSeLayer2UEtoNetworkRelay.c
     NGAP_FiveGProSeLayer3UEtoNetworkRelay.c
     NGAP_FiveGProSeLayer2RemoteUE.c
+    NGAP_FiveGProSeLayer2Multipath.c
+    NGAP_FiveGProSeLayer2UEtoUERelay.c
+    NGAP_FiveGProSeLayer2UEtoUERemote.c
+    NGAP_FiveGProSeLayer2MHUEtoNetworkRelay.c
+    NGAP_FiveGProSeLayer2MHIntermediateUEtoNetworkRelay.c
+    NGAP_FiveGProSeLayer2MHRemote.c
+    NGAP_FiveGProSeLayer3MHUEtoNetworkRelay.c
     NGAP_FiveG-ProSePC5QoSParameters.c
     NGAP_FiveGProSePC5QoSFlowList.c
     NGAP_FiveGProSePC5QoSFlowItem.c
@@ -388,8 +495,11 @@ libasn1c_ngap_sources = files('''
     NGAP_ForbiddenTACs.c
     NGAP_FromEUTRANtoNGRAN.c
     NGAP_FromNGRANtoEUTRAN.c
+    NGAP_FurtherExtendedUEIdentityIndexValue.c
     NGAP_GBR-QosInformation.c
+    NGAP_GeographyBasedMDT.c
     NGAP_GlobalCable-ID.c
+    NGAP_GlobalCable-ID-new.c
     NGAP_GlobalENB-ID.c
     NGAP_GlobalGNB-ID.c
     NGAP_GlobalN3IWF-ID.c
@@ -405,6 +515,9 @@ libasn1c_ngap_sources = files('''
     NGAP_GTPTunnel.c
     NGAP_GUAMI.c
     NGAP_GUAMIType.c
+    NGAP_GUAMIList.c
+    NGAP_GUAMIList-Item.c
+    NGAP_GW-Context-Release-Indication.c
     NGAP_HandoverCommandTransfer.c
     NGAP_HandoverFlag.c
     NGAP_HandoverPreparationUnsuccessfulTransfer.c
@@ -412,14 +525,20 @@ libasn1c_ngap_sources = files('''
     NGAP_HandoverRequiredTransfer.c
     NGAP_HandoverResourceAllocationUnsuccessfulTransfer.c
     NGAP_HandoverType.c
+    NGAP_HashedUEIdentityIndexValue.c
     NGAP_HFCNode-ID.c
+    NGAP_HFCNode-ID-new.c
+    NGAP_HLComActivate.c
+    NGAP_HLComDeactivate.c
     NGAP_HOReport.c
     NGAP_Hysteresis.c
     NGAP_IAB-Authorized.c
+    NGAP_MobileIAB-MTUserLocationInformation.c
     NGAP_IAB-Supported.c
     NGAP_IABNodeIndication.c
     NGAP_IMSVoiceSupportIndicator.c
     NGAP_IndexToRFSP.c
+    NGAP_Indication-of-Bitrate-Adaptation.c
     NGAP_InfoOnRecommendedCellsAndRANNodesForPaging.c
     NGAP_IntegrityProtectionIndication.c
     NGAP_IntegrityProtectionResult.c
@@ -475,7 +594,12 @@ libasn1c_ngap_sources = files('''
     NGAP_NGRAN-RadioResourceStatus.c
     NGAP_InterSystemHOReport.c
     NGAP_InterSystemHandoverReportType.c
+    NGAP_IntersystemMobilityFailureforVoiceFallback.c
     NGAP_IntersystemUnnecessaryHO.c
+    NGAP_InventoryRequestTransfer.c
+    NGAP_InventoryResponseTransfer.c
+    NGAP_InventoryFailureTransfer.c
+    NGAP_InventoryReportTransfer.c
     NGAP_LAC.c
     NGAP_LAI.c
     NGAP_LastVisitedCellInformation.c
@@ -490,20 +614,29 @@ libasn1c_ngap_sources = files('''
     NGAP_LocationReportingAdditionalInfo.c
     NGAP_LocationReportingReferenceID.c
     NGAP_LocationReportingRequestType.c
+    NGAP_Aerial-UE-FlightInformationReportingControl.c
+    NGAP_Aerial-UE-FlightInformationReportingControlList.c
+    NGAP_Aerial-UE-FlightInformationReportingControlItem.c
+    NGAP_Area-ID.c
     NGAP_LoggedMDTNr.c
     NGAP_LoggingInterval.c
     NGAP_LoggingDuration.c
     NGAP_Links-to-log.c
     NGAP_LoggedMDTTrigger.c
+    NGAP_LPWUSPSAssistanceInformation.c
+    NGAP_LPWUSCNsubgroupID.c
+    NGAP_LPWUSDisableIndication.c
     NGAP_LTEM-Indication.c
     NGAP_LTEUERLFReportContainer.c
     NGAP_LTEV2XServicesAuthorized.c
     NGAP_LTEUESidelinkAggregateMaximumBitrate.c
+    NGAP_LTE-A2X-ServicesAuthorized.c
     NGAP_MaskedIMEISV.c
     NGAP_MaximumDataBurstVolume.c
     NGAP_MessageIdentifier.c
     NGAP_MaximumIntegrityProtectedDataRate.c
     NGAP_MBS-AreaSessionID.c
+    NGAP_MBSCommServiceType.c
     NGAP_MBS-DataForwardingResponseMRBList.c
     NGAP_MBS-DataForwardingResponseMRBItem.c
     NGAP_MBS-MappingandDataForwardingRequestList.c
@@ -518,6 +651,8 @@ libasn1c_ngap_sources = files('''
     NGAP_MBS-ServiceAreaInformation.c
     NGAP_MBS-ServiceAreaCellList.c
     NGAP_MBS-ServiceAreaTAIList.c
+    NGAP_MBS-IntendedServiceAreaList.c
+    NGAP_IntendedServiceAreaCoordinates.c
     NGAP_MBS-SessionID.c
     NGAP_MBSSessionFailedtoSetupList.c
     NGAP_MBSSessionFailedtoSetupItem.c
@@ -525,10 +660,13 @@ libasn1c_ngap_sources = files('''
     NGAP_MBS-ActiveSessionInformation-SourcetoTargetItem.c
     NGAP_MBS-ActiveSessionInformation-TargettoSourceList.c
     NGAP_MBS-ActiveSessionInformation-TargettoSourceItem.c
+    NGAP_MBS-AssistanceInformation.c
     NGAP_MBSSessionSetupOrModFailureTransfer.c
     NGAP_MBSSessionSetupResponseList.c
     NGAP_MBSSessionSetupResponseItem.c
     NGAP_MBSSessionSetupOrModRequestTransfer.c
+    NGAP_SupportedUETypeList.c
+    NGAP_SupportedUEType.c
     NGAP_MBS-SessionFSAIDList.c
     NGAP_MBS-SessionFSAID.c
     NGAP_MBSSessionReleaseResponseTransfer.c
@@ -544,6 +682,10 @@ libasn1c_ngap_sources = files('''
     NGAP_MBS-DistributionSetupRequestTransfer.c
     NGAP_MBS-DistributionSetupResponseTransfer.c
     NGAP_MBS-DistributionSetupUnsuccessfulTransfer.c
+    NGAP_MBS-NGUFailureIndication.c
+    NGAP_MBS-UP-FailureIndicationList.c
+    NGAP_MBS-UP-FailureIndicationItem.c
+    NGAP_MBS-UP-FailureIndication.c
     NGAP_MBSSessionSetupRequestList.c
     NGAP_MBSSessionSetupRequestItem.c
     NGAP_MBSSessionSetuporModifyRequestList.c
@@ -554,17 +696,24 @@ libasn1c_ngap_sources = files('''
     NGAP_MicoAllPLMN.c
     NGAP_MICOModeIndication.c
     NGAP_MobilityInformation.c
+    NGAP_ExtendedMobilityInformation.c
     NGAP_MobilityRestrictionList.c
     NGAP_MDT-AlignmentInfo.c
     NGAP_MDTPLMNList.c
     NGAP_MDTPLMNModificationList.c
     NGAP_MDT-Configuration.c
+    NGAP_MN-only-MDT-collection.c
     NGAP_MDT-Configuration-NR.c
     NGAP_MDT-Configuration-EUTRA.c
     NGAP_MDT-Activation.c
     NGAP_MDTModeNr.c
     NGAP_MDTModeEutra.c
     NGAP_MeasurementsToActivate.c
+    NGAP_MobileIAB-Authorized.c
+    NGAP_MobileIABNodeIndication.c
+    NGAP_MobileIAB-Supported.c
+    NGAP_MonitoringRequestonAvailableBitrate.c
+    NGAP_MonitoringRequest.c
     NGAP_MRB-ID.c
     NGAP_MulticastSessionActivationRequestTransfer.c
     NGAP_MulticastSessionDeactivationRequestTransfer.c
@@ -594,9 +743,13 @@ libasn1c_ngap_sources = files('''
     NGAP_M7Configuration.c
     NGAP_M7ReportAmountMDT.c
     NGAP_M7period.c
+    NGAP_MDT-circle.c
     NGAP_MDT-Location-Info.c
     NGAP_MDT-Location-Information.c
+    NGAP_MDT-polygon.c
+    NGAP_MMSID.c
     NGAP_N3IWF-ID.c
+    NGAP_N6JitterInformation.c
     NGAP_NAS-PDU.c
     NGAP_NASSecurityParametersFromNGRAN.c
     NGAP_NB-IoT-DefaultPagingDRX.c
@@ -605,7 +758,13 @@ libasn1c_ngap_sources = files('''
     NGAP_NB-IoT-Paging-TimeWindow.c
     NGAP_NB-IoT-Paging-eDRXInfo.c
     NGAP_NB-IoT-UEPriority.c
+    NGAP_NetworkControlledRepeaterAuthorized.c
     NGAP_NetworkInstance.c
+    NGAP_NetworkSliceListforMDT.c
+    NGAP_NetworkSliceItemforMDT.c
+    NGAP_NetworkSliceAreaScopeofMDT.c
+    NGAP_SliceMDTList.c
+    NGAP_SliceMDTItem.c
     NGAP_NewSecurityContextInd.c
     NGAP_NextHopChainingCount.c
     NGAP_NextPagingAreaScope.c
@@ -621,6 +780,7 @@ libasn1c_ngap_sources = files('''
     NGAP_NGRANTraceID.c
     NGAP_NID.c
     NGAP_NonDynamic5QIDescriptor.c
+    NGAP_NoPDUSessionIndication.c
     NGAP_NotAllowedTACs.c
     NGAP_NotificationCause.c
     NGAP_NotificationControl.c
@@ -634,7 +794,10 @@ libasn1c_ngap_sources = files('''
     NGAP_NR-CGIListForWarning.c
     NGAP_NR-PagingeDRXInformation.c
     NGAP_NR-Paging-eDRX-Cycle.c
+    NGAP_NR-Paging-Long-eDRX-Information-for-RRC-INACTIVE.c
+    NGAP_NR-Paging-Long-eDRX-Cycle-for-RRC-INACTIVE.c
     NGAP_NR-Paging-Time-Window.c
+    NGAP_NR-Paging-Time-Window-for-RRC-INACTIVE.c
     NGAP_NRencryptionAlgorithms.c
     NGAP_NRintegrityProtectionAlgorithms.c
     NGAP_NRMobilityHistoryReport.c
@@ -654,6 +817,9 @@ libasn1c_ngap_sources = files('''
     NGAP_PedestrianUE.c
     NGAP_NRUESidelinkAggregateMaximumBitrate.c
     NGAP_NSAG-ID.c
+    NGAP_NR-A2X-ServicesAuthorized.c
+    NGAP_NTN-Geographical-Area-List.c
+    NGAP_NTN-Geographical-Area-Item.c
     NGAP_OnboardingSupport.c
     NGAP_OverloadAction.c
     NGAP_OverloadResponse.c
@@ -669,8 +835,17 @@ libasn1c_ngap_sources = files('''
     NGAP_PagingCauseIndicationForVoiceService.c
     NGAP_PagingDRX.c
     NGAP_PagingOrigin.c
+    NGAP_PagingPolicyDifferentiation.c
+    NGAP_PDUSessionForPagingList.c
+    NGAP_PDUSessionForPagingItem.c
+    NGAP_PagingPolicyDifferentiationList.c
+    NGAP_PagingPolicyDifferentiationItem.c
+    NGAP_PagingPolicyIndicator.c
     NGAP_PagingPriority.c
     NGAP_PagingProbabilityInformation.c
+    NGAP_ParentTImeSource.c
+    NGAP_Partially-Allowed-NSSAI.c
+    NGAP_PartiallyAllowedNSSAI-Item.c
     NGAP_PathSwitchRequestAcknowledgeTransfer.c
     NGAP_PathSwitchRequestSetupFailedTransfer.c
     NGAP_PathSwitchRequestTransfer.c
@@ -714,6 +889,8 @@ libasn1c_ngap_sources = files('''
     NGAP_PDUSessionResourceItemCxtRelReq.c
     NGAP_PDUSessionResourceListHORqd.c
     NGAP_PDUSessionResourceItemHORqd.c
+    NGAP_PDUSessionListMTCommHReq.c
+    NGAP_PDUSessionListMTCommHReq-Item.c
     NGAP_PDUSessionResourceModifyConfirmTransfer.c
     NGAP_PDUSessionResourceModifyIndicationUnsuccessfulTransfer.c
     NGAP_PDUSessionResourceModifyRequestTransfer.c
@@ -731,6 +908,7 @@ libasn1c_ngap_sources = files('''
     NGAP_PDUSessionResourceNotifyList.c
     NGAP_PDUSessionResourceNotifyItem.c
     NGAP_PDUSessionResourceNotifyReleasedTransfer.c
+    NGAP_UserPlaneErrorIndicator.c
     NGAP_PDUSessionResourceNotifyTransfer.c
     NGAP_PDUSessionResourceReleaseCommandTransfer.c
     NGAP_PDUSessionResourceReleasedListNot.c
@@ -773,8 +951,15 @@ libasn1c_ngap_sources = files('''
     NGAP_PDUSessionResourceToReleaseItemRelCmd.c
     NGAP_PDUSessionType.c
     NGAP_PDUSessionUsageReport.c
+    NGAP_PDUsetQoSParameters.c
+    NGAP_PDUsetQoSInformation.c
+    NGAP_PDUSetbasedHandlingIndicator.c
     NGAP_PEIPSassistanceInformation.c
     NGAP_Periodicity.c
+    NGAP_PeriodicityBound.c
+    NGAP_PeriodicityList.c
+    NGAP_AllowedPeriodicityList.c
+    NGAP_PeriodicityRange.c
     NGAP_PeriodicRegistrationUpdateTimer.c
     NGAP_PLMNIdentity.c
     NGAP_PLMNAreaBasedQMC.c
@@ -788,13 +973,20 @@ libasn1c_ngap_sources = files('''
     NGAP_PriorityLevelARP.c
     NGAP_PriorityLevelQos.c
     NGAP_PWSFailedCellIDList.c
+    NGAP_PNI-NPN-AreaScopeofMDT.c
+    NGAP_PNI-NPNBasedMDT.c
     NGAP_QMCConfigInfo.c
     NGAP_QMCDeactivation.c
     NGAP_QoEReferenceList.c
     NGAP_QoEReference.c
+    NGAP_QoERVQoEReportingPaths.c
     NGAP_QosCharacteristics.c
     NGAP_QosFlowAcceptedList.c
     NGAP_QosFlowAcceptedItem.c
+    NGAP_QosFlowAdditionalInfoListRelCom.c
+    NGAP_QosFlowAdditionalInfoItemRelCom.c
+    NGAP_QosFlowAdditionalInfoListRelRes.c
+    NGAP_QosFlowAdditionalInfoItemRelRes.c
     NGAP_QosFlowAddOrModifyRequestList.c
     NGAP_QosFlowAddOrModifyRequestItem.c
     NGAP_QosFlowAddOrModifyResponseList.c
@@ -825,14 +1017,24 @@ libasn1c_ngap_sources = files('''
     NGAP_QosFlowItemWithDataForwarding.c
     NGAP_QosFlowToBeForwardedList.c
     NGAP_QosFlowToBeForwardedItem.c
+    NGAP_QoSFlowTSCList.c
+    NGAP_QoSFlowTSCItem.c
     NGAP_QoSFlowsUsageReportList.c
     NGAP_QoSFlowsUsageReport-Item.c
+    NGAP_RANfeedbacktype.c
+    NGAP_RANfeedbacktype-proactive.c
+    NGAP_RANfeedbacktype-reactive.c
     NGAP_Range.c
     NGAP_RANNodeName.c
     NGAP_RANNodeNameVisibleString.c
     NGAP_RANNodeNameUTF8String.c
     NGAP_RANPagingPriority.c
     NGAP_RANStatusTransfer-TransparentContainer.c
+    NGAP_RANTimingSynchronisationStatusInfo.c
+    NGAP_RAN-TSSRequestType.c
+    NGAP_RAN-TSSScope.c
+    NGAP_RANTSSCellList.c
+    NGAP_RANTSSCellItem.c
     NGAP_RAN-UE-NGAP-ID.c
     NGAP_RAT-Information.c
     NGAP_RATRestrictions.c
@@ -851,11 +1053,14 @@ libasn1c_ngap_sources = files('''
     NGAP_ReflectiveQosAttribute.c
     NGAP_RelativeAMFCapacity.c
     NGAP_ReportArea.c
+    NGAP_ReportingThreshold.c
     NGAP_RepetitionPeriod.c
     NGAP_ResetAll.c
     NGAP_ReportAmountMDT.c
     NGAP_ReportIntervalMDT.c
     NGAP_ExtendedReportIntervalMDT.c
+    NGAP_RequestedNSSAI.c
+    NGAP_RequestedNSSAIItem.c
     NGAP_ResetType.c
     NGAP_RGLevelWirelineAccessCharacteristics.c
     NGAP_RNC-ID.c
@@ -868,6 +1073,10 @@ libasn1c_ngap_sources = files('''
     NGAP_RIMInformationTransfer.c
     NGAP_RIMInformation.c
     NGAP_GNBSetID.c
+    NGAP_RSPPQoSFlowList.c
+    NGAP_RSPPQoSFlowItem.c
+    NGAP_RSPPFlowBitRates.c
+    NGAP_RequestedTNLInfo.c
     NGAP_ScheduledCommunicationTime.c
     NGAP_SCTP-TLAs.c
     NGAP_SD.c
@@ -902,8 +1111,19 @@ libasn1c_ngap_sources = files('''
     NGAP_SONInformation.c
     NGAP_SONInformationReply.c
     NGAP_SONInformationReport.c
+    NGAP_SNPN-CellBasedMDT.c
+    NGAP_SNPNCellIdListforMDT.c
+    NGAP_SNPNCellIdListforMDTItem.c
+    NGAP_SNPN-TAIBasedMDT.c
+    NGAP_SNPNTAIListforMDT.c
+    NGAP_SNPNTAIListforMDTItem.c
+    NGAP_SNPN-BasedMDT.c
+    NGAP_SNPNListforMDT.c
+    NGAP_SNPNListforMDTItem.c
     NGAP_SuccessfulHandoverReportList.c
     NGAP_SuccessfulHandoverReport-Item.c
+    NGAP_SuccessfulPSCellChangeReportList.c
+    NGAP_SuccessfulPSCellChangeReport-Item.c
     NGAP_SONInformationRequest.c
     NGAP_SourceNGRANNode-ToTargetNGRANNode-TransparentContainer.c
     NGAP_SourceNodeID.c
@@ -922,6 +1142,10 @@ libasn1c_ngap_sources = files('''
     NGAP_Suspend-Request-Indication.c
     NGAP_Suspend-Response-Indication.c
     NGAP_SurvivalTime.c
+    NGAP_SLPositioningRangingServiceInfo.c
+    NGAP_SLPositioningRangingAuthorized.c
+    NGAP_SLPositioningRangingQoSParameters.c
+    NGAP_SCGActivationTime.c
     NGAP_TAC.c
     NGAP_TACListInNRNTN.c
     NGAP_TAI.c
@@ -941,7 +1165,10 @@ libasn1c_ngap_sources = files('''
     NGAP_TAIListForWarning.c
     NGAP_TAINSAGSupportList.c
     NGAP_TAINSAGSupportItem.c
+    NGAP_TAIMBSSupportItem.c
+    NGAP_TAIMBSSupportList.c
     NGAP_TargeteNB-ID.c
+    NGAP_TargetHomeENB-ID.c
     NGAP_TargetID.c
     NGAP_TargetNGRANNode-ToSourceNGRANNode-TransparentContainer.c
     NGAP_TargetNGRANNode-ToSourceNGRANNode-FailureTransparentContainer.c
@@ -949,10 +1176,16 @@ libasn1c_ngap_sources = files('''
     NGAP_TargetNSSAI-Item.c
     NGAP_TargetNSSAIInformation.c
     NGAP_TargetRANNodeID.c
+    NGAP_TargetRANNodeID-RIM.c
+    NGAP_TargetRANNodeID-SON.c
     NGAP_TargetRNC-ID.c
     NGAP_TargetToSource-TransparentContainer.c
     NGAP_TargettoSource-Failure-TransparentContainer.c
+    NGAP_TimeBasedHandoverInformation.c
+    NGAP_HandoverWindowStart.c
+    NGAP_HandoverWindowDuration.c
     NGAP_TimerApproachForGUAMIRemoval.c
+    NGAP_TimeSinceFailure.c
     NGAP_TimeStamp.c
     NGAP_TimeSyncAssistanceInfo.c
     NGAP_TimeToWait.c
@@ -983,10 +1216,13 @@ libasn1c_ngap_sources = files('''
     NGAP_Threshold-RSRQ.c
     NGAP_Threshold-SINR.c
     NGAP_TimeToTrigger.c
+    NGAP_TLContainer.c
     NGAP_TWAP-ID.c
     NGAP_TWIF-ID.c
     NGAP_TSCAssistanceInformation.c
     NGAP_TSCTrafficCharacteristics.c
+    NGAP_TSCTrafficCharacteristicsFeedback.c
+    NGAP_TSCFeedbackInformation.c
     NGAP_UEAggregateMaximumBitRate.c
     NGAP_UEAppLayerMeasInfoList.c
     NGAP_UEAppLayerMeasInfoItem.c
@@ -1037,11 +1273,18 @@ libasn1c_ngap_sources = files('''
     NGAP_URI-address.c
     NGAP_UserLocationInformation.c
     NGAP_UserLocationInformationEUTRA.c
-    NGAP_UserLocationInformationN3IWF.c
+    NGAP_UserLocationInformationN3IWF-with-PortNumber.c
+    NGAP_UserLocationInformationN3IWF-without-PortNumber.c
     NGAP_UserLocationInformationTNGF.c
     NGAP_UserLocationInformationTWIF.c
     NGAP_UserLocationInformationW-AGF.c
     NGAP_UserLocationInformationNR.c
+    NGAP_Aerial-UE-FlightInformationReporting.c
+    NGAP_Altitude.c
+    NGAP_AerialUEReportingPeriodicity.c
+    NGAP_UserPlaneFailureIndication.c
+    NGAP_UserPlaneFailureIndicationReport.c
+    NGAP_UserPlaneFailureType.c
     NGAP_UserPlaneSecurityInformation.c
     NGAP_VolumeTimedReportList.c
     NGAP_VolumeTimedReport-Item.c
@@ -1062,6 +1305,7 @@ libasn1c_ngap_sources = files('''
     NGAP_XnGTP-TLAs.c
     NGAP_XnTLAs.c
     NGAP_XnTNLConfigurationInfo.c
+    NGAP_XrDeviceWith2Rx.c
     NGAP_Criticality.c
     NGAP_Presence.c
     NGAP_PrivateIE-ID.c

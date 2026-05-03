@@ -68,6 +68,11 @@ enum asn_transfer_syntax {
      */
     ATS_JER,
     ATS_JER_MINIFIED,
+    /*
+     * RFC 7049 (obsoleted by RFC 8949) / RFC 8949:
+     * CBOR: Concise Binary Object Representation.
+     */
+    ATS_CBOR,
 };
 
 /*

@@ -39,13 +39,17 @@ extern asn_TYPE_operation_t asn_OP_ENUMERATED;
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
 jer_type_decoder_f ENUMERATED_decode_jer;
-#define ENUMERATED_encode_jer INTEGER_encode_jer
+jer_type_encoder_f ENUMERATED_encode_jer;
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 oer_type_decoder_f ENUMERATED_decode_oer;
 oer_type_encoder_f ENUMERATED_encode_oer;
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+cbor_type_decoder_f ENUMERATED_decode_cbor;
+cbor_type_encoder_f ENUMERATED_encode_cbor;
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 per_type_decoder_f ENUMERATED_decode_uper;

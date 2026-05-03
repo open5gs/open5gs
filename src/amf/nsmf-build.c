@@ -586,6 +586,7 @@ OpenAPI_ng_ran_target_id_t *amf_nsmf_pdusession_build_target_id(
     NGAP_TargetRANNodeID_t *targetRANNodeID = NULL;
     NGAP_GlobalRANNodeID_t *globalRANNodeID = NULL;
     NGAP_GlobalGNB_ID_t *globalGNB_ID = NULL;
+    NGAP_GNB_ID_t *gNB_ID = NULL;
 
     OpenAPI_ng_ran_target_id_t *targetId = NULL;
     OpenAPI_global_ran_node_id_t *ranNodeId = NULL;
@@ -604,7 +605,12 @@ OpenAPI_ng_ran_target_id_t *amf_nsmf_pdusession_build_target_id(
         return NULL;
     }
 
-    globalRANNodeID = &targetRANNodeID->globalRANNodeID;
+    globalRANNodeID = targetRANNodeID->globalRANNodeID;
+    if (!globalRANNodeID) {
+        ogs_error("No globalRANNodeID");
+        return NULL;
+    }
+
     if (globalRANNodeID->present != NGAP_GlobalRANNodeID_PR_globalGNB_ID) {
         ogs_error("Not implemented globalRANNodeID[%d]",
                 globalRANNodeID->present);
@@ -614,6 +620,17 @@ OpenAPI_ng_ran_target_id_t *amf_nsmf_pdusession_build_target_id(
     globalGNB_ID = globalRANNodeID->choice.globalGNB_ID;
     if (!globalGNB_ID) {
         ogs_error("No globalGNB_ID");
+        return NULL;
+    }
+
+    gNB_ID = globalGNB_ID->gNB_ID;
+    if (!gNB_ID) {
+        ogs_error("No gNB_ID");
+        return NULL;
+    }
+
+    if (!targetRANNodeID->selectedTAI) {
+        ogs_error("No selectedTAI");
         return NULL;
     }
 
@@ -646,18 +663,18 @@ OpenAPI_ng_ran_target_id_t *amf_nsmf_pdusession_build_target_id(
     }
 
     gNbId->g_nb_value = ogs_calloc(
-            1, OGS_KEYSTRLEN(globalGNB_ID->gNB_ID.choice.gNB_ID.size));
+            1, OGS_KEYSTRLEN(gNB_ID->choice.gNB_ID.size));
     if (!gNbId->g_nb_value) {
         ogs_error("No gNbId->g_nb_value");
         amf_nsmf_pdusession_free_target_id(targetId);
         return NULL;
     }
     ogs_hex_to_ascii(
-            globalGNB_ID->gNB_ID.choice.gNB_ID.buf,
-            globalGNB_ID->gNB_ID.choice.gNB_ID.size,
+            gNB_ID->choice.gNB_ID.buf,
+            gNB_ID->choice.gNB_ID.size,
             gNbId->g_nb_value,
-            OGS_KEYSTRLEN(globalGNB_ID->gNB_ID.choice.gNB_ID.size));
-    gNbId->bit_length = 32 - globalGNB_ID->gNB_ID.choice.gNB_ID.bits_unused;
+            OGS_KEYSTRLEN(gNB_ID->choice.gNB_ID.size));
+    gNbId->bit_length = 32 - gNB_ID->choice.gNB_ID.bits_unused;
 
     targetId->tai = tai = ogs_calloc(1, sizeof(*tai));;
     if (!targetId->tai) {
@@ -666,7 +683,7 @@ OpenAPI_ng_ran_target_id_t *amf_nsmf_pdusession_build_target_id(
         return NULL;
     }
 
-    ogs_ngap_ASN_to_5gs_tai(&targetRANNodeID->selectedTAI, &nr_tai);
+    ogs_ngap_ASN_to_5gs_tai(targetRANNodeID->selectedTAI, &nr_tai);
     tai->plmn_id = ogs_sbi_build_plmn_id(&nr_tai.plmn_id);
     if (!tai->plmn_id) {
         ogs_error("No tai->plmn_id");

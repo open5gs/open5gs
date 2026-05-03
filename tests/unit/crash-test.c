@@ -41,58 +41,84 @@ static void test1_func(abts_case *tc, void *data)
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*pdu.choice.initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode =
         S1AP_ProcedureCode_id_InitialContextSetup;
     initiatingMessage->criticality = S1AP_Criticality_reject;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_InitialContextSetupRequest;
 
+    initiatingMessage->value.choice.InitialContextSetupRequest =
+        CALLOC(1, sizeof(*InitialContextSetupRequest));
     InitialContextSetupRequest =
-        &initiatingMessage->value.choice.InitialContextSetupRequest;
+        initiatingMessage->value.choice.InitialContextSetupRequest;
+    ogs_assert(InitialContextSetupRequest);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    InitialContextSetupRequest->protocolIEs =
+        ogs_asn_calloc_protocol_ies(
+                &asn_DEF_S1AP_InitialContextSetupRequest);
+    ogs_assert(InitialContextSetupRequest->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID =
+        CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID =
+        CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_uEaggregateMaximumBitrate;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_UEAggregateMaximumBitrate;
 
-    UEAggregateMaximumBitrate = &ie->value.choice.UEAggregateMaximumBitrate;
+    ie->value.choice.UEAggregateMaximumBitrate =
+        CALLOC(1, sizeof(*UEAggregateMaximumBitrate));
+    UEAggregateMaximumBitrate = ie->value.choice.UEAggregateMaximumBitrate;
+    ogs_assert(UEAggregateMaximumBitrate);
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupListCtxtSUReq;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
     S1AP_InitialContextSetupRequestIEs__value_PR_E_RABToBeSetupListCtxtSUReq;
 
-    E_RABToBeSetupListCtxtSUReq = &ie->value.choice.E_RABToBeSetupListCtxtSUReq;
+    ie->value.choice.E_RABToBeSetupListCtxtSUReq =
+        CALLOC(1, sizeof(*E_RABToBeSetupListCtxtSUReq));
+    E_RABToBeSetupListCtxtSUReq =
+        ie->value.choice.E_RABToBeSetupListCtxtSUReq;
+    ogs_assert(E_RABToBeSetupListCtxtSUReq);
 
     *MME_UE_S1AP_ID = 1;
     *ENB_UE_S1AP_ID = 1;
@@ -105,38 +131,55 @@ static void test1_func(abts_case *tc, void *data)
     {
         S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t *item = NULL;
         S1AP_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
+        S1AP_E_RABLevelQoSParameters_t *e_RABlevelQoSParameters = NULL;
+        S1AP_AllocationAndRetentionPriority_t *allocationRetentionPriority = NULL;
         S1AP_GBR_QosInformation_t *gbrQosInformation = NULL;
         S1AP_NAS_PDU_t *nasPdu = NULL;
         ogs_ip_t sgw_s1u_ip;
         uint32_t sgw_s1u_teid = 1;
 
         item = CALLOC(
-                1, sizeof(S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t));
-        ASN_SEQUENCE_ADD(&E_RABToBeSetupListCtxtSUReq->list, item);
+                1, sizeof(*item));
+        ogs_assert(item);
+        ASN_SEQUENCE_ADD(E_RABToBeSetupListCtxtSUReq, item);
 
         item->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq;
         item->criticality = S1AP_Criticality_reject;
-        item->value.present = S1AP_E_RABToBeSetupItemCtxtSUReqIEs__value_PR_E_RABToBeSetupItemCtxtSUReq;
+        item->value.present =
+            S1AP_E_RABToBeSetupItemCtxtSUReqIEs__value_PR_E_RABToBeSetupItemCtxtSUReq;
 
-        e_rab = &item->value.choice.E_RABToBeSetupItemCtxtSUReq;
+        item->value.choice.E_RABToBeSetupItemCtxtSUReq =
+            CALLOC(1, sizeof(*e_rab));
+        e_rab = item->value.choice.E_RABToBeSetupItemCtxtSUReq;
+        ogs_assert(e_rab);
 
         e_rab->e_RAB_ID = 5;
-        e_rab->e_RABlevelQoSParameters.qCI = 1;
+        e_rab->e_RABlevelQoSParameters =
+            CALLOC(1, sizeof(*e_RABlevelQoSParameters));
+        e_RABlevelQoSParameters = e_rab->e_RABlevelQoSParameters;
+        ogs_assert(e_RABlevelQoSParameters);
+        e_RABlevelQoSParameters->allocationRetentionPriority =
+            CALLOC(1, sizeof(*allocationRetentionPriority));
+        allocationRetentionPriority =
+            e_RABlevelQoSParameters->allocationRetentionPriority;
+        ogs_assert(allocationRetentionPriority);
+        e_RABlevelQoSParameters->qCI = 1;
 
-        e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        allocationRetentionPriority->
             priorityLevel = 10;
-        e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        allocationRetentionPriority->
             pre_emptionCapability = 1;
-        e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
+        allocationRetentionPriority->
             pre_emptionVulnerability = 1;
 
-        gbrQosInformation = 
-                CALLOC(1, sizeof(struct S1AP_GBR_QosInformation));
+        gbrQosInformation =
+                CALLOC(1, sizeof(*gbrQosInformation));
+        ogs_assert(gbrQosInformation);
         asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL, 1);
         asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateUL, 1);
         asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateDL, 1);
         asn_uint642INTEGER(&gbrQosInformation->e_RAB_GuaranteedBitrateUL, 1);
-        e_rab->e_RABlevelQoSParameters.gbrQosInformation =
+        e_RABlevelQoSParameters->gbrQosInformation =
                 gbrQosInformation;
 
         memset(&sgw_s1u_ip, 0, sizeof(sgw_s1u_ip));
@@ -147,19 +190,23 @@ static void test1_func(abts_case *tc, void *data)
         ogs_asn_uint32_to_OCTET_STRING(sgw_s1u_teid, &e_rab->gTP_TEID);
     }
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_UESecurityCapabilities;
 
-    UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
+    ie->value.choice.UESecurityCapabilities =
+        CALLOC(1, sizeof(*UESecurityCapabilities));
+    UESecurityCapabilities = ie->value.choice.UESecurityCapabilities;
+    ogs_assert(UESecurityCapabilities);
 
     UESecurityCapabilities->encryptionAlgorithms.size = 2;
-    UESecurityCapabilities->encryptionAlgorithms.buf = 
-        CALLOC(UESecurityCapabilities->encryptionAlgorithms.size, 
+    UESecurityCapabilities->encryptionAlgorithms.buf =
+        CALLOC(UESecurityCapabilities->encryptionAlgorithms.size,
                     sizeof(uint8_t));
     UESecurityCapabilities->encryptionAlgorithms.bits_unused = 0;
 
@@ -169,18 +216,21 @@ static void test1_func(abts_case *tc, void *data)
                         integrityProtectionAlgorithms.size, sizeof(uint8_t));
     UESecurityCapabilities->integrityProtectionAlgorithms.bits_unused = 0;
 
-    ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_SecurityKey;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_InitialContextSetupRequestIEs__value_PR_SecurityKey;
 
-    SecurityKey = &ie->value.choice.SecurityKey;
+    ie->value.choice.SecurityKey = CALLOC(1, sizeof(*SecurityKey));
+    SecurityKey = ie->value.choice.SecurityKey;
+    ogs_assert(SecurityKey);
 
     SecurityKey->size = OGS_SHA256_DIGEST_SIZE;
-    SecurityKey->buf = 
+    SecurityKey->buf =
         CALLOC(SecurityKey->size, sizeof(uint8_t));
     SecurityKey->bits_unused = 0;
 
@@ -191,28 +241,34 @@ static void test1_func(abts_case *tc, void *data)
         ogs_plmn_id_t plmn_id;
         uint16_t lac = 1;
 
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_CSFallbackIndicator;
         ie->criticality = S1AP_Criticality_reject;
         ie->value.present =
             S1AP_InitialContextSetupRequestIEs__value_PR_CSFallbackIndicator;
 
-        CSFallbackIndicator = &ie->value.choice.CSFallbackIndicator;
+        ie->value.choice.CSFallbackIndicator =
+            CALLOC(1, sizeof(*CSFallbackIndicator));
+        CSFallbackIndicator = ie->value.choice.CSFallbackIndicator;
         ogs_assert(CSFallbackIndicator);
 
         *CSFallbackIndicator = S1AP_CSFallbackIndicator_cs_fallback_required;
 
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_RegisteredLAI;
         ie->criticality = S1AP_Criticality_ignore;
         ie->value.present =
             S1AP_InitialContextSetupRequestIEs__value_PR_LAI;
 
-        LAI = &ie->value.choice.LAI;
+        ie->value.choice.LAI =
+        CALLOC(1, sizeof(*LAI));
+        LAI = ie->value.choice.LAI;
         ogs_assert(LAI);
 
         ogs_s1ap_buffer_to_OCTET_STRING(&plmn_id, sizeof(ogs_plmn_id_t),
@@ -220,22 +276,26 @@ static void test1_func(abts_case *tc, void *data)
         ogs_asn_uint16_to_OCTET_STRING(lac, &LAI->lAC);
 
     }
-    
+
     {
         char buf[1024];
         int size = 540;
         /* Set UeRadioCapability if exists */
         S1AP_UERadioCapability_t *UERadioCapability = NULL;
 
-        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+        ie = CALLOC(1, sizeof(*ie));
+        ogs_assert(ie);
+        ASN_SEQUENCE_ADD(InitialContextSetupRequest->protocolIEs, ie);
 
         ie->id = S1AP_ProtocolIE_ID_id_UERadioCapability;
         ie->criticality = S1AP_Criticality_ignore;
         ie->value.present =
             S1AP_InitialContextSetupRequestIEs__value_PR_UERadioCapability;
 
-        UERadioCapability = &ie->value.choice.UERadioCapability;
+        ie->value.choice.UERadioCapability =
+            CALLOC(1, sizeof(*UERadioCapability));
+        UERadioCapability = ie->value.choice.UERadioCapability;
+        ogs_assert(UERadioCapability);
 
         ogs_s1ap_buffer_to_OCTET_STRING(buf, size, UERadioCapability);
     }
@@ -263,28 +323,41 @@ static int test_build_mme_configuration_transfer(
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(*pdu.choice.initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode =
         S1AP_ProcedureCode_id_MMEConfigurationTransfer;
     initiatingMessage->criticality = S1AP_Criticality_ignore;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_MMEConfigurationTransfer;
 
+    initiatingMessage->value.choice.MMEConfigurationTransfer =
+        CALLOC(1, sizeof(*MMEConfigurationTransfer));
     MMEConfigurationTransfer =
-        &initiatingMessage->value.choice.MMEConfigurationTransfer;
+        initiatingMessage->value.choice.MMEConfigurationTransfer;
+    ogs_assert(MMEConfigurationTransfer);
 
-    ie = CALLOC(1, sizeof(S1AP_MMEConfigurationTransferIEs_t));
-    ASN_SEQUENCE_ADD(&MMEConfigurationTransfer->protocolIEs, ie);
+    MMEConfigurationTransfer->protocolIEs =
+        ogs_asn_calloc_protocol_ies(
+                &asn_DEF_S1AP_MMEConfigurationTransfer);
+    ogs_assert(MMEConfigurationTransfer->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(MMEConfigurationTransfer->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_SONConfigurationTransferMCT;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present =
         S1AP_MMEConfigurationTransferIEs__value_PR_SONConfigurationTransfer;
 
-    SONConfigurationTransfer = &ie->value.choice.SONConfigurationTransfer;
+    ie->value.choice.SONConfigurationTransfer =
+        CALLOC(1, sizeof(*SONConfigurationTransfer));
+    SONConfigurationTransfer = ie->value.choice.SONConfigurationTransfer;
+    ogs_assert(SONConfigurationTransfer);
 
     rv = ogs_asn_copy_ie(&asn_DEF_S1AP_SONConfigurationTransfer,
             son_configuration_transfer, SONConfigurationTransfer);
@@ -313,15 +386,16 @@ static void test_parse_enb_configuration_transfer(
     initiatingMessage = message->choice.initiatingMessage;
     ogs_assert(initiatingMessage);
     ENBConfigurationTransfer =
-        &initiatingMessage->value.choice.ENBConfigurationTransfer;
+        initiatingMessage->value.choice.ENBConfigurationTransfer;
     ogs_assert(ENBConfigurationTransfer);
 
-    for (i = 0; i < ENBConfigurationTransfer->protocolIEs.list.count; i++) {
-        ie = ENBConfigurationTransfer->protocolIEs.list.array[i];
+    for (i = 0; i < OGS_ASN_LIST_COUNT(
+                ENBConfigurationTransfer->protocolIEs); i++) {
+        ie = OGS_ASN_LIST_GET(ENBConfigurationTransfer->protocolIEs, i);
         switch (ie->id) {
         case S1AP_ProtocolIE_ID_id_SONConfigurationTransferECT:
             SONConfigurationTransfer =
-                &ie->value.choice.SONConfigurationTransfer;
+                ie->value.choice.SONConfigurationTransfer;
             break;
         default:
             break;
@@ -335,7 +409,7 @@ static void test_parse_enb_configuration_transfer(
 
 static void test2_func(abts_case *tc, void *data)
 {
-    const char *payload = 
+    const char *payload =
         "0028"
         "4022000001008140 1b0009f124000000 1009f12458ac0009 f1240000002009f1"
         "2458ac00";
@@ -347,7 +421,7 @@ static void test2_func(abts_case *tc, void *data)
 
     enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(enb_pkbuf);
-    ogs_pkbuf_put_data(enb_pkbuf, 
+    ogs_pkbuf_put_data(enb_pkbuf,
             ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 38);
 
     result = ogs_s1ap_decode(&message, enb_pkbuf);
@@ -361,7 +435,7 @@ static void test2_func(abts_case *tc, void *data)
 
 static void test3_func(abts_case *tc, void *data)
 {
-    const char *payload = 
+    const char *payload =
         "0028"
         "4028000001008140 210009f124000000 2009f12458ac0009 f1240000001009f1"
         "2458ac500f80c0a8 683b";
@@ -374,7 +448,7 @@ static void test3_func(abts_case *tc, void *data)
 
     enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(enb_pkbuf);
-    ogs_pkbuf_put_data(enb_pkbuf, 
+    ogs_pkbuf_put_data(enb_pkbuf,
             ogs_hex_from_string(payload, hexbuf, sizeof(hexbuf)), 44);
 
     result = ogs_s1ap_decode(&message, enb_pkbuf);
@@ -462,62 +536,87 @@ static ogs_pkbuf_t *test_build_uplink_nas_transport(
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
     pdu.choice.initiatingMessage =
-        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+        CALLOC(1, sizeof(*pdu.choice.initiatingMessage));
 
     initiatingMessage = pdu.choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
     initiatingMessage->procedureCode =
         S1AP_ProcedureCode_id_uplinkNASTransport;
     initiatingMessage->criticality = S1AP_Criticality_ignore;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_UplinkNASTransport;
 
-    UplinkNASTransport = &initiatingMessage->value.choice.UplinkNASTransport;
+    initiatingMessage->value.choice.UplinkNASTransport =
+        CALLOC(1, sizeof(*UplinkNASTransport));
+    UplinkNASTransport = initiatingMessage->value.choice.UplinkNASTransport;
+    ogs_assert(UplinkNASTransport);
 
-    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    UplinkNASTransport->protocolIEs =
+        ogs_asn_calloc_protocol_ies(
+                &asn_DEF_S1AP_UplinkNASTransport);
+    ogs_assert(UplinkNASTransport->protocolIEs);
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_UplinkNASTransport_IEs__value_PR_MME_UE_S1AP_ID;
 
-    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+    ie->value.choice.MME_UE_S1AP_ID =
+        CALLOC(1, sizeof(*MME_UE_S1AP_ID));
+    MME_UE_S1AP_ID = ie->value.choice.MME_UE_S1AP_ID;
+    ogs_assert(MME_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present =
         S1AP_UplinkNASTransport_IEs__value_PR_ENB_UE_S1AP_ID;
 
-    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+    ie->value.choice.ENB_UE_S1AP_ID =
+        CALLOC(1, sizeof(*ENB_UE_S1AP_ID));
+    ENB_UE_S1AP_ID = ie->value.choice.ENB_UE_S1AP_ID;
+    ogs_assert(ENB_UE_S1AP_ID);
 
-    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_NAS_PDU;
     ie->criticality = S1AP_Criticality_reject;
     ie->value.present = S1AP_UplinkNASTransport_IEs__value_PR_NAS_PDU;
 
-    NAS_PDU = &ie->value.choice.NAS_PDU;
+    ie->value.choice.NAS_PDU = CALLOC(1, sizeof(*NAS_PDU));
+    NAS_PDU = ie->value.choice.NAS_PDU;
+    ogs_assert(NAS_PDU);
 
     NAS_PDU->size = emmbuf->len;
     NAS_PDU->buf = CALLOC(NAS_PDU->size, sizeof(uint8_t));
+    ogs_assert(NAS_PDU->buf);
     memcpy(NAS_PDU->buf, emmbuf->data, NAS_PDU->size);
     ogs_pkbuf_free(emmbuf);
 
     *MME_UE_S1AP_ID = mme_ue_s1ap_id;
     *ENB_UE_S1AP_ID = enb_ue_s1ap_id;
 
-    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_EUTRAN_CGI;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_UplinkNASTransport_IEs__value_PR_EUTRAN_CGI;
 
-    EUTRAN_CGI = &ie->value.choice.EUTRAN_CGI;
+    ie->value.choice.EUTRAN_CGI =
+        CALLOC(1, sizeof(*EUTRAN_CGI));
+    EUTRAN_CGI = ie->value.choice.EUTRAN_CGI;
+    ogs_assert(EUTRAN_CGI);
 
     ogs_plmn_id_build(&plmn_id, 999, 70, 2);
 
@@ -536,29 +635,40 @@ static ogs_pkbuf_t *test_build_uplink_nas_transport(
     EUTRAN_CGI->cell_ID.buf[3] = (e_cell_id);
     EUTRAN_CGI->cell_ID.bits_unused = 4;
 
-    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_TAI;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_UplinkNASTransport_IEs__value_PR_TAI;
 
-    TAI = &ie->value.choice.TAI;
+    ie->value.choice.TAI =
+        CALLOC(1, sizeof(*TAI));
+    TAI = ie->value.choice.TAI;
+    ogs_assert(TAI);
 
     tac = 1;
     ogs_asn_uint16_to_OCTET_STRING(tac, &TAI->tAC);
     ogs_s1ap_buffer_to_OCTET_STRING(
             &plmn_id, OGS_PLMN_ID_LEN, &TAI->pLMNidentity);
 
-    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
-    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(UplinkNASTransport->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_PSCellInformation;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1AP_UplinkNASTransport_IEs__value_PR_PSCellInformation;
 
-    PSCellInformation = &ie->value.choice.PSCellInformation;
-    nCGI = &PSCellInformation->nCGI;
+    ie->value.choice.PSCellInformation =
+        CALLOC(1, sizeof(*PSCellInformation));
+    PSCellInformation = ie->value.choice.PSCellInformation;
+    ogs_assert(PSCellInformation);
+    PSCellInformation->nCGI =
+        CALLOC(1, sizeof(*nCGI));
+    nCGI = PSCellInformation->nCGI;
+    ogs_assert(nCGI);
 
     ogs_s1ap_buffer_to_OCTET_STRING(
             &plmn_id, OGS_PLMN_ID_LEN, &nCGI->pLMNIdentity);

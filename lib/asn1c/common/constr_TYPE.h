@@ -11,6 +11,8 @@
 #ifndef	_CONSTR_TYPE_H_
 #define	_CONSTR_TYPE_H_
 
+#include "asn_internal.h"
+
 #include <ber_tlv_length.h>
 #include <ber_tlv_tag.h>
 
@@ -81,6 +83,14 @@ typedef void (asn_random_fill_f)(void);
 typedef void (oer_type_decoder_f)(void);
 typedef void (oer_type_encoder_f)(void);
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_CBOR_SUPPORT)
+#include <cbor_decoder.h>  /* Decoder of CBOR (binary) */
+#include <cbor_encoder.h>  /* Encoder into CBOR (binary) */
+#else
+typedef void (cbor_type_decoder_f)(void);
+typedef void (cbor_type_encoder_f)(void);
+#endif  /* !defined(ASN_DISABLE_CBOR_SUPPORT) */
 
 /*
  * Free the structure according to its specification.
@@ -182,6 +192,7 @@ typedef asn_type_selector_result_t(asn_type_selector_f)(
  * May be directly invoked by applications.
  */
 typedef struct asn_TYPE_operation_s {
+    asn_type_kind_t kind;   /* The kind/category of this type */
     asn_struct_free_f *free_struct;     /* Free the structure */
     asn_struct_print_f *print_struct;   /* Human readable output */
     asn_struct_compare_f *compare_struct; /* Compare two structures */
@@ -200,6 +211,8 @@ typedef struct asn_TYPE_operation_s {
     per_type_encoder_f *aper_encoder;     /* Aligned PER encoder */
     asn_random_fill_f *random_fill;       /* Initialize with a random value */
     asn_outmost_tag_f *outmost_tag;       /* <optional, internal> */
+    cbor_type_decoder_f *cbor_decoder;    /* Generic CBOR decoder */
+    cbor_type_encoder_f *cbor_encoder;    /* Canonical CBOR encoder */
 } asn_TYPE_operation_t;
 
 /*
@@ -212,6 +225,9 @@ typedef struct asn_encoding_constraints_s {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
     const struct asn_per_constraints_s *per_constraints;
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+    const struct asn_jer_constraints_s *jer_constraints;
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
     asn_constr_check_f *general_constraints;
 } asn_encoding_constraints_t;
 
