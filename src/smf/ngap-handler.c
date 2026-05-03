@@ -501,6 +501,86 @@ cleanup:
     return rv;
 }
 
+/*
+ * TS 33.501 §6.6.3 / TS 33.515 §4.2.2.1.3 — verify the UE UP security policy
+ * reported by the target gNB in PathSwitchRequest against the SMF's locally
+ * stored canonical policy (smf_self()->security_indication, the same source
+ * the initial PDUSessionResourceSetupRequestTransfer's SecurityIndication
+ * IE is built from at ngap-build.c).
+ *
+ * Returns true on match (or when local policy is not configured and the
+ * spec's enforcement clause does not apply); returns false on mismatch.
+ * The caller forwards the result to sess->path_switch_security_indication_mismatch
+ * so ngap_build_path_switch_request_ack_transfer() emits the locally stored
+ * policy in the Acknowledge.
+ *
+ * SECURITY: a target gNB that omits the OPTIONAL userPlaneSecurityInformation
+ * IE while the SMF has a local policy configured is treated as a mismatch,
+ * not as a "skip the check" case. Otherwise a buggy or compromised gNB could
+ * drive a silent UP-security downgrade by leaving the IE out, since the
+ * spec-mandated correction in the Ack would never be sent. The gate is local
+ * policy presence, not IE presence.
+ */
+static bool sess_up_security_matches_local_policy(
+        smf_sess_t *sess,
+        NGAP_UserPlaneSecurityInformation_t *upSec)
+{
+    smf_ue_t *smf_ue = NULL;
+    long expected_ip_ind, expected_cp_ind;
+
+    ogs_assert(sess);
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
+    if (!smf_self()->security_indication.integrity_protection_indication ||
+            !smf_self()->security_indication.
+                confidentiality_protection_indication) {
+        /* No local policy configured — spec enforcement clause does not
+         * apply; treat as trivially matching. */
+        return true;
+    }
+
+    expected_ip_ind = smf_integrity_protection_indication_value2enum(
+            smf_self()->security_indication.integrity_protection_indication);
+    expected_cp_ind = smf_confidentiality_protection_indication_value2enum(
+            smf_self()->security_indication.
+                confidentiality_protection_indication);
+
+    if (expected_ip_ind < 0 || expected_cp_ind < 0) {
+        /* Local enum lookup failed — fail-open: do not flag as mismatch,
+         * because we cannot construct a corrective Ack IE either. */
+        return true;
+    }
+
+    if (!upSec) {
+        ogs_warn("[%s:%d] UE UP security policy missing on Path Switch — "
+                "gNB sent no userPlaneSecurityInformation IE, "
+                "SMF[ip=%ld cp=%ld]; treating as mismatch and returning "
+                "locally stored policy in PathSwitchRequestAcknowledge "
+                "per TS 33.501 §6.6.3",
+                smf_ue->supi, sess->psi,
+                expected_ip_ind, expected_cp_ind);
+        return false;
+    }
+
+    if (upSec->securityIndication.integrityProtectionIndication !=
+                expected_ip_ind ||
+            upSec->securityIndication.confidentialityProtectionIndication !=
+                expected_cp_ind) {
+        ogs_warn("[%s:%d] UE UP security policy mismatch on Path Switch — "
+                "gNB[ip=%ld cp=%ld] SMF[ip=%ld cp=%ld]; will return locally "
+                "stored policy in PathSwitchRequestAcknowledge "
+                "per TS 33.501 §6.6.3",
+                smf_ue->supi, sess->psi,
+                upSec->securityIndication.integrityProtectionIndication,
+                upSec->securityIndication.confidentialityProtectionIndication,
+                expected_ip_ind, expected_cp_ind);
+        return false;
+    }
+
+    return true;
+}
+
 int ngap_handle_path_switch_request_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
 {
@@ -582,6 +662,11 @@ int ngap_handle_path_switch_request_transfer(
         goto cleanup;
     }
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &remote_dl_teid);
+
+    /* TS 33.501 §6.6.3 verification — see helper above. */
+    sess->path_switch_security_indication_mismatch =
+            !sess_up_security_matches_local_policy(
+                    sess, message.userPlaneSecurityInformation);
 
     /* Need to Update? */
     if (memcmp(&sess->remote_dl_ip, &remote_dl_ip, sizeof(sess->remote_dl_ip)) != 0 ||

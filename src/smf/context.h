@@ -543,6 +543,18 @@ typedef struct smf_sess_s {
         OpenAPI_max_integrity_protected_data_rate_e mbr_ul;
     } integrity_protection;
 
+    /*
+     * TS 33.501 §6.6.3 (also TS 33.515 §4.2.2.1.3) — Xn handover UE UP
+     * security policy verification. Set in
+     * ngap_handle_path_switch_request_transfer() when the target gNB's
+     * userPlaneSecurityInformation.securityIndication does not match
+     * the SMF's locally stored UE UP security policy; consumed by
+     * ngap_build_path_switch_request_ack_transfer() to emit the
+     * locally stored policy back to the target gNB so it can correct
+     * its enforcement. Cleared after each Ack build.
+     */
+    bool path_switch_security_indication_mismatch;
+
     /* S_NSSAI */
     ogs_s_nssai_t s_nssai;
     ogs_s_nssai_t mapped_hplmn;
