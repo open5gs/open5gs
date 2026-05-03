@@ -431,12 +431,31 @@ static void handle_smf_info(
                     int dnn_index = nf_info->smf.slice
                         [nf_info->smf.num_of_slice].num_of_dnn;
 
-                    ogs_assert(dnn_index < OGS_MAX_NUM_OF_DNN);
+                    /*
+                     * Cap the per-slice DNN array at OGS_MAX_NUM_OF_DNN
+                     * (closes #4470). The previous ogs_assert() here
+                     * was reachable from peer-supplied SMF NF-profile
+                     * registrations carrying more than 16 DNN entries
+                     * in a single S-NSSAI slice, which crashed the NRF
+                     * with SIGABRT. The bound matches the existing
+                     * graceful pattern used by the outer slice loop at
+                     * line 421 and the TaiRange.tacRangeList loop a
+                     * few lines below.
+                     */
+                    if (dnn_index >= OGS_MAX_NUM_OF_DNN) {
+                        ogs_error("OVERFLOW DNN [%d:%d] in slice [%d]",
+                                dnn_index, OGS_MAX_NUM_OF_DNN,
+                                nf_info->smf.num_of_slice);
+                        break;
+                    }
                     nf_info->smf.slice[nf_info->smf.num_of_slice].
                         dnn[dnn_index] = ogs_strdup(DnnSmfInfoItem->dnn);
-                    ogs_assert(
-                        nf_info->smf.slice[nf_info->smf.num_of_slice].
-                            dnn[dnn_index]);
+                    if (!nf_info->smf.slice[nf_info->smf.num_of_slice].
+                            dnn[dnn_index]) {
+                        ogs_error("ogs_strdup() failed for DNN [%s]",
+                                DnnSmfInfoItem->dnn);
+                        break;
+                    }
                     nf_info->smf.slice[nf_info->smf.num_of_slice].
                         num_of_dnn++;
                 }
@@ -793,7 +812,22 @@ static void handle_amf_info(
                         TacRangeItem->start && TacRangeItem->end) {
                     int tac_index = nf_info->amf.nr_tai_range
                         [nf_info->amf.num_of_nr_tai_range].num_of_tac_range;
-                    ogs_assert(tac_index < OGS_MAX_NUM_OF_TAI);
+                    /*
+                     * Same defensive cap as the DNN inner loop in
+                     * handle_smf_info() above (closes #4467 sibling
+                     * site reported by LinZiyuu — the AMF-side
+                     * tacRangeList overflow has the same shape and
+                     * caused the same NRF SIGABRT). The graceful
+                     * pattern matches handle_smf_info()'s tacRangeList
+                     * inner loop at line 513.
+                     */
+                    if (tac_index >= OGS_MAX_NUM_OF_TAI) {
+                        ogs_error("OVERFLOW TAI [%d:%d] in tai_range "
+                                "[%d]",
+                                tac_index, OGS_MAX_NUM_OF_TAI,
+                                nf_info->amf.num_of_nr_tai_range);
+                        break;
+                    }
 
                     nf_info->amf.nr_tai_range
                         [nf_info->amf.num_of_nr_tai_range].start[tac_index] =

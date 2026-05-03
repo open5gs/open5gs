@@ -25,6 +25,67 @@ static int discover_handler(
 static void handle_nf_discover_search_result(
         OpenAPI_search_result_t *SearchResult);
 
+/*
+ * Pre-validate inner-loop list lengths in the NFProfile against the
+ * static array bounds the parser uses (lib/sbi/nnrf-handler.c).
+ * Returns true if the profile exceeds any pre-checked inner-loop
+ * bound; the caller surfaces an HTTP 400 Bad Request.
+ *
+ * Only inner-loop bounds that the parser would otherwise have to
+ * silently truncate (DNN per slice, TAC range per TAI range) are
+ * pre-checked here. State drift between NFs is fatal in the SBA, so
+ * a registration whose IE list overflows the local cache must be
+ * rejected explicitly, not stored partial. The outer-loop bounds
+ * (slice count, TAI count, TAI-range count, GUAMI count) still go
+ * through the existing cap-and-break pattern in the shared parser
+ * for now; tightening those into 400-rejects would be a separate
+ * PR with broader scope.
+ */
+static bool nfprofile_inner_lists_overflow(
+        OpenAPI_nf_profile_t *NFProfile, const char **offending)
+{
+    OpenAPI_lnode_t *node = NULL, *node2 = NULL;
+
+    ogs_assert(NFProfile);
+    ogs_assert(offending);
+
+    if (NFProfile->smf_info) {
+        OpenAPI_list_for_each(
+                NFProfile->smf_info->s_nssai_smf_info_list, node) {
+            OpenAPI_snssai_smf_info_item_t *item = node->data;
+            int dnn_count = 0;
+            if (!item) continue;
+            OpenAPI_list_for_each(item->dnn_smf_info_list, node2) {
+                dnn_count++;
+                if (dnn_count > OGS_MAX_NUM_OF_DNN) {
+                    *offending = "smfInfo.dnnSmfInfoList exceeds "
+                            "capacity (OGS_MAX_NUM_OF_DNN)";
+                    return true;
+                }
+            }
+        }
+    }
+
+    if (NFProfile->amf_info) {
+        OpenAPI_list_for_each(
+                NFProfile->amf_info->tai_range_list, node) {
+            OpenAPI_tai_range_t *range = node->data;
+            int tac_count = 0;
+            if (!range) continue;
+            OpenAPI_list_for_each(range->tac_range_list, node2) {
+                tac_count++;
+                if (tac_count > OGS_MAX_NUM_OF_TAI) {
+                    *offending = "amfInfo.taiRangeList[*].tacRangeList "
+                            "exceeds capacity (OGS_MAX_NUM_OF_TAI)";
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 /**
  * Handles NF registration in NRF. Validates the PLMN-ID against configured
  * serving PLMN-IDs and registers the NF instance if valid.
@@ -117,6 +178,30 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
             ogs_assert(true == ogs_sbi_server_send_error(
                 stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
                 "PLMN-ID not allowed", NULL, NULL));
+            return false;
+        }
+    }
+
+    /*
+     * Pre-validate inner-loop list lengths against the static array
+     * bounds the parser uses. State drift between NFs in the SBA is
+     * fatal: silently truncating an oversized NFProfile here would
+     * leave a registered SMF advertising 16 DNNs when the operator
+     * configured 20, so a later NF discovery for the missing DNN
+     * returns 404 even though both ends believe they are in sync.
+     * Reject the registration cleanly so the registering NF (or its
+     * operator) sees the failure immediately. Closes #4470 / #4467
+     * for the inner-loop overflows; outer-loop overflows still go
+     * through the parser's cap-and-break (see PR body).
+     */
+    {
+        const char *offending = NULL;
+        if (nfprofile_inner_lists_overflow(NFProfile, &offending)) {
+            ogs_error("[%s] NFProfile rejected: %s",
+                    NFProfile->nf_instance_id, offending);
+            ogs_assert(true == ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
+                offending, NFProfile->nf_instance_id, NULL));
             return false;
         }
     }
