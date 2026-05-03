@@ -2249,6 +2249,52 @@ void amf_ue_deassociate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
                 amf_ue->ran_ue_id, ran_ue->id);
 }
 
+amf_ue_cleanup_tier_t amf_ue_classify_cleanup(amf_ue_t *amf_ue)
+{
+    ogs_assert(amf_ue);
+
+    /*
+     * TS 24.501 §5.3.7 mobile-reachable / implicit-dereg timers are
+     * post-registration machinery. Pre-registration UEs (still in
+     * gmm_state_de_registered, _authentication, _security_mode or
+     * _initial_context_setup, plus the will-remove and exception
+     * states) hold no spec-mandated state that needs warming for a
+     * recovery window: no SUPI binding for UDM/PCF caches, no PDU
+     * sessions, no GUTI for paging. Drop them immediately to release
+     * the pool slot.
+     *
+     * gmm_state_registered is the only state where the §5.3.7 timer
+     * mandate applies; all other states classify as IMMEDIATE.
+     */
+    if (!OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered))
+        return AMF_UE_CLEANUP_IMMEDIATE;
+
+    return AMF_UE_CLEANUP_DEFERRED;
+}
+
+void amf_ue_apply_cleanup(amf_ue_t *amf_ue)
+{
+    ogs_assert(amf_ue);
+
+    switch (amf_ue_classify_cleanup(amf_ue)) {
+    case AMF_UE_CLEANUP_IMMEDIATE:
+        ogs_info("[%s] amf_ue cleanup: IMMEDIATE (pre-registration)",
+                amf_ue->suci ? amf_ue->suci :
+                (amf_ue->supi ? amf_ue->supi : "Unknown ID"));
+        amf_ue_remove(amf_ue);
+        break;
+
+    case AMF_UE_CLEANUP_DEFERRED:
+        ogs_info("[%s] amf_ue cleanup: DEFERRED "
+                "(mobile_reachable t=%lds per TS 24.501 §5.3.7)",
+                amf_ue->supi ? amf_ue->supi : "Unknown ID",
+                (long)(amf_self()->time.t3512.value + 240));
+        ogs_timer_start(amf_ue->mobile_reachable.timer,
+                ogs_time_from_sec(amf_self()->time.t3512.value + 240));
+        break;
+    }
+}
+
 void source_ue_associate_target_ue(
         ran_ue_t *source_ue, ran_ue_t *target_ue)
 {

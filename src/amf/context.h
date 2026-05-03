@@ -1052,6 +1052,45 @@ void amf_ue_deassociate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue);
 void source_ue_associate_target_ue(ran_ue_t *source_ue, ran_ue_t *target_ue);
 void source_ue_deassociate_target_ue(ran_ue_t *ran_ue);
 
+/*
+ * Cleanup tier classification — TS 24.501 §5.3.7 retention policy.
+ *
+ * The AMF reaches several teardown paths (SCTP disconnect, NG-RAN UE
+ * Context Release, NG-Reset variants, mobile-reachable timer expiry)
+ * after which an amf_ue context must be either removed immediately or
+ * kept warm for the §5.3.7 implicit-deregistration window. The choice
+ * depends on the UE's lifecycle phase, not on which teardown trigger
+ * fired:
+ *
+ *   - Pre-registration phases (mid-Authentication, pre-Reg-Accept,
+ *     deregistered, exception) hold no spec-mandated state — no SUPI
+ *     binding for UDM/PCF caches, no PDU sessions, no GUTI for paging.
+ *     Drop them immediately to release the pool slot. This closes the
+ *     pool leak class observed under fuzzer-style load (#4516) and the
+ *     latent over-retention on the regular NAS-release path.
+ *
+ *   - The registered phase carries spec-mandated retention via the
+ *     mobile-reachable timer (default t3512 + 240 s). This is what
+ *     §5.3.7 mandates and what every external NF expects.
+ *
+ * IMPORTANT: this helper is for TEARDOWN paths only. Do not use it
+ * during normal procedural dispatch — it always either removes the
+ * amf_ue or starts the implicit-dereg countdown, neither of which is
+ * appropriate while a procedure is in flight on the same context.
+ *
+ * If Open5GS later grows an emergency-services state machine
+ * (TS 23.501 §5.16, current issues #4359/#4360 marked
+ * "status:needs-planning"), the predicate inside
+ * amf_ue_classify_cleanup() must be revisited.
+ */
+typedef enum {
+    AMF_UE_CLEANUP_IMMEDIATE,   /* drop the amf_ue right now */
+    AMF_UE_CLEANUP_DEFERRED,    /* start mobile_reachable.timer */
+} amf_ue_cleanup_tier_t;
+
+amf_ue_cleanup_tier_t amf_ue_classify_cleanup(amf_ue_t *amf_ue);
+void amf_ue_apply_cleanup(amf_ue_t *amf_ue);
+
 amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi);
 
 /*
