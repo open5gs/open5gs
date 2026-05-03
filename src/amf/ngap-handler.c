@@ -1879,8 +1879,9 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
          */
         if (amf_ue) {
             amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
-            ogs_timer_start(amf_ue->mobile_reachable.timer,
-                    ogs_time_from_sec(amf_self()->time.t3512.value + 240));
+            /* TS 24.501 §5.3.7 retention via cleanup tier;
+             * see amf_ue_classify_cleanup() in context.c. */
+            amf_ue_apply_cleanup(amf_ue);
         } else
             ogs_error("No UE(amf-ue) Context");
 
@@ -5105,9 +5106,9 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                 ogs_debug("    SUPI[%s]", amf_ue->supi);
                 amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
                 ran_ue_remove(ran_ue);
-                ogs_timer_start(amf_ue->mobile_reachable.timer,
-                        ogs_time_from_sec(
-                            amf_self()->time.t3512.value + 240));
+                /* TS 24.501 §5.3.7 retention via cleanup tier;
+                 * see amf_ue_classify_cleanup() in context.c. */
+                amf_ue_apply_cleanup(amf_ue);
             }
         } else {
             ran_ue_remove(ran_ue);

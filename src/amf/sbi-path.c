@@ -649,6 +649,20 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
             if (old_xact_count == new_xact_count) {
                 amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
                 ran_ue_remove(ran_ue);
+                /*
+                 * Closes #4516. This synchronous branch was the only
+                 * AMF teardown path that never started any cleanup
+                 * trigger after deassociating the ran_ue, leaving
+                 * the amf_ue in the pool indefinitely. Pre-registered
+                 * UEs (mid-Authentication when the SCTP transport
+                 * dropped) accumulated under fuzzer-style load until
+                 * the pool exhausted; registered no-PDU-session UEs
+                 * became zombie contexts on the same path.
+                 *
+                 * TS 24.501 §5.3.7 retention via cleanup tier;
+                 * see amf_ue_classify_cleanup() in context.c.
+                 */
+                amf_ue_apply_cleanup(amf_ue);
             }
         } else {
             ogs_warn("amf_sbi_send_deactivate_all_ue_in_gnb()");
