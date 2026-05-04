@@ -21,6 +21,7 @@
 
 #include "sbi-path.h"
 #include "nnrf-handler.h"
+#include "metrics.h"
 
 void nrf_nf_fsm_init(ogs_sbi_nf_instance_t *nf_instance)
 {
@@ -270,6 +271,10 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                     ogs_assert(response);
                     ogs_assert(true ==
                             ogs_sbi_server_send_response(stream, response));
+                    nrf_metrics_inst_global_inc(
+                            NRF_METR_GLOB_CTR_NF_DEREGISTER);
+                    nrf_metrics_inst_global_dec(
+                            NRF_METR_GLOB_GAUGE_NF_INSTANCES);
                     OGS_FSM_TRAN(s, nrf_nf_state_de_registered);
                     break;
 

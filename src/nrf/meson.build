@@ -20,6 +20,8 @@ libnrf_sources = files('''
     event.c
     timer.c
 
+    metrics.c
+
     nnrf-handler.c
     nnrf-build.c
     sbi-path.c
@@ -32,12 +34,12 @@ libnrf_sources = files('''
 
 libnrf = static_library('nrf',
     sources : libnrf_sources,
-    dependencies : libsbi_dep,
+    dependencies : [libsbi_dep, libmetrics_dep],
     install : false)
 
 libnrf_dep = declare_dependency(
     link_with : libnrf,
-    dependencies : libsbi_dep)
+    dependencies : [libsbi_dep, libmetrics_dep])
 
 nrf_sources = files('''
     app.c

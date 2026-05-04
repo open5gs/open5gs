@@ -19,6 +19,7 @@
 
 #include "nnrf-handler.h"
 #include "sbi-path.h"
+#include "metrics.h"
 
 static int discover_handler(
         int status, ogs_sbi_response_t *response, void *data);
@@ -114,6 +115,7 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
         /* Reject the registration if PLMN-ID is invalid */
         if (!plmn_valid) {
             ogs_error("PLMN-ID in NFProfile is not allowed");
+            nrf_metrics_inst_global_inc(NRF_METR_GLOB_CTR_NF_REGISTER_FAIL);
             ogs_assert(true == ogs_sbi_server_send_error(
                 stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
                 "PLMN-ID not allowed", NULL, NULL));
@@ -134,6 +136,7 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
             nf_instance->id,
             OpenAPI_nf_type_ToString(nf_instance->nf_type));
 
+        nrf_metrics_inst_global_inc(NRF_METR_GLOB_CTR_NF_REGISTER_FAIL);
         ogs_assert(true ==
             ogs_sbi_server_send_error(
                 stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
@@ -257,6 +260,9 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
 
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    nrf_metrics_inst_global_inc(NRF_METR_GLOB_CTR_NF_REGISTER_SUCC);
+    nrf_metrics_inst_global_inc(NRF_METR_GLOB_GAUGE_NF_INSTANCES);
 
     return true;
 }
@@ -419,6 +425,7 @@ bool nrf_nnrf_handle_nf_update(ogs_sbi_nf_instance_t *nf_instance,
                 recvmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
         ogs_assert(response);
         ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+        nrf_metrics_inst_global_inc(NRF_METR_GLOB_CTR_NF_HEARTBEAT);
         break;
 
     DEFAULT
@@ -997,6 +1004,8 @@ bool nrf_nnrf_handle_nf_discover(
     ogs_assert(stream);
     ogs_assert(recvmsg);
 
+    nrf_metrics_inst_global_inc(NRF_METR_GLOB_CTR_NF_DISCOVER_REQ);
+
     if (!recvmsg->param.target_nf_type) {
         ogs_error("No target-nf-type [%s]", recvmsg->h.uri);
         ogs_assert(true ==
@@ -1396,6 +1405,7 @@ cleanup:
 
     ogs_free(SearchResult);
 
+    nrf_metrics_inst_global_inc(NRF_METR_GLOB_CTR_NF_DISCOVER_SUCC);
     return true;
 }
 
