@@ -256,6 +256,9 @@ int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent)
                 } else if (!strcmp(parameter_key, "fake_csfb")) {
                     global_conf.parameter.fake_csfb =
                         ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_ims")) {
+                    global_conf.parameter.no_ims =
+                        ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key,
                             "no_ipv4v6_local_addr_in_packet_filter")) {
                     global_conf.parameter.

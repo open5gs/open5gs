@@ -27,6 +27,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * NOKIA AEQE (SW: 5G20A)
  * NOKIA AEQD (SW: 5G20A)
  * NOKIA AEQP (SW: 5G21A)
+ * NOKIA AIRSCALE ASIK+ABIL BBU + AWHQE (n78) (SW: SBTS 25R2)
  * MOSO Networks Canopy 5GID1 Indoor 2T2R (5G n48 n78)
  * ZTE ITBBU ITRAN-PNF V5.65.20.20F10 (n78, n1, n3) 
 

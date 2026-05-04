@@ -5084,11 +5084,42 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     if (ran_ue) {
         amf_ue_t *amf_ue = NULL;
         int xact_count = 0;
+        NGAP_Cause_PR group = NGAP_Cause_PR_protocol;
+        long cause = NGAP_CauseProtocol_unspecified;
 
         ogs_warn("    Performing local release for "
                 "RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
                 (long long)ran_ue->ran_ue_ngap_id,
                 (long long)ran_ue->amf_ue_ngap_id);
+
+        if (!Cause)
+            ogs_warn("    ErrorIndication without Cause IE");
+        else switch (Cause->present) {
+        case NGAP_Cause_PR_radioNetwork:
+            group = Cause->present;
+            cause = Cause->choice.radioNetwork;
+            break;
+        case NGAP_Cause_PR_transport:
+            group = Cause->present;
+            cause = Cause->choice.transport;
+            break;
+        case NGAP_Cause_PR_nas:
+            group = Cause->present;
+            cause = Cause->choice.nas;
+            break;
+        case NGAP_Cause_PR_protocol:
+            group = Cause->present;
+            cause = Cause->choice.protocol;
+            break;
+        case NGAP_Cause_PR_misc:
+            group = Cause->present;
+            cause = Cause->choice.misc;
+            break;
+        default:
+            ogs_warn("    Invalid Cause Group[%d], using unspecified",
+                    Cause->present);
+            break;
+        }
 
         amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
         if (amf_ue) {
@@ -5099,7 +5130,7 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
             amf_sbi_send_deactivate_all_sessions(
                     ran_ue, amf_ue,
                     AMF_REMOVE_N2_CONTEXT_BY_ERROR_INDICATION,
-                    Cause->present, (int)Cause->choice.radioNetwork);
+                    group, cause);
 
             if (amf_sess_xact_count(amf_ue) == xact_count) {
                 ogs_debug("    SUPI[%s]", amf_ue->supi);
