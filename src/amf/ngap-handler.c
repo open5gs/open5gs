@@ -2842,7 +2842,6 @@ void ngap_handle_path_switch_request(
     NGAP_EUTRAintegrityProtectionAlgorithms_t
         *eUTRAintegrityProtectionAlgorithms = NULL;
     uint16_t nr_ea = 0, nr_ia = 0, eutra_ea = 0, eutra_ia = 0;
-    uint8_t nr_ea0 = 0, nr_ia0 = 0, eutra_ea0 = 0, eutra_ia0 = 0;
 
     NGAP_PDUSessionResourceToBeSwitchedDLItem_t *PDUSessionItem = NULL;
     OCTET_STRING_t *transfer = NULL;
@@ -3106,28 +3105,42 @@ void ngap_handle_path_switch_request(
     }
     memcpy(&nr_ea, nRencryptionAlgorithms->buf, sizeof(nr_ea));
     nr_ea = be16toh(nr_ea);
-    nr_ea0 = amf_ue->ue_security_capability.nr_ea0;
-    amf_ue->ue_security_capability.nr_ea = nr_ea >> 9;
-    amf_ue->ue_security_capability.nr_ea0 = nr_ea0;
+    if ((uint8_t)(nr_ea >> 9) != (amf_ue->ue_security_capability.nr_ea & 0x7f)) {
+        ogs_warn("Received NR EA[0x%x] != stored NR EA[0x%x]; "
+                "retaining stored value",
+                (uint8_t)(nr_ea >> 9),
+                amf_ue->ue_security_capability.nr_ea & 0x7f);
+    }
 
     memcpy(&nr_ia, nRintegrityProtectionAlgorithms->buf, sizeof(nr_ia));
     nr_ia = be16toh(nr_ia);
-    nr_ia0 = amf_ue->ue_security_capability.nr_ia0;
-    amf_ue->ue_security_capability.nr_ia = nr_ia >> 9;
-    amf_ue->ue_security_capability.nr_ia0 = nr_ia0;
+    if ((uint8_t)(nr_ia >> 9) != (amf_ue->ue_security_capability.nr_ia & 0x7f)) {
+        ogs_warn("Received NR IA[0x%x] != stored NR IA[0x%x]; "
+                "retaining stored value",
+                (uint8_t)(nr_ia >> 9),
+                amf_ue->ue_security_capability.nr_ia & 0x7f);
+    }
 
     memcpy(&eutra_ea, eUTRAencryptionAlgorithms->buf, sizeof(eutra_ea));
     eutra_ea = be16toh(eutra_ea);
-    eutra_ea0 = amf_ue->ue_security_capability.eutra_ea0;
-    amf_ue->ue_security_capability.eutra_ea = eutra_ea >> 9;
-    amf_ue->ue_security_capability.eutra_ea0 = eutra_ea0;
+    if ((uint8_t)(eutra_ea >> 9) !=
+            (amf_ue->ue_security_capability.eutra_ea & 0x7f)) {
+        ogs_warn("Received EUTRA EA[0x%x] != stored EUTRA EA[0x%x]; "
+                "retaining stored value",
+                (uint8_t)(eutra_ea >> 9),
+                amf_ue->ue_security_capability.eutra_ea & 0x7f);
+    }
 
     memcpy(&eutra_ia,
             eUTRAintegrityProtectionAlgorithms->buf, sizeof(eutra_ia));
     eutra_ia = be16toh(eutra_ia);
-    eutra_ia0 = amf_ue->ue_security_capability.eutra_ia0;
-    amf_ue->ue_security_capability.eutra_ia = eutra_ia >> 9;
-    amf_ue->ue_security_capability.eutra_ia0 = eutra_ia0;
+    if ((uint8_t)(eutra_ia >> 9) !=
+            (amf_ue->ue_security_capability.eutra_ia & 0x7f)) {
+        ogs_warn("Received EUTRA IA[0x%x] != stored EUTRA IA[0x%x]; "
+                "retaining stored value",
+                (uint8_t)(eutra_ia >> 9),
+                amf_ue->ue_security_capability.eutra_ia & 0x7f);
+    }
 
     /* Update Security Context (NextHop) */
     amf_ue->nhcc++;

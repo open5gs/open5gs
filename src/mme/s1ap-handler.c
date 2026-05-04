@@ -2714,7 +2714,6 @@ void s1ap_handle_path_switch_request(
     S1AP_EncryptionAlgorithms_t    *encryptionAlgorithms = NULL;
     S1AP_IntegrityProtectionAlgorithms_t *integrityProtectionAlgorithms = NULL;
     uint16_t eea = 0, eia = 0;
-    uint8_t eea0 = 0, eia0 = 0;
 
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -3015,9 +3014,12 @@ void s1ap_handle_path_switch_request(
     }
     memcpy(&eea, encryptionAlgorithms->buf, sizeof(eea));
     eea = be16toh(eea);
-    eea0 = mme_ue->ue_network_capability.eea0;
-    mme_ue->ue_network_capability.eea = eea >> 9;
-    mme_ue->ue_network_capability.eea0 = eea0;
+    if ((uint8_t)(eea >> 9) != (mme_ue->ue_network_capability.eea & 0x7f)) {
+        ogs_warn("Received EEA[0x%x] != stored EEA[0x%x]; "
+                "retaining stored value",
+                (uint8_t)(eea >> 9),
+                mme_ue->ue_network_capability.eea & 0x7f);
+    }
 
     if (integrityProtectionAlgorithms->size != sizeof(eia)) {
         ogs_error("Invalid integrityProtectionAlgorithms->size = %d "
@@ -3034,9 +3036,12 @@ void s1ap_handle_path_switch_request(
     }
     memcpy(&eia, integrityProtectionAlgorithms->buf, sizeof(eia));
     eia = be16toh(eia);
-    eia0 = mme_ue->ue_network_capability.eia0;
-    mme_ue->ue_network_capability.eia = eia >> 9;
-    mme_ue->ue_network_capability.eia0 = eia0;
+    if ((uint8_t)(eia >> 9) != (mme_ue->ue_network_capability.eia & 0x7f)) {
+        ogs_warn("Received EIA[0x%x] != stored EIA[0x%x]; "
+                "retaining stored value",
+                (uint8_t)(eia >> 9),
+                mme_ue->ue_network_capability.eia & 0x7f);
+    }
 
     /* Update Security Context (NextHop) */
     mme_ue->nhcc++;
