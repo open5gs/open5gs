@@ -27,6 +27,7 @@
 #include "s1ap-handler.h"
 #include "mme-sm.h"
 #include "mme-gtp-path.h"
+#include "mme-s-naptr.h"
 
 #define MAX_CELL_PER_ENB            8
 
@@ -152,6 +153,9 @@ void mme_context_init(void)
 void mme_context_final(void)
 {
     ogs_assert(context_initialized == 1);
+
+    /* Release the S-NAPTR DNS cache before tearing down the rest of context */
+    mme_s_naptr_cache_flush();
 
     mme_enb_remove_all();
     mme_ue_remove_all();
@@ -583,6 +587,54 @@ int mme_context_parse_config(void)
                             } else
                                 ogs_warn("unknown key `%s`", fd_key);
                         }
+                    }
+                } else if (!strcmp(mme_key, "s5s8")) {
+                    ogs_yaml_iter_t s5s8_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &s5s8_iter);
+                    while (ogs_yaml_iter_next(&s5s8_iter)) {
+                        const char *s5s8_key = ogs_yaml_iter_key(&s5s8_iter);
+                        ogs_assert(s5s8_key);
+                        if (!strcmp(s5s8_key, "dns")) {
+                            ogs_yaml_iter_t dns_iter;
+                            ogs_yaml_iter_recurse(&s5s8_iter, &dns_iter);
+                            ogs_assert(ogs_yaml_iter_type(&dns_iter) !=
+                                YAML_MAPPING_NODE);
+                            do {
+                                const char *v = NULL;
+
+                                if (ogs_yaml_iter_type(&dns_iter) ==
+                                        YAML_SEQUENCE_NODE) {
+                                    if (!ogs_yaml_iter_next(&dns_iter))
+                                        break;
+                                }
+
+                                v = ogs_yaml_iter_value(&dns_iter);
+                                if (v && strlen(v)) {
+                                    ogs_ipsubnet_t ipsub;
+                                    rv = ogs_ipsubnet(&ipsub, v, NULL);
+                                    if (rv != OGS_OK) {
+                                        ogs_warn("s5s8.dns: invalid address "
+                                                 "'%s', ignoring", v);
+                                        continue;
+                                    }
+
+                                    if (ipsub.family != AF_INET) {
+                                        ogs_warn("s5s8.dns only supports "
+                                            "IPv4, ignoring: %s", v);
+                                        continue; /* do not store IPv6 addr */
+                                    } else if (self.s5s8_dns[0] &&
+                                               self.s5s8_dns[1]) {
+                                        ogs_warn("Ignore s5s8 DNS : %s", v);
+                                    } else if (self.s5s8_dns[0]) {
+                                        self.s5s8_dns[1] = v;
+                                    } else {
+                                        self.s5s8_dns[0] = v;
+                                    }
+                                }
+                            } while (ogs_yaml_iter_type(&dns_iter) ==
+                                        YAML_SEQUENCE_NODE);
+                        } else
+                            ogs_warn("unknown key `%s`", s5s8_key);
                     }
                 } else if (!strcmp(mme_key, "relative_capacity")) {
                     const char *v = ogs_yaml_iter_value(&mme_iter);
@@ -4476,6 +4528,14 @@ void mme_sess_remove(mme_sess_t *sess)
     OGS_NAS_CLEAR_DATA(&sess->ue_epco);
     OGS_TLV_CLEAR_DATA(&sess->pgw_pco);
     OGS_TLV_CLEAR_DATA(&sess->pgw_epco);
+
+    /* Free DNS-resolved PGW candidates (allocated by mme_s_naptr_resolve_candidates()) */
+    if (sess->pgw_candidates.list) {
+        ogs_free(sess->pgw_candidates.list);
+        sess->pgw_candidates.list  = NULL;
+        sess->pgw_candidates.count = 0;
+        sess->pgw_candidates.index = 0;
+    }
 
     ogs_pool_id_free(&mme_sess_pool, sess);
 

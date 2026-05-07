@@ -26,6 +26,7 @@ testunit_unit_sources = files('''
     security-test.c
     nrf-discovery-test.c
     crash-test.c
+    s-naptr-test.c
 '''.split())
 
 testunit_unit_exe = executable('unit',

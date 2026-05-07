@@ -173,6 +173,32 @@ void mme_s11_handle_echo_response(
     /* Not Implemented */
 }
 
+/*
+ * is_transient_gtp_cause() - classify a GTPv2 cause code as transient.
+ *
+ * A transient cause indicates a temporary PGW/SMF unavailability that may be
+ * resolved by retrying with a different PGW candidate per 3GPP TS 23.401
+ * §5.3.2.1.  Permanent causes (e.g. APN not supported, subscriber barred) are
+ * not retried — they would fail identically on any other PGW.
+ *
+ * Returns true for causes that warrant a retry with the next candidate.
+ */
+static bool is_transient_gtp_cause(uint8_t cause)
+{
+    switch (cause) {
+    case OGS_GTP2_CAUSE_REMOTE_PEER_NOT_RESPONDING:                   /* 100 */
+    case OGS_GTP2_CAUSE_NO_RESOURCES_AVAILABLE:                       /*  73 */
+    case OGS_GTP2_CAUSE_SERVICE_NOT_SUPPORTED:                        /*  68 */
+    case OGS_GTP2_CAUSE_SYSTEM_FAILURE:                               /*  72 */
+    case OGS_GTP2_CAUSE_GTP_C_ENTITY_CONGESTION:                      /* 120 */
+    case OGS_GTP2_CAUSE_TEMPORARILY_REJECTED_DUE_TO_HANDOVER_IN_PROGRESS: /* 110 */
+    case OGS_GTP2_CAUSE_TIMED_OUT_REQUEST:                            /* 122 */
+        return true;
+    default:
+        return false;
+    }
+}
+
 static void mme_s11_create_session_fail(
         enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         int create_action, uint8_t fail_cause,
@@ -216,6 +242,18 @@ void mme_s11_handle_create_session_response(
     uint8_t fail_cause = OGS_GTP2_CAUSE_REQUEST_REJECTED_REASON_NOT_SPECIFIED;
     uint8_t session_cause = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
     uint8_t bearer_cause = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
+    /*
+     * local_failure: set to true when a goto-fail is triggered by an MME-side
+     * error AFTER the PGW has already responded with REQUEST_ACCEPTED (i.e. the
+     * PGW session already exists).  The retry gate MUST NOT fire in this case —
+     * sending a Create Session Request to the next candidate would create a
+     * duplicate PGW session instead of reporting the local error.
+     *
+     * Contrast with fail_cause values that come directly from the PGW's
+     * response (bearer_cause / session_cause): those indicate the PGW rejected
+     * our request, so no session was created and retrying is safe.
+     */
+    bool local_failure = false;
     ogs_gtp2_f_teid_t *sgw_s11_teid = NULL;
     ogs_gtp2_f_teid_t *pgw_s5c_teid = NULL;
     ogs_gtp2_f_teid_t *sgw_s1u_teid = NULL;
@@ -271,6 +309,9 @@ void mme_s11_handle_create_session_response(
 
     source_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
     if (!source_ue) {
+        /* MME-local context gap — not a PGW failure.  Mark local_failure so
+         * the retry gate does not send CSR to the next DNS candidate. */
+        local_failure = true;
         fail_reason = "No SGW UE Context";
         fail_cause = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
         goto fail;
@@ -279,6 +320,8 @@ void mme_s11_handle_create_session_response(
     if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST) {
         target_ue = sgw_ue_find_by_id(source_ue->target_ue_id);
         if (!target_ue) {
+            /* MME-local context gap — not a PGW failure. */
+            local_failure = true;
             fail_reason = "No target SGW UE Context";
             fail_cause = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
             goto fail;
@@ -312,6 +355,8 @@ void mme_s11_handle_create_session_response(
     if (!mme_ue_from_teid) {
         ogs_error("[%s] No Context in TEID [Cause:%d]",
                 mme_ue->imsi_bcd, session_cause);
+        /* MME-local TEID lookup failure — not a PGW availability problem. */
+        local_failure = true;
         fail_cause = OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND;
         fail_reason = "No Context in TEID";
         goto fail;
@@ -403,8 +448,17 @@ void mme_s11_handle_create_session_response(
      ********************/
     session = sess->session;
     if (!session) {
+        /*
+         * The PGW responded REQUEST_ACCEPTED but the MME has no subscriber
+         * session record for this APN.  This is a local data-model
+         * inconsistency, not a PGW availability problem.  Mark as a local
+         * failure so the retry gate does not send CSR to the next candidate
+         * (which would open a second PGW session while the first one, already
+         * accepted, remains orphaned).
+         */
+        local_failure = true;
         fail_cause = OGS_GTP2_CAUSE_SYSTEM_FAILURE;
-        fail_reason = "No Session";
+        fail_reason = "No Session context (local MME failure)";
         goto fail;
     }
 
@@ -573,8 +627,18 @@ void mme_s11_handle_create_session_response(
             if (OGS_OK != sgsap_send_location_update_request(mme_ue)) {
                 ogs_error("[%s] sgsap_send_location_update_request() failed",
                         mme_ue->imsi_bcd);
+                /*
+                 * The PGW session is fully established at this point — we are
+                 * past all GTP response validation and are about to send Attach
+                 * Accept to the UE.  The SGs/VLR path failure is an MME↔MSC
+                 * signalling issue completely unrelated to PGW availability.
+                 * Mark as a local failure to suppress the retry gate: retrying
+                 * CSR with the next DNS candidate would open a duplicate PGW
+                 * session without fixing the SGs problem.
+                 */
+                local_failure = true;
                 fail_cause = OGS_GTP2_CAUSE_SYSTEM_FAILURE;
-                fail_reason = "SGs location update failed";
+                fail_reason = "SGs location update failed (local MME failure)";
                 goto fail;
             }
         }
@@ -608,6 +672,60 @@ void mme_s11_handle_create_session_response(
     return;
 
 fail:
+    /*
+     * 3GPP TS 23.401 §5.3.2.1: on a transient failure, retry the Create
+     * Session Request with the next DNS-resolved PGW candidate before
+     * rejecting the UE.
+     *
+     * Retry conditions (ALL must be true):
+     *   1. fail_cause is a transient PGW cause (temporary unavailability).
+     *   2. !local_failure — the cause was set by the PGW's response, NOT by
+     *      a local MME error that fired after the PGW already accepted the
+     *      request.  Local failures (e.g. missing session context, SGs path
+     *      error) must not trigger retry: the PGW session already exists and
+     *      sending CSR to the next candidate would create a duplicate session.
+     *   3. Candidates remain (index + 1 < count).
+     *
+     * Permanent causes (APN not supported, subscriber barred, etc.) are not
+     * retried because they would fail identically on any other PGW.
+     */
+    /*
+     * Skip retry when an S5/S8 tunnel is already anchored to a specific PGW
+     * (PATH_SWITCH/TAU after a successful initial CSR).  In that case the
+     * CSR builder takes the handover branch and unconditionally re-uses
+     * sess->pgw_s5c_ip — incrementing pgw_candidates.index would just produce
+     * an identical request to the same PGW, wasting GTP transaction slots.
+     */
+    if (sess && is_transient_gtp_cause(fail_cause) &&
+        !local_failure &&
+        sess->pgw_candidates.list &&
+        sess->pgw_candidates.index + 1 < sess->pgw_candidates.count &&
+        !(sess->pgw_s5c_ip.ipv4 && sess->pgw_s5c_ip.addr != 0)) {
+        int r;
+        sess->pgw_candidates.index++;
+        ogs_warn("[%s] CSR rejected cause[%d] — retrying with PGW "
+                 "candidate [%d/%d]",
+                 mme_ue ? mme_ue->imsi_bcd : "?", fail_cause,
+                 sess->pgw_candidates.index + 1,
+                 sess->pgw_candidates.count);
+        r = mme_gtp_send_create_session_request(enb_ue, sess, create_action);
+        if (r == OGS_OK)
+            return;   /* retry in flight; response will re-enter this handler */
+
+        /*
+         * The resend itself failed (e.g. no GTP transaction slot, socket
+         * error).  ogs_expect() would only log and return, leaving the UE
+         * without a reject or release path.  Fall through to
+         * mme_s11_create_session_fail() so the UE is torn down cleanly.
+         */
+        ogs_error("[%s] mme_gtp_send_create_session_request() failed on "
+                  "retry candidate [%d/%d]; releasing UE (cause %d)",
+                  mme_ue ? mme_ue->imsi_bcd : "?",
+                  sess->pgw_candidates.index + 1,
+                  sess->pgw_candidates.count,
+                  fail_cause);
+    }
+
     mme_s11_create_session_fail(enb_ue, mme_ue,
             create_action, fail_cause, fail_reason);
     return;

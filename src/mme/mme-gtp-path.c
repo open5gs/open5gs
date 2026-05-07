@@ -188,6 +188,52 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
             ogs_warn("No S1 Context");
         }
         break;
+    case OGS_GTP2_CREATE_SESSION_REQUEST_TYPE:
+        /*
+         * 3GPP TS 23.401 §5.3.2.1: if the Create Session Request times out,
+         * retry with the next DNS-resolved PGW candidate before rejecting the
+         * UE.  The candidate array was populated by mme_s_naptr_resolve_candidates()
+         * in mme-s11-build.c on the first attempt.
+         *
+         * If no more candidates are available (static config path, or all DNS
+         * candidates exhausted), fall through to release the UE context.
+         */
+        /* Skip retry when the session is already anchored to a specific PGW
+         * (PATH_SWITCH/TAU after a successful initial CSR).  The CSR builder
+         * would re-use sess->pgw_s5c_ip and produce an identical request. */
+        if (sess->pgw_candidates.list &&
+            sess->pgw_candidates.index + 1 < sess->pgw_candidates.count &&
+            !(sess->pgw_s5c_ip.ipv4 && sess->pgw_s5c_ip.addr != 0)) {
+            sess->pgw_candidates.index++;
+            ogs_warn("[%s] CSR timeout — retrying with PGW candidate [%d/%d]",
+                     mme_ue->imsi_bcd,
+                     sess->pgw_candidates.index + 1,
+                     sess->pgw_candidates.count);
+            r = mme_gtp_send_create_session_request(
+                    enb_ue, sess, xact->create_action);
+            if (r == OGS_OK) {
+                ogs_warn("GTP Timeout (retry) : IMSI[%s] Message-Type[%d]",
+                        mme_ue->imsi_bcd, type);
+                return;  /* retry in flight — await next CSR response */
+            }
+            /*
+             * The resend failed (e.g. no GTP transaction slot, socket error).
+             * ogs_expect() would only log and the unconditional return would
+             * leave the UE with no release path even though no retry is in
+             * flight.  Fall through to the release block below.
+             */
+            ogs_error("[%s] mme_gtp_send_create_session_request() failed on "
+                      "timeout retry candidate [%d/%d]; releasing UE",
+                      mme_ue->imsi_bcd,
+                      sess->pgw_candidates.index + 1,
+                      sess->pgw_candidates.count);
+        }
+        /* No more candidates, or resend failed — release UE context */
+        if (enb_ue)
+            mme_send_delete_session_or_mme_ue_context_release(enb_ue, mme_ue);
+        else
+            ogs_error("No S1 Context");
+        break;
     case OGS_GTP2_BEARER_RESOURCE_COMMAND_TYPE:
         /* Nothing to do */
         break;

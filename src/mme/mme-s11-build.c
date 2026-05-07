@@ -17,7 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <arpa/inet.h>
+
 #include "mme-context.h"
+#include "mme-s-naptr.h"
 
 #include "mme-s11-build.h"
 
@@ -141,25 +144,204 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
         req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.data =
             &pgw_s5c_teid;
-    } else {
-        ogs_sockaddr_t *pgw_addr = NULL;
-        ogs_sockaddr_t *pgw_addr6 = NULL;
-
-        pgw_addr = mme_pgw_addr_find_by_apn_enb(
-                &mme_self()->pgw_list, AF_INET, sess);
-        pgw_addr6 = mme_pgw_addr_find_by_apn_enb(
-                &mme_self()->pgw_list, AF_INET6, sess);
-        if (!pgw_addr && !pgw_addr6) {
-            pgw_addr = mme_self()->pgw_addr;
-            pgw_addr6 = mme_self()->pgw_addr6;
-        }
-
-        rv = ogs_gtp2_sockaddr_to_f_teid(
-                pgw_addr, pgw_addr6, &pgw_s5c_teid, &len);
-        ogs_assert(rv == OGS_OK);
+    } else if ((create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST ||
+                create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) &&
+               sess->pgw_s5c_ip.ipv4 && sess->pgw_s5c_ip.addr != 0) {
+        /*
+         * Handover / TAU re-attach: the session is already established.
+         * Use the PGW IP that accepted the original Create Session Request
+         * (stored in sess->pgw_s5c_ip after the first CSR response).
+         * Do NOT re-run DNS discovery — the SGW must anchor the S5/S8
+         * tunnel to the same PGW that holds the subscriber context.
+         *
+         * Guard: require addr != 0 in addition to the ipv4 flag, so a
+         * non-compliant PGW that sets ipv4=1 but returns 0.0.0.0 falls
+         * through to the warning + DNS/static path below rather than
+         * sending a CSR with a null destination address.
+         */
+        pgw_s5c_teid.ipv4 = 1;
+        pgw_s5c_teid.addr = sess->pgw_s5c_ip.addr;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &pgw_s5c_teid;
-        req->pgw_s5_s8_address_for_control_plane_or_pmip.len = len;
+        req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
+            OGS_GTP2_F_TEID_IPV4_LEN;
+    } else {
+        /*
+         * PGW/SMF address not provisioned by HSS.
+         *
+         * Resolution order:
+         *   1. S-NAPTR DNS (3GPP TS 29.303) — only when mme.s5s8.dns is
+         *      configured in mme.yaml.  Completely optional: if omitted, or
+         *      if DNS resolution fails for any reason, the MME falls through
+         *      transparently to the static configuration below.
+         *   2. Static PGW list from mme.yaml matched by APN / Cell-ID / TAC.
+         *   3. First PGW in the static list (last-resort).
+         */
+
+        /*
+         * PATH_SWITCH / TAU with no established PGW IP.
+         *
+         * Normally the PGW IP is recorded in sess->pgw_s5c_ip when the
+         * Create Session Response is processed.  If we reach here during a
+         * handover or TAU it means that field was never set — either the PGW
+         * omitted the F-TEID from its response (non-compliant) or the session
+         * was never fully established.  Fall through to DNS/static discovery
+         * and warn the operator so the misconfiguration is visible in logs.
+         */
+        if (create_action == OGS_GTP_CREATE_IN_PATH_SWITCH_REQUEST ||
+            create_action == OGS_GTP_CREATE_IN_TRACKING_AREA_UPDATE) {
+            ogs_warn("S-NAPTR: PATH_SWITCH/TAU but pgw_s5c_ip not set for "
+                     "session — PGW may not have returned F-TEID in CSR "
+                     "response; falling back to DNS/static discovery");
+        }
+
+        ogs_sockaddr_t *pgw_addr  = NULL;
+        ogs_sockaddr_t *pgw_addr6 = NULL;
+        bool dns_used = false;
+
+        /*
+         * --- Path 1: S-NAPTR DNS (optional, TS 29.303) ---
+         *
+         * On the FIRST Create Session Request for this session, resolve ALL
+         * PGW candidates via DNS and store them in sess->pgw_candidates.
+         * On RETRY attempts (pgw_candidates.list already set), just advance
+         * to the next candidate — do not re-query DNS.
+         *
+         * This implements TS 23.401 §5.3.2.1: the MME shall try the next
+         * DNS-resolved candidate before rejecting the UE.
+         */
+        if (mme_self()->s5s8_dns[0] && session->name) {
+            /* mme_ue is already looked up and asserted non-NULL at the top of
+             * this function; no second lookup needed. */
+            if (!sess->pgw_candidates.list) {
+                /*
+                 * First attempt: resolve the subscriber's home PLMN, then
+                 * run S-NAPTR DNS to discover PGW candidates.
+                 *
+                 * Home PLMN source priority:
+                 *
+                 *   1. hssmap (mme.yaml hssmap_map) — explicit operator
+                 *      config mapping IMSI prefix → home PLMN + HSS realm.
+                 *      Most precise; required for roaming UEs whose home
+                 *      PLMN differs from every served GUMMEI.
+                 *
+                 *   2. IMSI-prefix match against served GUMMEIs — derives
+                 *      home PLMN from the leading MCC+MNC digits of the
+                 *      IMSI, checked against every PLMN in the configured
+                 *      gummei list.  Covers non-roaming and simple single-
+                 *      PLMN deployments without requiring hssmap config.
+                 *
+                 * Do NOT use tai.plmn_id: TAI is the VISITED PLMN.  For
+                 * roaming UEs, visited ≠ home, and using it would build
+                 * the APN-FQDN in the wrong DNS zone (TS 23.003 §19.4.2).
+                 *
+                 * If neither source yields a PLMN, fall through to static
+                 * PGW config (dns_used stays false, no error logged here).
+                 */
+                const ogs_plmn_id_t *home_plmn = NULL;
+                /* derived_plmn is used only if hssmap is absent.
+                 * home_plmn may point into it; both are used only within
+                 * this block before mme_s_naptr_resolve_candidates(), which
+                 * copies the struct by value — no dangling-pointer risk. */
+                ogs_plmn_id_t derived_plmn;
+
+                if (mme_ue->hssmap) {
+                    /* Source 1: explicit hssmap — exact home PLMN */
+                    home_plmn = &mme_ue->hssmap->plmn_id;
+                } else {
+                    /* Source 2: derive from IMSI prefix vs served GUMMEIs */
+                    int g, p;
+                    for (g = 0; g < mme_self()->num_of_served_gummei
+                                && !home_plmn; g++) {
+                        for (p = 0;
+                             p < mme_self()->served_gummei[g].num_of_plmn_id
+                             && !home_plmn; p++) {
+                            char plmn_str[OGS_PLMNIDSTRLEN];
+                            ogs_plmn_id_to_string(
+                                &mme_self()->served_gummei[g].plmn_id[p],
+                                plmn_str);
+                            if (strncmp(plmn_str, mme_ue->imsi_bcd,
+                                        strlen(plmn_str)) == 0) {
+                                derived_plmn =
+                                    mme_self()->served_gummei[g].plmn_id[p];
+                                home_plmn = &derived_plmn;
+                            }
+                        }
+                    }
+                    if (!home_plmn)
+                        ogs_debug("S-NAPTR: cannot derive home PLMN for "
+                                  "[%s] APN[%s] — no GUMMEI PLMN matches "
+                                  "IMSI prefix; using static PGW config",
+                                  mme_ue->imsi_bcd,
+                                  session->name ? session->name : "(null)");
+                }
+
+                if (home_plmn) {
+                    sess->pgw_candidates.list =
+                        mme_s_naptr_resolve_candidates(
+                                session->name,
+                                home_plmn,
+                                &sess->pgw_candidates.count);
+                    sess->pgw_candidates.index = 0;
+                }
+            }
+
+            if (sess->pgw_candidates.list &&
+                sess->pgw_candidates.index < sess->pgw_candidates.count) {
+                dns_used = true;
+            }
+        }
+
+        if (dns_used) {
+            /*
+             * DNS discovery succeeded — use the current candidate.
+             * index 0 on first attempt; incremented by retry machinery
+             * in mme-gtp-path.c (timeout) and mme-s11-handler.c (fail:).
+             */
+            ogs_sockaddr_t *cand =
+                &sess->pgw_candidates.list[sess->pgw_candidates.index];
+
+            char _cand_addr[INET_ADDRSTRLEN];
+            ogs_debug("S-NAPTR: using PGW candidate [%d/%d] %s:%u",
+                      sess->pgw_candidates.index + 1,
+                      sess->pgw_candidates.count,
+                      inet_ntop(AF_INET, &cand->sin.sin_addr,
+                                _cand_addr, sizeof(_cand_addr)),
+                      OGS_GTPV2_C_UDP_PORT);
+
+            pgw_s5c_teid.ipv4 = 1;
+            pgw_s5c_teid.addr = cand->sin.sin_addr.s_addr;
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.data =
+                &pgw_s5c_teid;
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
+                OGS_GTP2_F_TEID_IPV4_LEN;
+        } else {
+            /*
+             * --- Path 2 & 3: static config ---
+             * Reached when:
+             *   (a) s5s8.dns is not configured — DNS never invoked, OR
+             *   (b) DNS resolution returned NULL — already warned internally
+             *       by mme_s_naptr_resolve_candidates().
+             * Either way this is normal operation; no additional warning needed.
+             */
+            pgw_addr = mme_pgw_addr_find_by_apn_enb(
+                    &mme_self()->pgw_list, AF_INET, sess);
+            pgw_addr6 = mme_pgw_addr_find_by_apn_enb(
+                    &mme_self()->pgw_list, AF_INET6, sess);
+            if (!pgw_addr && !pgw_addr6) {
+                pgw_addr  = mme_self()->pgw_addr;
+                pgw_addr6 = mme_self()->pgw_addr6;
+            }
+
+            rv = ogs_gtp2_sockaddr_to_f_teid(
+                    pgw_addr, pgw_addr6, &pgw_s5c_teid, &len);
+            ogs_assert(rv == OGS_OK);
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.data =
+                &pgw_s5c_teid;
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.len = len;
+        }
     }
 
     req->access_point_name.presence = 1;

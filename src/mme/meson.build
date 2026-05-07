@@ -45,6 +45,8 @@ libmme_sources = files('''
     mme-path.h
     metrics.h
 
+    mme-s-naptr.h
+    mme-s-naptr.c
     mme-init.c
     mme-event.c
     mme-timer.c
@@ -84,15 +86,26 @@ libmme_sources = files('''
     ../../lib/metrics/prometheus/json_pager.c
 '''.split())
 
+libresolv = cc.find_library('resolv', required : true)
+
+# nameser_compat.h is present on glibc but absent on musl (Alpine Linux).
+# mme-s-naptr.c guards the include with this macro so it builds on both.
+mme_c_args = []
+if cc.has_header('arpa/nameser_compat.h')
+    mme_c_args += ['-DHAVE_ARPA_NAMESER_COMPAT_H']
+endif
+
 libmme = static_library('mme',
     sources : libmme_sources,
+    c_args : mme_c_args,
     dependencies : [libmetrics_dep,
                     libsctp_dep,
                     libs1ap_dep,
                     libnas_eps_dep,
                     libdiameter_s6a_dep,
                     libgtp_dep,
-                    libsbi_dep],
+                    libsbi_dep,
+                    libresolv],
     install : false)
 
 libmme_dep = declare_dependency(
@@ -103,7 +116,8 @@ libmme_dep = declare_dependency(
                     libnas_eps_dep,
                     libdiameter_s6a_dep,
                     libsbi_dep,
-                    libgtp_dep])
+                    libgtp_dep,
+                    libresolv])
 
 mme_sources = files('''
     app-init.c

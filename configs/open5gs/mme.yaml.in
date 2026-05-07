@@ -160,6 +160,52 @@ mme:
 #          default_route: true
 #
 ################################################################################
+# S5/S8 Interface — PGW Discovery via S-NAPTR DNS (3GPP TS 29.303)
+################################################################################
+#  When mme.s5s8.dns is configured the MME performs a live NAPTR→SRV→A
+#  DNS lookup at session-setup time to discover PGW candidates dynamically.
+#  Results are cached in-process per APN-FQDN.  The effective cache TTL is
+#  min(NAPTR TTL, SRV TTL, A TTL), clamped to [30 s, 86400 s].  The floor
+#  prevents cache thrashing from broken zones returning TTL 0; the ceiling
+#  caps the cache lifetime at one day so that long-lived processes always
+#  refresh the PGW pool at least once every 24 hours.  Up to 64 distinct
+#  APN-FQDNs are cached simultaneously.
+#
+#  On each Create Session Request the MME selects one candidate at random
+#  and retries with the next candidate on any transient GTP failure
+#  (causes: 100, 73, 68, 72, 120, 110, 122) per TS 23.401 §5.3.2.1.
+#
+#  IPv4 only.  Only A records are resolved; AAAA is not supported yet.
+#  Falls back to the static pgw address in mme.yaml when dns is absent.
+#
+#  o Minimal — primary DNS server only
+#  s5s8:
+#    dns:
+#      - 192.168.1.53
+#
+#  o Recommended — primary + secondary for DNS failover
+#  s5s8:
+#    dns:
+#      - 192.168.1.53     # primary EPC DNS  (IPv4 only)
+#      - 192.168.1.54     # secondary EPC DNS (optional, IPv4 only)
+#
+#  o Lab / test network using dnsmasq on loopback
+#  s5s8:
+#    dns:
+#      - 127.0.0.1
+#
+#  DNS zone example (bind9 / dnsmasq) for APN "internet", MCC=234, MNC=01:
+#
+#  internet.apn.epc.mnc01.mcc234.3gppnetwork.org.  IN NAPTR 10 10 "S" \
+#      "x-3gpp-pgw:x-gtp-v2" "" _gtp-v2._udp.pgw.epc.example.com.
+#
+#  _gtp-v2._udp.pgw.epc.example.com.  IN SRV 10 10 2123 pgw1.epc.example.com.
+#  _gtp-v2._udp.pgw.epc.example.com.  IN SRV 10 10 2123 pgw2.epc.example.com.
+#
+#  pgw1.epc.example.com.  IN A  10.0.1.1
+#  pgw2.epc.example.com.  IN A  10.0.1.2
+#
+################################################################################
 # SGaAP Server
 ################################################################################
 #  o MSC/VLR
