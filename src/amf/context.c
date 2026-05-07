@@ -1328,14 +1328,20 @@ amf_gnb_t *amf_gnb_find_by_gnb_id(uint32_t gnb_id)
     return (amf_gnb_t *)ogs_hash_get(self.gnb_id_hash, &gnb_id, sizeof(gnb_id));
 }
 
-int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id)
+int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id, uint8_t gnb_id_length)
 {
     ogs_assert(gnb);
+
+    if (gnb_id_length < 22 || gnb_id_length > 32) {
+        ogs_error("Invalid gNB-ID length[%d]", gnb_id_length);
+        return OGS_ERROR;
+    }
 
     if (gnb->gnb_id_presence == true)
         ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), NULL);
 
     gnb->gnb_id = gnb_id;
+    gnb->gnb_id_length = gnb_id_length;
     ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), gnb);
 
     gnb->gnb_id_presence = true;
@@ -1676,6 +1682,11 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     ogs_list_init(&amf_ue->sess_list);
 
     /* Initialization */
+    amf_ue->gnb_ostream_id = ran_ue->gnb_ostream_id;
+    memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
+    memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
+    amf_ue->nr_cgi_gnb_id_length = ran_ue->saved.nr_cgi_gnb_id_length;
+
     amf_ue->guami = &amf_self()->served_guami[0];
     amf_ue->nas.access_type = OGS_ACCESS_TYPE_3GPP;
     amf_ue->nas.amf.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;

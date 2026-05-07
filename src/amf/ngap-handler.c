@@ -115,6 +115,51 @@ static bool s_nssai_is_found(amf_gnb_t *gnb)
     return false;
 }
 
+static bool gnb_id_length_from_global_gnb_id(
+        NGAP_GlobalGNB_ID_t *globalGNB_ID, uint8_t *gnb_id_length)
+{
+    BIT_STRING_t *bit_string = NULL;
+    size_t length;
+
+    ogs_assert(globalGNB_ID);
+    ogs_assert(gnb_id_length);
+
+    if (globalGNB_ID->gNB_ID.present != NGAP_GNB_ID_PR_gNB_ID) {
+        ogs_error("Unsupported GNB_ID present[%d]",
+                globalGNB_ID->gNB_ID.present);
+        return false;
+    }
+
+    bit_string = &globalGNB_ID->gNB_ID.choice.gNB_ID;
+    if (!bit_string->buf || bit_string->size == 0) {
+        ogs_error("Invalid GNB_ID BIT STRING");
+        return false;
+    }
+
+    if (bit_string->bits_unused < 0 || bit_string->bits_unused > 7) {
+        ogs_error("Invalid GNB_ID bits_unused[%d]",
+                bit_string->bits_unused);
+        return false;
+    }
+
+    length = bit_string->size * 8;
+    if ((size_t)bit_string->bits_unused > length) {
+        ogs_error("Invalid GNB_ID length[size:%d,bits_unused:%d]",
+                (int)bit_string->size, bit_string->bits_unused);
+        return false;
+    }
+
+    length -= bit_string->bits_unused;
+    if (length < 22 || length > 32) {
+        ogs_error("Invalid GNB_ID length[%d]", (int)length);
+        return false;
+    }
+
+    *gnb_id_length = (uint8_t)length;
+
+    return true;
+}
+
 void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
@@ -133,6 +178,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     long cause = 0;
 
     uint32_t gnb_id;
+    uint8_t gnb_id_length = 0;
 
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
@@ -205,8 +251,18 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         return;
     }
 
+    if (!gnb_id_length_from_global_gnb_id(globalGNB_ID, &gnb_id_length)) {
+        group = NGAP_Cause_PR_protocol;
+        cause = NGAP_CauseProtocol_semantic_error;
+        r = ngap_send_ng_setup_failure(gnb, group, cause);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     ogs_ngap_GNB_ID_to_uint32(&globalGNB_ID->gNB_ID, &gnb_id);
-    ogs_debug("    IP[%s] GNB_ID[0x%x]", OGS_ADDR(gnb->sctp.addr, buf), gnb_id);
+    ogs_debug("    IP[%s] GNB_ID[0x%x] GNB_ID_LENGTH[%d]",
+            OGS_ADDR(gnb->sctp.addr, buf), gnb_id, gnb_id_length);
 
     memcpy(&gnb->plmn_id,
             globalGNB_ID->pLMNIdentity.buf, sizeof(gnb->plmn_id));
@@ -423,7 +479,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         return;
     }
 
-    amf_gnb_set_gnb_id(gnb, gnb_id);
+    ogs_assert(OGS_OK == amf_gnb_set_gnb_id(gnb, gnb_id, gnb_id_length));
 
     gnb->state.ng_setup_success = true;
     r = ngap_send_ng_setup_response(gnb);
@@ -616,6 +672,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     ogs_assert(UserLocationInformationNR);
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
+    ran_ue->saved.nr_cgi_gnb_id_length = gnb->gnb_id_length;
     ogs_ngap_ASN_to_5gs_tai(
             &UserLocationInformationNR->tAI, &ran_ue->saved.nr_tai);
 
@@ -796,6 +853,7 @@ void ngap_handle_uplink_nas_transport(
 
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
+    ran_ue->saved.nr_cgi_gnb_id_length = gnb->gnb_id_length;
     ogs_ngap_ASN_to_5gs_tai(
             &UserLocationInformationNR->tAI, &ran_ue->saved.nr_tai);
 
@@ -807,6 +865,7 @@ void ngap_handle_uplink_nas_transport(
     /* Copy NR-TAI/NR-CGI from ran_ue */
     memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
+    amf_ue->nr_cgi_gnb_id_length = ran_ue->saved.nr_cgi_gnb_id_length;
 
     ogs_expect(OGS_OK == ngap_send_to_nas(
                 ran_ue, NGAP_ProcedureCode_id_UplinkNASTransport, NAS_PDU));
@@ -3035,6 +3094,7 @@ void ngap_handle_path_switch_request(
 
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
+    ran_ue->saved.nr_cgi_gnb_id_length = gnb->gnb_id_length;
     ogs_ngap_ASN_to_5gs_tai(
             &UserLocationInformationNR->tAI, &ran_ue->saved.nr_tai);
 
@@ -3042,6 +3102,7 @@ void ngap_handle_path_switch_request(
     amf_ue->gnb_ostream_id = ran_ue->gnb_ostream_id;
     memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
+    amf_ue->nr_cgi_gnb_id_length = ran_ue->saved.nr_cgi_gnb_id_length;
 
     ogs_info("    [NEW] TAC[%d] CellID[0x%llx]",
         amf_ue->nr_tai.tac.v, (long long)amf_ue->nr_cgi.cell_id);
@@ -4428,6 +4489,7 @@ void ngap_handle_handover_notification(
     ogs_assert(UserLocationInformationNR);
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &target_ue->saved.nr_cgi);
+    target_ue->saved.nr_cgi_gnb_id_length = gnb->gnb_id_length;
     ogs_ngap_ASN_to_5gs_tai(
             &UserLocationInformationNR->tAI, &target_ue->saved.nr_tai);
 
@@ -4448,6 +4510,7 @@ void ngap_handle_handover_notification(
     amf_ue->gnb_ostream_id = target_ue->gnb_ostream_id;
     memcpy(&amf_ue->nr_tai, &target_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &target_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
+    amf_ue->nr_cgi_gnb_id_length = target_ue->saved.nr_cgi_gnb_id_length;
 
     r = ngap_send_ran_ue_context_release_command(source_ue,
             NGAP_Cause_PR_radioNetwork,
@@ -4511,6 +4574,7 @@ void ngap_handle_ran_configuration_update(
     long cause = 0;
 
     uint32_t gnb_id;
+    uint8_t gnb_id_length = 0;
 
     ogs_assert(gnb);
     ogs_assert(gnb->sctp.sock);
@@ -4552,11 +4616,20 @@ void ngap_handle_ran_configuration_update(
             return;
         }
 
-        ogs_ngap_GNB_ID_to_uint32(&globalGNB_ID->gNB_ID, &gnb_id);
-        ogs_debug("    IP[%s] GNB_ID[0x%x]",
-                OGS_ADDR(gnb->sctp.addr, buf), gnb_id);
+        if (!gnb_id_length_from_global_gnb_id(globalGNB_ID, &gnb_id_length)) {
+            group = NGAP_Cause_PR_protocol;
+            cause = NGAP_CauseProtocol_semantic_error;
+            r = ngap_send_ran_configuration_update_failure(gnb, group, cause);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return;
+        }
 
-        amf_gnb_set_gnb_id(gnb, gnb_id);
+        ogs_ngap_GNB_ID_to_uint32(&globalGNB_ID->gNB_ID, &gnb_id);
+        ogs_debug("    IP[%s] GNB_ID[0x%x] GNB_ID_LENGTH[%d]",
+                OGS_ADDR(gnb->sctp.addr, buf), gnb_id, gnb_id_length);
+
+        ogs_assert(OGS_OK == amf_gnb_set_gnb_id(gnb, gnb_id, gnb_id_length));
     }
 
     if (SupportedTAList) {

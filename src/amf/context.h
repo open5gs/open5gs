@@ -141,6 +141,7 @@ typedef struct amf_gnb_s {
 
     bool            gnb_id_presence;
     uint32_t        gnb_id;     /* gNB_ID received from gNB */
+    uint8_t         gnb_id_length; /* gNB-ID BIT STRING length(22..32) */
     ogs_plmn_id_t   plmn_id;    /* gNB PLMN-ID received from gNB */
     ogs_sctp_sock_t sctp;       /* SCTP socket */
 
@@ -205,6 +206,7 @@ struct ran_ue_s {
     struct {
         ogs_5gs_tai_t   nr_tai;
         ogs_nr_cgi_t    nr_cgi;
+        uint8_t         nr_cgi_gnb_id_length;
     } saved;
 
     /* NG Holding timer for removing this context */
@@ -363,6 +365,7 @@ struct amf_ue_s {
     uint16_t        gnb_ostream_id;
     ogs_5gs_tai_t   nr_tai;
     ogs_nr_cgi_t    nr_cgi;
+    uint8_t         nr_cgi_gnb_id_length;
     ogs_time_t      ue_location_timestamp;
     ogs_plmn_id_t   last_visited_plmn_id;
     ogs_nas_ue_usage_setting_t ue_usage_setting;
@@ -964,7 +967,7 @@ void amf_gnb_remove(amf_gnb_t *gnb);
 void amf_gnb_remove_all(void);
 amf_gnb_t *amf_gnb_find_by_addr(ogs_sockaddr_t *addr);
 amf_gnb_t *amf_gnb_find_by_gnb_id(uint32_t gnb_id);
-int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id);
+int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id, uint8_t gnb_id_length);
 int amf_gnb_sock_type(ogs_sock_t *sock);
 amf_gnb_t *amf_gnb_find_by_id(ogs_pool_id_t id);
 
