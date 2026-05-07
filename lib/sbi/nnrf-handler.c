@@ -251,7 +251,18 @@ void ogs_nnrf_nfm_handle_nf_profile(
                             nf_instance,
                             NFService->service_instance_id,
                             NFService->service_name, NFService->scheme);
-            ogs_assert(nf_service);
+            if (!nf_service) {
+                /*
+                 * nf_service_pool exhausted. Cap-and-break matches the
+                 * existing pattern for outer-list overflows in this file
+                 * (e.g. handle_smf_info() slice list, handle_amf_info()
+                 * GUAMI list): truncate gracefully and keep the entries
+                 * already parsed instead of aborting the process.
+                 */
+                ogs_error("Truncating NFProfile.nfServices on "
+                        "nf_service_pool exhaustion");
+                break;
+            }
         }
 
         ogs_sbi_nf_service_clear(nf_service);
@@ -294,7 +305,14 @@ void ogs_nnrf_nfm_handle_nf_profile(
                                 nf_instance,
                                 NFService->service_instance_id,
                                 NFService->service_name, NFService->scheme);
-                ogs_assert(nf_service);
+                if (!nf_service) {
+                    /* Same cap-and-break as the nf_services loop above —
+                     * NFProfile.nfServiceList is the legacy MAP-shaped
+                     * format with the same per-pool exhaustion shape. */
+                    ogs_error("Truncating NFProfile.nfServiceList on "
+                            "nf_service_pool exhaustion");
+                    break;
+                }
             }
 
             ogs_sbi_nf_service_clear(nf_service);

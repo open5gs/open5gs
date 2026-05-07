@@ -1477,7 +1477,11 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(
     ogs_assert(name);
 
     ogs_pool_alloc(&nf_service_pool, &nf_service);
-    ogs_assert(nf_service);
+    if (!nf_service) {
+        ogs_error("nf_service_pool exhausted (capacity %d)",
+                (int)ogs_app()->pool.nf_service);
+        return NULL;
+    }
     memset(nf_service, 0, sizeof(ogs_sbi_nf_service_t));
 
     nf_service->id = ogs_strdup(id);
