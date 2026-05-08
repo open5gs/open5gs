@@ -1478,9 +1478,33 @@ ran_ue_t *ran_ue_find(uint32_t index)
     return ogs_pool_find(&ran_ue_pool, index);
 }
 
-ran_ue_t *ran_ue_find_by_amf_ue_ngap_id(uint64_t amf_ue_ngap_id)
+ran_ue_t *ran_ue_find_by_amf_ue_ngap_id(
+        amf_gnb_t *gnb, uint64_t amf_ue_ngap_id)
 {
-    return ran_ue_find(amf_ue_ngap_id);
+    ran_ue_t *ran_ue = ran_ue_find(amf_ue_ngap_id);
+
+    /*
+     * Per 3GPP TS 38.413 §10.6 and issue #4498: when an NGAP message
+     * references an AMF-UE-NGAP-ID, the resolved UE-associated
+     * logical NG-connection MUST belong to the gNB that sent the
+     * message. Without this scoping, a second gNB that completed its
+     * own NG Setup with the AMF can submit UE-associated NGAP
+     * messages — including PDUSessionResourceSetupResponse with an
+     * attacker-controlled GTP-U tunnel — referencing another UE's
+     * AMF-UE-NGAP-ID, and the AMF will accept and forward the
+     * message as if it had come from the legitimate serving gNB.
+     */
+    if (ran_ue && gnb && ran_ue->gnb_id != gnb->id) {
+        ogs_warn("AMF-UE-NGAP-ID[%lld] resolves to a UE on "
+                "gnb_id[%llu] but message arrived on gnb_id[%llu] "
+                "— refusing lookup",
+                (long long)amf_ue_ngap_id,
+                (unsigned long long)ran_ue->gnb_id,
+                (unsigned long long)gnb->id);
+        return NULL;
+    }
+
+    return ran_ue;
 }
 
 ran_ue_t *ran_ue_find_by_id(ogs_pool_id_t id)
