@@ -365,6 +365,97 @@ cleanup:
     return ueid;
 }
 
+
+/*
+ * ogs_bcd_to_buffer() only converts bytes.  It does not validate that
+ * the input is a bounded decimal IMSI string, so check it first.
+ */
+bool ogs_imsi_bcd_is_valid(const char *imsi_bcd)
+{
+    int i, len;
+
+    ogs_assert(imsi_bcd);
+
+    len = strlen(imsi_bcd);
+    if (len == 0 || len > OGS_MAX_IMSI_BCD_LEN) {
+        ogs_error("Invalid IMSI BCD length [%d:%s]",
+                len, imsi_bcd);
+        return false;
+    }
+
+    for (i = 0; i < len; i++) {
+        if (imsi_bcd[i] < '0' || imsi_bcd[i] > '9') {
+            ogs_error("Invalid IMSI BCD digit [%d:%c:%s]",
+                    i, imsi_bcd[i], imsi_bcd);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/*
+ * Return the decimal IMSI string only for IMSI-type SUPI.  Other SUPI
+ * types cannot be used as EPC IMSI keys and remain SUPI-only.
+ *
+ * Return OGS_ERROR only when the SUPI claims to be IMSI-type but the
+ * IMSI payload is malformed.  That must not fall back to SUPI-only.
+ */
+int ogs_supi_to_imsi_bcd(
+        const char *supi, char *imsi_bcd, bool *imsi_supi)
+{
+    int rv = OGS_ERROR;
+    char *type = NULL;
+    char *value = NULL;
+
+    ogs_assert(supi);
+    ogs_assert(imsi_bcd);
+    ogs_assert(imsi_supi);
+
+    *imsi_supi = false;
+
+    type = ogs_id_get_type(supi);
+    if (!type) {
+        ogs_error("ogs_id_get_type() failed [%s]", supi);
+        goto cleanup;
+    }
+
+    /* Non-IMSI SUPI is valid, but has no EPC IMSI alias. */
+    if (strcmp(type, OGS_ID_SUPI_TYPE_IMSI) != 0) {
+        rv = OGS_OK;
+        goto cleanup;
+    }
+
+    value = ogs_id_get_value(supi);
+    if (!value) {
+        ogs_error("No IMSI in SUPI [%s]", supi);
+        goto cleanup;
+    }
+
+    /* Reject extra '-' components that ogs_id_get_value() ignores. */
+    if (strlen(supi) != strlen(type) + 1 + strlen(value)) {
+        ogs_error("Invalid IMSI SUPI [%s]", supi);
+        goto cleanup;
+    }
+
+    if (ogs_imsi_bcd_is_valid(value) == false) {
+        ogs_error("Invalid IMSI SUPI [%s]", supi);
+        goto cleanup;
+    }
+
+    ogs_cpystrn(imsi_bcd, value, OGS_MAX_IMSI_BCD_LEN+1);
+    *imsi_supi = true;
+    rv = OGS_OK;
+
+cleanup:
+    if (type)
+        ogs_free(type);
+    if (value)
+        ogs_free(value);
+
+    return rv;
+}
+
 char *ogs_s_nssai_sd_to_string(const ogs_uint24_t sd)
 {
     char *string = NULL;

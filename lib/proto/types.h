@@ -308,6 +308,9 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
 #define OGS_ID_5G_GUTI_TYPE "5g-guti"
 char *ogs_id_get_type(const char *str);
 char *ogs_id_get_value(const char *str);
+bool ogs_imsi_bcd_is_valid(const char *imsi_bcd);
+int ogs_supi_to_imsi_bcd(
+        const char *supi, char *imsi_bcd, bool *imsi_supi);
 
 /************************************
  * TAI Structure                    */

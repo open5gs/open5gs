@@ -1071,40 +1071,239 @@ static smf_ue_t *smf_ue_add(void)
     return smf_ue;
 }
 
-smf_ue_t *smf_ue_add_by_supi(char *supi)
+/*
+ * Set and index SUPI in one place.  Callers decide which smf_ue_t to
+ * use; this helper prevents a hash entry owned by another UE from being
+ * overwritten by ogs_hash_set().
+ */
+static int smf_ue_set_supi(smf_ue_t *smf_ue, const char *supi)
 {
-    smf_ue_t *smf_ue;
+    smf_ue_t *indexed_smf_ue = NULL;
 
+    ogs_assert(smf_ue);
     ogs_assert(supi);
 
-    if ((smf_ue = smf_ue_add()) == NULL) {
-        ogs_error("smf_ue_add_by_supi() failed");
-        return NULL;
+    if (smf_ue->supi) {
+        if (strcmp(smf_ue->supi, supi) != 0) {
+            ogs_fatal("SUPI mismatch [%s:%s]", smf_ue->supi, supi);
+            ogs_assert_if_reached();
+            return OGS_ERROR;
+        }
+        return OGS_OK;
+    }
+
+    indexed_smf_ue = smf_ue_find_by_supi((char *)supi);
+    if (indexed_smf_ue && indexed_smf_ue != smf_ue) {
+        ogs_fatal("SUPI[%s] already indexed", supi);
+        ogs_assert_if_reached();
+        return OGS_ERROR;
     }
 
     smf_ue->supi = ogs_strdup(supi);
     ogs_assert(smf_ue->supi);
-    ogs_hash_set(self.supi_hash, smf_ue->supi, strlen(smf_ue->supi), smf_ue);
+
+    ogs_hash_set(self.supi_hash,
+            smf_ue->supi, strlen(smf_ue->supi), smf_ue);
+
+    return OGS_OK;
+}
+
+/*
+ * Set and index IMSI in one place.  Convert first to a temporary buffer
+ * so an existing hash key is not modified before mismatch detection.
+ */
+static int smf_ue_set_imsi_bcd(smf_ue_t *smf_ue, const char *imsi_bcd)
+{
+    smf_ue_t *indexed_smf_ue = NULL;
+    uint8_t imsi[OGS_MAX_IMSI_LEN];
+    int imsi_len = 0;
+
+    ogs_assert(smf_ue);
+    ogs_assert(imsi_bcd);
+
+    if (ogs_imsi_bcd_is_valid(imsi_bcd) == false) {
+        ogs_error("ogs_imsi_bcd_is_valid() failed [%s]", imsi_bcd);
+        return OGS_ERROR;
+    }
+
+    memset(imsi, 0, sizeof(imsi));
+    ogs_bcd_to_buffer(imsi_bcd, imsi, &imsi_len);
+    ogs_assert(imsi_len > 0);
+    ogs_assert(imsi_len <= OGS_MAX_IMSI_LEN);
+
+    if (smf_ue->imsi_len) {
+        if (smf_ue->imsi_len != imsi_len ||
+            memcmp(smf_ue->imsi, imsi, imsi_len) != 0) {
+            ogs_fatal("IMSI mismatch [%s:%s]",
+                    smf_ue->imsi_bcd, imsi_bcd);
+            ogs_assert_if_reached();
+            return OGS_ERROR;
+        }
+        return OGS_OK;
+    }
+
+    indexed_smf_ue = smf_ue_find_by_imsi(imsi, imsi_len);
+    if (indexed_smf_ue && indexed_smf_ue != smf_ue) {
+        ogs_fatal("IMSI[%s] already indexed", imsi_bcd);
+        ogs_assert_if_reached();
+        return OGS_ERROR;
+    }
+
+    smf_ue->imsi_len = imsi_len;
+    memcpy(smf_ue->imsi, imsi, smf_ue->imsi_len);
+    ogs_cpystrn(smf_ue->imsi_bcd, imsi_bcd, OGS_MAX_IMSI_BCD_LEN+1);
+
+    ogs_hash_set(self.imsi_hash,
+            smf_ue->imsi, smf_ue->imsi_len, smf_ue);
+
+    return OGS_OK;
+}
+
+/*
+ * The EPC path receives raw BCD bytes.  Convert them to the canonical
+ * decimal IMSI string used by the SUPI path.
+ */
+static int smf_ue_set_imsi(smf_ue_t *smf_ue, uint8_t *imsi, int imsi_len)
+{
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+
+    ogs_assert(smf_ue);
+    ogs_assert(imsi);
+    ogs_assert(imsi_len);
+
+    if (imsi_len > OGS_MAX_IMSI_LEN) {
+        ogs_error("Invalid IMSI length [%d]", imsi_len);
+        return OGS_ERROR;
+    }
+
+    memset(imsi_bcd, 0, sizeof(imsi_bcd));
+    ogs_buffer_to_bcd(imsi, imsi_len, imsi_bcd);
+
+    if (smf_ue_set_imsi_bcd(smf_ue, imsi_bcd) != OGS_OK) {
+        ogs_error("smf_ue_set_imsi_bcd() failed [%s]", imsi_bcd);
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+smf_ue_t *smf_ue_add_by_supi(char *supi)
+{
+    smf_ue_t *smf_ue = NULL;
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    uint8_t imsi[OGS_MAX_IMSI_LEN];
+    int imsi_len = 0;
+    bool created = false;
+    bool imsi_supi = false;
+
+    ogs_assert(supi);
+
+    memset(imsi_bcd, 0, sizeof(imsi_bcd));
+    memset(imsi, 0, sizeof(imsi));
+
+    if (ogs_supi_to_imsi_bcd(supi, imsi_bcd, &imsi_supi) != OGS_OK) {
+        ogs_error("ogs_supi_to_imsi_bcd() failed [%s]", supi);
+        return NULL;
+    }
+
+    /* First use the native SBI key. */
+    smf_ue = smf_ue_find_by_supi(supi);
+
+    /* If this is an IMSI SUPI, try the EPC IMSI key as an alias. */
+    if (!smf_ue && imsi_supi == true) {
+        ogs_bcd_to_buffer(imsi_bcd, imsi, &imsi_len);
+        smf_ue = smf_ue_find_by_imsi(imsi, imsi_len);
+    }
+
+    if (!smf_ue) {
+        smf_ue = smf_ue_add();
+        if (!smf_ue) {
+            ogs_error("smf_ue_add_by_supi() failed");
+            return NULL;
+        }
+        created = true;
+    }
+
+    if (smf_ue_set_supi(smf_ue, supi) != OGS_OK) {
+        ogs_error("smf_ue_set_supi() failed [%s]", supi);
+        goto error;
+    }
+
+    if (imsi_supi == true &&
+        smf_ue_set_imsi_bcd(smf_ue, imsi_bcd) != OGS_OK) {
+        ogs_error("smf_ue_set_imsi_bcd() failed [%s:%s]",
+                supi, imsi_bcd);
+        goto error;
+    }
 
     return smf_ue;
+
+error:
+    if (created == true)
+        smf_ue_remove(smf_ue);
+    return NULL;
 }
 
 smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
 {
-    smf_ue_t *smf_ue;
+    smf_ue_t *smf_ue = NULL;
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    char *supi = NULL;
+    bool created = false;
 
     ogs_assert(imsi);
     ogs_assert(imsi_len);
 
-    if ((smf_ue = smf_ue_add()) == NULL)
-        return NULL;;
+    if (imsi_len > OGS_MAX_IMSI_LEN) {
+        ogs_error("Invalid IMSI length [%d]", imsi_len);
+        return NULL;
+    }
 
-    smf_ue->imsi_len = ogs_min(imsi_len, OGS_MAX_IMSI_LEN);
-    memcpy(smf_ue->imsi, imsi, smf_ue->imsi_len);
-    ogs_buffer_to_bcd(smf_ue->imsi, smf_ue->imsi_len, smf_ue->imsi_bcd);
-    ogs_hash_set(self.imsi_hash, smf_ue->imsi, smf_ue->imsi_len, smf_ue);
+    memset(imsi_bcd, 0, sizeof(imsi_bcd));
+    ogs_buffer_to_bcd(imsi, imsi_len, imsi_bcd);
+    if (ogs_imsi_bcd_is_valid(imsi_bcd) == false) {
+        ogs_error("ogs_imsi_bcd_is_valid() failed [%s]", imsi_bcd);
+        return NULL;
+    }
 
+    supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
+    ogs_assert(supi);
+
+    /* First use the native EPC key. */
+    smf_ue = smf_ue_find_by_imsi(imsi, imsi_len);
+
+    /* Then try the canonical IMSI SUPI used by the SBI path. */
+    if (!smf_ue)
+        smf_ue = smf_ue_find_by_supi(supi);
+
+    if (!smf_ue) {
+        smf_ue = smf_ue_add();
+        if (!smf_ue) {
+            ogs_error("smf_ue_add() failed");
+            goto error;
+        }
+        created = true;
+    }
+
+    if (smf_ue_set_imsi(smf_ue, imsi, imsi_len) != OGS_OK) {
+        ogs_error("smf_ue_set_imsi() failed [%s]", imsi_bcd);
+        goto error;
+    }
+
+    if (smf_ue_set_supi(smf_ue, supi) != OGS_OK) {
+        ogs_error("smf_ue_set_supi() failed [%s]", supi);
+        goto error;
+    }
+
+    ogs_free(supi);
     return smf_ue;
+
+error:
+    if (supi)
+        ogs_free(supi);
+    if (created == true)
+        smf_ue_remove(smf_ue);
+    return NULL;
 }
 
 void smf_ue_remove(smf_ue_t *smf_ue)

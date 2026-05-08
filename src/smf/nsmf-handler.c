@@ -223,24 +223,10 @@ bool smf_nsmf_handle_create_sm_context(
         return false;
     }
 
-    if (SmContextCreateData->supi) {
-        type = ogs_id_get_type(SmContextCreateData->supi);
-        if (type) {
-            if (strncmp(type, OGS_ID_SUPI_TYPE_IMSI,
-                        strlen(OGS_ID_SUPI_TYPE_IMSI)) == 0) {
-                char *imsi_bcd = ogs_id_get_value(SmContextCreateData->supi);
-
-                ogs_cpystrn(smf_ue->imsi_bcd, imsi_bcd,
-                        ogs_min(strlen(imsi_bcd), OGS_MAX_IMSI_BCD_LEN)+1);
-                ogs_bcd_to_buffer(smf_ue->imsi_bcd,
-                        smf_ue->imsi, &smf_ue->imsi_len);
-
-                ogs_free(imsi_bcd);
-            }
-            ogs_free(type);
-        }
-    }
-
+    /*
+     * SUPI/IMSI identity is canonicalized in smf_ue_add_by_supi().
+     * Do not rewrite smf_ue->imsi here; it may already be a hash key.
+     */
     if (SmContextCreateData->pei) {
         type = ogs_id_get_type(SmContextCreateData->pei);
         if (type) {
@@ -1568,24 +1554,10 @@ bool smf_nsmf_handle_create_data_in_hsmf(
     ogs_freeaddrinfo(addr);
     ogs_freeaddrinfo(addr6);
 
-    if (PduSessionCreateData->supi) {
-        type = ogs_id_get_type(PduSessionCreateData->supi);
-        if (type) {
-            if (strncmp(type, OGS_ID_SUPI_TYPE_IMSI,
-                        strlen(OGS_ID_SUPI_TYPE_IMSI)) == 0) {
-                char *imsi_bcd = ogs_id_get_value(PduSessionCreateData->supi);
-
-                ogs_cpystrn(smf_ue->imsi_bcd, imsi_bcd,
-                        ogs_min(strlen(imsi_bcd), OGS_MAX_IMSI_BCD_LEN)+1);
-                ogs_bcd_to_buffer(smf_ue->imsi_bcd,
-                        smf_ue->imsi, &smf_ue->imsi_len);
-
-                ogs_free(imsi_bcd);
-            }
-            ogs_free(type);
-        }
-    }
-
+    /*
+     * SUPI/IMSI identity is canonicalized in smf_ue_add_by_supi().
+     * Do not rewrite smf_ue->imsi here; it may already be a hash key.
+     */
     if (PduSessionCreateData->pei) {
         type = ogs_id_get_type(PduSessionCreateData->pei);
         if (type) {
