@@ -215,6 +215,8 @@ static int mme_context_prepare(void)
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
 
+    /* Set the default T3396 to 12 minutes */
+    self.time.t3396.value = 720;
     /* Set the default T3412 to 9 minutes for backward compatibility. */
     self.time.t3412.value = 540;
 
@@ -297,12 +299,20 @@ static int mme_context_validation(void)
                 ogs_app()->file);
         return OGS_ERROR;
     }
-    if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3402.value) !=
+    if (self.time.t3402.value && /* Optional */
+        ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3402.value) !=
         OGS_OK) {
         ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3402.value);
         return OGS_ERROR;
     }
-    if (!self.time.t3412.value) {
+    if (self.time.t3396.value && /* Optional */
+        ogs_nas_gprs_timer_3_from_sec(&gprs_timer, self.time.t3396.value) !=
+        OGS_OK) {
+        ogs_error("Not support GPRS Timer 3 [%d]",
+                (int)self.time.t3396.value);
+        return OGS_ERROR;
+    }
+    if (!self.time.t3412.value) { /* Mandatory */
         ogs_error("No mme.time.t3412.value in '%s'",
                 ogs_app()->file);
         return OGS_ERROR;
@@ -312,7 +322,8 @@ static int mme_context_validation(void)
         ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3412.value);
         return OGS_ERROR;
     }
-    if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3423.value) !=
+    if (self.time.t3423.value && /* Optional */
+        ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3423.value) !=
         OGS_OK) {
         ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3423.value);
         return OGS_ERROR;
@@ -2487,6 +2498,22 @@ int mme_context_parse_config(void)
                                         self.time.t3402.value = atoll(v);
                                 } else
                                     ogs_warn("unknown key `%s`", t3402_key);
+                            }
+                        } else if (!strcmp(time_key, "t3396")) {
+                            ogs_yaml_iter_t t3396_iter;
+                            ogs_yaml_iter_recurse(&time_iter, &t3396_iter);
+
+                            while (ogs_yaml_iter_next(&t3396_iter)) {
+                                const char *t3396_key =
+                                    ogs_yaml_iter_key(&t3396_iter);
+                                ogs_assert(t3396_key);
+
+                                if (!strcmp(t3396_key, "value")) {
+                                    const char *v = ogs_yaml_iter_value(&t3396_iter);
+                                    if (v)
+                                        self.time.t3396.value = atoll(v);
+                                } else
+                                    ogs_warn("unknown key `%s`", t3396_key);
                             }
                         } else if (!strcmp(time_key, "t3412")) {
                             ogs_yaml_iter_t t3412_iter;
