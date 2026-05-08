@@ -142,6 +142,12 @@ typedef struct amf_gnb_s {
     bool            gnb_id_presence;
     uint32_t        gnb_id;     /* gNB_ID received from gNB */
     uint8_t         gnb_id_length; /* gNB-ID BIT STRING length(22..32) */
+    /* Optional human-readable RAN node name from the NGSetupRequest
+     * RANNodeName IE (NGAP id_RANNodeName).  Empty string when the gNB
+     * doesn't include the IE.  Capped at 64 octets to match the typical
+     * deployment use of short identifiers; the spec PrintableString
+     * upper bound is 150 but real-world names are short. */
+    char            ran_node_name[64];
     ogs_plmn_id_t   plmn_id;    /* gNB PLMN-ID received from gNB */
     ogs_sctp_sock_t sctp;       /* SCTP socket */
 
