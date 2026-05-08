@@ -57,7 +57,8 @@
  *               "pdr_id": 2
  *             }
  *           },
- *           "pdu_state": "inactive"
+ *           "pdu_state": "inactive",
+ *           "ue_location_timestamp": 1778223227627488
  *         }
  *       ],
  *       "ue_activity": "idle"
@@ -603,6 +604,20 @@ static cJSON *build_single_pdu_object(const smf_sess_t *sess, int *any_active, i
 
         if (any_active && !strcmp(state, "active")) *any_active = 1;
         else if (any_unknown && !strcmp(state, "unknown")) *any_unknown = 1;
+    }
+
+    /* Last location update timestamp (epoch microseconds, ogs_time_t).
+     * A value of 0 means the location has not yet been updated by the
+     * peer NF for this session.
+     * Inherited from the UE context at each N1/N2 location-bearing event
+     * (Initial Registration, TAU/Registration Update, Handover, Service
+     * Request response). Exposed for external reconciliation tools that
+     * need to age PDU sessions — e.g. distinguish a truly stale session
+     * from one that is legitimately idle-parked for later Resume. */
+    {
+        cJSON *ts = cJSON_CreateNumber((double)sess->ue_location_timestamp);
+        if (!ts) { cJSON_Delete(pdu); return NULL; }
+        cJSON_AddItemToObjectCS(pdu, "ue_location_timestamp", ts);
     }
 
     return pdu;
