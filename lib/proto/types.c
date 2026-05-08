@@ -365,6 +365,11 @@ cleanup:
     return ueid;
 }
 
+bool ogs_pdu_session_id_is_valid(int psi)
+{
+    return psi > OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED &&
+           psi <= OGS_NAS_PDU_SESSION_IDENTITY_MAX;
+}
 
 /*
  * ogs_bcd_to_buffer() only converts bytes.  It does not validate that

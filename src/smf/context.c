@@ -1756,9 +1756,10 @@ smf_sess_t *smf_sess_add_by_sm_context(ogs_sbi_message_t *message)
         return NULL;
     }
 
-    if (SmContextCreateData->pdu_session_id ==
-            OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
-        ogs_error("PDU session identity is unassigned");
+    if (ogs_pdu_session_id_is_valid(
+            SmContextCreateData->pdu_session_id) == false) {
+        ogs_error("Invalid PDU session identity [%d]",
+                SmContextCreateData->pdu_session_id);
         return NULL;
     }
 
@@ -1809,9 +1810,10 @@ smf_sess_t *smf_sess_add_by_pdu_session(ogs_sbi_message_t *message)
         return NULL;
     }
 
-    if (PduSessionCreateData->pdu_session_id ==
-            OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
-        ogs_error("PDU session identitiy is unassigned");
+    if (ogs_pdu_session_id_is_valid(
+            PduSessionCreateData->pdu_session_id) == false) {
+        ogs_error("Invalid PDU session identity [%d]",
+                PduSessionCreateData->pdu_session_id);
         return NULL;
     }
 
