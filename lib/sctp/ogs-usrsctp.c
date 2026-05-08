@@ -560,3 +560,22 @@ int ogs_sctp_so_linger(ogs_sock_t *sock, int l_linger)
 
     return OGS_OK;
 }
+
+int ogs_sctp_abort(ogs_sock_t *sock)
+{
+    struct socket *socket = (struct socket *)sock;
+    struct sctp_sndinfo sndinfo;
+
+    ogs_assert(socket);
+
+    memset(&sndinfo, 0, sizeof(sndinfo));
+    sndinfo.snd_flags = SCTP_ABORT;
+    if (usrsctp_sendv(socket, NULL, 0, NULL, 0,
+                &sndinfo, (socklen_t)sizeof(sndinfo),
+                SCTP_SENDV_SNDINFO, 0) < 0) {
+        ogs_error("usrsctp_sendv(SCTP_ABORT) failed");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}

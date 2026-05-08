@@ -55,6 +55,29 @@ ogs_pkbuf_t *esm_build_pdn_connectivity_reject(
 
     pdn_connectivity_reject->esm_cause = esm_cause;
 
+    /*
+     * Include T3396 back-off timer for APN-related rejections.
+     *
+     * Per 3GPP TS 24.301 Section 6.6.1.2, the UE shall start timer T3396
+     * and shall not re-request PDN connectivity to the same APN until T3396
+     * expires. This prevents rapid retry storms from misconfigured UEs
+     * (e.g., VoLTE-enabled handsets without IMS subscription) from
+     * overloading the S1AP signaling path to the eNB.
+     *
+     * Timer value: 5 minutes (unit=MULTIPLES_OF_1_MM, value=5).
+     * This is conservative -- commercial networks often use 10-30 minutes.
+     */
+    if (esm_cause == OGS_NAS_ESM_CAUSE_MISSING_OR_UNKNOWN_APN ||
+        esm_cause == OGS_NAS_ESM_CAUSE_REQUESTED_SERVICE_OPTION_NOT_SUBSCRIBED ||
+        esm_cause == OGS_NAS_ESM_CAUSE_REQUEST_REJECTED_UNSPECIFIED) {
+        pdn_connectivity_reject->presencemask |=
+            OGS_NAS_EPS_PDN_CONNECTIVITY_REJECT_BACK_OFF_TIMER_VALUE_PRESENT;
+        pdn_connectivity_reject->back_off_timer_value.length = 1;
+        pdn_connectivity_reject->back_off_timer_value.t.unit =
+            OGS_NAS_GPRS_TIMER_3_UNIT_MULTIPLES_OF_1_MM;
+        pdn_connectivity_reject->back_off_timer_value.t.value = 5;
+    }
+
     if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST)
         return ogs_nas_eps_plain_encode(&message);
     else

@@ -897,3 +897,39 @@ int ogs_sctp_so_linger(ogs_sock_t *sock, int l_linger)
     ogs_assert(sock);
     return ogs_so_linger(sock->fd, l_linger);
 }
+
+/*
+ * Send a zero-length SCTP DATA chunk with SCTP_ABORT flag set.
+ *
+ * Per RFC 6458 §5.3.2, sctp_sendmsg() with sinfo_flags=SCTP_ABORT
+ * aborts the association targeted by the socket without touching any
+ * socket-wide option. This is preferable to SO_LINGER(0)+close() when
+ * the socket is about to be destroyed for reasons other than graceful
+ * shutdown: no global state change, the ABORT is sent immediately, and
+ * the kernel still follows up with an SCTP_COMM_LOST notification so
+ * the normal cleanup path runs.
+ *
+ * Intended for forced recovery paths (stall detected, path degraded).
+ * The caller should destroy the socket afterwards.
+ */
+int ogs_sctp_abort(ogs_sock_t *sock)
+{
+    int rv;
+
+    ogs_assert(sock);
+
+    rv = sctp_sendmsg(sock->fd, NULL, 0,
+            NULL, 0,      /* no peer addr (one-to-one socket) */
+            0,            /* ppid */
+            SCTP_ABORT,   /* flags */
+            0,            /* stream */
+            0,            /* timetolive */
+            0);           /* context */
+    if (rv < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "sctp_sendmsg(SCTP_ABORT) failed");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}

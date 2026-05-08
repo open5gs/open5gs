@@ -33,6 +33,7 @@ extern "C" {
 
 int s1ap_open(void);
 void s1ap_close(void);
+void s1ap_sctp_health_check_init(void);
 
 ogs_sock_t *s1ap_server(ogs_socknode_t *node);
 void s1ap_recv_upcall(short when, ogs_socket_t fd, void *data);
