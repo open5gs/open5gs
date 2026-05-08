@@ -214,27 +214,47 @@ int amf_nudm_sdm_handle_provisioned(
                             DnnInfoList = SubscribedSnssaiInfo->dnn_infos;
                             if (DnnInfoList) {
                                 OpenAPI_list_for_each(DnnInfoList, node2) {
+                                    ogs_session_t *session = NULL;
                                     DnnInfo = node2->data;
-                                    if (DnnInfo) {
-                                        ogs_session_t *session =
-                                            &slice->session
-                                                [slice->num_of_session];
-                                        session->name =
-                                            ogs_strdup(DnnInfo->dnn);
-                                        ogs_assert(session->name);
-                                        if (DnnInfo->is_default_dnn_indicator ==
-                                                true) {
-                                            session->default_dnn_indicator =
-                                                DnnInfo->default_dnn_indicator;
-                                        }
-                                        slice->num_of_session++;
 
-                                        if (DnnInfo->is_lbo_roaming_allowed ==
-                                                true) {
-                                            session->lbo_roaming_allowed =
-                                                DnnInfo->lbo_roaming_allowed;
-                                        }
+                                    if (!DnnInfo) {
+                                        ogs_error("No DnnInfo");
+                                        continue;
                                     }
+
+                                    if (!DnnInfo->dnn) {
+                                        ogs_error("No DnnInfo->dnn");
+                                        continue;
+                                    }
+
+                                    if (slice->num_of_session >=
+                                            OGS_MAX_NUM_OF_SESS) {
+                                        ogs_error("[%s] Too many DNNs in "
+                                                "S-NSSAI[SST:%d SD:0x%x]",
+                                                amf_ue->supi, s_nssai.sst,
+                                                s_nssai.sd.v);
+                                        break;
+                                    }
+
+                                    session =
+                                        &slice->session[slice->num_of_session];
+
+                                    session->name = ogs_strdup(DnnInfo->dnn);
+                                    ogs_assert(session->name);
+
+                                    if (DnnInfo->is_default_dnn_indicator ==
+                                            true) {
+                                        session->default_dnn_indicator =
+                                            DnnInfo->default_dnn_indicator;
+                                    }
+
+                                    if (DnnInfo->is_lbo_roaming_allowed ==
+                                            true) {
+                                        session->lbo_roaming_allowed =
+                                            DnnInfo->lbo_roaming_allowed;
+                                    }
+
+                                    slice->num_of_session++;
                                 }
                             }
                         }
