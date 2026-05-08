@@ -2430,6 +2430,39 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                     } else {
 
+                        if (!stream) {
+                            /*
+                             * SBI stream was torn down before this
+                             * PFCP-deletion-completion event fired (peer
+                             * RST_STREAM, idle-stream timeout, premature
+                             * client disconnect). The N1/N2 release
+                             * messages cannot reach the AMF, so the build
+                             * is skipped entirely. Transitioning to
+                             * smf_gsm_state_wait_5gc_n1_n2_release would
+                             * deadlock the FSM waiting for completion of a
+                             * release procedure that was never started.
+                             *
+                             * Take the local-only cleanup path:
+                             *   - PCF SmPolicy associated → run delete via
+                             *     smf_gsm_state_5gc_session_will_deregister
+                             *     which converges to session_will_release.
+                             *   - No PCF policy → straight to
+                             *     session_will_release (terminal teardown).
+                             */
+                            ogs_error("[%s:%d] Stream removed before PFCP "
+                                    "deletion completion; proceeding with "
+                                    "local-only release",
+                                    smf_ue->supi, sess->psi);
+
+                            if (PCF_SM_POLICY_ASSOCIATED(sess))
+                                OGS_FSM_TRAN(s,
+                                    smf_gsm_state_5gc_session_will_deregister);
+                            else
+                                OGS_FSM_TRAN(s,
+                                    smf_gsm_state_session_will_release);
+                            break;
+                        }
+
                         n1smbuf = gsm_build_pdu_session_release_command(
                                 sess, OGS_5GSM_CAUSE_REGULAR_DEACTIVATION);
                         ogs_assert(n1smbuf);
@@ -2442,7 +2475,6 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                                     NGAP_CauseNas_normal_release);
                         ogs_assert(n2smbuf);
 
-                        ogs_assert(stream);
                         smf_sbi_send_sm_context_updated_data_n1_n2_message(
                                 sess, stream, n1smbuf,
                                 OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD,
