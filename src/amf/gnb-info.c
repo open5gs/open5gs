@@ -160,6 +160,7 @@ size_t amf_dump_gnb_info_paged(char *buf, size_t buflen, size_t page, size_t pag
 
         /* basics */
         if (!cJSON_AddNumberToObject(g, "gnb_id", (double)(unsigned)gnb->gnb_id)) { cJSON_Delete(g); oom = true; break; }
+        if (!cJSON_AddStringToObject(g, "name", gnb->ran_node_name)) { cJSON_Delete(g); oom = true; break; }
         if (add_plmn_string(g, "plmn", &gnb->plmn_id) < 0) { cJSON_Delete(g); oom = true; break; }
 
         /* network */

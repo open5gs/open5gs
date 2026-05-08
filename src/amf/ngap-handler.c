@@ -267,6 +267,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     NGAP_GlobalGNB_ID_t *globalGNB_ID = NULL;
     NGAP_SupportedTAList_t *SupportedTAList = NULL;
     NGAP_PagingDRX_t *PagingDRX = NULL;
+    NGAP_RANNodeName_t *RANNodeName_ng = NULL;
 
     NGAP_Cause_PR group = NGAP_Cause_PR_NOTHING;
     long cause = 0;
@@ -297,9 +298,25 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         case NGAP_ProtocolIE_ID_id_DefaultPagingDRX:
             PagingDRX = &ie->value.choice.PagingDRX;
             break;
+        case NGAP_ProtocolIE_ID_id_RANNodeName:
+            RANNodeName_ng = &ie->value.choice.RANNodeName;
+            break;
         default:
             break;
         }
+    }
+
+    /* Capture the optional RANNodeName IE (PrintableString) into the
+     * gNB context.  Truncated to fit ran_node_name[] less the NUL.
+     * Used by the /gnb-info JSON dumper so external monitors can show
+     * a friendly identifier alongside the SCTP peer address. */
+    gnb->ran_node_name[0] = '\0';
+    if (RANNodeName_ng && RANNodeName_ng->buf && RANNodeName_ng->size > 0) {
+        size_t copy_len = (size_t)RANNodeName_ng->size;
+        if (copy_len >= sizeof(gnb->ran_node_name))
+            copy_len = sizeof(gnb->ran_node_name) - 1;
+        memcpy(gnb->ran_node_name, RANNodeName_ng->buf, copy_len);
+        gnb->ran_node_name[copy_len] = '\0';
     }
 
     if (!GlobalRANNodeID) {
