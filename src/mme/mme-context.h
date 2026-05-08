@@ -254,6 +254,11 @@ typedef struct mme_enb_s {
 
     bool            enb_id_presence;
     uint32_t        enb_id;     /* eNB_ID received from eNB */
+    /* Optional human-readable eNB name from the S1SetupRequest eNBname
+     * IE (S1AP id_eNBname).  Empty string when the eNB doesn't include
+     * the IE.  Capped at 64 octets; the spec PrintableString upper
+     * bound is 150 but real-world names are short. */
+    char            enb_name[64];
     ogs_plmn_id_t   plmn_id;    /* eNB PLMN-ID received from eNB */
     ogs_sctp_sock_t sctp;       /* SCTP socket */
 
