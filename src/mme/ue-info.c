@@ -86,8 +86,8 @@
 #include "ogs-proto.h"
 
 #include "mme-context.h"
+#include "mme-sm.h"
 #include "ue-info.h"
-#include "mme-context.h"
 
 #include "metrics/prometheus/json_pager.h"
 #include "metrics/ogs-metrics.h"
@@ -306,6 +306,33 @@ static cJSON *ue_to_json(const mme_ue_t *ue)
     if (!cJSON_AddStringToObject(o, "domain", "EPS")) goto end;
     if (!cJSON_AddStringToObject(o, "rat", "E-UTRA")) goto end;
     if (!cJSON_AddStringToObject(o, "cm_state", cm_state_str(ue))) goto end;
+
+    /*
+     * mm_state: 4G EMM FSM state, exposed as a stable string so
+     * external consumers can distinguish in-progress NAS transitions
+     * from the steady-state {de,}registered values.  The string
+     * mirrors the name of the FSM state-handler function in emm-sm.c,
+     * with "de_registered" rendered as "deregistered" for readability.
+     *
+     * The MME keeps mme_ue_t contexts in mme_ue_list across explicit
+     * detach (see emm_state_de_registered's entry handler -- it clears
+     * timers and S1 state but does not call mme_ue_remove()), so
+     * without this field a detached UE is indistinguishable from an
+     * ECM-IDLE but still EMM-REGISTERED UE in the JSON output.  This
+     * is the LTE mirror of the equivalent AMF /ue-info field added in
+     * the prior mm_state patch.
+     */
+    {
+        const char *mm = "initial";
+        if      (OGS_FSM_CHECK(&ue->sm, emm_state_de_registered))          mm = "deregistered";
+        else if (OGS_FSM_CHECK(&ue->sm, emm_state_registered))             mm = "registered";
+        else if (OGS_FSM_CHECK(&ue->sm, emm_state_authentication))         mm = "authentication";
+        else if (OGS_FSM_CHECK(&ue->sm, emm_state_security_mode))          mm = "security_mode";
+        else if (OGS_FSM_CHECK(&ue->sm, emm_state_initial_context_setup))  mm = "initial_context_setup";
+        else if (OGS_FSM_CHECK(&ue->sm, emm_state_ue_context_will_remove)) mm = "ue_context_will_remove";
+        else if (OGS_FSM_CHECK(&ue->sm, emm_state_exception))              mm = "exception";
+        if (!cJSON_AddStringToObject(o, "mm_state", mm)) goto end;
+    }
 
     /* enb */
     {
