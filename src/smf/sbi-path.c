@@ -833,9 +833,23 @@ static int client_notify_cb(
         return OGS_ERROR;
     }
 
-    if (message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
+    if (message.res_status == OGS_SBI_HTTP_STATUS_NOT_FOUND) {
+        /*
+         * The AMF has already cleared its sm-context state for this
+         * session (e.g. after a 404 on sm-contexts/{ref}/modify, or
+         * post-AMF-restart, or after the AMF-side defensive cleanup
+         * fired ahead of our notification). Per TS 29.518 §5.2.5.2.6
+         * the response is intentionally idempotent — 404 here means
+         * "already gone", which is a successful steady-state outcome
+         * for the SMF, not an error. Downgrade to debug to keep the
+         * log signal clean during release-cascade events.
+         */
+        ogs_debug("SmContextStatusNotification idempotent: AMF "
+                "already cleared session [404]");
+    } else if (message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
         ogs_error("SmContextStatusNotification failed [%d]",
                 message.res_status);
+    }
 
     ogs_sbi_message_free(&message);
     ogs_sbi_response_free(response);
