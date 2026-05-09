@@ -4356,11 +4356,23 @@ int mme_ue_xact_count(mme_ue_t *mme_ue, uint8_t org)
 
 void enb_ue_associate_mme_ue(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
 {
+    mme_enb_t *enb_obj = NULL;
+
     ogs_assert(mme_ue);
     ogs_assert(enb_ue);
 
     mme_ue->enb_ue_id = enb_ue->id;
     enb_ue->mme_ue_id = mme_ue->id;
+
+    /* Capture the eNB-ID so /ue-info can still report the last-attached
+     * cell after the enb_ue_t is freed at UE Context Release.  Skip
+     * silently if the eNB hasn't completed S1 Setup with an enb_id IE;
+     * a later association on a properly-set-up eNB will overwrite. */
+    enb_obj = mme_enb_find_by_id(enb_ue->enb_id);
+    if (enb_obj && enb_obj->enb_id_presence) {
+        mme_ue->last_enb_id = enb_obj->enb_id;
+        mme_ue->last_enb_id_presence = true;
+    }
 }
 
 void enb_ue_deassociate_mme_ue(enb_ue_t *enb_ue, mme_ue_t *mme_ue)

@@ -149,6 +149,25 @@ static cJSON *build_enb(const mme_ue_t *ue)
             if (!cJSON_AddNumberToObject(enb, "cell_id", (double)cell_id))
                 goto end;
         }
+    } else {
+        /* ECM-IDLE: enb_ue_t has been freed at UE Context Release, so
+         * the live S1AP IDs are unavailable.  Fall back to the
+         * eNB-ID and ECI we captured at the most recent attach (see
+         * enb_ue_associate_mme_ue() in mme-context.c, and ue->e_cgi
+         * which is updated on Initial UE / TAU / Service Request).
+         * "status" stays "not-connected" via the cm_state field above
+         * to make it explicit to the consumer that these are
+         * last-known values. */
+        if (ue->last_enb_id_presence) {
+            if (!cJSON_AddNumberToObject(enb, "enb_id", (double)ue->last_enb_id))
+                goto end;
+        }
+        if (ue->e_cgi.cell_id) {
+            if (!cJSON_AddNumberToObject(enb, "cell_id", (double)ue->e_cgi.cell_id))
+                goto end;
+        }
+        if (!cJSON_AddStringToObject(enb, "status", "not-connected"))
+            goto end;
     }
 
     return enb;
