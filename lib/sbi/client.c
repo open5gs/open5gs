@@ -834,6 +834,11 @@ bool ogs_sbi_client_send_via_scp_or_sepp(
         ogs_assert(apiroot);
 
         rc = ogs_sbi_getpath_from_uri(&path, request->h.uri);
+        if (rc == false) {
+            ogs_error("Cannot extract path from URI [%s]", request->h.uri);
+            ogs_free(apiroot);
+            return false;
+        }
         ogs_assert(path);
 
         request->h.uri = ogs_msprintf("%s/%s", apiroot, path);

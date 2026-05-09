@@ -1615,6 +1615,7 @@ static int on_begin_headers(nghttp2_session *session,
 {
     ogs_sbi_session_t *sbi_sess = user_data;
     ogs_sbi_stream_t *stream = NULL;
+    int rv;
 
     ogs_assert(sbi_sess);
     ogs_assert(session);
@@ -1626,7 +1627,20 @@ static int on_begin_headers(nghttp2_session *session,
     }
 
     stream = stream_add(sbi_sess, frame->hd.stream_id);
-    ogs_assert(stream);
+    if (!stream) {
+        ogs_error("stream_add() failed for stream [%d]",
+                frame->hd.stream_id);
+
+        rv = nghttp2_submit_rst_stream(
+                session, NGHTTP2_FLAG_NONE,
+                frame->hd.stream_id, NGHTTP2_REFUSED_STREAM);
+        if (rv != 0)
+            ogs_error("nghttp2_submit_rst_stream() failed (%d:%s)",
+                    rv, nghttp2_strerror(rv));
+
+        return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
+    }
+
     ogs_debug("STREAM added [%d]", frame->hd.stream_id);
 
     nghttp2_session_set_stream_user_data(session, frame->hd.stream_id, stream);

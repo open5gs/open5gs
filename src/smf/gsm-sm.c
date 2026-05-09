@@ -160,6 +160,49 @@ static bool send_ccr_termination_req_gx_gy_s6b(
     return true;
 }
 
+static bool hsmf_update_has_up_cnx_state(smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    return sess->nsmf_param.up_cnx_state != OpenAPI_up_cnx_state_NULL;
+}
+
+static bool hsmf_update_has_qos_modification(smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    return sess->nsmf_param.up_cnx_state == OpenAPI_up_cnx_state_NULL &&
+        sess->nsmf_param.pfcp_flags != 0;
+}
+
+static void hsmf_update_send_bad_request(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *sbi_message,
+        smf_sess_t *sess, const char *reason)
+{
+    char *strerror = NULL;
+
+    ogs_assert(stream);
+    ogs_assert(sbi_message);
+    ogs_assert(sess);
+    ogs_assert(reason);
+
+    strerror = ogs_msprintf(
+            "Invalid HsmfUpdateData: %s "
+            "[requestIndication:%d][upCnxState:%d][pfcp_flags:0x%llx]",
+            reason,
+            sess->nsmf_param.request_indication,
+            sess->nsmf_param.up_cnx_state,
+            (long long)sess->nsmf_param.pfcp_flags);
+    ogs_assert(strerror);
+
+    ogs_error("%s", strerror);
+    ogs_assert(true == ogs_sbi_server_send_error(
+            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            sbi_message, strerror, NULL, NULL));
+
+    ogs_free(strerror);
+}
+
 void smf_gsm_state_initial(ogs_fsm_t *s, smf_event_t *e)
 {
     int rv;
@@ -1119,8 +1162,25 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     if (rc == true) {
                         switch (sess->nsmf_param.request_indication) {
                         case OpenAPI_request_indication_UE_REQ_PDU_SES_MOD:
-                            if (sess->nsmf_param.up_cnx_state ==
-                                    OpenAPI_up_cnx_state_DEACTIVATED) {
+    /*
+     * UE requested H-SMF update supports two forms:
+     *
+     * 1. UP connection state transition
+     *    - upCnxState must be present.
+     *    - Only DEACTIVATED, ACTIVATING and ACTIVATED are valid.
+     *
+     * 2. QoS Flow modification
+     *    - upCnxState must be absent.
+     *    - pfcp_flags must be non-zero.
+     *
+     * Any other combination is rejected as Bad Request because it can be
+     * provided by the peer.
+     */
+                            if (hsmf_update_has_up_cnx_state(sess)) {
+                                bool far_update = false;
+
+                                switch (sess->nsmf_param.up_cnx_state) {
+                                case OpenAPI_up_cnx_state_DEACTIVATED:
     /*
      * UE-requested PDU Session Modification(DEACTIVATED)
      *
@@ -1139,14 +1199,15 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      * 8.  V: smf_sbi_send_sm_context_updated_data_up_cnx_state(
      *          OpenAPI_up_cnx_state_DEACTIVATED)
      */
-                                ogs_assert(OGS_OK ==
-                                    smf_5gc_pfcp_send_all_pdr_modification_request(
-                                        sess, stream,
-                                        OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
-                                        OGS_PFCP_MODIFY_DL_ONLY|
-                                        OGS_PFCP_MODIFY_DEACTIVATE, 0, 0));
-                            } else if (sess->nsmf_param.up_cnx_state ==
-                                    OpenAPI_up_cnx_state_ACTIVATING) {
+                                    ogs_assert(OGS_OK ==
+                                        smf_5gc_pfcp_send_all_pdr_modification_request(
+                                            sess, stream,
+                                            OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                                            OGS_PFCP_MODIFY_DL_ONLY|
+                                            OGS_PFCP_MODIFY_DEACTIVATE, 0, 0));
+                                    break;
+
+                                case OpenAPI_up_cnx_state_ACTIVATING:
     /*
      * UE-requested PDU Session Modification(ACTIVATING)
      *
@@ -1161,11 +1222,13 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      *          OpenAPI_up_cnx_state_ACTIVATING,
      *          OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ, n2smbuf)
      */
-                                ogs_assert(true ==
-                                        ogs_sbi_send_http_status_no_content(
-                                            stream));
-                            } else if (sess->nsmf_param.up_cnx_state ==
-                                    OpenAPI_up_cnx_state_ACTIVATED) {
+                                    ogs_assert(true ==
+                                            ogs_sbi_send_http_status_no_content(
+                                                stream));
+                                    break;
+
+                                case OpenAPI_up_cnx_state_ACTIVATED:
+
     /*
      * UE-requested PDU Session Modification(ACTIVATED)
      *
@@ -1190,50 +1253,60 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      *        case SMF_UPDATE_STATE_HR_ACTIVATED_FROM_NON_ACTIVATING:
      *           ogs_sbi_send_http_status_no_content
      */
-                                bool far_update = false;
-
-                                if (memcmp(
-                                        &sess->nsmf_param.dl_ip,
-                                        &sess->remote_dl_ip,
-                                        sizeof(sess->nsmf_param.dl_ip)) != 0 ||
-                                    sess->nsmf_param.dl_teid !=
-                                        sess->remote_dl_teid)
-                                    far_update = true;
-
-                                ogs_list_for_each(
-                                        &sess->bearer_list, qos_flow) {
-                                    ogs_pfcp_far_t *dl_far = qos_flow->dl_far;
-                                    ogs_assert(dl_far);
-
-                                    if (dl_far->apply_action !=
-                                            OGS_PFCP_APPLY_ACTION_FORW)
+                                    if (memcmp(
+                                            &sess->nsmf_param.dl_ip,
+                                            &sess->remote_dl_ip,
+                                            sizeof(
+                                                sess->nsmf_param.dl_ip)) != 0 ||
+                                        sess->nsmf_param.dl_teid !=
+                                            sess->remote_dl_teid)
                                         far_update = true;
 
-                                    dl_far->apply_action =
-                                        OGS_PFCP_APPLY_ACTION_FORW;
-                                    ogs_assert(OGS_OK ==
-                                        ogs_pfcp_ip_to_outer_header_creation(
-                                            &sess->remote_dl_ip,
-                                            &dl_far->outer_header_creation,
-                                            &dl_far->outer_header_creation_len)
-                                        );
-                                    dl_far->outer_header_creation.teid =
-                                        sess->remote_dl_teid;
-                                }
+                                    ogs_list_for_each(
+                                            &sess->bearer_list, qos_flow) {
+                                        ogs_pfcp_far_t *dl_far =
+                                            qos_flow->dl_far;
+                                        ogs_assert(dl_far);
 
-                                if (far_update) {
-                                    ogs_assert(OGS_OK ==
-                                        smf_5gc_pfcp_send_all_pdr_modification_request(
-                                            sess, stream,
-                                            OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
-                                            OGS_PFCP_MODIFY_DL_ONLY|
-                                            OGS_PFCP_MODIFY_ACTIVATE, 0, 0));
-                                } else {
-                                    ogs_assert(true ==
-                                            ogs_sbi_send_http_status_no_content(
-                                                stream));
+                                        if (dl_far->apply_action !=
+                                                OGS_PFCP_APPLY_ACTION_FORW)
+                                            far_update = true;
+
+                                        dl_far->apply_action =
+                                            OGS_PFCP_APPLY_ACTION_FORW;
+                                        ogs_assert(OGS_OK ==
+                                            ogs_pfcp_ip_to_outer_header_creation(
+                                                &sess->remote_dl_ip,
+                                                &dl_far->outer_header_creation,
+                                                &dl_far->
+                                                    outer_header_creation_len)
+                                            );
+                                        dl_far->outer_header_creation.teid =
+                                            sess->remote_dl_teid;
+                                    }
+
+                                    if (far_update) {
+                                        ogs_assert(OGS_OK ==
+                                            smf_5gc_pfcp_send_all_pdr_modification_request(
+                                                sess, stream,
+                                                OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING|
+                                                OGS_PFCP_MODIFY_DL_ONLY|
+                                                OGS_PFCP_MODIFY_ACTIVATE,
+                                                0, 0));
+                                    } else {
+                                        ogs_assert(true ==
+                                                ogs_sbi_send_http_status_no_content(
+                                                    stream));
+                                    }
+                                    break;
+
+                                default:
+                                    hsmf_update_send_bad_request(
+                                            stream, sbi_message, sess,
+                                            "unsupported upCnxState");
+                                    break;
                                 }
-                            } else if (sess->nsmf_param.pfcp_flags) {
+                            } else if (hsmf_update_has_qos_modification(sess)) {
                                 ogs_assert(true ==
                                         ogs_sbi_send_http_status_no_content(
                                             stream));
@@ -1245,11 +1318,9 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                             OGS_PFCP_MODIFY_UE_REQUESTED|
                                             sess->nsmf_param.pfcp_flags, 0));
                             } else {
-                                ogs_fatal("Invalid [upCnxState:%d]"
-                                        "[pfcp_flags:0x%llx]",
-                                        sess->nsmf_param.up_cnx_state,
-                                        (long long)sess->nsmf_param.pfcp_flags);
-                                ogs_assert_if_reached();
+                                hsmf_update_send_bad_request(
+                                        stream, sbi_message, sess,
+                                        "missing upCnxState and pfcp_flags");
                             }
                             break;
                         case OpenAPI_request_indication_UE_REQ_PDU_SES_REL:
