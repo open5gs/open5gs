@@ -1112,6 +1112,10 @@ int amf_find_served_tai(ogs_5gs_tai_t *nr_tai);
 ogs_s_nssai_t *amf_find_s_nssai(
         ogs_plmn_id_t *served_plmn_id, ogs_s_nssai_t *s_nssai);
 
+ogs_session_t *amf_resolve_session_for_requested_dnn(
+        amf_ue_t *amf_ue, ogs_slice_data_t *slice,
+        const char *requested_dnn);
+
 amf_m_tmsi_t *amf_m_tmsi_alloc(void);
 int amf_m_tmsi_free(amf_m_tmsi_t *tmsi);
 
