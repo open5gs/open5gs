@@ -237,6 +237,73 @@ int gsm_handle_pdu_session_modification_qos_rules(
         return OGS_ERROR;
     }
 
+    /*
+     * Pass 1 — pre-validation.
+     *
+     * Pass 2 below mutates qos_flow state (smf_pf_remove_all,
+     * smf_pf_add, ipfw_rule writes via reconfigure_packet_filter)
+     * inside the per-rule loop. A malformed rule encountered
+     * mid-loop after one or more valid rules had already been
+     * applied would otherwise leave the SMF with PF-list updates
+     * committed locally while the UE rejects the entire
+     * Modification Request — a state drift between core and UE
+     * that only detach + re-attach can resolve.
+     *
+     * Validates per rule:
+     *  - code is one of the spec-defined values (TS 24.501
+     *    §9.11.4.13: DELETE / CREATE_NEW / MODIFY_AND_ADD /
+     *    MODIFY_AND_REPLACE).
+     *  - for non-DELETE rules with packet filters, each packet
+     *    filter is dispatchable through reconfigure_packet_filter
+     *    when called with the inner index `j` (the filter's
+     *    actual position within the rule). Uses a stack-local
+     *    scratch_pf so this is read-only with respect to
+     *    qos_flow state.
+     */
+    for (i = 0; i < num_of_rule; i++) {
+        switch (qos_rule[i].code) {
+        case OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE:
+            /* No packet filter content to validate. */
+            break;
+        case OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE:
+        case OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_ADD_PACKET_FILTERS:
+        case OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_REPLACE_ALL_PACKET_FILTERS:
+            for (j = 0; j < qos_rule[i].num_of_packet_filter &&
+                        j < OGS_MAX_NUM_OF_FLOW_IN_NAS; j++) {
+                smf_pf_t scratch_pf = { 0 };
+
+                if (reconfigure_packet_filter(
+                            &scratch_pf, &qos_rule[i], j) <= 0) {
+                    ogs_error("[%s:%d] Invalid packet filter at "
+                            "rule[%d] pf[%d] (rule_id[%d] pf_id[%d])",
+                            smf_ue->supi, sess->psi, i, j,
+                            qos_rule[i].identifier,
+                            qos_rule[i].pf[j].identifier);
+                    return OGS_ERROR;
+                }
+            }
+            break;
+        default:
+            ogs_error("[%s:%d] Unknown QoS rule code [%d] at rule[%d]",
+                    smf_ue->supi, sess->psi, qos_rule[i].code, i);
+            return OGS_ERROR;
+        }
+    }
+
+    /*
+     * Pass 2 — apply the validated rules.
+     *
+     * Pass 1 has already proven that every reachable code is
+     * spec-defined and every packet filter would dispatch
+     * cleanly through reconfigure_packet_filter() at index j.
+     * The reconfigure_packet_filter() call below therefore
+     * carries the corrected index `j` (was: outer rule index
+     * `i`, a copy-paste typo that triggered an OOB read on
+     * multi-rule shapes — issues #4429 and #4512). The
+     * trailing ogs_assert(... > 0) is preserved as an
+     * engineering guard-rail; with Pass 1 in place it should
+     * never fire from peer input.
+     */
     for (i = 0; i < num_of_rule; i++) {
         smf_pf_t *pf = NULL;
         smf_bearer_t *qos_flow =
@@ -272,7 +339,7 @@ int gsm_handle_pdu_session_modification_qos_rules(
                 ogs_assert(pf);
 
                 ogs_assert(
-                    reconfigure_packet_filter(pf, &qos_rule[i], i) > 0);
+                    reconfigure_packet_filter(pf, &qos_rule[i], j) > 0);
 /*
  * Refer to lib/ipfw/ogs-ipfw.h
  * Issue #338
