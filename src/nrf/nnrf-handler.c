@@ -121,8 +121,15 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
         }
     }
 
-    ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile);
+    if (ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile) == false) {
+        ogs_error("[%s] Invalid NFProfile", nf_instance->id);
 
+        ogs_assert(true == ogs_sbi_server_send_error(
+            stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+            recvmsg, "Invalid NFProfile", nf_instance->id, NULL));
+
+        return false;
+    }
     ogs_sbi_client_associate(nf_instance);
 
     /* ---------------------------------------------------------- */
@@ -1516,7 +1523,13 @@ static void handle_nf_discover_search_result(
         }
 
         if (NF_INSTANCE_ID_IS_OTHERS(nf_instance->id)) {
-            ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile);
+            if (ogs_nnrf_nfm_handle_nf_profile(
+                        nf_instance, NFProfile) == false) {
+                ogs_error("[%s] (NF-discover) Invalid NFProfile [type:%s]",
+                        NFProfile->nf_instance_id,
+                        OpenAPI_nf_type_ToString(NFProfile->nf_type));
+                continue;
+            }
 
             ogs_sbi_client_associate(nf_instance);
 
