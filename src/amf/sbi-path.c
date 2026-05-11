@@ -627,6 +627,31 @@ void amf_sbi_send_deactivate_all_sessions(
     }
 }
 
+static void amf_sbi_release_ran_ue_on_gnb_remove(
+        amf_ue_t *amf_ue, ran_ue_t *ran_ue)
+{
+    ogs_assert(amf_ue);
+    ogs_assert(ran_ue);
+
+    amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
+    ran_ue_remove(ran_ue);
+
+    /*
+     * If the UE has already been registered, keep the AMF UE context
+     * and let the mobile reachable timer handle implicit deregistration.
+     *
+     * If the UE is still in registration procedure, there is no valid
+     * registered NAS context to keep. Since no SMF transaction is created
+     * in this path, remove the AMF UE context immediately.
+     */
+    if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
+        ogs_timer_start(amf_ue->mobile_reachable.timer,
+                ogs_time_from_sec(amf_self()->time.t3512.value + 240));
+    } else {
+        amf_ue_remove(amf_ue);
+    }
+}
+
 void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
 {
     amf_ue_t *amf_ue = NULL;
@@ -646,10 +671,8 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
 
             new_xact_count = amf_sess_xact_count(amf_ue);
 
-            if (old_xact_count == new_xact_count) {
-                amf_ue_deassociate_ran_ue(amf_ue, ran_ue);
-                ran_ue_remove(ran_ue);
-            }
+            if (old_xact_count == new_xact_count)
+                amf_sbi_release_ran_ue_on_gnb_remove(amf_ue, ran_ue);
         } else {
             ogs_warn("amf_sbi_send_deactivate_all_ue_in_gnb()");
             ogs_warn("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld] State[%d]",

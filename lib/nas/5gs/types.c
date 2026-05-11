@@ -477,6 +477,14 @@ int ogs_nas_build_qos_flow_descriptions(
     return OGS_OK;
 }
 
+static bool qos_flow_bitrate_unit_is_valid(ogs_nas_bitrate_t *br)
+{
+    ogs_assert(br);
+
+    return br->unit >= OGS_NAS_BR_UNIT_1K &&
+           br->unit <= OGS_NAS_BR_UNIT_256P;
+}
+
 int ogs_nas_parse_qos_flow_descriptions(
         ogs_nas_qos_flow_description_t *description,
         ogs_nas_qos_flow_descriptions_t *descriptions)
@@ -492,11 +500,11 @@ int ogs_nas_parse_qos_flow_descriptions(
 
     if (descriptions->length == 0) {
         ogs_error("Length is 0");
-        goto cleanup;
+        return 0;
     }
     if (descriptions->buffer == NULL) {
         ogs_error("Buffer is NULL");
-        goto cleanup;
+        return 0;
     }
 
     length = descriptions->length;
@@ -506,18 +514,30 @@ int ogs_nas_parse_qos_flow_descriptions(
     while (size < length) {
         memset(description, 0, sizeof(*description));
 
+        if ((description - first) >=
+                OGS_NAS_MAX_NUM_OF_QOS_FLOW_DESCRIPTION) {
+            ogs_error("Too many QoS flow descriptions");
+            return (int)(description-first);
+        }
+
         if (size+3 > length) {
             ogs_error("Overflow : size[%d] length[%d]", size, length);
-            goto cleanup;
+            return (int)(description-first);
         }
         memcpy(description, buffer+size, 3);
         size += 3;
 
-        for (i = 0; i < description->num_of_parameter &&
-                    i < OGS_NAS_MAX_NUM_OF_QOS_FLOW_PARAMETER; i++) {
+        if (description->num_of_parameter >
+                OGS_NAS_MAX_NUM_OF_QOS_FLOW_PARAMETER) {
+            ogs_error("Too many QoS flow parameters [%d]",
+                    description->num_of_parameter);
+            return (int)(description-first);
+        }
+
+        for (i = 0; i < description->num_of_parameter; i++) {
             if (size+sizeof(description->param[i].identifier) > length) {
                 ogs_error("Overflow : size[%d] length[%d]", size, length);
-                goto cleanup;
+                return (int)(description-first);
             }
             memcpy(&description->param[i].identifier, buffer+size,
                     sizeof(description->param[i].identifier));
@@ -525,7 +545,7 @@ int ogs_nas_parse_qos_flow_descriptions(
 
             if (size+sizeof(description->param[i].len) > length) {
                 ogs_error("Overflow : size[%d] length[%d]", size, length);
-                goto cleanup;
+                return (int)(description-first);
             }
             memcpy(&description->param[i].len, buffer+size,
                     sizeof(description->param[i].len));
@@ -535,12 +555,12 @@ int ogs_nas_parse_qos_flow_descriptions(
             case OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI:
                 if (description->param[i].len != 1) {
                     ogs_error("Invalid len[%d]", description->param[i].len);
-                    goto cleanup;
+                    return (int)(description-first);
                 }
                 if (size+description->param[i].len > length) {
                     ogs_error("Overflow: len[%d] length[%d]",
                             description->param[i].len, length);
-                    goto cleanup;
+                    return (int)(description-first);
                 }
                 memcpy(&description->param[i].qos_index,
                         buffer+size, description->param[i].len);
@@ -553,30 +573,34 @@ int ogs_nas_parse_qos_flow_descriptions(
             case OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_DOWNLINK:
                 if (description->param[i].len != 3) {
                     ogs_error("Invalid len[%d]", description->param[i].len);
-                    goto cleanup;
+                    return (int)(description-first);
                 }
                 if (size+description->param[i].len > length) {
                     ogs_error("Overflow: len[%d] length[%d]",
                             description->param[i].len, length);
-                    goto cleanup;
+                    return (int)(description-first);
                 }
                 memcpy(&description->param[i].br,
                         buffer+size, description->param[i].len);
                 description->param[i].br.value =
                     be16toh(description->param[i].br.value);
+                if (!qos_flow_bitrate_unit_is_valid(
+                        &description->param[i].br)) {
+                    ogs_error("Invalid QoS flow bitrate unit [%d]",
+                            description->param[i].br.unit);
+                    return (int)(description-first);
+                }
                 size += description->param[i].len;
                 break;
             default:
                 ogs_error("Unknown qos_flow parameter identifier [%d]",
                         description->param[i].identifier);
-                goto cleanup;
+                return (int)(description-first);
             }
         }
 
         description++;
     }
-
-cleanup:
 
     return (int)(description-first);
 }

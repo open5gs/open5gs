@@ -21,13 +21,13 @@
 
 static void handle_nf_service(
         ogs_sbi_nf_service_t *nf_service, OpenAPI_nf_service_t *NFService);
-static void handle_smf_info(
+static bool handle_smf_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_smf_info_t *SmfInfo);
 static void handle_scp_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_scp_info_t *ScpInfo);
 static void handle_sepp_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_sepp_info_t *SeppInfo);
-static void handle_amf_info(
+static bool handle_amf_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_amf_info_t *AmfInfo);
 
 void ogs_nnrf_nfm_handle_nf_register(
@@ -72,7 +72,7 @@ void ogs_nnrf_nfm_handle_nf_register(
     }
 }
 
-void ogs_nnrf_nfm_handle_nf_profile(
+bool ogs_nnrf_nfm_handle_nf_profile(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_profile_t *NFProfile)
 {
     int rv;
@@ -305,26 +305,32 @@ void ogs_nnrf_nfm_handle_nf_profile(
 
     ogs_sbi_nf_info_remove_all(&nf_instance->nf_info_list);
 
-    if (NFProfile->smf_info)
-        handle_smf_info(nf_instance, NFProfile->smf_info);
+    if (NFProfile->smf_info &&
+            handle_smf_info(nf_instance, NFProfile->smf_info) == false)
+        return false;
 
     OpenAPI_list_for_each(NFProfile->smf_info_list, node) {
         OpenAPI_map_t *SmfInfoMap = node->data;
-        if (SmfInfoMap && SmfInfoMap->value)
-            handle_smf_info(nf_instance, SmfInfoMap->value);
+        if (SmfInfoMap && SmfInfoMap->value &&
+                handle_smf_info(nf_instance, SmfInfoMap->value) == false)
+            return false;
     }
-    if (NFProfile->amf_info)
-        handle_amf_info(nf_instance, NFProfile->amf_info);
+    if (NFProfile->amf_info &&
+            handle_amf_info(nf_instance, NFProfile->amf_info) == false)
+        return false;
 
     OpenAPI_list_for_each(NFProfile->amf_info_list, node) {
         OpenAPI_map_t *AmfInfoMap = node->data;
-        if (AmfInfoMap && AmfInfoMap->value)
-            handle_amf_info(nf_instance, AmfInfoMap->value);
+        if (AmfInfoMap && AmfInfoMap->value &&
+                handle_amf_info(nf_instance, AmfInfoMap->value) == false)
+            return false;
     }
     if (NFProfile->scp_info)
         handle_scp_info(nf_instance, NFProfile->scp_info);
     if (NFProfile->sepp_info)
         handle_sepp_info(nf_instance, NFProfile->sepp_info);
+
+    return true;
 }
 
 static void handle_nf_service(
@@ -426,9 +432,10 @@ static void handle_nf_service(
         nf_service->load = NFService->load;
 }
 
-static void handle_smf_info(
+static bool handle_smf_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_smf_info_t *SmfInfo)
 {
+    bool rv = true;
     ogs_sbi_nf_info_t *nf_info = NULL;
 
     OpenAPI_list_t *sNssaiSmfInfoList = NULL;
@@ -460,6 +467,7 @@ static void handle_smf_info(
             if (nf_info->smf.num_of_slice >= OGS_MAX_NUM_OF_SLICE) {
                 ogs_error("OVERFLOW Slice [%d:%d]",
                         nf_info->smf.num_of_slice, OGS_MAX_NUM_OF_SLICE);
+                rv = false;
                 break;
             }
 
@@ -470,16 +478,27 @@ static void handle_smf_info(
                     int dnn_index = nf_info->smf.slice
                         [nf_info->smf.num_of_slice].num_of_dnn;
 
-                    ogs_assert(dnn_index < OGS_MAX_NUM_OF_DNN);
+                    if (dnn_index >= OGS_MAX_NUM_OF_DNN) {
+                        ogs_error("OVERFLOW DNN [%d:%d]",
+                                dnn_index, OGS_MAX_NUM_OF_DNN);
+                        rv = false;
+                        break;
+                    }
                     nf_info->smf.slice[nf_info->smf.num_of_slice].
                         dnn[dnn_index] = ogs_strdup(DnnSmfInfoItem->dnn);
-                    ogs_assert(
-                        nf_info->smf.slice[nf_info->smf.num_of_slice].
-                            dnn[dnn_index]);
+                    if (!nf_info->smf.slice[nf_info->smf.num_of_slice].
+                            dnn[dnn_index]) {
+                        ogs_error("No memory for DNN");
+                        rv = false;
+                        break;
+                    }
                     nf_info->smf.slice[nf_info->smf.num_of_slice].
                         num_of_dnn++;
                 }
             }
+
+            if (rv == false)
+                break;
 
             if (!nf_info->smf.slice[nf_info->smf.num_of_slice].num_of_dnn) {
                 ogs_error("No DNN");
@@ -499,10 +518,12 @@ static void handle_smf_info(
         }
     }
 
+    if (rv == false) goto out;
+
     if (nf_info->smf.num_of_slice == 0) {
         ogs_error("No S-NSSAI(DNN) in smfInfo");
         ogs_sbi_nf_info_remove(&nf_instance->nf_info_list, nf_info);
-        return;
+        return true;
     }
 
     TaiList = SmfInfo->tai_list;
@@ -513,6 +534,7 @@ static void handle_smf_info(
             if (nf_info->smf.num_of_nr_tai >= OGS_MAX_NUM_OF_TAI) {
                 ogs_error("OVERFLOW TAI [%d:%d]",
                         nf_info->smf.num_of_nr_tai, OGS_MAX_NUM_OF_TAI);
+                rv = false;
                 break;
             }
 
@@ -525,6 +547,8 @@ static void handle_smf_info(
         }
     }
 
+    if (rv == false) goto out;
+
     TaiRangeList = SmfInfo->tai_range_list;
     OpenAPI_list_for_each(TaiRangeList, node) {
         TaiRangeItem = node->data;
@@ -534,6 +558,7 @@ static void handle_smf_info(
             if (nf_info->smf.num_of_nr_tai_range >= OGS_MAX_NUM_OF_TAI) {
                 ogs_error("OVERFLOW TaiRangeItem [%d:%d]",
                         nf_info->smf.num_of_nr_tai_range, OGS_MAX_NUM_OF_TAI);
+                rv = false;
                 break;
             }
 
@@ -552,6 +577,7 @@ static void handle_smf_info(
                     if (tac_index >= OGS_MAX_NUM_OF_TAI) {
                         ogs_error("OVERFLOW TAI [%d:%d]",
                                 tac_index, OGS_MAX_NUM_OF_TAI);
+                        rv = false;
                         break;
                     }
 
@@ -572,9 +598,20 @@ static void handle_smf_info(
                 }
             }
 
+            if (rv == false)
+                break;
+
             nf_info->smf.num_of_nr_tai_range++;
         }
     }
+
+out:
+    if (rv == false) {
+        ogs_sbi_nf_info_remove(&nf_instance->nf_info_list, nf_info);
+        return false;
+    }
+
+    return true;
 }
 
 static void handle_scp_info(
@@ -741,9 +778,10 @@ static void handle_sepp_info(
     }
 }
 
-static void handle_amf_info(
+static bool handle_amf_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_amf_info_t *AmfInfo)
 {
+    bool rv = true;
     ogs_sbi_nf_info_t *nf_info = NULL;
     OpenAPI_list_t *GuamiList = NULL;
     OpenAPI_guami_t *GuamiAmfInfoItem = NULL;
@@ -774,6 +812,7 @@ static void handle_amf_info(
             if (nf_info->amf.num_of_guami >= OGS_MAX_NUM_OF_SERVED_GUAMI) {
                 ogs_error("OVERFLOW Guami [%d:%d]",
                         nf_info->amf.num_of_guami, OGS_MAX_NUM_OF_SERVED_GUAMI);
+                rv = false;
                 break;
             }
 
@@ -788,6 +827,7 @@ static void handle_amf_info(
             }
         }
     }
+    if (rv == false) goto out;
 
     TaiList = AmfInfo->tai_list;
     OpenAPI_list_for_each(TaiList, node) {
@@ -798,6 +838,7 @@ static void handle_amf_info(
             if (nf_info->amf.num_of_nr_tai >= OGS_MAX_NUM_OF_TAI) {
                 ogs_error("OVERFLOW TaiItem [%d:%d]",
                         nf_info->amf.num_of_nr_tai, OGS_MAX_NUM_OF_TAI);
+                rv = false;
                 break;
             }
 
@@ -808,6 +849,7 @@ static void handle_amf_info(
             nf_info->amf.num_of_nr_tai++;
         }
     }
+    if (rv == false) goto out;
 
     TaiRangeList = AmfInfo->tai_range_list;
     OpenAPI_list_for_each(TaiRangeList, node) {
@@ -817,6 +859,7 @@ static void handle_amf_info(
             if (nf_info->amf.num_of_nr_tai_range >= OGS_MAX_NUM_OF_TAI) {
                 ogs_error("OVERFLOW TaiRangeItem [%d:%d]",
                         nf_info->amf.num_of_nr_tai_range, OGS_MAX_NUM_OF_TAI);
+                rv = false;
                 break;
             }
 
@@ -832,7 +875,12 @@ static void handle_amf_info(
                         TacRangeItem->start && TacRangeItem->end) {
                     int tac_index = nf_info->amf.nr_tai_range
                         [nf_info->amf.num_of_nr_tai_range].num_of_tac_range;
-                    ogs_assert(tac_index < OGS_MAX_NUM_OF_TAI);
+                    if (tac_index >= OGS_MAX_NUM_OF_TAI) {
+                        ogs_error("OVERFLOW TAI [%d:%d]",
+                                tac_index, OGS_MAX_NUM_OF_TAI);
+                        rv = false;
+                        break;
+                    }
 
                     nf_info->amf.nr_tai_range
                         [nf_info->amf.num_of_nr_tai_range].start[tac_index] =
@@ -847,9 +895,21 @@ static void handle_amf_info(
                         [nf_info->amf.num_of_nr_tai_range].num_of_tac_range++;
                 }
             }
+
+            if (rv == false)
+                break;
+
             nf_info->amf.num_of_nr_tai_range++;
         }
     }
+
+out:
+    if (rv == false) {
+        ogs_sbi_nf_info_remove(&nf_instance->nf_info_list, nf_info);
+        return false;
+    }
+
+    return true;
 }
 
 static void handle_validity_time(
@@ -1322,7 +1382,13 @@ void ogs_nnrf_disc_handle_nf_discover_search_result(
         }
 
         if (NF_INSTANCE_ID_IS_OTHERS(nf_instance->id)) {
-            ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile);
+            if (ogs_nnrf_nfm_handle_nf_profile(
+                        nf_instance, NFProfile) == false) {
+                ogs_error("[%s] (NRF-discover) Invalid NFProfile [type:%s]",
+                        nf_instance->id,
+                        OpenAPI_nf_type_ToString(NFProfile->nf_type));
+                continue;
+            }
 
             ogs_sbi_client_associate(nf_instance);
 

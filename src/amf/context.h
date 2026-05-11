@@ -444,6 +444,9 @@ struct amf_ue_s {
     /* Security Context */
     ogs_nas_ue_security_capability_t ue_security_capability;
     ogs_nas_ue_network_capability_t ue_network_capability;
+
+    /* Transient Path Switch state */
+    bool send_ue_security_capability_in_path_switch_ack;
 #define CHECK_5G_AKA_CONFIRMATION(__aMF) \
     ((__aMF) && ((__aMF)->confirmation_for_5g_aka.resource_uri))
 #define STORE_5G_AKA_CONFIRMATION(__aMF, __rESOURCE_URI) \

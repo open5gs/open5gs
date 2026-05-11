@@ -2000,14 +2000,20 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_SecurityContext_t *SecurityContext = NULL;
+    NGAP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
     NGAP_PDUSessionResourceSwitchedList_t *PDUSessionResourceSwitchedList;
     NGAP_AllowedNSSAI_t *AllowedNSSAI = NULL;
+    bool send_ue_security_capability = false;
 
     ogs_assert(amf_ue);
     ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
     ogs_assert(ran_ue);
 
     ogs_debug("PathSwitchAcknowledge");
+
+    send_ue_security_capability =
+        amf_ue->send_ue_security_capability_in_path_switch_ack;
+    amf_ue->send_ue_security_capability_in_path_switch_ack = false;
 
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_successfulOutcome;
@@ -2076,6 +2082,50 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 
     PDUSessionResourceSwitchedList =
         &ie->value.choice.PDUSessionResourceSwitchedList;
+
+    if (send_ue_security_capability) {
+        ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
+        ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_UESecurityCapabilities;
+        ie->criticality = NGAP_Criticality_reject;
+        ie->value.present =
+            NGAP_PathSwitchRequestAcknowledgeIEs__value_PR_UESecurityCapabilities;
+
+        UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
+
+        UESecurityCapabilities->nRencryptionAlgorithms.size = 2;
+        UESecurityCapabilities->nRencryptionAlgorithms.buf =
+            CALLOC(UESecurityCapabilities->
+                        nRencryptionAlgorithms.size, sizeof(uint8_t));
+        UESecurityCapabilities->nRencryptionAlgorithms.bits_unused = 0;
+        UESecurityCapabilities->nRencryptionAlgorithms.buf[0] =
+            (amf_ue->ue_security_capability.nr_ea << 1);
+
+        UESecurityCapabilities->nRintegrityProtectionAlgorithms.size = 2;
+        UESecurityCapabilities->nRintegrityProtectionAlgorithms.buf =
+            CALLOC(UESecurityCapabilities->
+                        nRintegrityProtectionAlgorithms.size, sizeof(uint8_t));
+        UESecurityCapabilities->nRintegrityProtectionAlgorithms.bits_unused = 0;
+        UESecurityCapabilities->nRintegrityProtectionAlgorithms.buf[0] =
+            (amf_ue->ue_security_capability.nr_ia << 1);
+
+        UESecurityCapabilities->eUTRAencryptionAlgorithms.size = 2;
+        UESecurityCapabilities->eUTRAencryptionAlgorithms.buf =
+            CALLOC(UESecurityCapabilities->
+                        eUTRAencryptionAlgorithms.size, sizeof(uint8_t));
+        UESecurityCapabilities->eUTRAencryptionAlgorithms.bits_unused = 0;
+        UESecurityCapabilities->eUTRAencryptionAlgorithms.buf[0] =
+            (amf_ue->ue_security_capability.eutra_ea << 1);
+
+        UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.size = 2;
+        UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf =
+            CALLOC(UESecurityCapabilities->
+                    eUTRAintegrityProtectionAlgorithms.size, sizeof(uint8_t));
+        UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.bits_unused = 0;
+        UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf[0] =
+            (amf_ue->ue_security_capability.eutra_ia << 1);
+    }
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
         OCTET_STRING_t *transfer = NULL;
