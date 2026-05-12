@@ -2501,6 +2501,52 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                     } else {
 
+                        if (!stream) {
+                            /*
+                             * SBI stream was torn down before this
+                             * PFCP-deletion-completion event fired
+                             * (peer RST_STREAM, idle-stream timeout,
+                             * premature client disconnect). The N1/N2
+                             * release messages cannot reach the AMF,
+                             * so the build is skipped entirely.
+                             * Transitioning to
+                             * smf_gsm_state_wait_5gc_n1_n2_release
+                             * would deadlock the FSM waiting for
+                             * completion of a release procedure that
+                             * was never started.
+                             *
+                             * Take the local-only cleanup path through
+                             * smf_sbi_cleanup_session(POLICY_FIRST),
+                             * which internally dispatches to PCF
+                             * SmPolicy delete, UDM SDM unsubscribe, or
+                             * UDM UECM deregistration depending on
+                             * which SBI state is associated with the
+                             * session. The chain converges at the
+                             * UDM UECM DEREG_BY_N1N2 handler, which
+                             * issues smf_sbi_send_sm_context_status_notify()
+                             * to keep AMF state consistent and then
+                             * SMF_SESS_CLEAR(sess).
+                             */
+                            smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+                            ogs_assert(smf_ue);
+
+                            ogs_error("[%s:%d] Stream removed before "
+                                    "PFCP deletion completion; "
+                                    "proceeding with local-only release",
+                                    smf_ue->supi, sess->psi);
+
+                            r = smf_sbi_cleanup_session(
+                                    sess, NULL,
+                                    SMF_UECM_STATE_DEREG_BY_N1N2,
+                                    SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
+
+                            OGS_FSM_TRAN(s,
+                                    smf_gsm_state_5gc_session_will_deregister);
+                            break;
+                        }
+
                         n1smbuf = gsm_build_pdu_session_release_command(
                                 sess, OGS_5GSM_CAUSE_REGULAR_DEACTIVATION);
                         ogs_assert(n1smbuf);
