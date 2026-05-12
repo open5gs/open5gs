@@ -23,9 +23,9 @@ static void handle_nf_service(
         ogs_sbi_nf_service_t *nf_service, OpenAPI_nf_service_t *NFService);
 static bool handle_smf_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_smf_info_t *SmfInfo);
-static void handle_scp_info(
+static bool handle_scp_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_scp_info_t *ScpInfo);
-static void handle_sepp_info(
+static bool handle_sepp_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_sepp_info_t *SeppInfo);
 static bool handle_amf_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_amf_info_t *AmfInfo);
@@ -72,7 +72,97 @@ void ogs_nnrf_nfm_handle_nf_register(
     }
 }
 
-bool ogs_nnrf_nfm_handle_nf_profile(
+/* ====================================================================
+ * NFProfile shadow-swap rebuild
+ * ====================================================================
+ *
+ * ogs_nnrf_nfm_handle_nf_profile() rebuilds an nf_instance's profile
+ * from a wire NFProfile. To make the rebuild atomic, the work is
+ * performed against a stack-allocated "staged" nf_instance and the
+ * result is committed onto the live nf_instance only on success;
+ * on failure the staged shadow is freed and the live instance is
+ * left exactly as it was.
+ *
+ * Field category taxonomy
+ * -----------------------
+ * Each member of ogs_sbi_nf_instance_t falls into one of four
+ * categories, tagged inline in lib/sbi/context.h:
+ *
+ * [RUNTIME]
+ *   Lifecycle / identity / binding state. NOT part of NFProfile.
+ *   Set by nf_instance_add(), FSM init, ID setter, or client
+ *   association code paths. The shadow-swap MUST NOT touch these
+ *   fields - they live on the live instance throughout. The staged
+ *   shadow is memset(0) so RUNTIME slots are zero there; they are
+ *   never copied to the live instance during commit.
+ *
+ * [PROFILE_REQUIRED]
+ *   NFProfile mandatory per 3GPP TS 29.510 (nfInstanceId, nfType,
+ *   nfStatus). The public wrapper validates these BEFORE staged
+ *   init, so they never enter the build path with NULL values.
+ *
+ * [PROFILE_OPTIONAL_FLAGGED]
+ *   NFProfile optional, OpenAPI generates an `is_xxx` flag to
+ *   distinguish "explicitly set to zero" from "absent". If the
+ *   flag is false on the wire, the field must keep its previous
+ *   value - otherwise re-registering with a partial NFProfile
+ *   would clobber working values with zero. Examples: priority,
+ *   capacity, load, heartBeatTimer.
+ *
+ * [PROFILE_OPTIONAL_DATA]
+ *   NFProfile optional fields whose presence is signalled by data
+ *   shape: a non-NULL pointer (e.g. fqdn) or a non-empty list
+ *   (e.g. nfServices). The staged shadow starts these at zero /
+ *   NULL; the builder fills them when NFProfile carries the data,
+ *   leaves them empty otherwise.
+ *
+ * Maintainer workflow when adding a new ogs_sbi_nf_instance_t field
+ * ----------------------------------------------------------------
+ *
+ *   [RUNTIME]
+ *     Touch nothing in this file. The staged shadow leaves the slot
+ *     at zero and commit never copies it.
+ *
+ *   [PROFILE_REQUIRED]
+ *     - ogs_nnrf_nfm_handle_nf_profile(): add a non-null/non-zero
+ *       check before nf_profile_payload_init().
+ *     - nnrf_nfm_build_nf_profile_payload(): write into staged
+ *       unconditionally.
+ *     - nf_profile_payload_commit(): copy from staged to live.
+ *
+ *   [PROFILE_OPTIONAL_FLAGGED]
+ *     - nf_profile_payload_init(): carry forward base->field so
+ *       an omitted is_xxx flag preserves the live value.
+ *     - nnrf_nfm_build_nf_profile_payload(): write into staged
+ *       only when NFProfile->is_xxx is true.
+ *     - nf_profile_payload_commit(): copy from staged to live.
+ *
+ *   [PROFILE_OPTIONAL_DATA]
+ *     - nnrf_nfm_build_nf_profile_payload(): populate from
+ *       NFProfile when present.
+ *     - nf_profile_payload_commit(): copy (scalars / fixed-size
+ *       value arrays) or move ownership (heap pointers, list
+ *       nodes with back-pointer rewriting).
+ *     - nf_profile_payload_free(): release the resource for owned
+ *       heap or list fields. Plain scalars and fixed-size value
+ *       arrays need no free hook.
+ *
+ * Forgetting to update commit() silently drops the new field on
+ * every successful rebuild - the build succeeds but the field
+ * never reaches the registry. There is no compiler warning for
+ * this; reviewers must explicitly check commit() when builder
+ * changes.
+ * ==================================================================== */
+
+/*
+ * Build the new NFProfile into a staged nf_instance.
+ *
+ * The live nf_instance must NOT be modified until the staged rebuild
+ * succeeds; on failure we discard the staged payload, on success
+ * ogs_nnrf_nfm_handle_nf_profile()'s commit step transfers the
+ * staged profile payload onto the live nf_instance.
+ */
+static bool nnrf_nfm_build_nf_profile_payload(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_profile_t *NFProfile)
 {
     int rv;
@@ -80,20 +170,26 @@ bool ogs_nnrf_nfm_handle_nf_profile(
 
     ogs_assert(nf_instance);
     ogs_assert(NFProfile);
-    ogs_assert(NFProfile->nf_instance_id);
-    ogs_assert(NFProfile->nf_type);
-    ogs_assert(NFProfile->nf_status);
 
-    ogs_sbi_nf_instance_clear(nf_instance);
+    /*
+     * Note: no nf_instance_clear() here. The staged shadow arrives
+     * already memset(0)+list_init() via nf_profile_payload_init(),
+     * so there is nothing to clear. The live instance's old payload
+     * is freed later by nf_profile_payload_free() inside commit.
+     */
 
+    /* [PROFILE_REQUIRED] nf_type, nf_status. */
     nf_instance->nf_type = NFProfile->nf_type;
     nf_instance->nf_status = NFProfile->nf_status;
+    /* [PROFILE_OPTIONAL_FLAGGED] heartBeatTimer. */
     if (NFProfile->is_heart_beat_timer == true)
         nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
 
+    /* [PROFILE_OPTIONAL_DATA] fqdn. Owned string. */
     if (NFProfile->fqdn)
         nf_instance->fqdn = ogs_strdup(NFProfile->fqdn);
 
+    /* [PROFILE_OPTIONAL_FLAGGED] priority / capacity / load. */
     if (NFProfile->is_priority == true)
         nf_instance->priority = NFProfile->priority;
     if (NFProfile->is_capacity == true)
@@ -101,6 +197,7 @@ bool ogs_nnrf_nfm_handle_nf_profile(
     if (NFProfile->is_load == true)
         nf_instance->load = NFProfile->load;
 
+    /* [PROFILE_OPTIONAL_DATA] plmnList. Fixed-size value array. */
     nf_instance->num_of_plmn_id = 0;
     OpenAPI_list_for_each(NFProfile->plmn_list, node) {
         OpenAPI_plmn_id_t *PlmnId = node->data;
@@ -118,6 +215,8 @@ bool ogs_nnrf_nfm_handle_nf_profile(
         }
     }
 
+    /* [PROFILE_OPTIONAL_DATA] ipv4Addresses. Owned sockaddr_t* array.
+     * Per-slot ownership; discard releases each non-NULL slot. */
     OpenAPI_list_for_each(NFProfile->ipv4_addresses, node) {
         ogs_sockaddr_t *addr = NULL;
 
@@ -141,6 +240,7 @@ bool ogs_nnrf_nfm_handle_nf_profile(
             nf_instance->num_of_ipv4++;
         }
     }
+    /* [PROFILE_OPTIONAL_DATA] ipv6Addresses. Same ownership as ipv4. */
     OpenAPI_list_for_each(NFProfile->ipv6_addresses, node) {
         ogs_sockaddr_t *addr = NULL;
 
@@ -165,6 +265,7 @@ bool ogs_nnrf_nfm_handle_nf_profile(
         }
     }
 
+    /* [PROFILE_OPTIONAL_DATA] allowedNfTypes. Fixed-size value array. */
     OpenAPI_list_for_each(NFProfile->allowed_nf_types, node) {
         OpenAPI_nf_type_e AllowedNfType = (uintptr_t)node->data;
 
@@ -187,6 +288,7 @@ bool ogs_nnrf_nfm_handle_nf_profile(
      * allowedNssais restricts for which slices the NF may be discovered.
      */
     nf_instance->num_of_s_nssai = 0;
+    /* [PROFILE_OPTIONAL_DATA] sNssais. Fixed-size value array. */
     OpenAPI_list_for_each(NFProfile->s_nssais, node) {
         OpenAPI_ext_snssai_t *sNssai = node->data;
         if (sNssai) {
@@ -204,6 +306,7 @@ bool ogs_nnrf_nfm_handle_nf_profile(
     }
 
     nf_instance->num_of_allowed_nssai = 0;
+    /* [PROFILE_OPTIONAL_DATA] allowedNssais. Fixed-size value array. */
     OpenAPI_list_for_each(NFProfile->allowed_nssais, node) {
         OpenAPI_ext_snssai_t *sNssai = node->data;
         if (sNssai) {
@@ -220,6 +323,9 @@ bool ogs_nnrf_nfm_handle_nf_profile(
         }
     }
 
+    /* [PROFILE_OPTIONAL_DATA] nfServices. List of pool-allocated
+     * nf_service_t objects with back-pointers to the owning instance.
+     * Commit re-parents the back-pointer from staged to live. */
     OpenAPI_list_for_each(NFProfile->nf_services, node) {
         ogs_sbi_nf_service_t *nf_service = NULL;
         OpenAPI_nf_service_t *NFService = node->data;
@@ -251,7 +357,11 @@ bool ogs_nnrf_nfm_handle_nf_profile(
                             nf_instance,
                             NFService->service_instance_id,
                             NFService->service_name, NFService->scheme);
-            ogs_assert(nf_service);
+            if (!nf_service) {
+                ogs_error("Failed to add NFService [%s]",
+                        NFService->service_instance_id);
+                return false;
+            }
         }
 
         ogs_sbi_nf_service_clear(nf_service);
@@ -259,6 +369,9 @@ bool ogs_nnrf_nfm_handle_nf_profile(
         handle_nf_service(nf_service, NFService);
     }
 
+    /* [PROFILE_OPTIONAL_DATA] nfServiceList (legacy MAP form,
+     * 3GPP TS 29.510 Release 16+). Same ownership semantics as the
+     * nf_services list above. */
     OpenAPI_list_for_each(NFProfile->nf_service_list, node) {
         ogs_sbi_nf_service_t *nf_service = NULL;
         OpenAPI_map_t *NFServiceMap = NULL;
@@ -294,7 +407,11 @@ bool ogs_nnrf_nfm_handle_nf_profile(
                                 nf_instance,
                                 NFService->service_instance_id,
                                 NFService->service_name, NFService->scheme);
-                ogs_assert(nf_service);
+                if (!nf_service) {
+                    ogs_error("Failed to add NFService [%s]",
+                            NFService->service_instance_id);
+                    return false;
+                }
             }
 
             ogs_sbi_nf_service_clear(nf_service);
@@ -303,7 +420,15 @@ bool ogs_nnrf_nfm_handle_nf_profile(
         }
     }
 
-    ogs_sbi_nf_info_remove_all(&nf_instance->nf_info_list);
+    /*
+     * [PROFILE_OPTIONAL_DATA] nfInfo list (smfInfo / amfInfo /
+     * scpInfo / seppInfo / their *_list MAP variants). Heap-allocated
+     * nf_info_t nodes linked through nf_info_list. Owned by the
+     * containing instance; released by ogs_sbi_nf_info_remove_all().
+     *
+     * Note: no nf_info_remove_all() reset here. The staged
+     * shadow's nf_info_list starts empty from init().
+     */
 
     if (NFProfile->smf_info &&
             handle_smf_info(nf_instance, NFProfile->smf_info) == false)
@@ -325,10 +450,271 @@ bool ogs_nnrf_nfm_handle_nf_profile(
                 handle_amf_info(nf_instance, AmfInfoMap->value) == false)
             return false;
     }
-    if (NFProfile->scp_info)
-        handle_scp_info(nf_instance, NFProfile->scp_info);
-    if (NFProfile->sepp_info)
-        handle_sepp_info(nf_instance, NFProfile->sepp_info);
+    if (NFProfile->scp_info &&
+            handle_scp_info(nf_instance, NFProfile->scp_info) == false)
+        return false;
+    if (NFProfile->sepp_info &&
+            handle_sepp_info(nf_instance, NFProfile->sepp_info) == false)
+        return false;
+
+    return true;
+}
+
+/*
+ * Initialise a staged nf_instance for shadow rebuild.
+ *
+ * The staged copy starts out as memset(0), then carries forward the
+ * [PROFILE_OPTIONAL_FLAGGED] fields from the live instance. See the
+ * field category taxonomy in lib/sbi/context.h.
+ *
+ * Carry-forward is required for FLAGGED fields specifically because
+ * the builder only overwrites them when NFProfile->is_xxx is true.
+ * Without the carry-forward, a wire profile that omits the is_xxx
+ * flag would let the staged value remain zero, and commit would
+ * then silently zero out the live priority / capacity / load on
+ * every such rebuild.
+ *
+ * Categories handled here:
+ *   [PROFILE_OPTIONAL_FLAGGED] time, priority, capacity, load
+ *                              (copied from base).
+ *
+ * Categories NOT handled here:
+ *   [RUNTIME]                  stays on the live instance, never
+ *                              touched on staged.
+ *   [PROFILE_REQUIRED]         always overwritten by the builder.
+ *   [PROFILE_OPTIONAL_DATA]    starts at zero/NULL on staged and is
+ *                              populated by the builder if NFProfile
+ *                              provides the data.
+ *
+ * When you add a new [PROFILE_OPTIONAL_FLAGGED] field to
+ * ogs_sbi_nf_instance_t, extend the carry-forward below.
+ */
+static void nf_profile_payload_init(
+        ogs_sbi_nf_instance_t *staged, ogs_sbi_nf_instance_t *base)
+{
+    ogs_assert(staged);
+    ogs_assert(base);
+
+    memset(staged, 0, sizeof(*staged));
+
+    /* [PROFILE_OPTIONAL_FLAGGED] carry-forward. */
+    staged->time = base->time;
+    staged->priority = base->priority;
+    staged->capacity = base->capacity;
+    staged->load = base->load;
+
+    /* [PROFILE_OPTIONAL_DATA] list heads: explicit init even though
+     * memset(0) already zeroed them, for self-documenting code. */
+    ogs_list_init(&staged->nf_service_list);
+    ogs_list_init(&staged->nf_info_list);
+}
+
+/*
+ * Free a profile payload from the given nf_instance.
+ *
+ * Releases all owned heap and list resources that fall under
+ * [PROFILE_OPTIONAL_DATA]; leaves [RUNTIME] state alone (FSM,
+ * timers, id, lnode linkage). [PROFILE_OPTIONAL_FLAGGED] and
+ * [PROFILE_REQUIRED] scalars are zeroed implicitly by
+ * ogs_sbi_nf_instance_clear() where applicable, or simply left
+ * alone where not - either way they are not "owned" and require
+ * no explicit cleanup.
+ *
+ * Used in two contexts:
+ *   - To clean up a staged payload after a failed build, before
+ *     the stack-allocated staged goes out of scope;
+ *   - As the first step inside nf_profile_payload_commit() to drop
+ *     the live nf_instance's old profile before transferring the
+ *     staged one onto it.
+ *
+ * Both nf_info_remove_all() and nf_service_remove_all() identify
+ * services / infos via the per-instance list head and (for
+ * services) the back-pointer ogs_sbi_nf_service_t::nf_instance, so
+ * this works correctly for both the staged shadow (whose services
+ * were added with nf_instance == staged) and the live instance
+ * (whose services were added with nf_instance == live).
+ *
+ * When you add a new [PROFILE_OPTIONAL_DATA] field that owns heap
+ * or list resources, extend this function to release them.
+ */
+static void nf_profile_payload_free(ogs_sbi_nf_instance_t *nf_instance)
+{
+    ogs_assert(nf_instance);
+
+    /* [PROFILE_OPTIONAL_DATA] nf_info_list - heap-allocated nodes. */
+    ogs_sbi_nf_info_remove_all(&nf_instance->nf_info_list);
+    /* [PROFILE_OPTIONAL_DATA] nf_service_list - pool-allocated
+     * services with owned id/name strings and back-pointer. */
+    ogs_sbi_nf_service_remove_all(nf_instance);
+    /* [PROFILE_OPTIONAL_DATA] fqdn (heap), ipv4/ipv6 (sockaddr).
+     * ogs_sbi_nf_instance_clear() handles all of these. */
+    ogs_sbi_nf_instance_clear(nf_instance);
+}
+
+/*
+ * Commit the staged profile payload onto the live nf_instance.
+ *
+ * This is the only place where staged profile state crosses the
+ * boundary onto the live instance. Every [PROFILE_REQUIRED],
+ * [PROFILE_OPTIONAL_FLAGGED], and [PROFILE_OPTIONAL_DATA] field
+ * must be transferred here. [RUNTIME] fields are deliberately
+ * left untouched: id / sm / t_* / lnode / client / hnrf_uri stay
+ * on the live nf_instance, and the staged copy was memset(0) at
+ * init so its zero values for those fields must not leak across.
+ *
+ * Transfer rules by category:
+ *
+ *   [PROFILE_REQUIRED]         direct assignment (always present).
+ *   [PROFILE_OPTIONAL_FLAGGED] direct assignment (init() guaranteed
+ *                              a valid staged value via carry-forward
+ *                              or builder overwrite).
+ *   [PROFILE_OPTIONAL_DATA] scalar / fixed-size value array:
+ *                              copy by assignment / memcpy.
+ *   [PROFILE_OPTIONAL_DATA] owned heap pointer (e.g. fqdn):
+ *                              pointer-transfer + NULL the staged
+ *                              side so a subsequent discard of
+ *                              staged does not double-free.
+ *   [PROFILE_OPTIONAL_DATA] owned pointer array (e.g. ipv4/ipv6):
+ *                              memcpy + zero the staged side, same
+ *                              double-free protection.
+ *   [PROFILE_OPTIONAL_DATA] list of objects with back-pointer
+ *                              (nf_service_list):
+ *                              for each node, unlink from staged,
+ *                              rewrite back-pointer to nf_instance,
+ *                              link onto nf_instance's list head.
+ *   [PROFILE_OPTIONAL_DATA] list of plain objects (nf_info_list):
+ *                              for each node, unlink from staged,
+ *                              link onto nf_instance's list head.
+ *
+ * Step 1 discards the previously registered profile so the
+ * transfers below don't leak the old fqdn / sockaddr / lists.
+ */
+static void nf_profile_payload_commit(
+        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_nf_instance_t *staged)
+{
+    ogs_sbi_nf_service_t *nf_service = NULL, *next_nf_service = NULL;
+    ogs_sbi_nf_info_t *nf_info = NULL, *next_nf_info = NULL;
+
+    ogs_assert(nf_instance);
+    ogs_assert(staged);
+
+    /* Step 1: drop the previously registered profile. */
+    nf_profile_payload_free(nf_instance);
+
+    /* [PROFILE_OPTIONAL_FLAGGED] time (struct copy). */
+    nf_instance->time = staged->time;
+    /* [PROFILE_REQUIRED] nf_type, nf_status. */
+    nf_instance->nf_type = staged->nf_type;
+    nf_instance->nf_status = staged->nf_status;
+    /* [PROFILE_OPTIONAL_FLAGGED] priority / capacity / load. */
+    nf_instance->priority = staged->priority;
+    nf_instance->capacity = staged->capacity;
+    nf_instance->load = staged->load;
+
+    /* [PROFILE_OPTIONAL_DATA] plmn_id (fixed-size value array). */
+    nf_instance->num_of_plmn_id = staged->num_of_plmn_id;
+    memcpy(nf_instance->plmn_id, staged->plmn_id,
+            sizeof(nf_instance->plmn_id));
+
+    /* [PROFILE_OPTIONAL_DATA] allowed_nf_type (fixed-size value array). */
+    nf_instance->num_of_allowed_nf_type = staged->num_of_allowed_nf_type;
+    memcpy(nf_instance->allowed_nf_type, staged->allowed_nf_type,
+            sizeof(nf_instance->allowed_nf_type));
+
+    /* [PROFILE_OPTIONAL_DATA] s_nssai (fixed-size value array). */
+    nf_instance->num_of_s_nssai = staged->num_of_s_nssai;
+    memcpy(nf_instance->s_nssai, staged->s_nssai,
+            sizeof(nf_instance->s_nssai));
+
+    /* [PROFILE_OPTIONAL_DATA] allowed_nssai (fixed-size value array). */
+    nf_instance->num_of_allowed_nssai = staged->num_of_allowed_nssai;
+    memcpy(nf_instance->allowed_nssai, staged->allowed_nssai,
+            sizeof(nf_instance->allowed_nssai));
+
+    /* [PROFILE_OPTIONAL_DATA] fqdn: owned heap pointer transfer. */
+    nf_instance->fqdn = staged->fqdn;
+    staged->fqdn = NULL;
+
+    /* [PROFILE_OPTIONAL_DATA] ipv4 / ipv6: owned pointer array.
+     * memcpy + zero on staged so a subsequent discard is a no-op
+     * for these slots. */
+    nf_instance->num_of_ipv4 = staged->num_of_ipv4;
+    memcpy(nf_instance->ipv4, staged->ipv4, sizeof(nf_instance->ipv4));
+    staged->num_of_ipv4 = 0;
+    memset(staged->ipv4, 0, sizeof(staged->ipv4));
+
+    nf_instance->num_of_ipv6 = staged->num_of_ipv6;
+    memcpy(nf_instance->ipv6, staged->ipv6, sizeof(nf_instance->ipv6));
+    staged->num_of_ipv6 = 0;
+    memset(staged->ipv6, 0, sizeof(staged->ipv6));
+
+    /* [PROFILE_OPTIONAL_DATA] nf_service_list: re-parent.
+     *
+     * While in staged, each service had
+     *   nf_service->nf_instance == staged
+     * which let ogs_sbi_nf_service_clear() and remove_all() identify
+     * the staged list correctly during the build. After commit they
+     * live on the live instance, so the back-pointer must be
+     * rewritten before relinking. */
+    ogs_list_for_each_safe(&staged->nf_service_list,
+            next_nf_service, nf_service) {
+        ogs_list_remove(&staged->nf_service_list, nf_service);
+        nf_service->nf_instance = nf_instance;
+        ogs_list_add(&nf_instance->nf_service_list, nf_service);
+    }
+
+    /* [PROFILE_OPTIONAL_DATA] nf_info_list: relink (no back-pointer). */
+    ogs_list_for_each_safe(&staged->nf_info_list, next_nf_info, nf_info) {
+        ogs_list_remove(&staged->nf_info_list, nf_info);
+        ogs_list_add(&nf_instance->nf_info_list, nf_info);
+    }
+}
+
+/*
+ * Public entry point: atomically rebuild nf_instance's profile from
+ * NFProfile.
+ *
+ * On failure the live nf_instance is guaranteed to be unmodified.
+ * The build is performed against a stack-allocated staged shadow,
+ * which is either committed (on success) or discarded (on failure).
+ */
+bool ogs_nnrf_nfm_handle_nf_profile(
+        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_profile_t *NFProfile)
+{
+    ogs_sbi_nf_instance_t staged;
+
+    ogs_assert(nf_instance);
+
+    /*
+     * Top-level NFProfile validation. These checks never touch any
+     * state, so we do them before initialising staged to avoid the
+     * memset+carry-forward cost on trivially malformed input.
+     */
+    if (!NFProfile) {
+        ogs_error("No NFProfile");
+        return false;
+    }
+    if (!NFProfile->nf_instance_id) {
+        ogs_error("No NFProfile.nf_instance_id");
+        return false;
+    }
+    if (!NFProfile->nf_type) {
+        ogs_error("No NFProfile.nf_type");
+        return false;
+    }
+    if (!NFProfile->nf_status) {
+        ogs_error("No NFProfile.nf_status");
+        return false;
+    }
+
+    nf_profile_payload_init(&staged, nf_instance);
+
+    if (nnrf_nfm_build_nf_profile_payload(&staged, NFProfile) == false) {
+        nf_profile_payload_free(&staged);
+        return false;
+    }
+
+    nf_profile_payload_commit(nf_instance, &staged);
 
     return true;
 }
@@ -458,7 +844,10 @@ static bool handle_smf_info(
 
     nf_info = ogs_sbi_nf_info_add(
             &nf_instance->nf_info_list, OpenAPI_nf_type_SMF);
-    ogs_assert(nf_info);
+    if (!nf_info) {
+        ogs_error("Failed to add SMF nfInfo");
+        return false;
+    }
 
     sNssaiSmfInfoList = SmfInfo->s_nssai_smf_info_list;
     OpenAPI_list_for_each(sNssaiSmfInfoList, node) {
@@ -614,7 +1003,20 @@ out:
     return true;
 }
 
-static void handle_scp_info(
+static void scp_info_free(ogs_sbi_scp_info_t *scp_info)
+{
+    int i;
+
+    ogs_assert(scp_info);
+
+    for (i = 0; i < scp_info->num_of_domain; i++) {
+        ogs_free(scp_info->domain[i].name);
+        ogs_free(scp_info->domain[i].fqdn);
+    }
+    memset(scp_info, 0, sizeof(*scp_info));
+}
+
+static bool handle_scp_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_scp_info_t *ScpInfo)
 {
     ogs_sbi_nf_info_t *nf_info = NULL;
@@ -712,13 +1114,19 @@ static void handle_scp_info(
         scp_info.num_of_domain) {
         nf_info = ogs_sbi_nf_info_add(
                 &nf_instance->nf_info_list, OpenAPI_nf_type_SCP);
-        ogs_assert(nf_info);
+        if (!nf_info) {
+            ogs_error("Failed to add SCP nfInfo");
+            scp_info_free(&scp_info);
+            return false;
+        }
 
         memcpy(&nf_info->scp, &scp_info, sizeof(scp_info));
     }
+
+    return true;
 }
 
-static void handle_sepp_info(
+static bool handle_sepp_info(
         ogs_sbi_nf_instance_t *nf_instance, OpenAPI_sepp_info_t *SeppInfo)
 {
     ogs_sbi_nf_info_t *nf_info = NULL;
@@ -768,7 +1176,10 @@ static void handle_sepp_info(
     if (http.presence || https.presence) {
         nf_info = ogs_sbi_nf_info_add(
                 &nf_instance->nf_info_list, OpenAPI_nf_type_SEPP);
-        ogs_assert(nf_info);
+        if (!nf_info) {
+            ogs_error("Failed to add SEPP nfInfo");
+            return false;
+        }
 
         nf_info->sepp.http.presence = http.presence;
         nf_info->sepp.http.port = http.port;
@@ -776,6 +1187,8 @@ static void handle_sepp_info(
         nf_info->sepp.https.presence = https.presence;
         nf_info->sepp.https.port = https.port;
     }
+
+    return true;
 }
 
 static bool handle_amf_info(
@@ -798,7 +1211,10 @@ static bool handle_amf_info(
 
     nf_info = ogs_sbi_nf_info_add(
             &nf_instance->nf_info_list, OpenAPI_nf_type_AMF);
-    ogs_assert(nf_info);
+    if (!nf_info) {
+        ogs_error("Failed to add AMF nfInfo");
+        return false;
+    }
 
     nf_info->amf.amf_set_id = ogs_uint64_from_string_hexadecimal(
             AmfInfo->amf_set_id);
@@ -1144,6 +1560,7 @@ bool ogs_nnrf_nfm_handle_nf_status_notify(
     ogs_sbi_response_t *response = NULL;
     OpenAPI_notification_data_t *NotificationData = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
+    bool nf_instance_created = false;
 
     ogs_sbi_message_t message;
     ogs_sbi_header_t header;
@@ -1254,6 +1671,7 @@ bool ogs_nnrf_nfm_handle_nf_status_notify(
             ogs_sbi_nf_instance_set_id(
                     nf_instance, message.h.resource.component[1]);
             ogs_sbi_nf_fsm_init(nf_instance);
+            nf_instance_created = true;
 
             ogs_info("[%s] (NRF-notify) NF registered", nf_instance->id);
         } else {
@@ -1267,7 +1685,31 @@ bool ogs_nnrf_nfm_handle_nf_status_notify(
             }
         }
 
-        ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile);
+        if (ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile) == false) {
+            ogs_error("[%s] (NRF-notify) Invalid NFProfile [type:%s]",
+                    NFProfile->nf_instance_id,
+                    OpenAPI_nf_type_ToString(NFProfile->nf_type));
+
+            /*
+             * ogs_nnrf_nfm_handle_nf_profile() rebuilds the NF profile in
+             * place. If parsing fails for a newly created cache entry, remove
+             * it because it may contain a partial profile. If the entry
+             * already existed, keep it in the registry to avoid deleting a
+             * previously usable local cache entry because of one bad notify.
+             */
+            if (nf_instance_created == true) {
+                ogs_sbi_nf_fsm_fini(nf_instance);
+                ogs_sbi_nf_instance_remove(nf_instance);
+            }
+
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "Invalid NFProfile",
+                    NFProfile->nf_instance_id, NULL));
+            ogs_sbi_header_free(&header);
+            return false;
+        }
 
         ogs_info("[%s] (NRF-notify) NF Profile updated [type:%s]",
                     nf_instance->id,
@@ -1334,6 +1776,7 @@ void ogs_nnrf_disc_handle_nf_discover_search_result(
 
     OpenAPI_list_for_each(SearchResult->nf_instances, node) {
         OpenAPI_nf_profile_t *NFProfile = NULL;
+        bool nf_instance_created = false;
 
         if (!node->data) continue;
 
@@ -1366,6 +1809,7 @@ void ogs_nnrf_disc_handle_nf_discover_search_result(
 
             ogs_sbi_nf_instance_set_id(nf_instance, NFProfile->nf_instance_id);
             ogs_sbi_nf_fsm_init(nf_instance);
+            nf_instance_created = true;
 
             ogs_info("[%s] (NRF-discover) NF registered [type:%s]",
                     nf_instance->id,
@@ -1385,8 +1829,19 @@ void ogs_nnrf_disc_handle_nf_discover_search_result(
             if (ogs_nnrf_nfm_handle_nf_profile(
                         nf_instance, NFProfile) == false) {
                 ogs_error("[%s] (NRF-discover) Invalid NFProfile [type:%s]",
-                        nf_instance->id,
+                        NFProfile->nf_instance_id,
                         OpenAPI_nf_type_ToString(NFProfile->nf_type));
+
+                /*
+                 * Do not leave a newly created partial NFProfile in the
+                 * registry. If the entry already existed, keep it to avoid
+                 * deleting a previously usable local cache entry because of
+                 * one bad discovery result.
+                 */
+                if (nf_instance_created == true) {
+                    ogs_sbi_nf_fsm_fini(nf_instance);
+                    ogs_sbi_nf_instance_remove(nf_instance);
+                }
                 continue;
             }
 

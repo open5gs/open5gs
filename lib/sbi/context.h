@@ -110,20 +110,35 @@ typedef struct ogs_sbi_context_s {
     const char *service_name[OGS_SBI_MAX_NUM_OF_SERVICE_TYPE];
 } ogs_sbi_context_t;
 
+/*
+ * Each member is tagged [RUNTIME], [PROFILE_REQUIRED],
+ * [PROFILE_OPTIONAL_FLAGGED], or [PROFILE_OPTIONAL_DATA] for the
+ * NFProfile shadow-swap rebuild in ogs_nnrf_nfm_handle_nf_profile().
+ * See lib/sbi/nnrf-handler.c for the category taxonomy and the
+ * maintainer workflow when adding new fields.
+ */
 typedef struct ogs_sbi_nf_instance_s {
+    /* [RUNTIME] Registry list linkage. */
     ogs_lnode_t lnode;
 
-    ogs_fsm_t sm;                           /* A state machine */
-    ogs_timer_t *t_registration_interval;   /* timer to retry
-                                               to register peer node */
+    /* [RUNTIME] Per-NF state machine. */
+    ogs_fsm_t sm;
+    /* [RUNTIME] Retry timer for outbound registration to a peer NRF. */
+    ogs_timer_t *t_registration_interval;
+
+    /* [PROFILE_OPTIONAL_FLAGGED] heartBeatTimer.heart_beat_timer
+     * maps to time.heartbeat_interval; validity_duration is
+     * consumer-side bookkeeping with the same flagged-overwrite
+     * pattern. */
     struct {
         int heartbeat_interval;
         int validity_duration;
     } time;
 
-    ogs_timer_t *t_heartbeat_interval;      /* heartbeat interval */
-    ogs_timer_t *t_no_heartbeat;            /* check heartbeat */
-    ogs_timer_t *t_validity;                /* check validation */
+    /* [RUNTIME] Heartbeat/validity bookkeeping timers. */
+    ogs_timer_t *t_heartbeat_interval;
+    ogs_timer_t *t_no_heartbeat;
+    ogs_timer_t *t_validity;
 
     /*
      * Issues #2034
@@ -148,27 +163,42 @@ typedef struct ogs_sbi_nf_instance_s {
 #define NF_INSTANCE_ID_IS_OTHERS(_iD) \
     (_iD) && ogs_sbi_self()->nf_instance && \
         strcmp((_iD), ogs_sbi_self()->nf_instance->id) != 0
+    /* [RUNTIME] Instance identity. Set once by
+     * ogs_sbi_nf_instance_set_id(), kept stable across rebuilds. */
     char *id;
 
 #define NF_INSTANCE_TYPE(__nFInstance) \
     ((__nFInstance) ? ((__nFInstance)->nf_type) : OpenAPI_nf_type_NULL)
 #define NF_INSTANCE_TYPE_IS_NRF(__nFInstance) \
     (NF_INSTANCE_TYPE(__nFInstance) == OpenAPI_nf_type_NRF)
+    /* [PROFILE_REQUIRED] NFProfile.nfType. */
     OpenAPI_nf_type_e nf_type;
+    /* [PROFILE_REQUIRED] NFProfile.nfStatus. */
     OpenAPI_nf_status_e nf_status;
 
+    /* [PROFILE_OPTIONAL_DATA] NFProfile.plmnList. Builder writes the
+     * count + array based on what's present in NFProfile. */
     ogs_plmn_id_t plmn_id[OGS_MAX_NUM_OF_PLMN];
     int num_of_plmn_id;
 
+    /* [PROFILE_OPTIONAL_DATA] NFProfile.fqdn. Owned string; commit
+     * transfers ownership, discard frees. */
     char *fqdn;
-    char *hnrf_uri; /* NRF Only */
+    /* [RUNTIME] Home-NRF URI cached on the instance (NRF only).
+     * Not part of NFProfile; not touched by shadow-swap. */
+    char *hnrf_uri;
 
 #define OGS_SBI_MAX_NUM_OF_IP_ADDRESS 8
+    /* [PROFILE_OPTIONAL_DATA] NFProfile.ipv4Addresses. Owned
+     * sockaddr_t* array (ogs_freeaddrinfo); commit transfers
+     * ownership, discard frees per-slot. */
     int num_of_ipv4;
     ogs_sockaddr_t *ipv4[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
+    /* [PROFILE_OPTIONAL_DATA] NFProfile.ipv6Addresses. Same as above. */
     int num_of_ipv6;
     ogs_sockaddr_t *ipv6[OGS_SBI_MAX_NUM_OF_IP_ADDRESS];
 
+    /* [PROFILE_OPTIONAL_DATA] NFProfile.allowedNfTypes. */
     int num_of_allowed_nf_type;
 #define OGS_SBI_MAX_NUM_OF_NF_TYPE 128
     OpenAPI_nf_type_e allowed_nf_type[OGS_SBI_MAX_NUM_OF_NF_TYPE];
@@ -183,24 +213,44 @@ typedef struct ogs_sbi_nf_instance_s {
      *                  (from NFProfile.allowedNssais).
      *                  Used to filter target NFs during NF discovery.
      */
+    /* [PROFILE_OPTIONAL_DATA] NFProfile.sNssais. */
     int num_of_s_nssai;
     ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_SLICE];
 
+    /* [PROFILE_OPTIONAL_DATA] NFProfile.allowedNssais. */
     int num_of_allowed_nssai;
     ogs_s_nssai_t allowed_nssai[OGS_MAX_NUM_OF_SLICE];
 
 #define OGS_SBI_DEFAULT_PRIORITY 0
 #define OGS_SBI_DEFAULT_CAPACITY 100
 #define OGS_SBI_DEFAULT_LOAD 0
+    /* [PROFILE_OPTIONAL_FLAGGED] NFProfile.priority / .capacity /
+     * .load. Carry-forward in init(), overwrite in builder only when
+     * NFProfile->is_priority / is_capacity / is_load is true. */
     int priority;
     int capacity;
     int load;
 
+    /*
+     * [PROFILE_OPTIONAL_DATA] NFProfile.nfServices / nfServiceList.
+     * List head only - the actual nf_service_t objects are pool-
+     * allocated and carry an nf_instance back-pointer. During the
+     * shadow-swap rebuild the back-pointer points at the staged
+     * shadow; commit re-parents to the live instance.
+     */
     ogs_list_t nf_service_list;
+    /*
+     * [PROFILE_OPTIONAL_DATA] NFProfile.{smf,amf,scp,sepp,...}Info
+     * (per-NF-type structured info). List head only; nodes are
+     * heap-allocated and released by ogs_sbi_nf_info_remove_all().
+     */
     ogs_list_t nf_info_list;
 
 #define NF_INSTANCE_CLIENT(__nFInstance) \
     ((__nFInstance) ? ((__nFInstance)->client) : NULL)
+    /* [RUNTIME] HTTP client binding (consumer side only). Refreshed
+     * by ogs_sbi_client_associate() AFTER a successful profile
+     * commit, never inside the shadow-swap helpers. */
     void *client;                       /* only used in CLIENT */
 } ogs_sbi_nf_instance_t;
 

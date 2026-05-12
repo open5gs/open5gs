@@ -46,7 +46,11 @@ static void handle_nf_profile_retrieval(
 
     ogs_sbi_nf_instance_set_id(nf_instance, nf_instance_id);
 
-    ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile);
+    if (ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile) == false) {
+        ogs_error("[%s] (NRF-profile-get) Invalid NFProfile", nf_instance_id);
+        ogs_sbi_nf_instance_remove(nf_instance);
+        return;
+    }
 
     /* verify against our subscription list that we want to save this
      * nf instance to our context */

@@ -1477,13 +1477,26 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(
     ogs_assert(name);
 
     ogs_pool_alloc(&nf_service_pool, &nf_service);
-    ogs_assert(nf_service);
+    if (!nf_service) {
+        ogs_error("OVERFLOW nf_service_pool [pool:%llu]",
+                (unsigned long long)ogs_app()->pool.nf_service);
+        return NULL;
+    }
     memset(nf_service, 0, sizeof(ogs_sbi_nf_service_t));
 
     nf_service->id = ogs_strdup(id);
-    ogs_assert(nf_service->id);
+    if (!nf_service->id) {
+        ogs_error("ogs_strdup() failed for nf_service->id");
+        ogs_pool_free(&nf_service_pool, nf_service);
+        return NULL;
+    }
     nf_service->name = ogs_strdup(name);
-    ogs_assert(nf_service->name);
+    if (!nf_service->name) {
+        ogs_error("ogs_strdup() failed for nf_service->name");
+        ogs_free(nf_service->id);
+        ogs_pool_free(&nf_service_pool, nf_service);
+        return NULL;
+    }
     nf_service->scheme = scheme;
     ogs_assert(nf_service->scheme);
 
@@ -1676,7 +1689,9 @@ ogs_sbi_nf_info_t *ogs_sbi_nf_info_add(
 
     ogs_pool_alloc(&nf_info_pool, &nf_info);
     if (!nf_info) {
-        ogs_fatal("ogs_pool_alloc() failed");
+        ogs_error("OVERFLOW nf_info_pool [pool:%llu]",
+                (unsigned long long)(ogs_app()->pool.nf *
+                    OGS_MAX_NUM_OF_NF_INFO));
         return NULL;
     }
     memset(nf_info, 0, sizeof(*nf_info));
@@ -1937,7 +1952,15 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
     ogs_assert(scheme);
 
     nf_service = ogs_sbi_nf_service_add(nf_instance, id, name, scheme);
-    ogs_assert(nf_service);
+    if (!nf_service) {
+        ogs_error("Cannot build default NF service [%s]: "
+                "nf_service_pool exhausted at startup. "
+                "Increase 'max.peer' (current pool capacity = "
+                "max.peer * 16 = %llu).",
+                name,
+                (unsigned long long)ogs_app()->pool.nf_service);
+        return NULL;
+    }
 
     hostname = NULL;
     for (server = ogs_sbi_server_first();

@@ -122,11 +122,20 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
     }
 
     if (ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile) == false) {
-        ogs_error("[%s] Invalid NFProfile", nf_instance->id);
+        ogs_error("[%s] Invalid NFProfile", NFProfile->nf_instance_id);
 
+        /*
+         * Do not finalize or remove nf_instance here. This handler is called
+         * from the NRF NF state machine. The caller performs OGS_FSM_TRAN()
+         * on &nf_instance->sm immediately after this function returns, so
+         * freeing nf_instance here would cause a use-after-free.
+         *
+         * Return failure and let the FSM dispatcher perform cleanup after the
+         * transition to nrf_nf_state_exception.
+         */
         ogs_assert(true == ogs_sbi_server_send_error(
             stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-            recvmsg, "Invalid NFProfile", nf_instance->id, NULL));
+            recvmsg, "Invalid NFProfile", NFProfile->nf_instance_id, NULL));
 
         return false;
     }
@@ -1473,6 +1482,7 @@ static void handle_nf_discover_search_result(
 
     OpenAPI_list_for_each(SearchResult->nf_instances, node) {
         OpenAPI_nf_profile_t *NFProfile = NULL;
+        bool nf_instance_created = false;
 
         if (!node->data) continue;
 
@@ -1504,6 +1514,7 @@ static void handle_nf_discover_search_result(
             ogs_assert(nf_instance);
 
             ogs_sbi_nf_instance_set_id(nf_instance, NFProfile->nf_instance_id);
+            nf_instance_created = true;
 
             /*
              * If nrf_nf_fsm_init() is not executed, nf_instance->sm is NULL.
@@ -1528,6 +1539,17 @@ static void handle_nf_discover_search_result(
                 ogs_error("[%s] (NF-discover) Invalid NFProfile [type:%s]",
                         NFProfile->nf_instance_id,
                         OpenAPI_nf_type_ToString(NFProfile->nf_type));
+
+                /*
+                 * Only roll back nf_instances we just created here. A
+                 * pre-existing cache entry will be corrected by the next
+                 * inter-NRF discovery cycle; removing it now would cause
+                 * a temporary blackhole. (No fsm_fini: this code path
+                 * never calls nrf_nf_fsm_init() for newly added entries
+                 * per the comment at line 1517-1522, so sm is NULL.)
+                 */
+                if (nf_instance_created)
+                    ogs_sbi_nf_instance_remove(nf_instance);
                 continue;
             }
 

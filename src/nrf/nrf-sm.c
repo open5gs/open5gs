@@ -191,6 +191,14 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                             ogs_error("[%s] State machine exception",
                                     nf_instance->id);
 
+                            /*
+                             * Handlers invoked from the NF FSM must not free
+                             * nf_instance before returning because the FSM
+                             * transition writes to &nf_instance->sm.  Cleanup
+                             * of failed registration/update attempts is
+                             * centralized here, after ogs_fsm_dispatch()
+                             * completes.
+                             */
                             nrf_nf_fsm_fini(nf_instance);
                             ogs_sbi_nf_instance_remove(nf_instance);
                         }
