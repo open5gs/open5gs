@@ -850,12 +850,29 @@ void ngap_handle_uplink_nas_transport(
 
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
-        ogs_error("Cannot find AMF-UE Context [%lld]",
+        /*
+         * Stale NG-RAN context. Dominant trigger: HOLDING_NG_CONTEXT
+         * clears ran_ue->amf_ue_id when a newer NG-connection arrives
+         * for the same NAS UE; the held ran_ue stays in the pool until
+         * CLEAR_NG_CONTEXT fires after Security Mode Complete on the
+         * new connection (per TS 23.502 §4.2.6: "after successfully
+         * authenticating the UE, the AMF releases the old NAS
+         * signalling connection"). If the gNB sends a stale message
+         * on the held IDs during that window, sending
+         * UEContextReleaseCommand here — instead of Error Indication
+         * with the misleading cause unknown-local-UE-NGAP-ID, since
+         * the AMF actually knows the ID and just cleared the amf_ue
+         * back-link — lets the gNB promptly release its end of the
+         * stale RAN context. Mirrors the existing handling in
+         * ngap_handle_ue_context_release_request().
+         */
+        ogs_warn("UplinkNASTransport on stale NG context "
+                "[AMF_UE_NGAP_ID:%lld] — sending UEContextReleaseCommand",
                 (long long)ran_ue->amf_ue_ngap_id);
-        r = ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+        r = ngap_send_ran_ue_context_release_command(ran_ue,
                 NGAP_Cause_PR_radioNetwork,
-                NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
+                NGAP_CauseRadioNetwork_unspecified,
+                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
@@ -1076,12 +1093,18 @@ void ngap_handle_initial_context_setup_response(
 
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
-        ogs_error("Cannot find AMF-UE Context [%lld]",
+        /*
+         * Stale NG-RAN context — see ngap_handle_uplink_nas_transport()
+         * for the rationale. Send UEContextReleaseCommand so the gNB
+         * cleans up its end of the stale RAN context.
+         */
+        ogs_warn("InitialContextSetupResponse on stale NG context "
+                "[AMF_UE_NGAP_ID:%lld] — sending UEContextReleaseCommand",
                 (long long)ran_ue->amf_ue_ngap_id);
-        r = ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+        r = ngap_send_ran_ue_context_release_command(ran_ue,
                 NGAP_Cause_PR_radioNetwork,
-                NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
+                NGAP_CauseRadioNetwork_unspecified,
+                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
@@ -2033,12 +2056,18 @@ void ngap_handle_pdu_session_resource_setup_response(
 
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
-        ogs_error("Cannot find AMF-UE Context [%lld]",
+        /*
+         * Stale NG-RAN context — see ngap_handle_uplink_nas_transport()
+         * for the rationale. Send UEContextReleaseCommand so the gNB
+         * cleans up its end of the stale RAN context.
+         */
+        ogs_warn("PDUSessionResourceSetupResponse on stale NG context "
+                "[AMF_UE_NGAP_ID:%lld] — sending UEContextReleaseCommand",
                 (long long)ran_ue->amf_ue_ngap_id);
-        r = ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+        r = ngap_send_ran_ue_context_release_command(ran_ue,
                 NGAP_Cause_PR_radioNetwork,
-                NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
+                NGAP_CauseRadioNetwork_unspecified,
+                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
@@ -2330,12 +2359,18 @@ void ngap_handle_pdu_session_resource_modify_response(
 
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
-        ogs_error("Cannot find AMF-UE Context [%lld]",
+        /*
+         * Stale NG-RAN context — see ngap_handle_uplink_nas_transport()
+         * for the rationale. Send UEContextReleaseCommand so the gNB
+         * cleans up its end of the stale RAN context.
+         */
+        ogs_warn("PDUSessionResourceModifyResponse on stale NG context "
+                "[AMF_UE_NGAP_ID:%lld] — sending UEContextReleaseCommand",
                 (long long)ran_ue->amf_ue_ngap_id);
-        r = ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+        r = ngap_send_ran_ue_context_release_command(ran_ue,
                 NGAP_Cause_PR_radioNetwork,
-                NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
+                NGAP_CauseRadioNetwork_unspecified,
+                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
@@ -2492,12 +2527,18 @@ void ngap_handle_pdu_session_resource_release_response(
 
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
-        ogs_error("Cannot find AMF-UE Context [%lld]",
+        /*
+         * Stale NG-RAN context — see ngap_handle_uplink_nas_transport()
+         * for the rationale. Send UEContextReleaseCommand so the gNB
+         * cleans up its end of the stale RAN context.
+         */
+        ogs_warn("PDUSessionResourceReleaseResponse on stale NG context "
+                "[AMF_UE_NGAP_ID:%lld] — sending UEContextReleaseCommand",
                 (long long)ran_ue->amf_ue_ngap_id);
-        r = ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+        r = ngap_send_ran_ue_context_release_command(ran_ue,
                 NGAP_Cause_PR_radioNetwork,
-                NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
+                NGAP_CauseRadioNetwork_unspecified,
+                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
