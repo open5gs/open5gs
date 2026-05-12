@@ -850,12 +850,23 @@ void ngap_handle_uplink_nas_transport(
 
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
-        ogs_error("Cannot find AMF-UE Context [%lld]",
+        /*
+         * The RAN UE context is being held after a newer NG-connection
+         * was established for the same NAS UE (HOLDING_NG_CONTEXT cleared
+         * amf_ue_id). Per TS 38.413 §8.3.3.1 the stale NG-RAN context must
+         * be torn down with UE Context Release, not silently dropped — a
+         * later message on the held IDs would otherwise be answered with
+         * Error Indication (unknown-local-UE-NGAP-ID). Match the existing
+         * UEContextReleaseRequest handler and send a release command so
+         * the gNB cleans up its end of the old connection.
+         */
+        ogs_warn("Uplink NAS on held NG context [AMF_UE_NGAP_ID:%lld] — "
+                "sending UEContextReleaseCommand",
                 (long long)ran_ue->amf_ue_ngap_id);
-        r = ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+        r = ngap_send_ran_ue_context_release_command(ran_ue,
                 NGAP_Cause_PR_radioNetwork,
-                NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
+                NGAP_CauseRadioNetwork_unspecified,
+                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
