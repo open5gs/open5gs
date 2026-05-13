@@ -891,6 +891,41 @@ void s1ap_handle_uplink_nas_transport(
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
+    /*
+     * Stale S1 context. Dominant trigger: HOLDING_S1_CONTEXT clears
+     * enb_ue->mme_ue_id when a newer S1-connection arrives for the same
+     * NAS UE (mme_ue); the held enb_ue stays in the pool until
+     * CLEAR_S1_CONTEXT sends UEContextReleaseCommand after authentication
+     * completes on the new connection (per TS 23.401 §5.3.4.4 / mirrors
+     * TS 23.502 §4.2.6 for 5G: "after successfully authenticating the
+     * UE, the [MME/AMF] releases the old NAS signalling connection").
+     *
+     * If the eNB sends a stale UplinkNASTransport on the held IDs during
+     * that window, send UEContextReleaseCommand here so the eNB can
+     * promptly release its end of the stale RAN context. We do NOT
+     * forward the held NAS message to the NAS layer - the UE has
+     * abandoned this radio link, and replaying an old NAS message
+     * through the EMM state machine could re-associate the held enb_ue
+     * with the live mme_ue and cause responses to be sent on the wrong
+     * S1 connection. The t_s1_holding timer guarantees local cleanup
+     * even if the eNB does not respond.
+     *
+     * Mirrors the AMF NGAP handling in ngap_handle_uplink_nas_transport().
+     */
+    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
+    if (!mme_ue) {
+        ogs_error("UplinkNASTransport on stale S1 context "
+                "[MME_UE_S1AP_ID:%d] - sending UEContextReleaseCommand",
+                enb_ue->mme_ue_s1ap_id);
+        r = s1ap_send_ue_context_release_command(
+                enb_ue, S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unspecified,
+                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     if (!NAS_PDU) {
         ogs_error("No NAS_PDU");
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
@@ -1015,15 +1050,10 @@ void s1ap_handle_uplink_nas_transport(
         enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id,
         enb_ue->saved.tai.tac, enb_ue->saved.e_cgi.cell_id);
 
-    /* Copy Stream-No/TAI/ECGI from enb_ue */
-    mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
-    if (mme_ue) {
-        memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
-        memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
-        mme_ue->ue_location_timestamp = ogs_time_now();
-    } else {
-        ogs_error("No UE Context in UplinkNASTransport");
-    }
+    /* Copy Stream-No/TAI/ECGI from enb_ue (mme_ue checked at function entry) */
+    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
+    memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
+    mme_ue->ue_location_timestamp = ogs_time_now();
 
     ogs_expect(OGS_OK == s1ap_send_to_nas(
                 enb_ue, S1AP_ProcedureCode_id_uplinkNASTransport, NAS_PDU));
@@ -1157,7 +1187,20 @@ void s1ap_handle_initial_context_setup_response(
 
     mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (!mme_ue) {
-        ogs_error("No UE(mme-ue) context");
+        /*
+         * Stale S1 context - see s1ap_handle_uplink_nas_transport()
+         * for the rationale. Send UEContextReleaseCommand so the eNB
+         * cleans up its end of the stale RAN context.
+         */
+        ogs_error("InitialContextSetupResponse on stale S1 context "
+                "[MME_UE_S1AP_ID:%d] - sending UEContextReleaseCommand",
+                enb_ue->mme_ue_s1ap_id);
+        r = s1ap_send_ue_context_release_command(
+                enb_ue, S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unspecified,
+                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return;
     }
 
@@ -1374,7 +1417,7 @@ void s1ap_handle_ue_context_modification_response(
         mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
-    int i;
+    int i, r;
 
     S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
     S1AP_UEContextModificationResponse_t *UEContextModificationResponse = NULL;
@@ -1428,7 +1471,20 @@ void s1ap_handle_ue_context_modification_response(
 
     mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (!mme_ue) {
-        ogs_error("No UE(mme-ue) context");
+        /*
+         * Stale S1 context - see s1ap_handle_uplink_nas_transport()
+         * for the rationale. Send UEContextReleaseCommand so the eNB
+         * cleans up its end of the stale RAN context.
+         */
+        ogs_error("UEContextModificationResponse on stale S1 context "
+                "[MME_UE_S1AP_ID:%d] - sending UEContextReleaseCommand",
+                enb_ue->mme_ue_s1ap_id);
+        r = s1ap_send_ue_context_release_command(
+                enb_ue, S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unspecified,
+                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return;
     }
 
@@ -1508,7 +1564,20 @@ void s1ap_handle_ue_context_modification_failure(
 
     mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (!mme_ue) {
-        ogs_error("No UE(mme-ue) context");
+        /*
+         * Stale S1 context - see s1ap_handle_uplink_nas_transport()
+         * for the rationale. Send UEContextReleaseCommand so the eNB
+         * cleans up its end of the stale RAN context.
+         */
+        ogs_error("UEContextModificationFailure on stale S1 context "
+                "[MME_UE_S1AP_ID:%d] - sending UEContextReleaseCommand",
+                enb_ue->mme_ue_s1ap_id);
+        r = s1ap_send_ue_context_release_command(
+                enb_ue, S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unspecified,
+                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return;
     }
     CLEAR_SERVICE_INDICATOR(mme_ue);
@@ -1591,7 +1660,20 @@ void s1ap_handle_e_rab_setup_response(
 
     mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (!mme_ue) {
-        ogs_error("No UE(mme-ue) context");
+        /*
+         * Stale S1 context - see s1ap_handle_uplink_nas_transport()
+         * for the rationale. Send UEContextReleaseCommand so the eNB
+         * cleans up its end of the stale RAN context.
+         */
+        ogs_error("E-RABSetupResponse on stale S1 context "
+                "[MME_UE_S1AP_ID:%d] - sending UEContextReleaseCommand",
+                enb_ue->mme_ue_s1ap_id);
+        r = s1ap_send_ue_context_release_command(
+                enb_ue, S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unspecified,
+                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return;
     }
 
@@ -2264,7 +2346,20 @@ void s1ap_handle_e_rab_modification_indication(
 
     mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
     if (!mme_ue) {
-        ogs_error("No UE(mme-ue) context");
+        /*
+         * Stale S1 context - see s1ap_handle_uplink_nas_transport()
+         * for the rationale. Send UEContextReleaseCommand so the eNB
+         * cleans up its end of the stale RAN context.
+         */
+        ogs_error("E-RABModificationIndication on stale S1 context "
+                "[MME_UE_S1AP_ID:%d] - sending UEContextReleaseCommand",
+                enb_ue->mme_ue_s1ap_id);
+        r = s1ap_send_ue_context_release_command(
+                enb_ue, S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unspecified,
+                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
         return;
     }
 

@@ -859,15 +859,15 @@ void ngap_handle_uplink_nas_transport(
          * authenticating the UE, the AMF releases the old NAS
          * signalling connection"). If the gNB sends a stale message
          * on the held IDs during that window, sending
-         * UEContextReleaseCommand here — instead of Error Indication
+         * UEContextReleaseCommand here - instead of Error Indication
          * with the misleading cause unknown-local-UE-NGAP-ID, since
          * the AMF actually knows the ID and just cleared the amf_ue
-         * back-link — lets the gNB promptly release its end of the
+         * back-link - lets the gNB promptly release its end of the
          * stale RAN context. Mirrors the existing handling in
          * ngap_handle_ue_context_release_request().
          */
-        ogs_warn("UplinkNASTransport on stale NG context "
-                "[AMF_UE_NGAP_ID:%lld] — sending UEContextReleaseCommand",
+        ogs_error("UplinkNASTransport on stale NG context "
+                "[AMF_UE_NGAP_ID:%lld] - sending UEContextReleaseCommand",
                 (long long)ran_ue->amf_ue_ngap_id);
         r = ngap_send_ran_ue_context_release_command(ran_ue,
                 NGAP_Cause_PR_radioNetwork,
@@ -1094,12 +1094,12 @@ void ngap_handle_initial_context_setup_response(
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
         /*
-         * Stale NG-RAN context — see ngap_handle_uplink_nas_transport()
+         * Stale NG-RAN context - see ngap_handle_uplink_nas_transport()
          * for the rationale. Send UEContextReleaseCommand so the gNB
          * cleans up its end of the stale RAN context.
          */
-        ogs_warn("InitialContextSetupResponse on stale NG context "
-                "[AMF_UE_NGAP_ID:%lld] — sending UEContextReleaseCommand",
+        ogs_error("InitialContextSetupResponse on stale NG context "
+                "[AMF_UE_NGAP_ID:%lld] - sending UEContextReleaseCommand",
                 (long long)ran_ue->amf_ue_ngap_id);
         r = ngap_send_ran_ue_context_release_command(ran_ue,
                 NGAP_Cause_PR_radioNetwork,
@@ -2057,12 +2057,12 @@ void ngap_handle_pdu_session_resource_setup_response(
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
         /*
-         * Stale NG-RAN context — see ngap_handle_uplink_nas_transport()
+         * Stale NG-RAN context - see ngap_handle_uplink_nas_transport()
          * for the rationale. Send UEContextReleaseCommand so the gNB
          * cleans up its end of the stale RAN context.
          */
-        ogs_warn("PDUSessionResourceSetupResponse on stale NG context "
-                "[AMF_UE_NGAP_ID:%lld] — sending UEContextReleaseCommand",
+        ogs_error("PDUSessionResourceSetupResponse on stale NG context "
+                "[AMF_UE_NGAP_ID:%lld] - sending UEContextReleaseCommand",
                 (long long)ran_ue->amf_ue_ngap_id);
         r = ngap_send_ran_ue_context_release_command(ran_ue,
                 NGAP_Cause_PR_radioNetwork,
@@ -2360,12 +2360,12 @@ void ngap_handle_pdu_session_resource_modify_response(
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
         /*
-         * Stale NG-RAN context — see ngap_handle_uplink_nas_transport()
+         * Stale NG-RAN context - see ngap_handle_uplink_nas_transport()
          * for the rationale. Send UEContextReleaseCommand so the gNB
          * cleans up its end of the stale RAN context.
          */
-        ogs_warn("PDUSessionResourceModifyResponse on stale NG context "
-                "[AMF_UE_NGAP_ID:%lld] — sending UEContextReleaseCommand",
+        ogs_error("PDUSessionResourceModifyResponse on stale NG context "
+                "[AMF_UE_NGAP_ID:%lld] - sending UEContextReleaseCommand",
                 (long long)ran_ue->amf_ue_ngap_id);
         r = ngap_send_ran_ue_context_release_command(ran_ue,
                 NGAP_Cause_PR_radioNetwork,
@@ -2528,12 +2528,12 @@ void ngap_handle_pdu_session_resource_release_response(
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
         /*
-         * Stale NG-RAN context — see ngap_handle_uplink_nas_transport()
+         * Stale NG-RAN context - see ngap_handle_uplink_nas_transport()
          * for the rationale. Send UEContextReleaseCommand so the gNB
          * cleans up its end of the stale RAN context.
          */
-        ogs_warn("PDUSessionResourceReleaseResponse on stale NG context "
-                "[AMF_UE_NGAP_ID:%lld] — sending UEContextReleaseCommand",
+        ogs_error("PDUSessionResourceReleaseResponse on stale NG context "
+                "[AMF_UE_NGAP_ID:%lld] - sending UEContextReleaseCommand",
                 (long long)ran_ue->amf_ue_ngap_id);
         r = ngap_send_ran_ue_context_release_command(ran_ue,
                 NGAP_Cause_PR_radioNetwork,
