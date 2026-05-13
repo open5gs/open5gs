@@ -608,6 +608,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command_transfer(
 ogs_pkbuf_t *ngap_build_path_switch_request_ack_transfer(smf_sess_t *sess)
 {
     NGAP_PathSwitchRequestAcknowledgeTransfer_t message;
+    NGAP_SecurityIndication_t *SecurityIndication = NULL;
 
 #if 0 /* The following is optional. So I've removed */
     ogs_ip_t upf_n3_ip;
@@ -638,6 +639,56 @@ ogs_pkbuf_t *ngap_build_path_switch_request_ack_transfer(smf_sess_t *sess)
     ogs_asn_uint32_to_OCTET_STRING(sess->local_ul_teid, &gTPTunnel->gTP_TEID);
 
 #endif
+
+    /*
+     * TS 33.501 §6.6.3 / TS 33.515 §4.2.2.1.3 — when the SMF detected
+     * a mismatch between the target gNB's reported UE UP security
+     * policy and the locally stored canonical policy in
+     * ngap_handle_path_switch_request_transfer(), the spec mandates
+     * sending the locally stored policy back in this Acknowledge so
+     * the target gNB can correct its enforcement. We emit the
+     * SecurityIndication IE only on mismatch; on a clean match the
+     * IE is omitted (matching the gNB's view, no work needed).
+     */
+    if (sess->path_switch_security_indication_mismatch &&
+            smf_self()->security_indication.integrity_protection_indication &&
+            smf_self()->security_indication.confidentiality_protection_indication) {
+
+        message.securityIndication = SecurityIndication =
+            CALLOC(1, sizeof(*SecurityIndication));
+        ogs_assert(SecurityIndication);
+
+        SecurityIndication->integrityProtectionIndication =
+                smf_integrity_protection_indication_value2enum(
+                    smf_self()->security_indication.
+                        integrity_protection_indication);
+        ogs_assert(SecurityIndication->integrityProtectionIndication >= 0);
+
+        SecurityIndication->confidentialityProtectionIndication =
+                smf_confidentiality_protection_indication_value2enum(
+                    smf_self()->security_indication.
+                        confidentiality_protection_indication);
+        ogs_assert(SecurityIndication->
+                confidentialityProtectionIndication >= 0);
+
+        if (smf_self()->security_indication.
+                maximum_integrity_protected_data_rate_uplink) {
+            SecurityIndication->maximumIntegrityProtectedDataRate_UL =
+                CALLOC(1, sizeof(NGAP_MaximumIntegrityProtectedDataRate_t));
+            ogs_assert(
+                SecurityIndication->maximumIntegrityProtectedDataRate_UL);
+            *(SecurityIndication->maximumIntegrityProtectedDataRate_UL) =
+                smf_maximum_integrity_protected_data_rate_uplink_value2enum(
+                    smf_self()->security_indication.
+                        maximum_integrity_protected_data_rate_uplink);
+            ogs_assert(
+                *(SecurityIndication->
+                    maximumIntegrityProtectedDataRate_UL) >= 0);
+        }
+
+        /* Clear the mismatch flag now that the IE has been emitted. */
+        sess->path_switch_security_indication_mismatch = false;
+    }
 
     return ogs_asn_encode(
             &asn_DEF_NGAP_PathSwitchRequestAcknowledgeTransfer, &message);
