@@ -71,6 +71,7 @@ typedef struct ogs_global_conf_s {
         int use_openair;
         int fake_csfb;
         int no_ims;
+        int allow_unsecured_redirection;
         int use_upg_vpp;
         int no_ipv4v6_local_addr_in_packet_filter;
 

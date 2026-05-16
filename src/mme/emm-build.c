@@ -265,6 +265,18 @@ ogs_pkbuf_t *emm_build_attach_accept(
         ogs_debug("    P-TMSI: 0x%08x", tmsi->tmsi);
     }
 
+    attach_accept->presencemask |=
+        OGS_NAS_EPS_ATTACH_ACCEPT_NETWORK_POLICY_PRESENT;
+    attach_accept->network_policy.type =
+            OGS_NAS_EPS_ATTACH_ACCEPT_NETWORK_POLICY_TYPE >> 4;
+    if (ogs_global_conf()->parameter.allow_unsecured_redirection == true) {
+        attach_accept->network_policy.
+            unsecured_redirection_to_geran_not_allowed = 0;
+    } else {
+        attach_accept->network_policy.
+            unsecured_redirection_to_geran_not_allowed = 1;
+    }
+
     pkbuf = nas_eps_security_encode(mme_ue, &message);
     ogs_pkbuf_free(esmbuf);
 
@@ -693,6 +705,18 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     }
     tau_accept->eps_network_feature_support.
         extended_protocol_configuration_options = 1;
+
+    tau_accept->presencemask |=
+        OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NETWORK_POLICY_PRESENT;
+    tau_accept->network_policy.type =
+        OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NETWORK_POLICY_TYPE >> 4;
+    if (ogs_global_conf()->parameter.allow_unsecured_redirection == true) {
+        tau_accept->network_policy.
+            unsecured_redirection_to_geran_not_allowed = 0;
+    } else {
+        tau_accept->network_policy.
+            unsecured_redirection_to_geran_not_allowed = 1;
+    }
 
     return nas_eps_security_encode(mme_ue, &message);
 }
