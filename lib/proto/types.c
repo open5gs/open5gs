@@ -365,6 +365,60 @@ cleanup:
     return ueid;
 }
 
+bool ogs_id_get_type_value(const char *str, char **type, char **value)
+{
+    ogs_assert(str);
+    ogs_assert(type);
+    ogs_assert(value);
+
+    *type = ogs_id_get_type(str);
+    *value = ogs_id_get_value(str);
+
+    if (!*type || !*value || !strlen(*type) || !strlen(*value))
+        goto cleanup;
+
+    /* Reject extra '-' components that ogs_id_get_value() ignores. */
+    if (strlen(str) != strlen(*type) + 1 + strlen(*value))
+        goto cleanup;
+
+    return true;
+
+cleanup:
+    if (*type) {
+        ogs_free(*type);
+        *type = NULL;
+    }
+    if (*value) {
+        ogs_free(*value);
+        *value = NULL;
+    }
+
+    return false;
+}
+
+bool ogs_bcd_string_is_valid(const char *bcd, int max_len)
+{
+    int i, len;
+
+    ogs_assert(bcd);
+    ogs_assert(max_len > 0);
+
+    len = strlen(bcd);
+    if (len == 0 || len > max_len) {
+        ogs_error("Invalid BCD length [%d:%s]", len, bcd);
+        return false;
+    }
+
+    for (i = 0; i < len; i++) {
+        if (bcd[i] < '0' || bcd[i] > '9') {
+            ogs_error("Invalid BCD digit [%d:%c:%s]", i, bcd[i], bcd);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool ogs_pdu_session_id_is_valid(int psi)
 {
     return psi > OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED &&
@@ -372,31 +426,17 @@ bool ogs_pdu_session_id_is_valid(int psi)
 }
 
 /*
- * ogs_bcd_to_buffer() only converts bytes.  It does not validate that
+ * ogs_bcd_to_buffer() only converts bytes. It does not validate that
  * the input is a bounded decimal IMSI string, so check it first.
  */
 bool ogs_imsi_bcd_is_valid(const char *imsi_bcd)
 {
-    int i, len;
+    return ogs_bcd_string_is_valid(imsi_bcd, OGS_MAX_IMSI_BCD_LEN);
+}
 
-    ogs_assert(imsi_bcd);
-
-    len = strlen(imsi_bcd);
-    if (len == 0 || len > OGS_MAX_IMSI_BCD_LEN) {
-        ogs_error("Invalid IMSI BCD length [%d:%s]",
-                len, imsi_bcd);
-        return false;
-    }
-
-    for (i = 0; i < len; i++) {
-        if (imsi_bcd[i] < '0' || imsi_bcd[i] > '9') {
-            ogs_error("Invalid IMSI BCD digit [%d:%c:%s]",
-                    i, imsi_bcd[i], imsi_bcd);
-            return false;
-        }
-    }
-
-    return true;
+bool ogs_imeisv_bcd_is_valid(const char *imeisv_bcd)
+{
+    return ogs_bcd_string_is_valid(imeisv_bcd, OGS_MAX_IMEISV_BCD_LEN);
 }
 
 /*
@@ -419,27 +459,14 @@ int ogs_supi_to_imsi_bcd(
 
     *imsi_supi = false;
 
-    type = ogs_id_get_type(supi);
-    if (!type) {
-        ogs_error("ogs_id_get_type() failed [%s]", supi);
+    if (ogs_id_get_type_value(supi, &type, &value) == false) {
+        ogs_error("Invalid SUPI [%s]", supi);
         goto cleanup;
     }
 
     /* Non-IMSI SUPI is valid, but has no EPC IMSI alias. */
     if (strcmp(type, OGS_ID_SUPI_TYPE_IMSI) != 0) {
         rv = OGS_OK;
-        goto cleanup;
-    }
-
-    value = ogs_id_get_value(supi);
-    if (!value) {
-        ogs_error("No IMSI in SUPI [%s]", supi);
-        goto cleanup;
-    }
-
-    /* Reject extra '-' components that ogs_id_get_value() ignores. */
-    if (strlen(supi) != strlen(type) + 1 + strlen(value)) {
-        ogs_error("Invalid IMSI SUPI [%s]", supi);
         goto cleanup;
     }
 

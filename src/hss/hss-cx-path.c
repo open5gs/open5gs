@@ -33,6 +33,30 @@ static struct disp_hdl *hdl_cx_sar = NULL;
 /* handler for Location-Info-Request cb */
 static struct disp_hdl *hdl_cx_lir = NULL;
 
+static bool hss_cx_user_name_to_bcd(
+        const char *user_name, char *bcd, size_t bcd_len)
+{
+    size_t i, j = 0;
+
+    ogs_assert(bcd);
+
+    if (!user_name || bcd_len == 0)
+        return false;
+
+    bcd[0] = '\0';
+
+    for (i = 0; user_name[i]; i++) {
+        if (user_name[i] >= '0' && user_name[i] <= '9') {
+            if (j + 1 >= bcd_len)
+                return false;
+            bcd[j++] = user_name[i];
+        }
+    }
+    bcd[j] = '\0';
+
+    return ogs_bcd_string_is_valid(bcd, OGS_MAX_IMSI_BCD_LEN);
+}
+
 /* Default callback for the application. */
 static int hss_ogs_diam_cx_fb_cb(struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
@@ -119,7 +143,13 @@ static int hss_ogs_diam_cx_uar_cb(struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    ogs_extract_digit_from_string(imsi_or_msisdn_bcd, user_name);
+    if (hss_cx_user_name_to_bcd(user_name,
+                imsi_or_msisdn_bcd, sizeof(imsi_or_msisdn_bcd)) == false) {
+        ogs_error("Invalid User-Name BCD");
+        result_code = OGS_DIAM_INVALID_AVP_VALUE;
+        error_occurred = 1;
+        goto out;
+    }
 
     /* Get Public-Identity AVP (Mandatory) */
     ret = fd_msg_search_avp(qry, ogs_diam_cx_public_identity, &avp);
@@ -511,6 +541,13 @@ static int hss_ogs_diam_cx_mar_cb(struct msg **msg, struct avp *avp,
     imsi_bcd = hss_cx_get_imsi_bcd(public_identity);
     if (!imsi_bcd) {
         ogs_error("Cannot find IMSI for User-Name[%s] Public-Identity[%s]",
+                    user_name, public_identity);
+        result_code = OGS_DIAM_CX_ERROR_IDENTITY_NOT_REGISTERED;
+        error_occurred = 1;
+        goto out;
+    }
+    if (ogs_imsi_bcd_is_valid(imsi_bcd) == false) {
+        ogs_error("Invalid IMSI for User-Name[%s] Public-Identity[%s]",
                     user_name, public_identity);
         result_code = OGS_DIAM_CX_ERROR_IDENTITY_NOT_REGISTERED;
         error_occurred = 1;
@@ -1155,6 +1192,13 @@ static int hss_ogs_diam_cx_sar_cb(struct msg **msg, struct avp *avp,
     imsi_bcd = hss_cx_get_imsi_bcd(public_identity);
     if (!imsi_bcd) {
         ogs_error("Cannot find IMSI for User-Name[%s] Public-Identity[%s]",
+                    user_name, public_identity);
+        result_code = OGS_DIAM_CX_ERROR_IDENTITY_NOT_REGISTERED;
+        error_occurred = 1;
+        goto out;
+    }
+    if (ogs_imsi_bcd_is_valid(imsi_bcd) == false) {
+        ogs_error("Invalid IMSI for User-Name[%s] Public-Identity[%s]",
                     user_name, public_identity);
         result_code = OGS_DIAM_CX_ERROR_IDENTITY_NOT_REGISTERED;
         error_occurred = 1;
