@@ -1736,11 +1736,35 @@ void amf_ue_remove(amf_ue_t *amf_ue)
         ogs_assert(amf_m_tmsi_free(amf_ue->next.m_tmsi) == OGS_OK);
     }
     if (amf_ue->suci) {
-        ogs_hash_set(self.suci_hash, amf_ue->suci, strlen(amf_ue->suci), NULL);
+        /*
+         * Only unset the SUCI hash entry if it still refers to THIS amf_ue.
+         * If a fresh registration arrived for the same SUCI before this
+         * removal runs, amf_ue_set_suci() has already overwritten the hash
+         * to point at the new amf_ue.  A blind unset there would orphan
+         * that newer entry, making the SUCI unfindable while the amf_ue
+         * remains in amf_ue_list — observed as the "No UE context [...]"
+         * 404 loop in nsmf-handler.c:96.
+         */
+        void *indexed = ogs_hash_get(self.suci_hash,
+                amf_ue->suci, strlen(amf_ue->suci));
+        if (indexed == amf_ue)
+            ogs_hash_set(self.suci_hash,
+                    amf_ue->suci, strlen(amf_ue->suci), NULL);
+        else
+            ogs_debug("[%s] suci_hash unset skipped — owned by newer amf_ue",
+                    amf_ue->suci);
         ogs_free(amf_ue->suci);
     }
     if (amf_ue->supi) {
-        ogs_hash_set(self.supi_hash, amf_ue->supi, strlen(amf_ue->supi), NULL);
+        /* Same protection for the SUPI index — see SUCI block above. */
+        void *indexed = ogs_hash_get(self.supi_hash,
+                amf_ue->supi, strlen(amf_ue->supi));
+        if (indexed == amf_ue)
+            ogs_hash_set(self.supi_hash,
+                    amf_ue->supi, strlen(amf_ue->supi), NULL);
+        else
+            ogs_debug("[%s] supi_hash unset skipped — owned by newer amf_ue",
+                    amf_ue->supi);
         ogs_free(amf_ue->supi);
     }
 
@@ -2199,7 +2223,15 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
     }
 
     if (amf_ue->suci) {
-        ogs_hash_set(self.suci_hash, amf_ue->suci, strlen(amf_ue->suci), NULL);
+        /* See amf_ue_remove() for rationale on the indexed-check. */
+        void *indexed = ogs_hash_get(self.suci_hash,
+                amf_ue->suci, strlen(amf_ue->suci));
+        if (indexed == amf_ue)
+            ogs_hash_set(self.suci_hash,
+                    amf_ue->suci, strlen(amf_ue->suci), NULL);
+        else
+            ogs_debug("[%s] suci_hash unset skipped — owned by newer amf_ue",
+                    amf_ue->suci);
         ogs_free(amf_ue->suci);
     }
     amf_ue->suci = suci;
@@ -2211,7 +2243,15 @@ void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi)
     ogs_assert(supi);
 
     if (amf_ue->supi) {
-        ogs_hash_set(self.supi_hash, amf_ue->supi, strlen(amf_ue->supi), NULL);
+        /* See amf_ue_remove() for rationale on the indexed-check. */
+        void *indexed = ogs_hash_get(self.supi_hash,
+                amf_ue->supi, strlen(amf_ue->supi));
+        if (indexed == amf_ue)
+            ogs_hash_set(self.supi_hash,
+                    amf_ue->supi, strlen(amf_ue->supi), NULL);
+        else
+            ogs_debug("[%s] supi_hash unset skipped — owned by newer amf_ue",
+                    amf_ue->supi);
         ogs_free(amf_ue->supi);
     }
     amf_ue->supi = ogs_strdup(supi);
