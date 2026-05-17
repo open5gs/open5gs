@@ -25,7 +25,7 @@
 
 uint32_t ogs_plmn_id_hexdump(const void *plmn_id)
 {
-    uint32_t hex;
+    uint32_t hex = 0;
     ogs_assert(plmn_id);
     memcpy(&hex, plmn_id, sizeof(ogs_plmn_id_t));
     hex = be32toh(hex) >> 8;
@@ -75,7 +75,7 @@ void *ogs_nas_from_plmn_id(
     ogs_assert(ogs_nas_plmn_id);
     ogs_assert(plmn_id);
 
-    memcpy(ogs_nas_plmn_id, plmn_id, OGS_PLMN_ID_LEN);
+    memcpy(ogs_nas_plmn_id, plmn_id, sizeof(*ogs_nas_plmn_id));
     if (plmn_id->mnc1 != 0xf) {
         ogs_nas_plmn_id->mnc1 = plmn_id->mnc1;
         ogs_nas_plmn_id->mnc2 = plmn_id->mnc2;
@@ -89,7 +89,7 @@ void *ogs_nas_to_plmn_id(
     ogs_assert(plmn_id);
     ogs_assert(ogs_nas_plmn_id);
 
-    memcpy(plmn_id, ogs_nas_plmn_id, OGS_PLMN_ID_LEN);
+    memcpy(plmn_id, ogs_nas_plmn_id, sizeof(*plmn_id));
     if (plmn_id->mnc1 != 0xf) {
         plmn_id->mnc1 = ogs_nas_plmn_id->mnc1;
         plmn_id->mnc2 = ogs_nas_plmn_id->mnc2;
@@ -1056,20 +1056,18 @@ static int flow_rx_to_gx(ogs_flow_t *rx_flow, ogs_flow_t *gx_flow)
         len = strlen(rx_flow->description)+2;
         gx_flow->description = ogs_calloc(1, len);
         ogs_assert(gx_flow->description);
-        strcpy(gx_flow->description, "permit out");
         from_str = strstr(&rx_flow->description[strlen("permit in")], "from");
         ogs_assert(from_str);
         to_str = strstr(&rx_flow->description[strlen("permit in")], "to");
         ogs_assert(to_str);
-        strncat(gx_flow->description,
+        ogs_snprintf(gx_flow->description, len,
+            "permit out%.*sfrom%s to%.*s",
+            (int)(strlen(rx_flow->description) -
+                strlen("permit in") - strlen(from_str)),
             &rx_flow->description[strlen("permit in")],
-            strlen(rx_flow->description) -
-                strlen("permit in") - strlen(from_str));
-        strcat(gx_flow->description, "from");
-        strcat(gx_flow->description, &to_str[strlen("to")]);
-        strcat(gx_flow->description, " to");
-        strncat(gx_flow->description, &from_str[strlen("from")],
-                strlen(from_str) - strlen(to_str) - strlen("from") - 1);
+            &to_str[strlen("to")],
+            (int)(strlen(from_str) - strlen(to_str) - strlen("from") - 1),
+            &from_str[strlen("from")]);
         ogs_assert(len == strlen(gx_flow->description)+1);
     } else {
         ogs_error("Invalid Flow Descripton : [%s]", rx_flow->description);
