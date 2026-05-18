@@ -2279,6 +2279,97 @@ void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi)
             ogs_debug("[%s] supi_hash unset skipped — owned by newer amf_ue",
                     amf_ue->supi);
         ogs_free(amf_ue->supi);
+    } else {
+        /*
+         * Fresh amf_ue slot is claiming this SUPI for the first time.
+         *
+         * If another slot in the pool already holds the same SUPI, it is
+         * an orphan from a previous attach cycle that amf_ue_set_suci()
+         * could NOT detect — because the UE re-attached with a fresh
+         * SUCI (USIM-toggle, post-deregistration timer, flight-mode,
+         * iOS push-driven re-registration, PoC radio attach loop). The
+         * suci_hash lookup in amf_ue_set_suci() therefore returned NULL
+         * for the new context, the "OLD amf_ue_t" cleanup branch never
+         * fired, and the old slot was left dangling — its supi_hash
+         * pointer is about to be silently overwritten by the hash_set
+         * below (orphan-overwrite was prevented in the *delete* path by
+         * 7d8b6e3b, but not on this *create* path).
+         *
+         * Tear it down through the standard release path now, mirroring
+         * the same-SUCI branch in amf_ue_set_suci(). amf_sbi_send_release
+         * _all_sessions() is a no-op if old_amf_ue->sess_list is empty
+         * (no SBI dispatch, xact_count stays zero), so the immediate
+         * amf_ue_remove() call below correctly handles both the
+         * "stranded with sessions" and "empty pool slot" cases.
+         *
+         * Field-observed at SUPIs accumulating two or more amf_ue_t
+         * slots in /admin/v1/ue-info — every fresh-SUCI re-registration
+         * grows the pool until the mobile-reachable timer expires
+         * (~50 min) or external cleanup intervenes.
+         */
+        amf_ue_t *old_amf_ue = (amf_ue_t *)ogs_hash_get(
+                self.supi_hash, supi, strlen(supi));
+        if (old_amf_ue && old_amf_ue != amf_ue) {
+            ran_ue_t *new_ran_ue = NULL;
+            amf_nsmf_pdusession_sm_context_param_t _release_param;
+
+            ogs_warn("[%s] fresh-SUCI re-attach orphan: tearing down old "
+                    "amf_ue (sess_count=%d)",
+                    supi, ogs_list_count(&old_amf_ue->sess_list));
+
+            /*
+             * Sessions on the old slot must be released through SBI
+             * with a populated param: amf_nsmf_pdusession_build_release
+             * _sm_context() asserts param != NULL when a session has
+             * an active sm_context_ref at the SMF (nsmf-build.c:442).
+             * Mirror the cause codes that amf_ue_remove() uses for its
+             * own per-UE cleanup so the SMF sees a coherent release
+             * reason on the wire. If sess_list is empty the build
+             * helper is never invoked and the param contents are
+             * immaterial — but pre-populating is cheap.
+             */
+            memset(&_release_param, 0, sizeof(_release_param));
+            _release_param.cause =
+                    OpenAPI_cause_REL_DUE_TO_UNSPECIFIED_REASON;
+            _release_param.ngApCause.group = NGAP_Cause_PR_nas;
+            _release_param.ngApCause.value = NGAP_CauseNas_deregister;
+            _release_param.ue_location = true;
+            _release_param.ue_timezone = true;
+
+            new_ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+            amf_sbi_send_release_all_sessions(
+                    new_ran_ue, old_amf_ue,
+                    AMF_RELEASE_SM_CONTEXT_NO_STATE, &_release_param);
+
+            /*
+             * Synchronously remove the old slot. amf_sbi_send_release_all
+             * _sessions() has just queued any pending SBI release calls
+             * against old_amf_ue->id; their responses will arrive later
+             * in nsmf-handler.c, look up amf_ue_find_by_id(old_id)
+             * → NULL, and gracefully no-op (lookup-by-id is the SBI
+             * framework's robustness contract).
+             *
+             * This mirrors the release-then-free pattern that
+             * amf_ue_remove() itself uses internally for its own per-UE
+             * cleanup: it issues a release_all_sessions() with the same
+             * NO_STATE / unspecified-cause param and then runs
+             * amf_ue_fsm_fini() + ogs_pool_free() immediately, without
+             * waiting for SBI completion.
+             *
+             * The deferred-remove path in nsmf-handler.c is reserved
+             * for UEs whose FSM has already transitioned to
+             * gmm_state_de_registered (e.g. NAS Deregistration Request
+             * from the UE). A fresh-SUCI re-attach happens with the
+             * old slot in registered / authentication_success / similar
+             * non-de_registered state, so that callback never fires and
+             * an `if (xact_count == 0)` guard here would let the slot
+             * accumulate in the pool. The new amf_ue holds no PDU
+             * sessions yet at this point (those are established only
+             * after Registration Accept), so there is no #4427-style
+             * SMF anchoring race to wait out either.
+             */
+            amf_ue_remove(old_amf_ue);
+        }
     }
     amf_ue->supi = ogs_strdup(supi);
     ogs_assert(amf_ue->supi);
