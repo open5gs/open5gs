@@ -140,6 +140,32 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             CASE(OGS_SBI_HTTP_METHOD_PATCH)
                 SWITCH(message->h.resource.component[1])
                 CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
+                    if (!message->h.resource.component[2] ||
+                        strcmp(message->h.resource.component[2],
+                            OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS) != 0) {
+                        ogs_error("[%s] Invalid resource name [%s]",
+                                udm_ue->suci,
+                                message->h.resource.component[2]);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_BAD_REQUEST, message,
+                                "Invalid resource name",
+                                message->h.method, NULL));
+                        break;
+                    }
+
+                    if (message->h.resource.component[3]) {
+                        ogs_error("[%s] Unsupported sub-resource [%s]",
+                                udm_ue->suci,
+                                message->h.resource.component[3]);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_NOT_IMPLEMENTED, message,
+                                "Unsupported sub-resource",
+                                message->h.resource.component[3], NULL));
+                        break;
+                    }
+
                     udm_nudm_uecm_handle_amf_registration_update(
                             udm_ue, stream, message);
                     break;

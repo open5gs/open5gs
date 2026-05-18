@@ -39,6 +39,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
     int rv;
     const char *api_version = NULL;
     char *supi = NULL;
+    uint8_t psi = OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED;
 
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
@@ -210,26 +211,33 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
             SWITCH(message.h.resource.component[2])
             CASE(OGS_SBI_RESOURCE_NAME_SMF_REGISTRATIONS)
-                if (message.h.resource.component[3]) {
-                    uint8_t psi = atoi(message.h.resource.component[3]);
-                    if (psi == OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
-                        ogs_error("PDU Session Identitiy unassigned [%s]",
-                                message.h.resource.component[3]);
-                        ogs_assert(true ==
-                            ogs_sbi_server_send_error(stream,
-                                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                                &message, "PDU Session Identitiy unassigned",
-                                message.h.resource.component[3], NULL));
-                        break;
-                    }
+                if (!message.h.resource.component[3]) {
+                    ogs_error("[%s] No pduSessionId", udm_ue->supi);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, &message,
+                            "No pduSessionId", message.h.method, NULL));
+                    break;
+                }
 
-                    sess = udm_sess_find_by_psi(udm_ue, psi);
-                    if (!sess) {
-                        sess = udm_sess_add(udm_ue, psi);
-                        ogs_assert(sess);
-                        ogs_debug("[%s:%d] UDM session added",
-                                udm_ue->supi, sess->psi);
-                    }
+                psi = atoi(message.h.resource.component[3]);
+                if (psi == OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
+                    ogs_error("PDU Session Identitiy unassigned [%s]",
+                            message.h.resource.component[3]);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            &message, "PDU Session Identitiy unassigned",
+                            message.h.resource.component[3], NULL));
+                    break;
+                }
+
+                sess = udm_sess_find_by_psi(udm_ue, psi);
+                if (!sess) {
+                    sess = udm_sess_add(udm_ue, psi);
+                    ogs_assert(sess);
+                    ogs_debug("[%s:%d] UDM session added",
+                            udm_ue->supi, sess->psi);
                 }
 
                 ogs_assert(sess);

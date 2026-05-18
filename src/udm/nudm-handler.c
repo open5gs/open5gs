@@ -420,6 +420,15 @@ bool udm_nudm_uecm_handle_amf_registration_update(
         return false;
     }
 
+    if (!udm_ue->amf_3gpp_access_registration) {
+        ogs_error("[%s] No AMF 3GPP access registration", udm_ue->supi);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_NOT_FOUND, message,
+                "No AMF 3GPP access registration", udm_ue->supi, NULL));
+        return false;
+    }
+
     /* TS 29.503: 5.3.2.4.2 AMF deregistration for 3GPP access
      * 2a. The UDM shall check whether the received GUAMI matches the stored
      * GUAMI. If so, the UDM shall set the PurgeFlag. The UDM responds with
@@ -451,7 +460,6 @@ bool udm_nudm_uecm_handle_amf_registration_update(
     }
 
     if (Amf3GppAccessRegistrationModification->is_purge_flag) {
-        ogs_assert(udm_ue->amf_3gpp_access_registration);
         udm_ue->amf_3gpp_access_registration->is_purge_flag =
                 Amf3GppAccessRegistrationModification->is_purge_flag;
         udm_ue->amf_3gpp_access_registration->purge_flag =
