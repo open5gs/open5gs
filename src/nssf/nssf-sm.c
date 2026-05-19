@@ -369,13 +369,19 @@ void nssf_state_operational(ogs_fsm_t *s, nssf_event_t *e)
 
             ogs_sbi_xact_remove(sbi_xact);
 
+            if (!stream) {
+                ogs_warn("Original NSSelection stream has been removed "
+                        "before Home-NSSF response arrived");
+                break;
+            }
+
             home = nssf_home_find_by_id(sbi_object_id);
             if (!home) {
                 ogs_error("Home Network Context has already been removed");
                 break;
             }
 
-            e->h.sbi.message = &message;;
+            e->h.sbi.message = &message;
 
             nssf_nnrf_nsselection_handle_get_from_hnssf(home, stream, &message);
             break;
