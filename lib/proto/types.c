@@ -1041,6 +1041,11 @@ static int flow_rx_to_gx(ogs_flow_t *rx_flow, ogs_flow_t *gx_flow)
     ogs_assert(rx_flow);
     ogs_assert(gx_flow);
 
+    if (!rx_flow->description) {
+        ogs_error("No Flow Description");
+        return OGS_ERROR;
+    }
+
     if (!strncmp(rx_flow->description,
                 "permit out", strlen("permit out"))) {
         gx_flow->direction = OGS_FLOW_DOWNLINK_ONLY;
@@ -1057,10 +1062,35 @@ static int flow_rx_to_gx(ogs_flow_t *rx_flow, ogs_flow_t *gx_flow)
         gx_flow->description = ogs_calloc(1, len);
         ogs_assert(gx_flow->description);
         strcpy(gx_flow->description, "permit out");
-        from_str = strstr(&rx_flow->description[strlen("permit in")], "from");
-        ogs_assert(from_str);
-        to_str = strstr(&rx_flow->description[strlen("permit in")], "to");
-        ogs_assert(to_str);
+
+        /*
+         * Match "from" and "to" as space-padded tokens, and ensure
+         * "to" follows "from" before using pointer-length arithmetic.
+         */
+        from_str = strstr(&rx_flow->description[strlen("permit in")],
+                " from ");
+        if (!from_str) {
+            ogs_error("Invalid Flow Description : [%s] (missing 'from')",
+                    rx_flow->description);
+            ogs_free(gx_flow->description);
+            gx_flow->description = NULL;
+            return OGS_ERROR;
+        }
+
+        to_str = strstr(&rx_flow->description[strlen("permit in")],
+                " to ");
+        if (!to_str || to_str <= from_str) {
+            ogs_error("Invalid Flow Description : [%s] "
+                    "(missing 'to' or 'to' precedes 'from')",
+                    rx_flow->description);
+            ogs_free(gx_flow->description);
+            gx_flow->description = NULL;
+            return OGS_ERROR;
+        }
+
+        from_str++;
+        to_str++;
+
         strncat(gx_flow->description,
             &rx_flow->description[strlen("permit in")],
             strlen(rx_flow->description) -

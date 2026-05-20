@@ -90,14 +90,28 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             } else {
                 SWITCH(message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_DELETE)
-                    handled = pcf_npcf_smpolicycontrol_handle_delete(
-                            sess, stream, message);
-                    if (!handled) {
-                        ogs_error("[%s:%d] "
-                            "pcf_npcf_smpolicycontrol_handle_delete() failed",
-                            pcf_ue_sm->supi, sess->psi);
-                        OGS_FSM_TRAN(s, pcf_sm_state_exception);
-                    }
+                    SWITCH(message->h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_POST)
+                        handled = pcf_npcf_smpolicycontrol_handle_delete(
+                                sess, stream, message);
+                        if (!handled) {
+                            ogs_error("[%s:%d] "
+                                "pcf_npcf_smpolicycontrol_handle_delete() "
+                                "failed", pcf_ue_sm->supi, sess->psi);
+                            OGS_FSM_TRAN(s, pcf_sm_state_exception);
+                        }
+                        break;
+
+                    DEFAULT
+                        ogs_error("[%s:%d] Invalid HTTP method [%s] for "
+                                "/delete", pcf_ue_sm->supi, sess->psi,
+                                message->h.method);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED,
+                                message, "Invalid HTTP method",
+                                message->h.uri, NULL));
+                    END
                     break;
 
                 DEFAULT
@@ -116,8 +130,22 @@ void pcf_sm_state_operational(ogs_fsm_t *s, pcf_event_t *e)
                 if (message->h.resource.component[2]) {
                     SWITCH(message->h.resource.component[2])
                     CASE(OGS_SBI_RESOURCE_NAME_DELETE)
-                        handled = pcf_npcf_policyauthorization_handle_delete(
-                                sess, e->app, stream, message);
+                        SWITCH(message->h.method)
+                        CASE(OGS_SBI_HTTP_METHOD_POST)
+                            handled =
+                                pcf_npcf_policyauthorization_handle_delete(
+                                    sess, e->app, stream, message);
+                            break;
+                        DEFAULT
+                            ogs_error("[%s:%d] Invalid HTTP method [%s] for "
+                                    "/delete", pcf_ue_sm->supi, sess->psi,
+                                    message->h.method);
+                            ogs_assert(true ==
+                                ogs_sbi_server_send_error(stream,
+                                    OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED,
+                                    message, "Invalid HTTP method",
+                                    message->h.uri, NULL));
+                        END
                         break;
                     DEFAULT
                         ogs_error("[%s:%d] Invalid resource name [%s]",
