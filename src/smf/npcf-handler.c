@@ -98,7 +98,17 @@ static void update_authorized_pcc_rule_and_qos(
         sess->policy.num_of_pcc_rule = 0;
 
         OpenAPI_list_for_each(SmPolicyDecision->pcc_rules, node) {
-            ogs_pcc_rule_t *pcc_rule =
+            ogs_pcc_rule_t *pcc_rule = NULL;
+
+            if (sess->policy.num_of_pcc_rule >= OGS_MAX_NUM_OF_PCC_RULE) {
+                ogs_error("Too many PccRules [%d:%d]",
+                        sess->policy.num_of_pcc_rule + 1,
+                        OGS_MAX_NUM_OF_PCC_RULE);
+                break;
+            }
+
+            QosData = NULL;
+            pcc_rule =
                 &sess->policy.pcc_rule[sess->policy.num_of_pcc_rule];
             ogs_assert(pcc_rule);
 
@@ -174,6 +184,11 @@ static void update_authorized_pcc_rule_and_qos(
                 continue;
             }
 
+            if (!PccRule->pcc_rule_id) {
+                ogs_error("No PccRule->pcc_rule_id");
+                continue;
+            }
+
             pcc_rule->type = OGS_PCC_RULE_TYPE_INSTALL;
             pcc_rule->id = ogs_strdup(PccRule->pcc_rule_id);
             ogs_assert(pcc_rule->id);
@@ -182,8 +197,17 @@ static void update_authorized_pcc_rule_and_qos(
             if (PccRule->flow_infos) {
                 ogs_assert(pcc_rule->num_of_flow == 0);
                 OpenAPI_list_for_each(PccRule->flow_infos, node2) {
-                    ogs_flow_t *flow = &pcc_rule->flow[pcc_rule->num_of_flow];
+                    ogs_flow_t *flow = NULL;
 
+                    if (pcc_rule->num_of_flow >=
+                            OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE) {
+                        ogs_error("Too many FlowInfos [%d:%d]",
+                                pcc_rule->num_of_flow + 1,
+                                OGS_MAX_NUM_OF_FLOW_IN_PCC_RULE);
+                        break;
+                    }
+
+                    flow = &pcc_rule->flow[pcc_rule->num_of_flow];
                     ogs_assert(flow);
 
                     FlowInformation = node2->data;
@@ -204,6 +228,11 @@ static void update_authorized_pcc_rule_and_qos(
                     else {
                         ogs_error("Unsupported direction [%d]",
                                 FlowInformation->flow_direction);
+                        continue;
+                    }
+
+                    if (!FlowInformation->flow_description) {
+                        ogs_error("No FlowDescription");
                         continue;
                     }
 
@@ -228,7 +257,13 @@ static void update_authorized_pcc_rule_and_qos(
                     OpenAPI_preemption_capability_MAY_PREEMPT)
                     pcc_rule->qos.arp.pre_emption_capability =
                         OGS_5GC_PRE_EMPTION_ENABLED;
-                ogs_assert(pcc_rule->qos.arp.pre_emption_capability);
+                else {
+                    ogs_error("Unknown preemptCap [%d], "
+                            "fall back to NOT_PREEMPT",
+                            (int)QosData->arp->preempt_cap);
+                    pcc_rule->qos.arp.pre_emption_capability =
+                        OGS_5GC_PRE_EMPTION_DISABLED;
+                }
 
                 if (QosData->arp->preempt_vuln ==
                     OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
@@ -238,7 +273,13 @@ static void update_authorized_pcc_rule_and_qos(
                     OpenAPI_preemption_vulnerability_PREEMPTABLE)
                     pcc_rule->qos.arp.pre_emption_vulnerability =
                         OGS_5GC_PRE_EMPTION_ENABLED;
-                ogs_assert(pcc_rule->qos.arp.pre_emption_vulnerability);
+                else {
+                    ogs_error("Unknown preemptVuln [%d], "
+                            "fall back to NOT_PREEMPTABLE",
+                            (int)QosData->arp->preempt_vuln);
+                    pcc_rule->qos.arp.pre_emption_vulnerability =
+                        OGS_5GC_PRE_EMPTION_DISABLED;
+                }
             }
 
             if (QosData->maxbr_ul)
@@ -455,7 +496,13 @@ bool smf_npcf_smpolicycontrol_handle_create(
                         OpenAPI_preemption_capability_MAY_PREEMPT)
                         sess->session.qos.arp.pre_emption_capability =
                             OGS_5GC_PRE_EMPTION_ENABLED;
-                    ogs_assert(sess->session.qos.arp.pre_emption_capability);
+                    else {
+                        ogs_error("Unknown preemptCap [%d], "
+                                "fall back to NOT_PREEMPT",
+                                (int)AuthDefQos->arp->preempt_cap);
+                        sess->session.qos.arp.pre_emption_capability =
+                            OGS_5GC_PRE_EMPTION_DISABLED;
+                    }
 
                     if (AuthDefQos->arp->preempt_vuln ==
                         OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
@@ -465,7 +512,13 @@ bool smf_npcf_smpolicycontrol_handle_create(
                         OpenAPI_preemption_vulnerability_PREEMPTABLE)
                         sess->session.qos.arp.pre_emption_vulnerability =
                             OGS_5GC_PRE_EMPTION_ENABLED;
-                    ogs_assert(sess->session.qos.arp.pre_emption_vulnerability);
+                    else {
+                        ogs_error("Unknown preemptVuln [%d], "
+                                "fall back to NOT_PREEMPTABLE",
+                                (int)AuthDefQos->arp->preempt_vuln);
+                        sess->session.qos.arp.pre_emption_vulnerability =
+                            OGS_5GC_PRE_EMPTION_DISABLED;
+                    }
                 }
             }
         }
