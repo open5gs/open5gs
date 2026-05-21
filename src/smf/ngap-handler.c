@@ -820,9 +820,16 @@ int ngap_handle_handover_required_transfer(
         goto cleanup;
     }
 
+    /*
+     * Always re-evaluate per HO prep: the flag must not carry state
+     * from a previous handover.  The source gNB sets the optional
+     * directForwardingPathAvailability IE inside HandoverRequiredTransfer
+     * when direct forwarding between source and target is available;
+     * the AMF passes the container through transparently.
+     */
     directForwardingPathAvailability = message.directForwardingPathAvailability;
-    if (!directForwardingPathAvailability)
-        sess->handover.data_forwarding_not_possible = true;
+    sess->handover.data_forwarding_not_possible =
+            (directForwardingPathAvailability == NULL);
 
     n2smbuf = ngap_build_pdu_session_resource_setup_request_transfer(sess);
     ogs_assert(n2smbuf);
