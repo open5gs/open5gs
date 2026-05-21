@@ -1429,7 +1429,7 @@ static char *amf_namf_comm_base64_encode_ue_security_capability(
     /* Security guarantee */
     num_of_octets = ogs_min(
             num_of_octets, sizeof(ue_security_capability) + 1);
-    enc_len = ogs_base64_encode_len(num_of_octets);
+    enc_len = ogs_base64_encoded_size(num_of_octets);
 
     enc = ogs_calloc(1, enc_len);
     ogs_assert(enc);
@@ -1437,7 +1437,8 @@ static char *amf_namf_comm_base64_encode_ue_security_capability(
     security_octets_string[0] = (uint8_t)
         OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_TYPE;
     memcpy(security_octets_string + 1, &ue_security_capability, num_of_octets);
-    ogs_base64_encode(enc , security_octets_string, num_of_octets);
+    ogs_assert(ogs_base64_encode_from_buffer(enc, enc_len,
+            (const uint8_t *)security_octets_string, num_of_octets) > 0);
 
     return enc;
 }
@@ -1471,7 +1472,7 @@ static char *amf_namf_comm_base64_encode_5gmm_capability(amf_ue_t *amf_ue)
     num_of_octets = ogs_min(
             num_of_octets, sizeof(ogs_nas_5gmm_capability_t) + 1);
 
-    enc_len = ogs_base64_encode_len(num_of_octets);
+    enc_len = ogs_base64_encoded_size(num_of_octets);
     enc = ogs_calloc(1, enc_len);
     ogs_assert(enc);
 
@@ -1480,7 +1481,8 @@ static char *amf_namf_comm_base64_encode_5gmm_capability(amf_ue_t *amf_ue)
             (uint8_t)OGS_NAS_5GS_REGISTRATION_REQUEST_5GMM_CAPABILITY_TYPE;
     memcpy(gmm_capability_octets_string + 1,
             &nas_gmm_capability, num_of_octets);
-    ogs_base64_encode(enc, gmm_capability_octets_string, num_of_octets);
+    ogs_assert(ogs_base64_encode_from_buffer(enc, enc_len,
+            (const uint8_t *)gmm_capability_octets_string, num_of_octets) > 0);
 
     return enc;
 }
@@ -1621,9 +1623,11 @@ static ogs_nas_5gmm_capability_t
             (char*) ogs_calloc(sizeof(gmm_capability) + 1, sizeof(char));
     ogs_assert(gmm_capability_octets_string);
 
-    len = ogs_base64_decode(gmm_capability_octets_string, encoded);
+    len = ogs_base64_decode_to_buffer(
+            (uint8_t *)gmm_capability_octets_string,
+            sizeof(gmm_capability) + 1, encoded);
 
-    if (len == 0)
+    if (len <= 0)
         ogs_error("Gmm capability not decoded");
 
     ogs_assert(sizeof(gmm_capability_octets_string) <=
@@ -1657,7 +1661,9 @@ static ogs_nas_ue_security_capability_t
             (char*) ogs_calloc(sizeof(ue_security_capability) + 1, sizeof(char));
     ogs_assert(ue_security_capability_octets_string);
 
-    ogs_base64_decode(ue_security_capability_octets_string, encoded);
+    ogs_base64_decode_to_buffer(
+            (uint8_t *)ue_security_capability_octets_string,
+            sizeof(ue_security_capability) + 1, encoded);
 
     ogs_assert(sizeof(ue_security_capability_octets_string) <=
             sizeof(ogs_nas_ue_security_capability_t) + 1);

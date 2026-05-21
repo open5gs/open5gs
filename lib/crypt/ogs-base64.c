@@ -38,7 +38,7 @@
  */
 
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -78,125 +78,191 @@ static const unsigned char pr2six[256] =
     64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64
 };
 
-int ogs_base64_decode_len(const char *bufcoded)
+static bool ogs_base64_scan(
+        const char *in, size_t *out_nprbytes, size_t *out_decoded_size)
 {
-    int nbytesdecoded;
-    register const unsigned char *bufin;
-    register size_t nprbytes;
+    const unsigned char *p = NULL;
+    size_t nprbytes = 0, padding = 0;
+    size_t decoded_size = 0;
 
-    bufin = (const unsigned char *) bufcoded;
-    while (pr2six[*(bufin++)] <= 63);
+    if (!in)
+        return false;
 
-    nprbytes = (bufin - (const unsigned char *) bufcoded) - 1;
-    nbytesdecoded = (((int)nprbytes + 3) / 4) * 3;
+    p = (const unsigned char *)in;
+    while (*p) {
+        if (pr2six[*p] <= 63) {
+            if (padding)
+                return false;
+            nprbytes++;
+        } else if (*p == '=') {
+            padding++;
+            if (padding > 2)
+                return false;
+        } else {
+            return false;
+        }
+        p++;
+    }
 
-    return nbytesdecoded + 1;
+    if (!nprbytes)
+        return false;
+
+    /* A single remaining base64 character cannot produce valid output. */
+    if (nprbytes % 4 == 1)
+        return false;
+
+    /* If padding exists, the encoded length including padding must be aligned. */
+    if (padding && ((nprbytes + padding) % 4))
+        return false;
+
+    decoded_size = ((nprbytes + 3) / 4) * 3;
+    decoded_size -= (4 - nprbytes) & 3;
+
+    if (!decoded_size)
+        return false;
+
+    if (out_nprbytes)
+        *out_nprbytes = nprbytes;
+    if (out_decoded_size)
+        *out_decoded_size = decoded_size;
+
+    return true;
 }
 
-int ogs_base64_decode(char *bufplain, const char *bufcoded)
+int ogs_base64_decoded_size(const char *in)
 {
-    int len;
-    
-    len = ogs_base64_decode_binary((unsigned char *) bufplain, bufcoded);
-    bufplain[len] = '\0';
-    return len;
+    size_t decoded_size = 0;
+
+    if (!ogs_base64_scan(in, NULL, &decoded_size))
+        return OGS_ERROR;
+
+    return (int)decoded_size;
 }
 
-/* This is the same as ogs_base64_decode() except:
- * - no \0 is appended
- */
-int ogs_base64_decode_binary(unsigned char *bufplain, const char *bufcoded)
+int ogs_base64_decode_to_buffer(
+        uint8_t *out, size_t out_size, const char *in)
 {
-    int nbytesdecoded;
-    register const unsigned char *bufin;
-    register unsigned char *bufout;
-    register size_t nprbytes;
+    const unsigned char *bufin = NULL;
+    unsigned char *bufout = NULL;
+    size_t nprbytes = 0, decoded_size = 0;
 
-    bufin = (const unsigned char *) bufcoded;
-    while (pr2six[*(bufin++)] <= 63);
-    nprbytes = (bufin - (const unsigned char *) bufcoded) - 1;
-    nbytesdecoded = (((int)nprbytes + 3) / 4) * 3;
+    if (!out || !out_size)
+        return OGS_ERROR;
 
-    bufout = (unsigned char *) bufplain;
-    bufin = (const unsigned char *) bufcoded;
+    if (!ogs_base64_scan(in, &nprbytes, &decoded_size))
+        return OGS_ERROR;
+
+    if (out_size < decoded_size)
+        return OGS_ERROR;
+
+    bufout = out;
+    bufin = (const unsigned char *)in;
 
     while (nprbytes > 4) {
-	*(bufout++) =
-	    (unsigned char) (pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
-	*(bufout++) =
-	    (unsigned char) (pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
-	*(bufout++) =
-	    (unsigned char) (pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
-	bufin += 4;
-	nprbytes -= 4;
+        *(bufout++) =
+            (unsigned char) (pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
+        *(bufout++) =
+            (unsigned char) (pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
+        *(bufout++) =
+            (unsigned char) (pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
+        bufin += 4;
+        nprbytes -= 4;
     }
 
-    /* Note: (nprbytes == 1) would be an error, so just ignore that case */
     if (nprbytes > 1) {
-	*(bufout++) =
-	    (unsigned char) (pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
+        *(bufout++) =
+            (unsigned char) (pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
     }
     if (nprbytes > 2) {
-	*(bufout++) =
-	    (unsigned char) (pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
+        *(bufout++) =
+            (unsigned char) (pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
     }
     if (nprbytes > 3) {
-	*(bufout++) =
-	    (unsigned char) (pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
+        *(bufout++) =
+            (unsigned char) (pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
     }
 
-    nbytesdecoded -= (4 - (int)nprbytes) & 3;
-    return nbytesdecoded;
+    return (int)decoded_size;
+}
+
+int ogs_base64_decode_to_string(char *out, size_t out_size, const char *in)
+{
+    int len;
+
+    if (!out || out_size <= 1)
+        return OGS_ERROR;
+
+    len = ogs_base64_decode_to_buffer((uint8_t *)out, out_size - 1, in);
+    if (len <= 0)
+        return OGS_ERROR;
+
+    out[len] = '\0';
+    return len;
 }
 
 static const char basis_64[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-int ogs_base64_encode_len(int len)
+int ogs_base64_encoded_size(size_t in_size)
 {
-    return ((len + 2) / 3 * 4) + 1;
+    size_t encoded_size;
+
+    if (in_size > (SIZE_MAX - 1) / 4 * 3)
+        return OGS_ERROR;
+
+    encoded_size = ((in_size + 2) / 3 * 4) + 1;
+    return (int)encoded_size;
 }
 
-int ogs_base64_encode(char *encoded, const char *string, int len)
+int ogs_base64_encode_from_buffer(
+        char *out, size_t out_size, const uint8_t *in, size_t in_size)
 {
-    return ogs_base64_encode_binary(
-            encoded, (const unsigned char *) string, len);
-}
+    size_t i;
+    int needed;
+    char *p = NULL;
 
-/* This is the same as ogs_base64_encode() except on EBCDIC machines, where
- * the conversion of the input to ascii is left out.
- */
-int ogs_base64_encode_binary(
-        char *encoded, const unsigned char *string, int len)
-{
-    int i;
-    char *p;
+    if (!out || !out_size || (!in && in_size))
+        return OGS_ERROR;
 
-    p = encoded;
-    for (i = 0; i < len - 2; i += 3) {
-	*p++ = basis_64[(string[i] >> 2) & 0x3F];
-	*p++ = basis_64[((string[i] & 0x3) << 4) |
-	                ((int) (string[i + 1] & 0xF0) >> 4)];
-	*p++ = basis_64[((string[i + 1] & 0xF) << 2) |
-	                ((int) (string[i + 2] & 0xC0) >> 6)];
-	*p++ = basis_64[string[i + 2] & 0x3F];
+    needed = ogs_base64_encoded_size(in_size);
+    if (needed <= 0 || out_size < (size_t)needed)
+        return OGS_ERROR;
+
+    p = out;
+    for (i = 0; i + 2 < in_size; i += 3) {
+        *p++ = basis_64[(in[i] >> 2) & 0x3F];
+        *p++ = basis_64[((in[i] & 0x3) << 4) |
+                        ((int) (in[i + 1] & 0xF0) >> 4)];
+        *p++ = basis_64[((in[i + 1] & 0xF) << 2) |
+                        ((int) (in[i + 2] & 0xC0) >> 6)];
+        *p++ = basis_64[in[i + 2] & 0x3F];
     }
-    if (i < len) {
-	*p++ = basis_64[(string[i] >> 2) & 0x3F];
-	if (i == (len - 1)) {
-	    *p++ = basis_64[((string[i] & 0x3) << 4)];
-	    *p++ = '=';
-	}
-	else {
-	    *p++ = basis_64[((string[i] & 0x3) << 4) |
-	                    ((int) (string[i + 1] & 0xF0) >> 4)];
-	    *p++ = basis_64[((string[i + 1] & 0xF) << 2)];
-	}
-	*p++ = '=';
+
+    if (i < in_size) {
+        *p++ = basis_64[(in[i] >> 2) & 0x3F];
+        if (i == (in_size - 1)) {
+            *p++ = basis_64[((in[i] & 0x3) << 4)];
+            *p++ = '=';
+        } else {
+            *p++ = basis_64[((in[i] & 0x3) << 4) |
+                            ((int) (in[i + 1] & 0xF0) >> 4)];
+            *p++ = basis_64[((in[i + 1] & 0xF) << 2)];
+        }
+        *p++ = '=';
     }
 
     *p++ = '\0';
-    return (int)(p - encoded);
+    return (int)(p - out);
+}
+
+int ogs_base64_encode_from_string(
+        char *out, size_t out_size, const char *in)
+{
+    if (!in)
+        return OGS_ERROR;
+
+    return ogs_base64_encode_from_buffer(
+            out, out_size, (const uint8_t *)in, strlen(in));
 }
 
 /* copies data to result but removes newlines and <CR>
@@ -246,7 +312,7 @@ int ogs_fbase64_decode(const char *header,
     static const char top[] = "-----BEGIN ";
     static const char bottom[] = "-----END ";
     uint8_t *rdata, *kdata;
-    int rdata_size;
+    int rdata_size, decoded_size;
 #define MAX_PEM_HEADER_LEN 128
     char pem_header[MAX_PEM_HEADER_LEN];
 
@@ -323,18 +389,28 @@ int ogs_fbase64_decode(const char *header,
         return OGS_ERROR;
     }
 
-    result->data = ogs_calloc(1, bufcoded_len);
-    if (result->data == NULL) {
-        ogs_error("ogs_calloc() failed [%d]", bufcoded_len);
+    decoded_size = ogs_base64_decoded_size((const char *)bufcoded);
+    if (decoded_size <= 0) {
+        ogs_error("ogs_base64_decoded_size() failed");
+        ogs_log_hexdump(OGS_LOG_ERROR, bufcoded, bufcoded_len);
         ogs_free(bufcoded);
         return OGS_ERROR;
     }
 
-    result->size = ogs_base64_decode_binary(
-            result->data, (const char *)bufcoded);
-    if (result->size == 0) {
-        ogs_error("ogs_base64_decode_binary() failed");
+    result->data = ogs_calloc(1, decoded_size);
+    if (result->data == NULL) {
+        ogs_error("ogs_calloc() failed [%d]", decoded_size);
+        ogs_free(bufcoded);
+        return OGS_ERROR;
+    }
+
+    result->size = ogs_base64_decode_to_buffer(
+            result->data, decoded_size, (const char *)bufcoded);
+    if (result->size <= 0) {
+        ogs_error("ogs_base64_decode_to_buffer() failed");
         ogs_log_hexdump(OGS_LOG_ERROR, bufcoded, bufcoded_len);
+        ogs_free(result->data);
+        result->data = NULL;
         ogs_free(bufcoded);
         return OGS_ERROR;
     }
