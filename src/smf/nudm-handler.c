@@ -190,24 +190,34 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
                     sess->session.qos.arp.priority_level =
                             _5gQoSProfile->arp->priority_level;
                     if (_5gQoSProfile->arp->preempt_cap ==
-                            OpenAPI_preemption_capability_MAY_PREEMPT)
+                            OpenAPI_preemption_capability_MAY_PREEMPT) {
                         sess->session.qos.arp.pre_emption_capability =
                             OGS_5GC_PRE_EMPTION_ENABLED;
-                    else if (_5gQoSProfile->arp->preempt_cap ==
-                            OpenAPI_preemption_capability_NOT_PREEMPT)
+                    } else if (_5gQoSProfile->arp->preempt_cap ==
+                            OpenAPI_preemption_capability_NOT_PREEMPT) {
                         sess->session.qos.arp.pre_emption_capability =
                             OGS_5GC_PRE_EMPTION_DISABLED;
-                    ogs_assert(sess->session.qos.arp.pre_emption_capability);
+                    } else {
+                        ogs_error("[%s:%d] Invalid ARP preemptCap [%d]",
+                                smf_ue->supi, sess->psi,
+                                _5gQoSProfile->arp->preempt_cap);
+                        continue;
+                    }
 
                     if (_5gQoSProfile->arp->preempt_vuln ==
-                            OpenAPI_preemption_vulnerability_PREEMPTABLE)
+                            OpenAPI_preemption_vulnerability_PREEMPTABLE) {
                         sess->session.qos.arp.pre_emption_vulnerability =
                             OGS_5GC_PRE_EMPTION_ENABLED;
-                    else if (_5gQoSProfile->arp->preempt_vuln ==
-                            OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
+                    } else if (_5gQoSProfile->arp->preempt_vuln ==
+                            OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE) {
                         sess->session.qos.arp.pre_emption_vulnerability =
                             OGS_5GC_PRE_EMPTION_DISABLED;
-                    ogs_assert(sess->session.qos.arp.pre_emption_vulnerability);
+                    } else {
+                        ogs_error("[%s:%d] Invalid ARP preemptVuln [%d]",
+                                smf_ue->supi, sess->psi,
+                                _5gQoSProfile->arp->preempt_vuln);
+                        continue;
+                    }
                 }
             }
 
