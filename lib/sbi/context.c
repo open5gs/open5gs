@@ -2809,7 +2809,12 @@ ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_add(void)
     ogs_sbi_subscription_data_t *subscription_data = NULL;
 
     ogs_pool_alloc(&subscription_data_pool, &subscription_data);
-    ogs_assert(subscription_data);
+    if (!subscription_data) {
+        ogs_error("OVERFLOW subscription_data_pool [pool:%llu]",
+                (unsigned long long)ogs_app()->pool.subscription);
+        return NULL;
+    }
+
     memset(subscription_data, 0, sizeof(ogs_sbi_subscription_data_t));
 
     ogs_list_add(&ogs_sbi_self()->subscription_data_list, subscription_data);

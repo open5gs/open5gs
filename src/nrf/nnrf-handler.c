@@ -502,7 +502,14 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     ogs_uuid_format(id, &uuid);
 
     subscription_data = ogs_sbi_subscription_data_add();
-    ogs_assert(subscription_data);
+    if (!subscription_data) {
+        ogs_error("ogs_sbi_subscription_data_add() failed");
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                recvmsg, "No subscription data available", NULL, NULL));
+        return false;
+    }
 
     ogs_sbi_subscription_data_set_id(subscription_data, id);
     ogs_assert(subscription_data->id);
@@ -616,7 +623,19 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     if (!client) {
         ogs_debug("%s: ogs_sbi_client_add()", OGS_FUNC);
         client = ogs_sbi_client_add(scheme, fqdn, fqdn_port, addr, addr6);
-        ogs_assert(client);
+        if (!client) {
+            ogs_error("ogs_sbi_client_add() failed");
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(
+                    stream, OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                    recvmsg, "No SBI client available",
+                    subscription_data->notification_uri, NULL));
+            ogs_free(fqdn);
+            ogs_freeaddrinfo(addr);
+            ogs_freeaddrinfo(addr6);
+            ogs_sbi_subscription_data_remove(subscription_data);
+            return false;
+        }
     }
     OGS_SBI_SETUP_CLIENT(subscription_data, client);
 
@@ -1300,10 +1319,6 @@ bool nrf_nnrf_handle_nf_discover(
                 if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
                     ogs_error("Invalid hnrf-uri [%s]",
                             discovery_option->hnrf_uri);
-
-                    ogs_free(fqdn);
-                    ogs_freeaddrinfo(addr);
-                    ogs_freeaddrinfo(addr6);
 
                     ogs_sbi_nf_instance_remove(nf_instance);
 
