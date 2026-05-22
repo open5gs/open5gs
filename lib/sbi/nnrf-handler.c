@@ -1290,7 +1290,17 @@ bool ogs_nnrf_nfm_handle_nf_status_notify(
         nf_instance = ogs_sbi_nf_instance_find(message.h.resource.component[1]);
         if (!nf_instance) {
             nf_instance = ogs_sbi_nf_instance_add();
-            ogs_assert(nf_instance);
+            if (!nf_instance) {
+                ogs_error("Can't add notified NF instance [%s] "
+                        "due to insufficient space",
+                        message.h.resource.component[1]);
+                ogs_assert(true == ogs_sbi_server_send_error(
+                        stream, OGS_SBI_HTTP_STATUS_PAYLOAD_TOO_LARGE,
+                        recvmsg, "Insufficient space",
+                        message.h.resource.component[1], NULL));
+                ogs_sbi_header_free(&header);
+                return false;
+            }
 
             ogs_sbi_nf_instance_set_id(
                     nf_instance, message.h.resource.component[1]);
@@ -1429,7 +1439,13 @@ void ogs_nnrf_disc_handle_nf_discover_search_result(
         nf_instance = ogs_sbi_nf_instance_find(NFProfile->nf_instance_id);
         if (!nf_instance) {
             nf_instance = ogs_sbi_nf_instance_add();
-            ogs_assert(nf_instance);
+            if (!nf_instance) {
+                ogs_error("Can't add discovered NF instance [%s:%s] "
+                        "due to insufficient space",
+                        NFProfile->nf_instance_id,
+                        OpenAPI_nf_type_ToString(NFProfile->nf_type));
+                continue;
+            }
 
             ogs_sbi_nf_instance_set_id(nf_instance, NFProfile->nf_instance_id);
             ogs_sbi_nf_fsm_init(nf_instance);

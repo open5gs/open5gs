@@ -1233,7 +1233,11 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
     ogs_pool_alloc(&nf_instance_pool, &nf_instance);
-    ogs_assert(nf_instance);
+    if (!nf_instance) {
+        ogs_error("OVERFLOW nf_instance_pool [pool:%llu]",
+                (unsigned long long)ogs_app()->pool.nf);
+        return NULL;
+    }
     memset(nf_instance, 0, sizeof(ogs_sbi_nf_instance_t));
 
     nf_instance->time.heartbeat_interval =
@@ -1461,10 +1465,6 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_service_type(
     return nf_instance;
 }
 
-bool ogs_sbi_nf_instance_maximum_number_is_reached(void)
-{
-    return nf_instance_pool.avail <= 0;
-}
 
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(
         ogs_sbi_nf_instance_t *nf_instance,

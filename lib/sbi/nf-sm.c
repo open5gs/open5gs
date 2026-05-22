@@ -57,7 +57,11 @@ static void handle_nf_profile_retrieval(
     }
 
     nf_instance = ogs_sbi_nf_instance_add();
-    ogs_assert(nf_instance);
+    if (!nf_instance) {
+        ogs_error("Can't add retrieved NF instance [%s] "
+                "due to insufficient space", nf_instance_id);
+        return;
+    }
 
     ogs_sbi_nf_instance_set_id(nf_instance, nf_instance_id);
 

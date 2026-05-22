@@ -501,7 +501,6 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_discovery_param(
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_service_type(
         ogs_sbi_service_type_e service_type,
         OpenAPI_nf_type_e requester_nf_type);
-bool ogs_sbi_nf_instance_maximum_number_is_reached(void);
 
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(
         ogs_sbi_nf_instance_t *nf_instance,
