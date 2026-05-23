@@ -819,7 +819,7 @@ typedef ogs_tlv_uint32_t ogs_pfcp_tlv_time_quota_t;
 typedef ogs_tlv_uint32_t ogs_pfcp_tlv_start_time_t;
 typedef ogs_tlv_uint32_t ogs_pfcp_tlv_end_time_t;
 typedef ogs_tlv_uint32_t ogs_pfcp_tlv_urr_id_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_linked_urr_id_t;
+typedef ogs_tlv_uint32_t ogs_pfcp_tlv_linked_urr_id_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_outer_header_creation_t;
 typedef ogs_tlv_uint8_t ogs_pfcp_tlv_bar_id_t;
 typedef ogs_tlv_uint8_t ogs_pfcp_tlv_cp_function_features_t;
