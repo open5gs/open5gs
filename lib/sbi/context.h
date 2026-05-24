@@ -287,6 +287,42 @@ typedef struct ogs_sbi_xact_s {
     ogs_pool_id_t assoc_stream_id;
 
     /*
+     * Linkage into the server-side stream that triggered this
+     * outbound transaction.
+     *
+     * When the inbound HTTP/2 stream is closed by the peer (e.g.
+     * RST_STREAM or connection close) before the response from the
+     * upstream NF arrives, every transaction registered on the
+     * stream's xact_list is cancelled. This releases the response
+     * timer back to the pool immediately instead of holding a slot
+     * until the SBI client wait timeout expires, which is the
+     * accumulation that leads to timer-pool exhaustion when a peer
+     * resets streams rapidly while the upstream NF is slow or
+     * unresponsive (issues #4472 and #4473).
+     *
+     * The linkage is managed entirely by lib/sbi:
+     *   - ogs_sbi_discover_and_send() attaches when assoc_stream_id
+     *     is set;
+     *   - ogs_sbi_xact_remove() detaches automatically;
+     *   - stream/session close drains the list and removes every
+     *     attached transaction.
+     *
+     * to_stream_list is both the attachment flag and the cached
+     * list head:
+     *   to_stream_list != NULL
+     *      <=> to_stream_node is on *to_stream_list
+     *      <=> assoc_stream_id refers to the owning stream
+     *
+     * Caching the list head address lets detach unlink in O(1)
+     * without re-resolving the stream from assoc_stream_id.
+     * Transactions with no associated inbound stream (e.g. NRF
+     * discovery initiated by the NF itself, status notifications)
+     * leave the whole linkage group zero-initialised.
+     */
+    ogs_lnode_t to_stream_node;
+    ogs_list_t *to_stream_list;
+
+    /*
      * Optional user context attached to this SBI transaction.
      *
      * This pointer allows NF-specific code to associate arbitrary
