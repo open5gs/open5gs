@@ -647,88 +647,122 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     }
 
     ran_ue = ran_ue_find_by_ran_ue_ngap_id(gnb, *RAN_UE_NGAP_ID);
-    if (!ran_ue) {
-        ran_ue = ran_ue_add(gnb, *RAN_UE_NGAP_ID);
-        if (ran_ue == NULL) {
-            r = ngap_send_error_indication(gnb, NULL, NULL,
-                    NGAP_Cause_PR_misc,
-                    NGAP_CauseMisc_control_processing_overload);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-            return;
-        }
+    if (ran_ue) {
+        uint64_t *amf_ue_ngap_id = NULL;
 
-        /* Find AMF_UE if 5G-S_TMSI included */
-        if (FiveG_S_TMSI) {
-            ogs_nas_5gs_guti_t nas_guti;
-            amf_ue_t *amf_ue = NULL;
-            uint8_t region;
-            uint16_t set;
-            uint8_t pointer;
-            uint32_t m_tmsi;
+        /*
+         * 3GPP TS 38.413 clause 10.4 (Handling of AP ID):
+         *
+         * The RAN UE NGAP ID assigned in an INITIAL UE MESSAGE shall be
+         * unique within the NG-RAN node. If the NG-RAN node reuses an
+         * already-active RAN UE NGAP ID in a new INITIAL UE MESSAGE
+         * instead of using the UPLINK NAS TRANSPORT procedure, the AMF
+         * shall detect this as a logical error and respond with an
+         * ERROR INDICATION message.
+         *
+         * The existing UE context shall NOT be released or modified -
+         * this is mandatory; otherwise a malformed/duplicated
+         * INITIAL UE MESSAGE from the NG-RAN could tear down a
+         * legitimate active UE NG context.
+         */
+        ogs_error("Duplicate RAN_UE_NGAP_ID [%lld] in InitialUEMessage "
+                "(existing AMF_UE_NGAP_ID [%lld]); "
+                "sending ERROR INDICATION",
+                (long long)*RAN_UE_NGAP_ID,
+                (long long)ran_ue->amf_ue_ngap_id);
 
-            memset(&nas_guti, 0, sizeof(ogs_nas_5gs_guti_t));
+        if (ran_ue->amf_ue_ngap_id != INVALID_UE_NGAP_ID)
+            amf_ue_ngap_id = &ran_ue->amf_ue_ngap_id;
 
-            /* Use the first configured plmn_id and mme group id */
-            ogs_nas_from_plmn_id(&nas_guti.nas_plmn_id,
-                    &amf_self()->served_guami[0].plmn_id);
-            region = amf_self()->served_guami[0].amf_id.region;
+        r = ngap_send_error_indication(gnb,
+                &ran_ue->ran_ue_ngap_id, amf_ue_ngap_id,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
 
-            /* Getting from 5G-S_TMSI */
-            ogs_ngap_AMFSetID_to_uint16(&FiveG_S_TMSI->aMFSetID, &set);
-            ogs_ngap_AMFPointer_to_uint8(&FiveG_S_TMSI->aMFPointer, &pointer);
+    ran_ue = ran_ue_add(gnb, *RAN_UE_NGAP_ID);
+    if (ran_ue == NULL) {
+        r = ngap_send_error_indication(gnb, NULL, NULL,
+                NGAP_Cause_PR_misc,
+                NGAP_CauseMisc_control_processing_overload);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
 
-            ogs_amf_id_build(&nas_guti.amf_id, region, set, pointer);
+    /* Find AMF_UE if 5G-S_TMSI included */
+    if (FiveG_S_TMSI) {
+        ogs_nas_5gs_guti_t nas_guti;
+        amf_ue_t *amf_ue = NULL;
+        uint8_t region;
+        uint16_t set;
+        uint8_t pointer;
+        uint32_t m_tmsi;
 
-            /* size must be 4 */
-            ogs_asn_OCTET_STRING_to_uint32(&FiveG_S_TMSI->fiveG_TMSI, &m_tmsi);
-            nas_guti.m_tmsi = m_tmsi;
+        memset(&nas_guti, 0, sizeof(ogs_nas_5gs_guti_t));
 
-            amf_ue = amf_ue_find_by_guti(&nas_guti);
-            if (!amf_ue) {
-                ogs_info("Unknown UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
-                    ogs_amf_id_hexdump(&nas_guti.amf_id), nas_guti.m_tmsi);
-            } else {
-                ogs_info("[%s]    5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
-                        AMF_UE_HAVE_SUCI(amf_ue) ? amf_ue->suci : "Unknown ID",
-                        ogs_amf_id_hexdump(&amf_ue->current.guti.amf_id),
-                        amf_ue->current.guti.m_tmsi);
-                /* If NAS(amf_ue_t) has already been associated with
-                 * older NG(ran_ue_t) context */
-                if (CM_CONNECTED(amf_ue)) {
-    /*
-     * Issue #2786
-     *
-     * In cases where the UE sends an Integrity Un-Protected Registration
-     * Request or Service Request, there is an issue of sending
-     * a UEContextReleaseCommand for the OLD RAN Context.
-     *
-     * For example, if the UE switchs off and power-on after
-     * the first connection, the 5G Core sends a UEContextReleaseCommand.
-     *
-     * However, since there is no RAN context for this on the gNB,
-     * the gNB does not send a UEContextReleaseComplete,
-     * so the deletion of the RAN Context does not function properly.
-     *
-     * To solve this problem, the 5G Core has been modified to implicitly
-     * delete the RAN Context instead of sending a UEContextReleaseCommand.
-     */
-                    HOLDING_NG_CONTEXT(amf_ue);
-                }
-                amf_ue_associate_ran_ue(amf_ue, ran_ue);
+        /* Use the first configured plmn_id and mme group id */
+        ogs_nas_from_plmn_id(&nas_guti.nas_plmn_id,
+                &amf_self()->served_guami[0].plmn_id);
+        region = amf_self()->served_guami[0].amf_id.region;
 
-                /*
-                 * TS 24.501
-                 * 5.3.7 Handling of the periodic registration update timer
-                 *
-                 * The mobile reachable timer shall be stopped
-                 * when a NAS signalling connection is established for the UE.
-                 * The implicit de-registration timer shall be stopped
-                 * when a NAS signalling connection is established for the UE.
-                 */
-                CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
-                CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
+        /* Getting from 5G-S_TMSI */
+        ogs_ngap_AMFSetID_to_uint16(&FiveG_S_TMSI->aMFSetID, &set);
+        ogs_ngap_AMFPointer_to_uint8(&FiveG_S_TMSI->aMFPointer, &pointer);
+
+        ogs_amf_id_build(&nas_guti.amf_id, region, set, pointer);
+
+        /* size must be 4 */
+        ogs_asn_OCTET_STRING_to_uint32(&FiveG_S_TMSI->fiveG_TMSI, &m_tmsi);
+        nas_guti.m_tmsi = m_tmsi;
+
+        amf_ue = amf_ue_find_by_guti(&nas_guti);
+        if (!amf_ue) {
+            ogs_info("Unknown UE by 5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
+                ogs_amf_id_hexdump(&nas_guti.amf_id), nas_guti.m_tmsi);
+        } else {
+            ogs_info("[%s]    5G-S_TMSI[AMF_ID:0x%x,M_TMSI:0x%x]",
+                    AMF_UE_HAVE_SUCI(amf_ue) ? amf_ue->suci : "Unknown ID",
+                    ogs_amf_id_hexdump(&amf_ue->current.guti.amf_id),
+                    amf_ue->current.guti.m_tmsi);
+            /* If NAS(amf_ue_t) has already been associated with
+             * older NG(ran_ue_t) context */
+            if (CM_CONNECTED(amf_ue)) {
+/*
+ * Issue #2786
+ *
+ * In cases where the UE sends an Integrity Un-Protected Registration
+ * Request or Service Request, there is an issue of sending
+ * a UEContextReleaseCommand for the OLD RAN Context.
+ *
+ * For example, if the UE switchs off and power-on after
+ * the first connection, the 5G Core sends a UEContextReleaseCommand.
+ *
+ * However, since there is no RAN context for this on the gNB,
+ * the gNB does not send a UEContextReleaseComplete,
+ * so the deletion of the RAN Context does not function properly.
+ *
+ * To solve this problem, the 5G Core has been modified to implicitly
+ * delete the RAN Context instead of sending a UEContextReleaseCommand.
+ */
+                HOLDING_NG_CONTEXT(amf_ue);
             }
+            amf_ue_associate_ran_ue(amf_ue, ran_ue);
+
+            /*
+             * TS 24.501
+             * 5.3.7 Handling of the periodic registration update timer
+             *
+             * The mobile reachable timer shall be stopped
+             * when a NAS signalling connection is established for the UE.
+             * The implicit de-registration timer shall be stopped
+             * when a NAS signalling connection is established for the UE.
+             */
+            CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
+            CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
         }
     }
 
