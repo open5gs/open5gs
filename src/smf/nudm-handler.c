@@ -478,8 +478,10 @@ bool smf_nudm_sdm_handle_subscription(smf_sess_t *sess, ogs_sbi_stream_t *stream
      * If NOT Home-Routed Roaming,
      * Send HTTP_STATUS_CREATED(/nsmf-pdusession/v1/sm-context) to the AMF
      *********************************************************************/
-    if (!HOME_ROUTED_ROAMING_IN_HSMF(sess))
+    if (!HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
         smf_sbi_send_sm_context_created_data(sess, stream);
+        stream = NULL;
+    }
 
     r = smf_sbi_discover_and_send(
             OGS_SBI_SERVICE_TYPE_NPCF_SMPOLICYCONTROL, NULL,
