@@ -100,6 +100,26 @@ smf_metrics_spec_def_t smf_metrics_spec_def_global[_SMF_METR_GLOB_MAX] = {
     .name = "fivegs_smffunction_sm_n4sessionreportsucc",
     .description = "Number of successful N4 session reports evidented by SMF",
 },
+[SMF_METR_GLOB_CTR_SMF_MIGRATION_ATTEMPTS] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "smf_migration_attempts",
+    .description = "Number of SMF live UPF migration attempts",
+},
+[SMF_METR_GLOB_CTR_SMF_MIGRATION_COMPLETED] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "smf_migration_completed",
+    .description = "Number of completed SMF live UPF migrations",
+},
+[SMF_METR_GLOB_CTR_SMF_MIGRATION_ROLLED_BACK] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "smf_migration_rolled_back",
+    .description = "Number of rolled back SMF live UPF migrations",
+},
+[SMF_METR_GLOB_CTR_SMF_MIGRATION_FAILED] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "smf_migration_failed",
+    .description = "Number of failed SMF live UPF migrations",
+},
 /* Global Gauges: */
 [SMF_METR_GLOB_GAUGE_UES_ACTIVE] = {
     .type = OGS_METRICS_METRIC_TYPE_GAUGE,
@@ -135,6 +155,11 @@ smf_metrics_spec_def_t smf_metrics_spec_def_global[_SMF_METR_GLOB_MAX] = {
     .type = OGS_METRICS_METRIC_TYPE_GAUGE,
     .name = "pfcp_peers_active",
     .description = "Active PFCP peers",
+},
+[SMF_METR_GLOB_GAUGE_SMF_MIGRATIONS_ACTIVE] = {
+    .type = OGS_METRICS_METRIC_TYPE_GAUGE,
+    .name = "smf_migrations_active",
+    .description = "Active SMF live UPF migrations",
 },
 };
 int smf_metrics_init_inst_global(void)

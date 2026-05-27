@@ -70,6 +70,14 @@ typedef struct ogs_metrics_inst_s {
     char                    *label_values[MAX_LABELS];
 } ogs_metrics_inst_t;
 
+typedef struct custom_post_context_s {
+    char *body;
+    size_t len;
+    size_t cap;
+    bool too_large;
+    bool oom;
+} custom_post_context_t;
+
 static OGS_POOL(metrics_spec_pool, ogs_metrics_spec_t);
 static OGS_POOL(metrics_server_pool, ogs_metrics_server_t);
 
@@ -86,6 +94,52 @@ static size_t get_query_size_t(struct MHD_Connection *connection,
     unsigned long long v = strtoull(val, &end, 10);
     if (end == val || *end != '\0') return default_val;
     return (size_t)v;
+}
+
+#define CUSTOM_POST_BODY_LIMIT (64 * 1024)
+
+static void custom_post_context_free(custom_post_context_t *ctx)
+{
+    if (!ctx) return;
+    if (ctx->body) ogs_free(ctx->body);
+    ogs_free(ctx);
+}
+
+static int custom_post_append(
+        custom_post_context_t *ctx, const char *data, size_t len)
+{
+    size_t newcap;
+    char *tmp;
+
+    ogs_assert(ctx);
+
+    if (!data || len == 0)
+        return OGS_OK;
+
+    if (ctx->len + len > CUSTOM_POST_BODY_LIMIT) {
+        ctx->too_large = true;
+        return OGS_OK;
+    }
+
+    if (ctx->len + len + 1 > ctx->cap) {
+        newcap = ctx->cap ? ctx->cap : 1024;
+        while (newcap < ctx->len + len + 1)
+            newcap *= 2;
+
+        tmp = ogs_realloc(ctx->body, newcap);
+        if (!tmp) {
+            ctx->oom = true;
+            return OGS_ERROR;
+        }
+        ctx->body = tmp;
+        ctx->cap = newcap;
+    }
+
+    memcpy(ctx->body + ctx->len, data, len);
+    ctx->len += len;
+    ctx->body[ctx->len] = '\0';
+
+    return OGS_OK;
 }
 
 void ogs_metrics_server_init(ogs_metrics_context_t *ctx)
@@ -186,6 +240,20 @@ static void mhd_server_notify_connection(void *cls,
     }
 }
 
+static void mhd_server_request_completed(
+        void *cls, struct MHD_Connection *connection,
+        void **con_cls, enum MHD_RequestTerminationCode toe)
+{
+    (void)cls;
+    (void)connection;
+    (void)toe;
+
+    if (con_cls && *con_cls) {
+        custom_post_context_free(*con_cls);
+        *con_cls = NULL;
+    }
+}
+
 #if MHD_VERSION >= 0x00097001
 typedef enum MHD_Result _MHD_Result;
 #else
@@ -259,6 +327,164 @@ static _MHD_Result serve_json_from_dumper(struct MHD_Connection *connection,
     return (_MHD_Result)ret;
 }
 
+static _MHD_Result serve_json_from_request_handler(
+        struct MHD_Connection *connection,
+        ogs_metrics_custom_req_ep_hdlr_t handler,
+        const char *method, const char *body, size_t body_len)
+{
+    int status_code = MHD_HTTP_OK;
+    size_t cap = 64 * 1024;
+    char *bufjson = NULL;
+    size_t n;
+    struct MHD_Response *rsp;
+    int ret;
+
+    ogs_assert(connection);
+    ogs_assert(handler);
+
+    bufjson = (char *)ogs_malloc(cap);
+    if (!bufjson) {
+        const char *msg = "Out of memory\n";
+        rsp = MHD_create_response_from_buffer(strlen(msg),
+                (void*)msg, MHD_RESPMEM_PERSISTENT);
+        if (!rsp) return (_MHD_Result)MHD_NO;
+        ret = MHD_queue_response(
+                connection, MHD_HTTP_INTERNAL_SERVER_ERROR, rsp);
+        MHD_destroy_response(rsp);
+        return (_MHD_Result)ret;
+    }
+
+    n = handler(bufjson, cap, method, body, body_len, &status_code);
+    if (n >= cap - 1) {
+        size_t newcap = cap * 2;
+        char *tmp = (char *)ogs_realloc(bufjson, newcap);
+        if (!tmp) {
+            ogs_free(bufjson);
+            const char *msg = "Out of memory\n";
+            rsp = MHD_create_response_from_buffer(strlen(msg),
+                    (void*)msg, MHD_RESPMEM_PERSISTENT);
+            if (!rsp) return (_MHD_Result)MHD_NO;
+            ret = MHD_queue_response(
+                    connection, MHD_HTTP_INTERNAL_SERVER_ERROR, rsp);
+            MHD_destroy_response(rsp);
+            return (_MHD_Result)ret;
+        }
+        bufjson = tmp;
+        cap = newcap;
+        n = handler(bufjson, cap, method, body, body_len, &status_code);
+        if (n >= cap - 1)
+            n = ogs_snprintf(bufjson, cap, "{}");
+    }
+
+#if MHD_VERSION >= 0x00096100
+    rsp = MHD_create_response_from_buffer_with_free_callback(
+            n, (void*)bufjson, free_callback);
+    bufjson = NULL;
+#else
+    rsp = MHD_create_response_from_buffer(
+            n, (void*)bufjson, MHD_RESPMEM_MUST_COPY);
+#endif
+    if (!rsp) {
+#if MHD_VERSION < 0x00096100
+        ogs_free(bufjson);
+#endif
+        return (_MHD_Result)MHD_NO;
+    }
+
+    MHD_add_response_header(rsp, "Content-Type", "application/json");
+    MHD_add_response_header(rsp, "Access-Control-Allow-Origin", "*");
+    ret = MHD_queue_response(connection, status_code, rsp);
+    MHD_destroy_response(rsp);
+#if MHD_VERSION < 0x00096100
+    ogs_free(bufjson);
+#endif
+    return (_MHD_Result)ret;
+}
+
+static _MHD_Result serve_custom_post(
+        struct MHD_Connection *connection, const char *url, const char *method,
+        const char *upload_data, size_t *upload_data_size, void **con_cls)
+{
+    custom_post_context_t *post = NULL;
+    ogs_metrics_custom_ep_t *node = NULL;
+    const char *body = NULL;
+    size_t body_len = 0;
+    int ret;
+
+    ogs_assert(connection);
+    ogs_assert(url);
+    ogs_assert(method);
+    ogs_assert(upload_data_size);
+    ogs_assert(con_cls);
+
+    post = *con_cls;
+    if (!post) {
+        post = ogs_calloc(1, sizeof(*post));
+        if (!post) return (_MHD_Result)MHD_NO;
+        *con_cls = post;
+        return (_MHD_Result)MHD_YES;
+    }
+
+    if (*upload_data_size) {
+        custom_post_append(post, upload_data, *upload_data_size);
+        *upload_data_size = 0;
+        return (_MHD_Result)MHD_YES;
+    }
+
+    if (post->too_large) {
+        const char *msg = "{\"error\":\"request_too_large\"}";
+        struct MHD_Response *rsp = MHD_create_response_from_buffer(
+                strlen(msg), (void *)msg, MHD_RESPMEM_PERSISTENT);
+        if (!rsp) return (_MHD_Result)MHD_NO;
+        MHD_add_response_header(rsp, "Content-Type", "application/json");
+        ret = MHD_queue_response(connection, 413, rsp);
+        MHD_destroy_response(rsp);
+        custom_post_context_free(post);
+        *con_cls = NULL;
+        return (_MHD_Result)ret;
+    }
+    if (post->oom) {
+        const char *msg = "{\"error\":\"out_of_memory\"}";
+        struct MHD_Response *rsp = MHD_create_response_from_buffer(
+                strlen(msg), (void *)msg, MHD_RESPMEM_PERSISTENT);
+        if (!rsp) return (_MHD_Result)MHD_NO;
+        MHD_add_response_header(rsp, "Content-Type", "application/json");
+        ret = MHD_queue_response(
+                connection, MHD_HTTP_INTERNAL_SERVER_ERROR, rsp);
+        MHD_destroy_response(rsp);
+        custom_post_context_free(post);
+        *con_cls = NULL;
+        return (_MHD_Result)ret;
+    }
+
+    body = post->body ? post->body : "";
+    body_len = post->len;
+
+    ogs_list_for_each(&ogs_metrics_self()->custom_eps, node) {
+        if (!strcmp(node->endpoint, url) && node->request_handler) {
+            ret = serve_json_from_request_handler(connection,
+                    node->request_handler, method, body, body_len);
+            custom_post_context_free(post);
+            *con_cls = NULL;
+            return (_MHD_Result)ret;
+        }
+    }
+
+    {
+        const char *msg = "{\"error\":\"bad_request\"}";
+        struct MHD_Response *rsp = MHD_create_response_from_buffer(
+                strlen(msg), (void *)msg, MHD_RESPMEM_PERSISTENT);
+        if (!rsp) return (_MHD_Result)MHD_NO;
+        MHD_add_response_header(rsp, "Content-Type", "application/json");
+        ret = MHD_queue_response(connection, MHD_HTTP_BAD_REQUEST, rsp);
+        MHD_destroy_response(rsp);
+    }
+
+    custom_post_context_free(post);
+    *con_cls = NULL;
+    return (_MHD_Result)ret;
+}
+
 static _MHD_Result
 mhd_server_access_handler(void *cls, struct MHD_Connection *connection,
         const char *url, const char *method, const char *version,
@@ -270,7 +496,11 @@ mhd_server_access_handler(void *cls, struct MHD_Connection *connection,
     struct MHD_Response *rsp = NULL;
     int ret = MHD_NO;
 
-    /* Only GET is supported */
+    if (strcmp(method, "POST") == 0)
+        return serve_custom_post(connection, url, method,
+                upload_data, upload_data_size, con_cls);
+
+    /* Only GET and registered POST endpoints are supported */
     if (strcmp(method, "GET") != 0) {
         buf = "Invalid HTTP Method\n";
         rsp = MHD_create_response_from_buffer(strlen(buf), (void *)buf, MHD_RESPMEM_PERSISTENT);
@@ -352,6 +582,10 @@ static int ogs_metrics_context_server_start(ogs_metrics_server_t *server)
 
     mhd_ops[index].option = MHD_OPTION_NOTIFY_CONNECTION;
     mhd_ops[index].value = (intptr_t)&mhd_server_notify_connection;
+    mhd_ops[index].ptr_value = NULL; index++;
+
+    mhd_ops[index].option = MHD_OPTION_NOTIFY_COMPLETED;
+    mhd_ops[index].value = (intptr_t)&mhd_server_request_completed;
     mhd_ops[index].ptr_value = NULL; index++;
 
     mhd_ops[index].option = MHD_OPTION_SOCK_ADDR;
@@ -613,4 +847,3 @@ void ogs_metrics_inst_add(ogs_metrics_inst_t *inst, int val)
         break;
     }
 }
-

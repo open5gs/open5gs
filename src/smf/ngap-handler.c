@@ -21,6 +21,7 @@
 #include "sbi-path.h"
 #include "pfcp-path.h"
 #include "ngap-path.h"
+#include "migration.h"
 
 int ngap_handle_pdu_session_resource_setup_response_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream, ogs_pkbuf_t *pkbuf)
@@ -437,6 +438,9 @@ int ngap_handle_pdu_session_resource_modify_response_transfer(
     ogs_assert(sess);
     smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
+
+    if (sess->migration.state == SMF_MIGRATION_STATE_PATH_SWITCHING)
+        return smf_migration_handle_path_switch_response(sess, stream);
 
     ogs_debug("PDUSessionResourceModifyResponseTransfer");
 

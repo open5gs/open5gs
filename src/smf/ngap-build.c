@@ -86,6 +86,27 @@ static void fill_qos_level_parameters(
     }
 }
 
+static void fill_gtp_tunnel(
+        NGAP_UPTransportLayerInformation_t *information,
+        ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, uint32_t teid)
+{
+    ogs_ip_t ip;
+    NGAP_GTPTunnel_t *gTPTunnel = NULL;
+
+    ogs_assert(information);
+
+    gTPTunnel = CALLOC(1, sizeof(*gTPTunnel));
+    ogs_assert(gTPTunnel);
+
+    information->present = NGAP_UPTransportLayerInformation_PR_gTPTunnel;
+    information->choice.gTPTunnel = gTPTunnel;
+
+    ogs_assert(OGS_OK == ogs_sockaddr_to_ip(addr, addr6, &ip));
+    ogs_assert(OGS_OK == ogs_asn_ip_to_BIT_STRING(
+                &ip, &gTPTunnel->transportLayerAddress));
+    ogs_asn_uint32_to_OCTET_STRING(teid, &gTPTunnel->gTP_TEID);
+}
+
 ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
         smf_sess_t *sess)
 {
@@ -505,6 +526,65 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
                     &qos_flow->qos, include_gbr);
         }
     }
+
+    return ogs_asn_encode(
+            &asn_DEF_NGAP_PDUSessionResourceModifyRequestTransfer, &message);
+}
+
+ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer_for_migration(
+        smf_sess_t *sess)
+{
+    NGAP_PDUSessionResourceModifyRequestTransfer_t message;
+    NGAP_PDUSessionResourceModifyRequestTransferIEs_t *ie = NULL;
+    NGAP_UL_NGU_UP_TNLModifyList_t *modifyList = NULL;
+    NGAP_UL_NGU_UP_TNLModifyItem_t *modifyItem = NULL;
+    ogs_sockaddr_t *gnb_addr = NULL, *gnb_addr4 = NULL, *gnb_addr6 = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(sess->migration.target_local_ul_teid);
+    ogs_assert(sess->migration.target_local_ul_addr ||
+            sess->migration.target_local_ul_addr6);
+    ogs_assert(sess->remote_dl_teid);
+    ogs_assert(sess->remote_dl_ip.ipv4 || sess->remote_dl_ip.ipv6);
+
+    ogs_debug("PDUSessionResourceModifyRequestTransfer(Migration)");
+    memset(&message, 0, sizeof(message));
+
+    ie = CALLOC(1, sizeof(*ie));
+    ogs_assert(ie);
+    ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_UL_NGU_UP_TNLModifyList;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PDUSessionResourceModifyRequestTransferIEs__value_PR_UL_NGU_UP_TNLModifyList;
+
+    modifyList = &ie->value.choice.UL_NGU_UP_TNLModifyList;
+
+    modifyItem = CALLOC(1, sizeof(*modifyItem));
+    ogs_assert(modifyItem);
+    ASN_SEQUENCE_ADD(&modifyList->list, modifyItem);
+
+    fill_gtp_tunnel(&modifyItem->uL_NGU_UP_TNLInformation,
+            sess->migration.target_local_ul_addr,
+            sess->migration.target_local_ul_addr6,
+            sess->migration.target_local_ul_teid);
+
+    ogs_assert(OGS_OK == ogs_ip_to_sockaddr(&sess->remote_dl_ip,
+                OGS_GTPV1_U_UDP_PORT, &gnb_addr));
+    if (gnb_addr->ogs_sa_family == AF_INET) {
+        gnb_addr4 = gnb_addr;
+        if (gnb_addr->next && gnb_addr->next->ogs_sa_family == AF_INET6)
+            gnb_addr6 = gnb_addr->next;
+    } else if (gnb_addr->ogs_sa_family == AF_INET6) {
+        gnb_addr6 = gnb_addr;
+    } else {
+        ogs_assert_if_reached();
+    }
+    fill_gtp_tunnel(&modifyItem->dL_NGU_UP_TNLInformation,
+            gnb_addr4, gnb_addr6, sess->remote_dl_teid);
+    if (gnb_addr)
+        ogs_freeaddrinfo(gnb_addr);
 
     return ogs_asn_encode(
             &asn_DEF_NGAP_PDUSessionResourceModifyRequestTransfer, &message);

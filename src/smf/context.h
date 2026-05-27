@@ -64,6 +64,21 @@ typedef struct smf_ctf_config_s {
 
 int smf_ctf_config_init(smf_ctf_config_t *ctf_config);
 
+typedef enum {
+    SMF_MIGRATION_STATE_IDLE = 0,
+    SMF_MIGRATION_STATE_PRECHECK,
+    SMF_MIGRATION_STATE_TARGET_PREPARING,
+    SMF_MIGRATION_STATE_TARGET_READY,
+    SMF_MIGRATION_STATE_ROUTE_PROGRAMMING,
+    SMF_MIGRATION_STATE_PATH_SWITCHING,
+    SMF_MIGRATION_STATE_SWITCH_CONFIRMED,
+    SMF_MIGRATION_STATE_SOURCE_DRAINING,
+    SMF_MIGRATION_STATE_COMPLETED,
+    SMF_MIGRATION_STATE_ABORTING,
+    SMF_MIGRATION_STATE_ROLLED_BACK,
+    SMF_MIGRATION_STATE_FAILED,
+} smf_migration_state_e;
+
 typedef struct smf_nsmf_pdusession_param_s {
     OpenAPI_request_indication_e request_indication;
 
@@ -123,6 +138,10 @@ typedef struct smf_context_s {
     smf_ctf_config_t    ctf_config;
     const char*         diam_conf_path;   /* SMF Diameter conf path */
     ogs_diam_config_t   *diam_config;     /* SMF Diameter config */
+
+    struct {
+        const char *route_hook;
+    } migration;
 
 #define MAX_NUM_OF_DNS              2
     const char      *dns[MAX_NUM_OF_DNS];
@@ -647,6 +666,27 @@ typedef struct smf_sess_s {
         ogs_ip_t remote_dl_ip;
     } handover;
 
+    /* Live UPF migration staging. Inert until migration code advances state. */
+    struct {
+        smf_migration_state_e state;
+
+        ogs_pfcp_node_t *source_node;
+        ogs_pfcp_node_t *target_node;
+
+        uint64_t source_upf_n4_seid;
+        uint64_t target_upf_n4_seid;
+
+        uint32_t target_local_dl_teid;
+        ogs_sockaddr_t *target_local_dl_addr;
+        ogs_sockaddr_t *target_local_dl_addr6;
+
+        uint32_t target_local_ul_teid;
+        ogs_sockaddr_t *target_local_ul_addr;
+        ogs_sockaddr_t *target_local_ul_addr6;
+
+        bool metrics_active;
+    } migration;
+
     /* Charging */
     struct {
         uint32_t id;
@@ -740,6 +780,8 @@ smf_sess_t *smf_sess_add_by_pdu_session(ogs_sbi_message_t *message);
 smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi);
 
 void smf_sess_select_upf(smf_sess_t *sess);
+ogs_pfcp_node_t *smf_upf_node_find_by_addr(const char *addr);
+bool smf_sess_upf_eligible(smf_sess_t *sess, ogs_pfcp_node_t *node);
 uint8_t smf_sess_set_ue_ip(smf_sess_t *sess);
 void smf_sess_set_paging_n1n2message_location(
         smf_sess_t *sess, char *n1n2message_location);

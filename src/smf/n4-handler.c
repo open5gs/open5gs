@@ -26,6 +26,7 @@
 #include "sbi-path.h"
 #include "ngap-path.h"
 #include "fd-path.h"
+#include "migration.h"
 
 uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause, uint8_t gtp_version)
 {
@@ -249,6 +250,133 @@ uint8_t smf_5gc_n4_handle_session_establishment_response(
     up_f_seid = rsp->up_f_seid.data;
     ogs_assert(up_f_seid);
     sess->upf_n4_seid = be64toh(up_f_seid->seid);
+
+    return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+}
+
+uint8_t smf_5gc_n4_handle_migration_target_establishment_response(
+        smf_sess_t *sess, ogs_pfcp_xact_t *xact,
+        ogs_pfcp_session_establishment_response_t *rsp)
+{
+    int i;
+    uint8_t cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+    ogs_pfcp_f_seid_t *up_f_seid = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(xact);
+    ogs_assert(rsp);
+
+    ogs_debug("Migration Target Session Establishment Response [5gc]");
+
+    ogs_pfcp_xact_commit(xact);
+
+    if (rsp->up_f_seid.presence == 0) {
+        ogs_error("No UP F-SEID");
+        cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
+    if (rsp->cause.presence) {
+        if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+            ogs_error("PFCP Cause [%d] : Migration Target Not Accepted",
+                    rsp->cause.u8);
+            cause_value = rsp->cause.u8;
+            smf_metrics_inst_by_cause_add(cause_value,
+                    SMF_METR_CTR_SM_N4SESSIONESTABFAIL, 1);
+        }
+    } else {
+        ogs_error("No Cause");
+        cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
+    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+        smf_migration_mark_failed(sess);
+        return cause_value;
+    }
+
+    for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
+        ogs_pfcp_tlv_created_pdr_t *created = &rsp->created_pdr[i];
+        ogs_pfcp_pdr_t *pdr = NULL;
+        ogs_pfcp_far_t *far = NULL;
+        ogs_pfcp_f_teid_t f_teid;
+        ogs_sockaddr_t **addr = NULL;
+        ogs_sockaddr_t **addr6 = NULL;
+        uint32_t *teid = NULL;
+
+        if (created->presence == 0)
+            break;
+
+        if (created->pdr_id.presence == 0) {
+            ogs_error("No PDR-ID");
+            smf_migration_mark_failed(sess);
+            return OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+        }
+
+        if (created->local_f_teid.presence == 0)
+            continue;
+
+        pdr = ogs_pfcp_pdr_find(&sess->pfcp, created->pdr_id.u16);
+        if (!pdr) {
+            ogs_error("Cannot find PDR-ID[%d] in PDR",
+                    created->pdr_id.u16);
+            smf_migration_mark_failed(sess);
+            return OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+        }
+        far = pdr->far;
+        if (!far) {
+            ogs_error("No FAR for PDR-ID[%d]", pdr->id);
+            smf_migration_mark_failed(sess);
+            return OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+        }
+
+        memset(&f_teid, 0, sizeof(f_teid));
+        memcpy(&f_teid, created->local_f_teid.data,
+                ogs_min(sizeof(f_teid), created->local_f_teid.len));
+        if (f_teid.ipv4 == 0 && f_teid.ipv6 == 0) {
+            ogs_error("Invalid local F-TEID in migration target response");
+            smf_migration_mark_failed(sess);
+            return OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+        }
+        f_teid.teid = be32toh(f_teid.teid);
+
+        if (pdr->src_if == OGS_PFCP_INTERFACE_CORE &&
+            far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
+            teid = &sess->migration.target_local_dl_teid;
+            addr = &sess->migration.target_local_dl_addr;
+            addr6 = &sess->migration.target_local_dl_addr6;
+        } else if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS &&
+            far->dst_if == OGS_PFCP_INTERFACE_CORE) {
+            teid = &sess->migration.target_local_ul_teid;
+            addr = &sess->migration.target_local_ul_addr;
+            addr6 = &sess->migration.target_local_ul_addr6;
+        } else {
+            continue;
+        }
+
+        if (*addr)
+            ogs_freeaddrinfo(*addr);
+        if (*addr6)
+            ogs_freeaddrinfo(*addr6);
+        *addr = NULL;
+        *addr6 = NULL;
+
+        ogs_assert(OGS_OK ==
+            ogs_pfcp_f_teid_to_sockaddr(
+                &f_teid, created->local_f_teid.len, addr, addr6));
+        *teid = f_teid.teid;
+    }
+
+    if (sess->migration.target_local_ul_addr == NULL &&
+        sess->migration.target_local_ul_addr6 == NULL) {
+        ogs_error("No Migration Target UP F-TEID");
+        smf_migration_mark_failed(sess);
+        return OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND;
+    }
+
+    up_f_seid = rsp->up_f_seid.data;
+    ogs_assert(up_f_seid);
+
+    sess->migration.target_upf_n4_seid = be64toh(up_f_seid->seid);
+    sess->migration.state = SMF_MIGRATION_STATE_TARGET_READY;
 
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
@@ -1112,6 +1240,12 @@ int smf_5gc_n4_handle_session_deletion_response(
                     stream, status, NULL, strerror, NULL, NULL));
         } else if (trigger == OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED) {
             /* No stream - Nothing */
+        } else if (trigger ==
+                OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_SOURCE) {
+            /* Source-UPF drain failure is handled by the migration FSM. */
+        } else if (trigger ==
+                OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_TARGET) {
+            /* Target-UPF cleanup failure is handled by the migration FSM. */
         } else {
             ogs_fatal("Unknown trigger [%d]", trigger);
             ogs_assert_if_reached();

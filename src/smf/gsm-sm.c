@@ -36,6 +36,7 @@
 #include "ngap-path.h"
 #include "fd-path.h"
 #include "local-path.h"
+#include "migration.h"
 
 static uint8_t gtp_cause_from_diameter(uint8_t gtp_version,
         const uint32_t dia_err, const uint32_t *dia_exp_err)
@@ -1031,12 +1032,44 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 up_f_seid = rsp->up_f_seid.data;
                 ogs_assert(up_f_seid);
                 sess->upf_n4_seid = be64toh(up_f_seid->seid);
+            } else if (pfcp_xact->create_flags &
+                    OGS_PFCP_CREATE_UPF_MIGRATION_TARGET) {
+                pfcp_cause =
+                    smf_5gc_n4_handle_migration_target_establishment_response(
+                            sess, pfcp_xact,
+                            &pfcp_message->pfcp_session_establishment_response);
+                if (pfcp_cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                    ogs_error("Migration target preparation failed [%d]",
+                            pfcp_cause);
             } else {
                 ogs_error("cannot handle PFCP Session Establishment Response");
             }
             break;
 
         case OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE:
+            if (!pfcp_xact->epc &&
+                (pfcp_xact->delete_trigger ==
+                    OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_SOURCE ||
+                 pfcp_xact->delete_trigger ==
+                    OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_TARGET)) {
+                int status, trigger;
+
+                trigger = pfcp_xact->delete_trigger;
+                ogs_pfcp_xact_commit(pfcp_xact);
+
+                status = smf_5gc_n4_handle_session_deletion_response(
+                        sess, stream, trigger,
+                        &pfcp_message->pfcp_session_deletion_response);
+
+                if (trigger == OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_SOURCE)
+                    smf_migration_handle_source_deletion_response(
+                            sess, status == OGS_SBI_HTTP_STATUS_OK);
+                else
+                    smf_migration_handle_target_deletion_response(
+                            sess, status == OGS_SBI_HTTP_STATUS_OK);
+                break;
+            }
+
             ogs_error("EPC Session Released by Error Indication");
             OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
             break;
@@ -2082,6 +2115,21 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             }
             break;
 
+        case OpenAPI_n2_sm_info_type_PDU_RES_MOD_FAIL:
+            if (sess->migration.state == SMF_MIGRATION_STATE_PATH_SWITCHING) {
+                ogs_error("[%s:%d] Migration PDU Resource Modify failed",
+                        smf_ue->supi, sess->psi);
+                sess->migration.state = SMF_MIGRATION_STATE_FAILED;
+                smf_migration_send_target_deletion(sess);
+                smf_sbi_send_sm_context_update_error_log(
+                        stream, OGS_SBI_HTTP_STATUS_CONFLICT,
+                        "Migration PDU Resource Modify failed", smf_ue->supi);
+                break;
+            }
+            ogs_error("[%s:%d] Unexpected PDU Resource Modify Failure",
+                    smf_ue->supi, sess->psi);
+            break;
+
         case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
             ngap_state = sess->ngap_state.pdu_session_resource_release;
 
@@ -2340,6 +2388,16 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                     ogs_error("OLD Session Released");
                     OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
+
+                } else if (trigger ==
+                        OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_SOURCE) {
+
+                    smf_migration_handle_source_deletion_response(sess, true);
+
+                } else if (trigger ==
+                        OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_TARGET) {
+
+                    smf_migration_handle_target_deletion_response(sess, true);
 
                 } else if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
                     ogs_pkbuf_t *n1smbuf = NULL, *n2smbuf = NULL;

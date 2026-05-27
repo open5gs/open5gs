@@ -50,6 +50,8 @@ smf:
 #    - ::1
 #  ctf:
 #    enabled: auto   # auto(default)|yes|no
+#  migration:
+#    route_hook: /opt/open5gs/bin/smf-upf-migration-route-hook
   freeDiameter: @sysconfdir@/freeDiameter/smf.conf
 
 ################################################################################

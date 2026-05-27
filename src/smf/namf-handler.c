@@ -21,6 +21,7 @@
 #include "ngap-path.h"
 #include "binding.h"
 #include "namf-handler.h"
+#include "migration.h"
 
 bool smf_namf_comm_handle_n1_n2_message_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
@@ -55,17 +56,29 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
         break;
 
     case SMF_NETWORK_TRIGGERED_SERVICE_REQUEST:
+    case SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION:
     case SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION:
         N1N2MessageTransferRspData = recvmsg->N1N2MessageTransferRspData;
         if (!N1N2MessageTransferRspData) {
             ogs_error("No N1N2MessageTransferRspData [status:%d]",
                     recvmsg->res_status);
+            if (state == SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION &&
+                smf_migration_active(sess)) {
+                sess->migration.state = SMF_MIGRATION_STATE_FAILED;
+                smf_migration_send_target_deletion(sess);
+            }
             break;
         }
 
         if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
             if (N1N2MessageTransferRspData->cause ==
                 OpenAPI_n1_n2_message_transfer_cause_N1_N2_TRANSFER_INITIATED) {
+                if (state == SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION &&
+                    !smf_migration_active(sess)) {
+                    ogs_error("Unexpected PDU Session Modification transfer "
+                            "outside migration");
+                    break;
+                }
                 if (stream) {
                     if (sess->vsmf_to_hsmf_modify_stream_id >=
                             OGS_MIN_POOL_ID &&
@@ -78,6 +91,12 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
                         ogs_sbi_id_from_stream(stream);
                 }
             } else {
+                if (state == SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION &&
+                    smf_migration_active(sess)) {
+                    sess->migration.state = SMF_MIGRATION_STATE_FAILED;
+                    smf_migration_send_target_deletion(sess);
+                    break;
+                }
                 ogs_error("Not implemented [cause:%d]",
                         N1N2MessageTransferRspData->cause);
                 ogs_assert_if_reached();
@@ -85,6 +104,11 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
         } else if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_ACCEPTED) {
             if (N1N2MessageTransferRspData->cause ==
                 OpenAPI_n1_n2_message_transfer_cause_ATTEMPTING_TO_REACH_UE) {
+                if (state == SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION &&
+                    smf_migration_active(sess)) {
+                    sess->migration.state = SMF_MIGRATION_STATE_FAILED;
+                    smf_migration_send_target_deletion(sess);
+                }
                 if (recvmsg->http.location)
                     smf_sess_set_paging_n1n2message_location(
                             sess, recvmsg->http.location);
@@ -103,11 +127,22 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
                         ogs_sbi_id_from_stream(stream);
                 }
             } else {
+                if (state == SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION &&
+                    smf_migration_active(sess)) {
+                    sess->migration.state = SMF_MIGRATION_STATE_FAILED;
+                    smf_migration_send_target_deletion(sess);
+                    break;
+                }
                 ogs_error("Not implemented [cause:%d]",
                         N1N2MessageTransferRspData->cause);
                 ogs_assert_if_reached();
             }
         } else {
+            if (state == SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION &&
+                smf_migration_active(sess)) {
+                sess->migration.state = SMF_MIGRATION_STATE_FAILED;
+                smf_migration_send_target_deletion(sess);
+            }
 
     /*
      * TODO:

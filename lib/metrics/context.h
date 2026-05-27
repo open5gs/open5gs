@@ -118,17 +118,23 @@ static inline void ogs_metrics_inst_dec(ogs_metrics_inst_t *inst)
 
 typedef size_t (*ogs_metrics_custom_ep_hdlr_t)(
     char *buf, size_t buflen, size_t page, size_t page_size);
+typedef size_t (*ogs_metrics_custom_req_ep_hdlr_t)(
+    char *buf, size_t buflen, const char *method,
+    const char *body, size_t body_len, int *status_code);
 
 typedef struct ogs_metrics_custom_ep_s {
     ogs_lnode_t lnode;
 
     char *endpoint;
     ogs_metrics_custom_ep_hdlr_t handler;
+    ogs_metrics_custom_req_ep_hdlr_t request_handler;
 } ogs_metrics_custom_ep_t;
 
 
 void ogs_metrics_register_custom_ep(ogs_metrics_custom_ep_hdlr_t handler,
         const char *endpoint);
+void ogs_metrics_register_custom_req_ep(
+        ogs_metrics_custom_req_ep_hdlr_t handler, const char *endpoint);
 
 #ifdef __cplusplus
 }

@@ -470,6 +470,9 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                         int num_of_tac = 0;
                                         const char *dnn[OGS_MAX_NUM_OF_DNN];
                                         int num_of_dnn = 0;
+                                        ogs_ipsubnet_t subnet[
+                                            OGS_MAX_NUM_OF_SUBNET];
+                                        int num_of_subnet = 0;
                                         uint32_t e_cell_id[
                                             OGS_MAX_NUM_OF_CELL_ID] = {0,};
                                         int num_of_e_cell_id = 0;
@@ -622,6 +625,107 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                                             &dnn_iter) ==
                                                         YAML_SEQUENCE_NODE);
                                             } else if (!strcmp(remote_key,
+                                                        "subnet")) {
+                                                ogs_yaml_iter_t subnet_array,
+                                                    subnet_iter;
+                                                ogs_yaml_iter_recurse(
+                                                        &remote_iter,
+                                                        &subnet_array);
+
+                                                do {
+                                                    const char *v = NULL;
+                                                    char *subnet_string = NULL;
+                                                    char *ipstr = NULL;
+                                                    char *mask_or_numbits = NULL;
+
+                                                    ogs_assert(num_of_subnet <
+                                                        OGS_MAX_NUM_OF_SUBNET);
+
+                                                    if (ogs_yaml_iter_type(
+                                                            &subnet_array) ==
+                                                        YAML_SEQUENCE_NODE) {
+                                                        if (!ogs_yaml_iter_next(
+                                                            &subnet_array))
+                                                            break;
+                                                        ogs_yaml_iter_recurse(
+                                                                &subnet_array,
+                                                                &subnet_iter);
+                                                    } else if (ogs_yaml_iter_type(
+                                                                &subnet_array) ==
+                                                            YAML_MAPPING_NODE) {
+                                                        memcpy(&subnet_iter,
+                                                                &subnet_array,
+                                                                sizeof(
+                                                                    ogs_yaml_iter_t));
+                                                    } else if (ogs_yaml_iter_type(
+                                                                &subnet_array) ==
+                                                            YAML_SCALAR_NODE) {
+                                                        v = ogs_yaml_iter_value(
+                                                                &subnet_array);
+                                                    } else
+                                                        ogs_assert_if_reached();
+
+                                                    if (ogs_yaml_iter_type(
+                                                            &subnet_array) !=
+                                                        YAML_SCALAR_NODE) {
+                                                        while (ogs_yaml_iter_next(
+                                                                    &subnet_iter)) {
+                                                            const char *subnet_key =
+                                                                ogs_yaml_iter_key(
+                                                                        &subnet_iter);
+                                                            ogs_assert(subnet_key);
+                                                            if (!strcmp(
+                                                                    subnet_key,
+                                                                    "addr") ||
+                                                                !strcmp(
+                                                                    subnet_key,
+                                                                    "subnet")) {
+                                                                v = ogs_yaml_iter_value(
+                                                                        &subnet_iter);
+                                                            } else
+                                                                ogs_warn(
+                                                                    "unknown key `%s`",
+                                                                    subnet_key);
+                                                        }
+                                                    }
+
+                                                    if (!v)
+                                                        continue;
+
+                                                    subnet_string = ogs_strdup(v);
+                                                    ogs_assert(subnet_string);
+                                                    ipstr = subnet_string;
+                                                    ipstr = strsep(
+                                                            &subnet_string, "/");
+                                                    mask_or_numbits =
+                                                        subnet_string;
+
+                                                    if (!mask_or_numbits) {
+                                                        ogs_warn(
+                                                            "Ignore subnet `%s` "
+                                                            "without prefix length",
+                                                            v);
+                                                        ogs_free(ipstr);
+                                                        continue;
+                                                    }
+
+                                                    rv = ogs_ipsubnet(
+                                                            &subnet[
+                                                                num_of_subnet],
+                                                            ipstr,
+                                                            mask_or_numbits);
+                                                    if (rv == OGS_OK)
+                                                        num_of_subnet++;
+                                                    else
+                                                        ogs_warn(
+                                                            "Ignore invalid "
+                                                            "subnet `%s`", v);
+
+                                                    ogs_free(ipstr);
+                                                } while (ogs_yaml_iter_type(
+                                                            &subnet_array) ==
+                                                        YAML_SEQUENCE_NODE);
+                                            } else if (!strcmp(remote_key,
                                                         "e_cell_id")) {
                                                 ogs_yaml_iter_t e_cell_id_iter;
                                                 ogs_yaml_iter_recurse(
@@ -729,6 +833,12 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                         if (num_of_dnn != 0)
                                             memcpy(node->dnn,
                                                     dnn, sizeof(node->dnn));
+
+                                        node->num_of_subnet = num_of_subnet;
+                                        if (num_of_subnet != 0)
+                                            memcpy(node->subnet,
+                                                    subnet,
+                                                    sizeof(node->subnet));
 
                                         node->num_of_e_cell_id =
                                             num_of_e_cell_id;
@@ -1027,6 +1137,8 @@ ogs_pfcp_node_t *ogs_pfcp_node_find(ogs_list_t *list,
 int ogs_pfcp_node_merge(ogs_pfcp_node_t *node,
     ogs_pfcp_node_id_t *node_id, ogs_sockaddr_t *from)
 {
+    int rv;
+    bool node_id_changed = false;
     ogs_sockaddr_t single;
     ogs_sockaddr_t *tmp_list = NULL;
 
@@ -1051,6 +1163,7 @@ int ogs_pfcp_node_merge(ogs_pfcp_node_t *node,
             /* Update the node's ID and reset the refresh timestamp. */
             memcpy(&node->node_id, node_id, sizeof(node->node_id));
             node->last_dns_refresh = 0;
+            node_id_changed = true;
         }
 
         /* If FQDN, do a DNS lookup (immediate or periodic). */
@@ -1088,6 +1201,23 @@ int ogs_pfcp_node_merge(ogs_pfcp_node_t *node,
         /* If IPv4/IPv6, convert immediately. */
         else if (node->node_id.type == OGS_PFCP_NODE_ID_IPV4 ||
                  node->node_id.type == OGS_PFCP_NODE_ID_IPV6) {
+            if (node_id_changed) {
+                ogs_freeaddrinfo(node->addr_list);
+                node->addr_list = NULL;
+                node->current_addr = NULL;
+                node->remote_recovery = 0;
+                node->restoration_required = false;
+
+                if (node->config_addr) {
+                    rv = ogs_copyaddrinfo(&node->addr_list,
+                            node->config_addr);
+                    if (rv != OGS_OK) {
+                        ogs_error("ogs_copyaddrinfo() failed");
+                        return OGS_ERROR;
+                    }
+                }
+            }
+
             tmp_list = ogs_pfcp_node_id_to_addrinfo(&node->node_id);
             if (!tmp_list) {
                 ogs_error("Failed to convert node ID to address info");

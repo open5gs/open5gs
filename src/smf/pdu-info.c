@@ -78,6 +78,7 @@
 
 #include "ogs-core.h"
 #include "context.h"
+#include "migration.h"
 #include "pdu-info.h"
 #include "sbi/openapi/external/cJSON.h"
 #include "metrics/prometheus/json_pager.h"
@@ -143,17 +144,17 @@ static cJSON *addr_string_item(const ogs_ip_t *ip, int port)
     return cJSON_CreateString(buf);
 }
 
-/* Only used in handover function (currently disabled) */
-/*
 static cJSON *addr_string_from_sockaddr(ogs_sockaddr_t *sa4, ogs_sockaddr_t *sa6, int default_port)
 {
     ogs_ip_t ip;
+    if (!sa4 && !sa6)
+        return NULL;
+
     memset(&ip, 0, sizeof(ip));
     if (OGS_OK != ogs_sockaddr_to_ip(sa4, sa6, &ip))
         return NULL;
     return addr_string_item(&ip, default_port);
 }
-*/
 
 static inline uint32_t u24_to_u32(ogs_uint24_t v)
 {
@@ -305,6 +306,86 @@ static cJSON *build_n3_object_5g(const smf_sess_t *sess)
 
     if (n3->child == NULL) { cJSON_Delete(n3); return NULL; }
     return n3;
+}
+
+static cJSON *build_migration_object_5g(const smf_sess_t *sess)
+{
+    cJSON *migration = NULL;
+    cJSON *target = NULL;
+    cJSON *target_n3 = NULL;
+    cJSON *upf = NULL;
+
+    if (!sess || sess->migration.state == SMF_MIGRATION_STATE_IDLE)
+        return NULL;
+
+    migration = cJSON_CreateObject();
+    if (!migration) return NULL;
+
+    if (sess->migration.source_node && sess->migration.source_node->addr_list) {
+        cJSON *source = cJSON_CreateString(ogs_sockaddr_to_string_static(
+                    sess->migration.source_node->addr_list));
+        if (!source) { cJSON_Delete(migration); return NULL; }
+        cJSON_AddItemToObjectCS(migration, "source_upf", source);
+    }
+
+    if (sess->migration.target_node && sess->migration.target_node->addr_list) {
+        target = cJSON_CreateString(ogs_sockaddr_to_string_static(
+                    sess->migration.target_node->addr_list));
+        if (!target) { cJSON_Delete(migration); return NULL; }
+        cJSON_AddItemToObjectCS(migration, "target_upf", target);
+    }
+
+    if (sess->migration.target_upf_n4_seid) {
+        cJSON *seid = cJSON_CreateNumber(
+                (double)sess->migration.target_upf_n4_seid);
+        if (!seid) { cJSON_Delete(migration); return NULL; }
+        cJSON_AddItemToObjectCS(migration, "target_upf_n4_seid", seid);
+    }
+
+    if (sess->migration.target_local_ul_teid ||
+        sess->migration.target_local_ul_addr ||
+        sess->migration.target_local_ul_addr6) {
+        target_n3 = cJSON_CreateObject();
+        if (!target_n3) { cJSON_Delete(migration); return NULL; }
+
+        upf = cJSON_CreateObject();
+        if (!upf) {
+            cJSON_Delete(target_n3);
+            cJSON_Delete(migration);
+            return NULL;
+        }
+
+        if (sess->migration.target_local_ul_teid) {
+            cJSON *teid = cJSON_CreateNumber(
+                    (double)sess->migration.target_local_ul_teid);
+            if (!teid) {
+                cJSON_Delete(upf);
+                cJSON_Delete(target_n3);
+                cJSON_Delete(migration);
+                return NULL;
+            }
+            cJSON_AddItemToObjectCS(upf, "teid", teid);
+        }
+
+        {
+            cJSON *addr = addr_string_from_sockaddr(
+                    sess->migration.target_local_ul_addr,
+                    sess->migration.target_local_ul_addr6,
+                    OGS_GTPV1_U_UDP_PORT);
+            if (addr)
+                cJSON_AddItemToObjectCS(upf, "addr", addr);
+        }
+
+        cJSON_AddItemToObjectCS(target_n3, "upf", upf);
+        cJSON_AddItemToObjectCS(migration, "target_n3", target_n3);
+    }
+
+    if (migration->child == NULL) {
+        cJSON_Delete(migration);
+        return NULL;
+    }
+
+    return migration;
 }
 
 /* Handover function disabled */
@@ -588,6 +669,9 @@ static cJSON *build_single_pdu_object(const smf_sess_t *sess, int *any_active, i
         cJSON *n3 = build_n3_object_5g(sess);
         if (n3) cJSON_AddItemToObjectCS(pdu, "n3", n3);
 
+        cJSON *migration = build_migration_object_5g(sess);
+        if (migration) cJSON_AddItemToObjectCS(pdu, "migration", migration);
+
         /* Handover disabled */
         /*
         cJSON *ho = build_handover_object_5g(sess);
@@ -604,6 +688,13 @@ static cJSON *build_single_pdu_object(const smf_sess_t *sess, int *any_active, i
 
         if (any_active && !strcmp(state, "active")) *any_active = 1;
         else if (any_unknown && !strcmp(state, "unknown")) *any_unknown = 1;
+    }
+
+    {
+        cJSON *st = cJSON_CreateString(
+                smf_migration_state_name(sess->migration.state));
+        if (!st) { cJSON_Delete(pdu); return NULL; }
+        cJSON_AddItemToObjectCS(pdu, "migration_state", st);
     }
 
     /* Last location update timestamp (epoch microseconds, ogs_time_t).
@@ -717,4 +808,3 @@ size_t smf_dump_pdu_info(char *buf, size_t buflen, size_t page, size_t page_size
 
     return smf_dump_pdu_info_paged(buf, buflen, page, page_size);
 }
-

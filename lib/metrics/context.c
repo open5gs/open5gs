@@ -291,3 +291,17 @@ void ogs_metrics_register_custom_ep(ogs_metrics_custom_ep_hdlr_t handler,
 
     ogs_list_add(&self.custom_eps, ep);
 }
+
+void ogs_metrics_register_custom_req_ep(
+        ogs_metrics_custom_req_ep_hdlr_t handler, const char *endpoint)
+{
+    ogs_metrics_custom_ep_t *ep;
+
+    ep = ogs_calloc(1, sizeof(*ep));
+    ogs_assert(ep);
+
+    ep->endpoint = ogs_strdup(endpoint);
+    ep->request_handler = handler;
+
+    ogs_list_add(&self.custom_eps, ep);
+}

@@ -55,6 +55,24 @@ static void pfcp_node_fsm_fini(ogs_pfcp_node_t *node)
         ogs_timer_delete(node->t_association);
 }
 
+static ogs_pfcp_node_t *pfcp_node_find_by_addr(
+        ogs_list_t *list, ogs_sockaddr_t *from)
+{
+    ogs_pfcp_node_t *cur = NULL;
+
+    ogs_assert(list);
+    ogs_assert(from);
+
+    ogs_list_for_each(list, cur) {
+        if (ogs_sockaddr_check_any_match(cur->addr_list, NULL, from,
+                    /* compare_port= */ false)) {
+            return cur;
+        }
+    }
+
+    return NULL;
+}
+
 static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     int rv;
@@ -63,6 +81,7 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t from;
     ogs_pfcp_node_t *node = NULL;
+    bool merge_from = true;
     ogs_pfcp_message_t *message = NULL;
 
     ogs_pfcp_status_e pfcp_status;;
@@ -128,6 +147,19 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
     node = ogs_pfcp_node_find(&ogs_pfcp_self()->pfcp_peer_list,
             pfcp_status == OGS_PFCP_STATUS_SUCCESS ? &node_id : NULL, &from);
     if (!node) {
+        node = pfcp_node_find_by_addr(&ogs_pfcp_self()->pfcp_peer_list, &from);
+        if (node) {
+            merge_from = false;
+            ogs_warn("Accepted PFCP message from known node IP with "
+                    "different source port: type [%d] node_id %s from %s",
+                    message->h.type,
+                    pfcp_status == OGS_PFCP_STATUS_SUCCESS ?
+                        ogs_pfcp_node_id_to_string_static(&node_id) :
+                        "NULL",
+                    ogs_sockaddr_to_string_static(&from));
+        }
+    }
+    if (!node) {
         if (message->h.type == OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE ||
             message->h.type == OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE) {
             ogs_assert(pfcp_status == OGS_PFCP_STATUS_SUCCESS);
@@ -154,12 +186,14 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
     } else {
         ogs_debug("Found PFCP-Node: addr_list %s",
                 ogs_sockaddr_to_string_static(node->addr_list));
-        ogs_expect(OGS_OK == ogs_pfcp_node_merge(
-                    node,
-                    pfcp_status == OGS_PFCP_STATUS_SUCCESS ?  &node_id : NULL,
-                    &from));
-        ogs_debug("Merged PFCP-Node: addr_list %s",
-                ogs_sockaddr_to_string_static(node->addr_list));
+        if (merge_from) {
+            ogs_expect(OGS_OK == ogs_pfcp_node_merge(
+                        node,
+                        pfcp_status == OGS_PFCP_STATUS_SUCCESS ? &node_id : NULL,
+                        &from));
+            ogs_debug("Merged PFCP-Node: addr_list %s",
+                    ogs_sockaddr_to_string_static(node->addr_list));
+        }
     }
 
     e->pfcp_node = node;

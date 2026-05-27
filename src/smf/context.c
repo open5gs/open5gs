@@ -19,6 +19,7 @@
 
 #include "context.h"
 #include "gtp-path.h"
+#include "migration.h"
 #include "pfcp-path.h"
 
 static smf_context_t self;
@@ -474,6 +475,29 @@ int smf_context_parse_config(void)
                             } else
                                 ogs_warn("unknown key `%s`", fd_key);
                         }
+                    }
+                } else if (!strcmp(smf_key, "migration")) {
+                    ogs_yaml_iter_t migration_iter;
+                    yaml_node_t *node =
+                        yaml_document_get_node(document, smf_iter.pair->value);
+                    ogs_assert(node);
+                    ogs_assert(node->type == YAML_MAPPING_NODE);
+                    ogs_yaml_iter_recurse(&smf_iter, &migration_iter);
+                    while (ogs_yaml_iter_next(&migration_iter)) {
+                        const char *migration_key =
+                            ogs_yaml_iter_key(&migration_iter);
+                        ogs_assert(migration_key);
+                        if (!strcmp(migration_key, "route_hook")) {
+                            yaml_node_t *migration_node =
+                                yaml_document_get_node(
+                                        document,
+                                        migration_iter.pair->value);
+                            ogs_assert(migration_node->type ==
+                                    YAML_SCALAR_NODE);
+                            self.migration.route_hook =
+                                ogs_yaml_iter_value(&migration_iter);
+                        } else
+                            ogs_warn("unknown key `%s`", migration_key);
                     }
                 } else if (!strcmp(smf_key, "ctf")) {
                     ogs_yaml_iter_t ctf_iter;
@@ -1354,6 +1378,44 @@ smf_ue_t *smf_ue_find_by_imsi(uint8_t *imsi, int imsi_len)
     return (smf_ue_t *)ogs_hash_get(self.imsi_hash, imsi, imsi_len);
 }
 
+static bool compare_ue_subnet(ogs_pfcp_node_t *node, smf_sess_t *sess)
+{
+    int i, j;
+
+    ogs_assert(node);
+    ogs_assert(sess);
+
+    if (!node->num_of_subnet)
+        return true;
+
+    if (!sess->ipv4 && !sess->ipv6)
+        return true;
+
+    for (i = 0; i < node->num_of_subnet; i++) {
+        ogs_ipsubnet_t *subnet = &node->subnet[i];
+
+        if (sess->ipv4 && subnet->family == AF_INET) {
+            for (j = 0; j < OGS_IPV4_LEN >> 2; j++)
+                if ((sess->ipv4->addr[j] & subnet->mask[j]) !=
+                        subnet->sub[j])
+                    break;
+            if (j == (OGS_IPV4_LEN >> 2))
+                return true;
+        }
+
+        if (sess->ipv6 && subnet->family == AF_INET6) {
+            for (j = 0; j < OGS_IPV6_LEN >> 2; j++)
+                if ((sess->ipv6->addr[j] & subnet->mask[j]) !=
+                        subnet->sub[j])
+                    break;
+            if (j == (OGS_IPV6_LEN >> 2))
+                return true;
+        }
+    }
+
+    return false;
+}
+
 static bool compare_ue_info(ogs_pfcp_node_t *node, smf_sess_t *sess)
 {
     int i;
@@ -1363,21 +1425,58 @@ static bool compare_ue_info(ogs_pfcp_node_t *node, smf_sess_t *sess)
     ogs_assert(sess->session.name);
 
     for (i = 0; i < node->num_of_dnn; i++)
-        if (ogs_strcasecmp(node->dnn[i], sess->session.name) == 0) return true;
+        if (ogs_strcasecmp(node->dnn[i], sess->session.name) == 0)
+            return compare_ue_subnet(node, sess);
 
     for (i = 0; i < node->num_of_e_cell_id; i++)
         if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN &&
-                node->e_cell_id[i] == sess->e_cgi.cell_id) return true;
+                node->e_cell_id[i] == sess->e_cgi.cell_id)
+            return compare_ue_subnet(node, sess);
 
     for (i = 0; i < node->num_of_nr_cell_id; i++)
-        if (node->nr_cell_id[i] == sess->nr_cgi.cell_id) return true;
+        if (node->nr_cell_id[i] == sess->nr_cgi.cell_id)
+            return compare_ue_subnet(node, sess);
 
     for (i = 0; i < node->num_of_tac; i++)
         if ((sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN &&
                 node->tac[i] == sess->e_tai.tac) ||
-            (node->tac[i] == sess->nr_tai.tac.v)) return true;
+            (node->tac[i] == sess->nr_tai.tac.v))
+            return compare_ue_subnet(node, sess);
 
     return false;
+}
+
+ogs_pfcp_node_t *smf_upf_node_find_by_addr(const char *addr)
+{
+    ogs_pfcp_node_t *node = NULL;
+
+    if (!addr || !addr[0])
+        return NULL;
+
+    ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, node) {
+        ogs_sockaddr_t *iter = NULL;
+
+        if (node->addr_list &&
+            !strcmp(ogs_sockaddr_to_string_static(node->addr_list), addr))
+            return node;
+
+        for (iter = node->addr_list; iter; iter = iter->next) {
+            char buf[OGS_ADDRSTRLEN];
+
+            if (!strcmp(OGS_ADDR(iter, buf), addr))
+                return node;
+        }
+    }
+
+    return NULL;
+}
+
+bool smf_sess_upf_eligible(smf_sess_t *sess, ogs_pfcp_node_t *node)
+{
+    ogs_assert(sess);
+    ogs_assert(node);
+
+    return compare_ue_info(node, sess);
 }
 
 static ogs_pfcp_node_t *selected_upf_node(
@@ -2091,6 +2190,8 @@ void smf_sess_remove(smf_sess_t *sess)
         ogs_freeaddrinfo(sess->handover.local_dl_addr);
     if (sess->handover.local_dl_addr6)
         ogs_freeaddrinfo(sess->handover.local_dl_addr6);
+
+    smf_migration_clear(sess);
 
     if (sess->local_dl_addr)
         ogs_freeaddrinfo(sess->local_dl_addr);

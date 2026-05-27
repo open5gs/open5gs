@@ -25,6 +25,7 @@
 #include "metrics.h"
 #include "ogs-metrics.h"
 #include "metrics/prometheus/json_pager.h"
+#include "migration.h"
 #include "pdu-info.h"
 
 static ogs_thread_t *thread;
@@ -95,6 +96,7 @@ int smf_initialize(void)
 
     /* dumper /pdu-info */
     ogs_metrics_register_custom_ep(smf_dump_pdu_info, "/pdu-info");
+    ogs_metrics_register_custom_req_ep(smf_handle_pdu_migrate, "/pdu-migrate");
 
     initialized = 1;
 

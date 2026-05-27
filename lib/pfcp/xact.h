@@ -81,6 +81,7 @@ typedef struct ogs_pfcp_xact_s {
     bool            epc;            /**< EPC or 5GC */
 
 #define OGS_PFCP_CREATE_RESTORATION_INDICATION ((uint64_t)1<<0)
+#define OGS_PFCP_CREATE_UPF_MIGRATION_TARGET ((uint64_t)1<<1)
     uint64_t        create_flags;
 
 #define OGS_PFCP_MODIFY_SESSION ((uint64_t)1<<0)
@@ -127,6 +128,8 @@ typedef struct ogs_pfcp_xact_s {
 #define OGS_PFCP_DELETE_TRIGGER_SMF_INITIATED 5
 #define OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT 6
 #define OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT 7
+#define OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_SOURCE 8
+#define OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_TARGET 9
     int             delete_trigger;
 
     ogs_list_t      pdr_to_create_list;

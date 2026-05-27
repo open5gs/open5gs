@@ -110,6 +110,8 @@ typedef struct ogs_pfcp_node_s {
     uint8_t         num_of_tac;
     const char*     dnn[OGS_MAX_NUM_OF_DNN];
     uint8_t         num_of_dnn;
+    ogs_ipsubnet_t  subnet[OGS_MAX_NUM_OF_SUBNET];
+    uint8_t         num_of_subnet;
     uint32_t        e_cell_id[OGS_MAX_NUM_OF_CELL_ID];
     uint8_t         num_of_e_cell_id;
     uint64_t        nr_cell_id[OGS_MAX_NUM_OF_CELL_ID];

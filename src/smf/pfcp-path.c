@@ -92,6 +92,28 @@ static void pfcp_node_fsm_fini(ogs_pfcp_node_t *node)
         ogs_timer_delete(node->t_association);
 }
 
+static ogs_pfcp_node_t *pfcp_node_find_by_local_xact(
+        ogs_list_t *list, ogs_pfcp_header_t *h)
+{
+    uint32_t xid;
+    ogs_pfcp_node_t *node = NULL;
+    ogs_pfcp_xact_t *xact = NULL;
+
+    ogs_assert(list);
+    ogs_assert(h);
+
+    xid = OGS_PFCP_SQN_TO_XID(h->sqn);
+
+    ogs_list_for_each(list, node) {
+        ogs_list_for_each(&node->local_list, xact) {
+            if (xact->xid == xid)
+                return node;
+        }
+    }
+
+    return NULL;
+}
+
 static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     int rv;
@@ -164,6 +186,18 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
 
     node = ogs_pfcp_node_find(&ogs_pfcp_self()->pfcp_peer_list,
             pfcp_status == OGS_PFCP_STATUS_SUCCESS ? &node_id : NULL, &from);
+    if (message->h.type == OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE) {
+        ogs_pfcp_node_t *xact_node = pfcp_node_find_by_local_xact(
+                &ogs_pfcp_self()->pfcp_peer_list, &message->h);
+
+        if (xact_node && xact_node != node) {
+            ogs_warn("PFCP Association Setup Response from %s matched "
+                    "a pending local transaction on a different peer; "
+                    "merging the new peer address",
+                    ogs_sockaddr_to_string_static(&from));
+            node = xact_node;
+        }
+    }
     if (!node) {
         if (message->h.type == OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE ||
             message->h.type == OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE) {
@@ -531,8 +565,9 @@ int smf_pfcp_send_modify_list(
     }
 }
 
-int smf_5gc_pfcp_send_session_establishment_request(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream, uint64_t flags)
+int smf_5gc_pfcp_send_session_establishment_request_to_node(
+        smf_sess_t *sess, ogs_pfcp_node_t *node,
+        ogs_sbi_stream_t *stream, uint64_t flags)
 {
     int rv;
     ogs_pkbuf_t *n4buf = NULL;
@@ -540,9 +575,10 @@ int smf_5gc_pfcp_send_session_establishment_request(
     ogs_pfcp_xact_t *xact = NULL;
 
     ogs_assert(sess);
+    ogs_assert(node);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, sess_5gc_timeout, OGS_UINT_TO_POINTER(sess->id));
+            node, sess_5gc_timeout, OGS_UINT_TO_POINTER(sess->id));
     if (!xact) {
         ogs_error("ogs_pfcp_xact_local_create() failed");
         return OGS_ERROR;
@@ -607,6 +643,16 @@ int smf_5gc_pfcp_send_session_establishment_request(
     ogs_expect(rv == OGS_OK);
 
     return rv;
+}
+
+int smf_5gc_pfcp_send_session_establishment_request(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, uint64_t flags)
+{
+    ogs_assert(sess);
+    ogs_assert(sess->pfcp_node);
+
+    return smf_5gc_pfcp_send_session_establishment_request_to_node(
+            sess, sess->pfcp_node, stream, flags);
 }
 
 int smf_5gc_pfcp_send_all_pdr_modification_request(
@@ -720,8 +766,9 @@ int smf_5gc_pfcp_send_one_qos_flow_modification_request(
     return rv;
 }
 
-int smf_5gc_pfcp_send_session_deletion_request(
-        smf_sess_t *sess, ogs_sbi_stream_t *stream, int trigger)
+int smf_5gc_pfcp_send_session_deletion_request_to_node(
+        smf_sess_t *sess, ogs_pfcp_node_t *node,
+        ogs_sbi_stream_t *stream, int trigger, uint64_t upf_n4_seid)
 {
     int rv;
     ogs_pkbuf_t *n4buf = NULL;
@@ -729,10 +776,12 @@ int smf_5gc_pfcp_send_session_deletion_request(
     ogs_pfcp_xact_t *xact = NULL;
 
     ogs_assert(sess);
+    ogs_assert(node);
     ogs_assert(trigger);
+    ogs_assert(upf_n4_seid);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, sess_5gc_timeout, OGS_UINT_TO_POINTER(sess->id));
+            node, sess_5gc_timeout, OGS_UINT_TO_POINTER(sess->id));
     if (!xact) {
         ogs_error("ogs_pfcp_xact_local_create() failed");
         return OGS_ERROR;
@@ -749,7 +798,7 @@ int smf_5gc_pfcp_send_session_deletion_request(
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_DELETION_REQUEST_TYPE;
-    h.seid = sess->upf_n4_seid;
+    h.seid = upf_n4_seid;
 
     n4buf = smf_n4_build_session_deletion_request(h.type, sess);
     if (!n4buf) {
@@ -767,6 +816,16 @@ int smf_5gc_pfcp_send_session_deletion_request(
     ogs_expect(rv == OGS_OK);
 
     return rv;
+}
+
+int smf_5gc_pfcp_send_session_deletion_request(
+        smf_sess_t *sess, ogs_sbi_stream_t *stream, int trigger)
+{
+    ogs_assert(sess);
+    ogs_assert(sess->pfcp_node);
+
+    return smf_5gc_pfcp_send_session_deletion_request_to_node(
+            sess, sess->pfcp_node, stream, trigger, sess->upf_n4_seid);
 }
 
 int smf_epc_pfcp_send_session_establishment_request(

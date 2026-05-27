@@ -32,6 +32,9 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer(
         smf_sess_t *sess, bool include_gbr);
 
+ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request_transfer_for_migration(
+        smf_sess_t *sess);
+
 ogs_pkbuf_t *ngap_build_pdu_session_resource_release_request_transfer(
         smf_sess_t *sess, NGAP_Cause_PR group, long cause);
 

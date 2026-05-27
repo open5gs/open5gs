@@ -20,6 +20,79 @@
 #include "context.h"
 #include "n4-build.h"
 
+static int prepare_migration_target_ue_ip_addr(
+        smf_sess_t *sess, ogs_pfcp_ue_ip_addr_t *addr, int *len, uint8_t sd)
+{
+    ogs_assert(sess);
+    ogs_assert(addr);
+    ogs_assert(len);
+
+    memset(addr, 0, sizeof(*addr));
+
+    if (sess->ipv4 && sess->ipv6) {
+        addr->ipv4 = 1;
+        addr->both.addr = sess->ipv4->addr[0];
+        addr->ipv6 = 1;
+        memcpy(addr->both.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
+        *len = OGS_IPV4V6_LEN + 1;
+    } else if (sess->ipv4) {
+        addr->ipv4 = 1;
+        addr->addr = sess->ipv4->addr[0];
+        *len = OGS_IPV4_LEN + 1;
+    } else if (sess->ipv6) {
+        addr->ipv6 = 1;
+        memcpy(addr->addr6, sess->ipv6->addr, OGS_IPV6_LEN);
+        *len = OGS_IPV6_LEN + 1;
+    } else {
+        ogs_error("Migration target PDR requires allocated UE IP");
+        return OGS_ERROR;
+    }
+
+    addr->sd = sd;
+    return OGS_OK;
+}
+
+static void prepare_migration_target_pdr(
+        smf_sess_t *sess, ogs_pfcp_pdr_t *dst, ogs_pfcp_pdr_t *src)
+{
+    ogs_assert(dst);
+    ogs_assert(src);
+
+    memcpy(dst, src, sizeof(*dst));
+
+    if (src->src_if == OGS_PFCP_INTERFACE_CORE &&
+        src->far && src->far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
+        ogs_assert(OGS_OK == prepare_migration_target_ue_ip_addr(
+                    sess, &dst->ue_ip_addr, &dst->ue_ip_addr_len,
+                    OGS_PFCP_UE_IP_DST));
+    } else if (src->ue_ip_addr_len) {
+        ogs_assert(OGS_OK == prepare_migration_target_ue_ip_addr(
+                    sess, &dst->ue_ip_addr, &dst->ue_ip_addr_len,
+                    src->ue_ip_addr.sd));
+    }
+
+    if (!dst->f_teid_len)
+        return;
+
+    if (dst->src_if != OGS_PFCP_INTERFACE_ACCESS &&
+        dst->src_if != OGS_PFCP_INTERFACE_CORE &&
+        dst->src_if != OGS_PFCP_INTERFACE_CP_FUNCTION)
+        return;
+
+    memset(&dst->f_teid, 0, sizeof(dst->f_teid));
+    dst->f_teid.ipv4 = 1;
+    dst->f_teid.ipv6 = 1;
+    dst->f_teid.ch = 1;
+    dst->f_teid_len = 1;
+
+    if (src->f_teid.chid || src->f_teid.choose_id) {
+        dst->f_teid.chid = 1;
+        dst->f_teid.choose_id = src->f_teid.choose_id ?
+            src->f_teid.choose_id : OGS_PFCP_DEFAULT_CHOOSE_ID;
+        dst->f_teid_len = 2;
+    }
+}
+
 ogs_pkbuf_t *smf_n4_build_session_establishment_request(
         uint8_t type, smf_sess_t *sess, ogs_pfcp_xact_t *xact)
 {
@@ -41,6 +114,7 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
     smf_ue_t *smf_ue = NULL;
     ogs_pfcp_user_id_t user_id;
     char user_id_buf[sizeof(ogs_pfcp_user_id_t)];
+    ogs_pfcp_pdr_t migration_target_pdr[OGS_MAX_NUM_OF_PDR];
 
     ogs_debug("Session Establishment Request");
     ogs_assert(sess);
@@ -80,11 +154,19 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
     req->cp_f_seid.len = len;
 
     ogs_pfcp_pdrbuf_init();
+    memset(migration_target_pdr, 0, sizeof(migration_target_pdr));
 
     /* Create PDR */
     i = 0;
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
-        ogs_pfcp_build_create_pdr(&req->create_pdr[i], i, pdr);
+        if (xact->create_flags & OGS_PFCP_CREATE_UPF_MIGRATION_TARGET) {
+            prepare_migration_target_pdr(
+                    sess, &migration_target_pdr[i], pdr);
+            ogs_pfcp_build_create_pdr(
+                    &req->create_pdr[i], i, &migration_target_pdr[i]);
+        } else {
+            ogs_pfcp_build_create_pdr(&req->create_pdr[i], i, pdr);
+        }
         i++;
     }
 
