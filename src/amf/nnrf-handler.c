@@ -83,10 +83,11 @@ void amf_nnrf_handle_nf_discover(
                 ran_ue_id = ctx->ran_ue_id;
         }
 
-        ogs_assert(ran_ue_id >= OGS_MIN_POOL_ID &&
-                ran_ue_id <= OGS_MAX_POOL_ID);
-        ran_ue = ran_ue_find_by_id(ran_ue_id);
-        ogs_assert(ran_ue);
+        /*
+         * ran_ue_id can remain OGS_INVALID_POOL_ID if this
+         * transaction was created without an associated NG context.
+         * Resolve ran_ue only where it is actually needed below.
+         */
     } else {
         ogs_fatal("(NF discover) Not implemented [%s:%d]",
             ogs_sbi_service_type_to_name(service_type), sbi_object->type);
@@ -98,6 +99,8 @@ void amf_nnrf_handle_nf_discover(
     nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
                     target_nf_type, requester_nf_type, discovery_option);
     if (!nf_instance) {
+        ogs_sbi_xact_remove(xact);
+
         switch(sbi_object->type) {
         case OGS_SBI_OBJ_UE_TYPE:
             amf_ue = (amf_ue_t *)sbi_object;
@@ -120,8 +123,6 @@ void amf_nnrf_handle_nf_discover(
                 amf_ue->amf_ue_context_transfer_state =
                         UE_CONTEXT_INITIAL_STATE;
 
-                ogs_sbi_xact_remove(xact);
-
                 if (!(AMF_UE_HAVE_SUCI(amf_ue) ||
                         AMF_UE_HAVE_SUPI(amf_ue))) {
                     CLEAR_AMF_UE_TIMER(amf_ue->t3570);
@@ -140,6 +141,17 @@ void amf_nnrf_handle_nf_discover(
         case OGS_SBI_OBJ_SESS_TYPE:
             ogs_error("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
                         ogs_sbi_service_type_to_name(service_type));
+
+            if (ran_ue_id >= OGS_MIN_POOL_ID &&
+                    ran_ue_id <= OGS_MAX_POOL_ID)
+                ran_ue = ran_ue_find_by_id(ran_ue_id);
+
+            if (!ran_ue) {
+                ogs_warn("[%s:%s:%d:%d] NG Context has already been removed",
+                        amf_ue->supi, amf_ue->suci, sess->psi, sess->pti);
+                break;
+            }
+
             if (sess->payload_container_type) {
                 r = nas_5gs_send_back_gsm_message(
                         ran_ue, sess,
@@ -195,6 +207,8 @@ void amf_nnrf_handle_failed_amf_discovery(
     ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
                 sbi_object->type < OGS_SBI_OBJ_TOP);
 
+    ogs_sbi_xact_remove(sbi_xact);
+
     if (sbi_object->type == OGS_SBI_OBJ_UE_TYPE) {
 
         amf_ue = (amf_ue_t *)sbi_object;
@@ -214,8 +228,6 @@ void amf_nnrf_handle_failed_amf_discovery(
 
             amf_ue->amf_ue_context_transfer_state =
                     UE_CONTEXT_INITIAL_STATE;
-
-            ogs_sbi_xact_remove(sbi_xact);
 
             if (!(AMF_UE_HAVE_SUCI(amf_ue) ||
                     AMF_UE_HAVE_SUPI(amf_ue))) {
