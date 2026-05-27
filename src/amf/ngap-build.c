@@ -2048,41 +2048,6 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 
     RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
 
-    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
-    ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
-
-    ie->id = NGAP_ProtocolIE_ID_id_SecurityContext;
-    ie->criticality = NGAP_Criticality_reject;
-    ie->value.present =
-        NGAP_PathSwitchRequestAcknowledgeIEs__value_PR_SecurityContext;
-
-    SecurityContext = &ie->value.choice.SecurityContext;
-
-    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
-    ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
-
-    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceSwitchedList;
-    ie->criticality = NGAP_Criticality_ignore;
-    ie->value.present = NGAP_PathSwitchRequestAcknowledgeIEs__value_PR_PDUSessionResourceSwitchedList;
-
-    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
-            (long long)ran_ue->ran_ue_ngap_id,
-            (long long)ran_ue->amf_ue_ngap_id);
-
-    asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
-    *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
-
-    SecurityContext->nextHopChainingCount = amf_ue->nhcc;
-    SecurityContext->nextHopNH.size = OGS_SHA256_DIGEST_SIZE;
-    SecurityContext->nextHopNH.buf =
-        CALLOC(SecurityContext->nextHopNH.size, sizeof(uint8_t));
-    SecurityContext->nextHopNH.bits_unused = 0;
-    memcpy(SecurityContext->nextHopNH.buf,
-            amf_ue->nh, SecurityContext->nextHopNH.size);
-
-    PDUSessionResourceSwitchedList =
-        &ie->value.choice.PDUSessionResourceSwitchedList;
-
     if (send_ue_security_capability) {
         ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
         ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
@@ -2126,6 +2091,41 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
         UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf[0] =
             (amf_ue->ue_security_capability.eutra_ia << 1);
     }
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_SecurityContext;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PathSwitchRequestAcknowledgeIEs__value_PR_SecurityContext;
+
+    SecurityContext = &ie->value.choice.SecurityContext;
+
+    ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceSwitchedList;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_PathSwitchRequestAcknowledgeIEs__value_PR_PDUSessionResourceSwitchedList;
+
+    ogs_debug("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+            (long long)ran_ue->ran_ue_ngap_id,
+            (long long)ran_ue->amf_ue_ngap_id);
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
+
+    SecurityContext->nextHopChainingCount = amf_ue->nhcc;
+    SecurityContext->nextHopNH.size = OGS_SHA256_DIGEST_SIZE;
+    SecurityContext->nextHopNH.buf =
+        CALLOC(SecurityContext->nextHopNH.size, sizeof(uint8_t));
+    SecurityContext->nextHopNH.bits_unused = 0;
+    memcpy(SecurityContext->nextHopNH.buf,
+            amf_ue->nh, SecurityContext->nextHopNH.size);
+
+    PDUSessionResourceSwitchedList =
+        &ie->value.choice.PDUSessionResourceSwitchedList;
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
         OCTET_STRING_t *transfer = NULL;
