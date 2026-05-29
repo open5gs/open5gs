@@ -1081,7 +1081,15 @@ static int smf_ue_set_supi(smf_ue_t *smf_ue, const char *supi)
     smf_ue_t *indexed_smf_ue = NULL;
 
     ogs_assert(smf_ue);
-    ogs_assert(supi);
+
+    if (!supi) {
+        ogs_error("No SUPI");
+        return OGS_ERROR;
+    }
+    if (strlen(supi) == 0) {
+        ogs_error("Empty SUPI");
+        return OGS_ERROR;
+    }
 
     if (smf_ue->supi) {
         if (strcmp(smf_ue->supi, supi) != 0) {
@@ -1196,7 +1204,14 @@ smf_ue_t *smf_ue_add_by_supi(char *supi)
     bool created = false;
     bool imsi_supi = false;
 
-    ogs_assert(supi);
+    if (!supi) {
+        ogs_error("No SUPI");
+        return NULL;
+    }
+    if (strlen(supi) == 0) {
+        ogs_error("Empty SUPI");
+        return NULL;
+    }
 
     memset(imsi_bcd, 0, sizeof(imsi_bcd));
     memset(imsi, 0, sizeof(imsi));
@@ -1343,8 +1358,20 @@ void smf_ue_remove_all(void)
 
 smf_ue_t *smf_ue_find_by_supi(char *supi)
 {
-    ogs_assert(supi);
-    return (smf_ue_t *)ogs_hash_get(self.supi_hash, supi, strlen(supi));
+    size_t supi_len;
+
+    if (!supi) {
+        ogs_error("No SUPI");
+        return NULL;
+    }
+
+    supi_len = strlen(supi);
+    if (supi_len == 0) {
+        ogs_error("Empty SUPI");
+        return NULL;
+    }
+
+    return (smf_ue_t *)ogs_hash_get(self.supi_hash, supi, supi_len);
 }
 
 smf_ue_t *smf_ue_find_by_imsi(uint8_t *imsi, int imsi_len)
@@ -1750,6 +1777,10 @@ smf_sess_t *smf_sess_add_by_sm_context(ogs_sbi_message_t *message)
         ogs_error("No SUPI");
         return NULL;
     }
+    if (strlen(SmContextCreateData->supi) == 0) {
+        ogs_error("Empty SUPI");
+        return NULL;
+    }
 
     if (SmContextCreateData->is_pdu_session_id == false) {
         ogs_error("No PDU session identitiy");
@@ -1802,6 +1833,10 @@ smf_sess_t *smf_sess_add_by_pdu_session(ogs_sbi_message_t *message)
 
     if (!PduSessionCreateData->supi) {
         ogs_error("No SUPI");
+        return NULL;
+    }
+    if (strlen(PduSessionCreateData->supi) == 0) {
+        ogs_error("Empty SUPI");
         return NULL;
     }
 
