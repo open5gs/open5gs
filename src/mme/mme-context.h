@@ -667,6 +667,24 @@ struct mme_ue_s {
     do { \
         enb_ue_t *enb_ue_holding = NULL; \
         \
+        enb_ue_holding = enb_ue_find_by_id((__mME)->enb_ue_holding_id); \
+        if (enb_ue_holding) { \
+            int r; \
+            ogs_warn("[%s] Holding S1 context already exists", \
+                    (__mME)->imsi_bcd); \
+            ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]", \
+                    (__mME)->imsi_bcd, \
+                    enb_ue_holding->enb_ue_s1ap_id, \
+                    enb_ue_holding->mme_ue_s1ap_id); \
+            r = s1ap_send_ue_context_release_command( \
+                    enb_ue_holding, \
+                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release, \
+                    S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0); \
+            ogs_expect(r == OGS_OK); \
+        } else if ((__mME)->enb_ue_holding_id != OGS_INVALID_POOL_ID) { \
+            ogs_warn("[%s] Holding S1 context has already been removed", \
+                    (__mME)->imsi_bcd); \
+        } \
         (__mME)->enb_ue_holding_id = OGS_INVALID_POOL_ID; \
         \
         enb_ue_holding = enb_ue_find_by_id((__mME)->enb_ue_id); \

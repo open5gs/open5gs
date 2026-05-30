@@ -548,6 +548,24 @@ struct amf_ue_s {
     do { \
         ran_ue_t *ran_ue_holding = NULL; \
         \
+        ran_ue_holding = ran_ue_find_by_id((__aMF)->ran_ue_holding_id); \
+        if (ran_ue_holding) { \
+            int r; \
+            ogs_warn("[%s] Holding NG context already exists", \
+                    (__aMF)->suci); \
+            ogs_warn("[%s]    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]", \
+                    (__aMF)->suci, \
+                    (long long)ran_ue_holding->ran_ue_ngap_id, \
+                    (long long)ran_ue_holding->amf_ue_ngap_id); \
+            r = ngap_send_ran_ue_context_release_command( \
+                    ran_ue_holding, \
+                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
+                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
+            ogs_expect(r == OGS_OK); \
+        } else if ((__aMF)->ran_ue_holding_id != OGS_INVALID_POOL_ID) { \
+            ogs_warn("[%s] Holding NG context has already been removed", \
+                    (__aMF)->suci); \
+        } \
         (__aMF)->ran_ue_holding_id = OGS_INVALID_POOL_ID; \
         \
         ran_ue_holding = ran_ue_find_by_id((__aMF)->ran_ue_id); \

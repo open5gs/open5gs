@@ -2155,15 +2155,60 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
             ogs_warn("[%s] OLD UE Context Release", suci);
             if (CM_CONNECTED(old_amf_ue)) {
                 ran_ue_t *ran_ue = ran_ue_find_by_id(old_amf_ue->ran_ue_id);
-                /* Implcit NG release */
-                ogs_warn("[%s] Implicit NG release", suci);
+                ran_ue_t *ran_ue_holding = NULL;
+
+                /*
+                 * Keep the old NG context until the new registration is
+                 * authenticated. CLEAR_NG_CONTEXT(amf_ue) will then send
+                 * UEContextReleaseCommand to the old NG-RAN context.
+                 *
+                 * Do not use HOLDING_NG_CONTEXT(old_amf_ue) here: that macro
+                 * stores the holding id in old_amf_ue, but this function
+                 * removes old_amf_ue below after moving the session context
+                 * to the new amf_ue.
+                 */
+                ogs_warn("[%s] Holding old NG context", suci);
                 if (ran_ue) {
+                    int r;
+
+                    ran_ue_holding =
+                        ran_ue_find_by_id(amf_ue->ran_ue_holding_id);
+                    if (ran_ue_holding) {
+                        ogs_error("[%s] Holding NG context already exists",
+                                suci);
+                        ogs_error("[%s]    RAN_UE_NGAP_ID[%lld] "
+                                "AMF_UE_NGAP_ID[%lld]",
+                                suci,
+                                (long long)ran_ue_holding->ran_ue_ngap_id,
+                                (long long)ran_ue_holding->amf_ue_ngap_id);
+                        r = ngap_send_ran_ue_context_release_command(
+                                ran_ue_holding,
+                                NGAP_Cause_PR_nas,
+                                NGAP_CauseNas_normal_release,
+                                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+                        ogs_expect(r == OGS_OK);
+                    } else if (amf_ue->ran_ue_holding_id !=
+                            OGS_INVALID_POOL_ID) {
+                        ogs_error("[%s] Holding NG context has already "
+                                "been removed", suci);
+                    }
+                    amf_ue->ran_ue_holding_id = OGS_INVALID_POOL_ID;
+
+                    ran_ue->amf_ue_id = OGS_INVALID_POOL_ID;
+
                     ogs_warn("[%s]    RAN_UE_NGAP_ID[%lld] "
                             "AMF_UE_NGAP_ID[%lld]",
                             old_amf_ue->suci,
                             (long long)ran_ue->ran_ue_ngap_id,
                             (long long)ran_ue->amf_ue_ngap_id);
-                    ran_ue_remove(ran_ue);
+
+                    ran_ue->ue_ctx_rel_action =
+                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE;
+                    ogs_timer_start(ran_ue->t_ng_holding,
+                            amf_timer_cfg(AMF_TIMER_NG_HOLDING)->duration);
+
+                    amf_ue->ran_ue_holding_id = old_amf_ue->ran_ue_id;
+                    old_amf_ue->ran_ue_id = OGS_INVALID_POOL_ID;
                 } else {
                     ogs_error("[%s] RAN-NG Context has already been removed",
                                 old_amf_ue->suci);
