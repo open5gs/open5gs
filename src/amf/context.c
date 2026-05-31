@@ -2636,6 +2636,71 @@ ogs_s_nssai_t *amf_find_s_nssai(
     return NULL;
 }
 
+ogs_session_t *amf_resolve_session_for_requested_dnn(
+        amf_ue_t *amf_ue, ogs_slice_data_t *slice,
+        const char *requested_dnn)
+{
+    int i;
+    ogs_session_t *default_session = NULL;
+
+    ogs_assert(amf_ue);
+    ogs_assert(slice);
+
+    /* First try exact DNN match within this slice's subscribed sessions. */
+    if (requested_dnn) {
+        for (i = 0; i < slice->num_of_session; i++) {
+            if (slice->session[i].name &&
+                    ogs_strcasecmp(
+                        slice->session[i].name, requested_dnn) == 0) {
+                return &slice->session[i];
+            }
+        }
+    }
+
+    /* 3GPP TS 23.501 §5.6.7: when the UE-requested DNN is not part
+     * of the subscription for the matched slice, the AMF may select
+     * the subscriber's default DNN for that slice instead of
+     * rejecting the PDU Session Establishment. The default DNN is
+     * the first session in the slice subscription record (the one
+     * carrying the defaultDnnIndicator from the UDM/UDR). This
+     * supports UEs with stationary APN configuration that should
+     * still be admitted to the local PLMN with the subscribed
+     * default DNN.
+     *
+     * Implicit opt-in per subscriber: the substitution only fires
+     * when the slice has at least one subscribed session — operators
+     * preferring strict reject for a given subscriber can leave the
+     * slice empty of sessions to disable the fallback. */
+    if (slice->num_of_session == 0)
+        return NULL;
+
+    default_session = &slice->session[0];
+
+    /* If the UE provided no DNN at all, picking the default is the
+     * existing (non-substitution) behaviour — return without an
+     * info-log to avoid surprising operators with new noise on the
+     * happy path. */
+    if (!requested_dnn)
+        return default_session;
+
+    /* Substitution path. Note: the spec explicitly allows multiple
+     * concurrent PDU Sessions on the same DNN (different SSC modes,
+     * different S-NSSAIs, or simply different PDU Session IDs per
+     * TS 23.501 §5.6.4 / §5.6.5), so this helper deliberately does
+     * NOT block a substitution when the UE already has another
+     * session on the default DNN. PDU-Session-ID-level duplicate
+     * detection is the caller's responsibility and is enforced by
+     * gmm_handle_ul_nas_transport() before this helper runs. */
+    ogs_info("[%s] Requested DNN[%s] not subscribed in slice "
+             "[SST:%d SD:0x%x] — substituting default DNN[%s] "
+             "(per TS 23.501 §5.6.7)",
+             amf_ue->supi, requested_dnn,
+             slice->s_nssai.sst, slice->s_nssai.sd.v,
+             default_session->name);
+
+    return default_session;
+}
+
 #if 0 /* DEPRECATED */
 int amf_m_tmsi_pool_generate(void)
 {
