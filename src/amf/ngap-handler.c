@@ -2779,12 +2779,23 @@ void ngap_handle_uplink_ran_configuration_transfer(
 
         target_gnb = amf_gnb_find_by_gnb_id(target_gnb_id);
         if (!target_gnb) {
-            ogs_error("Uplink RAN configuration transfer : "
-                    "cannot find target gNB-id[0x%x]", target_gnb_id);
-            r = ngap_send_error_indication(gnb, NULL, NULL,
-                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
+            /* 3GPP TS 38.413 §8.7.1.2 instructs the AMF to forward
+             * SON Configuration Transfer "if the target gNB is
+             * known" and defines no response for the unknown-target
+             * case. ErrorIndication is technically permitted by
+             * §8.4.1 but in practice it can sustain retransmit
+             * loops on RAN stacks where the X2/Xn-Setup retry
+             * counter is effectively unbounded: each unanswered
+             * Configuration Transfer accumulates state on the
+             * source gNB. Silent discard follows the spec wording
+             * ("if known" → otherwise no action) and breaks the
+             * loop without changing protocol semantics for any
+             * spec-compliant peer. Mirrors the analogous fix in
+             * src/mme/s1ap-handler.c for S1AP §8.7.1. */
+            ogs_warn("Uplink RAN Configuration Transfer: "
+                     "target gNB-id[0x%x] not connected — "
+                     "silently discarding (TS 38.413 §8.7.1.2)",
+                     target_gnb_id);
             return;
         }
 
