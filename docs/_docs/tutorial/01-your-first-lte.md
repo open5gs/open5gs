@@ -191,7 +191,7 @@ $ echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.
 
 # Run Update and Install
 $ sudo apt update
-$ sudo apt install nodejs -y
+$ sudo apt install nodejs npm -y
 
 # Install the WebUI of Open5GS
 $ curl -fsSL https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
