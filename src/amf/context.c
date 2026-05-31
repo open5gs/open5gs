@@ -3153,6 +3153,34 @@ bool amf_update_allowed_nssai(amf_ue_t *amf_ue)
     return true;
 }
 
+bool amf_ue_voice_over_ps_supported(amf_ue_t *amf_ue)
+{
+    int i, j;
+
+    if (!ogs_global_conf()->parameter.vops_per_apn)
+        return true;
+
+    if (!amf_ue)
+        return false;
+
+    /*
+     * Match the IMS DNN by either the bare "ims" name or the
+     * GSMA IR.88 / TS 23.003 §9.1.2 FQDN form
+     * "ims.mncXXX.mccYYY.3gppnetwork.org" (5G) — the latter is what
+     * most roaming-aware UDMs hand out. Match is case-insensitive.
+     */
+    for (i = 0; i < amf_ue->num_of_slice; i++) {
+        for (j = 0; j < amf_ue->slice[i].num_of_session; j++) {
+            const char *dnn = amf_ue->slice[i].session[j].name;
+            if (dnn &&
+                    (ogs_strcasecmp(dnn, "ims") == 0 ||
+                     ogs_strncasecmp(dnn, "ims.", 4) == 0))
+                return true;
+        }
+    }
+    return false;
+}
+
 bool amf_ue_is_rat_restricted(amf_ue_t *amf_ue)
 {
     OpenAPI_lnode_t *node = NULL;

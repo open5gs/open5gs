@@ -76,6 +76,17 @@ typedef struct ogs_global_conf_s {
 
         int no_pfcp_rr_select;
         int no_time_zone_information;
+
+        /* When true, MME/AMF derive the
+         * "IMS Voice over PS Sessions in S1/3GPP-Access" support bit
+         * in the EPS / 5GS Network Feature Support IE per-subscriber
+         * from whether the subscriber's subscribed APN/DNN list
+         * contains an IMS-flagged entry (case-insensitive name match
+         * on "ims"), rather than always advertising support.
+         *
+         * Default false: preserve historical hardcoded =1 behaviour.
+         * Composes with global no_ims-style overrides if/when added. */
+        int vops_per_apn;
     } parameter;
 
     struct {
