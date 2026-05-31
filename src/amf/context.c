@@ -18,6 +18,7 @@
  */
 
 #include "ngap-path.h"
+#include "sbi-path.h"
 
 static amf_context_t self;
 
@@ -2137,7 +2138,6 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
         ogs_nas_5gs_mobile_identity_t *mobile_identity)
 {
     amf_ue_t *old_amf_ue = NULL;
-    amf_sess_t *old_sess = NULL;
     char *suci = NULL;
 
     ogs_assert(amf_ue);
@@ -2152,6 +2152,8 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
         /* Check if OLD amf_ue_t is different with NEW amf_ue_t */
         if (ogs_pool_index(&amf_ue_pool, amf_ue) !=
             ogs_pool_index(&amf_ue_pool, old_amf_ue)) {
+            ran_ue_t *new_ran_ue = NULL;
+
             ogs_warn("[%s] OLD UE Context Release", suci);
             if (CM_CONNECTED(old_amf_ue)) {
                 ran_ue_t *ran_ue = ran_ue_find_by_id(old_amf_ue->ran_ue_id);
@@ -2216,30 +2218,55 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
             }
 
     /*
-     * We should delete the AMF-Session Context in the AMF-UE Context.
-     * Otherwise, all unnecessary SESSIONs remain in SMF/UPF.
+     * SUCI re-attach signals a fresh UE state per TS 24.501 §5.5.1.2:
+     * the UE has discarded its 5G NAS security context (USIM-toggle,
+     * post-deregistration timer, flight-mode cycle, etc.) and is
+     * starting Initial Registration without a usable 5G-GUTI. Any PDU
+     * sessions previously anchored to the old amf_ue context must be
+     * torn down through the standard release path, not transplanted
+     * onto the new context.
      *
-     * In order to do this, AMF-Session Context should be moved
-     * from OLD AMF-UE Context to NEW AMF-UE Context.
+     * The pre-2026 implementation shallow-copied old_amf_ue->sess_list
+     * onto the new amf_ue and then removed old_amf_ue immediately, on
+     * the assumption that "Another SBI Transaction can cause fatal
+     * errors". That assumption no longer holds: amf_sbi_send_release_*
+     * dispatches via the xact-queue mechanism (sbi-path.c), which
+     * defers old_amf_ue removal until every pending Nsmf_PDUSession
+     * Release transaction has completed (nsmf-handler.c).
      *
-     * If needed, The Session deletion process in NEW-AMF UE context will work.
+     * The transplant has the architectural side-effect of leaving the
+     * SMF anchored to the old amf_ue identity (the
+     * sm_context_resource_uri / sm_context_ref pair the SMF allocated
+     * against the original ran_ue / amf_ue_ngap_id). Subsequent
+     * Nsmf_PDUSession_UpdateSMContext calls from the new amf_ue
+     * therefore receive 404 from the SMF, the AMF wakes up and pages
+     * the UE, the UE responds with another SUCI re-attach, and the
+     * cascade self-perpetuates until mobile-reachable timer expiry
+     * (~5 min) finally garbage-collects the leak. Field-observed in
+     * issue #4427 with iPhone-16 organic traffic and reproduced via
+     * flight-mode toggle on the same device.
      *
-     * Note that we should not send Session-Release to the SMF at this point.
-     * Another SBI Transaction can cause fatal errors.
+     * The release uses AMF_RELEASE_SM_CONTEXT_NO_STATE so we do not
+     * re-enter any GMM state machine on old_amf_ue (which is about to
+     * be removed). new_ran_ue from the incoming registration carries
+     * the necessary peer-NF context for SBI dispatch; we do NOT use
+     * old_amf_ue->ran_ue_id because that ran_ue has been freed two
+     * blocks above when the old context was CM_CONNECTED.
      */
+            new_ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+            amf_sbi_send_release_all_sessions(
+                    new_ran_ue, old_amf_ue,
+                    AMF_RELEASE_SM_CONTEXT_NO_STATE, NULL);
 
-            /* Phase-1 : Change AMF-UE Context in Session Context */
-            ogs_list_for_each(&old_amf_ue->sess_list, old_sess)
-                old_sess->amf_ue_id = amf_ue->id;
-
-            /* Phase-2 : Move Session Context from OLD to NEW AMF-UE Context */
-            memcpy(&amf_ue->sess_list,
-                    &old_amf_ue->sess_list, sizeof(amf_ue->sess_list));
-
-            /* Phase-3 : Clear Session Context in OLD AMF-UE Context */
-            memset(&old_amf_ue->sess_list, 0, sizeof(old_amf_ue->sess_list));
-
-            amf_ue_remove(old_amf_ue);
+            if (amf_sess_xact_count(old_amf_ue) == 0) {
+                /* No PDU sessions held at the SMF, or all releases
+                 * dispatched synchronously already — safe to remove
+                 * old_amf_ue right away. */
+                amf_ue_remove(old_amf_ue);
+            }
+            /* else: removal is deferred; the SBI release-completion
+             * path (nsmf-handler.c) calls amf_ue_remove(old_amf_ue)
+             * once xact_count drops to zero. */
         }
     }
 
