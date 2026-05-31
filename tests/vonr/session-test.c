@@ -1951,7 +1951,7 @@ static void test5_func(abts_case *tc, void *data)
             NGAP_ProcedureCode_id_DownlinkNASTransport,
             test_ue->ngap_procedure_code);
     ABTS_INT_EQUAL(tc,
-            OGS_NAS_5GS_5GMM_STATUS,
+            OGS_NAS_5GS_DL_NAS_TRANSPORT,
             test_ue->gmm_message_type);
 
     /* Waiting for deleting PDU session */
@@ -2227,7 +2227,7 @@ static void test6_func(abts_case *tc, void *data)
             NGAP_ProcedureCode_id_DownlinkNASTransport,
             test_ue->ngap_procedure_code);
     ABTS_INT_EQUAL(tc,
-            OGS_NAS_5GS_5GMM_STATUS,
+            OGS_NAS_5GS_DL_NAS_TRANSPORT,
             test_ue->gmm_message_type);
 
     /* Remove All Test Session */
