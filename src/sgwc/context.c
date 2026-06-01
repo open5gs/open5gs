@@ -257,7 +257,8 @@ int sgwc_ue_remove(sgwc_ue_t *sgwc_ue)
 
     ogs_hash_set(self.sgw_s11_teid_hash,
             &sgwc_ue->sgw_s11_teid, sizeof(sgwc_ue->sgw_s11_teid), NULL);
-    ogs_hash_set(self.imsi_ue_hash, sgwc_ue->imsi, sgwc_ue->imsi_len, NULL);
+    ogs_hash_unset_if_owner(self.imsi_ue_hash,
+            sgwc_ue->imsi, sgwc_ue->imsi_len, sgwc_ue);
 
     sgwc_sess_remove_all(sgwc_ue);
 

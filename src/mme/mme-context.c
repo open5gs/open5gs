@@ -3511,8 +3511,8 @@ void mme_ue_confirm_guti(mme_ue_t *mme_ue)
     if (MME_CURRENT_GUTI_IS_AVAILABLE(mme_ue)) {
         /* MME has a VALID GUTI
          * As such, we need to remove previous GUTI in hash table */
-        ogs_hash_set(self.guti_ue_hash,
-                &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), NULL);
+        ogs_hash_unset_if_owner(self.guti_ue_hash,
+                &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), mme_ue);
         ogs_assert(mme_m_tmsi_free(mme_ue->current.m_tmsi) == OGS_OK);
     }
 
@@ -3782,12 +3782,12 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     if (sgw_ue) sgw_ue_remove(sgw_ue);
 
     if (mme_ue->imsi_len != 0)
-        ogs_hash_set(mme_self()->imsi_ue_hash,
-                mme_ue->imsi, mme_ue->imsi_len, NULL);
+        ogs_hash_unset_if_owner(mme_self()->imsi_ue_hash,
+                mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
     if (MME_CURRENT_GUTI_IS_AVAILABLE(mme_ue)) {
-        ogs_hash_set(self.guti_ue_hash,
-                &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), NULL);
+        ogs_hash_unset_if_owner(self.guti_ue_hash,
+                &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), mme_ue);
         ogs_assert(mme_m_tmsi_free(mme_ue->current.m_tmsi) == OGS_OK);
     }
 
@@ -4106,8 +4106,8 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
      * in mme_state_operational().
      */
     if (mme_ue->imsi_len != 0)
-        ogs_hash_set(mme_self()->imsi_ue_hash,
-                mme_ue->imsi, mme_ue->imsi_len, NULL);
+        ogs_hash_unset_if_owner(mme_self()->imsi_ue_hash,
+                mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
     ogs_cpystrn(mme_ue->imsi_bcd, imsi_bcd, OGS_MAX_IMSI_BCD_LEN+1);
     ogs_bcd_to_buffer(mme_ue->imsi_bcd, mme_ue->imsi, &mme_ue->imsi_len);
@@ -4208,6 +4208,8 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
             }
 
             /* Phase-2 : Move Session Context from OLD to NEW MME-UE Context */
+            ogs_assert(ogs_list_empty(&mme_ue->sess_list));
+
             memcpy(&mme_ue->sess_list,
                     &old_mme_ue->sess_list, sizeof(mme_ue->sess_list));
 

@@ -404,7 +404,8 @@ void pcf_ue_am_remove(pcf_ue_am_t *pcf_ue_am)
     ogs_free(pcf_ue_am->association_id);
 
     ogs_assert(pcf_ue_am->supi);
-    ogs_hash_set(self.supi_am_hash, pcf_ue_am->supi, strlen(pcf_ue_am->supi), NULL);
+    ogs_hash_unset_if_owner(self.supi_am_hash,
+            pcf_ue_am->supi, strlen(pcf_ue_am->supi), pcf_ue_am);
     ogs_free(pcf_ue_am->supi);
 
     if (pcf_ue_am->notification_uri)
@@ -467,7 +468,8 @@ void pcf_ue_sm_remove(pcf_ue_sm_t *pcf_ue_sm)
     pcf_sess_remove_all(pcf_ue_sm);
 
     ogs_assert(pcf_ue_sm->supi);
-    ogs_hash_set(self.supi_sm_hash, pcf_ue_sm->supi, strlen(pcf_ue_sm->supi), NULL);
+    ogs_hash_unset_if_owner(self.supi_sm_hash,
+            pcf_ue_sm->supi, strlen(pcf_ue_sm->supi), pcf_ue_sm);
     ogs_free(pcf_ue_sm->supi);
 
     if (pcf_ue_sm->gpsi)
