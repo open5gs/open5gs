@@ -126,8 +126,9 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         mongodb-org | mongodb,
          open5gs-common (= ${binary:Version})
+Recommends:
+         mongodb-org | mongodb,
 Description: HSS (Home Subscriber Server)
  Open5GS is a C-language implementation of 5G Core and EPC
  Packet Core, i.e. the core network of an NR/LTE network (Release-17)
@@ -143,8 +144,9 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         mongodb-org | mongodb,
          open5gs-common (= ${binary:Version})
+Recommends:
+         mongodb-org | mongodb,
 Description: PCRF (Policy and Charging Rules Function)
  Open5GS is a C-language implementation of 5G Core and EPC
  Packet Core, i.e. the core network of an NR/LTE network (Release-17)
