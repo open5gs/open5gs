@@ -372,6 +372,7 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_APP_SESSIONS)
                 sess = e->h.sbi.data;
                 ogs_assert(sess);
+                sess->last_pcf_status = message.res_status;
 
                 if (message.h.resource.component[1]) {
                     if (message.h.resource.component[2]) {
@@ -406,6 +407,14 @@ void af_state_operational(ogs_fsm_t *s, af_event_t *e)
                         if (message.res_status == OGS_SBI_HTTP_STATUS_CREATED)
                             af_npcf_policyauthorization_handle_create(
                                     sess, &message);
+                        else if (message.res_status ==
+                                OGS_SBI_HTTP_STATUS_FORBIDDEN)
+        /*
+         * 403 may be expected in negative tests, such as unknown qosReference.
+         * Do not report it as an AF test error here.
+         */
+                            ogs_warn("HTTP response error [%d]",
+                                    message.res_status);
                         else
                             ogs_error("HTTP response error [%d]",
                                     message.res_status);

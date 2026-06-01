@@ -351,6 +351,11 @@ pcf:
     server:
       - address: 127.0.2.13
         port: 9090
+  qos_profiles:
+    - reference: "test-audio"
+      qos_index: 1
+    - reference: "test-video"
+      qos_index: 2
   policy:
     - supi_range:
         - 999700000000001-999709999999999

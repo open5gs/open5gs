@@ -51,6 +51,7 @@ typedef struct af_sess_s {
     ogs_sbi_object_t sbi;
 
     uint64_t policyauthorization_features;
+    int last_pcf_status;
 
 #define PCF_APP_SESSION_ASSOCIATED(__sESS) \
     ((__sESS) && ((__sESS)->app_session.pcf_id))
