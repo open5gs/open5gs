@@ -383,6 +383,20 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* OLD Receive UEContextReleaseCommand */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_UEContextRelease,
+            test_ue->ngap_procedure_code);
+
+    /* Send OLD UEContextReleaseComplete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     /* Receive InitialContextSetupRequest +
      * Registration accept */
     recvbuf = testgnb_ngap_read(ngap);
@@ -1880,7 +1894,7 @@ static void context_transfer_func(abts_case *tc, void *data)
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
 
     /* gNB connects to AMF(default configuration) */
-    ngap = testngap_client(AF_INET);
+    ngap = testngap_client(1, AF_INET);
     ABTS_PTR_NOTNULL(tc, ngap);
 
     /* gNB connects to AMF(127.0.1.5) */

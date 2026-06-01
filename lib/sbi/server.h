@@ -32,6 +32,7 @@ extern "C" {
 #include <openssl/err.h>
 
 typedef struct ogs_sbi_stream_s ogs_sbi_stream_t;
+typedef struct ogs_sbi_xact_s ogs_sbi_xact_t;
 
 typedef struct ogs_sbi_server_s {
     ogs_socknode_t  node;
@@ -71,6 +72,15 @@ typedef struct ogs_sbi_server_actions_s {
 
     ogs_pool_id_t (*id_from_stream)(ogs_sbi_stream_t *stream);
     void *(*stream_find_by_id)(ogs_pool_id_t id);
+
+    /*
+     * Per-backend hooks linking an outbound SBI transaction into the
+     * inbound server stream that triggered it. The list head lives
+     * inside the backend-private stream/session struct, so each
+     * backend (HTTP/2 vs MHD) provides its own attach/detach.
+     */
+    void (*xact_attach)(ogs_sbi_stream_t *stream, ogs_sbi_xact_t *xact);
+    void (*xact_detach)(ogs_sbi_xact_t *xact);
 } ogs_sbi_server_actions_t;
 
 void ogs_sbi_server_init(int num_of_session_pool, int num_of_stream_pool);
@@ -106,6 +116,36 @@ ogs_sbi_server_t *ogs_sbi_server_from_stream(ogs_sbi_stream_t *stream);
 
 ogs_pool_id_t ogs_sbi_id_from_stream(ogs_sbi_stream_t *stream);
 void *ogs_sbi_stream_find_by_id(ogs_pool_id_t id);
+
+/*
+ * Helpers used by lib/sbi to link an outbound SBI transaction into
+ * the inbound stream that triggered it. NFs do not call these
+ * directly: ogs_sbi_discover_and_send() attaches when
+ * xact->assoc_stream_id is set, and ogs_sbi_xact_remove() /
+ * stream close detach automatically.
+ *
+ * Both helpers are idempotent and consult xact->to_stream_list as
+ * the ground-truth attachment flag.
+ *
+ * ogs_sbi_server_attach_xact() returns OGS_OK when the transaction
+ * is either freshly attached, already attached, or has no stream
+ * to attach to (streamless self-initiated xact). It returns
+ * OGS_NOTFOUND when the originating stream id is valid but the
+ * stream itself is already gone.
+ *
+ * ogs_sbi_discover_and_send() does not propagate this OGS_NOTFOUND
+ * to the NF caller. Some NF procedures send the original HTTP response
+ * first and then continue with follow-up SBI transactions while still
+ * passing the original stream pointer for convenience. Treating this
+ * as a hard send failure would make those wrappers call their normal
+ * error path, which may try to send another response on a stream that
+ * has already been answered.
+ *
+ * Therefore, this condition is logged here, stream attachment is skipped,
+ * and the upstream send continues.
+ */
+int ogs_sbi_server_attach_xact(ogs_sbi_xact_t *xact);
+void ogs_sbi_server_detach_xact(ogs_sbi_xact_t *xact);
 
 ogs_sbi_server_t *ogs_sbi_server_first(void);
 ogs_sbi_server_t *ogs_sbi_server_next(ogs_sbi_server_t *current);

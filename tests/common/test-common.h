@@ -74,9 +74,6 @@ extern "C" {
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN 1
 
-#define SEND_UE_CONTEXT_RELEASE_COMMAND_IN_INTEGRITY_UNPROTECTED 0
-#define SEND_UE_CONTEXT_RELEASE_COMMAND_IN_INTEGRITY_PROTECTED 1
-
 /*
  * [VONR]
  * Disable vonr/test8_func when running Home Routed Roaming tests,

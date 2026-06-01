@@ -81,12 +81,14 @@ bool pcf_nbsf_management_handle_register(
     if (rv != OGS_OK) {
         strerror = ogs_msprintf("[%s:%d] Cannot parse http.location [%s]",
                 pcf_ue_sm->supi, sess->psi, recvmsg->http.location);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
 
     if (!message.h.resource.component[1]) {
         strerror = ogs_msprintf("[%s:%d] No Binding ID [%s]",
                 pcf_ue_sm->supi, sess->psi, recvmsg->http.location);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
 
         ogs_sbi_header_free(&header);
         goto cleanup;
@@ -97,6 +99,7 @@ bool pcf_nbsf_management_handle_register(
     if (rc == false || scheme == OpenAPI_uri_scheme_NULL) {
         strerror = ogs_msprintf("[%s:%d] Invalid URI [%s]",
                 pcf_ue_sm->supi, sess->psi, header.uri);
+        status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         ogs_sbi_header_free(&header);
         goto cleanup;
     }
@@ -108,6 +111,7 @@ bool pcf_nbsf_management_handle_register(
         if (!client) {
             strerror = ogs_msprintf("[%s:%d] ogs_sbi_client_add() failed",
                     pcf_ue_sm->supi, sess->psi);
+            status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
 
             ogs_sbi_header_free(&header);
             ogs_free(fqdn);

@@ -175,12 +175,13 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
     ogs_free(ausf_ue->ctx_id);
 
     ogs_assert(ausf_ue->suci);
-    ogs_hash_set(self.suci_hash, ausf_ue->suci, strlen(ausf_ue->suci), NULL);
+    ogs_hash_unset_if_owner(self.suci_hash,
+            ausf_ue->suci, strlen(ausf_ue->suci), ausf_ue);
     ogs_free(ausf_ue->suci);
 
     if (ausf_ue->supi) {
-        ogs_hash_set(self.supi_hash,
-                ausf_ue->supi, strlen(ausf_ue->supi), NULL);
+        ogs_hash_unset_if_owner(self.supi_hash,
+                ausf_ue->supi, strlen(ausf_ue->supi), ausf_ue);
         ogs_free(ausf_ue->supi);
     }
 

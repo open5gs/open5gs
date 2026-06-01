@@ -223,24 +223,10 @@ bool smf_nsmf_handle_create_sm_context(
         return false;
     }
 
-    if (SmContextCreateData->supi) {
-        type = ogs_id_get_type(SmContextCreateData->supi);
-        if (type) {
-            if (strncmp(type, OGS_ID_SUPI_TYPE_IMSI,
-                        strlen(OGS_ID_SUPI_TYPE_IMSI)) == 0) {
-                char *imsi_bcd = ogs_id_get_value(SmContextCreateData->supi);
-
-                ogs_cpystrn(smf_ue->imsi_bcd, imsi_bcd,
-                        ogs_min(strlen(imsi_bcd), OGS_MAX_IMSI_BCD_LEN)+1);
-                ogs_bcd_to_buffer(smf_ue->imsi_bcd,
-                        smf_ue->imsi, &smf_ue->imsi_len);
-
-                ogs_free(imsi_bcd);
-            }
-            ogs_free(type);
-        }
-    }
-
+    /*
+     * SUPI/IMSI identity is canonicalized in smf_ue_add_by_supi().
+     * Do not rewrite smf_ue->imsi here; it may already be a hash key.
+     */
     if (SmContextCreateData->pei) {
         type = ogs_id_get_type(SmContextCreateData->pei);
         if (type) {
@@ -408,6 +394,17 @@ bool smf_nsmf_handle_create_sm_context(
         if (sess->full_dnn)
             ogs_free(sess->full_dnn);
         sess->full_dnn = NULL;
+    }
+
+    if (SmContextCreateData->h_smf_uri && !sess->full_dnn) {
+        ogs_error("[%s:%d] Full DNN required for HR Roaming [%s]",
+                smf_ue->supi, sess->psi, SmContextCreateData->dnn);
+        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
+                OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
+        smf_sbi_send_sm_context_create_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                "Full DNN required for HR Roaming", smf_ue->supi, n1smbuf);
+        return false;
     }
 
     ogs_assert(SmContextCreateData->serving_nf_id);
@@ -1443,10 +1440,17 @@ bool smf_nsmf_handle_create_data_in_hsmf(
     }
 
     vcnTunnelInfo = PduSessionCreateData->vcn_tunnel_info;
-    if (!vcnTunnelInfo ||
-        !(vcnTunnelInfo->ipv4_addr || vcnTunnelInfo->ipv6_addr) ||
+    if (!vcnTunnelInfo) {
+        ogs_error("[%s:%d] No vcnTunnelInfo", smf_ue->supi, sess->psi);
+        smf_sbi_send_pdu_session_create_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                "No vcnTunnelInfo", smf_ue->supi, NULL);
+        return false;
+    }
+    if (!(vcnTunnelInfo->ipv4_addr || vcnTunnelInfo->ipv6_addr) ||
         !vcnTunnelInfo->gtp_teid) {
-        ogs_error("[%s:%d] No vcnTunnelInfo [%s:%s:%s]",
+        ogs_error("[%s:%d] Invalid vcnTunnelInfo [%s:%s:%s]",
                 smf_ue->supi, sess->psi,
                 vcnTunnelInfo->ipv4_addr ? vcnTunnelInfo->ipv4_addr : "NULL",
                 vcnTunnelInfo->ipv6_addr ? vcnTunnelInfo->ipv6_addr : "NULL",
@@ -1454,7 +1458,7 @@ bool smf_nsmf_handle_create_data_in_hsmf(
         smf_sbi_send_pdu_session_create_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
                 OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
-                "No vcnTunnelInfo", smf_ue->supi, NULL);
+                "Invalid vcnTunnelInfo", smf_ue->supi, NULL);
         return false;
     }
 
@@ -1568,24 +1572,10 @@ bool smf_nsmf_handle_create_data_in_hsmf(
     ogs_freeaddrinfo(addr);
     ogs_freeaddrinfo(addr6);
 
-    if (PduSessionCreateData->supi) {
-        type = ogs_id_get_type(PduSessionCreateData->supi);
-        if (type) {
-            if (strncmp(type, OGS_ID_SUPI_TYPE_IMSI,
-                        strlen(OGS_ID_SUPI_TYPE_IMSI)) == 0) {
-                char *imsi_bcd = ogs_id_get_value(PduSessionCreateData->supi);
-
-                ogs_cpystrn(smf_ue->imsi_bcd, imsi_bcd,
-                        ogs_min(strlen(imsi_bcd), OGS_MAX_IMSI_BCD_LEN)+1);
-                ogs_bcd_to_buffer(smf_ue->imsi_bcd,
-                        smf_ue->imsi, &smf_ue->imsi_len);
-
-                ogs_free(imsi_bcd);
-            }
-            ogs_free(type);
-        }
-    }
-
+    /*
+     * SUPI/IMSI identity is canonicalized in smf_ue_add_by_supi().
+     * Do not rewrite smf_ue->imsi here; it may already be a hash key.
+     */
     if (PduSessionCreateData->pei) {
         type = ogs_id_get_type(PduSessionCreateData->pei);
         if (type) {
@@ -1847,10 +1837,13 @@ bool smf_nsmf_handle_created_data_in_vsmf(
         }
 
         hcnTunnelInfo = PduSessionCreatedData->hcn_tunnel_info;
-        if (!hcnTunnelInfo ||
-            !(hcnTunnelInfo->ipv4_addr || hcnTunnelInfo->ipv6_addr) ||
+        if (!hcnTunnelInfo) {
+            ogs_error("[%s:%d] No hcnTunnelInfo", smf_ue->supi, sess->psi);
+            return false;
+        }
+        if (!(hcnTunnelInfo->ipv4_addr || hcnTunnelInfo->ipv6_addr) ||
             !hcnTunnelInfo->gtp_teid) {
-            ogs_error("[%s:%d] No hcnTunnelInfo [%s:%s:%s]",
+            ogs_error("[%s:%d] Invalid hcnTunnelInfo [%s:%s:%s]",
                 smf_ue->supi, sess->psi,
                 hcnTunnelInfo->ipv4_addr ? hcnTunnelInfo->ipv4_addr : "NULL",
                 hcnTunnelInfo->ipv6_addr ? hcnTunnelInfo->ipv6_addr : "NULL",
@@ -1920,32 +1913,42 @@ bool smf_nsmf_handle_created_data_in_vsmf(
                 &ul_far->outer_header_creation_len));
         ul_far->outer_header_creation.teid = sess->remote_ul_teid;
 
-        CLEAR_QOS_FLOWS_SETUP_LIST(sess->h_smf_qos_flows_setup_list);
+        if (!PduSessionCreatedData->qos_flows_setup_list ||
+            !PduSessionCreatedData->qos_flows_setup_list->count) {
+            ogs_error("[%s:%d] No qosFlowsSetupList", smf_ue->supi, sess->psi);
+            return false;
+        }
 
-        qosFlowsSetupList = OpenAPI_list_create();
-        ogs_assert(qosFlowsSetupList);
         OpenAPI_list_for_each(
                 PduSessionCreatedData->qos_flows_setup_list, node) {
-            OpenAPI_qos_flow_setup_item_t *dst = NULL, *src = NULL;
+            OpenAPI_qos_flow_setup_item_t *src = NULL;
 
             src = node->data;
-            if (!src ||
-                !src->qfi ||
-                !src->qos_rules ||
-                !src->qos_flow_description ||
-                !src->qos_flow_profile) {
-                ogs_error("[%s:%d] No src [%d:%s:%s]",
+            if (!src) {
+                ogs_error("[%s:%d] No qosFlowsSetupList item",
+                        smf_ue->supi, sess->psi);
+                return false;
+            }
+            if (!src->qfi || !src->qos_rules || !src->qos_flow_profile) {
+                ogs_error("[%s:%d] Invalid qosFlowsSetupList item [%d:%s:%p]",
                         smf_ue->supi, sess->psi, src->qfi,
-                        src->qos_rules ?
-                            src->qos_rules : "NULL",
-                        src->qos_flow_description ?
-                            src->qos_flow_description : "NULL");
+                        src->qos_rules ? src->qos_rules : "NULL",
+                        src->qos_flow_profile ? src->qos_flow_profile : NULL);
+                return false;
+            }
+            if (ogs_base64_decoded_size(src->qos_rules) <= 0) {
+                ogs_error("[%s:%d] Invalid qosRules", smf_ue->supi, sess->psi);
+                return false;
+            }
+            if (src->qos_flow_description &&
+                ogs_base64_decoded_size(src->qos_flow_description) <= 0) {
+                ogs_error("[%s:%d] Invalid qosFlowDescription",
+                        smf_ue->supi, sess->psi);
                 return false;
             }
 
             qosFlowProfile = src->qos_flow_profile;
-            if (!qosFlowProfile ||
-                !qosFlowProfile->_5qi ||
+            if (!qosFlowProfile->_5qi ||
                 !qosFlowProfile->arp ||
                 !qosFlowProfile->arp->priority_level ||
                 !(qosFlowProfile->arp->preempt_cap ==
@@ -1964,16 +1967,25 @@ bool smf_nsmf_handle_created_data_in_vsmf(
                             qosFlowProfile->arp->priority_level : 0);
                 return false;
             }
+        }
+
+        qosFlowsSetupList = OpenAPI_list_create();
+        ogs_assert(qosFlowsSetupList);
+        OpenAPI_list_for_each(
+                PduSessionCreatedData->qos_flows_setup_list, node) {
+            OpenAPI_qos_flow_setup_item_t *dst = NULL, *src = NULL;
+
+            src = node->data;
+            ogs_assert(src);
 
             dst = OpenAPI_qos_flow_setup_item_copy(dst, src);
             ogs_assert(dst);
             OpenAPI_list_add(qosFlowsSetupList, dst);
         }
 
-        if (qosFlowsSetupList->count)
-            sess->h_smf_qos_flows_setup_list = qosFlowsSetupList;
-        else
-            OpenAPI_list_free(qosFlowsSetupList);
+        ogs_assert(qosFlowsSetupList->count);
+        CLEAR_QOS_FLOWS_SETUP_LIST(sess->h_smf_qos_flows_setup_list);
+        sess->h_smf_qos_flows_setup_list = qosFlowsSetupList;
 
         sessionAmbr = PduSessionCreatedData->session_ambr;
         if (sessionAmbr) {
@@ -2359,6 +2371,17 @@ bool smf_nsmf_handle_update_data_in_vsmf(
         return false;
     }
 
+    if (!HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
+        ogs_error("[%s:%d] vsmf-pdu-session modify is only valid for "
+                  "HR Roaming V-SMF sessions", smf_ue->supi, sess->psi);
+        smf_sbi_send_vsmf_update_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                OGS_5GSM_CAUSE_REQUEST_REJECTED_UNSPECIFIED,
+                "vsmf-pdu-session modify is only valid for HR Roaming V-SMF sessions",
+                smf_ue->supi, NULL);
+        return false;
+    }
+
     if (!VsmfUpdateData->request_indication) {
         ogs_error("[%s:%d] No requestIndication",
                 smf_ue->supi, sess->psi);
@@ -2395,63 +2418,174 @@ bool smf_nsmf_handle_update_data_in_vsmf(
     switch (sess->nsmf_param.request_indication) {
     case OpenAPI_request_indication_UE_REQ_PDU_SES_MOD:
     case OpenAPI_request_indication_NW_REQ_PDU_SES_MOD:
-        CLEAR_QOS_FLOWS_ADD_MOD_REQUEST_LIST(
-                sess->h_smf_qos_flows_add_mod_request_list);
+        if (VsmfUpdateData->qos_flows_add_mod_request_list) {
+            OpenAPI_list_for_each(
+                    VsmfUpdateData->qos_flows_add_mod_request_list, node) {
+                OpenAPI_qos_flow_add_modify_request_item_t *src = NULL;
+
+                src = node->data;
+                if (!src) {
+                    ogs_error("[%s:%d] No qosFlowsAddModRequestList item",
+                            smf_ue->supi, sess->psi);
+                    smf_sbi_send_vsmf_update_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            OGS_SBI_APP_ERRNO_NULL,
+                            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                            "No qosFlowsAddModRequestList item",
+                            smf_ue->supi, NULL);
+                    return false;
+                }
+                if (!src->qfi || !src->qos_flow_profile) {
+                    ogs_error("[%s:%d] Invalid qosFlowsAddModRequestList item "
+                            "[%d:%p]", smf_ue->supi, sess->psi,
+                            src->qfi, src->qos_flow_profile);
+                    smf_sbi_send_vsmf_update_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            OGS_SBI_APP_ERRNO_NULL,
+                            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                            "Invalid qosFlowsAddModRequestList item",
+                            smf_ue->supi, NULL);
+                    return false;
+                }
+                if (src->qos_rules &&
+                    ogs_base64_decoded_size(src->qos_rules) <= 0) {
+                    ogs_error("[%s:%d] Invalid qosRules",
+                            smf_ue->supi, sess->psi);
+                    smf_sbi_send_vsmf_update_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            OGS_SBI_APP_ERRNO_NULL,
+                            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                            "Invalid qosRules", smf_ue->supi, NULL);
+                    return false;
+                }
+                if (src->qos_flow_description &&
+                    ogs_base64_decoded_size(src->qos_flow_description) <= 0) {
+                    ogs_error("[%s:%d] Invalid qosFlowDescription",
+                            smf_ue->supi, sess->psi);
+                    smf_sbi_send_vsmf_update_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            OGS_SBI_APP_ERRNO_NULL,
+                            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                            "Invalid qosFlowDescription", smf_ue->supi, NULL);
+                    return false;
+                }
+
+                qosFlowProfile = src->qos_flow_profile;
+                if (!qosFlowProfile->_5qi ||
+                    !qosFlowProfile->arp ||
+                    !qosFlowProfile->arp->priority_level ||
+                    !(qosFlowProfile->arp->preempt_cap ==
+                        OpenAPI_preemption_capability_NOT_PREEMPT ||
+                     qosFlowProfile->arp->preempt_cap ==
+                        OpenAPI_preemption_capability_MAY_PREEMPT) ||
+                    !(qosFlowProfile->arp->preempt_vuln ==
+                         OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE ||
+                     qosFlowProfile->arp->preempt_vuln ==
+                         OpenAPI_preemption_vulnerability_PREEMPTABLE)) {
+                    ogs_error("[%s:%d] Invalid qosFlowProfile [%d:%p:%d]",
+                            smf_ue->supi, sess->psi,
+                            qosFlowProfile->_5qi,
+                            qosFlowProfile->arp,
+                            qosFlowProfile->arp ?
+                                qosFlowProfile->arp->priority_level : 0);
+                    smf_sbi_send_vsmf_update_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            OGS_SBI_APP_ERRNO_NULL,
+                            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                            "Invalid qosFlowProfile", smf_ue->supi, NULL);
+                    return false;
+                }
+            }
+        }
+
+        if (VsmfUpdateData->qos_flows_rel_request_list) {
+            OpenAPI_list_for_each(
+                    VsmfUpdateData->qos_flows_rel_request_list, node) {
+                OpenAPI_qos_flow_release_request_item_t *src = NULL;
+
+                src = node->data;
+                if (!src) {
+                    ogs_error("[%s:%d] No qosFlowsRelRequestList item",
+                            smf_ue->supi, sess->psi);
+                    smf_sbi_send_vsmf_update_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            OGS_SBI_APP_ERRNO_NULL,
+                            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                            "No qosFlowsRelRequestList item",
+                            smf_ue->supi, NULL);
+                    return false;
+                }
+                if (!src->qfi) {
+                    ogs_error("[%s:%d] Invalid qosFlowsRelRequestList item [%d]",
+                            smf_ue->supi, sess->psi, src->qfi);
+                    smf_sbi_send_vsmf_update_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            OGS_SBI_APP_ERRNO_NULL,
+                            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                            "Invalid qosFlowsRelRequestList item",
+                            smf_ue->supi, NULL);
+                    return false;
+                }
+                if (src->qos_rules &&
+                    ogs_base64_decoded_size(src->qos_rules) <= 0) {
+                    ogs_error("[%s:%d] Invalid qosRules",
+                            smf_ue->supi, sess->psi);
+                    smf_sbi_send_vsmf_update_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            OGS_SBI_APP_ERRNO_NULL,
+                            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                            "Invalid qosRules", smf_ue->supi, NULL);
+                    return false;
+                }
+                if (src->qos_flow_description &&
+                    ogs_base64_decoded_size(src->qos_flow_description) <= 0) {
+                    ogs_error("[%s:%d] Invalid qosFlowDescription",
+                            smf_ue->supi, sess->psi);
+                    smf_sbi_send_vsmf_update_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            OGS_SBI_APP_ERRNO_NULL,
+                            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
+                            "Invalid qosFlowDescription", smf_ue->supi, NULL);
+                    return false;
+                }
+            }
+        }
 
         qosFlowsAddModRequestList = OpenAPI_list_create();
         ogs_assert(qosFlowsAddModRequestList);
-        OpenAPI_list_for_each(
-                VsmfUpdateData->qos_flows_add_mod_request_list, node) {
-            OpenAPI_qos_flow_add_modify_request_item_t *dst = NULL, *src = NULL;
+        if (VsmfUpdateData->qos_flows_add_mod_request_list) {
+            OpenAPI_list_for_each(
+                    VsmfUpdateData->qos_flows_add_mod_request_list, node) {
+                OpenAPI_qos_flow_add_modify_request_item_t *dst = NULL;
+                OpenAPI_qos_flow_add_modify_request_item_t *src = NULL;
 
-            src = node->data;
-            if (!src ||
-                !src->qfi ||
-                !(src->qos_flow_description || src->qos_flow_profile)) {
-                ogs_error("[%s:%d] No src [%d:%s:%p]",
-                        smf_ue->supi, sess->psi, src->qfi,
-                        src->qos_flow_description ?
-                            src->qos_flow_description : "NULL",
-                        src->qos_flow_profile ?
-                            src->qos_flow_profile : NULL);
-                smf_sbi_send_vsmf_update_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
-                        OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
-                        "No src", smf_ue->supi, NULL);
-                return false;
+                src = node->data;
+                ogs_assert(src);
+
+                dst = OpenAPI_qos_flow_add_modify_request_item_copy(dst, src);
+                ogs_assert(dst);
+                OpenAPI_list_add(qosFlowsAddModRequestList, dst);
             }
-
-            qosFlowProfile = src->qos_flow_profile;
-            if (!qosFlowProfile ||
-                !qosFlowProfile->_5qi ||
-                !qosFlowProfile->arp ||
-                !qosFlowProfile->arp->priority_level ||
-                !(qosFlowProfile->arp->preempt_cap ==
-                    OpenAPI_preemption_capability_NOT_PREEMPT ||
-                 qosFlowProfile->arp->preempt_cap ==
-                    OpenAPI_preemption_capability_MAY_PREEMPT) ||
-                !(qosFlowProfile->arp->preempt_vuln ==
-                     OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE ||
-                 qosFlowProfile->arp->preempt_vuln ==
-                     OpenAPI_preemption_vulnerability_PREEMPTABLE)) {
-                ogs_error("[%s:%d] Invalid qosFlowProfile [%d:%p:%d]",
-                        smf_ue->supi, sess->psi,
-                        qosFlowProfile->_5qi,
-                        qosFlowProfile->arp,
-                        qosFlowProfile->arp ?
-                            qosFlowProfile->arp->priority_level : 0);
-                smf_sbi_send_vsmf_update_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
-                        OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
-                        "Invalid qosFlowProfile", smf_ue->supi, NULL);
-                return false;
-            }
-
-            dst = OpenAPI_qos_flow_add_modify_request_item_copy(dst, src);
-            ogs_assert(dst);
-            OpenAPI_list_add(qosFlowsAddModRequestList, dst);
         }
 
+        qosFlowsRelRequestList = OpenAPI_list_create();
+        ogs_assert(qosFlowsRelRequestList);
+        if (VsmfUpdateData->qos_flows_rel_request_list) {
+            OpenAPI_list_for_each(
+                    VsmfUpdateData->qos_flows_rel_request_list, node) {
+                OpenAPI_qos_flow_release_request_item_t *dst = NULL, *src = NULL;
+
+                src = node->data;
+                ogs_assert(src);
+
+                dst = OpenAPI_qos_flow_release_request_item_copy(dst, src);
+                ogs_assert(dst);
+                OpenAPI_list_add(qosFlowsRelRequestList, dst);
+            }
+        }
+
+        CLEAR_QOS_FLOWS_ADD_MOD_REQUEST_LIST(
+                sess->h_smf_qos_flows_add_mod_request_list);
         if (qosFlowsAddModRequestList->count)
             sess->h_smf_qos_flows_add_mod_request_list =
                 qosFlowsAddModRequestList;
@@ -2460,35 +2594,6 @@ bool smf_nsmf_handle_update_data_in_vsmf(
 
         CLEAR_QOS_FLOWS_REL_REQUEST_LIST(
                 sess->h_smf_qos_flows_rel_request_list);
-
-        qosFlowsRelRequestList = OpenAPI_list_create();
-        ogs_assert(qosFlowsRelRequestList);
-        OpenAPI_list_for_each(VsmfUpdateData->qos_flows_rel_request_list, node) {
-            OpenAPI_qos_flow_release_request_item_t *dst = NULL, *src = NULL;
-
-            src = node->data;
-            if (!src ||
-                !src->qfi ||
-                !src->qos_rules ||
-                !src->qos_flow_description) {
-                ogs_error("[%s:%d] No src [%d:%s:%s]",
-                        smf_ue->supi, sess->psi, src->qfi,
-                        src->qos_rules ?
-                            src->qos_rules : "NULL",
-                        src->qos_flow_description ?
-                            src->qos_flow_description : "NULL");
-                smf_sbi_send_vsmf_update_error(stream,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
-                        OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION,
-                        "No src", smf_ue->supi, NULL);
-                return false;
-            }
-
-            dst = OpenAPI_qos_flow_release_request_item_copy(dst, src);
-            ogs_assert(dst);
-            OpenAPI_list_add(qosFlowsRelRequestList, dst);
-        }
-
         if (qosFlowsRelRequestList->count)
             sess->h_smf_qos_flows_rel_request_list = qosFlowsRelRequestList;
         else

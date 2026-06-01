@@ -260,8 +260,33 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
 
                     handled = nrf_nnrf_handle_nf_update(
                             nf_instance, stream, message);
-                    if (handled == false)
-                        OGS_FSM_TRAN(s, nrf_nf_state_exception);
+                    if (handled == false) {
+                        ogs_error("[%s] Invalid NF update [type:%s] - "
+                                "keeping existing registration",
+                                nf_instance->id,
+                                OpenAPI_nf_type_ToString(
+                                    nf_instance->nf_type));
+                        /*
+                         * ogs_nnrf_nfm_handle_nf_profile() now guarantees
+                         * that the live nf_instance is unchanged on failure
+                         * (shadow-swap rebuild). nrf_nnrf_handle_nf_update()
+                         * has already sent the HTTP error response, so we
+                         * keep the existing registration intact - treating
+                         * a malformed PUT/PATCH update as an implicit
+                         * de-registration would evict an otherwise healthy
+                         * peer because of one bad message.
+                         *
+                         * The previous behaviour was to transition to
+                         * nrf_nf_state_exception, which causes the FSM
+                         * dispatcher in nrf_state_operational() to call
+                         * nrf_nf_fsm_fini() + ogs_sbi_nf_instance_remove().
+                         * That eviction is the correct response for
+                         * nrf_nf_state_will_register (initial registration
+                         * never completed), but is wrong for
+                         * nrf_nf_state_registered (the registration is
+                         * still valid - only this one update was bad).
+                         */
+                    }
                     break;
 
                 CASE(OGS_SBI_HTTP_METHOD_DELETE)

@@ -700,7 +700,7 @@ void ogs_sbi_discovery_option_add_service_names(
         char *service_name);
 char *ogs_sbi_discovery_option_build_service_names(
         ogs_sbi_discovery_option_t *discovery_option);
-void ogs_sbi_discovery_option_parse_service_names(
+int ogs_sbi_discovery_option_parse_service_names(
         ogs_sbi_discovery_option_t *discovery_option,
         char *service_names);
 
@@ -708,21 +708,21 @@ void ogs_sbi_discovery_option_add_snssais(
         ogs_sbi_discovery_option_t *discovery_option, ogs_s_nssai_t *s_nssai);
 char *ogs_sbi_discovery_option_build_snssais(
         ogs_sbi_discovery_option_t *discovery_option);
-void ogs_sbi_discovery_option_parse_snssais(
+int ogs_sbi_discovery_option_parse_snssais(
         ogs_sbi_discovery_option_t *discovery_option, char *snssais);
 
 void ogs_sbi_discovery_option_set_guami(
         ogs_sbi_discovery_option_t *discovery_option, ogs_guami_t *guami);
 char *ogs_sbi_discovery_option_build_guami(
         ogs_sbi_discovery_option_t *discovery_option);
-void ogs_sbi_discovery_option_parse_guami(
+int ogs_sbi_discovery_option_parse_guami(
         ogs_sbi_discovery_option_t *discovery_option, char *guami);
 
 void ogs_sbi_discovery_option_set_tai(
         ogs_sbi_discovery_option_t *discovery_option, ogs_5gs_tai_t *tai);
 char *ogs_sbi_discovery_option_build_tai(
         ogs_sbi_discovery_option_t *discovery_option);
-void ogs_sbi_discovery_option_parse_tai(
+int ogs_sbi_discovery_option_parse_tai(
         ogs_sbi_discovery_option_t *discovery_option, char *tai);
 
 void ogs_sbi_discovery_option_add_target_plmn_list(

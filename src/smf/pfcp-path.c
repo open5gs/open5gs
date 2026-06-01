@@ -690,7 +690,7 @@ int smf_5gc_pfcp_send_one_qos_flow_modification_request(
     smf_sess_t *sess = NULL;
 
     ogs_assert(qos_flow);
-    sess = smf_sess_find_by_id(qos_flow->id);
+    sess = smf_sess_find_by_id(qos_flow->sess_id);
     ogs_assert(sess);
 
     xact = ogs_pfcp_xact_local_create(

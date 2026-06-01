@@ -137,8 +137,19 @@ int nrf_context_parse_config(void)
 nrf_assoc_t *nrf_assoc_add(ogs_sbi_stream_t *stream)
 {
     nrf_assoc_t *assoc = NULL;
+    ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
 
     ogs_assert(stream);
+
+    /*
+     * The caller passes a live inbound stream taken straight out of
+     * the nnrf-disc request callback, so the ID must be valid here.
+     * Resolve it up front so we never have to dereference the raw
+     * stream pointer later -- by the time the Home-NRF response
+     * comes back the original client may already be gone.
+     */
+    stream_id = ogs_sbi_id_from_stream(stream);
+    ogs_assert(stream_id >= OGS_MIN_POOL_ID && stream_id <= OGS_MAX_POOL_ID);
 
     ogs_pool_alloc(&nrf_assoc_pool, &assoc);
     if (!assoc) {
@@ -148,7 +159,7 @@ nrf_assoc_t *nrf_assoc_add(ogs_sbi_stream_t *stream)
     }
     memset(assoc, 0, sizeof *assoc);
 
-    assoc->stream = stream;
+    assoc->stream_id = stream_id;
 
     ogs_list_add(&self.assoc_list, assoc);
 

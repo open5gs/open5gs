@@ -30,6 +30,21 @@ static void handle_nf_profile_retrieval(
     ogs_assert(nf_instance_id);
     ogs_assert(NFProfile);
 
+    if (!NFProfile->nf_instance_id) {
+        ogs_error("No NFProfile.NFInstanceId");
+        return;
+    }
+
+    if (!NFProfile->nf_type) {
+        ogs_error("No NFProfile.NFType");
+        return;
+    }
+
+    if (!NFProfile->nf_status) {
+        ogs_error("No NFProfile.NFStatus");
+        return;
+    }
+
     nf_instance = ogs_sbi_nf_instance_find(nf_instance_id);
     if (nf_instance) {
         /* already have this nf_instance; done */
@@ -42,11 +57,19 @@ static void handle_nf_profile_retrieval(
     }
 
     nf_instance = ogs_sbi_nf_instance_add();
-    ogs_assert(nf_instance);
+    if (!nf_instance) {
+        ogs_error("Can't add retrieved NF instance [%s] "
+                "due to insufficient space", nf_instance_id);
+        return;
+    }
 
     ogs_sbi_nf_instance_set_id(nf_instance, nf_instance_id);
 
-    ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile);
+    if (ogs_nnrf_nfm_handle_nf_profile(nf_instance, NFProfile) == false) {
+        ogs_error("[%s] (NRF-profile-get) Invalid NFProfile", nf_instance_id);
+        ogs_sbi_nf_instance_remove(nf_instance);
+        return;
+    }
 
     /* verify against our subscription list that we want to save this
      * nf instance to our context */

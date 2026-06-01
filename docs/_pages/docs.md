@@ -6,6 +6,10 @@ permalink: /docs/
 head_inline: "<style> ul { padding-bottom: 1em; } </style>"
 ---
 
+- Featured Community Projects
+  - [Open5GS Network Management System (NMS)](https://github.com/paulmataruso/open5gs-nms) - Web UI for Open5GS: config, subscribers, monitoring, and topology in one place
+  - [Docker Open5GS](https://github.com/herlesupreeth/docker_open5gs) - One-command Docker setup for a full 4G/5G Open5GS stack (Core, IMS, RAN, UE).
+
 - User's Guide
   - [Quickstart](guide/01-quickstart)
   - [Building Open5GS from Sources](guide/02-building-open5gs-from-sources)

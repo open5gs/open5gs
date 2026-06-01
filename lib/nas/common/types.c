@@ -444,9 +444,22 @@ void ogs_nas_bitrate_from_uint64(ogs_nas_bitrate_t *nas, uint64_t bitrate)
     nas->value = bitrate;
 }
 
+bool ogs_nas_bitrate_unit_is_valid(ogs_nas_bitrate_t *nas_bitrate)
+{
+    ogs_assert(nas_bitrate);
+
+    return nas_bitrate->unit >= OGS_NAS_BR_UNIT_1K &&
+        nas_bitrate->unit <= OGS_NAS_BR_UNIT_256P;
+}
+
 uint64_t ogs_nas_bitrate_to_uint64(ogs_nas_bitrate_t *nas_bitrate)
 {
     ogs_assert(nas_bitrate);
+
+    if (!ogs_nas_bitrate_unit_is_valid(nas_bitrate)) {
+        ogs_error("Invalid bitrate unit [%d]", nas_bitrate->unit);
+        return 0;
+    }
 
     if (nas_bitrate->unit == OGS_NAS_BR_UNIT_1K)
         return nas_bitrate->value * 1000;
@@ -498,9 +511,6 @@ uint64_t ogs_nas_bitrate_to_uint64(ogs_nas_bitrate_t *nas_bitrate)
         return nas_bitrate->value * 64 * 1000 * 1000 * 1000 * 1000 * 1000;
     if (nas_bitrate->unit == OGS_NAS_BR_UNIT_256P)
         return nas_bitrate->value * 256 * 1000 * 1000 * 1000 * 1000 * 1000;
-
-    ogs_fatal("Unknown unit [%d]", nas_bitrate->unit);
-    ogs_assert_if_reached();
 
     return 0;
 }

@@ -284,11 +284,8 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
 
     if (!SmPolicyContextData->ipv4_address &&
         !SmPolicyContextData->ipv6_address_prefix) {
-        strerror = ogs_msprintf(
-                "[%s:%d] No IPv4 address[%p] or IPv6 prefix[%p]",
-                pcf_ue_sm->supi, sess->psi,
-                SmPolicyContextData->ipv4_address,
-                SmPolicyContextData->ipv6_address_prefix);
+        strerror = ogs_msprintf("[%s:%d] No IPv4 address or IPv6 prefix",
+                pcf_ue_sm->supi, sess->psi);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
@@ -451,13 +448,27 @@ bool pcf_npcf_smpolicycontrol_handle_create(pcf_sess_t *sess,
     ogs_freeaddrinfo(addr);
     ogs_freeaddrinfo(addr6);
 
-    if (SmPolicyContextData->ipv4_address)
-        ogs_assert(true ==
-            pcf_sess_set_ipv4addr(sess, SmPolicyContextData->ipv4_address));
-    if (SmPolicyContextData->ipv6_address_prefix)
-        ogs_assert(true ==
-            pcf_sess_set_ipv6prefix(
-                sess, SmPolicyContextData->ipv6_address_prefix));
+    if (SmPolicyContextData->ipv4_address) {
+        if (pcf_sess_set_ipv4addr(
+                    sess, SmPolicyContextData->ipv4_address) == false) {
+            strerror = ogs_msprintf("[%s:%d] Invalid ipv4Address [%s]",
+                    pcf_ue_sm->supi, sess->psi,
+                    SmPolicyContextData->ipv4_address);
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            goto cleanup;
+        }
+    }
+
+    if (SmPolicyContextData->ipv6_address_prefix) {
+        if (pcf_sess_set_ipv6prefix(
+                    sess, SmPolicyContextData->ipv6_address_prefix) == false) {
+            strerror = ogs_msprintf("[%s:%d] Invalid ipv6AddressPrefix [%s]",
+                    pcf_ue_sm->supi, sess->psi,
+                    SmPolicyContextData->ipv6_address_prefix);
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            goto cleanup;
+        }
+    }
 
     if (SmPolicyContextData->ipv4_frame_route_list) {
         OpenAPI_lnode_t *node = NULL;

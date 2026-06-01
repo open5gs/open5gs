@@ -374,6 +374,32 @@ void *ogs_hash_get_or_set_debug(ogs_hash_t *ht,
     return NULL;
 }
 
+bool ogs_hash_unset_if_owner_debug(ogs_hash_t *ht,
+        const void *key, int klen, const void *owner, const char *file_line)
+{
+    void *indexed = NULL;
+
+    ogs_assert(ht);
+    ogs_assert(key);
+    ogs_assert(klen);
+    ogs_assert(owner);
+
+    indexed = ogs_hash_get_debug(ht, key, klen, file_line);
+    if (indexed == owner) {
+        ogs_hash_set_debug(ht, key, klen, NULL, file_line);
+        return true;
+    }
+
+    /*
+     * A newer context has re-claimed this key (the same identity re-attached
+     * while this context was still being torn down). Leave the entry alone so
+     * the live context stays findable; clearing it would orphan that entry.
+     */
+    ogs_error("%s: hash unset skipped: entry not owned by expected context",
+            file_line);
+    return false;
+}
+
 unsigned int ogs_hash_count(ogs_hash_t *ht)
 {
     ogs_assert(ht);

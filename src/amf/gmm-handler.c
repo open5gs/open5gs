@@ -1755,6 +1755,7 @@ static ogs_nas_5gmm_cause_t gmm_handle_nas_message_container(
         ogs_nas_message_container_t *nas_message_container)
 {
     int gmm_cause;
+    uint8_t expected_message_type = 0;
 
     ogs_pkbuf_t *nasbuf = NULL;
     ogs_nas_5gs_message_t nas_message;
@@ -1809,6 +1810,55 @@ static ogs_nas_5gmm_cause_t gmm_handle_nas_message_container(
         ogs_error("ogs_nas_5gmm_decode() failed");
         ogs_pkbuf_free(nasbuf);
         return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
+    }
+
+    /*
+     * 3GPP TS 24.501 4.4.6 / TS 33.501 6.4.6
+     *
+     * Only an initial NAS message (REGISTRATION REQUEST or SERVICE REQUEST)
+     * may be carried in the NAS message container IE. Reject any other
+     * inner message type with SEMANTICALLY_INCORRECT_MESSAGE rather than
+     * dispatching it.
+     */
+    switch (nas_message.gmm.h.message_type) {
+    case OGS_NAS_5GS_REGISTRATION_REQUEST:
+    case OGS_NAS_5GS_SERVICE_REQUEST:
+        break;
+    default:
+        ogs_error("[%s] Unexpected NAS message type [%d] in "
+                "NAS message container [outer:%d]",
+                amf_ue->supi,
+                nas_message.gmm.h.message_type, message_type);
+        ogs_pkbuf_free(nasbuf);
+        return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
+    }
+
+    /*
+     * The protected NAS message must match the procedure being resumed.
+     * In SecurityModeComplete, the procedure is the previously stored
+     * initial NAS message. Otherwise, it is the current outer message.
+     *
+     * Without this check, a SECURITY MODE COMPLETE container can carry an
+     * initial NAS message of a different type than the one that triggered
+     * the security mode control procedure. The AMF would then resume on
+     * the other path, bypassing per-procedure preconditions (e.g.
+     * allowed_nssai is populated only on the registration path) and reach
+     * ngap_ue_build_initial_context_setup_request() with an empty
+     * allowed_nssai, hitting ogs_assert(amf_ue->allowed_nssai.num_of_s_nssai)
+     * and aborting open5gs-amfd (issue #4422).
+     */
+    expected_message_type =
+        (message_type == OGS_NAS_5GS_SECURITY_MODE_COMPLETE) ?
+            amf_ue->nas.message_type : message_type;
+    if (nas_message.gmm.h.message_type != expected_message_type) {
+        ogs_error("[%s] NAS message type mismatch in NAS message container "
+                "[expected:%d, received:%d, outer:%d]",
+                amf_ue->supi,
+                expected_message_type,
+                nas_message.gmm.h.message_type,
+                message_type);
+        ogs_pkbuf_free(nasbuf);
+        return OGS_5GMM_CAUSE_MESSAGE_NOT_COMPATIBLE_WITH_THE_PROTOCOL_STATE;
     }
 
     gmm_cause = OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;

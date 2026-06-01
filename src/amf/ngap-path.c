@@ -235,6 +235,16 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
             ogs_error("Invalid extended_protocol_discriminator [%d]",
                     h->extended_protocol_discriminator);
 
+            /*
+             * 3GPP TS 38.413 clause 10.4:
+             * Logical error in the NAS PDU carried in INITIAL UE MESSAGE.
+             * Reply with ERROR INDICATION before cleaning up the
+             * (newly-created) ran_ue context.
+             */
+            ogs_expect(OGS_OK == ngap_send_error_indication2(ran_ue,
+                    NGAP_Cause_PR_protocol,
+                    NGAP_CauseProtocol_semantic_error));
+
             ogs_pkbuf_free(nasbuf);
             ran_ue_remove(ran_ue);
 
@@ -245,7 +255,21 @@ int ngap_send_to_nas(ran_ue_t *ran_ue,
             h->message_type != OGS_NAS_5GS_SERVICE_REQUEST &&
             h->message_type != OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE) {
 
-            ogs_error("Invalid 5GMM message type [%d]", h->message_type);
+            ogs_error("Invalid 5GMM message type [%d] in InitialUEMessage",
+                    h->message_type);
+
+            /*
+             * 3GPP TS 38.413 clause 10.4 / TS 24.501:
+             * INITIAL UE MESSAGE may carry only REGISTRATION REQUEST,
+             * SERVICE REQUEST, or DEREGISTRATION REQUEST (from UE).
+             * Any other 5GMM message (e.g. IDENTITY RESPONSE) carried
+             * in INITIAL UE MESSAGE is a logical error - the NG-RAN
+             * node must use UPLINK NAS TRANSPORT instead. Reply with
+             * ERROR INDICATION.
+             */
+            ogs_expect(OGS_OK == ngap_send_error_indication2(ran_ue,
+                    NGAP_Cause_PR_protocol,
+                    NGAP_CauseProtocol_message_not_compatible_with_receiver_state));
 
             ogs_pkbuf_free(nasbuf);
             ran_ue_remove(ran_ue);

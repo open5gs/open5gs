@@ -1233,7 +1233,11 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(void)
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
     ogs_pool_alloc(&nf_instance_pool, &nf_instance);
-    ogs_assert(nf_instance);
+    if (!nf_instance) {
+        ogs_error("OVERFLOW nf_instance_pool [pool:%llu]",
+                (unsigned long long)ogs_app()->pool.nf);
+        return NULL;
+    }
     memset(nf_instance, 0, sizeof(ogs_sbi_nf_instance_t));
 
     nf_instance->time.heartbeat_interval =
@@ -1339,6 +1343,9 @@ void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance)
     nf_instance->num_of_ipv6 = 0;
 
     nf_instance->num_of_allowed_nf_type = 0;
+
+    nf_instance->num_of_s_nssai = 0;
+    nf_instance->num_of_allowed_nssai = 0;
 }
 
 void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
@@ -1458,10 +1465,6 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_service_type(
     return nf_instance;
 }
 
-bool ogs_sbi_nf_instance_maximum_number_is_reached(void)
-{
-    return nf_instance_pool.avail <= 0;
-}
 
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(
         ogs_sbi_nf_instance_t *nf_instance,
@@ -1474,13 +1477,26 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(
     ogs_assert(name);
 
     ogs_pool_alloc(&nf_service_pool, &nf_service);
-    ogs_assert(nf_service);
+    if (!nf_service) {
+        ogs_error("OVERFLOW nf_service_pool [pool:%llu]",
+                (unsigned long long)ogs_app()->pool.nf_service);
+        return NULL;
+    }
     memset(nf_service, 0, sizeof(ogs_sbi_nf_service_t));
 
     nf_service->id = ogs_strdup(id);
-    ogs_assert(nf_service->id);
+    if (!nf_service->id) {
+        ogs_error("ogs_strdup() failed for nf_service->id");
+        ogs_pool_free(&nf_service_pool, nf_service);
+        return NULL;
+    }
     nf_service->name = ogs_strdup(name);
-    ogs_assert(nf_service->name);
+    if (!nf_service->name) {
+        ogs_error("ogs_strdup() failed for nf_service->name");
+        ogs_free(nf_service->id);
+        ogs_pool_free(&nf_service_pool, nf_service);
+        return NULL;
+    }
     nf_service->scheme = scheme;
     ogs_assert(nf_service->scheme);
 
@@ -1673,7 +1689,9 @@ ogs_sbi_nf_info_t *ogs_sbi_nf_info_add(
 
     ogs_pool_alloc(&nf_info_pool, &nf_info);
     if (!nf_info) {
-        ogs_fatal("ogs_pool_alloc() failed");
+        ogs_error("OVERFLOW nf_info_pool [pool:%llu]",
+                (unsigned long long)(ogs_app()->pool.nf *
+                    OGS_MAX_NUM_OF_NF_INFO));
         return NULL;
     }
     memset(nf_info, 0, sizeof(*nf_info));
@@ -1934,7 +1952,15 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
     ogs_assert(scheme);
 
     nf_service = ogs_sbi_nf_service_add(nf_instance, id, name, scheme);
-    ogs_assert(nf_service);
+    if (!nf_service) {
+        ogs_error("Cannot build default NF service [%s]: "
+                "nf_service_pool exhausted at startup. "
+                "Increase 'max.peer' (current pool capacity = "
+                "max.peer * 16 = %llu).",
+                name,
+                (unsigned long long)ogs_app()->pool.nf_service);
+        return NULL;
+    }
 
     hostname = NULL;
     for (server = ogs_sbi_server_first();
@@ -2162,6 +2188,34 @@ bool ogs_sbi_discovery_option_is_matched(
         ogs_sbi_discovery_option_hnrf_uri_is_matched(
             nf_instance, discovery_option) == false)
         return false;
+
+    /*
+     * TS 33.518 4.2.2.2.1 - Target allowed_nssai filtering
+     *
+     * If the target NF registered with allowedNssais, it may only be
+     * discovered for queries whose S-NSSAI falls within that set.
+     */
+    if (nf_instance->num_of_allowed_nssai &&
+            discovery_option->num_of_snssais) {
+        bool nssai_allowed = false;
+
+        for (i = 0; i < discovery_option->num_of_snssais; i++) {
+            int j;
+            for (j = 0; j < nf_instance->num_of_allowed_nssai; j++) {
+                if (discovery_option->snssais[i].sst ==
+                        nf_instance->allowed_nssai[j].sst &&
+                    discovery_option->snssais[i].sd.v ==
+                        nf_instance->allowed_nssai[j].sd.v) {
+                    nssai_allowed = true;
+                    break;
+                }
+            }
+            if (nssai_allowed) break;
+        }
+
+        if (!nssai_allowed)
+            return false;
+    }
 
     /* Determine which SMF filters are requested */
     if (nf_instance->nf_type == OpenAPI_nf_type_SMF) {
@@ -2673,6 +2727,30 @@ void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact)
         ogs_free(xact->target_apiroot);
 
     /*
+     * Detach from the originating stream's xact_list, if attached.
+     *
+     * Two paths reach here:
+     *
+     *   (a) Normal completion: a response arrived (or the send
+     *       failed early) and the NF calls ogs_sbi_xact_remove().
+     *       xact_detach() unlinks via the cached to_stream_list
+     *       head in O(1), no stream lookup needed.
+     *
+     *   (b) Stream close: stream_remove_xact_all() (or its MHD
+     *       counterpart) walks the stream's xact_list and calls
+     *       ogs_sbi_xact_remove() on each entry. This detach runs
+     *       first and unlinks the node before the for_each_safe
+     *       iterator advances; the iterator's cached "next" pointer
+     *       keeps the loop sound.
+     *
+     * Idempotent for transactions that never had an inbound stream
+     * (NRF discovery initiated by the NF itself, status
+     * notifications): to_stream_list stays NULL and the helper is
+     * a no-op.
+     */
+    ogs_sbi_server_detach_xact(xact);
+
+    /*
      * Release optional user context attached to the transaction.
      * The transaction owns this memory and is responsible for
      * freeing it when the transaction is destroyed.
@@ -2755,7 +2833,12 @@ ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_add(void)
     ogs_sbi_subscription_data_t *subscription_data = NULL;
 
     ogs_pool_alloc(&subscription_data_pool, &subscription_data);
-    ogs_assert(subscription_data);
+    if (!subscription_data) {
+        ogs_error("OVERFLOW subscription_data_pool [pool:%llu]",
+                (unsigned long long)ogs_app()->pool.subscription);
+        return NULL;
+    }
+
     memset(subscription_data, 0, sizeof(ogs_sbi_subscription_data_t));
 
     ogs_list_add(&ogs_sbi_self()->subscription_data_list, subscription_data);

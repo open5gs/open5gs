@@ -44,7 +44,21 @@ typedef struct nrf_assoc_s nrf_assoc_t;
 typedef struct nrf_assoc_s {
     ogs_lnode_t lnode;
 
-    ogs_sbi_stream_t *stream;
+    /*
+     * Pool-ID of the inbound HTTP/2 stream that triggered an
+     * inter-PLMN NF discovery forwarding request to the Home NRF.
+     *
+     * The raw ogs_sbi_stream_t pointer must NOT be cached here.
+     * The original client may RST_STREAM or otherwise disconnect
+     * before the (possibly delayed) Home-NRF response arrives,
+     * in which case nghttp2 frees the stream and any cached
+     * pointer becomes dangling. Storing the ID and resolving it
+     * through ogs_sbi_stream_find_by_id() on the response path
+     * lets us drop the response cleanly when the originating
+     * stream is already gone, instead of asserting on a freed
+     * socket fd inside the SBI server.
+     */
+    ogs_pool_id_t stream_id;
 } nrf_assoc_t;
 
 void nrf_context_init(void);

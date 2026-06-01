@@ -35,49 +35,146 @@
 #include <netinet/tcp.h>
 #endif
 
-static int decode_ipv6_header(
-        struct ip6_hdr *ip6_h, uint8_t *proto, uint16_t *hlen)
+static int decode_ipv6_header(struct ip6_hdr *ip6_h, size_t buflen,
+        uint8_t *proto, uint16_t *hlen, size_t *plen)
 {
-    int done = 0;
-    uint8_t *p, *jp, *endp;
+    uint8_t *start, *p, *endp, *bufend;
     uint8_t nxt;          /* Next Header */
 
     ogs_assert(ip6_h);
     ogs_assert(proto);
     ogs_assert(hlen);
+    ogs_assert(plen);
 
+    if (buflen < sizeof(*ip6_h)) {
+        ogs_error("Invalid IPv6 packet: too short [len:%zu]", buflen);
+        return OGS_ERROR;
+    }
+
+    start = (uint8_t *)ip6_h;
+    bufend = start + buflen;
     nxt = ip6_h->ip6_nxt;
-    p = (uint8_t *)ip6_h + sizeof(*ip6_h);
-    endp = p + be16toh(ip6_h->ip6_plen);
+    p = start + sizeof(*ip6_h);
 
-    jp = p + sizeof(struct ip6_hbh);
-    while (p == endp) { /* Jumbo Frame */
-        uint32_t jp_len = 0;
-        struct ip6_opt_jumbo *jumbo = NULL;
+    if (be16toh(ip6_h->ip6_plen) == 0) {
+        uint8_t *jp, *optend;
+        size_t ext_len;
+        int jumbo_found = 0;
+        struct ip6_ext *ext = NULL;
 
-        if (nxt != 0) {
-            ogs_error("Invalid IPv6 jumbo: plen=0 but NextHeader=%u", nxt);
-            return OGS_ERROR;   /* Drop packet safely */
+        if (nxt != IPPROTO_HOPOPTS) {
+            ogs_error("Invalid IPv6 jumbo packet: missing hop-by-hop header "
+                    "[nxt:%u len:%zu]", nxt, buflen);
+            return OGS_ERROR;
         }
 
-        jumbo = (struct ip6_opt_jumbo *)jp;
-        memcpy(&jp_len, jumbo->ip6oj_jumbo_len, sizeof(jp_len));
-        jp_len = be32toh(jp_len);
-        switch (jumbo->ip6oj_type) {
-        case IP6OPT_JUMBO:
-            endp = p + jp_len;
-            break;
-        case 0:
-            jp++;
-            break;
-        default:
-            jp += (sizeof(struct ip6_opt) + jp_len);
-            break;
+        if ((size_t)(bufend - p) < sizeof(struct ip6_ext)) {
+            ogs_error("Invalid IPv6 jumbo packet: truncated hop-by-hop "
+                    "header [remaining:%zu len:%zu]",
+                    (size_t)(bufend - p), buflen);
+            return OGS_ERROR;
         }
+
+        ext = (struct ip6_ext *)p;
+        ext_len = ((size_t)ext->ip6e_len << 3) + 8;
+        if (ext_len > (size_t)(bufend - p)) {
+            ogs_error("Invalid IPv6 jumbo packet: hop-by-hop header exceeds "
+                    "packet [ext_len:%zu remaining:%zu len:%zu]",
+                    ext_len, (size_t)(bufend - p), buflen);
+            return OGS_ERROR;
+        }
+
+        jp = p + sizeof(struct ip6_hbh);
+        optend = p + ext_len;
+
+        while (jp < optend) {
+            uint8_t opt_type = *jp;
+            struct ip6_opt *opt = NULL;
+            size_t opt_len;
+
+            if (opt_type == 0) { /* Pad1 */
+                jp++;
+                continue;
+            }
+
+            if ((size_t)(optend - jp) < sizeof(struct ip6_opt)) {
+                ogs_error("Invalid IPv6 jumbo packet: truncated option "
+                        "[remaining:%zu len:%zu]",
+                        (size_t)(optend - jp), buflen);
+                return OGS_ERROR;
+            }
+
+            opt = (struct ip6_opt *)jp;
+            opt_len = sizeof(struct ip6_opt) + opt->ip6o_len;
+            if (opt_len > (size_t)(optend - jp)) {
+                ogs_error("Invalid IPv6 jumbo packet: option exceeds "
+                        "hop-by-hop header [type:%u opt_len:%zu "
+                        "remaining:%zu len:%zu]",
+                        opt->ip6o_type, opt_len, (size_t)(optend - jp),
+                        buflen);
+                return OGS_ERROR;
+            }
+
+            if (opt->ip6o_type == IP6OPT_JUMBO) {
+                uint32_t jp_len = 0;
+                struct ip6_opt_jumbo *jumbo = NULL;
+
+                if (opt->ip6o_len != sizeof(jp_len)) {
+                    ogs_error("Invalid IPv6 jumbo packet: invalid jumbo "
+                            "option length [opt_len:%u len:%zu]",
+                            opt->ip6o_len, buflen);
+                    return OGS_ERROR;
+                }
+
+                jumbo = (struct ip6_opt_jumbo *)jp;
+                memcpy(&jp_len, jumbo->ip6oj_jumbo_len, sizeof(jp_len));
+                jp_len = be32toh(jp_len);
+
+                if (jp_len <= 0xffff) {
+                    ogs_error("Invalid IPv6 jumbo packet: jumbo payload "
+                            "length is too small [jumbo_len:%u len:%zu]",
+                            jp_len, buflen);
+                    return OGS_ERROR;
+                }
+
+                if (jp_len > (size_t)(bufend - p)) {
+                    ogs_error("Invalid IPv6 jumbo packet: jumbo payload "
+                            "exceeds packet [jumbo_len:%u remaining:%zu "
+                            "len:%zu]", jp_len, (size_t)(bufend - p),
+                            buflen);
+                    return OGS_ERROR;
+                }
+
+                endp = p + jp_len;
+                jumbo_found = 1;
+                break;
+            }
+
+            jp += opt_len;
+        }
+
+        if (!jumbo_found) {
+            ogs_error("Invalid IPv6 jumbo packet: jumbo option not found "
+                    "[len:%zu]", buflen);
+            return OGS_ERROR;
+        }
+    } else {
+        size_t payload_len = be16toh(ip6_h->ip6_plen);
+
+        if (payload_len > (size_t)(bufend - p)) {
+            ogs_error("Invalid IPv6 packet: payload length exceeds packet "
+                    "[payload_len:%zu remaining:%zu len:%zu]",
+                    payload_len, (size_t)(bufend - p), buflen);
+            return OGS_ERROR;
+        }
+
+        endp = p + payload_len;
     }
 
     while (p < endp) {
-        struct ip6_ext *ext = (struct ip6_ext *)p;
+        struct ip6_ext *ext = NULL;
+        size_t ext_len;
+
         switch (nxt) {
         case IPPROTO_HOPOPTS:
         case IPPROTO_ROUTING:
@@ -87,27 +184,68 @@ static int decode_ipv6_header(
         case 140: /* shim6 */
         case 253: /* testing, experimental */
         case 254: /* testing, experimental */
-            p += ((ext->ip6e_len << 3) + 8);
+            if ((size_t)(endp - p) < sizeof(struct ip6_ext)) {
+                ogs_error("Invalid IPv6 packet: truncated extension header "
+                        "[nxt:%u remaining:%zu len:%zu]",
+                        nxt, (size_t)(endp - p), buflen);
+                return OGS_ERROR;
+            }
+            ext = (struct ip6_ext *)p;
+            ext_len = ((size_t)ext->ip6e_len << 3) + 8;
+            if (ext_len > (size_t)(endp - p)) {
+                ogs_error("Invalid IPv6 packet: extension header exceeds "
+                        "payload [nxt:%u ext_len:%zu remaining:%zu "
+                        "len:%zu]", nxt, ext_len, (size_t)(endp - p),
+                        buflen);
+                return OGS_ERROR;
+            }
+            nxt = ext->ip6e_nxt;
+            p += ext_len;
             break;
         case IPPROTO_FRAGMENT:
+            if ((size_t)(endp - p) < sizeof(struct ip6_frag)) {
+                ogs_error("Invalid IPv6 packet: truncated fragment header "
+                        "[remaining:%zu len:%zu]",
+                        (size_t)(endp - p), buflen);
+                return OGS_ERROR;
+            }
+            ext = (struct ip6_ext *)p;
+            nxt = ext->ip6e_nxt;
             p += sizeof(struct ip6_frag);
             break;
         case IPPROTO_AH:
-            p += ((ext->ip6e_len + 2) << 2);
+            if ((size_t)(endp - p) < sizeof(struct ip6_ext)) {
+                ogs_error("Invalid IPv6 packet: truncated AH header "
+                        "[remaining:%zu len:%zu]",
+                        (size_t)(endp - p), buflen);
+                return OGS_ERROR;
+            }
+            ext = (struct ip6_ext *)p;
+            ext_len = ((size_t)ext->ip6e_len + 2) << 2;
+            if (ext_len > (size_t)(endp - p)) {
+                ogs_error("Invalid IPv6 packet: AH header exceeds payload "
+                        "[ext_len:%zu remaining:%zu len:%zu]",
+                        ext_len, (size_t)(endp - p), buflen);
+                return OGS_ERROR;
+            }
+            nxt = ext->ip6e_nxt;
+            p += ext_len;
             break;
         default: /* Upper Layer */
-            done = 1;
-            break;
-
+            goto done;
         }
-        if (done)
-            break;
+    }
 
-        nxt = ext->ip6e_nxt;
+done:
+    if ((size_t)(p - start) > 0xffff) {
+        ogs_error("Invalid IPv6 packet: header length too large "
+                "[hlen:%zu len:%zu]", (size_t)(p - start), buflen);
+        return OGS_ERROR;
     }
 
     *proto = nxt;
-    *hlen = p - (uint8_t *)ip6_h;
+    *hlen = p - start;
+    *plen = endp - start;
 
     return OGS_OK;
 }
@@ -117,17 +255,90 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
 {
     struct ip *ip_h =  NULL;
     struct ip6_hdr *ip6_h = NULL;
-    uint32_t *src_addr = NULL;
-    uint32_t *dst_addr = NULL;
+    uint32_t src_addr[4] = {0, };
+    uint32_t dst_addr[4] = {0, };
     int addr_len = 0;
     uint8_t proto = 0;
     uint16_t ip_hlen = 0;
+    size_t pkt_len = 0;
+    uint8_t ip_v;
 
     ogs_pfcp_rule_t *rule = NULL;
 
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
     ogs_assert(pkbuf->data);
+
+    pkt_len = pkbuf->len;
+    ip_v = (*(uint8_t *)pkbuf->data) >> 4;
+
+    if (ip_v == 4) {
+        size_t ip_len;
+
+        if (pkt_len < sizeof(struct ip)) {
+            ogs_error("Invalid IPv4 packet: too short [len:%zu]", pkt_len);
+            return NULL;
+        }
+
+        ip_h = (struct ip *)pkbuf->data;
+
+        ip_hlen = ip_h->ip_hl * 4;
+        ip_len = be16toh(ip_h->ip_len);
+
+        if (ip_hlen < sizeof(struct ip) || ip_hlen > ip_len) {
+            ogs_error("Invalid IPv4 packet: invalid header length "
+                    "[hlen:%u ip_len:%zu len:%zu]",
+                    ip_hlen, ip_len, pkt_len);
+            return NULL;
+        }
+        if (ip_len > pkt_len) {
+            ogs_error("Invalid IPv4 packet: total length exceeds packet "
+                    "[ip_len:%zu len:%zu]", ip_len, pkt_len);
+            return NULL;
+        }
+
+        pkt_len = ip_len;
+        proto = ip_h->ip_p;
+
+        src_addr[0] = ip_h->ip_src.s_addr;
+        dst_addr[0] = ip_h->ip_dst.s_addr;
+        addr_len = OGS_IPV4_LEN;
+    } else if (ip_v == 6) {
+        if (pkt_len < sizeof(struct ip6_hdr)) {
+            ogs_error("Invalid IPv6 packet: too short [len:%zu]", pkt_len);
+            return NULL;
+        }
+
+        ip6_h = (struct ip6_hdr *)pkbuf->data;
+
+        if (OGS_OK != decode_ipv6_header(ip6_h, pkt_len,
+                    &proto, &ip_hlen, &pkt_len))
+            return NULL;
+
+        memcpy(src_addr, ip6_h->ip6_src.s6_addr, OGS_IPV6_LEN);
+        memcpy(dst_addr, ip6_h->ip6_dst.s6_addr, OGS_IPV6_LEN);
+        addr_len = OGS_IPV6_LEN;
+    } else {
+        ogs_error("Invalid IP packet: unsupported version "
+                "[version:%u len:%zu]", ip_v, pkt_len);
+        return NULL;
+    }
+
+    if (proto == IPPROTO_TCP) {
+        if ((size_t)ip_hlen > pkt_len ||
+            pkt_len - ip_hlen < sizeof(struct tcphdr)) {
+            ogs_error("Invalid TCP packet: truncated header "
+                    "[hlen:%u len:%zu]", ip_hlen, pkt_len);
+            return NULL;
+        }
+    } else if (proto == IPPROTO_UDP) {
+        if ((size_t)ip_hlen > pkt_len ||
+            pkt_len - ip_hlen < sizeof(struct udphdr)) {
+            ogs_error("Invalid UDP packet: truncated header "
+                    "[hlen:%u len:%zu]", ip_hlen, pkt_len);
+            return NULL;
+        }
+    }
 
     ogs_list_for_each(&pdr->rule_list, rule) {
         int k;
@@ -137,39 +348,6 @@ ogs_pfcp_rule_t *ogs_pfcp_pdr_rule_find_by_packet(
 
         ipfw = &rule->ipfw;
         ogs_assert(ipfw);
-
-        ip_h = (struct ip *)pkbuf->data;
-        if (ip_h->ip_v == 4) {
-            ip_h = (struct ip *)pkbuf->data;
-            ip6_h = NULL;
-
-            proto = ip_h->ip_p;
-            ip_hlen = (ip_h->ip_hl)*4;
-
-            src_addr = (void *)&ip_h->ip_src.s_addr;
-            dst_addr = (void *)&ip_h->ip_dst.s_addr;
-            addr_len = OGS_IPV4_LEN;
-        } else if (ip_h->ip_v == 6) {
-            ip_h = NULL;
-            ip6_h = (struct ip6_hdr *)pkbuf->data;
-
-            if (OGS_OK != decode_ipv6_header(ip6_h, &proto, &ip_hlen)) {
-                /* Drop malformed IPv6 packet gracefully */
-                ogs_error("Malformed IPv6 packet while matching PDR [plen:%d]",
-                        pkbuf->len);
-                ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-                continue;
-            }
-
-            src_addr = (void *)ip6_h->ip6_src.s6_addr;
-            dst_addr = (void *)ip6_h->ip6_dst.s6_addr;
-            addr_len = OGS_IPV6_LEN;
-        } else {
-            ogs_error("Invalid packet [IP version:%d, Packet Length:%d]",
-                    ip_h->ip_v, pkbuf->len);
-            ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-            continue;
-        }
 
         ogs_trace("PROTO:%d SRC:%08x %08x %08x %08x",
                 proto, be32toh(src_addr[0]), be32toh(src_addr[1]),

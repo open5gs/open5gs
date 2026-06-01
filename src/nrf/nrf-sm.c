@@ -120,19 +120,26 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                     break;
 
                 DEFAULT
-                    if (message.h.resource.component[1]) {
-                        nf_instance = ogs_sbi_nf_instance_find(
-                                message.h.resource.component[1]);
+                    if (!message.h.resource.component[1]) {
+                        ogs_error("No NFInstanceId");
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                &message, "No NFInstanceId", NULL, NULL));
+                        break;
                     }
+
+                    nf_instance = ogs_sbi_nf_instance_find(
+                            message.h.resource.component[1]);
 
                     if (!nf_instance) {
                         SWITCH(message.h.method)
                         CASE(OGS_SBI_HTTP_METHOD_PUT)
-                            if (ogs_sbi_nf_instance_maximum_number_is_reached())
-                            {
-                                ogs_warn("Can't add instance [%s] "
-                                         "due to insufficient space",
-                                         message.h.resource.component[1]);
+                            nf_instance = ogs_sbi_nf_instance_add();
+                            if (!nf_instance) {
+                                ogs_error("Can't add instance [%s] "
+                                        "due to insufficient space",
+                                        message.h.resource.component[1]);
                                 ogs_assert(
                                     true ==
                                     ogs_sbi_server_send_error(
@@ -142,8 +149,6 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                                         message.h.resource.component[1], NULL));
                                 break;
                             }
-                            nf_instance = ogs_sbi_nf_instance_add();
-                            ogs_assert(nf_instance);
                             ogs_sbi_nf_instance_set_id(nf_instance,
                                     message.h.resource.component[1]);
 
@@ -191,6 +196,14 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                             ogs_error("[%s] State machine exception",
                                     nf_instance->id);
 
+                            /*
+                             * Handlers invoked from the NF FSM must not free
+                             * nf_instance before returning because the FSM
+                             * transition writes to &nf_instance->sm.  Cleanup
+                             * of failed registration/update attempts is
+                             * centralized here, after ogs_fsm_dispatch()
+                             * completes.
+                             */
                             nrf_nf_fsm_fini(nf_instance);
                             ogs_sbi_nf_instance_remove(nf_instance);
                         }

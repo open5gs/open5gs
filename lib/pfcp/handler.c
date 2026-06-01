@@ -544,7 +544,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
 
     ogs_pfcp_rule_remove_all(pdr);
 
-    for (i = 0; i < OGS_MAX_NUM_OF_FLOW_IN_PDR; i++) {
+    for (i = 0; i < ogs_min(OGS_ARRAY_SIZE(message->pdi.sdf_filter),
+                OGS_MAX_NUM_OF_FLOW_IN_PDR); i++) {
         ogs_pfcp_sdf_filter_t sdf_filter;
         ogs_pfcp_rule_t *rule = NULL;
         ogs_pfcp_rule_t *oppsite_direction_rule = NULL;
@@ -933,7 +934,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
 
         ogs_pfcp_rule_remove_all(pdr);
 
-        for (i = 0; i < OGS_MAX_NUM_OF_FLOW_IN_PDR; i++) {
+        for (i = 0; i < ogs_min(OGS_ARRAY_SIZE(message->pdi.sdf_filter),
+                    OGS_MAX_NUM_OF_FLOW_IN_PDR); i++) {
             ogs_pfcp_sdf_filter_t sdf_filter;
             ogs_pfcp_rule_t *rule = NULL;
             ogs_pfcp_rule_t *oppsite_direction_rule = NULL;
@@ -1189,8 +1191,15 @@ ogs_pfcp_far_t *ogs_pfcp_handle_create_far(ogs_pfcp_sess_t *sess,
             ogs_pfcp_tlv_outer_header_creation_t *outer_header_creation =
                 &message->forwarding_parameters.outer_header_creation;
 
-            ogs_assert(outer_header_creation->data);
-            ogs_assert(outer_header_creation->len);
+            if (!outer_header_creation->data ||
+                    outer_header_creation->len == 0) {
+                ogs_error("Invalid Outer Header Creation [data:%p,len:%d]",
+                        outer_header_creation->data,
+                        outer_header_creation->len);
+                *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
+                *offending_ie_value = OGS_PFCP_OUTER_HEADER_CREATION_TYPE;
+                return NULL;
+            }
 
             memcpy(&far->outer_header_creation, outer_header_creation->data,
                     ogs_min(sizeof(far->outer_header_creation),
@@ -1307,8 +1316,15 @@ ogs_pfcp_far_t *ogs_pfcp_handle_update_far(ogs_pfcp_sess_t *sess,
             ogs_pfcp_tlv_outer_header_creation_t *outer_header_creation =
                 &message->update_forwarding_parameters.outer_header_creation;
 
-            ogs_assert(outer_header_creation->data);
-            ogs_assert(outer_header_creation->len);
+            if (!outer_header_creation->data ||
+                    outer_header_creation->len == 0) {
+                ogs_error("Invalid Outer Header Creation [data:%p,len:%d]",
+                        outer_header_creation->data,
+                        outer_header_creation->len);
+                *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
+                *offending_ie_value = OGS_PFCP_OUTER_HEADER_CREATION_TYPE;
+                return NULL;
+            }
 
             memcpy(&far->outer_header_creation, outer_header_creation->data,
                     ogs_min(sizeof(far->outer_header_creation),

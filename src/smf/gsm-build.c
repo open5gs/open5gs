@@ -22,11 +22,54 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gsm_log_domain
 
+static uint8_t *gsm_decode_base64(const char *src, int *out_len)
+{
+    int len, decoded;
+    uint8_t *buf = NULL;
+
+    ogs_assert(out_len);
+
+    *out_len = 0;
+
+    if (!src) {
+        ogs_error("No base64 data");
+        return NULL;
+    }
+
+    len = ogs_base64_decoded_size(src);
+    if (len <= 0) {
+        ogs_error("Invalid base64 data");
+        return NULL;
+    }
+
+    buf = ogs_calloc(1, len);
+    if (!buf) {
+        ogs_error("ogs_calloc() failed [%d]", len);
+        return NULL;
+    }
+
+    decoded = ogs_base64_decode_to_buffer(buf, len, src);
+    if (decoded <= 0) {
+        ogs_error("Invalid base64 data");
+        ogs_free(buf);
+        return NULL;
+    }
+    if (decoded > 0xffff) {
+        ogs_error("Base64 data too long [%d]", decoded);
+        ogs_free(buf);
+        return NULL;
+    }
+
+    *out_len = decoded;
+
+    return buf;
+}
+
 ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     smf_bearer_t *qos_flow = NULL;
-    int rv;
+    int rv, len;
 
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_pdu_session_establishment_accept_t *
@@ -54,8 +97,6 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     OpenAPI_list_t *qosFlowsSetupList = NULL;
     OpenAPI_qos_flow_setup_item_t *qosFlowSetupItem = NULL;
     OpenAPI_lnode_t *node = NULL;
-    int len;
-
     selected_pdu_session_type = &pdu_session_establishment_accept->
         selected_pdu_session_type;
     ogs_assert(selected_pdu_session_type);
@@ -105,14 +146,13 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
         qosFlowSetupItem = node->data;
         ogs_assert(qosFlowSetupItem);
 
-        len = ogs_base64_decode_len(qosFlowSetupItem->qos_rules);
-        ogs_assert(len);
-        authorized_qos_rules->buffer = ogs_calloc(1, len);
-        ogs_assert(authorized_qos_rules->buffer);
-        authorized_qos_rules->length =
-            ogs_base64_decode_binary(
-                    authorized_qos_rules->buffer, qosFlowSetupItem->qos_rules);
-        ogs_assert(authorized_qos_rules->length);
+        authorized_qos_rules->buffer =
+            gsm_decode_base64(qosFlowSetupItem->qos_rules, &len);
+        if (!authorized_qos_rules->buffer) {
+            ogs_error("Failed to decode qosRules");
+            goto cleanup;
+        }
+        authorized_qos_rules->length = len;
 
     } else if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
         ogs_fatal("This should not be invoked from H-SMF during HR-Roaming");
@@ -197,15 +237,13 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
         ogs_assert(qosFlowSetupItem);
 
         if (qosFlowSetupItem->qos_flow_description) {
-            len = ogs_base64_decode_len(qosFlowSetupItem->qos_flow_description);
-            ogs_assert(len);
-            authorized_qos_flow_descriptions->buffer = ogs_calloc(1, len);
-            ogs_assert(authorized_qos_flow_descriptions->buffer);
-            authorized_qos_flow_descriptions->length =
-                ogs_base64_decode_binary(
-                        authorized_qos_flow_descriptions->buffer,
-                        qosFlowSetupItem->qos_flow_description);
-            ogs_assert(authorized_qos_flow_descriptions->length);
+            authorized_qos_flow_descriptions->buffer = gsm_decode_base64(
+                    qosFlowSetupItem->qos_flow_description, &len);
+            if (!authorized_qos_flow_descriptions->buffer) {
+                ogs_error("Failed to decode qosFlowDescription");
+                goto cleanup;
+            }
+            authorized_qos_flow_descriptions->length = len;
 
             pdu_session_establishment_accept->presencemask |=
                 OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;
@@ -319,7 +357,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
 {
     ogs_pkbuf_t *pkbuf = NULL;
     smf_bearer_t *qos_flow = NULL;
-    int rv, i;
+    int rv, i, len;
 
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_pdu_session_modification_command_t
@@ -336,7 +374,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
     OpenAPI_qos_flow_add_modify_request_item_t *qosFlowAddModRequestItem = NULL;
     OpenAPI_qos_flow_release_request_item_t *qosFlowRelRequestItem = NULL;
     OpenAPI_lnode_t *node = NULL;
-    int num, len;
+    int num;
 
     authorized_qos_rules = &pdu_session_modification_command->
         authorized_qos_rules;
@@ -364,17 +402,20 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
                 qosFlowAddModRequestItem->qos_rules) {
                 ogs_nas_qos_rules_t qos_rules;
 
-                len = ogs_base64_decode_len(
-                        qosFlowAddModRequestItem->qos_rules);
-                ogs_assert(len);
-                qos_rules.buffer = ogs_calloc(1, len);
-                ogs_assert(qos_rules.buffer);
-                qos_rules.length = ogs_base64_decode_binary(
-                            qos_rules.buffer, qosFlowAddModRequestItem->qos_rules);
-                ogs_assert(qos_rules.length);
+                qos_rules.buffer = gsm_decode_base64(
+                        qosFlowAddModRequestItem->qos_rules, &len);
+                if (!qos_rules.buffer) {
+                    ogs_error("Failed to decode qosRules in qosFlowsAddModRequestList");
+                    goto cleanup;
+                }
+                qos_rules.length = len;
 
-                ogs_assert(1 ==
-                        ogs_nas_parse_qos_rules(&qos_rule[num], &qos_rules));
+                if (1 != ogs_nas_parse_qos_rules(&qos_rule[num],
+                            &qos_rules)) {
+                    ogs_error("ogs_nas_parse_qos_rules() failed");
+                    ogs_free(qos_rules.buffer);
+                    goto cleanup;
+                }
 
                 ogs_free(qos_rules.buffer);
 
@@ -387,16 +428,19 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
             if (qosFlowRelRequestItem && qosFlowRelRequestItem->qos_rules) {
                 ogs_nas_qos_rules_t qos_rules;
 
-                len = ogs_base64_decode_len(qosFlowRelRequestItem->qos_rules);
-                ogs_assert(len);
-                qos_rules.buffer = ogs_calloc(1, len);
-                ogs_assert(qos_rules.buffer);
-                qos_rules.length = ogs_base64_decode_binary(
-                            qos_rules.buffer, qosFlowRelRequestItem->qos_rules);
-                ogs_assert(qos_rules.length);
+                qos_rules.buffer = gsm_decode_base64(
+                        qosFlowRelRequestItem->qos_rules, &len);
+                if (!qos_rules.buffer) {
+                    ogs_error("Failed to decode qosRules in qosFlowsRelRequestList");
+                    goto cleanup;
+                }
+                qos_rules.length = len;
 
-                ogs_assert(1 ==
-                        ogs_nas_parse_qos_rules(&qos_rule[num], &qos_rules));
+                if (1 != ogs_nas_parse_qos_rules(&qos_rule[num], &qos_rules)) {
+                    ogs_error("ogs_nas_parse_qos_rules() failed");
+                    ogs_free(qos_rules.buffer);
+                    goto cleanup;
+                }
 
                 ogs_free(qos_rules.buffer);
 
@@ -451,20 +495,21 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
                 qosFlowAddModRequestItem->qos_flow_description) {
                 ogs_nas_qos_flow_descriptions_t qos_flow_descriptions;
 
-                len = ogs_base64_decode_len(
-                        qosFlowAddModRequestItem->qos_flow_description);
-                ogs_assert(len);
-                qos_flow_descriptions.buffer = ogs_calloc(1, len);
-                ogs_assert(qos_flow_descriptions.buffer);
-                qos_flow_descriptions.length = ogs_base64_decode_binary(
-                            qos_flow_descriptions.buffer,
-                            qosFlowAddModRequestItem->qos_flow_description);
-                ogs_assert(qos_flow_descriptions.length);
+                qos_flow_descriptions.buffer = gsm_decode_base64(
+                        qosFlowAddModRequestItem->qos_flow_description, &len);
+                if (!qos_flow_descriptions.buffer) {
+                    ogs_error("Failed to decode qosFlowDescription in qosFlowsAddModRequestList");
+                    goto cleanup;
+                }
+                qos_flow_descriptions.length = len;
 
-                ogs_assert(1 ==
-                        ogs_nas_parse_qos_flow_descriptions(
+                if (1 != ogs_nas_parse_qos_flow_descriptions(
                             &qos_flow_description[num],
-                            &qos_flow_descriptions));
+                            &qos_flow_descriptions)) {
+                    ogs_error("ogs_nas_parse_qos_flow_descriptions() failed");
+                    ogs_free(qos_flow_descriptions.buffer);
+                    goto cleanup;
+                }
 
                 ogs_free(qos_flow_descriptions.buffer);
 
@@ -479,20 +524,21 @@ ogs_pkbuf_t *gsm_build_pdu_session_modification_command(
                 qosFlowRelRequestItem->qos_flow_description) {
                 ogs_nas_qos_flow_descriptions_t qos_flow_descriptions;
 
-                len = ogs_base64_decode_len(
-                        qosFlowRelRequestItem->qos_flow_description);
-                ogs_assert(len);
-                qos_flow_descriptions.buffer = ogs_calloc(1, len);
-                ogs_assert(qos_flow_descriptions.buffer);
-                qos_flow_descriptions.length = ogs_base64_decode_binary(
-                            qos_flow_descriptions.buffer,
-                            qosFlowRelRequestItem->qos_flow_description);
-                ogs_assert(qos_flow_descriptions.length);
+                qos_flow_descriptions.buffer = gsm_decode_base64(
+                        qosFlowRelRequestItem->qos_flow_description, &len);
+                if (!qos_flow_descriptions.buffer) {
+                    ogs_error("Failed to decode qosFlowDescription in qosFlowsRelRequestList");
+                    goto cleanup;
+                }
+                qos_flow_descriptions.length = len;
 
-                ogs_assert(1 ==
-                        ogs_nas_parse_qos_flow_descriptions(
+                if (1 != ogs_nas_parse_qos_flow_descriptions(
                             &qos_flow_description[num],
-                            &qos_flow_descriptions));
+                            &qos_flow_descriptions)) {
+                    ogs_error("ogs_nas_parse_qos_flow_descriptions() failed");
+                    ogs_free(qos_flow_descriptions.buffer);
+                    goto cleanup;
+                }
 
                 ogs_free(qos_flow_descriptions.buffer);
 

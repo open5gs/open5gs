@@ -404,7 +404,8 @@ void pcf_ue_am_remove(pcf_ue_am_t *pcf_ue_am)
     ogs_free(pcf_ue_am->association_id);
 
     ogs_assert(pcf_ue_am->supi);
-    ogs_hash_set(self.supi_am_hash, pcf_ue_am->supi, strlen(pcf_ue_am->supi), NULL);
+    ogs_hash_unset_if_owner(self.supi_am_hash,
+            pcf_ue_am->supi, strlen(pcf_ue_am->supi), pcf_ue_am);
     ogs_free(pcf_ue_am->supi);
 
     if (pcf_ue_am->notification_uri)
@@ -467,7 +468,8 @@ void pcf_ue_sm_remove(pcf_ue_sm_t *pcf_ue_sm)
     pcf_sess_remove_all(pcf_ue_sm);
 
     ogs_assert(pcf_ue_sm->supi);
-    ogs_hash_set(self.supi_sm_hash, pcf_ue_sm->supi, strlen(pcf_ue_sm->supi), NULL);
+    ogs_hash_unset_if_owner(self.supi_sm_hash,
+            pcf_ue_sm->supi, strlen(pcf_ue_sm->supi), pcf_ue_sm);
     ogs_free(pcf_ue_sm->supi);
 
     if (pcf_ue_sm->gpsi)
@@ -672,7 +674,12 @@ bool pcf_sess_set_ipv6prefix(pcf_sess_t *sess, char *ipv6prefix_string)
         return false;
     }
 
-    ogs_assert(sess->ipv6prefix.len == OGS_IPV6_128_PREFIX_LEN);
+    if (sess->ipv6prefix.len != OGS_IPV6_128_PREFIX_LEN) {
+        ogs_error("Unsupported IPv6 prefix length [%d] in [%s]: "
+                "expected /%d", sess->ipv6prefix.len, ipv6prefix_string,
+                OGS_IPV6_128_PREFIX_LEN);
+        return false;
+    }
 
     sess->ipv6prefix_string = ogs_strdup(ipv6prefix_string);
     if (!sess->ipv6prefix_string) {
@@ -778,9 +785,17 @@ pcf_sess_t *pcf_sess_find_by_ipv6prefix(char *ipv6prefix_string)
 
     rv = ogs_ipv6prefix_from_string(
             ipv6prefix.addr6, &ipv6prefix.len, ipv6prefix_string);
-    ogs_assert(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_ipv6prefix_from_string() failed");
+        return NULL;
+    }
 
-    ogs_assert(ipv6prefix.len == OGS_IPV6_128_PREFIX_LEN);
+    if (ipv6prefix.len != OGS_IPV6_128_PREFIX_LEN) {
+        ogs_error("Unsupported IPv6 prefix length [%d] in [%s]: "
+                "expected /%d", ipv6prefix.len, ipv6prefix_string,
+                OGS_IPV6_128_PREFIX_LEN);
+        return NULL;
+    }
 
     return ogs_hash_get(self.ipv6prefix_hash,
             &ipv6prefix, (ipv6prefix.len >> 3) + 1);

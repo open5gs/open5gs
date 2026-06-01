@@ -131,6 +131,26 @@ static inline uint32_t u24_to_u32(ogs_uint24_t v)
     return (x & 0xFFFFFFu);
 }
 
+static void split_nr_cgi(
+        uint64_t nci, uint8_t gnb_id_length,
+        uint32_t *gnb_id, uint32_t *cell_id)
+{
+    int cell_id_bits;
+
+    ogs_assert(gnb_id);
+    ogs_assert(cell_id);
+
+    nci &= 0xFFFFFFFFFULL; /* NR Cell Identity is 36 bits */
+
+    if (gnb_id_length < 22 || gnb_id_length > 32)
+        gnb_id_length = 22;
+
+    cell_id_bits = 36 - gnb_id_length;
+
+    *gnb_id = (uint32_t)(nci >> cell_id_bits);
+    *cell_id = (uint32_t)(nci & ((1ULL << cell_id_bits) - 1));
+}
+
 /* AM policy feature labels */
 static const char *am_policy_feature_names[64] = {
     /*0*/ "AM Policy Association",
@@ -222,9 +242,11 @@ static int add_gnb(cJSON *parent, const amf_ue_t *ue)
 
     ran_ue_t *ran = ran_ue_find_by_id(ue->ran_ue_id);
     if (ran) {
-        uint64_t nci = ue->nr_cgi.cell_id & 0xFFFFFFFFFULL; /* 36-bit */
-        uint32_t gnb_id  = (uint32_t)((nci >> 14) & 0x3FFFFF);
-        uint32_t cell_id = (uint32_t)(nci & 0x3FFF);
+        uint64_t nci = ue->nr_cgi.cell_id;
+        uint32_t gnb_id = 0;
+        uint32_t cell_id = 0;
+
+        split_nr_cgi(nci, ue->nr_cgi_gnb_id_length, &gnb_id, &cell_id);
 
         cJSON *a = cJSON_CreateNumber((double)ran->amf_ue_ngap_id);
         cJSON *r = cJSON_CreateNumber((double)ran->ran_ue_ngap_id);
@@ -294,9 +316,11 @@ static int add_location(cJSON *parent, const amf_ue_t *ue)
         if (!p) { cJSON_Delete(cgi); cJSON_Delete(loc); return -1; }
         cJSON_AddItemToObjectCS(cgi, "plmn", p);
 
-        uint64_t nci     = ue->nr_cgi.cell_id & 0xFFFFFFFFFULL; /* 36-bit */
-        uint32_t gnb_id  = (uint32_t)((nci >> 14) & 0x3FFFFF);
-        uint32_t cell_id = (uint32_t)(nci & 0x3FFF);
+        uint64_t nci = ue->nr_cgi.cell_id;
+        uint32_t gnb_id = 0;
+        uint32_t cell_id = 0;
+
+        split_nr_cgi(nci, ue->nr_cgi_gnb_id_length, &gnb_id, &cell_id);
 
         cJSON *n = cJSON_CreateNumber((double)nci);
         cJSON *g = cJSON_CreateNumber((double)gnb_id);

@@ -149,6 +149,9 @@ extern "C" {
 #define OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
 /* 3GPP TS 24.007 Table 11.2.3.1c.1: */
 #define OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED 0
+#define OGS_NAS_PDU_SESSION_IDENTITY_MAX 255
+
+bool ogs_pdu_session_id_is_valid(int psi);
 
 #define OGS_ACCESS_TYPE_3GPP 1
 #define OGS_ACCESS_TYPE_NON_3GPP 2
@@ -308,6 +311,12 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
 #define OGS_ID_5G_GUTI_TYPE "5g-guti"
 char *ogs_id_get_type(const char *str);
 char *ogs_id_get_value(const char *str);
+bool ogs_id_get_type_value(const char *str, char **type, char **value);
+bool ogs_bcd_string_is_valid(const char *bcd, int max_len);
+bool ogs_imsi_bcd_is_valid(const char *imsi_bcd);
+bool ogs_imeisv_bcd_is_valid(const char *imeisv_bcd);
+int ogs_supi_to_imsi_bcd(
+        const char *supi, char *imsi_bcd, bool *imsi_supi);
 
 /************************************
  * TAI Structure                    */

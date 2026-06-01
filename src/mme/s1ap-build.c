@@ -1803,6 +1803,8 @@ ogs_pkbuf_t *s1ap_build_path_switch_ack(
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_E_RABToBeSwitchedULList_t *E_RABToBeSwitchedULList = NULL;
     S1AP_SecurityContext_t *SecurityContext = NULL;
+    S1AP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
+    bool send_ue_security_capability = false;
 
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -1813,6 +1815,10 @@ ogs_pkbuf_t *s1ap_build_path_switch_ack(
     ogs_assert(enb_ue);
 
     ogs_debug("PathSwitchAcknowledge");
+
+    send_ue_security_capability =
+        mme_ue->send_ue_security_capability_in_path_switch_ack;
+    mme_ue->send_ue_security_capability_in_path_switch_ack = false;
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
@@ -1908,6 +1914,35 @@ ogs_pkbuf_t *s1ap_build_path_switch_ack(
     SecurityContext->nextHopParameter.bits_unused = 0;
     memcpy(SecurityContext->nextHopParameter.buf,
             mme_ue->nh, SecurityContext->nextHopParameter.size);
+
+    if (send_ue_security_capability) {
+        ie = CALLOC(1, sizeof(S1AP_PathSwitchRequestAcknowledgeIEs_t));
+        ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present =
+            S1AP_PathSwitchRequestAcknowledgeIEs__value_PR_UESecurityCapabilities;
+
+        UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
+
+        UESecurityCapabilities->encryptionAlgorithms.size = 2;
+        UESecurityCapabilities->encryptionAlgorithms.buf =
+            CALLOC(UESecurityCapabilities->encryptionAlgorithms.size,
+                        sizeof(uint8_t));
+        UESecurityCapabilities->encryptionAlgorithms.bits_unused = 0;
+        UESecurityCapabilities->encryptionAlgorithms.buf[0] =
+            (mme_ue->ue_network_capability.eea << 1);
+
+        UESecurityCapabilities->integrityProtectionAlgorithms.size = 2;
+        UESecurityCapabilities->integrityProtectionAlgorithms.buf =
+            CALLOC(UESecurityCapabilities->
+                            integrityProtectionAlgorithms.size,
+                        sizeof(uint8_t));
+        UESecurityCapabilities->integrityProtectionAlgorithms.bits_unused = 0;
+        UESecurityCapabilities->integrityProtectionAlgorithms.buf[0] =
+            (mme_ue->ue_network_capability.eia << 1);
+    }
 
     return ogs_s1ap_encode(&pdu);
 }
