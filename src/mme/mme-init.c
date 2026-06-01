@@ -26,6 +26,7 @@
 #include "mme-timer.h"
 
 #include "mme-fd-path.h"
+#include "mme-dns.h"
 #include "s1ap-path.h"
 #include "sgsap-path.h"
 #include "mme-gtp-path.h"
@@ -77,6 +78,9 @@ int mme_initialize(void)
     rv = mme_fd_init();
     if (rv != OGS_OK) return OGS_ERROR;
 
+    /* TS 29.303 S-NAPTR PGW discovery (opt-in via mme.pgw_discovery). */
+    mme_dns_init();
+
     rv = mme_gtp_open();
     if (rv != OGS_OK) return OGS_ERROR;
 
@@ -107,6 +111,8 @@ void mme_terminate(void)
     s1ap_close();
 
     ogs_metrics_context_close(ogs_metrics_self());
+
+    mme_dns_final();
 
     mme_fd_final();
 

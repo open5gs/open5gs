@@ -37,3 +37,13 @@ testunit_unit_exe = executable('unit',
                     libsbi_dep])
 
 test('unit', testunit_unit_exe, is_parallel : false, suite: 'unit')
+
+# Dedicated test for the MME TS 29.303 S-NAPTR PGW discovery helpers. It links
+# libmme (for mme_dns_*), kept separate so the main 'unit' suite stays lean.
+testunit_mme_dns_exe = executable('mme-dns-test',
+    sources : files('mme-dns-test.c'),
+    c_args : [testunit_core_cc_flags, sbi_cc_flags],
+    include_directories : srcinc,
+    dependencies : [libmme_dep])
+
+test('mme-dns', testunit_mme_dns_exe, is_parallel : false, suite: 'unit')

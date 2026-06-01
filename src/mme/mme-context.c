@@ -1923,6 +1923,33 @@ int mme_context_parse_config(void)
                         }
                     } while (ogs_yaml_iter_type(&hss_map_array) ==
                             YAML_SEQUENCE_NODE);
+                } else if (!strcmp(mme_key, "pgw_discovery")) {
+                    /* TS 29.303 DNS S-NAPTR based PGW (S5/S8) discovery.
+                     * Opt-in; default disabled keeps static PGW selection. */
+                    ogs_yaml_iter_t pgw_disc_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &pgw_disc_iter);
+                    while (ogs_yaml_iter_next(&pgw_disc_iter)) {
+                        const char *pd_key =
+                            ogs_yaml_iter_key(&pgw_disc_iter);
+                        ogs_assert(pd_key);
+                        if (!strcmp(pd_key, "enabled")) {
+                            self.pgw_discovery.enabled =
+                                ogs_yaml_iter_bool(&pgw_disc_iter);
+                        } else if (!strcmp(pd_key, "interface")) {
+                            const char *v =
+                                ogs_yaml_iter_value(&pgw_disc_iter);
+                            if (v && !ogs_strcasecmp(v, "s5"))
+                                self.pgw_discovery.iface =
+                                    MME_PGW_DISCOVERY_IFACE_S5;
+                            else if (v && !ogs_strcasecmp(v, "both"))
+                                self.pgw_discovery.iface =
+                                    MME_PGW_DISCOVERY_IFACE_BOTH;
+                            else
+                                self.pgw_discovery.iface =
+                                    MME_PGW_DISCOVERY_IFACE_S8;
+                        } else
+                            ogs_warn("unknown key `%s`", pd_key);
+                    }
                 } else if (!strcmp(mme_key, "security")) {
                     ogs_yaml_iter_t security_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &security_iter);

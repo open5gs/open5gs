@@ -20,6 +20,7 @@
 #include "mme-context.h"
 
 #include "mme-s11-build.h"
+#include "mme-dns.h"
 
 ogs_pkbuf_t *mme_s11_build_create_session_request(
         uint8_t type, mme_sess_t *sess, int create_action)
@@ -144,11 +145,33 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     } else {
         ogs_sockaddr_t *pgw_addr = NULL;
         ogs_sockaddr_t *pgw_addr6 = NULL;
+        ogs_sockaddr_t *dns_sa_list = NULL;
 
         pgw_addr = mme_pgw_addr_find_by_apn_enb(
                 &mme_self()->pgw_list, AF_INET, sess);
         pgw_addr6 = mme_pgw_addr_find_by_apn_enb(
                 &mme_self()->pgw_list, AF_INET6, sess);
+
+        /*
+         * No HSS-provided PGW and no static peer matched. If TS 29.303
+         * S-NAPTR discovery is enabled and the subscriber's home PLMN is
+         * known (from hss_map), resolve the PGW from DNS before falling
+         * back to the configured default. Static config always wins.
+         */
+        if (!pgw_addr && !pgw_addr6 &&
+                mme_self()->pgw_discovery.enabled && mme_ue->hssmap) {
+            if (mme_dns_resolve_pgw(session->name,
+                        &mme_ue->hssmap->plmn_id, &dns_sa_list) == OGS_OK) {
+                ogs_sockaddr_t *sa = NULL;
+                for (sa = dns_sa_list; sa; sa = sa->next) {
+                    if (!pgw_addr && sa->ogs_sa_family == AF_INET)
+                        pgw_addr = sa;
+                    else if (!pgw_addr6 && sa->ogs_sa_family == AF_INET6)
+                        pgw_addr6 = sa;
+                }
+            }
+        }
+
         if (!pgw_addr && !pgw_addr6) {
             pgw_addr = mme_self()->pgw_addr;
             pgw_addr6 = mme_self()->pgw_addr6;
@@ -160,6 +183,11 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
         req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &pgw_s5c_teid;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.len = len;
+
+        /* pgw_addr/pgw_addr6 may point into dns_sa_list; the F-TEID build
+         * above copies the address, so it is safe to release it now. */
+        if (dns_sa_list)
+            ogs_freeaddrinfo(dns_sa_list);
     }
 
     req->access_point_name.presence = 1;

@@ -39,6 +39,7 @@ libmme_sources = files('''
     mme-gtp-path.h
     mme-s11-build.h
     mme-s11-handler.h
+    mme-dns.h
     sbc-message.h
     sbc-handler.h
     mme-sm.h
@@ -75,6 +76,7 @@ libmme_sources = files('''
     mme-gtp-path.c
     mme-s11-build.c
     mme-s11-handler.c
+    mme-dns.c
     mme-sm.c
     mme-path.c
     sbc-handler.c
@@ -84,6 +86,12 @@ libmme_sources = files('''
     ../../lib/metrics/prometheus/json_pager.c
 '''.split())
 
+# libresolv: res_nquery/ns_parse/dn_expand for TS 29.303 S-NAPTR PGW discovery
+# (mme-dns.c). On glibc these symbols may live in libc, so the library is
+# optional.
+cc = meson.get_compiler('c')
+libresolv_dep = cc.find_library('resolv', required : false)
+
 libmme = static_library('mme',
     sources : libmme_sources,
     dependencies : [libmetrics_dep,
@@ -92,6 +100,7 @@ libmme = static_library('mme',
                     libnas_eps_dep,
                     libdiameter_s6a_dep,
                     libgtp_dep,
+                    libresolv_dep,
                     libsbi_dep],
     install : false)
 
@@ -103,6 +112,7 @@ libmme_dep = declare_dependency(
                     libnas_eps_dep,
                     libdiameter_s6a_dep,
                     libsbi_dep,
+                    libresolv_dep,
                     libgtp_dep])
 
 mme_sources = files('''

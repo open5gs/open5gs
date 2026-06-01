@@ -94,6 +94,17 @@ typedef struct mme_context_s {
     ogs_sockaddr_t  *pgw_addr;      /* First IPv4 Address Selected */
     ogs_sockaddr_t  *pgw_addr6;     /* First IPv6 Address Selected */
 
+    /* TS 29.303 DNS S-NAPTR based PGW (S5/S8) discovery.
+     * Opt-in: when disabled (default), PGW selection is unchanged. */
+    struct {
+        bool        enabled;
+        /* Application protocol tag to filter NAPTR records on. */
+#define MME_PGW_DISCOVERY_IFACE_S8      0   /* x-s8-gtp (home-routed) */
+#define MME_PGW_DISCOVERY_IFACE_S5      1   /* x-s5-gtp */
+#define MME_PGW_DISCOVERY_IFACE_BOTH    2   /* x-s5-gtp or x-s8-gtp */
+        int         iface;
+    } pgw_discovery;
+
     ogs_list_t      enb_list;       /* ENB S1AP Client List */
 
     ogs_list_t      vlr_list;       /* VLR SGsAP Client List */
