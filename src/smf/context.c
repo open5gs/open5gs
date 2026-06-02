@@ -1424,6 +1424,12 @@ static bool compare_ue_info(ogs_pfcp_node_t *node, smf_sess_t *sess)
     ogs_assert(sess);
     ogs_assert(sess->session.name);
 
+    if (node->num_of_dnn == 0 &&
+        node->num_of_e_cell_id == 0 &&
+        node->num_of_nr_cell_id == 0 &&
+        node->num_of_tac == 0)
+        return compare_ue_subnet(node, sess);
+
     for (i = 0; i < node->num_of_dnn; i++)
         if (ogs_strcasecmp(node->dnn[i], sess->session.name) == 0)
             return compare_ue_subnet(node, sess);

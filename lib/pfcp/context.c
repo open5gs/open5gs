@@ -1094,7 +1094,8 @@ ogs_pfcp_node_t *ogs_pfcp_node_add(ogs_list_t *list,
 ogs_pfcp_node_t *ogs_pfcp_node_find(ogs_list_t *list,
     ogs_pfcp_node_id_t *node_id, ogs_sockaddr_t *from)
 {
-    ogs_pfcp_node_t *cur;
+    ogs_pfcp_node_t *cur, *match = NULL;
+    int matches = 0;
 
     ogs_assert(list);
     ogs_assert(node_id || from);
@@ -1120,6 +1121,28 @@ ogs_pfcp_node_t *ogs_pfcp_node_find(ogs_list_t *list,
             return cur;
         }
     }
+
+    /*
+     * Some PFCP peers, especially UPFs that initiate dynamic association from
+     * Kubernetes pods, keep the same IP address but use a non-8805 source port
+     * for heartbeat and session responses. Prefer exact IP:port matches above;
+     * only fall back to IP-only matching when a single peer is unambiguous.
+     */
+    if (from) {
+        ogs_list_for_each(list, cur) {
+            if (cur->node_id.type != OGS_PFCP_NODE_ID_UNKNOWN && node_id) {
+                if (!ogs_pfcp_node_id_compare(&cur->node_id, node_id))
+                    continue;
+            }
+            if (ogs_sockaddr_check_any_match(cur->addr_list, NULL,
+                                             from, /* compare_port= */ false)) {
+                match = cur;
+                matches++;
+            }
+        }
+    }
+    if (matches == 1)
+        return match;
 
     /* No match found. */
     return NULL;

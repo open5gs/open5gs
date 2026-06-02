@@ -38,6 +38,8 @@ size_t smf_dump_pdu_info(char *buf, size_t buflen,
         size_t page, size_t page_size);
 size_t smf_dump_pdu_info_paged(char *buf, size_t buflen,
         size_t page, size_t page_size);
+size_t smf_dump_upf_info(char *buf, size_t buflen,
+        size_t page, size_t page_size);
 #ifdef __cplusplus
 }
 #endif

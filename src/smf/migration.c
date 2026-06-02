@@ -508,6 +508,7 @@ int smf_migration_send_target_deletion(smf_sess_t *sess)
     ogs_assert(sess);
 
     switch (sess->migration.state) {
+    case SMF_MIGRATION_STATE_TARGET_PREPARING:
     case SMF_MIGRATION_STATE_TARGET_READY:
     case SMF_MIGRATION_STATE_ROUTE_PROGRAMMING:
     case SMF_MIGRATION_STATE_PATH_SWITCHING:

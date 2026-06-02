@@ -808,3 +808,111 @@ size_t smf_dump_pdu_info(char *buf, size_t buflen, size_t page, size_t page_size
 
     return smf_dump_pdu_info_paged(buf, buflen, page, page_size);
 }
+
+size_t smf_dump_upf_info(char *buf, size_t buflen, size_t page, size_t page_size)
+{
+    cJSON *root = NULL;
+    cJSON *items = NULL;
+    ogs_pfcp_node_t *node = NULL;
+    bool oom = false;
+    size_t emitted = 0;
+
+    (void)page;
+    (void)page_size;
+
+    if (!buf || buflen == 0)
+        return 0;
+
+    root = cJSON_CreateObject();
+    items = cJSON_CreateArray();
+    if (!root || !items) {
+        if (root) cJSON_Delete(root);
+        if (items) cJSON_Delete(items);
+        if (buflen >= 3) {
+            memcpy(buf, "{}", 3);
+            return 2;
+        }
+        buf[0] = '\0';
+        return 0;
+    }
+
+    ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, node) {
+        cJSON *item = NULL;
+        cJSON *address = NULL;
+        cJSON *pfcp = NULL;
+        cJSON *associated = NULL;
+        cJSON *ftup = NULL;
+        cJSON *configured = NULL;
+        cJSON *dynamic = NULL;
+        char ipbuf[OGS_ADDRSTRLEN] = "";
+        bool is_associated = false;
+
+        if (!node || !node->addr_list)
+            continue;
+
+        is_associated = OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated);
+        if (node->config_addr == NULL && !is_associated)
+            continue;
+
+        item = cJSON_CreateObject();
+        address = cJSON_CreateString(OGS_ADDR(node->addr_list, ipbuf));
+        pfcp = cJSON_CreateString(ogs_sockaddr_to_string_static(node->addr_list));
+        associated = cJSON_CreateBool(is_associated);
+        ftup = cJSON_CreateBool(node->up_function_features.ftup);
+        configured = cJSON_CreateBool(node->config_addr != NULL);
+        dynamic = cJSON_CreateBool(node->config_addr == NULL);
+        if (!item || !address || !pfcp || !associated || !ftup ||
+            !configured || !dynamic) {
+            if (item) cJSON_Delete(item);
+            if (address) cJSON_Delete(address);
+            if (pfcp) cJSON_Delete(pfcp);
+            if (associated) cJSON_Delete(associated);
+            if (ftup) cJSON_Delete(ftup);
+            if (configured) cJSON_Delete(configured);
+            if (dynamic) cJSON_Delete(dynamic);
+            oom = true;
+            break;
+        }
+
+        cJSON_AddItemToObjectCS(item, "address", address);
+        cJSON_AddItemToObjectCS(item, "pfcp", pfcp);
+        cJSON_AddItemToObjectCS(item, "associated", associated);
+        cJSON_AddItemToObjectCS(item, "ftup", ftup);
+        cJSON_AddItemToObjectCS(item, "configured", configured);
+        cJSON_AddItemToObjectCS(item, "dynamic", dynamic);
+
+        if (node->num_of_dnn > 0) {
+            int i;
+            cJSON *dnns = cJSON_CreateArray();
+            if (!dnns) {
+                cJSON_Delete(item);
+                oom = true;
+                break;
+            }
+            for (i = 0; i < node->num_of_dnn; i++) {
+                cJSON *dnn = cJSON_CreateString(node->dnn[i] ? node->dnn[i] : "");
+                if (!dnn) {
+                    cJSON_Delete(dnns);
+                    cJSON_Delete(item);
+                    oom = true;
+                    break;
+                }
+                cJSON_AddItemToArray(dnns, dnn);
+            }
+            if (oom)
+                break;
+            cJSON_AddItemToObjectCS(item, "dnn", dnns);
+        }
+
+        cJSON_AddItemToArray(items, item);
+        emitted++;
+    }
+
+    cJSON_AddItemToObjectCS(root, "items", items);
+    if (!cJSON_AddNumberToObject(root, "count", (double)emitted))
+        oom = true;
+    if (oom)
+        cJSON_AddBoolToObject(root, "truncated", true);
+
+    return json_pager_finalize(root, buf, buflen);
+}
