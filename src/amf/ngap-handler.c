@@ -3146,10 +3146,6 @@ void ngap_handle_path_switch_request(
                 received_eutra_ea, received_eutra_ia);
     }
 
-    /* Update Security Context (NextHop) */
-    amf_ue->nhcc++;
-    ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->nh, amf_ue->nh);
-
     for (i = 0; i < PDUSessionResourceToBeSwitchedDLList->list.count; i++) {
         amf_sess_t *sess = NULL;
         PDUSessionItem = (NGAP_PDUSessionResourceToBeSwitchedDLItem_t *)
@@ -3223,6 +3219,18 @@ void ngap_handle_path_switch_request(
 
         ogs_pkbuf_free(param.n2smbuf);
     }
+
+    /*
+     * Update Security Context (NextHop)
+     *
+     * Defer NH/NCC derivation until every PDU session in the
+     * PathSwitchRequest has been validated. An unknown or unassigned
+     * PDU Session ID returns an ErrorIndication in the loop above;
+     * advancing the NextHop chain before that point would leave the
+     * AMF and gNB desynchronized with no rollback (TS 33.501 6.9.2.3.2).
+     */
+    amf_ue->nhcc++;
+    ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->nh, amf_ue->nh);
 }
 
 void ngap_handle_handover_required(
@@ -3539,10 +3547,6 @@ void ngap_handle_handover_required(
     amf_ue->handover.group = Cause->present;
     amf_ue->handover.cause = (int)Cause->choice.radioNetwork;
 
-    /* Update Security Context (NextHop) */
-    amf_ue->nhcc++;
-    ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->nh, amf_ue->nh);
-
     /* Store Container */
     OGS_ASN_STORE_DATA(&amf_ue->handover.container,
             SourceToTarget_TransparentContainer);
@@ -3623,6 +3627,19 @@ void ngap_handle_handover_required(
 
         ogs_pkbuf_free(param.n2smbuf);
     }
+
+    /*
+     * Update Security Context (NextHop)
+     *
+     * Defer NH/NCC derivation until every PDU session in the
+     * HandoverRequired has been validated. An unknown or unassigned
+     * PDU Session ID returns an ErrorIndication in the loop above;
+     * advancing the NextHop chain before that point permanently loses
+     * the current NextHop (in-place overwrite) and breaks subsequent
+     * legitimate handovers (TS 33.501 6.9.2.3.2).
+     */
+    amf_ue->nhcc++;
+    ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->nh, amf_ue->nh);
 }
 
 void ngap_handle_handover_request_ack(
@@ -4292,6 +4309,16 @@ void ngap_handle_uplink_ran_status_transfer(
         (long long)target_ue->ran_ue_ngap_id,
         (long long)target_ue->amf_ue_ngap_id);
 
+    if (!RANStatusTransfer_TransparentContainer) {
+        ogs_error("No RANStatusTransfer_TransparentContainer");
+        r = ngap_send_error_indication(
+                gnb, &source_ue->ran_ue_ngap_id, &source_ue->amf_ue_ngap_id,
+                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     r = ngap_send_downlink_ran_status_transfer(
             target_ue, RANStatusTransfer_TransparentContainer);
     ogs_expect(r == OGS_OK);
@@ -4418,8 +4445,6 @@ void ngap_handle_handover_notification(
         return;
     }
 
-    amf_ue_associate_ran_ue(amf_ue, target_ue);
-
     if (!UserLocationInformation) {
         ogs_error("No UserLocationInformation");
         r = ngap_send_error_indication(gnb, &target_ue->ran_ue_ngap_id, NULL,
@@ -4439,6 +4464,8 @@ void ngap_handle_handover_notification(
         ogs_assert(r != OGS_ERROR);
         return;
     }
+
+    amf_ue_associate_ran_ue(amf_ue, target_ue);
 
     UserLocationInformationNR =
         UserLocationInformation->choice.userLocationInformationNR;

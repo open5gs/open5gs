@@ -2980,10 +2980,6 @@ void s1ap_handle_path_switch_request(
                 received_eea, received_eia);
     }
 
-    /* Update Security Context (NextHop) */
-    mme_ue->nhcc++;
-    ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
-
     ogs_list_init(&mme_ue->bearer_to_modify_list);
 
     for (i = 0; i < E_RABToBeSwitchedDLList->list.count; i++) {
@@ -3072,6 +3068,18 @@ void s1ap_handle_path_switch_request(
         else
             ogs_warn("Bearer [%d] Duplicated", (int)e_rab->e_RAB_ID);
     }
+
+    /*
+     * Update Security Context (NextHop)
+     *
+     * Defer NH/NCC derivation until every E-RAB in the PathSwitchRequest
+     * has been validated. An unknown E-RAB ID (or malformed GTP-TEID /
+     * transportLayerAddress) returns an ErrorIndication in the loop above;
+     * advancing the NextHop chain before that point would desynchronize
+     * the {NH, NCC} with the eNB with no rollback (TS 33.401 7.2.8).
+     */
+    mme_ue->nhcc++;
+    ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
 
     relocation = sgw_ue_check_if_relocated(mme_ue);
     if (relocation == SGW_WITHOUT_RELOCATION) {
