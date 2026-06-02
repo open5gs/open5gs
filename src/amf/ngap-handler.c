@@ -2827,6 +2827,7 @@ void ngap_handle_path_switch_request(
     uint16_t nr_ea = 0, nr_ia = 0, eutra_ea = 0, eutra_ia = 0;
     uint8_t received_nr_ea = 0, received_nr_ia = 0;
     uint8_t received_eutra_ea = 0, received_eutra_ia = 0;
+    bool ue_security_capability_mismatch = false;
 
     NGAP_PDUSessionResourceToBeSwitchedDLItem_t *PDUSessionItem = NULL;
     OCTET_STRING_t *transfer = NULL;
@@ -2944,15 +2945,11 @@ void ngap_handle_path_switch_request(
     ogs_info("    [OLD] TAC[%d] CellID[0x%llx]",
         amf_ue->nr_tai.tac.v, (long long)amf_ue->nr_cgi.cell_id);
 
-    /* Update RAN-UE-NGAP-ID */
-    ran_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;
-
-    /* Change ran_ue to the NEW gNB */
-    ran_ue_switch_to_gnb(ran_ue, gnb);
 
     if (!UserLocationInformation) {
         ogs_error("No UserLocationInformation");
-        r = ngap_send_error_indication2(ran_ue,
+        r = ngap_send_error_indication(gnb,
+                (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -2963,7 +2960,8 @@ void ngap_handle_path_switch_request(
             NGAP_UserLocationInformation_PR_userLocationInformationNR) {
         ogs_error("Not implemented UserLocationInformation[%d]",
                 UserLocationInformation->present);
-        r = ngap_send_error_indication2(ran_ue,
+        r = ngap_send_error_indication(gnb,
+                (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_unspecified);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -2972,7 +2970,8 @@ void ngap_handle_path_switch_request(
 
     if (!UESecurityCapabilities) {
         ogs_error("No UESecurityCapabilities");
-        r = ngap_send_error_indication2(ran_ue,
+        r = ngap_send_error_indication(gnb,
+                (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -2981,7 +2980,8 @@ void ngap_handle_path_switch_request(
 
     if (!PDUSessionResourceToBeSwitchedDLList) {
         ogs_error("No PDUSessionResourceToBeSwitchedDLList");
-        r = ngap_send_error_indication2(ran_ue,
+        r = ngap_send_error_indication(gnb,
+                (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
@@ -2990,15 +2990,13 @@ void ngap_handle_path_switch_request(
 
     if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
         ogs_error("No Security Context");
-        r = ngap_send_error_indication2(ran_ue,
+        r = ngap_send_error_indication(gnb,
+                (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_nas, NGAP_CauseNas_authentication_failure);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
     }
-
-    ogs_info("    [NEW] RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld] ",
-        (long long)ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
 
     UserLocationInformationNR =
             UserLocationInformation->choice.userLocationInformationNR;
@@ -3010,7 +3008,7 @@ void ngap_handle_path_switch_request(
         ogs_error("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&nr_tai.plmn_id), nr_tai.tac.v);
         r = ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                gnb, (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_protocol,
                 NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
         ogs_expect(r == OGS_OK);
@@ -3018,21 +3016,6 @@ void ngap_handle_path_switch_request(
         return;
     }
     ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
-
-    ogs_ngap_ASN_to_nr_cgi(
-            &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
-    ran_ue->saved.nr_cgi_gnb_id_length = gnb->gnb_id_length;
-    ogs_ngap_ASN_to_5gs_tai(
-            &UserLocationInformationNR->tAI, &ran_ue->saved.nr_tai);
-
-    /* Copy Stream-No/TAI/ECGI from ran_ue */
-    amf_ue->gnb_ostream_id = ran_ue->gnb_ostream_id;
-    memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
-    memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
-    amf_ue->nr_cgi_gnb_id_length = ran_ue->saved.nr_cgi_gnb_id_length;
-
-    ogs_info("    [NEW] TAC[%d] CellID[0x%llx]",
-        amf_ue->nr_tai.tac.v, (long long)amf_ue->nr_cgi.cell_id);
 
     nRencryptionAlgorithms = &UESecurityCapabilities->nRencryptionAlgorithms;
     nRintegrityProtectionAlgorithms =
@@ -3047,7 +3030,7 @@ void ngap_handle_path_switch_request(
                 (int)nRencryptionAlgorithms->size,
                 (int)sizeof(nr_ea));
         r = ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                gnb, (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_protocol,
                 NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
         ogs_expect(r == OGS_OK);
@@ -3060,7 +3043,7 @@ void ngap_handle_path_switch_request(
                 (int)nRintegrityProtectionAlgorithms->size,
                 (int)sizeof(nr_ia));
         r = ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                gnb, (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_protocol,
                 NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
         ogs_expect(r == OGS_OK);
@@ -3072,7 +3055,7 @@ void ngap_handle_path_switch_request(
                 (int)eUTRAencryptionAlgorithms->size,
                 (int)sizeof(eutra_ea));
         r = ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                gnb, (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_protocol,
                 NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
         ogs_expect(r == OGS_OK);
@@ -3085,7 +3068,7 @@ void ngap_handle_path_switch_request(
                 (int)eUTRAintegrityProtectionAlgorithms->size,
                 (int)sizeof(eutra_ia));
         r = ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                gnb, (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_protocol,
                 NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
         ogs_expect(r == OGS_OK);
@@ -3129,6 +3112,34 @@ void ngap_handle_path_switch_request(
             (amf_ue->ue_security_capability.eutra_ea & 0x7f) ||
         received_eutra_ia !=
             (amf_ue->ue_security_capability.eutra_ia & 0x7f)) {
+        ue_security_capability_mismatch = true;
+    }
+
+    /* Update RAN-UE-NGAP-ID */
+    ran_ue->ran_ue_ngap_id = *RAN_UE_NGAP_ID;
+
+    /* Change ran_ue to the NEW gNB after mandatory IE validation */
+    ran_ue_switch_to_gnb(ran_ue, gnb);
+
+    ogs_info("    [NEW] RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld] ",
+        (long long)ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+
+    ogs_ngap_ASN_to_nr_cgi(
+            &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
+    ran_ue->saved.nr_cgi_gnb_id_length = gnb->gnb_id_length;
+    ogs_ngap_ASN_to_5gs_tai(
+            &UserLocationInformationNR->tAI, &ran_ue->saved.nr_tai);
+
+    /* Copy Stream-No/TAI/ECGI from ran_ue */
+    amf_ue->gnb_ostream_id = ran_ue->gnb_ostream_id;
+    memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
+    memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
+    amf_ue->nr_cgi_gnb_id_length = ran_ue->saved.nr_cgi_gnb_id_length;
+
+    ogs_info("    [NEW] TAC[%d] CellID[0x%llx]",
+        amf_ue->nr_tai.tac.v, (long long)amf_ue->nr_cgi.cell_id);
+
+    if (ue_security_capability_mismatch) {
         amf_ue->send_ue_security_capability_in_path_switch_ack = true;
 
         ogs_warn("[%s] UE Security Capability mismatch in "
