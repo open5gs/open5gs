@@ -559,6 +559,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     S1AP_CellIdentity_t *cell_ID = NULL;
 
     enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue_from_stmsi = NULL;
 
     ogs_assert(enb);
     ogs_assert(enb->sctp.sock);
@@ -631,8 +632,6 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
         if (S_TMSI) {
             served_gummei_t *served_gummei = &mme_self()->served_gummei[0];
             ogs_nas_eps_guti_t nas_guti;
-            mme_ue_t *mme_ue = NULL;
-
             memset(&nas_guti, 0, sizeof(ogs_nas_eps_guti_t));
 
             /* Use the first configured plmn_id and mme group id */
@@ -668,44 +667,17 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
             memcpy(&nas_guti.m_tmsi, S_TMSI->m_TMSI.buf, S_TMSI->m_TMSI.size);
             nas_guti.m_tmsi = be32toh(nas_guti.m_tmsi);
 
-            mme_ue = mme_ue_find_by_guti(&nas_guti);
-            if (!mme_ue) {
+            mme_ue_from_stmsi = mme_ue_find_by_guti(&nas_guti);
+            if (!mme_ue_from_stmsi) {
                 ogs_info("Unknown UE by S_TMSI[G:%d,C:%d,M_TMSI:0x%x]",
                         nas_guti.mme_gid, nas_guti.mme_code, nas_guti.m_tmsi);
             } else {
                 ogs_info("    S_TMSI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
-                        mme_ue->current.guti.mme_gid,
-                        mme_ue->current.guti.mme_code,
-                        mme_ue->current.guti.m_tmsi,
-                        MME_UE_HAVE_IMSI(mme_ue)
-                            ? mme_ue->imsi_bcd : "Unknown");
-
-                /* If NAS(mme_ue_t) has already been associated with
-                 * older S1(enb_ue_t) context */
-                if (ECM_CONNECTED(mme_ue)) {
-    /*
-     * Issue #2786
-     *
-     * In cases where the UE sends an Integrity Un-Protected Attach
-     * Request or Service Request, there is an issue of sending
-     * a UEContextReleaseCommand for the OLD ENB Context.
-     *
-     * For example, if the UE switchs off and power-on after
-     * the first connection, the EPC sends a UEContextReleaseCommand.
-     *
-     * However, since there is no ENB context for this on the eNB,
-     * the eNB does not send a UEContextReleaseComplete,
-     * so the deletion of the ENB Context does not function properly.
-     *
-     * To solve this problem, the EPC has been modified to implicitly
-     * delete the ENB Context instead of sending a UEContextReleaseCommand.
-     */
-                    HOLDING_S1_CONTEXT(mme_ue);
-                }
-                enb_ue_associate_mme_ue(enb_ue, mme_ue);
-                ogs_debug("Mobile Reachable timer stopped for IMSI[%s]",
-                    mme_ue->imsi_bcd);
-                CLEAR_MME_UE_TIMER(mme_ue->t_mobile_reachable);
+                        mme_ue_from_stmsi->current.guti.mme_gid,
+                        mme_ue_from_stmsi->current.guti.mme_code,
+                        mme_ue_from_stmsi->current.guti.m_tmsi,
+                        MME_UE_HAVE_IMSI(mme_ue_from_stmsi)
+                            ? mme_ue_from_stmsi->imsi_bcd : "Unknown");
             }
         }
     } else {
@@ -803,6 +775,36 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
+    }
+
+    if (mme_ue_from_stmsi) {
+        /* If NAS(mme_ue_t) has already been associated with
+         * older S1(enb_ue_t) context */
+        if (ECM_CONNECTED(mme_ue_from_stmsi)) {
+/*
+ * Issue #2786
+ *
+ * In cases where the UE sends an Integrity Un-Protected Attach
+ * Request or Service Request, there is an issue of sending
+ * a UEContextReleaseCommand for the OLD ENB Context.
+ *
+ * For example, if the UE switchs off and power-on after
+ * the first connection, the EPC sends a UEContextReleaseCommand.
+ *
+ * However, since there is no ENB context for this on the eNB,
+ * the eNB does not send a UEContextReleaseComplete,
+ * so the deletion of the ENB Context does not function properly.
+ *
+ * To solve this problem, the EPC has been modified to implicitly
+ * delete the ENB Context instead of sending a UEContextReleaseCommand.
+ */
+            HOLDING_S1_CONTEXT(mme_ue_from_stmsi);
+        }
+
+        enb_ue_associate_mme_ue(enb_ue, mme_ue_from_stmsi);
+        ogs_debug("Mobile Reachable timer stopped for IMSI[%s]",
+                mme_ue_from_stmsi->imsi_bcd);
+        CLEAR_MME_UE_TIMER(mme_ue_from_stmsi->t_mobile_reachable);
     }
     memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf,
             sizeof(enb_ue->saved.e_cgi.plmn_id));

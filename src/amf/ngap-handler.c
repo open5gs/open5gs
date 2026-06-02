@@ -587,6 +587,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     char buf[OGS_ADDRSTRLEN];
 
     ran_ue_t *ran_ue = NULL;
+    amf_ue_t *amf_ue = NULL;
 
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_InitialUEMessage_t *InitialUEMessage = NULL;
@@ -696,7 +697,6 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     /* Find AMF_UE if 5G-S_TMSI included */
     if (FiveG_S_TMSI) {
         ogs_nas_5gs_guti_t nas_guti;
-        amf_ue_t *amf_ue = NULL;
         uint8_t region;
         uint16_t set;
         uint8_t pointer;
@@ -728,41 +728,6 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                     AMF_UE_HAVE_SUCI(amf_ue) ? amf_ue->suci : "Unknown ID",
                     ogs_amf_id_hexdump(&amf_ue->current.guti.amf_id),
                     amf_ue->current.guti.m_tmsi);
-            /* If NAS(amf_ue_t) has already been associated with
-             * older NG(ran_ue_t) context */
-            if (CM_CONNECTED(amf_ue)) {
-/*
- * Issue #2786
- *
- * In cases where the UE sends an Integrity Un-Protected Registration
- * Request or Service Request, there is an issue of sending
- * a UEContextReleaseCommand for the OLD RAN Context.
- *
- * For example, if the UE switchs off and power-on after
- * the first connection, the 5G Core sends a UEContextReleaseCommand.
- *
- * However, since there is no RAN context for this on the gNB,
- * the gNB does not send a UEContextReleaseComplete,
- * so the deletion of the RAN Context does not function properly.
- *
- * To solve this problem, the 5G Core has been modified to implicitly
- * delete the RAN Context instead of sending a UEContextReleaseCommand.
- */
-                HOLDING_NG_CONTEXT(amf_ue);
-            }
-            amf_ue_associate_ran_ue(amf_ue, ran_ue);
-
-            /*
-             * TS 24.501
-             * 5.3.7 Handling of the periodic registration update timer
-             *
-             * The mobile reachable timer shall be stopped
-             * when a NAS signalling connection is established for the UE.
-             * The implicit de-registration timer shall be stopped
-             * when a NAS signalling connection is established for the UE.
-             */
-            CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
-            CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
         }
     }
 
@@ -798,6 +763,49 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     UserLocationInformationNR =
         UserLocationInformation->choice.userLocationInformationNR;
     ogs_assert(UserLocationInformationNR);
+
+    /*
+     * If the message is malformed, do not replace the old NG context
+     * or associate this RAN UE with the AMF UE.
+     */
+    if (amf_ue) {
+        /* If NAS(amf_ue_t) has already been associated with
+         * older NG(ran_ue_t) context */
+        if (CM_CONNECTED(amf_ue)) {
+/*
+ * Issue #2786
+ *
+ * In cases where the UE sends an Integrity Un-Protected Registration
+ * Request or Service Request, there is an issue of sending
+ * a UEContextReleaseCommand for the OLD RAN Context.
+ *
+ * For example, if the UE switchs off and power-on after
+ * the first connection, the 5G Core sends a UEContextReleaseCommand.
+ *
+ * However, since there is no RAN context for this on the gNB,
+ * the gNB does not send a UEContextReleaseComplete,
+ * so the deletion of the RAN Context does not function properly.
+ *
+ * To solve this problem, the 5G Core has been modified to implicitly
+ * delete the RAN Context instead of sending a UEContextReleaseCommand.
+ */
+            HOLDING_NG_CONTEXT(amf_ue);
+        }
+        amf_ue_associate_ran_ue(amf_ue, ran_ue);
+
+        /*
+         * TS 24.501
+         * 5.3.7 Handling of the periodic registration update timer
+         *
+         * The mobile reachable timer shall be stopped
+         * when a NAS signalling connection is established for the UE.
+         * The implicit de-registration timer shall be stopped
+         * when a NAS signalling connection is established for the UE.
+         */
+        CLEAR_AMF_UE_TIMER(amf_ue->mobile_reachable);
+        CLEAR_AMF_UE_TIMER(amf_ue->implicit_deregistration);
+    }
+
     ogs_ngap_ASN_to_nr_cgi(
             &UserLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
     ran_ue->saved.nr_cgi_gnb_id_length = gnb->gnb_id_length;
