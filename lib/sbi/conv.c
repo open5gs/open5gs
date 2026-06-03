@@ -150,9 +150,9 @@ char *ogs_supi_from_suci(char *suci)
 
                     if (ogs_sbi_self()->hnet[home_network_pki_value].scheme
                             != protection_scheme_id) {
-                        ogs_error("Scheme Not Matched [%d != %s]",
-                            ogs_sbi_self()->hnet[protection_scheme_id].scheme,
-                            array[5]);
+                        ogs_error("Scheme Not Matched [%d != %d]",
+                            ogs_sbi_self()->hnet[home_network_pki_value].scheme,
+                            protection_scheme_id);
                         break;
                     }
 

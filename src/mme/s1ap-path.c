@@ -173,8 +173,8 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     ogs_assert(enb_ue);
     ogs_assert(nasPdu);
 
-    if (nasPdu->size == 0) {
-        ogs_error("Empty NAS PDU");
+    if (nasPdu->size < sizeof(ogs_nas_emm_header_t)) {
+        ogs_error("NAS PDU too short [%d]", (int)nasPdu->size);
         enb_ue_remove(enb_ue);
         return OGS_ERROR;
     }
@@ -200,27 +200,56 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         break;
     case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
         security_header_type.integrity_protected = 1;
-        ogs_pkbuf_pull(nasbuf, 6);
         break;
     case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
         security_header_type.integrity_protected = 1;
         security_header_type.ciphered = 1;
-        ogs_pkbuf_pull(nasbuf, 6);
         break;
     case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
         security_header_type.integrity_protected = 1;
         security_header_type.new_security_context = 1;
-        ogs_pkbuf_pull(nasbuf, 6);
         break;
     case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
         security_header_type.integrity_protected = 1;
         security_header_type.ciphered = 1;
         security_header_type.new_security_context = 1;
-        ogs_pkbuf_pull(nasbuf, 6);
         break;
     default:
         ogs_error("Not implemented(security header type:0x%x)",
                 sh->security_header_type);
+        ogs_pkbuf_free(nasbuf);
+        enb_ue_remove(enb_ue);
+        return OGS_ERROR;
+    }
+
+    /*
+     * Skip the 6-octet NAS security header for integrity-protected messages.
+     * ogs_pkbuf_pull() returns NULL when the buffer is shorter than the
+     * requested length, so a protected NAS-PDU that is too short to even
+     * contain its own security header is rejected here instead of being
+     * parsed from a buffer that was never advanced.
+     *
+     * The PLAIN and SERVICE_REQUEST formats carry no security header and
+     * must not be pulled; both leave integrity_protected == 0.
+     */
+    if (security_header_type.integrity_protected) {
+        if (!ogs_pkbuf_pull(nasbuf, sizeof(ogs_nas_eps_security_header_t))) {
+            ogs_error("NAS PDU too short for security header [%d]",
+                    (int)nasPdu->size);
+            ogs_pkbuf_free(nasbuf);
+            enb_ue_remove(enb_ue);
+            return OGS_ERROR;
+        }
+    }
+
+    /*
+     * Make sure the (post-security-header) NAS message is large enough to
+     * hold the EMM header that is dereferenced through 'h' below. This also
+     * covers ciphered messages: the length is unchanged by decoding.
+     */
+    if (nasbuf->len < sizeof(ogs_nas_emm_header_t)) {
+        ogs_error("NAS PDU too short for EMM header [%d]", (int)nasbuf->len);
+        ogs_pkbuf_free(nasbuf);
         enb_ue_remove(enb_ue);
         return OGS_ERROR;
     }
@@ -229,6 +258,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         if (nas_eps_security_decode(mme_ue,
                 security_header_type, nasbuf) != OGS_OK) {
             ogs_error("nas_eps_security_decode failed()");
+            ogs_pkbuf_free(nasbuf);
             enb_ue_remove(enb_ue);
             return OGS_ERROR;
         }
