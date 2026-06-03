@@ -423,7 +423,7 @@ uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
     if (session_type == OGS_PDU_SESSION_TYPE_IPV4) {
         if (ue_ip->ipv4 || pdr->dnn) {
             sess->ipv4 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET,
-                            pdr->dnn, (uint8_t *)&(ue_ip->addr));
+                            pdr->dnn, (uint8_t *)&(ue_ip->addr), NULL);
             if (!sess->ipv4) {
                 ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
                 ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
@@ -438,7 +438,7 @@ uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
     } else if (session_type == OGS_PDU_SESSION_TYPE_IPV6) {
         if (ue_ip->ipv6 || pdr->dnn) {
             sess->ipv6 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET6,
-                            pdr->dnn, ue_ip->addr6);
+                            pdr->dnn, ue_ip->addr6, NULL);
             if (!sess->ipv6) {
                 ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
                 ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
@@ -454,7 +454,7 @@ uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
     } else if (session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
         if (ue_ip->ipv4 || pdr->dnn) {
             sess->ipv4 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET,
-                            pdr->dnn, (uint8_t *)&(ue_ip->both.addr));
+                            pdr->dnn, (uint8_t *)&(ue_ip->both.addr), NULL);
             if (!sess->ipv4) {
                 ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
                 ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
@@ -469,7 +469,7 @@ uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
 
         if (ue_ip->ipv6 || pdr->dnn) {
             sess->ipv6 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET6,
-                            pdr->dnn, ue_ip->both.addr6);
+                            pdr->dnn, ue_ip->both.addr6, NULL);
             if (!sess->ipv6) {
                 ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
                 ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);

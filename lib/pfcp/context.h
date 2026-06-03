@@ -39,6 +39,9 @@ extern "C" {
 #define OGS_MAX_NUM_OF_DEV      16
 #define OGS_MAX_NUM_OF_SUBNET   16
 
+/* Max UE-IP subnets that a single UPF PFCP peer may advertise to the SMF */
+#define OGS_MAX_NUM_OF_UE_SUBNET 8
+
 typedef struct ogs_pfcp_node_s ogs_pfcp_node_t;
 
 typedef struct ogs_pfcp_context_s {
@@ -114,6 +117,16 @@ typedef struct ogs_pfcp_node_s {
     uint8_t         num_of_e_cell_id;
     uint64_t        nr_cell_id[OGS_MAX_NUM_OF_CELL_ID];
     uint8_t         num_of_nr_cell_id;
+
+    /*
+     * UE IP subnets served by this UPF (parsed from the SMF's
+     * 'pfcp.client.upf[].subnet' list). Used to pin UE-IP allocation to the
+     * pool owned by the selected UPF so that, with multiple UPFs serving the
+     * same DNN from distinct subnets, the assigned address always belongs to
+     * the anchoring UPF (no downlink black-hole). Empty => legacy behaviour.
+     */
+    ogs_ipsubnet_t  ue_subnet[OGS_MAX_NUM_OF_UE_SUBNET];
+    uint8_t         num_of_ue_subnet;
 
     uint32_t        remote_recovery; /* UTC time */
     bool            restoration_required;
@@ -502,7 +515,8 @@ void ogs_pfcp_rule_remove_all(ogs_pfcp_pdr_t *pdr);
 
 int ogs_pfcp_ue_pool_generate(void);
 ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
-        uint8_t *cause_value, int family, const char *dnn, uint8_t *addr);
+        uint8_t *cause_value, int family, const char *dnn, uint8_t *addr,
+        ogs_pfcp_node_t *node);
 void ogs_pfcp_ue_ip_free(ogs_pfcp_ue_ip_t *ip);
 
 ogs_pfcp_dev_t *ogs_pfcp_dev_add(const char *ifname);
@@ -518,6 +532,8 @@ void ogs_pfcp_subnet_remove(ogs_pfcp_subnet_t *subnet);
 void ogs_pfcp_subnet_remove_all(void);
 ogs_pfcp_subnet_t *ogs_pfcp_find_subnet(int family);
 ogs_pfcp_subnet_t *ogs_pfcp_find_subnet_by_dnn(int family, const char *dnn);
+ogs_pfcp_subnet_t *ogs_pfcp_find_subnet_by_dnn_and_node(
+        int family, const char *dnn, ogs_pfcp_node_t *node);
 
 void ogs_pfcp_pool_init(ogs_pfcp_sess_t *sess);
 void ogs_pfcp_pool_final(ogs_pfcp_sess_t *sess);

@@ -476,6 +476,11 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                         uint64_t nr_cell_id[
                                             OGS_MAX_NUM_OF_CELL_ID] = {0,};
                                         int num_of_nr_cell_id = 0;
+                                        ogs_ipsubnet_t ue_subnet[
+                                            OGS_MAX_NUM_OF_UE_SUBNET];
+                                        int num_of_ue_subnet = 0;
+
+                                        memset(ue_subnet, 0, sizeof(ue_subnet));
 
                                         if (ogs_yaml_iter_type(&remote_array) ==
                                                 YAML_MAPPING_NODE) {
@@ -693,6 +698,59 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                                 } while (ogs_yaml_iter_type(
                                                         &nr_cell_id_iter) ==
                                                         YAML_SEQUENCE_NODE);
+                                            } else if (!strcmp(remote_key,
+                                                        "subnet")) {
+                                                /*
+                                                 * UE-IP subnet(s) owned by this
+                                                 * UPF. Lets the SMF allocate the
+                                                 * UE address from the selected
+                                                 * UPF's own pool (CIDR list).
+                                                 */
+                                                ogs_yaml_iter_t ue_subnet_iter;
+                                                ogs_yaml_iter_recurse(
+                                                        &remote_iter,
+                                                        &ue_subnet_iter);
+                                                ogs_assert(ogs_yaml_iter_type(
+                                                            &ue_subnet_iter) !=
+                                                        YAML_MAPPING_NODE);
+
+                                                do {
+                                                    const char *v = NULL;
+                                                    char buf[OGS_ADDRSTRLEN + 8];
+                                                    char *p = NULL;
+                                                    const char *ipstr = NULL;
+                                                    const char *bits = NULL;
+
+                                                    if (ogs_yaml_iter_type(
+                                                            &ue_subnet_iter) ==
+                                                        YAML_SEQUENCE_NODE) {
+                                                        if (!ogs_yaml_iter_next(
+                                                            &ue_subnet_iter))
+                                                            break;
+                                                    }
+
+                                                    v = ogs_yaml_iter_value(
+                                                            &ue_subnet_iter);
+                                                    if (!v) continue;
+
+                                                    ogs_assert(num_of_ue_subnet <
+                                                        OGS_MAX_NUM_OF_UE_SUBNET);
+
+                                                    ogs_cpystrn(buf, v,
+                                                            sizeof(buf));
+                                                    p = buf;
+                                                    ipstr = (const char *)
+                                                        strsep(&p, "/");
+                                                    bits = (const char *)p;
+                                                    if (ipstr && bits &&
+                                                        ogs_ipsubnet(&ue_subnet[
+                                                            num_of_ue_subnet],
+                                                            ipstr, bits) ==
+                                                                OGS_OK)
+                                                        num_of_ue_subnet++;
+                                                } while (ogs_yaml_iter_type(
+                                                        &ue_subnet_iter) ==
+                                                        YAML_SEQUENCE_NODE);
                                             } else
                                                 ogs_warn("unknown key `%s`",
                                                         remote_key);
@@ -741,6 +799,12 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                         if (num_of_nr_cell_id != 0)
                                             memcpy(node->nr_cell_id, nr_cell_id,
                                                     sizeof(node->nr_cell_id));
+
+                                        node->num_of_ue_subnet =
+                                            num_of_ue_subnet;
+                                        if (num_of_ue_subnet != 0)
+                                            memcpy(node->ue_subnet, ue_subnet,
+                                                    sizeof(node->ue_subnet));
 
                                     } while (ogs_yaml_iter_type(
                                                 &remote_array) ==
@@ -2357,7 +2421,8 @@ int ogs_pfcp_ue_pool_generate(void)
 }
 
 ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
-        uint8_t *cause_value, int family, const char *dnn, uint8_t *addr)
+        uint8_t *cause_value, int family, const char *dnn, uint8_t *addr,
+        ogs_pfcp_node_t *node)
 {
     ogs_pfcp_subnet_t *subnet = NULL;
     ogs_pfcp_ue_ip_t *ue_ip = NULL;
@@ -2376,9 +2441,18 @@ ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(
         return NULL;
     }
 
-    if (dnn)
-        subnet = ogs_pfcp_find_subnet_by_dnn(family, dnn);
-    else
+    if (dnn) {
+        /*
+         * If a UPF was already selected and it advertises its own UE
+         * subnet(s), allocate from the pool owned by that UPF so the UE IP
+         * always belongs to the anchoring UPF. Fall back to the plain
+         * DNN-based lookup when no node-specific pool matches (legacy).
+         */
+        if (node && node->num_of_ue_subnet > 0)
+            subnet = ogs_pfcp_find_subnet_by_dnn_and_node(family, dnn, node);
+        if (subnet == NULL)
+            subnet = ogs_pfcp_find_subnet_by_dnn(family, dnn);
+    } else
         subnet = ogs_pfcp_find_subnet(family);
 
     if (subnet == NULL) {
@@ -2603,6 +2677,53 @@ ogs_pfcp_subnet_t *ogs_pfcp_find_subnet_by_dnn(int family, const char *dnn)
     }
 
     return subnet;
+}
+
+/*
+ * Like ogs_pfcp_find_subnet_by_dnn(), but only returns a subnet whose network
+ * is contained in one of the UE subnets advertised by the given UPF node.
+ * This pins UE-IP allocation to the pool owned by the anchoring UPF when
+ * several UPFs serve the same DNN from distinct subnets. Returns NULL when the
+ * node owns no matching, non-exhausted pool (caller then falls back).
+ */
+ogs_pfcp_subnet_t *ogs_pfcp_find_subnet_by_dnn_and_node(
+        int family, const char *dnn, ogs_pfcp_node_t *node)
+{
+    ogs_pfcp_subnet_t *subnet = NULL;
+    int i, k;
+
+    ogs_assert(dnn);
+    ogs_assert(node);
+    ogs_assert(family == AF_INET || family == AF_INET6);
+
+    ogs_list_for_each(&self.subnet_list, subnet) {
+        if (!((subnet->family == AF_UNSPEC || subnet->family == family) &&
+            (strlen(subnet->dnn) == 0 ||
+                (strlen(subnet->dnn) &&
+                    ogs_strcasecmp(subnet->dnn, dnn) == 0)) &&
+            subnet->pool.avail))
+            continue;
+
+        for (i = 0; i < node->num_of_ue_subnet; i++) {
+            bool contained = true;
+
+            if (node->ue_subnet[i].family != subnet->sub.family)
+                continue;
+
+            for (k = 0; k < 4; k++) {
+                if ((subnet->sub.sub[k] & node->ue_subnet[i].mask[k]) !=
+                        node->ue_subnet[i].sub[k]) {
+                    contained = false;
+                    break;
+                }
+            }
+
+            if (contained)
+                return subnet;
+        }
+    }
+
+    return NULL;
 }
 
 void ogs_pfcp_pool_init(ogs_pfcp_sess_t *sess)

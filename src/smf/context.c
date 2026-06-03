@@ -1935,7 +1935,8 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
 
     if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4) {
         sess->ipv4 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET,
-                sess->session.name, (uint8_t *)&sess->session.ue_ip.addr);
+                sess->session.name, (uint8_t *)&sess->session.ue_ip.addr,
+                sess->pfcp_node);
         if (!sess->ipv4) {
             ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
             return cause_value;
@@ -1945,7 +1946,8 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
                 sess->ipv4->addr, OGS_IPV4_LEN, sess);
     } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV6) {
         sess->ipv6 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET6,
-                sess->session.name, sess->session.ue_ip.addr6);
+                sess->session.name, sess->session.ue_ip.addr6,
+                sess->pfcp_node);
         if (!sess->ipv6) {
             ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
             return cause_value;
@@ -1960,13 +1962,15 @@ uint8_t smf_sess_set_ue_ip(smf_sess_t *sess)
                 sess->ipv6->addr, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, sess);
     } else if (sess->session.session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
         sess->ipv4 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET,
-                sess->session.name, (uint8_t *)&sess->session.ue_ip.addr);
+                sess->session.name, (uint8_t *)&sess->session.ue_ip.addr,
+                sess->pfcp_node);
         if (!sess->ipv4) {
             ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
             return cause_value;
         }
         sess->ipv6 = ogs_pfcp_ue_ip_alloc(&cause_value, AF_INET6,
-                sess->session.name, sess->session.ue_ip.addr6);
+                sess->session.name, sess->session.ue_ip.addr6,
+                sess->pfcp_node);
         if (!sess->ipv6) {
             ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
             ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
