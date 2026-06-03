@@ -3191,12 +3191,23 @@ static int on_header_field(
     data = multipart_parser_get_data(parser);
     ogs_assert(data);
 
-    if (at && length) {
-        if (data->header_field)
-            ogs_free(data->header_field);
-        data->header_field = ogs_strndup(at, length);
-        ogs_assert(data->header_field);
+    /*
+     * The multipart state machine emits a zero-length field name when a
+     * header line begins with ':' (e.g. ":application/json"). Such input is
+     * malformed; rejecting it here prevents a NULL data->header_field from
+     * propagating into on_header_value(). See Issues #4608
+     */
+    if (!at || !length) {
+        ogs_error("Invalid multipart header field");
+        data->parse_error = true;
+        return 0;
     }
+
+    if (data->header_field)
+        ogs_free(data->header_field);
+    data->header_field = ogs_strndup(at, length);
+    ogs_assert(data->header_field);
+
     return 0;
 }
 
@@ -3208,6 +3219,18 @@ static int on_header_value(
     ogs_assert(parser);
     data = multipart_parser_get_data(parser);
     ogs_assert(data);
+
+    /*
+     * Defense in depth: a header value must be preceded by a valid field
+     * name. on_header_field() already rejects empty names, but guard here as
+     * well so ogs_strcasecmp() (plain strcasecmp, not NULL-safe) is never
+     * called with a NULL data->header_field.
+     */
+    if (!data->header_field) {
+        ogs_error("Multipart header value without field name");
+        data->parse_error = true;
+        return 0;
+    }
 
     if (data->num_of_part < OGS_SBI_MAX_NUM_OF_PART && at && length) {
         if (!ogs_strcasecmp(data->header_field, OGS_SBI_CONTENT_TYPE)) {
