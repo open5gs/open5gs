@@ -159,17 +159,26 @@ $ make
 $ make test
 ```
 
-#### 3. Open5GS
+#### 4. MongoDB
 
+**Tip:** MongoDB is used as database for PCRF/HSS.
+{: .notice--info}
 
-The Open5GS package is available on the recent versions of *Ubuntu*.
+**Note:** open5gs-hssd and open5gs-pcrfd services need a working MongoDB instance in order to work properly. If you want to use an external MongoDB server, skip this step and use --no-install-recommends apt flag when installing open5gs-hss or open5gs-pcrf packages.
+{: .notice--warning}
+
 ```bash
-# Install the MongoDB Packages
 $ curl -fsSL https://pgp.mongodb.com/server-8.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
 $ echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
 $ sudo apt update
 $ sudo apt install mongodb-org
+```
 
+#### 5. Open5GS
+
+The Open5GS package is available on the recent versions of *Ubuntu*.
+
+```bash
 # Installing Open5GS
 $ sudo add-apt-repository ppa:open5gs/latest
 $ sudo apt update
