@@ -4,11 +4,9 @@
 
 The Open5GS project takes security vulnerabilities seriously.
 
-If you believe you have discovered a security issue in Open5GS, please report it privately to the project maintainer before making any public disclosure.
+If you believe you have discovered a security issue in Open5GS, please report it privately and avoid public disclosure until the issue has been reviewed and addressed.
 
-Security reports may be submitted to:
-
-[acetcom@gmail.com](mailto:acetcom@gmail.com)
+Please report vulnerabilities privately using GitHub's "Report a vulnerability" button under the Security tab (Security → Advisories → Report a vulnerability). This opens a private advisory visible only to the maintainers.
 
 When reporting a vulnerability, please include:
 
