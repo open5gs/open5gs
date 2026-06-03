@@ -1606,8 +1606,36 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
             SWITCH(sbi_message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
-                smf_namf_comm_handle_n1_n2_message_transfer(
-                        sess, stream, e->h.sbi.state, sbi_message);
+                if (!smf_namf_comm_handle_n1_n2_message_transfer(
+                        sess, stream, e->h.sbi.state, sbi_message)) {
+                    /*
+                     * The N1N2MessageTransfer to AMF failed during
+                     * SMF_UE_REQUESTED_PDU_SESSION_ESTABLISHMENT (handler
+                     * returned false). Typical cause: AMF-side UE context
+                     * was released by the RAN in the race window between
+                     * PFCP Session Establishment and the N1N2 message
+                     * arriving at AMF — AMF then answers 404 Not Found
+                     * and the session is non-recoverable.
+                     *
+                     * Without this transition the SMF session would be
+                     * stranded in smf_gsm_state_operational with PCF
+                     * associated and UPF TEID allocated but no RAN
+                     * attachment, leaking pdu_state=inactive forever
+                     * unless a external fallback (e.g. AMF-side
+                     * DUPLICATED_PDU_SESSION_ID handling on the next
+                     * UE attempt) happens to tear it down.
+                     *
+                     * smf_gsm_state_5gc_n1_n2_reject is the existing
+                     * teardown path for failed establishments: its
+                     * ENTRY_SIG checks PCF_SM_POLICY_ASSOCIATED and
+                     * drives SMPolicy Delete followed by SMF_SESS_CLEAR
+                     * via smf_gsm_state_session_will_release.
+                     */
+                    ogs_warn("[%s:%d] N1N2MessageTransfer failed, "
+                             "releasing stranded session",
+                             smf_ue->supi, sess->psi);
+                    OGS_FSM_TRAN(s, smf_gsm_state_5gc_n1_n2_reject);
+                }
                 break;
 
             DEFAULT

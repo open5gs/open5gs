@@ -49,8 +49,33 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
  */
             smf_qos_flow_binding(sess);
         } else {
+            /*
+             * AMF rejected the N1N2MessageTransfer during PDU Session
+             * Establishment. This is typically a 404 Not Found (matching
+             * AMF-side fix in the previous commit) when the AMF-side UE
+             * context was released by the RAN (inactivity timer) in the
+             * brief race window between SMF's PFCP session setup and the
+             * N1N2 transfer arriving at AMF. It can also be a 400
+             * (malformed request) or 5xx (AMF internal error).
+             *
+             * In every case the session is non-recoverable on this
+             * establishment attempt: the UE has no active NGAP context,
+             * no N1 Establishment Accept was delivered, and SMF is holding
+             * PFCP state (UPF TEID, UE IP from pool) that needs to be
+             * released before the next attempt. Previously the error was
+             * merely logged and the session leaked as pdu_state=inactive
+             * indefinitely, observable in SMF InfoAPI /pdu-info as
+             * stranded entries with allocated resources and no RAN
+             * attachment.
+             *
+             * Returning false signals the caller in gsm-sm.c to drive
+             * the FSM into smf_gsm_state_5gc_n1_n2_reject, which handles
+             * SMPolicy deletion and session teardown uniformly with the
+             * other PDU establishment failure paths.
+             */
             ogs_error("[%s:%d] HTTP response error [%d]",
                 smf_ue->supi, sess->psi, recvmsg->res_status);
+            return false;
         }
         break;
 
