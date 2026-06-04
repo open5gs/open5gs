@@ -222,6 +222,8 @@ Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          open5gs-common (= ${binary:Version})
+Recommends:
+         mongodb-org | mongodb,
 Description: PCF (Policy Control Function)
  Open5GS is a C-language implementation of 5G Core and EPC
  Packet Core, i.e. the core network of an NR/LTE network (Release-17)
@@ -258,6 +260,8 @@ Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          open5gs-common (= ${binary:Version})
+Recommends:
+         mongodb-org | mongodb,
 Description: UDR (Unified Data Repository)
  Open5GS is a C-language implementation of 5G Core and EPC
  Packet Core, i.e. the core network of an NR/LTE network (Release-17)
