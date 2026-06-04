@@ -2559,11 +2559,33 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                                     NGAP_CauseNas_normal_release);
                         ogs_assert(n2smbuf);
 
-                        ogs_assert(stream);
-                        smf_sbi_send_sm_context_updated_data_n1_n2_message(
-                                sess, stream, n1smbuf,
-                                OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD,
-                                n2smbuf);
+                        if (stream) {
+                            smf_sbi_send_sm_context_updated_data_n1_n2_message(
+                                    sess, stream, n1smbuf,
+                                    OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD,
+                                    n2smbuf);
+                        } else {
+                            /*
+                             * Race window: the SBI stream tied to the
+                             * SM-context-update can be torn down (peer reset,
+                             * timeout, premature client disconnect) before
+                             * this FSM event fires. Without this guard the
+                             * previous ogs_assert(stream) crashes the SMF.
+                             *
+                             * The PDU release path is no longer reachable
+                             * through SBI here, but the local SMF session
+                             * still needs to converge: free the prepared NAS
+                             * and N2 buffers, log, and STILL transition to
+                             * smf_gsm_state_wait_5gc_n1_n2_release so that
+                             * the wait-completion logic and PFCP cleanup run
+                             * to completion. Returning without transitioning
+                             * would leak the smf_sess_t indefinitely.
+                             */
+                            ogs_error("Stream has already been removed; "
+                                    "proceeding with local-only release");
+                            ogs_pkbuf_free(n1smbuf);
+                            ogs_pkbuf_free(n2smbuf);
+                        }
                     }
 
                     OGS_FSM_TRAN(s, smf_gsm_state_wait_5gc_n1_n2_release);
