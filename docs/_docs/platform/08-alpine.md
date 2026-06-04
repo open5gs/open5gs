@@ -9,6 +9,9 @@ This guide is based on **Alpine 3.13** Distribution.
 ### Getting MongoDB
 ---
 
+**Tip:** MongoDB is used as database for PCF/UDR and PCRF/HSS.
+{: .notice--info}
+
 Install MongoDB with package manager.
 ```bash
 $ sudo apk update

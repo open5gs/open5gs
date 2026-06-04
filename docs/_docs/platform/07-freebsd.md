@@ -53,6 +53,9 @@ user 'vagrant', or on your bare metal FreeBSD 14 system as any normal user.
 ### Getting MongoDB
 ---
 
+**Tip:** MongoDB is used as database for PCF/UDR and PCRF/HSS.
+{: .notice--info}
+
 Install MongoDB with package manager.
 ```bash
 $ sudo pkg install mongodb50
