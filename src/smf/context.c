@@ -617,6 +617,39 @@ int smf_context_parse_config(void)
                     } while (ogs_yaml_iter_type(&p_cscf_iter) ==
                             YAML_SEQUENCE_NODE);
 
+                } else if (!strcmp(smf_key, "p-cscf-policy")) {
+                    ogs_yaml_iter_t policy_iter;
+                    ogs_yaml_iter_recurse(&smf_iter, &policy_iter);
+                    while (ogs_yaml_iter_next(&policy_iter)) {
+                        const char *policy_key =
+                            ogs_yaml_iter_key(&policy_iter);
+                        ogs_assert(policy_key);
+                        if (!strcmp(policy_key, "mode")) {
+                            const char *v =
+                                ogs_yaml_iter_value(&policy_iter);
+                            if (v && !strcmp(v, "all"))
+                                self.p_cscf_return_all = true;
+                            else if (v && !strcmp(v, "single"))
+                                self.p_cscf_return_all = false;
+                            else if (v)
+                                ogs_warn("Unknown p-cscf-policy mode: %s",
+                                        v);
+                        } else if (!strcmp(policy_key, "order")) {
+                            const char *v =
+                                ogs_yaml_iter_value(&policy_iter);
+                            if (v && !strcmp(v, "random"))
+                                self.p_cscf_order = SMF_P_CSCF_ORDER_RANDOM;
+                            else if (v && !strcmp(v, "round-robin"))
+                                self.p_cscf_order =
+                                    SMF_P_CSCF_ORDER_ROUND_ROBIN;
+                            else if (v)
+                                ogs_warn("Unknown p-cscf-policy order: %s",
+                                        v);
+                        } else
+                            ogs_warn("Unknown p-cscf-policy key: %s",
+                                    policy_key);
+                    }
+
                 } else if (!strcmp(smf_key, "info")) {
                     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
@@ -3337,6 +3370,57 @@ static const uint8_t *ipcp_contains_option(
 #include "../version.h"
 static const char *pap_welcome = "Welcome to open5gs-smfd " OPEN5GS_VERSION;
 
+/* Serialized size of the PCO/ePCO accumulated so far (header + containers),
+ * used to keep the P-CSCF list below OGS_MAX_PCO_LEN (ogs_pco_build()
+ * asserts on overflow). */
+static int smf_pco_cur_size(const ogs_pco_t *pco)
+{
+    int i, size = 1; /* PCO/ePCO header octet */
+    for (i = 0; i < pco->num_of_id; i++)
+        size += 3 + pco->ids[i].len; /* container-id(2) + length(1) + value */
+    return size;
+}
+
+/* Compute the order of P-CSCF indices to return for one session and advance
+ * the round-robin cursor. Returns the number of indices written to 'out'.
+ * Honors smf_self()->p_cscf_return_all and ->p_cscf_order. With the defaults
+ * (return_all=false, order=round-robin) this yields the legacy behaviour:
+ * a single address selected by the rotating index. */
+static int smf_pco_select_p_cscf(int *out, int num, int *rr_index)
+{
+    int i, order = smf_self()->p_cscf_order;
+
+    if (num <= 0)
+        return 0;
+
+    if (!smf_self()->p_cscf_return_all) {
+        if (order == SMF_P_CSCF_ORDER_RANDOM) {
+            out[0] = ogs_random32() % num;
+        } else {
+            out[0] = *rr_index % num;
+            *rr_index = (*rr_index + 1) % num;
+        }
+        return 1;
+    }
+
+    if (order == SMF_P_CSCF_ORDER_RANDOM) {
+        for (i = 0; i < num; i++)
+            out[i] = i;
+        for (i = num - 1; i > 0; i--) { /* Fisher-Yates shuffle */
+            int j = ogs_random32() % (i + 1);
+            int t = out[i]; out[i] = out[j]; out[j] = t;
+        }
+    } else {
+        /* Round-robin: emit the whole list but rotate which entry is the
+         * highest-preference (first) one, so primary load is distributed
+         * while the UE still receives every address for local failover. */
+        for (i = 0; i < num; i++)
+            out[i] = (*rr_index + i) % num;
+        *rr_index = (*rr_index + 1) % num;
+    }
+    return num;
+}
+
 int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
 {
     int rv;
@@ -3348,7 +3432,7 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
     int num_of_ipcp;
     int pco_size = 0;
     ogs_ipsubnet_t dns_primary, dns_secondary, dns6_primary, dns6_secondary;
-    ogs_ipsubnet_t p_cscf, p_cscf6;
+    ogs_ipsubnet_t p_cscf[MAX_NUM_OF_P_CSCF], p_cscf6[MAX_NUM_OF_P_CSCF];
     int size = 0;
     int i = 0;
     uint16_t mtu = 0;
@@ -3521,30 +3605,62 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
             break;
         case OGS_PCO_ID_P_CSCF_IPV4_ADDRESS_REQUEST:
             if (smf_self()->num_of_p_cscf) {
-                rv = ogs_ipsubnet(&p_cscf,
-                    smf_self()->p_cscf[smf_self()->p_cscf_index], NULL);
-                ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV4_LEN;
-                smf.ids[smf.num_of_id].data = p_cscf.sub;
-                smf.num_of_id++;
-
-                smf_self()->p_cscf_index++;
-                smf_self()->p_cscf_index %= smf_self()->num_of_p_cscf;
+                int sel[MAX_NUM_OF_P_CSCF];
+                int n_sel, k;
+                n_sel = smf_pco_select_p_cscf(sel,
+                        smf_self()->num_of_p_cscf,
+                        &smf_self()->p_cscf_index);
+                for (k = 0; k < n_sel; k++) {
+                    if (smf.num_of_id >=
+                            OGS_MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID) {
+                        ogs_warn("PCO container limit reached; "
+                                "P-CSCF IPv4 list truncated");
+                        break;
+                    }
+                    if (smf_pco_cur_size(&smf) + 3 + OGS_IPV4_LEN >
+                            OGS_MAX_PCO_LEN) {
+                        ogs_warn("PCO length limit reached; "
+                                "P-CSCF IPv4 list truncated");
+                        break;
+                    }
+                    rv = ogs_ipsubnet(&p_cscf[k],
+                        smf_self()->p_cscf[sel[k]], NULL);
+                    ogs_assert(rv == OGS_OK);
+                    smf.ids[smf.num_of_id].id = ue.ids[i].id;
+                    smf.ids[smf.num_of_id].len = OGS_IPV4_LEN;
+                    smf.ids[smf.num_of_id].data = p_cscf[k].sub;
+                    smf.num_of_id++;
+                }
             }
             break;
         case OGS_PCO_ID_P_CSCF_IPV6_ADDRESS_REQUEST:
             if (smf_self()->num_of_p_cscf6) {
-                rv = ogs_ipsubnet(&p_cscf6,
-                    smf_self()->p_cscf6[smf_self()->p_cscf6_index], NULL);
-                ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV6_LEN;
-                smf.ids[smf.num_of_id].data = p_cscf6.sub;
-                smf.num_of_id++;
-
-                smf_self()->p_cscf6_index++;
-                smf_self()->p_cscf6_index %= smf_self()->num_of_p_cscf6;
+                int sel[MAX_NUM_OF_P_CSCF];
+                int n_sel, k;
+                n_sel = smf_pco_select_p_cscf(sel,
+                        smf_self()->num_of_p_cscf6,
+                        &smf_self()->p_cscf6_index);
+                for (k = 0; k < n_sel; k++) {
+                    if (smf.num_of_id >=
+                            OGS_MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID) {
+                        ogs_warn("PCO container limit reached; "
+                                "P-CSCF IPv6 list truncated");
+                        break;
+                    }
+                    if (smf_pco_cur_size(&smf) + 3 + OGS_IPV6_LEN >
+                            OGS_MAX_PCO_LEN) {
+                        ogs_warn("PCO length limit reached; "
+                                "P-CSCF IPv6 list truncated");
+                        break;
+                    }
+                    rv = ogs_ipsubnet(&p_cscf6[k],
+                        smf_self()->p_cscf6[sel[k]], NULL);
+                    ogs_assert(rv == OGS_OK);
+                    smf.ids[smf.num_of_id].id = ue.ids[i].id;
+                    smf.ids[smf.num_of_id].len = OGS_IPV6_LEN;
+                    smf.ids[smf.num_of_id].data = p_cscf6[k].sub;
+                    smf.num_of_id++;
+                }
             }
             break;
         case OGS_PCO_ID_IPV4_LINK_MTU_REQUEST:

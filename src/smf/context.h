@@ -136,6 +136,17 @@ typedef struct smf_context_s {
     int             num_of_p_cscf6;
     int             p_cscf6_index;
 
+    /* P-CSCF provisioning policy for the address(es) returned in PCO/ePCO
+     * (Gm) at PDP/PDU session establishment.
+     *   p_cscf_return_all = false (default): one address per session.
+     *   p_cscf_return_all = true: the full configured list per session,
+     *     letting the UE perform local re-selection (TS 24.229).
+     *   p_cscf_order selects rotation/shuffle (see SMF_P_CSCF_ORDER_*). */
+#define SMF_P_CSCF_ORDER_ROUND_ROBIN  0
+#define SMF_P_CSCF_ORDER_RANDOM       1
+    bool            p_cscf_return_all;
+    int             p_cscf_order;
+
     ogs_list_t      sgw_s5c_list;   /* SGW GTPC Node List */
     ogs_list_t      ip_pool_list;
 
