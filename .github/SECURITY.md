@@ -16,6 +16,19 @@ When reporting a vulnerability, please include:
 * Proof of concept, if available
 * Potential impact
 
+## Scope
+
+This policy covers security vulnerabilities in the source code of the
+open5gs/open5gs repository, including the network function implementations and
+the bundled WebUI.
+
+The following are generally considered out of scope:
+
+* Vulnerabilities in third-party software or dependencies
+* Issues caused by deployment or configuration choices outside Open5GS
+* Reports generated only by automated scanners without demonstrated impact
+* Theoretical issues without a realistic threat model or attack scenario
+
 ## Supported Versions
 
 Users are encouraged to use the latest stable release of Open5GS.
