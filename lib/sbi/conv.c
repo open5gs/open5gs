@@ -882,9 +882,17 @@ bool ogs_sbi_time_from_string(ogs_time_t *timestamp, char *str)
                     (str[i-3] == '+' || str[i-3] == '-')) {
                 /* remove ':' character in timezone string range */
             } else {
+                if (j >= MAX_TIMESTR_LEN - 1) {
+                    ogs_error("Too long time string [%d]", (int)strlen(str));
+                    return false;
+                }
                 seconds[j++] = str[i];
             }
         } else {
+            if (k >= MAX_TIMESTR_LEN - 1) {
+                ogs_error("Too long time string [%d]", (int)strlen(str));
+                return false;
+            }
             subsecs[k++] = str[i];
         }
 
