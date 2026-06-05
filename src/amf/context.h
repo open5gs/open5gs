@@ -53,7 +53,18 @@ typedef enum {
     REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE,
 } amf_ue_context_transfer_state_t;
 
+/*
+ * Opt-in toggle for the non-3GPP /admin/v1/ue-contexts/{amf_ue_id}
+ * endpoint. Defaults to off. When disabled, requests are answered with
+ * 404 so the endpoint's existence remains invisible to probes.
+ */
+typedef struct amf_admin_config_s {
+    bool enabled;
+} amf_admin_config_t;
+
 typedef struct amf_context_s {
+    amf_admin_config_t admin_config;
+
     /* Served GUAMI */
     int num_of_served_guami;
     ogs_guami_t served_guami[OGS_MAX_NUM_OF_SERVED_GUAMI];

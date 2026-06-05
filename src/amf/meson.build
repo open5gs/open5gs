@@ -60,6 +60,8 @@ libamf_sources = files('''
 
     amf-sm.c
 
+    admin-handler.c
+
     init.c
     metrics.c
     gnb-info.c

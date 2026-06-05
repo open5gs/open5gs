@@ -187,6 +187,17 @@ static int add_snssai_sd_string(cJSON *obj, const char *key, const ogs_uint24_t 
 
 static int add_basic_identity(cJSON *o, const amf_ue_t *ue)
 {
+    /*
+     * Expose the amf_ue_t pool index as a stable, privacy-neutral
+     * operator handle. It is the same identifier expected by
+     * DELETE /admin/v1/ue-contexts/{id}, so OAM tooling can correlate
+     * a /ue-info entry with the admin URL without touching SUPI/GUTI.
+     */
+    {
+        cJSON *v = cJSON_CreateNumber((double)ue->id); if (!v) return -1;
+        cJSON_AddItemToObjectCS(o, "id", v);
+    }
+
     if (ue->supi && ue->supi[0]) {
         cJSON *v = cJSON_CreateString(ue->supi); if (!v) return -1;
         cJSON_AddItemToObjectCS(o, "supi", v);

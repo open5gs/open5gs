@@ -280,6 +280,14 @@ static cJSON *ue_to_json(const mme_ue_t *ue)
     cJSON *o = cJSON_CreateObject();
     if (!o) return NULL;
 
+    /*
+     * Expose the mme_ue_t pool index as a stable, privacy-neutral
+     * operator handle. It is the same identifier expected by
+     * DELETE /admin/v1/ue-contexts/{id}, so OAM tooling can correlate a
+     * /ue-info entry with the admin URL without touching IMSI/GUTI.
+     */
+    if (!cJSON_AddNumberToObject(o, "id", (double)ue->id)) goto end;
+
     /* identity */
     if (ue->imsi_bcd[0]) {
         if (!cJSON_AddStringToObject(o, "supi", ue->imsi_bcd)) goto end;

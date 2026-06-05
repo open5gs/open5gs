@@ -27,6 +27,7 @@
 #include "nsmf-handler.h"
 #include "nnssf-handler.h"
 #include "nas-security.h"
+#include "admin-handler.h"
 
 void amf_state_initial(ogs_fsm_t *s, amf_event_t *e)
 {
@@ -299,6 +300,61 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                         OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
                         "Invalid resource name",
                         sbi_message.h.resource.component[1], NULL));
+            END
+            break;
+
+        /*
+         * Non-3GPP admin service: force-deregister a single UE context
+         * identified by its amf_ue_id (pool index). Used by operator OAM
+         * tooling to clean up stranded UE contexts after upstream NF
+         * restarts — AMF still holds the 5GMM-REGISTERED state while the
+         * SMF has lost the PDU session, and the UE is data-plane-stuck
+         * until something forces fresh Registration.
+         * See src/amf/admin-handler.c.
+         *
+         * URL layout: DELETE /admin/v1/ue-contexts/{amf_ue_id}
+         *
+         * Opt-in via amf.yaml `admin.enabled: true`. When disabled we
+         * answer 404 rather than 403 so a probe cannot distinguish
+         * "endpoint forbidden" from "endpoint not present".
+         */
+        CASE("admin")
+            if (!amf_self()->admin_config.enabled) {
+                ogs_info("admin endpoint disabled (admin.enabled not "
+                        "set in amf.yaml) — responding 404");
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_NOT_FOUND, &sbi_message,
+                        "Not Found", NULL, NULL));
+                break;
+            }
+
+            SWITCH(sbi_message.h.resource.component[0])
+            CASE("ue-contexts")
+                SWITCH(sbi_message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                    amf_admin_handle_delete_ue_context(
+                            stream, &sbi_message, sbi_request);
+                    break;
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]",
+                            sbi_message.h.method);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_METHOD_NOT_ALLOWED,
+                            &sbi_message,
+                            "Invalid HTTP method",
+                            sbi_message.h.method, NULL));
+                END
+                break;
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message.h.resource.component[0]);
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                        "Invalid resource name",
+                        sbi_message.h.resource.component[0], NULL));
             END
             break;
 
@@ -881,6 +937,28 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         ogs_free(addr);
 
         break;
+    case AMF_EVENT_ADMIN_UE_PURGE:
+        /*
+         * Deferred purge from DELETE /admin/v1/ue-contexts/{id}?purge=true.
+         * Re-resolve the pool id from a clean stack frame so state
+         * teardown never runs from inside the SBI handler. Silently
+         * no-op if the context disappeared in the meantime — another
+         * code path (UDM Cancel, T3512 expiry, ordinary deregistration)
+         * may have raced us to the cleanup.
+         */
+        amf_ue = amf_ue_find_by_id(e->amf_ue_id);
+        if (!amf_ue) {
+            ogs_info("Admin purge: amf_ue_id=%d already gone — no-op",
+                    (int)e->amf_ue_id);
+            break;
+        }
+        ogs_warn("[%s] Admin purge: removing local context for "
+                "amf_ue_id=%d (deferred from SBI handler)",
+                amf_ue->supi ? amf_ue->supi : "unknown",
+                (int)e->amf_ue_id);
+        amf_ue_remove(amf_ue);
+        break;
+
     case AMF_EVENT_NGAP_MESSAGE:
         sock = e->ngap.sock;
         ogs_assert(sock);

@@ -50,6 +50,8 @@ typedef enum {
     AMF_EVENT_5GSM_MESSAGE,
     AMF_EVENT_5GSM_TIMER,
 
+    AMF_EVENT_ADMIN_UE_PURGE,
+
     MAX_NUM_OF_AMF_EVENT,
 
 } amf_event_e;

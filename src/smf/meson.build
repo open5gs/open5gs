@@ -69,6 +69,7 @@ libsmf_sources = files('''
     ngap-handler.h
     ngap-path.h
     local-path.h
+    admin-handler.h
     metrics.h
     pdu-info.h
 
@@ -112,6 +113,7 @@ libsmf_sources = files('''
     ngap-handler.c
     ngap-path.c
     local-path.c
+    admin-handler.c
     metrics.c
     pdu-info.c
     ../../lib/metrics/prometheus/json_pager.c

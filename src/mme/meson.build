@@ -44,6 +44,7 @@ libmme_sources = files('''
     mme-sm.h
     mme-path.h
     metrics.h
+    admin-handler.h
 
     mme-init.c
     mme-event.c
@@ -81,6 +82,7 @@ libmme_sources = files('''
     metrics.c
     enb-info.c
     ue-info.c
+    admin-handler.c
     ../../lib/metrics/prometheus/json_pager.c
 '''.split())
 

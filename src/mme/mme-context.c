@@ -18,6 +18,7 @@
  */
 
 #include "ogs-sctp.h"
+#include "ogs-sbi.h"
 
 #include "mme-context.h"
 #include "mme-event.h"
@@ -2562,6 +2563,126 @@ int mme_context_parse_config(void)
                     }
                 } else if (!strcmp(mme_key, "metrics")) {
                     /* handle config in metrics library */
+                } else if (!strcmp(mme_key, "admin")) {
+                    ogs_yaml_iter_t admin_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &admin_iter);
+                    while (ogs_yaml_iter_next(&admin_iter)) {
+                        const char *admin_key =
+                            ogs_yaml_iter_key(&admin_iter);
+                        ogs_assert(admin_key);
+                        if (!strcmp(admin_key, "enabled")) {
+                            const char *v =
+                                ogs_yaml_iter_value(&admin_iter);
+                            if (v && (!strcmp(v, "true") ||
+                                        !strcmp(v, "yes") ||
+                                        !strcmp(v, "1")))
+                                self.admin_config.enabled = true;
+                            else
+                                self.admin_config.enabled = false;
+                        } else if (!strcmp(admin_key, "server")) {
+                            /*
+                             * Delegates parsing of the address/port
+                             * sequence to the shared helper in lib/sbi
+                             * by adding server nodes to the global SBI
+                             * context. MME is not an SBI NF; the lib's
+                             * HTTP/2 server is reused here purely for
+                             * the non-3GPP admin listener.
+                             */
+                            ogs_yaml_iter_t server_array, server_iter;
+                            ogs_yaml_iter_recurse(
+                                    &admin_iter, &server_array);
+                            do {
+                                ogs_sockaddr_t *addr = NULL;
+                                const char *family_v = NULL;
+                                int family = AF_UNSPEC;
+                                int i, num = 0;
+                                const char *hostname[OGS_MAX_NUM_OF_HOSTNAME];
+                                uint16_t port = 0;
+                                int rv;
+
+                                if (ogs_yaml_iter_type(&server_array) ==
+                                        YAML_MAPPING_NODE) {
+                                    memcpy(&server_iter, &server_array,
+                                            sizeof(ogs_yaml_iter_t));
+                                } else if (ogs_yaml_iter_type(
+                                            &server_array) ==
+                                        YAML_SEQUENCE_NODE) {
+                                    if (!ogs_yaml_iter_next(&server_array))
+                                        break;
+                                    ogs_yaml_iter_recurse(
+                                            &server_array, &server_iter);
+                                } else if (ogs_yaml_iter_type(
+                                            &server_array) ==
+                                        YAML_SCALAR_NODE) {
+                                    break;
+                                } else
+                                    ogs_assert_if_reached();
+
+                                while (ogs_yaml_iter_next(&server_iter)) {
+                                    const char *k =
+                                        ogs_yaml_iter_key(&server_iter);
+                                    ogs_assert(k);
+                                    if (!strcmp(k, "family")) {
+                                        family_v = ogs_yaml_iter_value(
+                                                &server_iter);
+                                        if (family_v) family = atoi(family_v);
+                                    } else if (!strcmp(k, "address") ||
+                                               !strcmp(k, "addr")) {
+                                        ogs_yaml_iter_t hostname_iter;
+                                        ogs_yaml_iter_recurse(
+                                                &server_iter, &hostname_iter);
+                                        ogs_assert(ogs_yaml_iter_type(
+                                                    &hostname_iter) !=
+                                                YAML_MAPPING_NODE);
+
+                                        do {
+                                            if (ogs_yaml_iter_type(
+                                                        &hostname_iter) ==
+                                                    YAML_SEQUENCE_NODE) {
+                                                if (!ogs_yaml_iter_next(
+                                                            &hostname_iter))
+                                                    break;
+                                            }
+                                            ogs_assert(num <
+                                                    OGS_MAX_NUM_OF_HOSTNAME);
+                                            hostname[num++] =
+                                                ogs_yaml_iter_value(
+                                                        &hostname_iter);
+                                        } while (
+                                            ogs_yaml_iter_type(
+                                                    &hostname_iter) ==
+                                                YAML_SEQUENCE_NODE);
+                                    } else if (!strcmp(k, "port")) {
+                                        const char *p =
+                                            ogs_yaml_iter_value(&server_iter);
+                                        if (p) port = atoi(p);
+                                    }
+                                }
+
+                                if (!port) port = OGS_SBI_HTTP_PORT;
+
+                                addr = NULL;
+                                for (i = 0; i < num; i++) {
+                                    rv = ogs_addaddrinfo(&addr, family,
+                                            hostname[i], port, 0);
+                                    ogs_assert(rv == OGS_OK);
+                                }
+
+                                if (addr) {
+                                    ogs_sockopt_t option;
+                                    ogs_sockopt_init(&option);
+                                    ogs_sbi_server_add("admin",
+                                            OpenAPI_uri_scheme_http,
+                                            addr, &option);
+                                    ogs_freeaddrinfo(addr);
+                                } else
+                                    ogs_warn("no 'address' in "
+                                            "admin.server[]");
+                            } while (ogs_yaml_iter_type(&server_array) ==
+                                    YAML_SEQUENCE_NODE);
+                        } else
+                            ogs_warn("unknown key `%s`", admin_key);
+                    }
                 } else if (!strcmp(mme_key, "emergency")) {
                     ogs_yaml_iter_t emerg_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &emerg_iter);

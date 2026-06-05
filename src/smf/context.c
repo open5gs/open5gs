@@ -503,6 +503,27 @@ int smf_context_parse_config(void)
                         } else
                             ogs_warn("unknown key `%s`", ctf_key);
                     }
+                } else if (!strcmp(smf_key, "admin")) {
+                    ogs_yaml_iter_t admin_iter;
+                    yaml_node_t *node =
+                        yaml_document_get_node(document, smf_iter.pair->value);
+                    ogs_assert(node);
+                    ogs_assert(node->type == YAML_MAPPING_NODE);
+                    ogs_yaml_iter_recurse(&smf_iter, &admin_iter);
+                    while (ogs_yaml_iter_next(&admin_iter)) {
+                        const char *admin_key = ogs_yaml_iter_key(&admin_iter);
+                        ogs_assert(admin_key);
+                        if (!strcmp(admin_key, "enabled")) {
+                            const char *v = ogs_yaml_iter_value(&admin_iter);
+                            if (v && (!strcmp(v, "true") ||
+                                        !strcmp(v, "yes") ||
+                                        !strcmp(v, "1")))
+                                self.admin_config.enabled = true;
+                            else
+                                self.admin_config.enabled = false;
+                        } else
+                            ogs_warn("unknown key `%s`", admin_key);
+                    }
                 } else if (!strcmp(smf_key, "gtpc")) {
                     /* handle config in gtp library */
                 } else if (!strcmp(smf_key, "gtpu")) {
@@ -1509,6 +1530,18 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn, uint8_t rat_type)
 
     /* Set Charging ID */
     sess->charging.id = sess->index;
+
+    /*
+     * Set SmContextRef also for EPC sessions so the same session handle
+     * is exposed by /pdu-info and accepted by
+     * DELETE /admin/v1/pdu-sessions/{smContextRef}. Format and lifecycle
+     * mirror the 5GC path in smf_sess_add_by_psi() so
+     * smf_sess_find_by_sm_context_ref() (atoll + pool-index lookup)
+     * resolves 4G and 5G sessions uniformly. Freed in the shared
+     * teardown path (smf_sess_remove).
+     */
+    sess->sm_context_ref = ogs_msprintf("%d", sess->index);
+    ogs_assert(sess->sm_context_ref);
 
     /* Create BAR in PFCP Session */
     ogs_pfcp_bar_new(&sess->pfcp);

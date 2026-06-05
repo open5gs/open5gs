@@ -75,7 +75,20 @@ typedef struct served_gummei_s {
     uint8_t         mme_code[CODE_PER_MME];
 } served_gummei_t;
 
+/*
+ * Opt-in toggle for the non-3GPP /admin/v1/ue-contexts/{mme_ue_id}
+ * endpoint. Defaults to off. When enabled, MME binds an additional
+ * HTTP/2 listener (via lib/sbi) on the address(es) configured under
+ * mme.admin.server in mme.yaml. When disabled, requests answer 404 so
+ * the endpoint's existence remains invisible to probes.
+ */
+typedef struct mme_admin_config_s {
+    bool enabled;
+} mme_admin_config_t;
+
 typedef struct mme_context_s {
+    mme_admin_config_t  admin_config;
+
     const char          *diam_conf_path;  /* MME Diameter conf path */
     ogs_diam_config_t   *diam_config;     /* MME Diameter config */
 
@@ -864,6 +877,17 @@ struct mme_ue_s {
 
     mme_csmap_t     *csmap;
     mme_hssmap_t    *hssmap;
+
+    /*
+     * Set by the admin endpoint (DELETE /admin/v1/ue-contexts/{id})
+     * when a UE is in ECM-IDLE and cannot accept an immediate Detach
+     * Request. The admin handler triggers S1AP Paging; when the UE
+     * responds with a Service Request, the EMM state machine checks
+     * this flag and sends a NAS Detach Request (re-attach required)
+     * right after the Initial Context Setup — completing the
+     * paged-detach flow per 3GPP TS 24.301 §5.5.2.3.
+     */
+    bool            admin_detach_pending;
 };
 
 #define MME_UE_REMOVE_WITH_PAGING_FAIL(__mME) \
