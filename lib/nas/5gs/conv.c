@@ -76,13 +76,10 @@ char *ogs_nas_5gs_suci_from_mobile_identity(
     char *scheme_output_string_or_bcd = NULL;
 
     ogs_assert(mobile_identity);
+    ogs_assert(mobile_identity->buffer);
 
-    if (mobile_identity->length <=
-            OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE) {
-        ogs_error("The length of SUCI Mobile Identity(%d) is too short; "
-                  "scheme output is missing", mobile_identity->length);
-        return NULL;
-    }
+    ogs_assert(mobile_identity->length >=
+            (OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1));
 
     mobile_identity_suci =
         (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;

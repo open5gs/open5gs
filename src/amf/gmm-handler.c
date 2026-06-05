@@ -131,12 +131,6 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
         return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
     }
 
-    if (mobile_identity->length < OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE) {
-        ogs_error("The length of Mobile Identity(%d) is less then the min(%d)",
-            mobile_identity->length, OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE);
-        return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
-    }
-
     mobile_identity_header =
             (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
 
@@ -144,8 +138,17 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
 
     switch (mobile_identity_header->type) {
     case OGS_NAS_5GS_MOBILE_IDENTITY_SUCI:
+        if (mobile_identity->length <
+                (OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1)) {
+            ogs_error("Too short SUCI Mobile Identity [%d:%d]",
+                    mobile_identity->length,
+                    OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1);
+            return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
+        }
+
         mobile_identity_suci =
             (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
+        ogs_assert(mobile_identity_suci);
         if (mobile_identity_suci->h.supi_format !=
                 OGS_NAS_5GS_SUPI_FORMAT_IMSI) {
             ogs_error("Not implemented SUPI format [%d]",
@@ -183,12 +186,17 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
         ogs_info("[%s]    SUCI", amf_ue->suci);
         break;
     case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
-        mobile_identity_guti =
-            (ogs_nas_5gs_mobile_identity_guti_t *)mobile_identity->buffer;
-        if (!mobile_identity_guti) {
-            ogs_error("No mobile identity");
+        if (mobile_identity->length <
+                sizeof(ogs_nas_5gs_mobile_identity_guti_t)) {
+            ogs_error("Too short 5G-GUTI Mobile Identity [%d:%d]",
+                    mobile_identity->length,
+                    (int)sizeof(ogs_nas_5gs_mobile_identity_guti_t));
             return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
         }
+
+        mobile_identity_guti =
+            (ogs_nas_5gs_mobile_identity_guti_t *)mobile_identity->buffer;
+        ogs_assert(mobile_identity_guti);
 
         ogs_nas_5gs_mobile_identity_guti_to_nas_guti(
             mobile_identity_guti, &amf_ue->old_guti);
@@ -1024,18 +1032,21 @@ ogs_nas_5gmm_cause_t gmm_handle_identity_response(amf_ue_t *amf_ue,
         return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
     }
 
-    if (mobile_identity->length < OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE) {
-        ogs_error("The length of Mobile Identity(%d) is less then the min(%d)",
-            mobile_identity->length, OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE);
-        return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
-    }
-
     mobile_identity_header =
             (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
 
     if (mobile_identity_header->type == OGS_NAS_5GS_MOBILE_IDENTITY_SUCI) {
+        if (mobile_identity->length <
+                (OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1)) {
+            ogs_error("Too short SUCI Mobile Identity [%d:%d]",
+                    mobile_identity->length,
+                    OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1);
+            return OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
+        }
+
         mobile_identity_suci =
             (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
+        ogs_assert(mobile_identity_suci);
         if (mobile_identity_suci->h.supi_format !=
                 OGS_NAS_5GS_SUPI_FORMAT_IMSI) {
             ogs_error("Not implemented SUPI format [%d]",

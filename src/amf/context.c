@@ -1890,8 +1890,17 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
 
         switch (mobile_identity_header->type) {
         case OGS_NAS_5GS_MOBILE_IDENTITY_SUCI:
+            if (mobile_identity->length <
+                    (OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1)) {
+                ogs_error("Too short SUCI Mobile Identity [%d:%d]",
+                        mobile_identity->length,
+                        OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1);
+                return NULL;
+            }
+
             mobile_identity_suci =
                 (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
+            ogs_assert(mobile_identity_suci);
 
             if (mobile_identity_suci->h.supi_format !=
                     OGS_NAS_5GS_SUPI_FORMAT_IMSI) {
@@ -1927,6 +1936,14 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
             ogs_free(suci);
             break;
         case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
+            if (mobile_identity->length <
+                    sizeof(ogs_nas_5gs_mobile_identity_guti_t)) {
+                ogs_error("Too short 5G-GUTI Mobile Identity [%d:%d]",
+                        mobile_identity->length,
+                        (int)sizeof(ogs_nas_5gs_mobile_identity_guti_t));
+                return NULL;
+            }
+
             mobile_identity_guti =
                 (ogs_nas_5gs_mobile_identity_guti_t *)mobile_identity->buffer;
             ogs_assert(mobile_identity_guti);
@@ -1965,6 +1982,14 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
 
         switch (mobile_identity_header->type) {
         case OGS_NAS_5GS_MOBILE_IDENTITY_S_TMSI:
+            if (mobile_identity->length <
+                    sizeof(ogs_nas_5gs_mobile_identity_s_tmsi_t)) {
+                ogs_error("Too short 5G-S-TMSI Mobile Identity [%d:%d]",
+                        mobile_identity->length,
+                        (int)sizeof(ogs_nas_5gs_mobile_identity_s_tmsi_t));
+                return NULL;
+            }
+
             mobile_identity_s_tmsi =
                 (ogs_nas_5gs_mobile_identity_s_tmsi_t *)mobile_identity->buffer;
             ogs_assert(mobile_identity_s_tmsi);
@@ -2012,6 +2037,14 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
 
         switch (mobile_identity_header->type) {
         case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
+            if (mobile_identity->length <
+                    sizeof(ogs_nas_5gs_mobile_identity_guti_t)) {
+                ogs_error("Too short 5G-GUTI Mobile Identity [%d:%d]",
+                        mobile_identity->length,
+                        (int)sizeof(ogs_nas_5gs_mobile_identity_guti_t));
+                return NULL;
+            }
+
             mobile_identity_guti =
                 (ogs_nas_5gs_mobile_identity_guti_t *)mobile_identity->buffer;
             ogs_assert(mobile_identity_guti);
@@ -2271,6 +2304,9 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
 
     ogs_assert(amf_ue);
     ogs_assert(mobile_identity);
+    ogs_assert(mobile_identity->buffer);
+    ogs_assert(mobile_identity->length >=
+            (OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1));
 
     suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
     ogs_assert(suci);
