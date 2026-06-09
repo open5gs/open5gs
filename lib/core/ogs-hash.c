@@ -408,12 +408,37 @@ unsigned int ogs_hash_count(ogs_hash_t *ht)
 
 void ogs_hash_clear(ogs_hash_t *ht)
 {
-    ogs_hash_index_t *hi;
+    unsigned int i;
 
     ogs_assert(ht);
+    ogs_assert(ht->array);
 
-    for (hi = ogs_hash_first(ht); hi; hi = ogs_hash_next(hi))
-        ogs_hash_set(ht, hi->this->key, hi->this->klen, NULL);
+    /*
+     * Recycle entries directly through the bucket array instead of
+     * re-locating each one with ogs_hash_set(ht, key, klen, NULL).
+     *
+     * Clearing the table only needs the entries we already hold, not their
+     * hash values, so re-hashing the key here is unnecessary -- and unsafe.
+     * During teardown a key may point at memory that an owning context has
+     * already freed; hashfunc_default() reads the key byte-by-byte (and
+     * find_entry() then memcmp()s it), which is a use-after-free read on a
+     * dangling key. Walking the buckets never dereferences key contents, so
+     * a stale entry is recycled harmlessly rather than crashing the exit
+     * path. (The hash never owns the key memory, so nothing is freed here.)
+     */
+    for (i = 0; i <= ht->max; i++) {
+        ogs_hash_entry_t *he = ht->array[i];
+
+        ht->array[i] = NULL;
+        while (he) {
+            ogs_hash_entry_t *next_he = he->next;
+
+            he->next = ht->free;
+            ht->free = he;
+            he = next_he;
+        }
+    }
+    ht->count = 0;
 }
 
 /* This is basically the following...
