@@ -215,6 +215,8 @@ static int mme_context_prepare(void)
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
 
+    /* Set the default T3396 to 12 minutes */
+    self.time.t3396.value = 720;
     /* Set the default T3412 to 9 minutes for backward compatibility. */
     self.time.t3412.value = 540;
 
@@ -297,12 +299,20 @@ static int mme_context_validation(void)
                 ogs_app()->file);
         return OGS_ERROR;
     }
-    if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3402.value) !=
+    if (self.time.t3402.value && /* Optional */
+        ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3402.value) !=
         OGS_OK) {
         ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3402.value);
         return OGS_ERROR;
     }
-    if (!self.time.t3412.value) {
+    if (self.time.t3396.value && /* Optional */
+        ogs_nas_gprs_timer_3_from_sec(&gprs_timer, self.time.t3396.value) !=
+        OGS_OK) {
+        ogs_error("Not support GPRS Timer 3 [%d]",
+                (int)self.time.t3396.value);
+        return OGS_ERROR;
+    }
+    if (!self.time.t3412.value) { /* Mandatory */
         ogs_error("No mme.time.t3412.value in '%s'",
                 ogs_app()->file);
         return OGS_ERROR;
@@ -312,7 +322,8 @@ static int mme_context_validation(void)
         ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3412.value);
         return OGS_ERROR;
     }
-    if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3423.value) !=
+    if (self.time.t3423.value && /* Optional */
+        ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3423.value) !=
         OGS_OK) {
         ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3423.value);
         return OGS_ERROR;
@@ -2488,6 +2499,22 @@ int mme_context_parse_config(void)
                                 } else
                                     ogs_warn("unknown key `%s`", t3402_key);
                             }
+                        } else if (!strcmp(time_key, "t3396")) {
+                            ogs_yaml_iter_t t3396_iter;
+                            ogs_yaml_iter_recurse(&time_iter, &t3396_iter);
+
+                            while (ogs_yaml_iter_next(&t3396_iter)) {
+                                const char *t3396_key =
+                                    ogs_yaml_iter_key(&t3396_iter);
+                                ogs_assert(t3396_key);
+
+                                if (!strcmp(t3396_key, "value")) {
+                                    const char *v = ogs_yaml_iter_value(&t3396_iter);
+                                    if (v)
+                                        self.time.t3396.value = atoll(v);
+                                } else
+                                    ogs_warn("unknown key `%s`", t3396_key);
+                            }
                         } else if (!strcmp(time_key, "t3412")) {
                             ogs_yaml_iter_t t3412_iter;
                             ogs_yaml_iter_recurse(&time_iter, &t3412_iter);
@@ -3484,8 +3511,8 @@ void mme_ue_confirm_guti(mme_ue_t *mme_ue)
     if (MME_CURRENT_GUTI_IS_AVAILABLE(mme_ue)) {
         /* MME has a VALID GUTI
          * As such, we need to remove previous GUTI in hash table */
-        ogs_hash_set(self.guti_ue_hash,
-                &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), NULL);
+        ogs_hash_unset_if_owner(self.guti_ue_hash,
+                &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), mme_ue);
         ogs_assert(mme_m_tmsi_free(mme_ue->current.m_tmsi) == OGS_OK);
     }
 
@@ -3755,12 +3782,12 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     if (sgw_ue) sgw_ue_remove(sgw_ue);
 
     if (mme_ue->imsi_len != 0)
-        ogs_hash_set(mme_self()->imsi_ue_hash,
-                mme_ue->imsi, mme_ue->imsi_len, NULL);
+        ogs_hash_unset_if_owner(mme_self()->imsi_ue_hash,
+                mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
     if (MME_CURRENT_GUTI_IS_AVAILABLE(mme_ue)) {
-        ogs_hash_set(self.guti_ue_hash,
-                &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), NULL);
+        ogs_hash_unset_if_owner(self.guti_ue_hash,
+                &mme_ue->current.guti, sizeof(ogs_nas_eps_guti_t), mme_ue);
         ogs_assert(mme_m_tmsi_free(mme_ue->current.m_tmsi) == OGS_OK);
     }
 
@@ -4079,8 +4106,8 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
      * in mme_state_operational().
      */
     if (mme_ue->imsi_len != 0)
-        ogs_hash_set(mme_self()->imsi_ue_hash,
-                mme_ue->imsi, mme_ue->imsi_len, NULL);
+        ogs_hash_unset_if_owner(mme_self()->imsi_ue_hash,
+                mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
     ogs_cpystrn(mme_ue->imsi_bcd, imsi_bcd, OGS_MAX_IMSI_BCD_LEN+1);
     ogs_bcd_to_buffer(mme_ue->imsi_bcd, mme_ue->imsi, &mme_ue->imsi_len);
@@ -4094,14 +4121,59 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
             ogs_warn("[%s] OLD UE Context Release", mme_ue->imsi_bcd);
             if (ECM_CONNECTED(old_mme_ue)) {
                 enb_ue_t *enb_ue = enb_ue_find_by_id(old_mme_ue->enb_ue_id);
-                /* Implcit S1 release */
-                ogs_warn("[%s] Implicit S1 release", mme_ue->imsi_bcd);
+                enb_ue_t *enb_ue_holding = NULL;
+
+                /*
+                 * Keep the old S1 context until the new attach/TAU procedure
+                 * is authenticated. CLEAR_S1_CONTEXT(mme_ue) will then send
+                 * UEContextReleaseCommand to the old E-UTRAN context.
+                 *
+                 * Do not use HOLDING_S1_CONTEXT(old_mme_ue) here: that macro
+                 * stores the holding id in old_mme_ue, but this function
+                 * removes old_mme_ue below after moving the session context
+                 * to the new mme_ue.
+                 */
+                ogs_warn("[%s] Holding old S1 context", mme_ue->imsi_bcd);
                 if (enb_ue) {
+                    int r;
+
+                    enb_ue_holding =
+                        enb_ue_find_by_id(mme_ue->enb_ue_holding_id);
+                    if (enb_ue_holding) {
+                        ogs_error("[%s] Holding S1 context already exists",
+                                mme_ue->imsi_bcd);
+                        ogs_error("[%s]    ENB_UE_S1AP_ID[%d] "
+                                "MME_UE_S1AP_ID[%d]",
+                                mme_ue->imsi_bcd,
+                                enb_ue_holding->enb_ue_s1ap_id,
+                                enb_ue_holding->mme_ue_s1ap_id);
+                        r = s1ap_send_ue_context_release_command(
+                                enb_ue_holding,
+                                S1AP_Cause_PR_nas,
+                                S1AP_CauseNas_normal_release,
+                                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+                        ogs_expect(r == OGS_OK);
+                    } else if (mme_ue->enb_ue_holding_id !=
+                            OGS_INVALID_POOL_ID) {
+                        ogs_error("[%s] Holding S1 context has already "
+                                "been removed", mme_ue->imsi_bcd);
+                    }
+                    mme_ue->enb_ue_holding_id = OGS_INVALID_POOL_ID;
+
+                    enb_ue->mme_ue_id = OGS_INVALID_POOL_ID;
+
                     ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
                             old_mme_ue->imsi_bcd,
                             enb_ue->enb_ue_s1ap_id,
                             enb_ue->mme_ue_s1ap_id);
-                    enb_ue_remove(enb_ue);
+
+                    enb_ue->ue_ctx_rel_action =
+                        S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE;
+                    ogs_timer_start(enb_ue->t_s1_holding,
+                            mme_timer_cfg(MME_TIMER_S1_HOLDING)->duration);
+
+                    mme_ue->enb_ue_holding_id = old_mme_ue->enb_ue_id;
+                    old_mme_ue->enb_ue_id = OGS_INVALID_POOL_ID;
                 } else {
                     ogs_error("[%s] S1 Context has already been removed",
                                 old_mme_ue->imsi_bcd);
@@ -4136,6 +4208,8 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
             }
 
             /* Phase-2 : Move Session Context from OLD to NEW MME-UE Context */
+            ogs_assert(ogs_list_empty(&mme_ue->sess_list));
+
             memcpy(&mme_ue->sess_list,
                     &old_mme_ue->sess_list, sizeof(mme_ue->sess_list));
 

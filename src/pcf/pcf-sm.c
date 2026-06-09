@@ -711,24 +711,26 @@ void pcf_state_operational(ogs_fsm_t *s, pcf_event_t *e)
             subscription_data = e->h.sbi.data;
             ogs_assert(subscription_data);
 
-            ogs_assert(true ==
-                ogs_nnrf_nfm_send_nf_status_subscribe(
-                    ogs_sbi_self()->nf_instance->nf_type,
-                    subscription_data->req_nf_instance_id,
-                    subscription_data->subscr_cond.nf_type,
-                    subscription_data->subscr_cond.service_name));
-
             ogs_error("[%s] Subscription validity expired",
-                subscription_data->id);
-            ogs_sbi_subscription_data_remove(subscription_data);
+                    subscription_data->id ?
+                        subscription_data->id : "Unknown");
+
+            /*
+             * Helper strdup-s the fields we need, removes the old
+             * subscription so the pool slot is freed, then resubscribes.
+             */
+            (void)ogs_nnrf_nfm_send_nf_status_subscribe_renew(
+                    subscription_data);
             break;
 
         case OGS_TIMER_SUBSCRIPTION_PATCH:
             subscription_data = e->h.sbi.data;
             ogs_assert(subscription_data);
 
-            ogs_assert(true ==
-                ogs_nnrf_nfm_send_nf_status_update(subscription_data));
+            if (ogs_nnrf_nfm_send_nf_status_update(subscription_data) != true)
+                ogs_error("[%s] NF status subscription update failed",
+                        subscription_data->id ?
+                            subscription_data->id : "Unknown");
 
             ogs_info("[%s] Need to update Subscription",
                     subscription_data->id);

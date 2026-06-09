@@ -361,8 +361,21 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         AMF_UE_CLEAR_N2_TRANSFER(amf_ue, handover_request);
                     }
                 } else {
-                    ogs_error("Invalid STATE[%d]", state);
-                    ogs_assert_if_reached();
+    /*
+     * [Issue #4408]
+     * avoid abort on SMF /modify success response with
+     * n2SmInfoType=PDU_RES_SETUP_REQ in an unexpected AMF state.
+     *
+     * Replace ogs_assert_if_reached() with ogs_error to log the invalid state
+     * and keep AMF running; logs error for debugging and improves availability.
+     */
+                    ogs_error("[%s:%d] Unexpected N2 SM info type [%s] "
+                            "for state [%d]",
+                            amf_ue->supi, sess->psi,
+                            OpenAPI_n2_sm_info_type_ToString(
+                                SmContextUpdatedData->n2_sm_info_type),
+                            state);
+                    return OGS_ERROR;
                 }
                 break;
 
@@ -636,14 +649,30 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 }
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST) {
-
-                /* Not reached here */
-                ogs_assert_if_reached();
+    /*
+     * [Issue #4409]
+     * avoid abort on SMF /modify success response missing n2SmInfo
+     * during Registration Request activation.
+     *
+     * Replace ogs_assert_if_reached() with ogs_error to log the invalid state
+     * and keep AMF running; logs error for debugging and improves availability.
+     */
+                ogs_error("[%s:%d] No N2 SM information in registration "
+                        "request update", amf_ue->supi, sess->psi);
+                return OGS_ERROR;
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST) {
-
-                /* Not reached here */
-                ogs_assert_if_reached();
+    /*
+     * [Issue #4409]
+     * avoid abort on SMF /modify success response missing n2SmInfo
+     * during Service Request activation.
+     *
+     * Replace ogs_assert_if_reached() with ogs_error to log the invalid state
+     * and keep AMF running; logs error for debugging and improves availability.
+     */
+                ogs_error("[%s:%d] No N2 SM information in service "
+                        "request update", amf_ue->supi, sess->psi);
+                return OGS_ERROR;
 
             } else if (state == AMF_UPDATE_SM_CONTEXT_N2_RELEASED) {
 

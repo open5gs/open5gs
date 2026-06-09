@@ -97,8 +97,10 @@ bool bsf_sess_set_ipv6prefix(bsf_sess_t *sess, char *ipv6prefix);
 bsf_sess_t *bsf_sess_find(uint32_t index);
 bsf_sess_t *bsf_sess_find_by_snssai_and_dnn(ogs_s_nssai_t *s_nssai, char *dnn);
 bsf_sess_t *bsf_sess_find_by_binding_id(char *binding_id);
-bsf_sess_t *bsf_sess_find_by_ipv4addr(char *ipv4addr_string);
-bsf_sess_t *bsf_sess_find_by_ipv6prefix(char *ipv6prefix_string);
+bsf_sess_t *bsf_sess_find_by_ipv4addr(
+        char *ipv4addr_string, bool *invalid);
+bsf_sess_t *bsf_sess_find_by_ipv6prefix(
+        char *ipv6prefix_string, bool *invalid);
 int get_sess_load(void);
 
 #ifdef __cplusplus

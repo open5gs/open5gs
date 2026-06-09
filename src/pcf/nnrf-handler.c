@@ -101,7 +101,12 @@ void pcf_nnrf_handle_nf_discover(
             ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                     xact->assoc_stream_id <= OGS_MAX_POOL_ID);
             stream = ogs_sbi_stream_find_by_id(xact->assoc_stream_id);
-            ogs_assert(stream);
+            if (!stream) {
+                ogs_warn("Associated SBI stream has already been removed [%d]",
+                        xact->assoc_stream_id);
+                ogs_sbi_xact_remove(xact);
+                return;
+            }
 
             /* Send Response for SM Policy Association establishment */
             ogs_expect(true ==

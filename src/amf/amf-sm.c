@@ -64,7 +64,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
 
-    ogs_sbi_object_t *sbi_object = NULL;
     ogs_pool_id_t sbi_object_id = OGS_INVALID_POOL_ID;
     ogs_sbi_xact_t *sbi_xact = NULL;
     ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
@@ -73,15 +72,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *sbi_request = NULL;
-    OpenAPI_service_name_e service_name = OpenAPI_service_name_NULL;
 
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_subscription_data_t *subscription_data = NULL;
     ogs_sbi_response_t *sbi_response = NULL;
     ogs_sbi_message_t sbi_message;
 
-    OpenAPI_nf_type_e requester_nf_type = OpenAPI_nf_type_NULL;
-    ogs_sbi_discovery_option_t *discovery_option = NULL;
     int service_name_id = OpenAPI_service_name_NULL;
 
     amf_sm_debug(e);
@@ -740,24 +736,26 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             subscription_data = e->h.sbi.data;
             ogs_assert(subscription_data);
 
-            ogs_assert(true ==
-                ogs_nnrf_nfm_send_nf_status_subscribe(
-                    ogs_sbi_self()->nf_instance->nf_type,
-                    subscription_data->req_nf_instance_id,
-                    subscription_data->subscr_cond.nf_type,
-                    subscription_data->subscr_cond.service_name));
-
             ogs_error("[%s] Subscription validity expired",
-                subscription_data->id);
-            ogs_sbi_subscription_data_remove(subscription_data);
+                    subscription_data->id ?
+                        subscription_data->id : "Unknown");
+
+            /*
+             * Helper strdup-s the fields we need, removes the old
+             * subscription so the pool slot is freed, then resubscribes.
+             */
+            (void)ogs_nnrf_nfm_send_nf_status_subscribe_renew(
+                    subscription_data);
             break;
 
         case OGS_TIMER_SUBSCRIPTION_PATCH:
             subscription_data = e->h.sbi.data;
             ogs_assert(subscription_data);
 
-            ogs_assert(true ==
-                ogs_nnrf_nfm_send_nf_status_update(subscription_data));
+            if (ogs_nnrf_nfm_send_nf_status_update(subscription_data) != true)
+                ogs_error("[%s] NF status subscription update failed",
+                        subscription_data->id ?
+                            subscription_data->id : "Unknown");
 
             ogs_info("[%s] Need to update Subscription",
                     subscription_data->id);
@@ -802,145 +800,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
-            sbi_object = sbi_xact->sbi_object;
-            ogs_assert(sbi_object);
-
-            sbi_object_id = sbi_xact->sbi_object_id;
-            ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
-                    sbi_object_id <= OGS_MAX_POOL_ID);
-
-            if (sbi_xact->user_data) {
-                amf_sbi_xact_ctx_t *ctx = sbi_xact->user_data;
-
-                if (ctx->ran_ue_id != OGS_INVALID_POOL_ID)
-                    ran_ue_id = ctx->ran_ue_id;
-            }
-
-            service_name = sbi_xact->service_name;
-            requester_nf_type = sbi_xact->requester_nf_type;
-            discovery_option = sbi_xact->discovery_option;
-
-            ogs_sbi_xact_remove(sbi_xact);
-
-            ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
-                        sbi_object->type < OGS_SBI_OBJ_TOP);
-
-            switch(sbi_object->type) {
-            case OGS_SBI_OBJ_UE_TYPE:
-                amf_ue = amf_ue_find_by_id(sbi_object_id);
-                if (!amf_ue) {
-                    ogs_error("UE(amf_ue) Context has already been removed");
-                    break;
-                }
-
-                ogs_error("[%s:%s] Cannot receive SBI message "
-                        "[type:%d,value:%d]", amf_ue->supi, amf_ue->suci,
-                        amf_ue->nas.message_type,
-                        amf_ue->nas.registration.value);
-
-                /*
-                * TS 23.502
-                * 4.2.2.2.2 General Registration
-                * If the SUCI is not provided by the UE nor retrieved from the old AMF the Identity Request
-                * procedure is initiated by AMF sending an Identity Request message to the UE requesting the SUCI.
-                */
-
-                if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST &&
-                        amf_ue->nas.registration.value == OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL &&
-                        requester_nf_type == OpenAPI_nf_type_AMF &&
-                        discovery_option->guami_presence) {
-
-                    amf_ue->amf_ue_context_transfer_state =
-                            UE_CONTEXT_INITIAL_STATE;
-
-                    if (!(AMF_UE_HAVE_SUCI(amf_ue) ||
-                            AMF_UE_HAVE_SUPI(amf_ue))) {
-                            CLEAR_AMF_UE_TIMER(amf_ue->t3570);
-                        rv = nas_5gs_send_identity_request(amf_ue);
-                        ogs_expect(rv == OGS_OK);
-                        ogs_assert(rv != OGS_ERROR);
-
-                        break;
-                    }
-                } else if (amf_ue->nas.message_type ==
-                        OGS_NAS_5GS_DEREGISTRATION_REQUEST_FROM_UE) {
-                    ogs_error("T3522 expired");
-                    break;
-                }
-
-                r = nas_5gs_send_gmm_reject_from_sbi(amf_ue,
-                        OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                break;
-
-            case OGS_SBI_OBJ_SESS_TYPE:
-                sess = amf_sess_find_by_id(sbi_object_id);
-                if (!sess) {
-                    ogs_error("Session has already been removed");
-                    break;
-                }
-
-                amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
-                if (!amf_ue) {
-                    ogs_error("UE(amf_ue) Context has already been removed");
-                    break;
-                }
-
-                ogs_error("[%s:%s:%d:%d] Cannot receive SBI message",
-                        amf_ue->supi, amf_ue->suci, sess->psi, sess->pti);
-
-                if (ran_ue_id < OGS_MIN_POOL_ID ||
-                    ran_ue_id > OGS_MAX_POOL_ID) {
-                    ogs_error("No assoc RAN-UE id [%d]", ran_ue_id);
-                    break;
-                }
-
-                ran_ue = ran_ue_find_by_id(ran_ue_id);
-                if (!ran_ue) {
-                    ogs_error("[%s:%s:%d:%d] "
-                            "NG Context has already been removed",
-                            amf_ue->supi, amf_ue->suci, sess->psi, sess->pti);
-                    break;
-                }
-
-                if (ran_ue->amf_ue_id == OGS_INVALID_POOL_ID) {
-                    ogs_error("[%s:%s:%d:%d] "
-                            "RAN-UE has already been deassociated",
-                            amf_ue->supi, amf_ue->suci, sess->psi, sess->pti);
-                    break;
-                }
-
-                if (amf_ue->id != ran_ue->amf_ue_id) {
-                    ogs_error("[%s:%s:%d:%d] AMF-UE mismatched [%d!=%d]",
-                            amf_ue->supi, amf_ue->suci, sess->psi, sess->pti,
-                            amf_ue->id, ran_ue->amf_ue_id);
-                    break;
-                }
-
-                if (sess->payload_container_type) {
-                    r = nas_5gs_send_back_gsm_message(
-                            ran_ue, sess,
-                            OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
-                            AMF_NAS_BACKOFF_TIME);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                } else {
-                    r = ngap_send_error_indication2(
-                            ran_ue,
-                            NGAP_Cause_PR_transport,
-                            NGAP_CauseTransport_transport_resource_unavailable);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-                }
-                break;
-
-            default:
-                ogs_fatal("Not implemented [%s:%d]",
-                    OpenAPI_service_name_ToString(service_name),
-                    sbi_object->type);
-                ogs_assert_if_reached();
-            }
+            amf_nnrf_handle_failed_amf_discovery(sbi_xact);
             break;
 
         default:

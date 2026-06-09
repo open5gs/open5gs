@@ -44,7 +44,8 @@
  *           "plmn": "99970",
  *           "tac_hex": "0001",
  *           "tac": 1
- *         }
+ *         },
+ *         "timestamp": 1778223227627488
  *       },
  *       "ambr": {
  *         "downlink": 1000000000,
@@ -176,6 +177,17 @@ static cJSON *build_location(const mme_ue_t *ue)
     if (!cJSON_AddNumberToObject(tai, "tac", (double)ue->tai.tac)) { cJSON_Delete(tai); goto end; }
 
     cJSON_AddItemToObjectCS(loc, "tai", tai);
+
+    /* Last location update timestamp (epoch microseconds, ogs_time_t).
+     * A value of 0 means the location has not yet been updated (i.e.
+     * the UE has not completed Initial Attach / TAU / Handover /
+     * Service Request response since the context was created).
+     * Updated on Initial Attach, TAU, Handover and Service Request responses;
+     * bounded by Periodic TAU (T3412). Keep the field name aligned with
+     * AMF /ue-info, which exposes this value as location.timestamp. */
+    if (!cJSON_AddNumberToObject(loc, "timestamp",
+                (double)ue->ue_location_timestamp)) goto end;
+
     return loc;
 
 end:

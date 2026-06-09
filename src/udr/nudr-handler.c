@@ -20,6 +20,57 @@
 #include "sbi-path.h"
 #include "nudr-handler.h"
 
+static bool nudr_validate_imsi_supi(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg, char *supi)
+{
+    char *type = NULL;
+    char *value = NULL;
+
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    if (!supi) {
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No SUPI", NULL, NULL));
+        return false;
+    }
+
+    if (ogs_id_get_type_value(supi, &type, &value) == false) {
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Invalid SUPI", supi, NULL));
+        return false;
+    }
+
+    if (strcmp(type, OGS_ID_SUPI_TYPE_IMSI) != 0) {
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                recvmsg, "Unknwon SUPI Type", supi, NULL));
+        goto invalid;
+    }
+
+    if (ogs_imsi_bcd_is_valid(value) == false) {
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Invalid SUPI", supi, NULL));
+        goto invalid;
+    }
+
+    ogs_free(type);
+    ogs_free(value);
+
+    return true;
+
+invalid:
+    if (type)
+        ogs_free(type);
+    if (value)
+        ogs_free(value);
+
+    return false;
+}
+
 bool udr_nudr_dr_handle_subscription_authentication(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
@@ -46,20 +97,8 @@ bool udr_nudr_dr_handle_subscription_authentication(
     ogs_assert(recvmsg);
 
     supi = recvmsg->h.resource.component[1];
-    if (!supi) {
-        ogs_error("No SUPI");
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No SUPI", NULL, NULL));
-        return false;
-    }
-
-    if (strncmp(supi,
-            OGS_ID_SUPI_TYPE_IMSI, strlen(OGS_ID_SUPI_TYPE_IMSI)) != 0) {
-        ogs_error("[%s] Unknown SUPI Type", supi);
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_FORBIDDEN,
-                recvmsg, "Unknwon SUPI Type", supi, NULL));
+    if (nudr_validate_imsi_supi(stream, recvmsg, supi) == false) {
+        ogs_error("Invalid SUPI [%s]", supi ? supi : "NULL");
         return false;
     }
 
@@ -254,6 +293,8 @@ bool udr_nudr_dr_handle_subscription_authentication(
 bool udr_nudr_dr_handle_subscription_context(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
 {
+    int rv;
+
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
 
@@ -263,20 +304,8 @@ bool udr_nudr_dr_handle_subscription_context(
     ogs_assert(recvmsg);
 
     supi = recvmsg->h.resource.component[1];
-    if (!supi) {
-        ogs_error("No SUPI");
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No SUPI", NULL, NULL));
-        return false;
-    }
-
-    if (strncmp(supi,
-            OGS_ID_SUPI_TYPE_IMSI, strlen(OGS_ID_SUPI_TYPE_IMSI)) != 0) {
-        ogs_error("[%s] Unknown SUPI Type", supi);
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_FORBIDDEN,
-                recvmsg, "Unknwon SUPI Type", supi, NULL));
+    if (nudr_validate_imsi_supi(stream, recvmsg, supi) == false) {
+        ogs_error("Invalid SUPI [%s]", supi ? supi : "NULL");
         return false;
     }
 
@@ -298,24 +327,52 @@ bool udr_nudr_dr_handle_subscription_context(
 
             if (Amf3GppAccessRegistration->pei) {
                 char *type = NULL, *value = NULL;
-                char *pei = NULL;
+                char *pei = Amf3GppAccessRegistration->pei;
 
-                pei = ogs_strdup(Amf3GppAccessRegistration->pei);
-                ogs_assert(pei);
-
-                type = ogs_id_get_type(pei);
-                ogs_assert(type);
-                value = ogs_id_get_value(pei);
-                ogs_assert(value);
-
-                if (strcmp(type, "imeisv") == 0) {
-                    ogs_assert(OGS_OK == ogs_dbi_update_imeisv(supi, value));
-                } else {
-                    ogs_fatal("Unknown Type = %s", type);
-                    ogs_assert_if_reached();
+                if (ogs_id_get_type_value(pei, &type, &value) == false) {
+                    ogs_error("Invalid PEI [%s]", pei);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            recvmsg, "Invalid PEI", pei, NULL));
+                    return false;
                 }
 
-                ogs_free(pei);
+                if (strcmp(type, OGS_ID_SUPI_TYPE_IMEISV) == 0) {
+                    if (ogs_imeisv_bcd_is_valid(value) == false) {
+                        ogs_error("Invalid IMEISV [%s]", pei);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                recvmsg, "Invalid PEI", pei, NULL));
+                        ogs_free(type);
+                        ogs_free(value);
+                        return false;
+                    }
+
+                    rv = ogs_dbi_update_imeisv(supi, value);
+                    if (rv != OGS_OK) {
+                        ogs_error("Cannot update IMEISV for SUPI [%s]", supi);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                                recvmsg, "Cannot update IMEISV",
+                                supi, NULL));
+                        ogs_free(type);
+                        ogs_free(value);
+                        return false;
+                    }
+                } else {
+                    ogs_error("Unsupported PEI Type [%s]", type);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            recvmsg, "Unsupported PEI Type", type, NULL));
+                    ogs_free(type);
+                    ogs_free(value);
+                    return false;
+                }
+
                 ogs_free(type);
                 ogs_free(value);
             }
@@ -483,16 +540,41 @@ bool udr_nudr_dr_handle_subscription_provisioned(
 
     supi = recvmsg->h.resource.component[1];
     if (!supi) {
+        ogs_error("No SUPI");
         strerror = ogs_msprintf("No SUPI");
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         goto cleanup;
     }
 
-    if (strncmp(supi,
-            OGS_ID_SUPI_TYPE_IMSI, strlen(OGS_ID_SUPI_TYPE_IMSI)) != 0) {
-        strerror = ogs_msprintf("[%s] Unknown SUPI Type", supi);
-        status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
-        goto cleanup;
+    {
+        char *type = NULL, *value = NULL;
+        if (ogs_id_get_type_value(supi, &type, &value) == false) {
+            ogs_error("Invalid SUPI [%s]", supi);
+            strerror = ogs_msprintf("[%s] Invalid SUPI", supi);
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            goto cleanup;
+        }
+
+        if (strcmp(type, OGS_ID_SUPI_TYPE_IMSI) != 0) {
+            ogs_error("Unknown SUPI Type [%s]", supi);
+            ogs_free(type);
+            ogs_free(value);
+            strerror = ogs_msprintf("[%s] Unknown SUPI Type", supi);
+            status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+            goto cleanup;
+        }
+
+        if (ogs_imsi_bcd_is_valid(value) == false) {
+            ogs_error("Invalid IMSI SUPI [%s]", supi);
+            ogs_free(type);
+            ogs_free(value);
+            strerror = ogs_msprintf("[%s] Invalid SUPI", supi);
+            status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+            goto cleanup;
+        }
+
+        ogs_free(type);
+        ogs_free(value);
     }
 
     rv = ogs_dbi_subscription_data(supi, &subscription_data);

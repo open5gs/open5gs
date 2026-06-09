@@ -262,6 +262,97 @@ void *ogs_sbi_stream_find_by_id(ogs_pool_id_t id)
     return ogs_sbi_server_actions.stream_find_by_id(id);
 }
 
+int ogs_sbi_server_attach_xact(ogs_sbi_xact_t *xact)
+{
+    ogs_sbi_stream_t *stream = NULL;
+
+    ogs_assert(xact);
+
+    /*
+     * Idempotent. NFs may set xact->assoc_stream_id and reach the
+     * SBI path multiple times for retries; attaching twice would
+     * corrupt the list, so we skip when already attached. This is
+     * not an error in itself — return OK so the caller continues.
+     */
+    if (xact->to_stream_list) {
+        ogs_error("ogs_sbi_server_attach_xact: already attached "
+                "[xact:%d,assoc_stream_id:%d,service:%s]",
+                (int)xact->id, (int)xact->assoc_stream_id,
+                OpenAPI_service_name_ToString(xact->service_name));
+        return OGS_OK;
+    }
+
+    /*
+     * No associated stream is normal for self-initiated transactions
+     * (NRF discovery from the NF itself, status notifications, etc.).
+     * Silent skip, OK.
+     */
+    if (xact->assoc_stream_id < OGS_MIN_POOL_ID ||
+        xact->assoc_stream_id > OGS_MAX_POOL_ID)
+        return OGS_OK;
+
+    /*
+     * xact->assoc_stream_id is a "best-effort" linkage: it means
+     * "if a response arrives and this stream is still alive,
+     * deliver the response there." The stream is not required to
+     * be alive at the moment the outbound transaction is sent.
+     *
+     * NFs are allowed to pass the same stream to discover_and_send()
+     * even after that stream has already been used to answer the
+     * original peer (and is therefore being closed). The common
+     * case is a "respond then start follow-up" pattern, e.g. SMF
+     * answering the AMF with HTTP 201 Created and then kicking off
+     * Npcf_SMPolicyControl_Create.
+     *
+     * Two outcomes:
+     *
+     *   - Stream still alive: attach to its xact_list so the
+     *     transaction is cancelled (and its response timer freed)
+     *     if the peer later resets the stream. This is the
+     *     #4472/#4473 protection path. Returns OGS_OK.
+     *
+     *   - Stream already gone: nothing to attach. Returns
+     *     OGS_ERROR so the caller can log with its own context
+     *     (NF name, UE/session id, etc.) and decide what to do.
+     *     The caller may legitimately ignore the error and let
+     *     the transaction proceed; the response (if any) will be
+     *     dropped through the existing "STREAM has already been
+     *     removed" path in the response handler.
+     */
+    stream = ogs_sbi_stream_find_by_id(xact->assoc_stream_id);
+    if (!stream) {
+        ogs_error("ogs_sbi_server_attach_xact: originating SBI stream "
+                "already closed "
+                "[xact:%d,assoc_stream_id:%d,service:%s]",
+                (int)xact->id, (int)xact->assoc_stream_id,
+                OpenAPI_service_name_ToString(xact->service_name));
+        return OGS_NOTFOUND;
+    }
+
+    ogs_assert(ogs_sbi_server_actions.xact_attach);
+    ogs_sbi_server_actions.xact_attach(stream, xact);
+
+    return OGS_OK;
+}
+
+void ogs_sbi_server_detach_xact(ogs_sbi_xact_t *xact)
+{
+    ogs_assert(xact);
+
+    /*
+     * Idempotent. No-op when not attached, including transactions
+     * that never had an inbound stream (NRF discovery, status
+     * notifications) where to_stream_list stays NULL. This is
+     * invoked unconditionally from ogs_sbi_xact_remove(), so
+     * streamless transactions reach here on every cleanup.
+     */
+    if (!xact->to_stream_list)
+        return;
+
+    ogs_assert(ogs_sbi_server_actions.xact_detach);
+    ogs_sbi_server_actions.xact_detach(xact);
+}
+
 static ogs_sbi_server_t *ogs_sbi_server_find_by_interface(
         ogs_sbi_server_t *current, const char *interface)
 {

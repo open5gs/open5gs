@@ -30,6 +30,7 @@ static OGS_POOL(pcf_app_pool, pcf_app_t);
 
 static int context_initialized = 0;
 
+static void pcf_qos_profile_clear(void);
 static void clear_ipv4addr(pcf_sess_t *sess);
 static void clear_ipv6prefix(pcf_sess_t *sess);
 
@@ -70,6 +71,8 @@ void pcf_context_final(void)
     pcf_ue_am_remove_all();
     pcf_ue_sm_remove_all();
 
+    pcf_qos_profile_clear();
+
     ogs_assert(self.supi_am_hash);
     ogs_hash_destroy(self.supi_am_hash);
     ogs_assert(self.supi_sm_hash);
@@ -92,8 +95,20 @@ pcf_context_t *pcf_self(void)
     return &self;
 }
 
+static void pcf_qos_profile_clear(void)
+{
+    int i;
+
+    for (i = 0; i < self.num_of_qos_profile; i++)
+        ogs_free(self.qos_profile[i].reference);
+
+    memset(self.qos_profile, 0, sizeof(self.qos_profile));
+    self.num_of_qos_profile = 0;
+}
+
 static int pcf_context_prepare(void)
 {
+    pcf_qos_profile_clear();
     return OGS_OK;
 }
 
@@ -204,6 +219,20 @@ static int policy_conf_validation(void)
     return OGS_OK;
 }
 
+static bool pcf_qos_profile_reference_exists(const char *reference)
+{
+    int i;
+
+    ogs_assert(reference);
+
+    for (i = 0; i < self.num_of_qos_profile; i++) {
+        if (!strcmp(self.qos_profile[i].reference, reference))
+            return true;
+    }
+
+    return false;
+}
+
 static int parse_policy_conf(ogs_yaml_iter_t *parent)
 {
     int rv;
@@ -288,6 +317,75 @@ static int parse_policy_conf(ogs_yaml_iter_t *parent)
     return OGS_OK;
 }
 
+static int parse_qos_profiles_conf(ogs_yaml_iter_t *parent)
+{
+    ogs_yaml_iter_t profile_array, profile_iter;
+
+    ogs_assert(parent);
+
+    ogs_yaml_iter_recurse(parent, &profile_array);
+    do {
+        const char *reference = NULL;
+        const char *qos_index_string = NULL;
+        char *end = NULL;
+        long qos_index = 0;
+
+        OGS_YAML_ARRAY_NEXT(&profile_array, &profile_iter);
+        while (ogs_yaml_iter_next(&profile_iter)) {
+            const char *profile_key = ogs_yaml_iter_key(&profile_iter);
+            ogs_assert(profile_key);
+
+            if (!strcmp(profile_key, "reference")) {
+                reference = ogs_yaml_iter_value(&profile_iter);
+            } else if (!strcmp(profile_key, "qos_index")) {
+                qos_index_string = ogs_yaml_iter_value(&profile_iter);
+            } else {
+                ogs_warn("unknown qos_profiles key `%s`", profile_key);
+            }
+        }
+
+        if (!reference || !reference[0]) {
+            ogs_warn("Ignore qos_profiles entry without reference");
+            goto next;
+        }
+
+        if (!qos_index_string || !qos_index_string[0]) {
+            ogs_warn("Ignore qos_profiles[%s] without qos_index", reference);
+            goto next;
+        }
+
+        qos_index = strtol(qos_index_string, &end, 10);
+        if (*end || qos_index <= 0 || qos_index > UINT8_MAX) {
+            ogs_warn("Ignore qos_profiles[%s] invalid qos_index [%s]",
+                    reference, qos_index_string);
+            goto next;
+        }
+
+        if (pcf_qos_profile_reference_exists(reference)) {
+            ogs_warn("Ignore duplicate qos_profiles reference [%s]", reference);
+            goto next;
+        }
+
+        if (self.num_of_qos_profile >= OGS_PCF_MAX_NUM_OF_QOS_PROFILE) {
+            ogs_warn("Ignore qos_profiles[%s] beyond max [%d]",
+                    reference, OGS_PCF_MAX_NUM_OF_QOS_PROFILE);
+            goto next;
+        }
+
+        self.qos_profile[self.num_of_qos_profile].reference =
+            ogs_strdup(reference);
+        ogs_assert(self.qos_profile[self.num_of_qos_profile].reference);
+        self.qos_profile[self.num_of_qos_profile].qos_index =
+            (uint8_t)qos_index;
+        self.num_of_qos_profile++;
+
+next:
+        ;
+    } while (ogs_yaml_iter_type(&profile_array) == YAML_SEQUENCE_NODE);
+
+    return OGS_OK;
+}
+
 int pcf_context_parse_config(void)
 {
     int rv;
@@ -326,6 +424,12 @@ int pcf_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(pcf_key, "metrics")) {
                     /* handle config in metrics library */
+                } else if (!strcmp(pcf_key, "qos_profiles")) {
+                    rv = parse_qos_profiles_conf(&pcf_iter);
+                    if (rv != OGS_OK) {
+                        ogs_error("parse_qos_profiles_conf() failed");
+                        return rv;
+                    }
                 } else if (!strcmp(pcf_key, OGS_POLICY_STRING)) {
                     rv = parse_policy_conf(&pcf_iter);
                     if (rv != OGS_OK) {
@@ -404,7 +508,8 @@ void pcf_ue_am_remove(pcf_ue_am_t *pcf_ue_am)
     ogs_free(pcf_ue_am->association_id);
 
     ogs_assert(pcf_ue_am->supi);
-    ogs_hash_set(self.supi_am_hash, pcf_ue_am->supi, strlen(pcf_ue_am->supi), NULL);
+    ogs_hash_unset_if_owner(self.supi_am_hash,
+            pcf_ue_am->supi, strlen(pcf_ue_am->supi), pcf_ue_am);
     ogs_free(pcf_ue_am->supi);
 
     if (pcf_ue_am->notification_uri)
@@ -467,7 +572,8 @@ void pcf_ue_sm_remove(pcf_ue_sm_t *pcf_ue_sm)
     pcf_sess_remove_all(pcf_ue_sm);
 
     ogs_assert(pcf_ue_sm->supi);
-    ogs_hash_set(self.supi_sm_hash, pcf_ue_sm->supi, strlen(pcf_ue_sm->supi), NULL);
+    ogs_hash_unset_if_owner(self.supi_sm_hash,
+            pcf_ue_sm->supi, strlen(pcf_ue_sm->supi), pcf_ue_sm);
     ogs_free(pcf_ue_sm->supi);
 
     if (pcf_ue_sm->gpsi)
@@ -672,7 +778,12 @@ bool pcf_sess_set_ipv6prefix(pcf_sess_t *sess, char *ipv6prefix_string)
         return false;
     }
 
-    ogs_assert(sess->ipv6prefix.len == OGS_IPV6_128_PREFIX_LEN);
+    if (sess->ipv6prefix.len != OGS_IPV6_128_PREFIX_LEN) {
+        ogs_error("Unsupported IPv6 prefix length [%d] in [%s]: "
+                "expected /%d", sess->ipv6prefix.len, ipv6prefix_string,
+                OGS_IPV6_128_PREFIX_LEN);
+        return false;
+    }
 
     sess->ipv6prefix_string = ogs_strdup(ipv6prefix_string);
     if (!sess->ipv6prefix_string) {
@@ -778,9 +889,17 @@ pcf_sess_t *pcf_sess_find_by_ipv6prefix(char *ipv6prefix_string)
 
     rv = ogs_ipv6prefix_from_string(
             ipv6prefix.addr6, &ipv6prefix.len, ipv6prefix_string);
-    ogs_assert(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_ipv6prefix_from_string() failed");
+        return NULL;
+    }
 
-    ogs_assert(ipv6prefix.len == OGS_IPV6_128_PREFIX_LEN);
+    if (ipv6prefix.len != OGS_IPV6_128_PREFIX_LEN) {
+        ogs_error("Unsupported IPv6 prefix length [%d] in [%s]: "
+                "expected /%d", ipv6prefix.len, ipv6prefix_string,
+                OGS_IPV6_128_PREFIX_LEN);
+        return NULL;
+    }
 
     return ogs_hash_get(self.ipv6prefix_hash,
             &ipv6prefix, (ipv6prefix.len >> 3) + 1);

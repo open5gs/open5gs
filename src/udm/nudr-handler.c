@@ -206,6 +206,8 @@ bool udm_nudr_dr_handle_subscription_authentication(
                     0, sizeof(AuthenticationInfoResult));
 
             AuthenticationInfoResult.supi = udm_ue->supi;
+            if (!udm_ue->auth_type)
+                udm_ue->auth_type = OpenAPI_auth_type_5G_AKA;
             AuthenticationInfoResult.auth_type = udm_ue->auth_type;
 
             ogs_random(udm_ue->rand, OGS_RAND_LEN);

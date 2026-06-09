@@ -34,6 +34,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     ogs_ip_t remote_dl_ip;
 
     bool far_update = false;
+    int num_of_qos_flow_modified = 0;
 
     NGAP_PDUSessionResourceSetupResponseTransfer_t message;
 
@@ -136,9 +137,15 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         sess->remote_dl_teid != remote_dl_teid)
         far_update = true;
 
-    /* Setup FAR */
-    memcpy(&sess->remote_dl_ip, &remote_dl_ip, sizeof(sess->remote_dl_ip));
-    sess->remote_dl_teid = remote_dl_teid;
+    /*
+     * Do NOT commit sess->remote_dl_ip/teid here.
+     * They are committed below, atomically with the PFCP Session
+     * Modification Request, only after we confirm at least one
+     * matching qos_flow exists. Otherwise an incomplete or stale
+     * PDUSessionResourceSetupResponseTransfer would leave SMF
+     * pointing at a new endpoint that UPF never learned about.
+     * See issue #4413.
+     */
 
     if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
         ogs_list_for_each(&sess->bearer_list, qos_flow) {
@@ -151,10 +158,11 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
             dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
             ogs_assert(OGS_OK ==
                 ogs_pfcp_ip_to_outer_header_creation(
-                        &sess->remote_dl_ip,
+                        &remote_dl_ip,
                         &dl_far->outer_header_creation,
                         &dl_far->outer_header_creation_len));
-            dl_far->outer_header_creation.teid = sess->remote_dl_teid;
+            dl_far->outer_header_creation.teid = remote_dl_teid;
+            num_of_qos_flow_modified++;
         }
     } else {
         associatedQosFlowList =
@@ -186,17 +194,40 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
                     dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
                     ogs_assert(OGS_OK ==
                         ogs_pfcp_ip_to_outer_header_creation(
-                                &sess->remote_dl_ip,
+                                &remote_dl_ip,
                                 &dl_far->outer_header_creation,
                                 &dl_far->outer_header_creation_len));
-                    dl_far->outer_header_creation.teid = sess->remote_dl_teid;
+                    dl_far->outer_header_creation.teid = remote_dl_teid;
+                    num_of_qos_flow_modified++;
                 }
             }
         }
     }
 
+    /*
+     * Guard: if the session-level remote DL endpoint changed but no
+     * per-flow FAR was actually touched (e.g. AssociatedQosFlowList
+     * references QFIs that match no qos_flow in sess->bearer_list),
+     * sending a PFCP Session Modification Request would build an
+     * empty modify list and abort smf_n4_build_pdr_to_modify_list().
+     * Bail out without mutating sess state. See issue #4413.
+     */
+    if (far_update && num_of_qos_flow_modified == 0) {
+        ogs_error("[%s:%d] No matching QoS flow to modify - "
+                "skipping PFCP Session Modification",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error_log(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No matching QoS flow", smf_ue->supi);
+        goto cleanup;
+    }
+
     if (far_update) {
         uint64_t pfcp_flags = OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE;
+
+        /* Atomically commit session state with the PFCP send below. */
+        memcpy(&sess->remote_dl_ip, &remote_dl_ip, sizeof(sess->remote_dl_ip));
+        sess->remote_dl_teid = remote_dl_teid;
     /*
      * UE-requested PDU Session Modification(ACTIVATED)
      *
@@ -544,6 +575,7 @@ int ngap_handle_path_switch_request_transfer(
     ogs_ip_t remote_dl_ip;
 
     bool far_update = false;
+    int num_of_qos_flow_modified = 0;
 
     NGAP_PathSwitchRequestTransfer_t message;
 
@@ -629,9 +661,7 @@ int ngap_handle_path_switch_request_transfer(
         sess->remote_dl_teid != remote_dl_teid)
         far_update = true;
 
-    /* Setup FAR */
-    memcpy(&sess->remote_dl_ip, &remote_dl_ip, sizeof(sess->remote_dl_ip));
-    sess->remote_dl_teid = remote_dl_teid;
+    /* sess->remote_dl_ip/teid are committed atomically below, see #4413 */
 
     if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
         ogs_list_for_each(&sess->bearer_list, qos_flow) {
@@ -644,10 +674,11 @@ int ngap_handle_path_switch_request_transfer(
             dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
             ogs_assert(OGS_OK ==
                 ogs_pfcp_ip_to_outer_header_creation(
-                        &sess->remote_dl_ip,
+                        &remote_dl_ip,
                         &dl_far->outer_header_creation,
                         &dl_far->outer_header_creation_len));
-            dl_far->outer_header_creation.teid = sess->remote_dl_teid;
+            dl_far->outer_header_creation.teid = remote_dl_teid;
+            num_of_qos_flow_modified++;
         }
     } else {
         qosFlowAcceptedList = message.qosFlowAcceptedList;
@@ -676,19 +707,35 @@ int ngap_handle_path_switch_request_transfer(
                     dl_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
                     ogs_assert(OGS_OK ==
                         ogs_pfcp_ip_to_outer_header_creation(
-                            &sess->remote_dl_ip,
+                            &remote_dl_ip,
                             &dl_far->outer_header_creation,
                             &dl_far->outer_header_creation_len));
-                    dl_far->outer_header_creation.teid = sess->remote_dl_teid;
+                    dl_far->outer_header_creation.teid = remote_dl_teid;
+                    num_of_qos_flow_modified++;
                 }
             }
         }
+    }
+
+    /* See issue #4413 - same guard as in setup_response_transfer */
+    if (far_update && num_of_qos_flow_modified == 0) {
+        ogs_error("[%s:%d] No matching QoS flow to modify - "
+                "skipping PFCP Session Modification",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error_log(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No matching QoS flow", smf_ue->supi);
+        goto cleanup;
     }
 
     if (far_update) {
         uint64_t pfcp_flags =
             OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE|
             OGS_PFCP_MODIFY_XN_HANDOVER|OGS_PFCP_MODIFY_END_MARKER;
+
+        /* Atomically commit session state with the PFCP send below. */
+        memcpy(&sess->remote_dl_ip, &remote_dl_ip, sizeof(sess->remote_dl_ip));
+        sess->remote_dl_teid = remote_dl_teid;
 
         if (HOME_ROUTED_ROAMING_IN_VSMF(sess)) {
             pfcp_flags |= OGS_PFCP_MODIFY_HOME_ROUTED_ROAMING;

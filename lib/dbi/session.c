@@ -45,10 +45,10 @@ int ogs_dbi_session_data(
     ogs_assert(dnn);
     ogs_assert(session_data);
 
-    supi_type = ogs_id_get_type(supi);
-    ogs_assert(supi_type);
-    supi_id = ogs_id_get_value(supi);
-    ogs_assert(supi_id);
+    if (ogs_id_get_type_value(supi, &supi_type, &supi_id) == false) {
+        ogs_error("Invalid supi=%s", supi);
+        return OGS_ERROR;
+    }
 
     query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
 #if MONGOC_CHECK_VERSION(1, 5, 0)

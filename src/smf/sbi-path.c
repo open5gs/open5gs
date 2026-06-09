@@ -523,21 +523,25 @@ void smf_sbi_send_pdu_session_created_data(
         qosFlowSetupItem->default_qos_rule_ind = true;
     }
 
-    enc_len = ogs_base64_encode_len(authorized_qos_rules.length);
+    enc_len = ogs_base64_encoded_size(authorized_qos_rules.length);
+    ogs_assert(enc_len > 0);
     qosFlowSetupItem->qos_rules = ogs_calloc(1, enc_len);
     ogs_assert(qosFlowSetupItem->qos_rules);
-    ogs_base64_encode(qosFlowSetupItem->qos_rules,
-            authorized_qos_rules.buffer, authorized_qos_rules.length);
+    ogs_assert(ogs_base64_encode_from_buffer(qosFlowSetupItem->qos_rules,
+            enc_len, authorized_qos_rules.buffer,
+            authorized_qos_rules.length) > 0);
 
     ogs_free(authorized_qos_rules.buffer);
 
-    enc_len = ogs_base64_encode_len(
+    enc_len = ogs_base64_encoded_size(
             authorized_qos_flow_descriptions.length);
+    ogs_assert(enc_len > 0);
     qosFlowSetupItem->qos_flow_description = ogs_calloc(1, enc_len);
     ogs_assert(qosFlowSetupItem->qos_flow_description);
-    ogs_base64_encode(qosFlowSetupItem->qos_flow_description,
+    ogs_assert(ogs_base64_encode_from_buffer(
+            qosFlowSetupItem->qos_flow_description, enc_len,
             authorized_qos_flow_descriptions.buffer,
-            authorized_qos_flow_descriptions.length);
+            authorized_qos_flow_descriptions.length) > 0);
 
     ogs_free(authorized_qos_flow_descriptions.buffer);
 

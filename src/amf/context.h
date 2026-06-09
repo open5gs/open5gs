@@ -141,6 +141,7 @@ typedef struct amf_gnb_s {
 
     bool            gnb_id_presence;
     uint32_t        gnb_id;     /* gNB_ID received from gNB */
+    uint8_t         gnb_id_length; /* gNB-ID BIT STRING length(22..32) */
     ogs_plmn_id_t   plmn_id;    /* gNB PLMN-ID received from gNB */
     ogs_sctp_sock_t sctp;       /* SCTP socket */
 
@@ -205,6 +206,7 @@ struct ran_ue_s {
     struct {
         ogs_5gs_tai_t   nr_tai;
         ogs_nr_cgi_t    nr_cgi;
+        uint8_t         nr_cgi_gnb_id_length;
     } saved;
 
     /* NG Holding timer for removing this context */
@@ -363,6 +365,7 @@ struct amf_ue_s {
     uint16_t        gnb_ostream_id;
     ogs_5gs_tai_t   nr_tai;
     ogs_nr_cgi_t    nr_cgi;
+    uint8_t         nr_cgi_gnb_id_length;
     ogs_time_t      ue_location_timestamp;
     ogs_plmn_id_t   last_visited_plmn_id;
     ogs_nas_ue_usage_setting_t ue_usage_setting;
@@ -441,6 +444,9 @@ struct amf_ue_s {
     /* Security Context */
     ogs_nas_ue_security_capability_t ue_security_capability;
     ogs_nas_ue_network_capability_t ue_network_capability;
+
+    /* Transient Path Switch state */
+    bool send_ue_security_capability_in_path_switch_ack;
 #define CHECK_5G_AKA_CONFIRMATION(__aMF) \
     ((__aMF) && ((__aMF)->confirmation_for_5g_aka.resource_uri))
 #define STORE_5G_AKA_CONFIRMATION(__aMF, __rESOURCE_URI) \
@@ -542,6 +548,24 @@ struct amf_ue_s {
     do { \
         ran_ue_t *ran_ue_holding = NULL; \
         \
+        ran_ue_holding = ran_ue_find_by_id((__aMF)->ran_ue_holding_id); \
+        if (ran_ue_holding) { \
+            int r; \
+            ogs_warn("[%s] Holding NG context already exists", \
+                    (__aMF)->suci); \
+            ogs_warn("[%s]    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]", \
+                    (__aMF)->suci, \
+                    (long long)ran_ue_holding->ran_ue_ngap_id, \
+                    (long long)ran_ue_holding->amf_ue_ngap_id); \
+            r = ngap_send_ran_ue_context_release_command( \
+                    ran_ue_holding, \
+                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
+                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
+            ogs_expect(r == OGS_OK); \
+        } else if ((__aMF)->ran_ue_holding_id != OGS_INVALID_POOL_ID) { \
+            ogs_warn("[%s] Holding NG context has already been removed", \
+                    (__aMF)->suci); \
+        } \
         (__aMF)->ran_ue_holding_id = OGS_INVALID_POOL_ID; \
         \
         ran_ue_holding = ran_ue_find_by_id((__aMF)->ran_ue_id); \
@@ -964,7 +988,7 @@ void amf_gnb_remove(amf_gnb_t *gnb);
 void amf_gnb_remove_all(void);
 amf_gnb_t *amf_gnb_find_by_addr(ogs_sockaddr_t *addr);
 amf_gnb_t *amf_gnb_find_by_gnb_id(uint32_t gnb_id);
-int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id);
+int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id, uint8_t gnb_id_length);
 int amf_gnb_sock_type(ogs_sock_t *sock);
 amf_gnb_t *amf_gnb_find_by_id(ogs_pool_id_t id);
 

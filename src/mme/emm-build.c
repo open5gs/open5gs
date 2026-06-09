@@ -235,7 +235,11 @@ ogs_pkbuf_t *emm_build_attach_accept(
     } else {
         eps_network_feature_support->length = 1;
     }
+    if (ogs_global_conf()->parameter.no_ims == true) {
+    	eps_network_feature_support->ims_voice_over_ps_session_in_s1_mode = 0;
+    } else {
     eps_network_feature_support->ims_voice_over_ps_session_in_s1_mode = 1;
+    }
     eps_network_feature_support->extended_protocol_configuration_options = 1;
     if (mme_self()->emergency.dnn)
         eps_network_feature_support->emergency_bearer_services_in_s1_mode = 1;
@@ -680,8 +684,13 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     } else {
         tau_accept->eps_network_feature_support.length = 1;
     }
-    tau_accept->eps_network_feature_support.
-        ims_voice_over_ps_session_in_s1_mode = 1;
+    if (ogs_global_conf()->parameter.no_ims == true) {
+    	tau_accept->eps_network_feature_support.
+        	ims_voice_over_ps_session_in_s1_mode = 0;
+    } else {
+        tau_accept->eps_network_feature_support.
+                ims_voice_over_ps_session_in_s1_mode = 1;
+    }
     tau_accept->eps_network_feature_support.
         extended_protocol_configuration_options = 1;
 

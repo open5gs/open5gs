@@ -67,6 +67,23 @@ void *ogs_hash_get_debug(ogs_hash_t *ht,
 void *ogs_hash_get_or_set_debug(ogs_hash_t *ht,
         const void *key, int klen, const void *val, const char *file_line);
 
+/*
+ * Clear an entry ONLY if it still points at the expected owner.
+ *
+ * Identity-keyed tables (SUPI/SUCI/GUTI/IMSI/...) can be re-claimed by a
+ * freshly created context while an older context that holds the same key is
+ * still being torn down (re-attach races, deferred removal). A blind
+ * ogs_hash_set(ht, key, klen, NULL) in the old context's teardown would then
+ * orphan the newer entry, leaving the live context unfindable.
+ *
+ * Returns true if the entry was unset (owner matched), false if it was left
+ * in place because a newer context owns it now.
+ */
+#define ogs_hash_unset_if_owner(ht, key, klen, owner) \
+    ogs_hash_unset_if_owner_debug(ht, key, klen, owner, OGS_FILE_LINE)
+bool ogs_hash_unset_if_owner_debug(ogs_hash_t *ht,
+        const void *key, int klen, const void *owner, const char *file_line);
+
 ogs_hash_index_t *ogs_hash_first(ogs_hash_t *ht);
 ogs_hash_index_t *ogs_hash_next(ogs_hash_index_t *hi);
 void ogs_hash_this(ogs_hash_index_t *hi, 

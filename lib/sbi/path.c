@@ -270,6 +270,48 @@ int ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact)
     request = xact->request;
     ogs_assert(request);
 
+    /*
+     * If the NF associated this transaction with an inbound server
+     * stream (by assigning xact->assoc_stream_id before calling us),
+     * register the transaction on that stream's outbound xact list.
+     *
+     * When the inbound stream is later closed by the peer (HTTP/2
+     * RST_STREAM, connection drop) before the upstream NF response
+     * arrives, stream_remove() walks the list and cancels every
+     * outstanding transaction. The response timer is returned to
+     * the pool immediately rather than holding a slot until the
+     * SBI client wait timeout, so a burst of short-lived inbound
+     * requests cannot pile up enough pending timers to exhaust the
+     * pool (issues #4472 and #4473).
+     *
+     * Transactions with no inbound stream (e.g. NRF discovery
+     * initiated by the NF itself, status notifications) leave
+     * assoc_stream_id at OGS_INVALID_POOL_ID and the helper is a
+     * no-op (returns OGS_OK).
+     *
+     * If attach reports failure (originating stream already
+     * closed), we DO NOT abort the upstream send and we DO NOT
+     * propagate the failure to the NF caller: most NF wrappers
+     * treat any non-OK return as a hard send failure and remove
+     * the transaction, which would orphan an upstream request
+     * already on the wire. The diagnostic context (xact id,
+     * stream id, service type, file:line) is already emitted by
+     * ogs_sbi_server_attach_xact() itself and by the ogs_error()
+     * below, so the situation is observable without changing the
+     * caller-visible return code. If a response later arrives,
+     * the NF response handler will see no stream and drop it
+     * through the existing "STREAM has already been removed"
+     * path.
+     */
+    if (ogs_sbi_server_attach_xact(xact) != OGS_OK) {
+        ogs_error("ogs_sbi_discover_and_send: attach failed, "
+                "proceeding with upstream send "
+                "[xact:%d,assoc_stream_id:%d,service:%s]",
+                (int)xact->id, (int)xact->assoc_stream_id,
+                OpenAPI_service_name_ToString(service_name));
+        /* fall through — upstream send must still happen */
+    }
+
     discovery_option = xact->discovery_option;
 
     /* SCP Availability */

@@ -43,6 +43,9 @@ static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *stream);
 static ogs_pool_id_t id_from_stream(ogs_sbi_stream_t *stream);
 static void *stream_find_by_id(ogs_pool_id_t id);
 
+static void xact_attach(ogs_sbi_stream_t *stream, ogs_sbi_xact_t *xact);
+static void xact_detach(ogs_sbi_xact_t *xact);
+
 const ogs_sbi_server_actions_t ogs_nghttp2_server_actions = {
     server_init,
     server_final,
@@ -58,6 +61,9 @@ const ogs_sbi_server_actions_t ogs_nghttp2_server_actions = {
 
     id_from_stream,
     stream_find_by_id,
+
+    xact_attach,
+    xact_detach,
 };
 
 struct h2_settings {
@@ -96,6 +102,15 @@ typedef struct ogs_sbi_stream_s {
     bool                    memory_overflow;
 
     ogs_sbi_session_t       *session;
+
+    /*
+     * Outbound SBI transactions originated by this inbound stream.
+     * Populated automatically when ogs_sbi_discover_and_send() sees
+     * xact->assoc_stream_id pointing at this stream, and drained at
+     * stream close so response timers are freed promptly rather
+     * than lingering until the SBI client wait timeout.
+     */
+    ogs_list_t              xact_list;
 } ogs_sbi_stream_t;
 
 static void session_remove(ogs_sbi_session_t *sbi_sess);
@@ -771,9 +786,85 @@ static ogs_sbi_stream_t *stream_add(
 
     stream->session = sbi_sess;
 
+    ogs_list_init(&stream->xact_list);
+
     ogs_list_add(&sbi_sess->stream_list, stream);
 
     return stream;
+}
+
+static void xact_attach(ogs_sbi_stream_t *stream, ogs_sbi_xact_t *xact)
+{
+    ogs_assert(stream);
+    ogs_assert(xact);
+
+    /*
+     * Invariant: the server-layer wrapper (ogs_sbi_server_attach_xact)
+     * already filtered out the already-attached case. Reaching the
+     * backend with to_stream_list set is a programming error.
+     */
+    ogs_assert(!xact->to_stream_list);
+
+    /*
+     * Cache the list head so xact_detach() can unlink in O(1)
+     * without re-resolving the stream from assoc_stream_id.
+     * to_stream_list serves as both attachment flag and cached head.
+     */
+    ogs_list_add(&stream->xact_list, &xact->to_stream_node);
+    xact->to_stream_list = &stream->xact_list;
+}
+
+static void xact_detach(ogs_sbi_xact_t *xact)
+{
+    ogs_assert(xact);
+
+    /*
+     * Invariant: the server-layer wrapper (ogs_sbi_server_detach_xact)
+     * already filtered out the not-attached case. Reaching the
+     * backend with to_stream_list cleared is a programming error.
+     */
+    ogs_assert(xact->to_stream_list);
+
+    ogs_list_remove(xact->to_stream_list, &xact->to_stream_node);
+
+    xact->to_stream_list = NULL;
+    xact->assoc_stream_id = OGS_INVALID_POOL_ID;
+}
+
+/*
+ * Cancel every outbound SBI transaction that was triggered by this
+ * stream. Without this, ogs_sbi_xact_remove() and its response timer
+ * would only be reached when the upstream NF responds or the SBI
+ * client wait timer expires; a peer that rapidly resets streams
+ * while the upstream NF stalls would pile up those timers until the
+ * pool is exhausted (the crash signature in issues #4472 / #4473).
+ *
+ * ogs_sbi_xact_remove() invokes xact_detach() internally, which is
+ * what unlinks the node from this list. ogs_list_for_each_entry_safe
+ * caches the next pointer before the body runs, so detach-during-
+ * iteration is well-defined.
+ */
+static void stream_remove_xact_all(ogs_sbi_stream_t *stream)
+{
+    ogs_sbi_xact_t *xact = NULL, *next_xact = NULL;
+
+    ogs_assert(stream);
+
+    ogs_list_for_each_entry_safe(
+            &stream->xact_list, next_xact, xact, to_stream_node) {
+        /*
+         * Logged at error level so the cancellation shows up in
+         * production traces alongside the upstream NF activity that
+         * was abandoned. Useful for diagnosing #4472/#4473 style
+         * patterns and any future regression where a peer resets
+         * streams while upstream NFs are slow.
+         */
+        ogs_error("Canceling pending outbound SBI transaction "
+                "on HTTP/2 stream close [xact:%d,stream:%d,service:%s]",
+                (int)xact->id, stream->stream_id,
+                OpenAPI_service_name_ToString(xact->service_name));
+        ogs_sbi_xact_remove(xact);
+    }
 }
 
 static void stream_remove(ogs_sbi_stream_t *stream)
@@ -785,6 +876,8 @@ static void stream_remove(ogs_sbi_stream_t *stream)
     ogs_assert(sbi_sess);
 
     ogs_list_remove(&sbi_sess->stream_list, stream);
+
+    stream_remove_xact_all(stream);
 
     ogs_assert(stream->request);
     ogs_sbi_request_free(stream->request);
@@ -1615,6 +1708,7 @@ static int on_begin_headers(nghttp2_session *session,
 {
     ogs_sbi_session_t *sbi_sess = user_data;
     ogs_sbi_stream_t *stream = NULL;
+    int rv;
 
     ogs_assert(sbi_sess);
     ogs_assert(session);
@@ -1626,7 +1720,20 @@ static int on_begin_headers(nghttp2_session *session,
     }
 
     stream = stream_add(sbi_sess, frame->hd.stream_id);
-    ogs_assert(stream);
+    if (!stream) {
+        ogs_error("stream_add() failed for stream [%d]",
+                frame->hd.stream_id);
+
+        rv = nghttp2_submit_rst_stream(
+                session, NGHTTP2_FLAG_NONE,
+                frame->hd.stream_id, NGHTTP2_REFUSED_STREAM);
+        if (rv != 0)
+            ogs_error("nghttp2_submit_rst_stream() failed (%d:%s)",
+                    rv, nghttp2_strerror(rv));
+
+        return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
+    }
+
     ogs_debug("STREAM added [%d]", frame->hd.stream_id);
 
     nghttp2_session_set_stream_user_data(session, frame->hd.stream_id, stream);

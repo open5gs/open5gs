@@ -57,6 +57,25 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
     ogs_free(sess_data);
 }
 
+static bool hss_s6a_user_name_to_imsi_bcd(
+        struct avp_hdr *hdr, char *imsi_bcd, size_t imsi_bcd_len)
+{
+    ogs_assert(imsi_bcd);
+
+    if (!hdr || !hdr->avp_value || !hdr->avp_value->os.data)
+        return false;
+
+    if (hdr->avp_value->os.len == 0 ||
+            hdr->avp_value->os.len > OGS_MAX_IMSI_BCD_LEN ||
+            hdr->avp_value->os.len >= imsi_bcd_len)
+        return false;
+
+    ogs_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data,
+            hdr->avp_value->os.len + 1);
+
+    return ogs_imsi_bcd_is_valid(imsi_bcd);
+}
+
 /* Default callback for the application. */
 static int hss_ogs_diam_s6a_fb_cb(struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)
@@ -148,8 +167,13 @@ static int hss_ogs_diam_s6a_air_cb(struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    ogs_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data,
-        ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
+    if (hss_s6a_user_name_to_imsi_bcd(
+                hdr, imsi_bcd, sizeof(imsi_bcd)) == false) {
+        ogs_error("Invalid User-Name IMSI");
+        result_code = OGS_DIAM_INVALID_AVP_VALUE;
+        error_occurred = 1;
+        goto out;
+    }
 
     /* Get authentication info from database */
     rv = hss_db_auth_info(imsi_bcd, &auth_info);
@@ -938,7 +962,7 @@ static int hss_ogs_diam_s6a_ulr_cb(struct msg **msg, struct avp *avp,
     struct avp *avpch1 = NULL;
     union avp_value val;
 
-    char *imsi_bcd = NULL;
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
     char imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
     char *mme_host = NULL;
     char *mme_realm = NULL;
@@ -959,6 +983,7 @@ static int hss_ogs_diam_s6a_ulr_cb(struct msg **msg, struct avp *avp,
 
     /* Initialize variables */
     memset(&subscription_data, 0, sizeof(ogs_subscription_data_t));
+    memset(imsi_bcd, 0, sizeof(imsi_bcd));
     memset(imeisv_bcd, 0, sizeof(imeisv_bcd));
     memset(&visited_plmn_id, 0, sizeof(visited_plmn_id));
 
@@ -990,11 +1015,9 @@ static int hss_ogs_diam_s6a_ulr_cb(struct msg **msg, struct avp *avp,
             goto out;
         }
 
-        imsi_bcd = ogs_strndup(
-            (char*)hdr->avp_value->os.data,
-            ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN) + 1);
-        if (!imsi_bcd) {
-            ogs_error("Failed to duplicate IMSI");
+        if (hss_s6a_user_name_to_imsi_bcd(
+                hdr, imsi_bcd, sizeof(imsi_bcd)) == false) {
+            ogs_error("Invalid User-Name IMSI");
             result_code = OGS_DIAM_INVALID_AVP_VALUE;
             error_occurred = 1;
             goto out;
@@ -1144,9 +1167,13 @@ static int hss_ogs_diam_s6a_ulr_cb(struct msg **msg, struct avp *avp,
         }
 
         if (strlen(imeisv_bcd) > 0) {
-            rv = hss_db_update_imeisv(imsi_bcd, imeisv_bcd);
-            if (rv != OGS_OK) {
-                ogs_warn("Failed to update IMEISV for IMSI: %s", imsi_bcd);
+            if (ogs_imeisv_bcd_is_valid(imeisv_bcd) == false) {
+                ogs_warn("Ignore invalid IMEISV for IMSI: %s", imsi_bcd);
+            } else {
+                rv = hss_db_update_imeisv(imsi_bcd, imeisv_bcd);
+                if (rv != OGS_OK) {
+                    ogs_warn("Failed to update IMEISV for IMSI: %s", imsi_bcd);
+                }
             }
         }
     }
@@ -1446,7 +1473,6 @@ static int hss_ogs_diam_s6a_ulr_cb(struct msg **msg, struct avp *avp,
 
         /* Cleanup resources */
         ogs_subscription_data_free(&subscription_data);
-        if (imsi_bcd) ogs_free(imsi_bcd);
         if (mme_host) ogs_free(mme_host);
         if (mme_realm) ogs_free(mme_realm);
 
@@ -1491,7 +1517,6 @@ out:
 
     /* Cleanup resources */
     ogs_subscription_data_free(&subscription_data);
-    if (imsi_bcd) ogs_free(imsi_bcd);
     if (mme_host) ogs_free(mme_host);
     if (mme_realm) ogs_free(mme_realm);
 
@@ -1565,8 +1590,13 @@ static int hss_ogs_diam_s6a_pur_cb(struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    ogs_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data,
-        ogs_min(hdr->avp_value->os.len, OGS_MAX_IMSI_BCD_LEN)+1);
+    if (hss_s6a_user_name_to_imsi_bcd(
+                hdr, imsi_bcd, sizeof(imsi_bcd)) == false) {
+        ogs_error("Invalid User-Name IMSI");
+        result_code = OGS_DIAM_INVALID_AVP_VALUE;
+        error_occurred = 1;
+        goto out;
+    }
 
     /* Get subscription data from database */
     rv = hss_db_subscription_data(imsi_bcd, &subscription_data);

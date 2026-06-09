@@ -187,7 +187,8 @@ void ogs_gtp2_fill_header(
         gtp_hlen = OGS_GTPV1U_HEADER_LEN+OGS_GTPV1U_EXTENSION_HEADER_LEN;
 
         i = 0;
-        while(ext_hdesc->array[i].len) {
+        while (i < OGS_GTP2_NUM_OF_EXTENSION_HEADER &&
+                ext_hdesc->array[i].len) {
             gtp_hlen += (ext_hdesc->array[i].len*4);
             i++;
         }
@@ -243,6 +244,7 @@ void ogs_gtp2_fill_header(
 
         i = 0;
         while (i < OGS_GTP2_NUM_OF_EXTENSION_HEADER &&
+                ext_hdesc->array[i].len &&
                 (ext_h - pkbuf->data) < gtp_hlen) {
             int len = ext_hdesc->array[i].len*4;
 
@@ -250,7 +252,8 @@ void ogs_gtp2_fill_header(
             memcpy(ext_h, &ext_hdesc->array[i].len, len-1);
 
             /* Check if Next Header is Available */
-            if (ext_hdesc->array[i+1].len)
+            if ((i + 1) < OGS_GTP2_NUM_OF_EXTENSION_HEADER &&
+                    ext_hdesc->array[i+1].len)
                 ext_h[len-1] = ext_hdesc->array[i+1].type;
             else
                 ext_h[len-1] =

@@ -48,12 +48,14 @@ static void base64_test1(abts_case *tc, void *data)
         enc_len = strlen(base64_tbl[i].enc);
 
         /* includes + 1 for term null */
-        b64_enc_len = ogs_base64_encode_len(orig_len);
+        b64_enc_len = ogs_base64_encoded_size(orig_len);
         ABTS_ASSERT(tc, "base 64 exp. length", (enc_len == (b64_enc_len - 1)));
 
         enc = ogs_malloc(b64_enc_len);
 
-        b64_len = ogs_base64_encode(enc, base64_tbl[i].orig, orig_len);
+        b64_len = ogs_base64_encode_from_buffer(
+                enc, b64_enc_len,
+                (const uint8_t *)base64_tbl[i].orig, orig_len);
 
         ABTS_ASSERT(tc, "base 64 encoded length", (b64_enc_len == b64_len));
         ABTS_ASSERT(tc, "base 64 encoded matches expected output",

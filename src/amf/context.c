@@ -1328,14 +1328,20 @@ amf_gnb_t *amf_gnb_find_by_gnb_id(uint32_t gnb_id)
     return (amf_gnb_t *)ogs_hash_get(self.gnb_id_hash, &gnb_id, sizeof(gnb_id));
 }
 
-int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id)
+int amf_gnb_set_gnb_id(amf_gnb_t *gnb, uint32_t gnb_id, uint8_t gnb_id_length)
 {
     ogs_assert(gnb);
+
+    if (gnb_id_length < 22 || gnb_id_length > 32) {
+        ogs_error("Invalid gNB-ID length[%d]", gnb_id_length);
+        return OGS_ERROR;
+    }
 
     if (gnb->gnb_id_presence == true)
         ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), NULL);
 
     gnb->gnb_id = gnb_id;
+    gnb->gnb_id_length = gnb_id_length;
     ogs_hash_set(self.gnb_id_hash, &gnb->gnb_id, sizeof(gnb->gnb_id), gnb);
 
     gnb->gnb_id_presence = true;
@@ -1676,6 +1682,11 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     ogs_list_init(&amf_ue->sess_list);
 
     /* Initialization */
+    amf_ue->gnb_ostream_id = ran_ue->gnb_ostream_id;
+    memcpy(&amf_ue->nr_tai, &ran_ue->saved.nr_tai, sizeof(ogs_5gs_tai_t));
+    memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
+    amf_ue->nr_cgi_gnb_id_length = ran_ue->saved.nr_cgi_gnb_id_length;
+
     amf_ue->guami = &amf_self()->served_guami[0];
     amf_ue->nas.access_type = OGS_ACCESS_TYPE_3GPP;
     amf_ue->nas.amf.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
@@ -1717,19 +1728,21 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     amf_sess_remove_all(amf_ue);
 
     if (amf_ue->current.m_tmsi) {
-        ogs_hash_set(self.guti_ue_hash,
-                &amf_ue->current.guti, sizeof(ogs_nas_5gs_guti_t), NULL);
+        ogs_hash_unset_if_owner(self.guti_ue_hash,
+                &amf_ue->current.guti, sizeof(ogs_nas_5gs_guti_t), amf_ue);
         ogs_assert(amf_m_tmsi_free(amf_ue->current.m_tmsi) == OGS_OK);
     }
     if (amf_ue->next.m_tmsi) {
         ogs_assert(amf_m_tmsi_free(amf_ue->next.m_tmsi) == OGS_OK);
     }
     if (amf_ue->suci) {
-        ogs_hash_set(self.suci_hash, amf_ue->suci, strlen(amf_ue->suci), NULL);
+        ogs_hash_unset_if_owner(self.suci_hash,
+                amf_ue->suci, strlen(amf_ue->suci), amf_ue);
         ogs_free(amf_ue->suci);
     }
     if (amf_ue->supi) {
-        ogs_hash_set(self.supi_hash, amf_ue->supi, strlen(amf_ue->supi), NULL);
+        ogs_hash_unset_if_owner(self.supi_hash,
+                amf_ue->supi, strlen(amf_ue->supi), amf_ue);
         ogs_free(amf_ue->supi);
     }
 
@@ -1877,8 +1890,17 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
 
         switch (mobile_identity_header->type) {
         case OGS_NAS_5GS_MOBILE_IDENTITY_SUCI:
+            if (mobile_identity->length <
+                    (OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1)) {
+                ogs_error("Too short SUCI Mobile Identity [%d:%d]",
+                        mobile_identity->length,
+                        OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1);
+                return NULL;
+            }
+
             mobile_identity_suci =
                 (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
+            ogs_assert(mobile_identity_suci);
 
             if (mobile_identity_suci->h.supi_format !=
                     OGS_NAS_5GS_SUPI_FORMAT_IMSI) {
@@ -1914,6 +1936,14 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
             ogs_free(suci);
             break;
         case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
+            if (mobile_identity->length <
+                    sizeof(ogs_nas_5gs_mobile_identity_guti_t)) {
+                ogs_error("Too short 5G-GUTI Mobile Identity [%d:%d]",
+                        mobile_identity->length,
+                        (int)sizeof(ogs_nas_5gs_mobile_identity_guti_t));
+                return NULL;
+            }
+
             mobile_identity_guti =
                 (ogs_nas_5gs_mobile_identity_guti_t *)mobile_identity->buffer;
             ogs_assert(mobile_identity_guti);
@@ -1952,6 +1982,14 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
 
         switch (mobile_identity_header->type) {
         case OGS_NAS_5GS_MOBILE_IDENTITY_S_TMSI:
+            if (mobile_identity->length <
+                    sizeof(ogs_nas_5gs_mobile_identity_s_tmsi_t)) {
+                ogs_error("Too short 5G-S-TMSI Mobile Identity [%d:%d]",
+                        mobile_identity->length,
+                        (int)sizeof(ogs_nas_5gs_mobile_identity_s_tmsi_t));
+                return NULL;
+            }
+
             mobile_identity_s_tmsi =
                 (ogs_nas_5gs_mobile_identity_s_tmsi_t *)mobile_identity->buffer;
             ogs_assert(mobile_identity_s_tmsi);
@@ -1999,6 +2037,14 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
 
         switch (mobile_identity_header->type) {
         case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
+            if (mobile_identity->length <
+                    sizeof(ogs_nas_5gs_mobile_identity_guti_t)) {
+                ogs_error("Too short 5G-GUTI Mobile Identity [%d:%d]",
+                        mobile_identity->length,
+                        (int)sizeof(ogs_nas_5gs_mobile_identity_guti_t));
+                return NULL;
+            }
+
             mobile_identity_guti =
                 (ogs_nas_5gs_mobile_identity_guti_t *)mobile_identity->buffer;
             ogs_assert(mobile_identity_guti);
@@ -2122,15 +2168,145 @@ amf_ue_t *amf_ue_find_by_ue_context_id(char *ue_context_id)
     return amf_ue;
 }
 
+/*
+ * Release an OLD amf_ue that collides with a freshly registering amf_ue on
+ * one of the UE indexes, moving any session context to the NEW amf_ue.
+ *
+ * Reached from two complementary detection points:
+ *
+ *   - amf_ue_set_suci(): the UE re-attached re-using the SAME SUCI, so the
+ *     old context is found via suci_hash (delete-path collision).
+ *
+ *   - amf_ue_set_supi(): the UE re-attached with a FRESH SUCI (USIM-toggle,
+ *     post-deregistration timer, flight-mode, push-driven re-registration,
+ *     PoC radio attach loop), so amf_ue_set_suci() could NOT detect it
+ *     (suci_hash miss). The old context is only discovered later, once
+ *     AKA-Auth reveals the SUPI and supi_hash still points at the stale
+ *     slot. Without this the slot leaks until the mobile-reachable timer
+ *     expires (create-path collision).
+ *
+ * Unifying the two paths here makes them behave identically, mirroring the
+ * SMF-side unification of the IMSI/SUPI indexes (commit eeeef3d1b).
+ */
+static void amf_ue_release_old_context(
+        amf_ue_t *amf_ue, amf_ue_t *old_amf_ue, const char *display)
+{
+    amf_sess_t *old_sess = NULL;
+
+    ogs_assert(amf_ue);
+    ogs_assert(old_amf_ue);
+    ogs_assert(amf_ue != old_amf_ue);
+    ogs_assert(display);
+
+    ogs_warn("[%s] OLD UE Context Release", display);
+    if (CM_CONNECTED(old_amf_ue)) {
+        ran_ue_t *ran_ue = ran_ue_find_by_id(old_amf_ue->ran_ue_id);
+        ran_ue_t *ran_ue_holding = NULL;
+
+        /*
+         * Keep the old NG context until the new registration is
+         * authenticated. CLEAR_NG_CONTEXT(amf_ue) will then send
+         * UEContextReleaseCommand to the old NG-RAN context.
+         *
+         * Do not use HOLDING_NG_CONTEXT(old_amf_ue) here: that macro
+         * stores the holding id in old_amf_ue, but this function
+         * removes old_amf_ue below after moving the session context
+         * to the new amf_ue.
+         */
+        ogs_warn("[%s] Holding old NG context", display);
+        if (ran_ue) {
+            int r;
+
+            ran_ue_holding =
+                ran_ue_find_by_id(amf_ue->ran_ue_holding_id);
+            if (ran_ue_holding) {
+                ogs_error("[%s] Holding NG context already exists",
+                        display);
+                ogs_error("[%s]    RAN_UE_NGAP_ID[%lld] "
+                        "AMF_UE_NGAP_ID[%lld]",
+                        display,
+                        (long long)ran_ue_holding->ran_ue_ngap_id,
+                        (long long)ran_ue_holding->amf_ue_ngap_id);
+                r = ngap_send_ran_ue_context_release_command(
+                        ran_ue_holding,
+                        NGAP_Cause_PR_nas,
+                        NGAP_CauseNas_normal_release,
+                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+                ogs_expect(r == OGS_OK);
+            } else if (amf_ue->ran_ue_holding_id !=
+                    OGS_INVALID_POOL_ID) {
+                ogs_error("[%s] Holding NG context has already "
+                        "been removed", display);
+            }
+            amf_ue->ran_ue_holding_id = OGS_INVALID_POOL_ID;
+
+            ran_ue->amf_ue_id = OGS_INVALID_POOL_ID;
+
+            ogs_warn("[%s]    RAN_UE_NGAP_ID[%lld] "
+                    "AMF_UE_NGAP_ID[%lld]",
+                    old_amf_ue->suci,
+                    (long long)ran_ue->ran_ue_ngap_id,
+                    (long long)ran_ue->amf_ue_ngap_id);
+
+            ran_ue->ue_ctx_rel_action =
+                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE;
+            ogs_timer_start(ran_ue->t_ng_holding,
+                    amf_timer_cfg(AMF_TIMER_NG_HOLDING)->duration);
+
+            amf_ue->ran_ue_holding_id = old_amf_ue->ran_ue_id;
+            old_amf_ue->ran_ue_id = OGS_INVALID_POOL_ID;
+        } else {
+            ogs_error("[%s] RAN-NG Context has already been removed",
+                        old_amf_ue->suci);
+        }
+    }
+
+    /*
+     * We should delete the AMF-Session Context in the AMF-UE Context.
+     * Otherwise, all unnecessary SESSIONs remain in SMF/UPF.
+     *
+     * In order to do this, AMF-Session Context should be moved from OLD
+     * AMF-UE Context to NEW AMF-UE Context. The stale sessions are then
+     * released towards the SMF through the NEW context's registration flow
+     * (AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT), each release-completion
+     * draining one session via AMF_SESS_CLEAR().
+     *
+     * Note that we should NOT send Session-Release to the SMF at this
+     * point, and we must NOT amf_ue_remove() old_amf_ue synchronously
+     * after a release dispatch: another SBI Transaction can cause fatal
+     * errors, and a synchronous removal would free the sessions (and their
+     * in-flight sess->sbi.xact_list entries) out from under the SBI layer.
+     * Moving the session list keeps every session object alive and owned
+     * by exactly one amf_ue at all times.
+     */
+
+    ogs_assert(ogs_list_empty(&amf_ue->sess_list));
+
+    /* Phase-1 : Change AMF-UE Context in Session Context */
+    ogs_list_for_each(&old_amf_ue->sess_list, old_sess)
+        old_sess->amf_ue_id = amf_ue->id;
+
+    /* Phase-2 : Move Session Context from OLD to NEW AMF-UE Context */
+    memcpy(&amf_ue->sess_list,
+            &old_amf_ue->sess_list, sizeof(amf_ue->sess_list));
+
+    /* Phase-3 : Clear Session Context in OLD AMF-UE Context */
+    memset(&old_amf_ue->sess_list, 0, sizeof(old_amf_ue->sess_list));
+
+    amf_ue_remove(old_amf_ue);
+}
+
 void amf_ue_set_suci(amf_ue_t *amf_ue,
         ogs_nas_5gs_mobile_identity_t *mobile_identity)
 {
     amf_ue_t *old_amf_ue = NULL;
-    amf_sess_t *old_sess = NULL;
     char *suci = NULL;
 
     ogs_assert(amf_ue);
     ogs_assert(mobile_identity);
+    ogs_assert(mobile_identity->buffer);
+    ogs_assert(mobile_identity->length >=
+            (OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1));
 
     suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
     ogs_assert(suci);
@@ -2141,54 +2317,14 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
         /* Check if OLD amf_ue_t is different with NEW amf_ue_t */
         if (ogs_pool_index(&amf_ue_pool, amf_ue) !=
             ogs_pool_index(&amf_ue_pool, old_amf_ue)) {
-            ogs_warn("[%s] OLD UE Context Release", suci);
-            if (CM_CONNECTED(old_amf_ue)) {
-                ran_ue_t *ran_ue = ran_ue_find_by_id(old_amf_ue->ran_ue_id);
-                /* Implcit NG release */
-                ogs_warn("[%s] Implicit NG release", suci);
-                if (ran_ue) {
-                    ogs_warn("[%s]    RAN_UE_NGAP_ID[%lld] "
-                            "AMF_UE_NGAP_ID[%lld]",
-                            old_amf_ue->suci,
-                            (long long)ran_ue->ran_ue_ngap_id,
-                            (long long)ran_ue->amf_ue_ngap_id);
-                    ran_ue_remove(ran_ue);
-                } else {
-                    ogs_error("[%s] RAN-NG Context has already been removed",
-                                old_amf_ue->suci);
-                }
-            }
-
-    /*
-     * We should delete the AMF-Session Context in the AMF-UE Context.
-     * Otherwise, all unnecessary SESSIONs remain in SMF/UPF.
-     *
-     * In order to do this, AMF-Session Context should be moved
-     * from OLD AMF-UE Context to NEW AMF-UE Context.
-     *
-     * If needed, The Session deletion process in NEW-AMF UE context will work.
-     *
-     * Note that we should not send Session-Release to the SMF at this point.
-     * Another SBI Transaction can cause fatal errors.
-     */
-
-            /* Phase-1 : Change AMF-UE Context in Session Context */
-            ogs_list_for_each(&old_amf_ue->sess_list, old_sess)
-                old_sess->amf_ue_id = amf_ue->id;
-
-            /* Phase-2 : Move Session Context from OLD to NEW AMF-UE Context */
-            memcpy(&amf_ue->sess_list,
-                    &old_amf_ue->sess_list, sizeof(amf_ue->sess_list));
-
-            /* Phase-3 : Clear Session Context in OLD AMF-UE Context */
-            memset(&old_amf_ue->sess_list, 0, sizeof(old_amf_ue->sess_list));
-
-            amf_ue_remove(old_amf_ue);
+            /* Same-SUCI re-attach: tear the old context down. */
+            amf_ue_release_old_context(amf_ue, old_amf_ue, suci);
         }
     }
 
     if (amf_ue->suci) {
-        ogs_hash_set(self.suci_hash, amf_ue->suci, strlen(amf_ue->suci), NULL);
+        ogs_hash_unset_if_owner(self.suci_hash,
+                amf_ue->suci, strlen(amf_ue->suci), amf_ue);
         ogs_free(amf_ue->suci);
     }
     amf_ue->suci = suci;
@@ -2200,8 +2336,27 @@ void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi)
     ogs_assert(supi);
 
     if (amf_ue->supi) {
-        ogs_hash_set(self.supi_hash, amf_ue->supi, strlen(amf_ue->supi), NULL);
+        /* Re-assignment: only clear our OWN supi_hash entry if it still
+         * points at us (see ogs_hash_unset_if_owner). */
+        ogs_hash_unset_if_owner(self.supi_hash,
+                amf_ue->supi, strlen(amf_ue->supi), amf_ue);
         ogs_free(amf_ue->supi);
+    } else {
+        /*
+         * First SUPI assignment for this amf_ue.
+         *
+         * Fresh-SUCI re-attach orphan cleanup (create path): if another
+         * amf_ue already holds this SUPI, it is an orphan from a previous
+         * attach cycle that amf_ue_set_suci() could NOT detect, because the
+         * UE re-attached with a fresh SUCI (suci_hash miss). The delete-path
+         * guard keeps the live entry findable but does not reclaim the stale
+         * slot - without this the pool grows by one slot on every fresh-SUCI
+         * re-registration, until the mobile-reachable timer expires. Tear it
+         * down through the same unified path the same-SUCI re-attach uses.
+         */
+        amf_ue_t *old_amf_ue = amf_ue_find_by_supi(supi);
+        if (old_amf_ue && old_amf_ue != amf_ue)
+            amf_ue_release_old_context(amf_ue, old_amf_ue, supi);
     }
     amf_ue->supi = ogs_strdup(supi);
     ogs_assert(amf_ue->supi);

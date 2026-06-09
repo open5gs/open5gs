@@ -45,6 +45,9 @@ static ogs_sbi_server_t *server_from_stream(ogs_sbi_stream_t *stream);
 static ogs_pool_id_t id_from_stream(ogs_sbi_stream_t *stream);
 static void *stream_find_by_id(ogs_pool_id_t id);
 
+static void xact_attach(ogs_sbi_stream_t *stream, ogs_sbi_xact_t *xact);
+static void xact_detach(ogs_sbi_xact_t *xact);
+
 const ogs_sbi_server_actions_t ogs_mhd_server_actions = {
     server_init,
     server_final,
@@ -59,6 +62,9 @@ const ogs_sbi_server_actions_t ogs_mhd_server_actions = {
     server_from_stream,
     id_from_stream,
     stream_find_by_id,
+
+    xact_attach,
+    xact_detach,
 };
 
 static void run(short when, ogs_socket_t fd, void *data);
@@ -110,6 +116,15 @@ typedef struct ogs_sbi_session_s {
      */
     ogs_timer_t             *timer;
 
+    /*
+     * Outbound SBI transactions originated by this session. Drained
+     * on session_remove() so response timers are returned to the
+     * pool immediately when the inbound HTTP connection goes away.
+     * See the matching xact_list on the HTTP/2 backend (stream_s in
+     * lib/sbi/nghttp2-server.c).
+     */
+    ogs_list_t              xact_list;
+
     void *data;
 } ogs_sbi_session_t;
 
@@ -141,6 +156,8 @@ static ogs_sbi_session_t *session_add(ogs_sbi_server_t *server,
     sbi_sess->request = request;
     sbi_sess->connection = connection;
 
+    ogs_list_init(&sbi_sess->xact_list);
+
     sbi_sess->timer = ogs_timer_add(
             ogs_app()->timer_mgr, session_timer_expired,
             OGS_UINT_TO_POINTER(sbi_sess->id));
@@ -160,6 +177,73 @@ static ogs_sbi_session_t *session_add(ogs_sbi_server_t *server,
     return sbi_sess;
 }
 
+static void xact_attach(ogs_sbi_stream_t *stream, ogs_sbi_xact_t *xact)
+{
+    ogs_sbi_session_t *sbi_sess = (ogs_sbi_session_t *)stream;
+
+    ogs_assert(sbi_sess);
+    ogs_assert(xact);
+
+    /*
+     * Invariant: the server-layer wrapper (ogs_sbi_server_attach_xact)
+     * already filtered out the already-attached case. Reaching the
+     * backend with to_stream_list set is a programming error.
+     */
+    ogs_assert(!xact->to_stream_list);
+
+    /*
+     * Cache the list head so xact_detach() can unlink in O(1).
+     * to_stream_list serves as both attachment flag and cached head.
+     */
+    ogs_list_add(&sbi_sess->xact_list, &xact->to_stream_node);
+    xact->to_stream_list = &sbi_sess->xact_list;
+}
+
+static void xact_detach(ogs_sbi_xact_t *xact)
+{
+    ogs_assert(xact);
+
+    /*
+     * Invariant: the server-layer wrapper (ogs_sbi_server_detach_xact)
+     * already filtered out the not-attached case. Reaching the
+     * backend with to_stream_list cleared is a programming error.
+     */
+    ogs_assert(xact->to_stream_list);
+
+    ogs_list_remove(xact->to_stream_list, &xact->to_stream_node);
+
+    xact->to_stream_list = NULL;
+    xact->assoc_stream_id = OGS_INVALID_POOL_ID;
+}
+
+/*
+ * Cancel outbound SBI transactions originated by this session before
+ * tearing it down. Same rationale as stream_remove_xact_all() on the
+ * HTTP/2 backend: release response timers immediately instead of
+ * holding pool slots until the SBI client wait timeout.
+ */
+static void session_remove_xact_all(ogs_sbi_session_t *sbi_sess)
+{
+    ogs_sbi_xact_t *xact = NULL, *next_xact = NULL;
+
+    ogs_assert(sbi_sess);
+
+    ogs_list_for_each_entry_safe(
+            &sbi_sess->xact_list, next_xact, xact, to_stream_node) {
+        /*
+         * Logged at error level so the cancellation shows up in
+         * production traces alongside the upstream NF activity that
+         * was abandoned. See the matching log in stream_remove() on
+         * the HTTP/2 backend.
+         */
+        ogs_error("Canceling pending outbound SBI transaction "
+                "on MHD session close [xact:%d,session:%d,service:%s]",
+                (int)xact->id, (int)sbi_sess->id,
+                OpenAPI_service_name_ToString(xact->service_name));
+        ogs_sbi_xact_remove(xact);
+    }
+}
+
 static void session_remove(ogs_sbi_session_t *sbi_sess)
 {
     struct MHD_Connection *connection;
@@ -170,6 +254,8 @@ static void session_remove(ogs_sbi_session_t *sbi_sess)
     ogs_assert(server);
 
     ogs_list_remove(&server->session_list, sbi_sess);
+
+    session_remove_xact_all(sbi_sess);
 
     ogs_assert(sbi_sess->timer);
     ogs_timer_delete(sbi_sess->timer);

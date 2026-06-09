@@ -108,6 +108,17 @@ bool nssf_nnrf_nsselection_handle_get_from_amf_or_vnssf(
             nssf_nnssf_nsselection_param_t param;
             ogs_sbi_discovery_option_t *h_discovery_option = NULL;
 
+            if (ogs_local_conf()->num_of_serving_plmn_id == 0) {
+                status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+                strerror = ogs_msprintf("No serving PLMN configured: "
+                        "cannot build Home-NSSF discovery query "
+                        "for PLMN-ID(0x%x) S-NSSAI[SST:%d SD:0x%x]",
+                        ogs_plmn_id_hexdump(&recvmsg->param.home_plmn_id),
+                        recvmsg->param.home_snssai.sst,
+                        recvmsg->param.home_snssai.sd.v);
+                goto cleanup;
+            }
+
             h_discovery_option = ogs_sbi_discovery_option_new();
             ogs_assert(h_discovery_option);
 
@@ -115,7 +126,6 @@ bool nssf_nnrf_nsselection_handle_get_from_amf_or_vnssf(
                     h_discovery_option, &home->s_nssai);
             ogs_sbi_discovery_option_add_target_plmn_list(
                     h_discovery_option, &home->plmn_id);
-            ogs_assert(ogs_local_conf()->num_of_serving_plmn_id);
             for (i = 0; i < ogs_local_conf()->num_of_serving_plmn_id; i++) {
                 ogs_sbi_discovery_option_add_requester_plmn_list(
                         h_discovery_option,

@@ -27,6 +27,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * NOKIA AEQE (SW: 5G20A)
  * NOKIA AEQD (SW: 5G20A)
  * NOKIA AEQP (SW: 5G21A)
+ * NOKIA AIRSCALE ASIK+ABIL BBU + AWHQE (n78) (SW: SBTS 25R2)
  * MOSO Networks Canopy 5GID1 Indoor 2T2R (5G n48 n78)
  * ZTE ITBBU ITRAN-PNF V5.65.20.20F10 (n78, n1, n3) 
 
@@ -62,6 +63,7 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Nokia FWGR Flexi Zone Mini-Macro Outdoor BTS, 2x20w Band 1
  * Nokia FWHG Flexi Zone Indoor Pico BTS, 2x250 mW Band 7
  * Nokia FW2HHD Flexi Zone Multiband Indoor Pico BTS, Band 38/41(S/W TLS18SP_ENB)
+ * Nokia Airscale - ASIA + ABIA + AHIB Band 66 (SW: SBTS325R2)
  * Mikrotik Intercell B1+B3 IC322GC-b1D+b3D
  * Ruckus Q710 and Q910
  * Sercomm SCE4255W "Englewood" (band 48/CBRS, SW version DG3934v3@2308041842)

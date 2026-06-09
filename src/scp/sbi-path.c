@@ -248,9 +248,18 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
             ogs_sbi_discovery_option_set_requester_nf_instance_id(
                     discovery_option, val);
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_SERVICE_NAMES)) {
-            if (val)
-                ogs_sbi_discovery_option_parse_service_names(
-                        discovery_option, val);
+            if (val) {
+                if (ogs_sbi_discovery_option_parse_service_names(
+                            discovery_option, val) != OGS_OK) {
+                    ogs_error("Invalid service-names [%s]", val);
+                    scp_assoc_remove(assoc);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                            "Invalid service-names", val, NULL));
+                    return OGS_ERROR;
+                }
+            }
 
             /*
              * So, we'll use the first item in service-names list.
@@ -273,32 +282,79 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                 service_name = discovery_option->service_names[0];
             }
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_SNSSAIS)) {
-            if (val)
-                ogs_sbi_discovery_option_parse_snssais(discovery_option, val);
+            if (val) {
+                if (ogs_sbi_discovery_option_parse_snssais(
+                            discovery_option, val) != OGS_OK) {
+                    ogs_error("Invalid snssais [%s]", val);
+                    scp_assoc_remove(assoc);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                            "Invalid snssais", val, NULL));
+                    return OGS_ERROR;
+                }
+            }
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_GUAMI)) {
-            if (val)
-                ogs_sbi_discovery_option_parse_guami(discovery_option, val);
+            if (val) {
+                if (ogs_sbi_discovery_option_parse_guami(
+                            discovery_option, val) != OGS_OK) {
+                    ogs_error("Invalid guami [%s]", val);
+                    scp_assoc_remove(assoc);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                            "Invalid guami", val, NULL));
+                    return OGS_ERROR;
+                }
+            }
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_DNN)) {
             ogs_sbi_discovery_option_set_dnn(discovery_option, val);
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_TAI)) {
-            if (val)
-                ogs_sbi_discovery_option_parse_tai(discovery_option, val);
-        } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_GUAMI)) {
-            if (val)
-                ogs_sbi_discovery_option_parse_guami(discovery_option, val);
+            if (val) {
+                if (ogs_sbi_discovery_option_parse_tai(
+                            discovery_option, val) != OGS_OK) {
+                    ogs_error("Invalid tai [%s]", val);
+                    scp_assoc_remove(assoc);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                            "Invalid tai", val, NULL));
+                    return OGS_ERROR;
+                }
+            }
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_TARGET_PLMN_LIST)) {
-            if (val)
-                discovery_option->num_of_target_plmn_list =
-                    ogs_sbi_discovery_option_parse_plmn_list(
-                        discovery_option->target_plmn_list, val);
+            if (val) {
+                int n = ogs_sbi_discovery_option_parse_plmn_list(
+                            discovery_option->target_plmn_list, val);
+                if (n < 0) {
+                    ogs_error("Invalid target-plmn-list [%s]", val);
+                    scp_assoc_remove(assoc);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                            "Invalid target-plmn-list", val, NULL));
+                    return OGS_ERROR;
+                }
+                discovery_option->num_of_target_plmn_list = n;
+            }
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_HNRF_URI)) {
             ogs_sbi_discovery_option_set_hnrf_uri(discovery_option, val);
         } else if (!strcasecmp(key,
                     OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_PLMN_LIST)) {
-            if (val)
-                discovery_option->num_of_requester_plmn_list =
-                    ogs_sbi_discovery_option_parse_plmn_list(
-                        discovery_option->requester_plmn_list, val);
+            if (val) {
+                int n = ogs_sbi_discovery_option_parse_plmn_list(
+                            discovery_option->requester_plmn_list, val);
+                if (n < 0) {
+                    ogs_error("Invalid requester-plmn-list [%s]", val);
+                    scp_assoc_remove(assoc);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                            "Invalid requester-plmn-list", val, NULL));
+                    return OGS_ERROR;
+                }
+                discovery_option->num_of_requester_plmn_list = n;
+            }
         } else if (!strcasecmp(key,
                     OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_FEATURES)) {
             if (val)

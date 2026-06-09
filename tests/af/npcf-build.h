@@ -30,6 +30,8 @@ typedef struct af_npcf_policyauthorization_param_s {
     OpenAPI_media_type_e med_type;
     int flow_type;
     int qos_type;
+    const char *qos_reference;
+    bool omit_med_type;
 } af_npcf_policyauthorization_param_t;
 
 ogs_sbi_request_t *af_npcf_policyauthorization_build_create(

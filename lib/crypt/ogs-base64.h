@@ -37,7 +37,7 @@
  */
 
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -65,16 +65,17 @@
 extern "C" {
 #endif
 
-int ogs_base64_decode_len(const char *bufcoded);
-int ogs_base64_decode(char *bufplain, const char *bufcoded);
-int ogs_base64_decode_binary(
-        unsigned char *bufplain, const char *bufcoded);
+int ogs_base64_decoded_size(const char *in);
+int ogs_base64_decode_to_buffer(
+        uint8_t *out, size_t out_size, const char *in);
+int ogs_base64_decode_to_string(
+        char *out, size_t out_size, const char *in);
 
-int ogs_base64_encode_len(int len);
-int ogs_base64_encode(
-        char *encoded, const char *string, int len);
-int ogs_base64_encode_binary(
-        char *encoded, const unsigned char *string, int len);
+int ogs_base64_encoded_size(size_t in_size);
+int ogs_base64_encode_from_buffer(
+        char *out, size_t out_size, const uint8_t *in, size_t in_size);
+int ogs_base64_encode_from_string(
+        char *out, size_t out_size, const char *in);
 
 int ogs_fbase64_decode(const char *header,
         const uint8_t *data, size_t data_size, ogs_datum_t *result);
