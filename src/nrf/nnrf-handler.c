@@ -333,8 +333,13 @@ bool nrf_nnrf_handle_nf_update(ogs_sbi_nf_instance_t *nf_instance,
             CASE(OGS_SBI_PATCH_PATH_PLMN_LIST)
                 /* Ensure the value is not null and is a valid JSON array */
                 if (patch_item->value && patch_item->value->json) {
+                    ogs_plmn_id_t new_plmn_id[
+                        OGS_ARRAY_SIZE(nf_instance->plmn_id)];
+                    int new_num_of_plmn_id = 0;
+
                     /* Set PLMN status to invalid */
                     plmn_valid = false;
+                    memset(new_plmn_id, 0, sizeof(new_plmn_id));
 
                     plmn_array = patch_item->value->json;
                     if (!cJSON_IsArray(plmn_array)) {
@@ -345,18 +350,13 @@ bool nrf_nnrf_handle_nf_update(ogs_sbi_nf_instance_t *nf_instance,
                         return false;
                     }
 
-                    /* Clear existing PLMN data in nf_instance */
-                    memset(nf_instance->plmn_id, 0,
-                            sizeof(nf_instance->plmn_id));
-                    nf_instance->num_of_plmn_id = 0;
-
                     /* Iterate through the JSON array of PLMN IDs */
                     cJSON_ArrayForEach(plmn_item, plmn_array) {
                         OpenAPI_plmn_id_t plmn_id;
                         memset(&plmn_id, 0, sizeof(plmn_id));
 
-                        if (nf_instance->num_of_plmn_id >=
-                                OGS_ARRAY_SIZE(nf_instance->plmn_id)) {
+                        if (new_num_of_plmn_id >=
+                                OGS_ARRAY_SIZE(new_plmn_id)) {
                             ogs_error("Exceeded maximum number of PLMN IDs");
                             ogs_assert(true == ogs_sbi_server_send_error(
                                 stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
@@ -390,15 +390,11 @@ bool nrf_nnrf_handle_nf_update(ogs_sbi_nf_instance_t *nf_instance,
                             return false;
                         }
 
-                        /*
-                         * Convert OpenAPI_plmn_id_t to ogs_plmn_id_t
-                         * and store in nf_instance
-                         */
+                        /* Convert OpenAPI_plmn_id_t to temporary PLMN list */
                         ogs_sbi_parse_plmn_id(
-                                &nf_instance->
-                                    plmn_id[nf_instance->num_of_plmn_id],
+                                &new_plmn_id[new_num_of_plmn_id],
                                 &plmn_id);
-                        nf_instance->num_of_plmn_id++;
+                        new_num_of_plmn_id++;
 
                         /* Compare with the serving PLMN list */
                         for (i = 0;
@@ -424,6 +420,15 @@ bool nrf_nnrf_handle_nf_update(ogs_sbi_nf_instance_t *nf_instance,
                             "PLMN-ID not allowed", NULL, NULL));
                         return false;
                     }
+
+                    /*
+                     * Commit the new PLMN list only after all validation
+                     * succeeds. This keeps rejected PATCH requests from
+                     * modifying the stored NF instance state.
+                     */
+                    memcpy(nf_instance->plmn_id, new_plmn_id,
+                            sizeof(new_plmn_id));
+                    nf_instance->num_of_plmn_id = new_num_of_plmn_id;
                 }
                 break;
             DEFAULT
