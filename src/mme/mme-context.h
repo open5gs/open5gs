@@ -254,6 +254,11 @@ typedef struct mme_enb_s {
 
     bool            enb_id_presence;
     uint32_t        enb_id;     /* eNB_ID received from eNB */
+    /* Optional human-readable eNB name from the S1SetupRequest eNBname
+     * IE (S1AP id_eNBname).  Empty string when the eNB doesn't include
+     * the IE.  Capped at 64 octets; the spec PrintableString upper
+     * bound is 150 but real-world names are short. */
+    char            enb_name[64];
     ogs_plmn_id_t   plmn_id;    /* eNB PLMN-ID received from eNB */
     ogs_sctp_sock_t sctp;       /* SCTP socket */
 
@@ -523,6 +528,15 @@ struct mme_ue_s {
     uint16_t        enb_ostream_id;
     ogs_eps_tai_t   tai;
     ogs_e_cgi_t     e_cgi;
+    /* Last-known eNB-ID, captured in enb_ue_associate_mme_ue() and
+     * preserved across UE Context Release.  Mirrors how amf_ue_t->nr_cgi
+     * survives the freeing of ran_ue_t at NG UE Context Release: the
+     * S1 enb_ue_t is freed when the UE goes ECM-IDLE, but external
+     * monitors querying /mme/ue-info still want to know which cell a
+     * UE was last attached to.  presence flag tracks whether we've
+     * ever seen this UE on an eNB whose own enb_id_presence was true. */
+    bool            last_enb_id_presence;
+    uint32_t        last_enb_id;
     ogs_time_t      ue_location_timestamp;
     ogs_plmn_id_t   last_visited_plmn_id;
 

@@ -86,8 +86,8 @@
 #include "ogs-proto.h"
 
 #include "mme-context.h"
+#include "mme-sm.h"
 #include "ue-info.h"
-#include "mme-context.h"
 
 #include "metrics/prometheus/json_pager.h"
 #include "metrics/ogs-metrics.h"
@@ -149,6 +149,25 @@ static cJSON *build_enb(const mme_ue_t *ue)
             if (!cJSON_AddNumberToObject(enb, "cell_id", (double)cell_id))
                 goto end;
         }
+    } else {
+        /* ECM-IDLE: enb_ue_t has been freed at UE Context Release, so
+         * the live S1AP IDs are unavailable.  Fall back to the
+         * eNB-ID and ECI we captured at the most recent attach (see
+         * enb_ue_associate_mme_ue() in mme-context.c, and ue->e_cgi
+         * which is updated on Initial UE / TAU / Service Request).
+         * "status" stays "not-connected" via the cm_state field above
+         * to make it explicit to the consumer that these are
+         * last-known values. */
+        if (ue->last_enb_id_presence) {
+            if (!cJSON_AddNumberToObject(enb, "enb_id", (double)ue->last_enb_id))
+                goto end;
+        }
+        if (ue->e_cgi.cell_id) {
+            if (!cJSON_AddNumberToObject(enb, "cell_id", (double)ue->e_cgi.cell_id))
+                goto end;
+        }
+        if (!cJSON_AddStringToObject(enb, "status", "not-connected"))
+            goto end;
     }
 
     return enb;
@@ -287,6 +306,33 @@ static cJSON *ue_to_json(const mme_ue_t *ue)
     if (!cJSON_AddStringToObject(o, "domain", "EPS")) goto end;
     if (!cJSON_AddStringToObject(o, "rat", "E-UTRA")) goto end;
     if (!cJSON_AddStringToObject(o, "cm_state", cm_state_str(ue))) goto end;
+
+    /*
+     * mm_state: 4G EMM FSM state, exposed as a stable string so
+     * external consumers can distinguish in-progress NAS transitions
+     * from the steady-state {de,}registered values.  The string
+     * mirrors the name of the FSM state-handler function in emm-sm.c,
+     * with "de_registered" rendered as "deregistered" for readability.
+     *
+     * The MME keeps mme_ue_t contexts in mme_ue_list across explicit
+     * detach (see emm_state_de_registered's entry handler -- it clears
+     * timers and S1 state but does not call mme_ue_remove()), so
+     * without this field a detached UE is indistinguishable from an
+     * ECM-IDLE but still EMM-REGISTERED UE in the JSON output.  This
+     * is the LTE mirror of the equivalent AMF /ue-info field added in
+     * the prior mm_state patch.
+     */
+    {
+        const char *mm = "initial";
+        if      (OGS_FSM_CHECK(&ue->sm, emm_state_de_registered))          mm = "deregistered";
+        else if (OGS_FSM_CHECK(&ue->sm, emm_state_registered))             mm = "registered";
+        else if (OGS_FSM_CHECK(&ue->sm, emm_state_authentication))         mm = "authentication";
+        else if (OGS_FSM_CHECK(&ue->sm, emm_state_security_mode))          mm = "security_mode";
+        else if (OGS_FSM_CHECK(&ue->sm, emm_state_initial_context_setup))  mm = "initial_context_setup";
+        else if (OGS_FSM_CHECK(&ue->sm, emm_state_ue_context_will_remove)) mm = "ue_context_will_remove";
+        else if (OGS_FSM_CHECK(&ue->sm, emm_state_exception))              mm = "exception";
+        if (!cJSON_AddStringToObject(o, "mm_state", mm)) goto end;
+    }
 
     /* enb */
     {

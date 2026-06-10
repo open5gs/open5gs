@@ -110,6 +110,7 @@
 #include "ogs-core.h"
 #include "ogs-proto.h"
 #include "context.h"
+#include "amf-sm.h"
 #include "ue-info.h"
 
 #include "sbi/openapi/external/cJSON.h"
@@ -204,6 +205,32 @@ static int add_basic_identity(cJSON *o, const amf_ue_t *ue)
         const char *cm = CM_CONNECTED(ue) ? "connected" : "idle";
         cJSON *v = cJSON_CreateString(cm); if (!v) return -1;
         cJSON_AddItemToObjectCS(o, "cm_state", v);
+    }
+
+    /*
+     * mm_state: 5G GMM FSM state, exposed as a stable string so
+     * external consumers can distinguish in-progress NAS transitions
+     * from the steady-state {de,}registered values.  The string
+     * mirrors the name of the FSM state-handler function in gmm-sm.c,
+     * with "de_registered" rendered as "deregistered" for readability.
+     *
+     * The AMF keeps amf_ue_t contexts in amf_ue_list across explicit
+     * deregistration (only freed later via amf_ue_remove() in specific
+     * paths), so without this field a deregistered UE is
+     * indistinguishable from a CM-IDLE but still-registered UE in the
+     * JSON output.
+     */
+    {
+        const char *mm = "initial";
+        if      (OGS_FSM_CHECK(&ue->sm, gmm_state_de_registered))          mm = "deregistered";
+        else if (OGS_FSM_CHECK(&ue->sm, gmm_state_registered))             mm = "registered";
+        else if (OGS_FSM_CHECK(&ue->sm, gmm_state_authentication))         mm = "authentication";
+        else if (OGS_FSM_CHECK(&ue->sm, gmm_state_security_mode))          mm = "security_mode";
+        else if (OGS_FSM_CHECK(&ue->sm, gmm_state_initial_context_setup))  mm = "initial_context_setup";
+        else if (OGS_FSM_CHECK(&ue->sm, gmm_state_ue_context_will_remove)) mm = "ue_context_will_remove";
+        else if (OGS_FSM_CHECK(&ue->sm, gmm_state_exception))              mm = "exception";
+        cJSON *v = cJSON_CreateString(mm); if (!v) return -1;
+        cJSON_AddItemToObjectCS(o, "mm_state", v);
     }
 
     /* If M-TMSI present, expose GUTI string and m_tmsi numeric */

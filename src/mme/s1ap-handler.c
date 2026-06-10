@@ -174,6 +174,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
     S1AP_Global_ENB_ID_t *Global_ENB_ID = NULL;
     S1AP_SupportedTAs_t *SupportedTAs = NULL;
     S1AP_PagingDRX_t *PagingDRX = NULL;
+    S1AP_ENBname_t *ENBname = NULL;
 
     uint32_t enb_id;
     S1AP_Cause_PR group = S1AP_Cause_PR_NOTHING;
@@ -202,9 +203,25 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         case S1AP_ProtocolIE_ID_id_DefaultPagingDRX:
             PagingDRX = ie->value.choice.PagingDRX;
             break;
+        case S1AP_ProtocolIE_ID_id_eNBname:
+            ENBname = &ie->value.choice.ENBname;
+            break;
         default:
             break;
         }
+    }
+
+    /* Capture the optional eNBname IE (PrintableString) into the eNB
+     * context.  Truncated to fit enb_name[] less the NUL.  Used by
+     * the /enb-info JSON dumper so external monitors can show a
+     * friendly identifier alongside the SCTP peer address. */
+    enb->enb_name[0] = '\0';
+    if (ENBname && ENBname->buf && ENBname->size > 0) {
+        size_t copy_len = (size_t)ENBname->size;
+        if (copy_len >= sizeof(enb->enb_name))
+            copy_len = sizeof(enb->enb_name) - 1;
+        memcpy(enb->enb_name, ENBname->buf, copy_len);
+        enb->enb_name[copy_len] = '\0';
     }
 
     if (!Global_ENB_ID) {

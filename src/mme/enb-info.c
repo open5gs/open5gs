@@ -147,6 +147,7 @@ size_t mme_dump_enb_info_paged(char *buf, size_t buflen, size_t page, size_t pag
 
         /* enb_id */
         if (!cJSON_AddNumberToObject(e, "enb_id", (double)(unsigned)enb->enb_id)) { cJSON_Delete(e); oom = true; break; }
+        if (!cJSON_AddStringToObject(e, "name", enb->enb_name)) { cJSON_Delete(e); oom = true; break; }
 
         /* plmn */
         {
