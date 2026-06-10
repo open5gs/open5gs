@@ -2400,50 +2400,6 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
             (amf_ue->ue_security_capability.eutra_ia << 1);
     }
 
-    if (send_ue_security_capability) {
-        ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
-        ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
-
-        ie->id = NGAP_ProtocolIE_ID_id_UESecurityCapabilities;
-        ie->criticality = NGAP_Criticality_reject;
-        ie->value.present =
-            NGAP_PathSwitchRequestAcknowledgeIEs__value_PR_UESecurityCapabilities;
-
-        UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
-
-        UESecurityCapabilities->nRencryptionAlgorithms.size = 2;
-        UESecurityCapabilities->nRencryptionAlgorithms.buf =
-            CALLOC(UESecurityCapabilities->
-                        nRencryptionAlgorithms.size, sizeof(uint8_t));
-        UESecurityCapabilities->nRencryptionAlgorithms.bits_unused = 0;
-        UESecurityCapabilities->nRencryptionAlgorithms.buf[0] =
-            (amf_ue->ue_security_capability.nr_ea << 1);
-
-        UESecurityCapabilities->nRintegrityProtectionAlgorithms.size = 2;
-        UESecurityCapabilities->nRintegrityProtectionAlgorithms.buf =
-            CALLOC(UESecurityCapabilities->
-                        nRintegrityProtectionAlgorithms.size, sizeof(uint8_t));
-        UESecurityCapabilities->nRintegrityProtectionAlgorithms.bits_unused = 0;
-        UESecurityCapabilities->nRintegrityProtectionAlgorithms.buf[0] =
-            (amf_ue->ue_security_capability.nr_ia << 1);
-
-        UESecurityCapabilities->eUTRAencryptionAlgorithms.size = 2;
-        UESecurityCapabilities->eUTRAencryptionAlgorithms.buf =
-            CALLOC(UESecurityCapabilities->
-                        eUTRAencryptionAlgorithms.size, sizeof(uint8_t));
-        UESecurityCapabilities->eUTRAencryptionAlgorithms.bits_unused = 0;
-        UESecurityCapabilities->eUTRAencryptionAlgorithms.buf[0] =
-            (amf_ue->ue_security_capability.eutra_ea << 1);
-
-        UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.size = 2;
-        UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf =
-            CALLOC(UESecurityCapabilities->
-                    eUTRAintegrityProtectionAlgorithms.size, sizeof(uint8_t));
-        UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.bits_unused = 0;
-        UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf[0] =
-            (amf_ue->ue_security_capability.eutra_ia << 1);
-    }
-
     ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
     ogs_assert(ie);
     ASN_SEQUENCE_ADD(PathSwitchRequestAcknowledge->protocolIEs, ie);
