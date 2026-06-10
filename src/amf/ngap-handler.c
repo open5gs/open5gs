@@ -300,7 +300,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
             PagingDRX = ie->value.choice.PagingDRX;
             break;
         case NGAP_ProtocolIE_ID_id_RANNodeName:
-            RANNodeName_ng = &ie->value.choice.RANNodeName;
+            RANNodeName_ng = ie->value.choice.RANNodeName;
             break;
         default:
             break;

@@ -204,7 +204,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
             PagingDRX = ie->value.choice.PagingDRX;
             break;
         case S1AP_ProtocolIE_ID_id_eNBname:
-            ENBname = &ie->value.choice.ENBname;
+            ENBname = ie->value.choice.ENBname;
             break;
         default:
             break;
