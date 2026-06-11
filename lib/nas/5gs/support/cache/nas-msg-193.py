@@ -13,8 +13,9 @@ ies.append({ "iei" : "6F", "value" : "UE-DS-TT residence time", "type" : "UE-DS-
 ies.append({ "iei" : "74", "value" : "Port management information container", "type" : "Port management information container", "reference" : "9.11.4.27", "presence" : "O", "format" : "TLV-E", "length" : "8-65538"})
 ies.append({ "iei" : "1F", "value" : "Ethernet header compression configuration", "type" : "Ethernet header compression configuration", "reference" : "9.11.4.28", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "29", "value" : "Suggested interface identifier", "type" : "PDU address", "reference" : "9.11.4.10", "presence" : "O", "format" : "TLV", "length" : "11"})
-ies.append({ "iei" : "72", "value" : "Service-level-AA container", "type" : "Service-level-AA container", "reference" : "9.11.2.10", "presence" : "O", "format" : "TLV-E", "length" : "6-n"})
+ies.append({ "iei" : "72", "value" : "Service-level-AA container", "type" : "Service-level-AA container", "reference" : "9.11.2.10", "presence" : "O", "format" : "TLV-E", "length" : "4-65538"})
 ies.append({ "iei" : "70", "value" : "Requested MBS container", "type" : "Requested MBS container", "reference" : "9.11.4.30", "presence" : "O", "format" : "TLV-E", "length" : "8-65538"})
 ies.append({ "iei" : "34", "value" : "PDU session pair ID", "type" : "PDU session pair ID", "reference" : "9.11.4.32", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "35", "value" : "RSN", "type" : "RSN", "reference" : "9.11.4.33", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "36", "value" : "URSP rule enforcement reports", "type" : "URSP rule enforcement reports", "reference" : "9.11.4.38", "presence" : "O", "format" : "TLV", "length" : "4-n"})
 msg_list[key]["ies"] = ies

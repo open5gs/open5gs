@@ -18,6 +18,9 @@ ies.append({ "iei" : "77", "value" : "ATSSS container", "type" : "ATSSS containe
 ies.append({ "iei" : "C-", "value" : "Control plane only indication", "type" : "Control plane only indication", "reference" : "9.11.4.23", "presence" : "O", "format" : "TV", "length" : "1"})
 ies.append({ "iei" : "66", "value" : "IP header compression configuration", "type" : "IP header compression configuration", "reference" : "9.11.4.24", "presence" : "O", "format" : "TLV", "length" : "5-257"})
 ies.append({ "iei" : "1F", "value" : "Ethernet header compression configuration", "type" : "Ethernet header compression configuration", "reference" : "9.11.4.28", "presence" : "O", "format" : "TLV", "length" : "3"})
-ies.append({ "iei" : "72", "value" : "Service-level-AA container", "type" : "Service-level-AA container", "reference" : "9.11.2.10", "presence" : "O", "format" : "TLV-E", "length" : "6-n"})
+ies.append({ "iei" : "72", "value" : "Service-level-AA container", "type" : "Service-level-AA container", "reference" : "9.11.2.10", "presence" : "O", "format" : "TLV-E", "length" : "4-65538"})
 ies.append({ "iei" : "71", "value" : "Received MBS container", "type" : "Received MBS container", "reference" : "9.11.4.31", "presence" : "O", "format" : "TLV-E", "length" : "9-65538"})
+ies.append({ "iei" : "70", "value" : "N3QAI", "type" : "N3QAI", "reference" : "9.11.4.36", "presence" : "O", "format" : "TLV-E", "length" : "9-n"})
+ies.append({ "iei" : "73", "value" : "Protocol description", "type" : "Protocol description", "reference" : "9.11.4.39", "presence" : "O", "format" : "TLV-E", "length" : "6-n"})
+ies.append({ "iei" : "38", "value" : "ECN marking for L4S indication", "type" : "ECN marking for L4S indication", "reference" : "9.11.4.40", "presence" : "O", "format" : "TLV", "length" : "2-257"})
 msg_list[key]["ies"] = ies

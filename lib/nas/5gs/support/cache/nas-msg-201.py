@@ -12,5 +12,8 @@ ies.append({ "iei" : "74", "value" : "Port management information container", "t
 ies.append({ "iei" : "66", "value" : "IP header compression configuration", "type" : "Header compression configuration", "reference" : "9.11.4.24", "presence" : "O", "format" : "TLV", "length" : "5-257"})
 ies.append({ "iei" : "1F", "value" : "Ethernet header compression configuration", "type" : "Ethernet header compression configuration", "reference" : "9.11.4.28", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "70", "value" : "Requested MBS container", "type" : "Requested MBS container", "reference" : "9.11.4.30", "presence" : "O", "format" : "TLV-E", "length" : "8-65538"})
-ies.append({ "iei" : "72", "value" : "Service-level-AA container", "type" : "Service-level-AA container", "reference" : "9.11.2.10", "presence" : "O", "format" : "TLV-E", "length" : "6-n"})
+ies.append({ "iei" : "72", "value" : "Service-level-AA container", "type" : "Service-level-AA container", "reference" : "9.11.2.10", "presence" : "O", "format" : "TLV-E", "length" : "4-65538"})
+ies.append({ "iei" : "73", "value" : "Non-3GPP delay budget", "type" : "Non-3GPP delay budget", "reference" : "9.11.4.37", "presence" : "O", "format" : "TLV-E", "length" : "6-n"})
+ies.append({ "iei" : "36", "value" : "URSP rule enforcement reports", "type" : "URSP rule enforcement reports", "reference" : "9.11.4.38", "presence" : "O", "format" : "TLV", "length" : "4-n"})
+ies.append({ "iei" : "7C", "value" : "Non-3GPP device information", "type" : "Non-3GPP device information", "reference" : "9.11.4.41", "presence" : "O", "format" : "TLV-E", "length" : "7-n"})
 msg_list[key]["ies"] = ies
