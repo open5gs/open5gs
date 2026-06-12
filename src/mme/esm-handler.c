@@ -117,15 +117,15 @@ int esm_handle_pdn_connectivity_request(
         } else {
             apn = req->access_point_name.apn;
         }
-        sess->session = mme_session_find_by_apn(mme_ue, apn);
+        sess->session = mme_resolve_session_for_requested_apn(mme_ue, apn);
         if (!sess->session) {
-            /* Invalid APN */
+            /* Invalid APN, no subscriber default APN available. */
             r = nas_eps_send_pdn_connectivity_reject(
                     sess, OGS_NAS_ESM_CAUSE_MISSING_OR_UNKNOWN_APN,
                     create_action);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
-            ogs_warn("Invalid APN[%s]", apn);
+            ogs_warn("Invalid APN[%s] and no default APN configured", apn);
             return OGS_ERROR;
         }
 
@@ -237,7 +237,7 @@ int esm_handle_information_response(
 
     if (rsp->presencemask &
             OGS_NAS_EPS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT) {
-        sess->session = mme_session_find_by_apn(
+        sess->session = mme_resolve_session_for_requested_apn(
                             mme_ue, rsp->access_point_name.apn);
     }
 
