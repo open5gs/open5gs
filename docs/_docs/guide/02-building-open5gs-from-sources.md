@@ -13,6 +13,9 @@ This post explains how to compile and install the source code on **Debian/Ubuntu
 ### Getting MongoDB
 ---
 
+**Tip:** MongoDB is used as database for PCF/UDR and PCRF/HSS.
+{: .notice--info}
+
 Import the public key used by the package management system.
 
 ```bash
@@ -26,18 +29,18 @@ Create the list file /etc/apt/sources.list.d/mongodb-org-8.0.list for your versi
 On ubuntu 22.04 (Jammy)
 ```bash
 $ echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+$ sudo apt update
 ```
+
+**Note:** If you want to use an external MongoDB server, skip this step.
+{: .notice--warning}
 
 Install the MongoDB packages.
 ```bash
-$ sudo apt update
 $ sudo apt install -y mongodb-org
 $ sudo systemctl start mongod (if '/usr/bin/mongod' is not running)
 $ sudo systemctl enable mongod (ensure to automatically start it on system boot)
 ```
-
-**Tip:** MongoDB is used as database for NRF/PCF/UDR and PCRF/HSS.
-{: .notice--info}
 
 ### Setting up TUN device (not persistent after rebooting)
 ---

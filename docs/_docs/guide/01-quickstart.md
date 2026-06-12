@@ -75,6 +75,12 @@ With the exception of the SMF and UPF, all config files for the 5G SA core funct
 #### Getting MongoDB
 ---
 
+**Tip:** MongoDB is used as database for PCF/UDR and PCRF/HSS.
+{: .notice--info}
+
+**Note:** If you want to use an external MongoDB server, skip this step and use --no-install-recommends apt flag when installing open5gs packages.
+{: .notice--warning}
+
 Import the public key used by the package management system.
 
 ```bash

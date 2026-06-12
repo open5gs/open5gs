@@ -82,6 +82,9 @@ To work with Open5GS core, it is recommended to build the project from source.
 
 **1. Getting MongoDB**
 
+**Tip:** MongoDB is used as database for PCF/UDR and PCRF/HSS.
+{: .notice--info}
+
 - Install GNU Privacy Guard tool:
 
 ```
