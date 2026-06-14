@@ -82,6 +82,7 @@ bool pcf_nbsf_management_handle_register(
         strerror = ogs_msprintf("[%s:%d] Cannot parse http.location [%s]",
                 pcf_ue_sm->supi, sess->psi, recvmsg->http.location);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+        ogs_sbi_header_free(&header);
         goto cleanup;
     }
 
@@ -91,6 +92,7 @@ bool pcf_nbsf_management_handle_register(
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
 
         ogs_sbi_header_free(&header);
+        ogs_sbi_message_free(&message);
         goto cleanup;
     }
 
@@ -101,6 +103,7 @@ bool pcf_nbsf_management_handle_register(
                 pcf_ue_sm->supi, sess->psi, header.uri);
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
         ogs_sbi_header_free(&header);
+        ogs_sbi_message_free(&message);
         goto cleanup;
     }
 
@@ -114,6 +117,7 @@ bool pcf_nbsf_management_handle_register(
             status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
 
             ogs_sbi_header_free(&header);
+            ogs_sbi_message_free(&message);
             ogs_free(fqdn);
             ogs_freeaddrinfo(addr);
             ogs_freeaddrinfo(addr6);
@@ -131,6 +135,7 @@ bool pcf_nbsf_management_handle_register(
     PCF_BINDING_STORE(sess, header.uri, message.h.resource.component[1]);
 
     ogs_sbi_header_free(&header);
+    ogs_sbi_message_free(&message);
 
     /* Send Response for SM Policy Association establishment */
     rc = pcf_sbi_send_smpolicycontrol_create_response(sess, stream);
