@@ -220,6 +220,23 @@ typedef struct ogs_nas_authentication_parameter_rand_s {
     uint8_t rand[OGS_RAND_LEN];
 } ogs_nas_authentication_parameter_rand_t;
 
+/* 9.9.3.3A Access technology utilization control
+ * 9.11.3.110 Access technology utilization control
+ * O TLV 4-5 */
+typedef struct ogs_nas_access_technology_utilization_control_s {
+    uint8_t length;
+ED2(uint8_t spare1:7;,
+    uint8_t type:1;)
+ED7(uint8_t spare2:2;,
+    uint8_t sat_ng_ran:1;,
+    uint8_t sat_e_utran:1;,
+    uint8_t ng_ran:1;,
+    uint8_t e_utran:1;,
+    uint8_t utran:1;,
+    uint8_t geran:1;)
+    uint8_t spare3;
+} ogs_nas_access_technology_utilization_control_t;
+
 /* 9.9.3.4 Authentication response parameter
  * M LV 5-17 */
 typedef struct ogs_nas_authentication_response_parameter_s {
@@ -785,6 +802,57 @@ typedef struct ogs_nas_additional_request_result_s {
 ED2(uint8_t spare:6;,
     uint8_t paging_restriction_decision:2;)
 } __attribute__ ((packed)) ogs_nas_additional_request_result_t;
+
+/* 9.9.3.69 Unavailability information
+ * 9.11.2.20 Unavailability information
+ * O TLV 3-9 */
+typedef struct ogs_nas_unavailability_information_s {
+    uint8_t length;
+ED4(uint8_t spare:3;,
+    uint8_t suppi:1;,
+    uint8_t updpi:1;,
+    uint8_t unavailability_type:3;)
+    ogs_uint24_t unavailability_period_duration;
+    ogs_uint24_t start_of_unavailability_period;
+} __attribute__ ((packed)) ogs_nas_unavailability_information_t;
+
+/* 9.9.3.70 Unavailability configuration
+ * 9.11.2.21 Unavailability configuration
+ * O TLV 3-9 */
+typedef struct ogs_nas_unavailability_configuration_s {
+    uint8_t length;
+ED4(uint8_t spare:5;,
+    uint8_t suppi:1;,
+    uint8_t updpi:1;,
+    uint8_t eupr:1;)
+    ogs_uint24_t unavailability_period_duration;
+    ogs_uint24_t start_of_unavailability_period;
+} __attribute__ ((packed)) ogs_nas_unavailability_configuration_t;
+
+/* 9.9.3.75 Registration wait range
+ * 9.11.3.84 Registration wait range
+ * O TLV 4 */
+typedef struct ogs_nas_registration_wait_range_s {
+    uint8_t length;
+    uint8_t min_time;
+    uint8_t max_time;
+} __attribute__ ((packed)) ogs_nas_registration_wait_range_t;
+
+/* 9.9.3.76 List of PLMNs to be used in disaster condition
+ * 9.11.3.83 List of PLMNs to be used in disaster condition
+ * O TLV 2-n */
+typedef struct ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_s {
+    uint8_t length;
+    void *buffer;
+} __attribute__ ((packed)) ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t;
+
+/* 9.9.3.77 PLMN identity
+ * 9.11.3.85 PLMN identity
+ * O TLV 5 */
+typedef struct ogs_nas_plmn_identity_s {
+    uint8_t length;
+    ogs_nas_plmn_id_t nas_plmn_id;
+} __attribute__ ((packed)) ogs_nas_plmn_identity_t;
 
 /* 9.9.4.2 APN aggregate maximum bit rate
  * O TLV 4-8  */

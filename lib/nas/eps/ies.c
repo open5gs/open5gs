@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,8 +28,8 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2024-12-11 21:08:02.462921 by acetcom
- * from 24301-h90.docx
+ * Created on: 2026-06-15 16:08:27.544287 by acetcom
+ * from r19.6.0/24301-j60-ch8-ch9.docx
  ******************************************************************************/
 
 #include "ogs-nas-eps.h"
@@ -43,6 +43,52 @@ int ogs_nas_eps_encode_optional_type(ogs_pkbuf_t *pkbuf, uint8_t type)
 
     return size;
 }
+/* 9.3.3.76 List of PLMNs to be used in disaster condition
+ * O TLV 2-n */
+int ogs_nas_eps_decode_list_of_plmns_to_be_used_in_disaster_condition(ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t *list_of_plmns_to_be_used_in_disaster_condition, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t *source = NULL;
+
+    if (pkbuf->len < 1) {
+       ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
+       return -1;
+    }
+
+    source = (ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t *)pkbuf->data;
+
+    list_of_plmns_to_be_used_in_disaster_condition->length = source->length;
+    size = list_of_plmns_to_be_used_in_disaster_condition->length + sizeof(list_of_plmns_to_be_used_in_disaster_condition->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*list_of_plmns_to_be_used_in_disaster_condition) < size) return -1;
+    memcpy(list_of_plmns_to_be_used_in_disaster_condition, pkbuf->data - size, size);
+
+    ogs_trace("  LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_list_of_plmns_to_be_used_in_disaster_condition(ogs_pkbuf_t *pkbuf, ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t *list_of_plmns_to_be_used_in_disaster_condition)
+{
+    int size = list_of_plmns_to_be_used_in_disaster_condition->length + sizeof(list_of_plmns_to_be_used_in_disaster_condition->length);
+    ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t target;
+
+    memcpy(&target, list_of_plmns_to_be_used_in_disaster_condition, sizeof(ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
 /* 9.9.2.0 Additional information
  * O TLV 3-n */
 int ogs_nas_eps_decode_additional_information(ogs_nas_additional_information_t *additional_information, ogs_pkbuf_t *pkbuf)
@@ -680,7 +726,7 @@ int ogs_nas_eps_encode_eps_mobile_identity(ogs_pkbuf_t *pkbuf, ogs_nas_eps_mobil
 }
 
 /* 9.9.3.12A EPS network feature support
- * O TLV 3-4 */
+ * O TLV 3-5 */
 int ogs_nas_eps_decode_eps_network_feature_support(ogs_nas_eps_network_feature_support_t *eps_network_feature_support, ogs_pkbuf_t *pkbuf)
 {
     int size = 0;
@@ -2135,6 +2181,52 @@ int ogs_nas_eps_encode_ss_code(ogs_pkbuf_t *pkbuf, ogs_nas_ss_code_t *ss_code)
     return size;
 }
 
+/* 9.9.3.3A Access technology utilization control
+ * O TLV 4-5 */
+int ogs_nas_eps_decode_access_technology_utilization_control(ogs_nas_access_technology_utilization_control_t *access_technology_utilization_control, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_access_technology_utilization_control_t *source = NULL;
+
+    if (pkbuf->len < 1) {
+       ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
+       return -1;
+    }
+
+    source = (ogs_nas_access_technology_utilization_control_t *)pkbuf->data;
+
+    access_technology_utilization_control->length = source->length;
+    size = access_technology_utilization_control->length + sizeof(access_technology_utilization_control->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*access_technology_utilization_control) < size) return -1;
+    memcpy(access_technology_utilization_control, pkbuf->data - size, size);
+
+    ogs_trace("  ACCESS_TECHNOLOGY_UTILIZATION_CONTROL - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_access_technology_utilization_control(ogs_pkbuf_t *pkbuf, ogs_nas_access_technology_utilization_control_t *access_technology_utilization_control)
+{
+    int size = access_technology_utilization_control->length + sizeof(access_technology_utilization_control->length);
+    ogs_nas_access_technology_utilization_control_t target;
+
+    memcpy(&target, access_technology_utilization_control, sizeof(ogs_nas_access_technology_utilization_control_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  ACCESS_TECHNOLOGY_UTILIZATION_CONTROL - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
 /* 9.9.3.4 Authentication response parameter
  * M LV 5-17 */
 int ogs_nas_eps_decode_authentication_response_parameter(ogs_nas_authentication_response_parameter_t *authentication_response_parameter, ogs_pkbuf_t *pkbuf)
@@ -2520,16 +2612,16 @@ int ogs_nas_eps_encode_dcn_id(ogs_pkbuf_t *pkbuf, ogs_nas_dcn_id_t *dcn_id)
 
 /* 9.9.3.49 Non-3GPP NW provided policies
  * O TV 1 */
-int ogs_nas_eps_decode_non__nw_provided_policies(ogs_nas_non__nw_provided_policies_t *non__nw_provided_policies, ogs_pkbuf_t *pkbuf)
+int ogs_nas_eps_decode_non_nw_provided_policies(ogs_nas_non_nw_provided_policies_t *non_nw_provided_policies, ogs_pkbuf_t *pkbuf)
 {
-    int size = sizeof(ogs_nas_non__nw_provided_policies_t);
+    int size = sizeof(ogs_nas_non_nw_provided_policies_t);
 
     if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
        ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
        return -1;
     }
 
-    memcpy(non__nw_provided_policies, pkbuf->data - size, size);
+    memcpy(non_nw_provided_policies, pkbuf->data - size, size);
 
     ogs_trace("  NON__NW_PROVIDED_POLICIES - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
@@ -2537,12 +2629,12 @@ int ogs_nas_eps_decode_non__nw_provided_policies(ogs_nas_non__nw_provided_polici
     return size;
 }
 
-int ogs_nas_eps_encode_non__nw_provided_policies(ogs_pkbuf_t *pkbuf, ogs_nas_non__nw_provided_policies_t *non__nw_provided_policies)
+int ogs_nas_eps_encode_non_nw_provided_policies(ogs_pkbuf_t *pkbuf, ogs_nas_non_nw_provided_policies_t *non_nw_provided_policies)
 {
-    int size = sizeof(ogs_nas_non__nw_provided_policies_t);
+    int size = sizeof(ogs_nas_non_nw_provided_policies_t);
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
-    memcpy(pkbuf->data - size, non__nw_provided_policies, size);
+    memcpy(pkbuf->data - size, non_nw_provided_policies, size);
 
     ogs_trace("  NON__NW_PROVIDED_POLICIES - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
@@ -3219,7 +3311,7 @@ int ogs_nas_eps_encode_ue_radio_capability_id_deletion_indication(ogs_pkbuf_t *p
 }
 
 /* 9.9.3.62 WUS assistance information
- * O TLV 3-n */
+ * O TLV 3 */
 int ogs_nas_eps_decode_wus_assistance_information(ogs_nas_wus_assistance_information_t *wus_assistance_information, ogs_pkbuf_t *pkbuf)
 {
     int size = 0;
@@ -3494,6 +3586,52 @@ int ogs_nas_eps_encode_eps_additional_request_result(ogs_pkbuf_t *pkbuf, ogs_nas
     return size;
 }
 
+/* 9.9.3.69 Unavailability information
+ * O TLV 3-9 */
+int ogs_nas_eps_decode_unavailability_information(ogs_nas_unavailability_information_t *unavailability_information, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_unavailability_information_t *source = NULL;
+
+    if (pkbuf->len < 1) {
+       ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
+       return -1;
+    }
+
+    source = (ogs_nas_unavailability_information_t *)pkbuf->data;
+
+    unavailability_information->length = source->length;
+    size = unavailability_information->length + sizeof(unavailability_information->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*unavailability_information) < size) return -1;
+    memcpy(unavailability_information, pkbuf->data - size, size);
+
+    ogs_trace("  UNAVAILABILITY_INFORMATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_unavailability_information(ogs_pkbuf_t *pkbuf, ogs_nas_unavailability_information_t *unavailability_information)
+{
+    int size = unavailability_information->length + sizeof(unavailability_information->length);
+    ogs_nas_unavailability_information_t target;
+
+    memcpy(&target, unavailability_information, sizeof(ogs_nas_unavailability_information_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  UNAVAILABILITY_INFORMATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
 /* 9.9.3.7 Detach type
  * M V 1/2 */
 int ogs_nas_eps_decode_detach_type(ogs_nas_detach_type_t *detach_type, ogs_pkbuf_t *pkbuf)
@@ -3523,6 +3661,222 @@ int ogs_nas_eps_encode_detach_type(ogs_pkbuf_t *pkbuf, ogs_nas_detach_type_t *de
     memcpy(pkbuf->data - size, &target, size);
 
     ogs_trace("  DETACH_TYPE - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.9.3.70 Unavailability configuration
+ * O TLV 3-9 */
+int ogs_nas_eps_decode_unavailability_configuration(ogs_nas_unavailability_configuration_t *unavailability_configuration, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_unavailability_configuration_t *source = NULL;
+
+    if (pkbuf->len < 1) {
+       ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
+       return -1;
+    }
+
+    source = (ogs_nas_unavailability_configuration_t *)pkbuf->data;
+
+    unavailability_configuration->length = source->length;
+    size = unavailability_configuration->length + sizeof(unavailability_configuration->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*unavailability_configuration) < size) return -1;
+    memcpy(unavailability_configuration, pkbuf->data - size, size);
+
+    ogs_trace("  UNAVAILABILITY_CONFIGURATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_unavailability_configuration(ogs_pkbuf_t *pkbuf, ogs_nas_unavailability_configuration_t *unavailability_configuration)
+{
+    int size = unavailability_configuration->length + sizeof(unavailability_configuration->length);
+    ogs_nas_unavailability_configuration_t target;
+
+    memcpy(&target, unavailability_configuration, sizeof(ogs_nas_unavailability_configuration_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  UNAVAILABILITY_CONFIGURATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.9.3.71 UE information request
+ * O TV 1 */
+int ogs_nas_eps_decode_ue_information_request(ogs_nas_ue_information_request_t *ue_information_request, ogs_pkbuf_t *pkbuf)
+{
+    int size = sizeof(ogs_nas_ue_information_request_t);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    memcpy(ue_information_request, pkbuf->data - size, size);
+
+    ogs_trace("  UE_INFORMATION_REQUEST - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_ue_information_request(ogs_pkbuf_t *pkbuf, ogs_nas_ue_information_request_t *ue_information_request)
+{
+    int size = sizeof(ogs_nas_ue_information_request_t);
+
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, ue_information_request, size);
+
+    ogs_trace("  UE_INFORMATION_REQUEST - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.9.3.72 UE coarse location information
+ * O TLV 8 */
+int ogs_nas_eps_decode_ue_coarse_location_information(ogs_nas_ue_coarse_location_information_t *ue_coarse_location_information, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_ue_coarse_location_information_t *source = NULL;
+
+    if (pkbuf->len < 1) {
+       ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
+       return -1;
+    }
+
+    source = (ogs_nas_ue_coarse_location_information_t *)pkbuf->data;
+
+    ue_coarse_location_information->length = source->length;
+    size = ue_coarse_location_information->length + sizeof(ue_coarse_location_information->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*ue_coarse_location_information) < size) return -1;
+    memcpy(ue_coarse_location_information, pkbuf->data - size, size);
+
+    ogs_trace("  UE_COARSE_LOCATION_INFORMATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_ue_coarse_location_information(ogs_pkbuf_t *pkbuf, ogs_nas_ue_coarse_location_information_t *ue_coarse_location_information)
+{
+    int size = ue_coarse_location_information->length + sizeof(ue_coarse_location_information->length);
+    ogs_nas_ue_coarse_location_information_t target;
+
+    memcpy(&target, ue_coarse_location_information, sizeof(ogs_nas_ue_coarse_location_information_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  UE_COARSE_LOCATION_INFORMATION - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.9.3.75 Registration wait range
+ * O TLV 4 */
+int ogs_nas_eps_decode_registration_wait_range(ogs_nas_registration_wait_range_t *registration_wait_range, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_registration_wait_range_t *source = NULL;
+
+    if (pkbuf->len < 1) {
+       ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
+       return -1;
+    }
+
+    source = (ogs_nas_registration_wait_range_t *)pkbuf->data;
+
+    registration_wait_range->length = source->length;
+    size = registration_wait_range->length + sizeof(registration_wait_range->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*registration_wait_range) < size) return -1;
+    memcpy(registration_wait_range, pkbuf->data - size, size);
+
+    ogs_trace("  REGISTRATION_WAIT_RANGE - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_registration_wait_range(ogs_pkbuf_t *pkbuf, ogs_nas_registration_wait_range_t *registration_wait_range)
+{
+    int size = registration_wait_range->length + sizeof(registration_wait_range->length);
+    ogs_nas_registration_wait_range_t target;
+
+    memcpy(&target, registration_wait_range, sizeof(ogs_nas_registration_wait_range_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  REGISTRATION_WAIT_RANGE - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* 9.9.3.77 PLMN identity
+ * O TLV 5 */
+int ogs_nas_eps_decode_plmn_identity(ogs_nas_plmn_identity_t *plmn_identity, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_plmn_identity_t *source = NULL;
+
+    if (pkbuf->len < 1) {
+       ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
+       return -1;
+    }
+
+    source = (ogs_nas_plmn_identity_t *)pkbuf->data;
+
+    plmn_identity->length = source->length;
+    size = plmn_identity->length + sizeof(plmn_identity->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*plmn_identity) < size) return -1;
+    memcpy(plmn_identity, pkbuf->data - size, size);
+
+    ogs_trace("  PLMN_IDENTITY - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_plmn_identity(ogs_pkbuf_t *pkbuf, ogs_nas_plmn_identity_t *plmn_identity)
+{
+    int size = plmn_identity->length + sizeof(plmn_identity->length);
+    ogs_nas_plmn_identity_t target;
+
+    memcpy(&target, plmn_identity, sizeof(ogs_nas_plmn_identity_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  PLMN_IDENTITY - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
     return size;
@@ -4739,6 +5093,52 @@ int ogs_nas_eps_encode_pdn_address(ogs_pkbuf_t *pkbuf, ogs_nas_pdn_address_t *pd
     memcpy(pkbuf->data - size, &target, size);
 
     ogs_trace("  PDN_ADDRESS - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+/* S&9.9.3.73 S&F satellite operation parameters
+ * O TLV 3-257 */
+int ogs_nas_eps_decode_s_f_satellite_operation_parameters(ogs_nas_s_f_satellite_operation_parameters_t *s_f_satellite_operation_parameters, ogs_pkbuf_t *pkbuf)
+{
+    int size = 0;
+    ogs_nas_s_f_satellite_operation_parameters_t *source = NULL;
+
+    if (pkbuf->len < 1) {
+       ogs_error("Not enough pkbuf [len:%d]", pkbuf->len);
+       return -1;
+    }
+
+    source = (ogs_nas_s_f_satellite_operation_parameters_t *)pkbuf->data;
+
+    s_f_satellite_operation_parameters->length = source->length;
+    size = s_f_satellite_operation_parameters->length + sizeof(s_f_satellite_operation_parameters->length);
+
+    if (ogs_pkbuf_pull(pkbuf, size) == NULL) {
+       ogs_error("ogs_pkbuf_pull() failed [size:%d]", (int)size);
+       return -1;
+    }
+
+    if (sizeof(*s_f_satellite_operation_parameters) < size) return -1;
+    memcpy(s_f_satellite_operation_parameters, pkbuf->data - size, size);
+
+    ogs_trace("  S_F_SATELLITE_OPERATION_PARAMETERS - ");
+    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
+
+    return size;
+}
+
+int ogs_nas_eps_encode_s_f_satellite_operation_parameters(ogs_pkbuf_t *pkbuf, ogs_nas_s_f_satellite_operation_parameters_t *s_f_satellite_operation_parameters)
+{
+    int size = s_f_satellite_operation_parameters->length + sizeof(s_f_satellite_operation_parameters->length);
+    ogs_nas_s_f_satellite_operation_parameters_t target;
+
+    memcpy(&target, s_f_satellite_operation_parameters, sizeof(ogs_nas_s_f_satellite_operation_parameters_t));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &target, size);
+
+    ogs_trace("  S_F_SATELLITE_OPERATION_PARAMETERS - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
     return size;

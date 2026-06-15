@@ -11,4 +11,8 @@ ies.append({ "iei" : "71", "value" : "Extended CAG information list", "type" : "
 ies.append({ "iei" : "3A", "value" : "Lower bound timer value", "type" : "GPRS timer 3", "reference" : "9.11.2.5", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "1D", "value" : "Forbidden TAI for the list of 5GS forbidden tracking areas for roaming", "type" : "5GS tracking area identity list", "reference" : "9.11.3.9", "presence" : "O", "format" : "TLV", "length" : "9-114"})
 ies.append({ "iei" : "1E", "value" : "Forbidden TAI for the list of 5GS forbidden tracking areas forregional provision of service", "type" : "5GS tracking area identity list", "reference" : "9.11.3.9", "presence" : "O", "format" : "TLV", "length" : "9-114"})
+ies.append({ "iei" : "3E", "value" : "N3IWF identifier", "type" : "N3IWF identifier", "reference" : "9.11.3.93", "presence" : "O", "format" : "TLV", "length" : "7-n"})
+ies.append({ "iei" : "4D", "value" : "TNAN information", "type" : "TNAN information", "reference" : "9.11.3.94", "presence" : "O", "format" : "TLV", "length" : "3-n"})
+ies.append({ "iei" : "62", "value" : "Extended 5GMM cause", "type" : "Extended 5GMM cause", "reference" : "9.11.3.109", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "63", "value" : "Access technology utilization control", "type" : "Access technology utilization control", "reference" : "9.11.3.110", "presence" : "O", "format" : "TLV", "length" : "4-5"})
 msg_list[key]["ies"] = ies

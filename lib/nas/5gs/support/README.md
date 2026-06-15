@@ -1,38 +1,142 @@
+Regenerate 5GS NAS message files
+================================
 
-* Install python-docx
-user@host ~/Documents/git/open5gs/lib/nas/5gs/support$ \
-    sudo pip3 install python-docx
+This document describes how to regenerate the 5GS NAS message
+encoder/decoder files for Open5GS using the 3GPP TS 24.501 document.
 
-* Change the format of standard specification 
-  from 24301-d80.doc to 24301-d80.docx 
-  using Microsoft Office 2007+
+Install dependency
+==================
 
-* Adjust table cell in 24301-h90.docx
+Install `python3-docx`.
 
-* Generate Message support files
-user@host ~/Documents/git/open5gs/lib/nas/5gs/support$ \
-    python3 nas-message.py -f 24501-h90.docx -o ..
+```sh
+sudo apt install python3-docx
+```
 
-* Check lib/nas/5gs/decoder.c
-$ diff --git a/lib/nas/5gs/decoder.c b/lib/nas/5gs/decoder.c
-index c03e529ec..f471f294b 100644
---- a/lib/nas/5gs/decoder.c
-+++ b/lib/nas/5gs/decoder.c
-@@ -968,7 +968,6 @@ int ogs_nas_5gs_decode_registration_accept(ogs_nas_5gs_message_t *message, ogs_p
-             registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_NEGOTIATED_PEIPS_ASSISTANCE_INFORMATION_PRESENT;
-             decoded += size;
-             break;
--#if 0 /* Modified by acetcom */
-         case OGS_NAS_5GS_REGISTRATION_ACCEPT_5GS_ADDITIONAL_REQUEST_RESULT_TYPE:
-             size = ogs_nas_5gs_decode_5gs_additional_request_result(&registration_accept->additional_request_result, pkbuf);
-             if (size < 0) {
-@@ -979,7 +978,6 @@ int ogs_nas_5gs_decode_registration_accept(ogs_nas_5gs_message_t *message, ogs_p
-             registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_5GS_ADDITIONAL_REQUEST_RESULT_PRESENT;
-             decoded += size;
-             break;
--#endif
-         case OGS_NAS_5GS_REGISTRATION_ACCEPT_NSSRG_INFORMATION_TYPE:
-             size = ogs_nas_5gs_decode_nssrg_information(&registration_accept->nssrg_information, pkbuf);
-             if (size < 0) {
+Prepare TS 24.501 input file
+============================
 
-* Add new structure to the types.h
+Prepare the 3GPP TS 24.501 Word document.
+
+Example input file:
+
+```text
+r19.6.2/24501-j62.docx
+```
+
+Create a reduced Word document from the original file. The reduced
+document should contain only Chapter 8 and Chapter 9.
+
+Example reduced file:
+
+```text
+r19.6.2/24501-j62-ch8-ch9.docx
+```
+
+Before running the generator, check the message tables in Chapter 8.
+Some table cells may need to be adjusted manually so that each row has
+the expected IEI, IE name, type/reference, presence, format, and length
+fields.
+
+Update table indexes
+====================
+
+Update the table indexes in `nas-message.py`.
+
+The generator uses Word table indexes to find each NAS message table.
+
+```python
+# Table number for Message List
+msg_list["AUTHENTICATION REQUEST"]["table"] = 0
+msg_list["AUTHENTICATION RESPONSE"]["table"] = 1
+msg_list["AUTHENTICATION RESULT"]["table"] = 2
+msg_list["AUTHENTICATION FAILURE"]["table"] = 3
+msg_list["AUTHENTICATION REJECT"]["table"] = 4
+msg_list["REGISTRATION REQUEST"]["table"] = 5
+msg_list["REGISTRATION ACCEPT"]["table"] = 6
+msg_list["REGISTRATION COMPLETE"]["table"] = 8
+msg_list["REGISTRATION REJECT"]["table"] = 9
+msg_list["UL NAS TRANSPORT"]["table"] = 10
+msg_list["DL NAS TRANSPORT"]["table"] = 11
+msg_list["DEREGISTRATION REQUEST FROM UE"]["table"] = 12
+msg_list["DEREGISTRATION ACCEPT FROM UE"]["table"] = 13
+msg_list["DEREGISTRATION REQUEST TO UE"]["table"] = 14
+msg_list["DEREGISTRATION ACCEPT TO UE"]["table"] = 15
+msg_list["SERVICE REQUEST"]["table"] = 16
+msg_list["SERVICE ACCEPT"]["table"] = 17
+msg_list["SERVICE REJECT"]["table"] = 18
+msg_list["CONFIGURATION UPDATE COMMAND"]["table"] = 19
+msg_list["CONFIGURATION UPDATE COMPLETE"]["table"] = 20
+msg_list["IDENTITY REQUEST"]["table"] = 21
+msg_list["IDENTITY RESPONSE"]["table"] = 22
+msg_list["NOTIFICATION"]["table"] = 23
+msg_list["NOTIFICATION RESPONSE"]["table"] = 24
+msg_list["SECURITY MODE COMMAND"]["table"] = 25
+...
+```
+
+The exact indexes may change when the Word document is edited. If the
+generator cannot find a message table, check the reduced document and
+update the table index again.
+
+Generate files
+==============
+
+Remove the old cache files if the input document or table indexes were
+changed.
+
+```sh
+rm -f cache/nas-msg-*.py
+```
+
+Run the generator.
+
+```sh
+python3 nas-message.py -f r19.6.2/24501-j62-ch8-ch9.docx -o ..
+```
+
+This regenerates the following files:
+
+```text
+../ies.h
+../ies.c
+../message.h
+../decoder.c
+../encoder.c
+```
+
+Update NAS IE types
+===================
+
+Add newly introduced NAS IE structures to `../types.h`.
+
+The generator creates message encoder/decoder code, but new IE
+structures must be added manually when TS 24.501 introduces new IEs.
+
+Use the existing definitions in `types.h` as references.
+
+Example:
+
+```c
+/* 9.11.x.y Example IE
+ * O TLV-E 6-n */
+typedef struct ogs_nas_example_ie_s {
+    uint16_t length;
+    void *buffer;
+} __attribute__ ((packed)) ogs_nas_example_ie_t;
+```
+
+Final check
+===========
+
+Check the generated changes.
+
+```sh
+git diff ../ies.h ../ies.c ../message.h ../decoder.c ../encoder.c ../types.h
+```
+
+Build Open5GS.
+
+```sh
+ninja -C build
+```

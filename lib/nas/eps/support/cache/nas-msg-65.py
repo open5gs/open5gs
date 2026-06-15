@@ -17,7 +17,7 @@ ies.append({ "iei" : "F-", "value" : "Additional update type", "type" : "Additio
 ies.append({ "iei" : "5D", "value" : "Voice domain preference and UE usage setting", "type" : "Voice domain preference and UE usage setting", "reference" : "9.9.3.44", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "D-", "value" : "Device properties", "type" : "Device properties", "reference" : "9.9.2.0A", "presence" : "O", "format" : "TV", "length" : "1"})
 ies.append({ "iei" : "E-", "value" : "Old GUTI type", "type" : "GUTI type", "reference" : "9.9.3.45", "presence" : "O", "format" : "TV", "length" : "1"})
-ies.append({ "iei" : "C- ", "value" : "MS network feature support", "type" : "MS network feature support", "reference" : "9.9.3.20A", "presence" : "O", "format" : "TV", "length" : "1"})
+ies.append({ "iei" : "C-", "value" : "MS network feature support", "type" : "MS network feature support", "reference" : "9.9.3.20A", "presence" : "O", "format" : "TV", "length" : "1"})
 ies.append({ "iei" : "10", "value" : "TMSI based NRI container", "type" : "Network resource identifier container", "reference" : "9.9.3.24A", "presence" : "O", "format" : "TLV", "length" : "4"})
 ies.append({ "iei" : "6A", "value" : "T3324 value", "type" : "GPRS timer 2", "reference" : "9.9.3.16A", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "5E", "value" : "T3412 extended value", "type" : "GPRS timer 3", "reference" : "9.9.3.16B", "presence" : "O", "format" : "TLV", "length" : "3"})
@@ -27,7 +27,8 @@ ies.append({ "iei" : "6D", "value" : "UE status", "type" : "UE status", "referen
 ies.append({ "iei" : "17", "value" : "Additional information requested", "type" : "Additional information requested", "reference" : "9.9.3.55", "presence" : "O", "format" : "TV", "length" : "2"})
 ies.append({ "iei" : "32", "value" : "N1 UE network capability", "type" : "N1 UE network capability", "reference" : "9.9.3.57", "presence" : "O", "format" : "TLV", "length" : "3-15"})
 ies.append({ "iei" : "34", "value" : "UE radio capability ID availability", "type" : "UE radio capability ID availability", "reference" : "9.9.3.58", "presence" : "O", "format" : "TLV", "length" : "3"})
-ies.append({ "iei" : "35", "value" : "Requested WUS assistance information", "type" : "WUS assistance information", "reference" : "9.9.3.62", "presence" : "O", "format" : "TLV", "length" : "3-n"})
+ies.append({ "iei" : "35", "value" : "Requested WUS assistance information", "type" : "WUS assistance information", "reference" : "9.9.3.62", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "36", "value" : "DRX parameter in NB-S1 mode", "type" : "NB-S1 DRX parameter", "reference" : "9.9.3.63", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "38", "value" : "Requested IMSI offset", "type" : "IMSI offset", "reference" : "9.9.3.64", "presence" : "O", "format" : "TLV", "length" : "4"})
+ies.append({ "iei" : "26", "value" : "UE determined PLMN with disaster condition", "type" : "PLMN identity", "reference" : "9.9.3.77", "presence" : "O", "format" : "TLV", "length" : "5"})
 msg_list[key]["ies"] = ies

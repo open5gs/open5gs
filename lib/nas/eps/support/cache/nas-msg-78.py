@@ -6,4 +6,7 @@ ies.append({ "iei" : "6B", "value" : "T3448 value", "type" : "GPRS timer 2", "re
 ies.append({ "iei" : "1C", "value" : "Lower bound timer value", "type" : "GPRS timer 3", "reference" : "9.9.3.16B", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "1D", "value" : "Forbidden TAI for the list of forbidden tracking areas for roaming", "type" : "Tracking area identity list", "reference" : "9.9.3.33", "presence" : "O", "format" : "TLV", "length" : "9-98"})
 ies.append({ "iei" : "1E", "value" : "Forbidden TAI for the list of forbidden tracking areas forregional provision of service", "type" : "Tracking area identity list", "reference" : "9.9.3.33", "presence" : "O", "format" : "TLV", "length" : "9-98"})
+ies.append({ "iei" : "20", "value" : "Access technology utilization control", "type" : "Access technology utilization control", "reference" : "9.9.3.3A", "presence" : "O", "format" : "TLV", "length" : "4-5"})
+ies.append({ "iei" : "21", "value" : "S&F satellite operation parameters", "type" : "S&F satellite operation parameters", "reference" : "S&9.9.3.73", "presence" : "O", "format" : "TLV", "length" : "3-257"})
+ies.append({ "iei" : "24", "value" : "Disaster return wait range", "type" : "Registration wait range", "reference" : "9.9.3.75", "presence" : "O", "format" : "TLV", "length" : "4"})
 msg_list[key]["ies"] = ies

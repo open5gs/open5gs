@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,8 +28,8 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2024-01-21 18:50:03.400537 by acetcom
- * from 24301-h90.docx
+ * Created on: 2026-06-15 16:08:27.541002 by acetcom
+ * from r19.6.0/24301-j60-ch8-ch9.docx
  ******************************************************************************/
 
 #if !defined(OGS_NAS_INSIDE) && !defined(OGS_NAS_COMPILATION)
@@ -45,6 +45,7 @@ extern "C" {
 
 int ogs_nas_eps_encode_optional_type(ogs_pkbuf_t *pkbuf, uint8_t type);
 
+int ogs_nas_eps_decode_list_of_plmns_to_be_used_in_disaster_condition(ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t *list_of_plmns_to_be_used_in_disaster_condition, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_additional_information(ogs_nas_additional_information_t *additional_information, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_device_properties(ogs_nas_device_properties_t *device_properties, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_eps_bearer_context_status(ogs_nas_eps_bearer_context_status_t *eps_bearer_context_status, ogs_pkbuf_t *pkbuf);
@@ -97,6 +98,7 @@ int ogs_nas_eps_decode_emergency_number_list(ogs_nas_emergency_number_list_t *em
 int ogs_nas_eps_decode_extended_emergency_number_list(ogs_nas_extended_emergency_number_list_t *extended_emergency_number_list, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_cli(ogs_nas_cli_t *cli, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_ss_code(ogs_nas_ss_code_t *ss_code, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_access_technology_utilization_control(ogs_nas_access_technology_utilization_control_t *access_technology_utilization_control, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_authentication_response_parameter(ogs_nas_authentication_response_parameter_t *authentication_response_parameter, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_lcs_indicator(ogs_nas_lcs_indicator_t *lcs_indicator, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_lcs_client_identity(ogs_nas_lcs_client_identity_t *lcs_client_identity, ogs_pkbuf_t *pkbuf);
@@ -106,7 +108,7 @@ int ogs_nas_eps_decode_voice_domain_preference_and_ue_usage_setting(ogs_nas_voic
 int ogs_nas_eps_decode_guti_type(ogs_nas_guti_type_t *guti_type, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_extended_drx_parameters(ogs_nas_extended_drx_parameters_t *extended_drx_parameters, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_dcn_id(ogs_nas_dcn_id_t *dcn_id, ogs_pkbuf_t *pkbuf);
-int ogs_nas_eps_decode_non__nw_provided_policies(ogs_nas_non__nw_provided_policies_t *non__nw_provided_policies, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_non_nw_provided_policies(ogs_nas_non_nw_provided_policies_t *non_nw_provided_policies, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_sms_services_status(ogs_nas_sms_services_status_t *sms_services_status, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_ciphering_key_sequence_number(ogs_nas_ciphering_key_sequence_number_t *ciphering_key_sequence_number, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_csfb_response(ogs_nas_csfb_response_t *csfb_response, ogs_pkbuf_t *pkbuf);
@@ -129,7 +131,13 @@ int ogs_nas_eps_decode_imsi_offset(ogs_nas_imsi_offset_t *imsi_offset, ogs_pkbuf
 int ogs_nas_eps_decode_ue_request_type(ogs_nas_ue_request_type_t *ue_request_type, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_paging_restriction(ogs_nas_paging_restriction_t *paging_restriction, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_eps_additional_request_result(ogs_nas_eps_additional_request_result_t *eps_additional_request_result, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_unavailability_information(ogs_nas_unavailability_information_t *unavailability_information, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_detach_type(ogs_nas_detach_type_t *detach_type, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_unavailability_configuration(ogs_nas_unavailability_configuration_t *unavailability_configuration, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_ue_information_request(ogs_nas_ue_information_request_t *ue_information_request, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_ue_coarse_location_information(ogs_nas_ue_coarse_location_information_t *ue_coarse_location_information, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_registration_wait_range(ogs_nas_registration_wait_range_t *registration_wait_range, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_plmn_identity(ogs_nas_plmn_identity_t *plmn_identity, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_drx_parameter(ogs_nas_drx_parameter_t *drx_parameter, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_emm_cause(ogs_nas_emm_cause_t *emm_cause, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_access_point_name(ogs_nas_access_point_name_t *access_point_name, ogs_pkbuf_t *pkbuf);
@@ -159,7 +167,9 @@ int ogs_nas_eps_decode_linked_eps_bearer_identity(ogs_nas_linked_eps_bearer_iden
 int ogs_nas_eps_decode_llc_service_access_point_identifier(ogs_nas_llc_service_access_point_identifier_t *llc_service_access_point_identifier, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_packet_flow_identifier(ogs_nas_packet_flow_identifier_t *packet_flow_identifier, ogs_pkbuf_t *pkbuf);
 int ogs_nas_eps_decode_pdn_address(ogs_nas_pdn_address_t *pdn_address, ogs_pkbuf_t *pkbuf);
+int ogs_nas_eps_decode_s_f_satellite_operation_parameters(ogs_nas_s_f_satellite_operation_parameters_t *s_f_satellite_operation_parameters, ogs_pkbuf_t *pkbuf);
 
+int ogs_nas_eps_encode_list_of_plmns_to_be_used_in_disaster_condition(ogs_pkbuf_t *pkbuf, ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t *list_of_plmns_to_be_used_in_disaster_condition);
 int ogs_nas_eps_encode_additional_information(ogs_pkbuf_t *pkbuf, ogs_nas_additional_information_t *additional_information);
 int ogs_nas_eps_encode_device_properties(ogs_pkbuf_t *pkbuf, ogs_nas_device_properties_t *device_properties);
 int ogs_nas_eps_encode_eps_bearer_context_status(ogs_pkbuf_t *pkbuf, ogs_nas_eps_bearer_context_status_t *eps_bearer_context_status);
@@ -212,6 +222,7 @@ int ogs_nas_eps_encode_emergency_number_list(ogs_pkbuf_t *pkbuf, ogs_nas_emergen
 int ogs_nas_eps_encode_extended_emergency_number_list(ogs_pkbuf_t *pkbuf, ogs_nas_extended_emergency_number_list_t *extended_emergency_number_list);
 int ogs_nas_eps_encode_cli(ogs_pkbuf_t *pkbuf, ogs_nas_cli_t *cli);
 int ogs_nas_eps_encode_ss_code(ogs_pkbuf_t *pkbuf, ogs_nas_ss_code_t *ss_code);
+int ogs_nas_eps_encode_access_technology_utilization_control(ogs_pkbuf_t *pkbuf, ogs_nas_access_technology_utilization_control_t *access_technology_utilization_control);
 int ogs_nas_eps_encode_authentication_response_parameter(ogs_pkbuf_t *pkbuf, ogs_nas_authentication_response_parameter_t *authentication_response_parameter);
 int ogs_nas_eps_encode_lcs_indicator(ogs_pkbuf_t *pkbuf, ogs_nas_lcs_indicator_t *lcs_indicator);
 int ogs_nas_eps_encode_lcs_client_identity(ogs_pkbuf_t *pkbuf, ogs_nas_lcs_client_identity_t *lcs_client_identity);
@@ -221,7 +232,7 @@ int ogs_nas_eps_encode_voice_domain_preference_and_ue_usage_setting(ogs_pkbuf_t 
 int ogs_nas_eps_encode_guti_type(ogs_pkbuf_t *pkbuf, ogs_nas_guti_type_t *guti_type);
 int ogs_nas_eps_encode_extended_drx_parameters(ogs_pkbuf_t *pkbuf, ogs_nas_extended_drx_parameters_t *extended_drx_parameters);
 int ogs_nas_eps_encode_dcn_id(ogs_pkbuf_t *pkbuf, ogs_nas_dcn_id_t *dcn_id);
-int ogs_nas_eps_encode_non__nw_provided_policies(ogs_pkbuf_t *pkbuf, ogs_nas_non__nw_provided_policies_t *non__nw_provided_policies);
+int ogs_nas_eps_encode_non_nw_provided_policies(ogs_pkbuf_t *pkbuf, ogs_nas_non_nw_provided_policies_t *non_nw_provided_policies);
 int ogs_nas_eps_encode_sms_services_status(ogs_pkbuf_t *pkbuf, ogs_nas_sms_services_status_t *sms_services_status);
 int ogs_nas_eps_encode_ciphering_key_sequence_number(ogs_pkbuf_t *pkbuf, ogs_nas_ciphering_key_sequence_number_t *ciphering_key_sequence_number);
 int ogs_nas_eps_encode_csfb_response(ogs_pkbuf_t *pkbuf, ogs_nas_csfb_response_t *csfb_response);
@@ -244,7 +255,13 @@ int ogs_nas_eps_encode_imsi_offset(ogs_pkbuf_t *pkbuf, ogs_nas_imsi_offset_t *im
 int ogs_nas_eps_encode_ue_request_type(ogs_pkbuf_t *pkbuf, ogs_nas_ue_request_type_t *ue_request_type);
 int ogs_nas_eps_encode_paging_restriction(ogs_pkbuf_t *pkbuf, ogs_nas_paging_restriction_t *paging_restriction);
 int ogs_nas_eps_encode_eps_additional_request_result(ogs_pkbuf_t *pkbuf, ogs_nas_eps_additional_request_result_t *eps_additional_request_result);
+int ogs_nas_eps_encode_unavailability_information(ogs_pkbuf_t *pkbuf, ogs_nas_unavailability_information_t *unavailability_information);
 int ogs_nas_eps_encode_detach_type(ogs_pkbuf_t *pkbuf, ogs_nas_detach_type_t *detach_type);
+int ogs_nas_eps_encode_unavailability_configuration(ogs_pkbuf_t *pkbuf, ogs_nas_unavailability_configuration_t *unavailability_configuration);
+int ogs_nas_eps_encode_ue_information_request(ogs_pkbuf_t *pkbuf, ogs_nas_ue_information_request_t *ue_information_request);
+int ogs_nas_eps_encode_ue_coarse_location_information(ogs_pkbuf_t *pkbuf, ogs_nas_ue_coarse_location_information_t *ue_coarse_location_information);
+int ogs_nas_eps_encode_registration_wait_range(ogs_pkbuf_t *pkbuf, ogs_nas_registration_wait_range_t *registration_wait_range);
+int ogs_nas_eps_encode_plmn_identity(ogs_pkbuf_t *pkbuf, ogs_nas_plmn_identity_t *plmn_identity);
 int ogs_nas_eps_encode_drx_parameter(ogs_pkbuf_t *pkbuf, ogs_nas_drx_parameter_t *drx_parameter);
 int ogs_nas_eps_encode_emm_cause(ogs_pkbuf_t *pkbuf, ogs_nas_emm_cause_t *emm_cause);
 int ogs_nas_eps_encode_access_point_name(ogs_pkbuf_t *pkbuf, ogs_nas_access_point_name_t *access_point_name);
@@ -274,6 +291,7 @@ int ogs_nas_eps_encode_linked_eps_bearer_identity(ogs_pkbuf_t *pkbuf, ogs_nas_li
 int ogs_nas_eps_encode_llc_service_access_point_identifier(ogs_pkbuf_t *pkbuf, ogs_nas_llc_service_access_point_identifier_t *llc_service_access_point_identifier);
 int ogs_nas_eps_encode_packet_flow_identifier(ogs_pkbuf_t *pkbuf, ogs_nas_packet_flow_identifier_t *packet_flow_identifier);
 int ogs_nas_eps_encode_pdn_address(ogs_pkbuf_t *pkbuf, ogs_nas_pdn_address_t *pdn_address);
+int ogs_nas_eps_encode_s_f_satellite_operation_parameters(ogs_pkbuf_t *pkbuf, ogs_nas_s_f_satellite_operation_parameters_t *s_f_satellite_operation_parameters);
 
 #ifdef __cplusplus
 }

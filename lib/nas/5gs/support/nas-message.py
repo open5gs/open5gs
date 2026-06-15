@@ -1,6 +1,6 @@
 # The MIT License
 
-# Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -64,7 +64,7 @@ def output_header_to_file(f):
     f.write("""/*
  * The MIT License
  *
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -105,21 +105,29 @@ def usage():
     print("-c [dir]  Cache files to given directory")
     print("-h        Print this help and return")
 
+def c_identifier(v):
+    return re.sub(r'_+', '_', re.sub(r'[^0-9a-zA-Z_]', '_', v)).strip('_')
+
 def v_upper(v):
-    return re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper()
+    return c_identifier(v).upper()
 
 def v_lower(v):
-    return re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower()
+    return c_identifier(v).lower()
 
 def get_value(v):
-    return re.sub('5gs_', '', re.sub('5g_', '', re.sub('5gsm', 'gsm', re.sub('5gmm', 'gmm', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower()))))
+    v = c_identifier(v).lower()
+    v = re.sub('5gsm', 'gsm', v)
+    v = re.sub('5gmm', 'gmm', v)
+    v = re.sub('5gs_', '', v)
+    v = re.sub('5g_', '', v)
+    return v
 
 def get_cells(cells):
     iei = cells[0].text
     value = cells[1].text.encode('ascii', 'ignore').decode('utf-8')
-    value = re.sub("\s*$", "", re.sub("\s*\n*\s*\([^\)]*\)*", "", re.sub("\"|'s", "", value)))
-    type = re.sub("^NAS ", "", re.sub("'s", "", re.sub('\s*\n\s*[a-zA-Z0-9.]*', '', cells[2].text)))
-    reference = re.sub('[a-zA-Z0-9\'\-\s]*\n\s*', '', cells[2].text)
+    value = re.sub(r"\s*$", "", re.sub(r"\s*\n*\s*\([^\)]*\)*", "", re.sub(r"\"|'s", "", value)))
+    type = re.sub("^NAS ", "", re.sub("'s", "", re.sub(r'\s*\n\s*[a-zA-Z0-9.]*', '', cells[2].text)))
+    reference = re.sub(r'[a-zA-Z0-9\'\-\s]*\n\s*', '', cells[2].text)
     presence = cells[3].text
     format = cells[4].text
     length = cells[5].text
@@ -219,44 +227,44 @@ msg_list["AUTHENTICATION FAILURE"]["table"] = 3
 msg_list["AUTHENTICATION REJECT"]["table"] = 4
 msg_list["REGISTRATION REQUEST"]["table"] = 5
 msg_list["REGISTRATION ACCEPT"]["table"] = 6
-msg_list["REGISTRATION COMPLETE"]["table"] = 7
-msg_list["REGISTRATION REJECT"]["table"] = 8
-msg_list["UL NAS TRANSPORT"]["table"] = 9
-msg_list["DL NAS TRANSPORT"]["table"] = 10
-msg_list["DEREGISTRATION REQUEST FROM UE"]["table"] = 11
-msg_list["DEREGISTRATION ACCEPT FROM UE"]["table"] = 12
-msg_list["DEREGISTRATION REQUEST TO UE"]["table"] = 13
-msg_list["DEREGISTRATION ACCEPT TO UE"]["table"] = 14
-msg_list["SERVICE REQUEST"]["table"] = 15
-msg_list["SERVICE ACCEPT"]["table"] = 16
-msg_list["SERVICE REJECT"]["table"] = 17
-msg_list["CONFIGURATION UPDATE COMMAND"]["table"] = 18
-msg_list["CONFIGURATION UPDATE COMPLETE"]["table"] = 19
-msg_list["IDENTITY REQUEST"]["table"] = 20
-msg_list["IDENTITY RESPONSE"]["table"] = 21
-msg_list["NOTIFICATION"]["table"] = 22
-msg_list["NOTIFICATION RESPONSE"]["table"] = 23
-msg_list["SECURITY MODE COMMAND"]["table"] = 24
-msg_list["SECURITY MODE COMPLETE"]["table"] = 25
-msg_list["SECURITY MODE REJECT"]["table"] = 26
-msg_list["5GMM STATUS"]["table"] = 28
+msg_list["REGISTRATION COMPLETE"]["table"] = 8
+msg_list["REGISTRATION REJECT"]["table"] = 9
+msg_list["UL NAS TRANSPORT"]["table"] = 10
+msg_list["DL NAS TRANSPORT"]["table"] = 11
+msg_list["DEREGISTRATION REQUEST FROM UE"]["table"] = 12
+msg_list["DEREGISTRATION ACCEPT FROM UE"]["table"] = 13
+msg_list["DEREGISTRATION REQUEST TO UE"]["table"] = 14
+msg_list["DEREGISTRATION ACCEPT TO UE"]["table"] = 15
+msg_list["SERVICE REQUEST"]["table"] = 16
+msg_list["SERVICE ACCEPT"]["table"] = 17
+msg_list["SERVICE REJECT"]["table"] = 18
+msg_list["CONFIGURATION UPDATE COMMAND"]["table"] = 19
+msg_list["CONFIGURATION UPDATE COMPLETE"]["table"] = 20
+msg_list["IDENTITY REQUEST"]["table"] = 21
+msg_list["IDENTITY RESPONSE"]["table"] = 22
+msg_list["NOTIFICATION"]["table"] = 23
+msg_list["NOTIFICATION RESPONSE"]["table"] = 24
+msg_list["SECURITY MODE COMMAND"]["table"] = 25
+msg_list["SECURITY MODE COMPLETE"]["table"] = 26
+msg_list["SECURITY MODE REJECT"]["table"] = 27
+msg_list["5GMM STATUS"]["table"] = 29
 
-msg_list["PDU SESSION ESTABLISHMENT REQUEST"]["table"] = 38
-msg_list["PDU SESSION ESTABLISHMENT ACCEPT"]["table"] = 39
-msg_list["PDU SESSION ESTABLISHMENT REJECT"]["table"] = 40
-msg_list["PDU SESSION AUTHENTICATION COMMAND"]["table"] = 41
-msg_list["PDU SESSION AUTHENTICATION COMPLETE"]["table"] = 42
-msg_list["PDU SESSION AUTHENTICATION RESULT"]["table"] = 43
-msg_list["PDU SESSION MODIFICATION REQUEST"]["table"] = 44
-msg_list["PDU SESSION MODIFICATION REJECT"]["table"] = 45
-msg_list["PDU SESSION MODIFICATION COMMAND"]["table"] = 46
-msg_list["PDU SESSION MODIFICATION COMPLETE"]["table"] = 47
-msg_list["PDU SESSION MODIFICATION COMMAND REJECT"]["table"] = 48
-msg_list["PDU SESSION RELEASE REQUEST"]["table"] = 49
-msg_list["PDU SESSION RELEASE REJECT"]["table"] = 50
-msg_list["PDU SESSION RELEASE COMMAND"]["table"] = 51
-msg_list["PDU SESSION RELEASE COMPLETE"]["table"] = 52
-msg_list["5GSM STATUS"]["table"] = 53
+msg_list["PDU SESSION ESTABLISHMENT REQUEST"]["table"] = 39
+msg_list["PDU SESSION ESTABLISHMENT ACCEPT"]["table"] = 40
+msg_list["PDU SESSION ESTABLISHMENT REJECT"]["table"] = 41
+msg_list["PDU SESSION AUTHENTICATION COMMAND"]["table"] = 42
+msg_list["PDU SESSION AUTHENTICATION COMPLETE"]["table"] = 43
+msg_list["PDU SESSION AUTHENTICATION RESULT"]["table"] = 44
+msg_list["PDU SESSION MODIFICATION REQUEST"]["table"] = 45
+msg_list["PDU SESSION MODIFICATION REJECT"]["table"] = 46
+msg_list["PDU SESSION MODIFICATION COMMAND"]["table"] = 47
+msg_list["PDU SESSION MODIFICATION COMPLETE"]["table"] = 48
+msg_list["PDU SESSION MODIFICATION COMMAND REJECT"]["table"] = 49
+msg_list["PDU SESSION RELEASE REQUEST"]["table"] = 50
+msg_list["PDU SESSION RELEASE REJECT"]["table"] = 51
+msg_list["PDU SESSION RELEASE COMMAND"]["table"] = 52
+msg_list["PDU SESSION RELEASE COMPLETE"]["table"] = 53
+msg_list["5GSM STATUS"]["table"] = 54
 
 for key in msg_list.keys():
     if "table" not in msg_list[key].keys():

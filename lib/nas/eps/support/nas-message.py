@@ -1,6 +1,6 @@
 # The MIT License
 
-# Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -64,7 +64,7 @@ def output_header_to_file(f):
     f.write("""/*
  * The MIT License
  *
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -105,20 +105,28 @@ def usage():
     print("-c [dir]  Cache files to given directory")
     print("-h        Print this help and return")
 
+def c_identifier(v):
+    return re.sub(r'_+', '_', re.sub(r'[^0-9a-zA-Z_]', '_', v)).strip('_')
+
 def v_upper(v):
-    return re.sub('_TO_UE', '', re.sub('_FROM_UE', '', re.sub('3GPP', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper())))
+    return re.sub(
+            r'_TO_UE$', '',
+            re.sub(r'_FROM_UE$', '',
+                re.sub('3GPP', '', c_identifier(v).upper())))
 
 def v_lower(v):
-    return re.sub('3gpp', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower())
-
+    return re.sub(
+            r'_+', '_',
+            re.sub('3gpp', '', c_identifier(v).lower())).strip('_')
+ 
 def get_cells(cells):
     iei = cells[0].text
     value = cells[1].text.encode('ascii', 'ignore').decode('utf-8')
-    value = re.sub("\s*$", "", re.sub("\s*\n*\s*\([^\)]*\)*", "", re.sub("\"|'s", "", value)))
-    type = re.sub("^NAS ", "", re.sub("'s", "", re.sub('\s*\n\s*[a-zA-Z0-9.]*', '', cells[2].text)))
+    value = re.sub(r"\s*$", "", re.sub(r"\s*\n*\s*\([^\)]*\)*", "", re.sub(r"\"|'s", "", value)))
+    type = re.sub("^NAS ", "", re.sub("'s", "", re.sub(r'\s*\n\s*[a-zA-Z0-9.]*', '', cells[2].text)))
     if type == "message container":
         type = "EPS message container"
-    reference = re.sub('[a-zA-Z0-9\'\-\s]*\n\s*', '', cells[2].text)
+    reference = re.sub(r'[a-zA-Z0-9\'\-\s]*\n\s*', '', cells[2].text)
     presence = cells[3].text
     format = cells[4].text
     length = cells[5].text
@@ -249,28 +257,28 @@ msg_list["UPLINK NAS TRANSPORT"]["table"] = 31
 msg_list["DOWNLINK GENERIC NAS TRANSPORT"]["table"] = 32
 msg_list["UPLINK GENERIC NAS TRANSPORT"]["table"] = 33
 
-msg_list["ACTIVATE DEDICATED EPS BEARER CONTEXT ACCEPT"]["table"] = 36
-msg_list["ACTIVATE DEDICATED EPS BEARER CONTEXT REJECT"]["table"] = 37
-msg_list["ACTIVATE DEDICATED EPS BEARER CONTEXT REQUEST"]["table"] = 38
-msg_list["ACTIVATE DEFAULT EPS BEARER CONTEXT ACCEPT"]["table"] = 39
-msg_list["ACTIVATE DEFAULT EPS BEARER CONTEXT REJECT"]["table"] = 40
-msg_list["ACTIVATE DEFAULT EPS BEARER CONTEXT REQUEST"]["table"] = 41
-msg_list["BEARER RESOURCE ALLOCATION REJECT"]["table"] = 42
-msg_list["BEARER RESOURCE ALLOCATION REQUEST"]["table"] = 43
-msg_list["BEARER RESOURCE MODIFICATION REJECT"]["table"] = 44
-msg_list["BEARER RESOURCE MODIFICATION REQUEST"]["table"] = 45
-msg_list["DEACTIVATE EPS BEARER CONTEXT ACCEPT"]["table"] = 46
-msg_list["DEACTIVATE EPS BEARER CONTEXT REQUEST"]["table"] = 47
-msg_list["ESM INFORMATION REQUEST"]["table"] = 49
-msg_list["ESM INFORMATION RESPONSE"]["table"] = 50
-msg_list["ESM STATUS"]["table"] = 51
-msg_list["MODIFY EPS BEARER CONTEXT ACCEPT"]["table"] = 52
-msg_list["MODIFY EPS BEARER CONTEXT REJECT"]["table"] = 53
-msg_list["MODIFY EPS BEARER CONTEXT REQUEST"]["table"] = 54
-msg_list["PDN CONNECTIVITY REJECT"]["table"] = 56
-msg_list["PDN CONNECTIVITY REQUEST"]["table"] = 57
-msg_list["PDN DISCONNECT REJECT"]["table"] = 58
-msg_list["PDN DISCONNECT REQUEST"]["table"] = 59
+msg_list["ACTIVATE DEDICATED EPS BEARER CONTEXT ACCEPT"]["table"] = 37
+msg_list["ACTIVATE DEDICATED EPS BEARER CONTEXT REJECT"]["table"] = 38
+msg_list["ACTIVATE DEDICATED EPS BEARER CONTEXT REQUEST"]["table"] = 39
+msg_list["ACTIVATE DEFAULT EPS BEARER CONTEXT ACCEPT"]["table"] = 40
+msg_list["ACTIVATE DEFAULT EPS BEARER CONTEXT REJECT"]["table"] = 41
+msg_list["ACTIVATE DEFAULT EPS BEARER CONTEXT REQUEST"]["table"] = 42
+msg_list["BEARER RESOURCE ALLOCATION REJECT"]["table"] = 43
+msg_list["BEARER RESOURCE ALLOCATION REQUEST"]["table"] = 44
+msg_list["BEARER RESOURCE MODIFICATION REJECT"]["table"] = 45
+msg_list["BEARER RESOURCE MODIFICATION REQUEST"]["table"] = 46
+msg_list["DEACTIVATE EPS BEARER CONTEXT ACCEPT"]["table"] = 47
+msg_list["DEACTIVATE EPS BEARER CONTEXT REQUEST"]["table"] = 48
+msg_list["ESM INFORMATION REQUEST"]["table"] = 50
+msg_list["ESM INFORMATION RESPONSE"]["table"] = 51
+msg_list["ESM STATUS"]["table"] = 52
+msg_list["MODIFY EPS BEARER CONTEXT ACCEPT"]["table"] = 53
+msg_list["MODIFY EPS BEARER CONTEXT REJECT"]["table"] = 54
+msg_list["MODIFY EPS BEARER CONTEXT REQUEST"]["table"] = 55
+msg_list["PDN CONNECTIVITY REJECT"]["table"] = 57
+msg_list["PDN CONNECTIVITY REQUEST"]["table"] = 58
+msg_list["PDN DISCONNECT REJECT"]["table"] = 59
+msg_list["PDN DISCONNECT REQUEST"]["table"] = 60
 
 for key in msg_list.keys():
     if "table" not in msg_list[key].keys():

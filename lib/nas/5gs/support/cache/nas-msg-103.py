@@ -9,4 +9,7 @@ ies.append({ "iei" : "25", "value" : "DNN", "type" : "DNN", "reference" : "9.11.
 ies.append({ "iei" : "24", "value" : "Additional information", "type" : "Additional information", "reference" : "9.11.2.1", "presence" : "O", "format" : "TLV", "length" : "3-n"})
 ies.append({ "iei" : "A-", "value" : "MA PDU session information", "type" : "MA PDU session information", "reference" : "9.11.3.31A", "presence" : "O", "format" : "TV", "length" : "1"})
 ies.append({ "iei" : "F-", "value" : "Release assistance indication", "type" : "Release assistance indication", "reference" : "9.11.3.46A", "presence" : "O", "format" : "TV", "length" : "1"})
+ies.append({ "iei" : "4E", "value" : "Non-3GPP access path switching indication", "type" : "Non-3GPP access path switching indication", "reference" : "9.11.3.99", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "5A", "value" : "Alternative S-NSSAI", "type" : "S-NSSAI", "reference" : "9.11.2.8", "presence" : "O", "format" : "TLV", "length" : "3-10"})
+ies.append({ "iei" : "9-", "value" : "Payload container information", "type" : "Payload container information", "reference" : "9.11.3.106", "presence" : "O", "format" : "TV", "length" : "1"})
 msg_list[key]["ies"] = ies

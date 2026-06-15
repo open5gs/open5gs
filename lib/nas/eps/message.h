@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -28,8 +28,8 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2024-01-21 18:50:03.409367 by acetcom
- * from 24301-h90.docx
+ * Created on: 2026-06-15 16:08:27.553337 by acetcom
+ * from r19.6.0/24301-j60-ch8-ch9.docx
  ******************************************************************************/
 
 #if !defined(OGS_NAS_INSIDE) && !defined(OGS_NAS_COMPILATION)
@@ -152,6 +152,7 @@ ED2(uint8_t security_header_type:4;,
 #define OGS_NAS_EPS_ATTACH_REQUEST_REQUESTED_WUS_ASSISTANCE_INFORMATION_PRESENT ((uint64_t)1<<24)
 #define OGS_NAS_EPS_ATTACH_REQUEST_DRX_PARAMETER_IN_NB_S1_MODE_PRESENT ((uint64_t)1<<25)
 #define OGS_NAS_EPS_ATTACH_REQUEST_REQUESTED_IMSI_OFFSET_PRESENT ((uint64_t)1<<26)
+#define OGS_NAS_EPS_ATTACH_REQUEST_UE_DETERMINED_PLMN_WITH_DISASTER_CONDITION_PRESENT ((uint64_t)1<<27)
 #define OGS_NAS_EPS_ATTACH_REQUEST_OLD_P_TMSI_SIGNATURE_TYPE 0x19
 #define OGS_NAS_EPS_ATTACH_REQUEST_ADDITIONAL_GUTI_TYPE 0x50
 #define OGS_NAS_EPS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_TYPE 0x52
@@ -166,7 +167,7 @@ ED2(uint8_t security_header_type:4;,
 #define OGS_NAS_EPS_ATTACH_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_TYPE 0x5D
 #define OGS_NAS_EPS_ATTACH_REQUEST_DEVICE_PROPERTIES_TYPE 0xD0
 #define OGS_NAS_EPS_ATTACH_REQUEST_OLD_GUTI_TYPE_TYPE 0xE0
-#define OGS_NAS_EPS_ATTACH_REQUEST_MS_NETWORK_FEATURE_SUPPORT_TYPE 0xC0 
+#define OGS_NAS_EPS_ATTACH_REQUEST_MS_NETWORK_FEATURE_SUPPORT_TYPE 0xC0
 #define OGS_NAS_EPS_ATTACH_REQUEST_TMSI_BASED_NRI_CONTAINER_TYPE 0x10
 #define OGS_NAS_EPS_ATTACH_REQUEST_T3324_VALUE_TYPE 0x6A
 #define OGS_NAS_EPS_ATTACH_REQUEST_T3412_EXTENDED_VALUE_TYPE 0x5E
@@ -179,6 +180,7 @@ ED2(uint8_t security_header_type:4;,
 #define OGS_NAS_EPS_ATTACH_REQUEST_REQUESTED_WUS_ASSISTANCE_INFORMATION_TYPE 0x35
 #define OGS_NAS_EPS_ATTACH_REQUEST_DRX_PARAMETER_IN_NB_S1_MODE_TYPE 0x36
 #define OGS_NAS_EPS_ATTACH_REQUEST_REQUESTED_IMSI_OFFSET_TYPE 0x38
+#define OGS_NAS_EPS_ATTACH_REQUEST_UE_DETERMINED_PLMN_WITH_DISASTER_CONDITION_TYPE 0x26
 
 typedef struct ogs_nas_eps_attach_request_s {
     /* Mandatory fields */
@@ -216,6 +218,7 @@ typedef struct ogs_nas_eps_attach_request_s {
     ogs_nas_wus_assistance_information_t requested_wus_assistance_information;
     ogs_nas_nb_s1_drx_parameter_t drx_parameter_in_nb_s1_mode;
     ogs_nas_imsi_offset_t requested_imsi_offset;
+    ogs_nas_plmn_identity_t ue_determined_plmn_with_disaster_condition;
 } ogs_nas_eps_attach_request_t;
 
 
@@ -250,6 +253,12 @@ typedef struct ogs_nas_eps_attach_request_s {
 #define OGS_NAS_EPS_ATTACH_ACCEPT_NEGOTIATED_IMSI_OFFSET_PRESENT ((uint64_t)1<<25)
 #define OGS_NAS_EPS_ATTACH_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT ((uint64_t)1<<26)
 #define OGS_NAS_EPS_ATTACH_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT ((uint64_t)1<<27)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_UNAVAILABILITY_CONFIGURATION_PRESENT ((uint64_t)1<<28)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_PRESENT ((uint64_t)1<<29)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_S_F_SATELLITE_OPERATION_PARAMETERS_PRESENT ((uint64_t)1<<30)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_DISASTER_ROAMING_WAIT_RANGE_PRESENT ((uint64_t)1<<31)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_DISASTER_RETURN_WAIT_RANGE_PRESENT ((uint64_t)1<<32)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_PRESENT ((uint64_t)1<<33)
 #define OGS_NAS_EPS_ATTACH_ACCEPT_GUTI_TYPE 0x50
 #define OGS_NAS_EPS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_TYPE 0x13
 #define OGS_NAS_EPS_ATTACH_ACCEPT_MS_IDENTITY_TYPE 0x23
@@ -278,6 +287,12 @@ typedef struct ogs_nas_eps_attach_request_s {
 #define OGS_NAS_EPS_ATTACH_ACCEPT_NEGOTIATED_IMSI_OFFSET_TYPE 0x38
 #define OGS_NAS_EPS_ATTACH_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE 0x1D
 #define OGS_NAS_EPS_ATTACH_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE 0x1E
+#define OGS_NAS_EPS_ATTACH_ACCEPT_UNAVAILABILITY_CONFIGURATION_TYPE 0x1F
+#define OGS_NAS_EPS_ATTACH_ACCEPT_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_TYPE 0x20
+#define OGS_NAS_EPS_ATTACH_ACCEPT_S_F_SATELLITE_OPERATION_PARAMETERS_TYPE 0x21
+#define OGS_NAS_EPS_ATTACH_ACCEPT_DISASTER_ROAMING_WAIT_RANGE_TYPE 0x22
+#define OGS_NAS_EPS_ATTACH_ACCEPT_DISASTER_RETURN_WAIT_RANGE_TYPE 0x24
+#define OGS_NAS_EPS_ATTACH_ACCEPT_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_TYPE 0x25
 
 typedef struct ogs_nas_eps_attach_accept_s {
     /* Mandatory fields */
@@ -303,7 +318,7 @@ typedef struct ogs_nas_eps_attach_accept_s {
     ogs_nas_extended_drx_parameters_t extended_drx_parameters;
     ogs_nas_dcn_id_t dcn_id;
     ogs_nas_sms_services_status_t sms_services_status;
-    ogs_nas_non__nw_provided_policies_t non__nw_provided_policies;
+    ogs_nas_non_nw_provided_policies_t non_nw_provided_policies;
     ogs_nas_gprs_timer_2_t t3448_value;
     ogs_nas_network_policy_t network_policy;
     ogs_nas_gprs_timer_3_t t3447_value;
@@ -316,6 +331,12 @@ typedef struct ogs_nas_eps_attach_accept_s {
     ogs_nas_imsi_offset_t negotiated_imsi_offset;
     ogs_nas_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming;
     ogs_nas_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service;
+    ogs_nas_unavailability_configuration_t unavailability_configuration;
+    ogs_nas_access_technology_utilization_control_t access_technology_utilization_control;
+    ogs_nas_s_f_satellite_operation_parameters_t s_f_satellite_operation_parameters;
+    ogs_nas_registration_wait_range_t disaster_roaming_wait_range;
+    ogs_nas_registration_wait_range_t disaster_return_wait_range;
+    ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t list_of_plmns_to_be_used_in_disaster_condition;
 } ogs_nas_eps_attach_accept_t;
 
 
@@ -339,6 +360,8 @@ typedef struct ogs_nas_eps_attach_complete_s {
 #define OGS_NAS_EPS_ATTACH_REJECT_LOWER_BOUND_TIMER_VALUE_PRESENT ((uint64_t)1<<4)
 #define OGS_NAS_EPS_ATTACH_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT ((uint64_t)1<<5)
 #define OGS_NAS_EPS_ATTACH_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT ((uint64_t)1<<6)
+#define OGS_NAS_EPS_ATTACH_REJECT_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_PRESENT ((uint64_t)1<<7)
+#define OGS_NAS_EPS_ATTACH_REJECT_S_F_SATELLITE_OPERATION_PARAMETERS_PRESENT ((uint64_t)1<<8)
 #define OGS_NAS_EPS_ATTACH_REJECT_ESM_MESSAGE_CONTAINER_TYPE 0x78
 #define OGS_NAS_EPS_ATTACH_REJECT_T3346_VALUE_TYPE 0x5F
 #define OGS_NAS_EPS_ATTACH_REJECT_T3402_VALUE_TYPE 0x16
@@ -346,6 +369,8 @@ typedef struct ogs_nas_eps_attach_complete_s {
 #define OGS_NAS_EPS_ATTACH_REJECT_LOWER_BOUND_TIMER_VALUE_TYPE 0x1C
 #define OGS_NAS_EPS_ATTACH_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE 0x1D
 #define OGS_NAS_EPS_ATTACH_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE 0x1E
+#define OGS_NAS_EPS_ATTACH_REJECT_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_TYPE 0x20
+#define OGS_NAS_EPS_ATTACH_REJECT_S_F_SATELLITE_OPERATION_PARAMETERS_TYPE 0x21
 
 typedef struct ogs_nas_eps_attach_reject_s {
     /* Mandatory fields */
@@ -360,6 +385,8 @@ typedef struct ogs_nas_eps_attach_reject_s {
     ogs_nas_gprs_timer_3_t lower_bound_timer_value;
     ogs_nas_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming;
     ogs_nas_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service;
+    ogs_nas_access_technology_utilization_control_t access_technology_utilization_control;
+    ogs_nas_s_f_satellite_operation_parameters_t s_f_satellite_operation_parameters;
 } ogs_nas_eps_attach_reject_t;
 
 
@@ -381,10 +408,16 @@ typedef struct ogs_nas_eps_detach_request_from_ue_s {
 #define OGS_NAS_EPS_DETACH_REQUEST_LOWER_BOUND_TIMER_VALUE_PRESENT ((uint64_t)1<<1)
 #define OGS_NAS_EPS_DETACH_REQUEST_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT ((uint64_t)1<<2)
 #define OGS_NAS_EPS_DETACH_REQUEST_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT ((uint64_t)1<<3)
+#define OGS_NAS_EPS_DETACH_REQUEST_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_PRESENT ((uint64_t)1<<4)
+#define OGS_NAS_EPS_DETACH_REQUEST_S_F_SATELLITE_OPERATION_PARAMETERS_PRESENT ((uint64_t)1<<5)
+#define OGS_NAS_EPS_DETACH_REQUEST_DISASTER_RETURN_WAIT_RANGE_PRESENT ((uint64_t)1<<6)
 #define OGS_NAS_EPS_DETACH_REQUEST_EMM_CAUSE_TYPE 0x53
 #define OGS_NAS_EPS_DETACH_REQUEST_LOWER_BOUND_TIMER_VALUE_TYPE 0x1C
 #define OGS_NAS_EPS_DETACH_REQUEST_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE 0x1D
 #define OGS_NAS_EPS_DETACH_REQUEST_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE 0x1E
+#define OGS_NAS_EPS_DETACH_REQUEST_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_TYPE 0x20
+#define OGS_NAS_EPS_DETACH_REQUEST_S_F_SATELLITE_OPERATION_PARAMETERS_TYPE 0x21
+#define OGS_NAS_EPS_DETACH_REQUEST_DISASTER_RETURN_WAIT_RANGE_TYPE 0x24
 
 typedef struct ogs_nas_eps_detach_request_to_ue_s {
     /* Mandatory fields */
@@ -396,6 +429,9 @@ typedef struct ogs_nas_eps_detach_request_to_ue_s {
     ogs_nas_gprs_timer_3_t lower_bound_timer_value;
     ogs_nas_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming;
     ogs_nas_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service;
+    ogs_nas_access_technology_utilization_control_t access_technology_utilization_control;
+    ogs_nas_s_f_satellite_operation_parameters_t s_f_satellite_operation_parameters;
+    ogs_nas_registration_wait_range_t disaster_return_wait_range;
 } ogs_nas_eps_detach_request_to_ue_t;
 
 
@@ -437,6 +473,8 @@ typedef struct ogs_nas_eps_detach_request_to_ue_s {
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_REQUESTED_IMSI_OFFSET_PRESENT ((uint64_t)1<<32)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_REQUEST_TYPE_PRESENT ((uint64_t)1<<33)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_PAGING_RESTRICTION_PRESENT ((uint64_t)1<<34)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UNAVAILABILITY_INFORMATION_PRESENT ((uint64_t)1<<35)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_DETERMINED_PLMN_WITH_DISASTER_CONDITION_PRESENT ((uint64_t)1<<36)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_NON_CURRENT_NATIVE_NAS_KEY_SET_IDENTIFIER_TYPE 0xB0
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_GPRS_CIPHERING_KEY_SEQUENCE_NUMBER_TYPE 0x80
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_OLD_P_TMSI_SIGNATURE_TYPE 0x19
@@ -472,6 +510,8 @@ typedef struct ogs_nas_eps_detach_request_to_ue_s {
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_REQUESTED_IMSI_OFFSET_TYPE 0x38
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_REQUEST_TYPE_TYPE 0x29
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_PAGING_RESTRICTION_TYPE 0x28
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UNAVAILABILITY_INFORMATION_TYPE 0x30
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_DETERMINED_PLMN_WITH_DISASTER_CONDITION_TYPE 0x26
 
 typedef struct ogs_nas_eps_tracking_area_update_request_s {
     /* Mandatory fields */
@@ -515,6 +555,8 @@ typedef struct ogs_nas_eps_tracking_area_update_request_s {
     ogs_nas_imsi_offset_t requested_imsi_offset;
     ogs_nas_ue_request_type_t ue_request_type;
     ogs_nas_paging_restriction_t paging_restriction;
+    ogs_nas_unavailability_information_t unavailability_information;
+    ogs_nas_plmn_identity_t ue_determined_plmn_with_disaster_condition;
 } ogs_nas_eps_tracking_area_update_request_t;
 
 
@@ -554,6 +596,13 @@ typedef struct ogs_nas_eps_tracking_area_update_request_s {
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_EPS_ADDITIONAL_REQUEST_RESULT_PRESENT ((uint64_t)1<<30)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT ((uint64_t)1<<31)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT ((uint64_t)1<<32)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_MAXIMUM_TIME_OFFSET_PRESENT ((uint64_t)1<<33)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_UNAVAILABILITY_CONFIGURATION_PRESENT ((uint64_t)1<<34)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_PRESENT ((uint64_t)1<<35)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_S_F_SATELLITE_OPERATION_PARAMETERS_PRESENT ((uint64_t)1<<36)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_DISASTER_ROAMING_WAIT_RANGE_PRESENT ((uint64_t)1<<37)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_DISASTER_RETURN_WAIT_RANGE_PRESENT ((uint64_t)1<<38)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_PRESENT ((uint64_t)1<<39)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3412_VALUE_TYPE 0x5A
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_GUTI_TYPE 0x50
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_TAI_LIST_TYPE 0x54
@@ -587,6 +636,13 @@ typedef struct ogs_nas_eps_tracking_area_update_request_s {
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_EPS_ADDITIONAL_REQUEST_RESULT_TYPE 0x37
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE 0x1D
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE 0x1E
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_MAXIMUM_TIME_OFFSET_TYPE 0x39
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_UNAVAILABILITY_CONFIGURATION_TYPE 0x1F
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_TYPE 0x20
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_S_F_SATELLITE_OPERATION_PARAMETERS_TYPE 0x21
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_DISASTER_ROAMING_WAIT_RANGE_TYPE 0x22
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_DISASTER_RETURN_WAIT_RANGE_TYPE 0x24
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_LIST_OF_PLMNS_TO_BE_USED_IN_DISASTER_CONDITION_TYPE 0x25
 
 typedef struct ogs_nas_eps_tracking_area_update_accept_s {
     /* Mandatory fields */
@@ -613,7 +669,7 @@ typedef struct ogs_nas_eps_tracking_area_update_accept_s {
     ogs_nas_header_compression_configuration_status_t header_compression_configuration_status;
     ogs_nas_dcn_id_t dcn_id;
     ogs_nas_sms_services_status_t sms_services_status;
-    ogs_nas_non__nw_provided_policies_t non__nw_policies;
+    ogs_nas_non_nw_provided_policies_t non_nw_policies;
     ogs_nas_gprs_timer_2_t t3448_value;
     ogs_nas_network_policy_t network_policy;
     ogs_nas_gprs_timer_3_t t3447_value;
@@ -627,6 +683,13 @@ typedef struct ogs_nas_eps_tracking_area_update_accept_s {
     ogs_nas_eps_additional_request_result_t eps_additional_request_result;
     ogs_nas_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming;
     ogs_nas_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service;
+    ogs_nas_gprs_timer_3_t maximum_time_offset;
+    ogs_nas_unavailability_configuration_t unavailability_configuration;
+    ogs_nas_access_technology_utilization_control_t access_technology_utilization_control;
+    ogs_nas_s_f_satellite_operation_parameters_t s_f_satellite_operation_parameters;
+    ogs_nas_registration_wait_range_t disaster_roaming_wait_range;
+    ogs_nas_registration_wait_range_t disaster_return_wait_range;
+    ogs_nas_list_of_plmns_to_be_used_in_disaster_condition_t list_of_plmns_to_be_used_in_disaster_condition;
 } ogs_nas_eps_tracking_area_update_accept_t;
 
 
@@ -638,11 +701,17 @@ typedef struct ogs_nas_eps_tracking_area_update_accept_s {
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_LOWER_BOUND_TIMER_VALUE_PRESENT ((uint64_t)1<<2)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT ((uint64_t)1<<3)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT ((uint64_t)1<<4)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_PRESENT ((uint64_t)1<<5)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_S_F_SATELLITE_OPERATION_PARAMETERS_PRESENT ((uint64_t)1<<6)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_DISASTER_RETURN_WAIT_RANGE_PRESENT ((uint64_t)1<<7)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_T3346_VALUE_TYPE 0x5F
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_EXTENDED_EMM_CAUSE_TYPE 0xA0
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_LOWER_BOUND_TIMER_VALUE_TYPE 0x1C
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE 0x1D
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE 0x1E
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_TYPE 0x20
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_S_F_SATELLITE_OPERATION_PARAMETERS_TYPE 0x21
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REJECT_DISASTER_RETURN_WAIT_RANGE_TYPE 0x24
 
 typedef struct ogs_nas_eps_tracking_area_update_reject_s {
     /* Mandatory fields */
@@ -655,6 +724,9 @@ typedef struct ogs_nas_eps_tracking_area_update_reject_s {
     ogs_nas_gprs_timer_3_t lower_bound_timer_value;
     ogs_nas_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming;
     ogs_nas_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service;
+    ogs_nas_access_technology_utilization_control_t access_technology_utilization_control;
+    ogs_nas_s_f_satellite_operation_parameters_t s_f_satellite_operation_parameters;
+    ogs_nas_registration_wait_range_t disaster_return_wait_range;
 } ogs_nas_eps_tracking_area_update_reject_t;
 
 
@@ -707,12 +779,18 @@ typedef struct ogs_nas_eps_service_request_s {
 #define OGS_NAS_EPS_SERVICE_REJECT_LOWER_BOUND_TIMER_VALUE_PRESENT ((uint64_t)1<<3)
 #define OGS_NAS_EPS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_PRESENT ((uint64_t)1<<4)
 #define OGS_NAS_EPS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_PRESENT ((uint64_t)1<<5)
+#define OGS_NAS_EPS_SERVICE_REJECT_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_PRESENT ((uint64_t)1<<6)
+#define OGS_NAS_EPS_SERVICE_REJECT_S_F_SATELLITE_OPERATION_PARAMETERS_PRESENT ((uint64_t)1<<7)
+#define OGS_NAS_EPS_SERVICE_REJECT_DISASTER_RETURN_WAIT_RANGE_PRESENT ((uint64_t)1<<8)
 #define OGS_NAS_EPS_SERVICE_REJECT_T3442_VALUE_TYPE 0x5B
 #define OGS_NAS_EPS_SERVICE_REJECT_T3346_VALUE_TYPE 0x5F
 #define OGS_NAS_EPS_SERVICE_REJECT_T3448_VALUE_TYPE 0x6B
 #define OGS_NAS_EPS_SERVICE_REJECT_LOWER_BOUND_TIMER_VALUE_TYPE 0x1C
 #define OGS_NAS_EPS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FOR_ROAMING_TYPE 0x1D
 #define OGS_NAS_EPS_SERVICE_REJECT_FORBIDDEN_TAI_FOR_THE_LIST_OF_FORBIDDEN_TRACKING_AREAS_FORREGIONAL_PROVISION_OF_SERVICE_TYPE 0x1E
+#define OGS_NAS_EPS_SERVICE_REJECT_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_TYPE 0x20
+#define OGS_NAS_EPS_SERVICE_REJECT_S_F_SATELLITE_OPERATION_PARAMETERS_TYPE 0x21
+#define OGS_NAS_EPS_SERVICE_REJECT_DISASTER_RETURN_WAIT_RANGE_TYPE 0x24
 
 typedef struct ogs_nas_eps_service_reject_s {
     /* Mandatory fields */
@@ -726,6 +804,9 @@ typedef struct ogs_nas_eps_service_reject_s {
     ogs_nas_gprs_timer_3_t lower_bound_timer_value;
     ogs_nas_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_for_roaming;
     ogs_nas_tracking_area_identity_list_t forbidden_tai_for_the_list_of_forbidden_tracking_areas_forregional_provision_of_service;
+    ogs_nas_access_technology_utilization_control_t access_technology_utilization_control;
+    ogs_nas_s_f_satellite_operation_parameters_t s_f_satellite_operation_parameters;
+    ogs_nas_registration_wait_range_t disaster_return_wait_range;
 } ogs_nas_eps_service_reject_t;
 
 
@@ -736,10 +817,12 @@ typedef struct ogs_nas_eps_service_reject_s {
 #define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_DCN_ID_PRESENT ((uint64_t)1<<1)
 #define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_UE_RADIO_CAPABILITY_ID_PRESENT ((uint64_t)1<<2)
 #define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_PRESENT ((uint64_t)1<<3)
+#define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_PRESENT ((uint64_t)1<<4)
 #define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_TAI_LIST_TYPE 0x54
 #define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_DCN_ID_TYPE 0x65
 #define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_UE_RADIO_CAPABILITY_ID_TYPE 0x66
 #define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_TYPE 0xB0
+#define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_ACCESS_TECHNOLOGY_UTILIZATION_CONTROL_TYPE 0x20
 
 typedef struct ogs_nas_eps_guti_reallocation_command_s {
     /* Mandatory fields */
@@ -751,6 +834,7 @@ typedef struct ogs_nas_eps_guti_reallocation_command_s {
     ogs_nas_dcn_id_t dcn_id;
     ogs_nas_ue_radio_capability_id_t ue_radio_capability_id;
     ogs_nas_ue_radio_capability_id_deletion_indication_t ue_radio_capability_id_deletion_indication;
+    ogs_nas_access_technology_utilization_control_t access_technology_utilization_control;
 } ogs_nas_eps_guti_reallocation_command_t;
 
 
@@ -821,12 +905,14 @@ typedef struct ogs_nas_eps_authentication_failure_s {
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_HASHMME_PRESENT ((uint64_t)1<<3)
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_REPLAYED_UE_ADDITIONAL_SECURITY_CAPABILITY_PRESENT ((uint64_t)1<<4)
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_UE_RADIO_CAPABILITY_ID_REQUEST_PRESENT ((uint64_t)1<<5)
+#define OGS_NAS_EPS_SECURITY_MODE_COMMAND_UE_COARSE_LOCATION_INFORMATION_REQUEST_PRESENT ((uint64_t)1<<6)
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_TYPE 0xC0
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_REPLAYED_NONCEUE_TYPE 0x55
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_NONCEMME_TYPE 0x56
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_HASHMME_TYPE 0x4F
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_REPLAYED_UE_ADDITIONAL_SECURITY_CAPABILITY_TYPE 0x6F
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_UE_RADIO_CAPABILITY_ID_REQUEST_TYPE 0x37
+#define OGS_NAS_EPS_SECURITY_MODE_COMMAND_UE_COARSE_LOCATION_INFORMATION_REQUEST_TYPE 0xD0
 
 typedef struct ogs_nas_eps_security_mode_command_s {
     /* Mandatory fields */
@@ -842,6 +928,7 @@ typedef struct ogs_nas_eps_security_mode_command_s {
     ogs_nas_hashmme_t hashmme;
     ogs_nas_ue_additional_security_capability_t replayed_ue_additional_security_capability;
     ogs_nas_ue_radio_capability_id_request_t ue_radio_capability_id_request;
+    ogs_nas_ue_information_request_t ue_coarse_location_information_request;
 } ogs_nas_eps_security_mode_command_t;
 
 
@@ -851,9 +938,11 @@ typedef struct ogs_nas_eps_security_mode_command_s {
 #define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_IMEISV_PRESENT ((uint64_t)1<<0)
 #define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_REPLAYED_NAS_MESSAGE_CONTAINER_PRESENT ((uint64_t)1<<1)
 #define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_UE_RADIO_CAPABILITY_ID_PRESENT ((uint64_t)1<<2)
+#define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_UE_COARSE_LOCATION_INFORMATION_PRESENT ((uint64_t)1<<3)
 #define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_IMEISV_TYPE 0x23
 #define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_REPLAYED_NAS_MESSAGE_CONTAINER_TYPE 0x79
 #define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_UE_RADIO_CAPABILITY_ID_TYPE 0x66
+#define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_UE_COARSE_LOCATION_INFORMATION_TYPE 0x67
 
 typedef struct ogs_nas_eps_security_mode_complete_s {
 
@@ -862,6 +951,7 @@ typedef struct ogs_nas_eps_security_mode_complete_s {
     ogs_nas_mobile_identity_t imeisv;
     ogs_nas_replayed_nas_message_container_t replayed_nas_message_container;
     ogs_nas_ue_radio_capability_id_t ue_radio_capability_id;
+    ogs_nas_ue_coarse_location_information_t ue_coarse_location_information;
 } ogs_nas_eps_security_mode_complete_t;
 
 

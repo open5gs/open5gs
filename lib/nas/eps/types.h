@@ -698,11 +698,11 @@ typedef struct ogs_nas_dcn_id_s {
 /* 9.9.3.49 Non-3GPP NW provided policies
  * See subclause 10.5.5.37 in 3GPP TS 24.008.
  * O TV 1 */
-typedef struct ogs_nas_non__nw_provided_policies_s {
+typedef struct ogs_nas_non_nw_provided_policies_s {
 ED3(uint8_t type:4;,
     uint8_t spare:3;,
     uint8_t use_of_non_3gpp_emergency_numbers_permitted:1;)
-} __attribute__ ((packed)) ogs_nas_non__nw_provided_policies_t;
+} __attribute__ ((packed)) ogs_nas_non_nw_provided_policies_t;
 
 /* 9.9.3.50 HashMME
  * O TLV 10 */
@@ -834,6 +834,28 @@ typedef struct ogs_nas_imsi_offset_s {
 /* 9.9.3.67 EPS additional request result
  * O TLV 3 */
 typedef struct ogs_nas_additional_request_result_s ogs_nas_eps_additional_request_result_t;
+
+/* 9.9.3.71 UE information request
+ * O TV 1 */
+typedef struct ogs_nas_ue_information_request_s {
+ED3(uint8_t type:4;,
+    uint8_t spare:1;,
+    uint8_t uclir:3;)
+} __attribute__ ((packed)) ogs_nas_ue_information_request_t;
+
+/* 9.9.3.72 UE coarse location information
+ * O TLV 8 */
+typedef struct ogs_nas_ue_coarse_location_information_s {
+    uint8_t length;
+    uint8_t contents[6];
+} __attribute__ ((packed)) ogs_nas_ue_coarse_location_information_t;
+
+/* 9.9.3.73 S&F satellite operation parameters
+ * O TLV 257 */
+typedef struct ogs_nas_s_f_satellite_operation_parameters_s {
+    uint8_t length;
+    void *buffer;
+} ogs_nas_s_f_satellite_operation_parameters_t;
 
 /* 9.9.4.1 Access point name
  * See subclause 10.5.6.1 in 3GPP TS 24.008 [13].

@@ -8,4 +8,5 @@ ies.append({ "iei" : "56", "value" : "NonceMME", "type" : "Nonce", "reference" :
 ies.append({ "iei" : "4F", "value" : "HashMME", "type" : "HashMME", "reference" : "9.9.3.50", "presence" : "O", "format" : "TLV", "length" : "10"})
 ies.append({ "iei" : "6F", "value" : "Replayed UE additional security capability", "type" : "UE additional security capability", "reference" : "9.9.3.53", "presence" : "O", "format" : "TLV", "length" : "6"})
 ies.append({ "iei" : "37", "value" : "UE radio capability ID request", "type" : "UE radio capability ID request", "reference" : "9.9.3.59", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "D-", "value" : "UE coarse location information request", "type" : "UE information request", "reference" : "9.9.3.71", "presence" : "O", "format" : "TV", "length" : "1"})
 msg_list[key]["ies"] = ies

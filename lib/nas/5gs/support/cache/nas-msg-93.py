@@ -8,4 +8,5 @@ ies.append({ "iei" : "36", "value" : "Additional 5G security information", "type
 ies.append({ "iei" : "78", "value" : "EAP message", "type" : "EAP message", "reference" : "9.11.2.2", "presence" : "O", "format" : "TLV-E", "length" : "7-1503"})
 ies.append({ "iei" : "38", "value" : "ABBA", "type" : "ABBA", "reference" : "9.11.3.10", "presence" : "O", "format" : "TLV", "length" : "4-n"})
 ies.append({ "iei" : "19", "value" : "Replayed S1 UE security capabilities", "type" : "S1 UE security capability", "reference" : "9.11.3.48A", "presence" : "O", "format" : "TLV", "length" : "4-7"})
+ies.append({ "iei" : "55", "value" : "AUN3 device security key", "type" : "AUN3 device security key", "reference" : "9.11.3.107", "presence" : "O", "format" : "TLV", "length" : "36-257"})
 msg_list[key]["ies"] = ies
