@@ -86,6 +86,26 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
         return false;
     }
 
+    /*
+     * Reject non-positive heartBeatTimer before it reaches the timer layer.
+     *
+     * A non-positive value would otherwise be stored as-is in
+     * nf_instance->time.heartbeat_interval and later passed to
+     * ogs_timer_start(), where ogs_assert(duration) aborts the NRF
+     * (heartBeatTimer == -no_heartbeat_margin yields a zero duration),
+     * or schedules an already-expired timer for other negative values.
+     */
+    if (NFProfile->is_heart_beat_timer == true &&
+            NFProfile->heart_beat_timer <= 0) {
+        ogs_error("Invalid heartBeatTimer [%d]",
+                NFProfile->heart_beat_timer);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(
+                stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Invalid heartBeatTimer", NULL, NULL));
+        return false;
+    }
+
     /* Validate the PLMN-ID against configured serving PLMN-IDs */
     if (NFProfile->plmn_list) {
         /* Set PLMN status to invalid */
