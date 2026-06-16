@@ -932,33 +932,6 @@ int ogs_sockaddr_to_user_plane_ip_resource_info(
     return OGS_OK;
 }
 
-int ogs_user_plane_ip_resource_info_to_sockaddr(
-    ogs_user_plane_ip_resource_info_t *info,
-    ogs_sockaddr_t **addr, ogs_sockaddr_t **addr6)
-{
-    ogs_assert(addr && addr6);
-    ogs_assert(info);
-
-    *addr = NULL;
-    *addr6 = NULL;
-
-    if (info->v4) {
-        *addr = ogs_calloc(1, sizeof(**addr));
-        ogs_assert(*addr);
-        (*addr)->sin.sin_addr.s_addr = info->addr;
-        (*addr)->ogs_sa_family = AF_INET;
-    }
-
-    if (info->v6) {
-        *addr6 = ogs_calloc(1, sizeof(**addr6));
-        ogs_assert(*addr6);
-        memcpy((*addr6)->sin6.sin6_addr.s6_addr, info->addr6, OGS_IPV6_LEN);
-        (*addr6)->ogs_sa_family = AF_INET6;
-    }
-
-    return OGS_OK;
-}
-
 ogs_slice_data_t *ogs_slice_find_by_s_nssai(
         ogs_slice_data_t *slice_data, int num_of_slice_data,
         ogs_s_nssai_t *s_nssai)

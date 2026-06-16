@@ -196,34 +196,19 @@ uint32_t smf_gx_handle_cca_initial_request(
         up2cp_pdr->f_teid.choose_id = OGS_PFCP_DEFAULT_CHOOSE_ID;
         up2cp_pdr->f_teid_len = 2;
     } else {
-        ogs_gtpu_resource_t *resource = NULL;
-        resource = ogs_pfcp_find_gtpu_resource(
-                &sess->pfcp_node->gtpu_resource_list,
-                sess->session.name, ul_pdr->src_if);
-        if (resource) {
-            ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
-                &bearer->pgw_s5u_addr, &bearer->pgw_s5u_addr6);
-            if (resource->info.teidri)
-                bearer->pgw_s5u_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                        ul_pdr->teid, resource->info.teidri,
-                        resource->info.teid_range);
-            else
-                bearer->pgw_s5u_teid = ul_pdr->teid;
-        } else {
-            ogs_assert(sess->pfcp_node->addr_list);
-            if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
-                ogs_assert(OGS_OK ==
-                    ogs_copyaddrinfo(
-                        &bearer->pgw_s5u_addr, sess->pfcp_node->addr_list));
-            else if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET6)
-                ogs_assert(OGS_OK ==
-                    ogs_copyaddrinfo(
-                        &bearer->pgw_s5u_addr6, sess->pfcp_node->addr_list));
-            else
-                ogs_assert_if_reached();
+        ogs_assert(sess->pfcp_node->addr_list);
+        if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(
+                    &bearer->pgw_s5u_addr, sess->pfcp_node->addr_list));
+        else if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET6)
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(
+                    &bearer->pgw_s5u_addr6, sess->pfcp_node->addr_list));
+        else
+            ogs_assert_if_reached();
 
-            bearer->pgw_s5u_teid = ul_pdr->teid;
-        }
+        bearer->pgw_s5u_teid = ul_pdr->teid;
 
         ogs_assert(OGS_OK ==
             ogs_pfcp_sockaddr_to_f_teid(

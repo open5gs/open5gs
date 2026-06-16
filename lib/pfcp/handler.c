@@ -93,32 +93,12 @@ bool ogs_pfcp_cp_handle_association_setup_request(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_association_setup_request_t *req)
 {
-    int i;
-    int16_t decoded;
-
     ogs_assert(xact);
     ogs_assert(node);
     ogs_assert(req);
 
     ogs_pfcp_cp_send_association_setup_response(
             xact, OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
-
-    ogs_gtpu_resource_remove_all(&node->gtpu_resource_list);
-
-    for (i = 0; i < OGS_MAX_NUM_OF_GTPU_RESOURCE; i++) {
-        ogs_pfcp_tlv_user_plane_ip_resource_information_t *message =
-            &req->user_plane_ip_resource_information[i];
-        ogs_user_plane_ip_resource_info_t info;
-
-        if (message->presence == 0)
-            break;
-
-        decoded = ogs_pfcp_parse_user_plane_ip_resource_info(&info, message);
-        if (message->len == decoded)
-            ogs_gtpu_resource_add(&node->gtpu_resource_list, &info);
-        else
-            ogs_error("Invalid User Plane IP Resource Info");
-    }
 
     if (req->up_function_features.presence) {
         if (req->up_function_features.data && req->up_function_features.len) {
@@ -141,31 +121,11 @@ bool ogs_pfcp_cp_handle_association_setup_response(
         ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
         ogs_pfcp_association_setup_response_t *rsp)
 {
-    int i;
-    int16_t decoded;
-
     ogs_assert(xact);
     ogs_pfcp_xact_commit(xact);
 
     ogs_assert(node);
     ogs_assert(rsp);
-
-    ogs_gtpu_resource_remove_all(&node->gtpu_resource_list);
-
-    for (i = 0; i < OGS_MAX_NUM_OF_GTPU_RESOURCE; i++) {
-        ogs_pfcp_tlv_user_plane_ip_resource_information_t *message =
-            &rsp->user_plane_ip_resource_information[i];
-        ogs_user_plane_ip_resource_info_t info;
-
-        if (message->presence == 0)
-            break;
-
-        decoded = ogs_pfcp_parse_user_plane_ip_resource_info(&info, message);
-        if (message->len == decoded)
-            ogs_gtpu_resource_add(&node->gtpu_resource_list, &info);
-        else
-            ogs_error("Invalid User Plane IP Resource Info");
-    }
 
     if (rsp->up_function_features.presence) {
         if (rsp->up_function_features.data && rsp->up_function_features.len) {

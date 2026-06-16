@@ -823,9 +823,6 @@ ED6(uint8_t     spare:1;,
 int ogs_sockaddr_to_user_plane_ip_resource_info(
     ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
     ogs_user_plane_ip_resource_info_t *info);
-int ogs_user_plane_ip_resource_info_to_sockaddr(
-    ogs_user_plane_ip_resource_info_t *info,
-    ogs_sockaddr_t **addr, ogs_sockaddr_t **addr6);
 
 typedef struct ogs_slice_data_s {
     ogs_s_nssai_t s_nssai;

@@ -118,8 +118,6 @@ typedef struct ogs_pfcp_node_s {
     uint32_t        remote_recovery; /* UTC time */
     bool            restoration_required;
 
-    ogs_list_t      gtpu_resource_list; /* User Plane IP Resource Information */
-
     ogs_pfcp_up_function_features_t up_function_features;
     int up_function_features_len;
 } ogs_pfcp_node_t;

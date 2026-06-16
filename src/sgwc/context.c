@@ -787,34 +787,19 @@ sgwc_tunnel_t *sgwc_tunnel_add(
         pdr->f_teid.ch = 1;
         pdr->f_teid_len = 1;
     } else {
-        ogs_gtpu_resource_t *resource = NULL;
-        resource = ogs_pfcp_find_gtpu_resource(
-                &sess->pfcp_node->gtpu_resource_list,
-                sess->session.name, pdr->src_if);
-        if (resource) {
-            ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
-                &tunnel->local_addr, &tunnel->local_addr6);
-            if (resource->info.teidri)
-                tunnel->local_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
-                        pdr->teid, resource->info.teidri,
-                        resource->info.teid_range);
-            else
-                tunnel->local_teid = pdr->teid;
-        } else {
-            ogs_assert(sess->pfcp_node->addr_list);
-            if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
-                ogs_assert(OGS_OK ==
-                    ogs_copyaddrinfo(
-                        &tunnel->local_addr, sess->pfcp_node->addr_list));
-            else if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET6)
-                ogs_assert(OGS_OK ==
-                    ogs_copyaddrinfo(
-                        &tunnel->local_addr6, sess->pfcp_node->addr_list));
-            else
-                ogs_assert_if_reached();
+        ogs_assert(sess->pfcp_node->addr_list);
+        if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(
+                    &tunnel->local_addr, sess->pfcp_node->addr_list));
+        else if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET6)
+            ogs_assert(OGS_OK ==
+                ogs_copyaddrinfo(
+                    &tunnel->local_addr6, sess->pfcp_node->addr_list));
+        else
+            ogs_assert_if_reached();
 
-            tunnel->local_teid = pdr->teid;
-        }
+        tunnel->local_teid = pdr->teid;
 
         ogs_assert(OGS_OK ==
             ogs_pfcp_sockaddr_to_f_teid(

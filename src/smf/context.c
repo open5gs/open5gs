@@ -2628,44 +2628,25 @@ void smf_sess_create_indirect_data_forwarding(smf_sess_t *sess)
              * the same TEID.
              */
             if (ogs_list_first(&sess->bearer_list) == qos_flow) {
-                ogs_gtpu_resource_t *resource = NULL;
-
                 if (sess->handover.local_dl_addr)
                     ogs_freeaddrinfo(sess->handover.local_dl_addr);
                 if (sess->handover.local_dl_addr6)
                     ogs_freeaddrinfo(sess->handover.local_dl_addr6);
 
-                resource = ogs_pfcp_find_gtpu_resource(
-                        &sess->pfcp_node->gtpu_resource_list,
-                        sess->session.name, pdr->src_if);
-
-                if (resource) {
-                    ogs_user_plane_ip_resource_info_to_sockaddr(&resource->info,
+                ogs_assert(sess->pfcp_node->addr_list);
+                if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
+                    ogs_assert(OGS_OK == ogs_copyaddrinfo(
                         &sess->handover.local_dl_addr,
-                        &sess->handover.local_dl_addr6);
-                    if (resource->info.teidri)
-                        sess->handover.local_dl_teid =
-                            OGS_PFCP_GTPU_INDEX_TO_TEID(
-                                pdr->teid, resource->info.teidri,
-                                resource->info.teid_range);
-                    else
-                        sess->handover.local_dl_teid = pdr->teid;
-                } else {
-                    ogs_assert(sess->pfcp_node->addr_list);
-                    if (sess->pfcp_node->addr_list->ogs_sa_family == AF_INET)
-                        ogs_assert(OGS_OK == ogs_copyaddrinfo(
-                            &sess->handover.local_dl_addr,
-                            sess->pfcp_node->addr_list));
-                    else if (sess->pfcp_node->addr_list->ogs_sa_family ==
-                            AF_INET6)
-                        ogs_assert(OGS_OK == ogs_copyaddrinfo(
-                            &sess->handover.local_dl_addr6,
-                            sess->pfcp_node->addr_list));
-                    else
-                        ogs_assert_if_reached();
+                        sess->pfcp_node->addr_list));
+                else if (sess->pfcp_node->addr_list->ogs_sa_family ==
+                        AF_INET6)
+                    ogs_assert(OGS_OK == ogs_copyaddrinfo(
+                        &sess->handover.local_dl_addr6,
+                        sess->pfcp_node->addr_list));
+                else
+                    ogs_assert_if_reached();
 
-                    sess->handover.local_dl_teid = pdr->teid;
-                }
+                sess->handover.local_dl_teid = pdr->teid;
             }
 
             ogs_assert(OGS_OK ==
