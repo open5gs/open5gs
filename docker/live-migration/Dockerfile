@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev \
         libmongoc-dev libbson-dev libyaml-dev libmicrohttpd-dev \
         libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev \
-        iproute2 iputils-ping tcpdump curl ca-certificates netbase pkg-config && \
+        iproute2 iputils-ping tcpdump curl ca-certificates netbase pkg-config \
+        wondershaper procps net-tools iptables iperf3 traceroute && \
     if apt-cache show libidn-dev >/dev/null 2>&1; then \
         apt-get install -y --no-install-recommends libidn-dev; \
     else \

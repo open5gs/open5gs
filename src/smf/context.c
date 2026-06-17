@@ -20,6 +20,7 @@
 #include "context.h"
 #include "gtp-path.h"
 #include "migration.h"
+#include "pdu-info.h"
 #include "pfcp-path.h"
 
 static smf_context_t self;
@@ -1485,6 +1486,112 @@ bool smf_sess_upf_eligible(smf_sess_t *sess, ogs_pfcp_node_t *node)
     return compare_ue_info(node, sess);
 }
 
+static int sessions_on_upf_node(ogs_pfcp_node_t *node)
+{
+    smf_ue_t *smf_ue = NULL;
+    smf_sess_t *sess = NULL;
+    int count = 0;
+
+    ogs_list_for_each(&smf_self()->smf_ue_list, smf_ue)
+        ogs_list_for_each(&smf_ue->sess_list, sess)
+            if (sess->pfcp_node == node)
+                count++;
+
+    return count;
+}
+
+static bool upf_node_is_draining(ogs_pfcp_node_t *node)
+{
+    char buf[OGS_ADDRSTRLEN];
+
+    if (!node || !node->addr_list)
+        return false;
+
+    return smf_upf_admin_is_draining(OGS_ADDR(node->addr_list, buf)) == 1;
+}
+
+/* Least-sessions UPF selection with a deterministic address tie-break.
+ *
+ * Stock round-robin ignores both load and admin state: it piles new sessions
+ * onto already-busy UPFs after scale events, and it can hand a brand-new
+ * session to a UPF that the controller is actively draining for scale-in,
+ * which makes the drain verification fail. Selection passes, strictest
+ * first:
+ *
+ *   pass 0: PFCP-associated, subnet/DNN-eligible, not admin-draining
+ *   pass 1: PFCP-associated, not admin-draining (no eligible match; mirrors
+ *           the stock no_pfcp_rr_select==0 fallback without reusing a UPF the
+ *           controller is actively draining)
+ *   pass 2: PFCP-associated, subnet/DNN-eligible (every non-draining
+ *           candidate failed; serving the UE still beats rejecting it)
+ *   pass 3: any PFCP-associated node
+ */
+static ogs_pfcp_node_t *least_sessions_upf_node(smf_sess_t *sess)
+{
+    int pass;
+    ogs_pfcp_node_t *node = NULL;
+
+    for (pass = 0; pass < 4; pass++) {
+        ogs_pfcp_node_t *best = NULL;
+        int best_count = 0;
+        char best_addr[OGS_ADDRSTRLEN] = "";
+
+        if (pass >= 1 && ogs_global_conf()->parameter.no_pfcp_rr_select)
+            break;
+
+        ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, node) {
+            char addr[OGS_ADDRSTRLEN] = "";
+            bool eligible, draining;
+            int count;
+
+            if (!OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated))
+                continue;
+
+            eligible = compare_ue_info(node, sess) == true;
+            draining = upf_node_is_draining(node);
+
+            if (pass == 0 && (!eligible || draining))
+                continue;
+            if (pass == 1 && draining)
+                continue;
+            if (pass == 2 && !eligible)
+                continue;
+
+            count = sessions_on_upf_node(node);
+            if (node->addr_list)
+                OGS_ADDR(node->addr_list, addr);
+            if (best == NULL || count < best_count ||
+                (count == best_count && strcmp(addr, best_addr) < 0)) {
+                best = node;
+                best_count = count;
+                ogs_cpystrn(best_addr, addr, OGS_ADDRSTRLEN);
+            }
+        }
+
+        if (best) {
+            ogs_info("[UPF-SELECT] least_sessions pass=%d selected %s "
+                    "with %d active session(s)", pass, best_addr, best_count);
+            return best;
+        }
+    }
+
+    return NULL;
+}
+
+static bool smf_upf_selection_least_sessions(void)
+{
+    static int cached = -1;
+
+    if (cached < 0) {
+        const char *mode = getenv("SMF_UPF_SELECTION");
+        cached = (mode && strcmp(mode, "round_robin") == 0) ? 0 : 1;
+        ogs_info("[UPF-SELECT] selection mode: %s",
+                cached ? "least_sessions" : "round_robin");
+    }
+
+    return cached == 1;
+}
+
 static ogs_pfcp_node_t *selected_upf_node(
         ogs_pfcp_node_t *current, smf_sess_t *sess)
 {
@@ -1528,6 +1635,20 @@ static ogs_pfcp_node_t *selected_upf_node(
 void smf_sess_select_upf(smf_sess_t *sess)
 {
     ogs_assert(sess);
+
+    if (smf_upf_selection_least_sessions()) {
+        ogs_pfcp_node_t *selected = least_sessions_upf_node(sess);
+        if (selected) {
+            /* Keep the round-robin cursor coherent for the stock fallback. */
+            ogs_pfcp_self()->pfcp_node = selected;
+            OGS_SETUP_PFCP_NODE(sess, selected);
+            ogs_info("UE using UPF on IP %s (least-sessions)",
+                    ogs_sockaddr_to_string_static(selected->addr_list));
+            return;
+        }
+        ogs_warn("[UPF-SELECT] least_sessions found no associated UPF; "
+                "falling back to round-robin selection");
+    }
 
     /*
      * When used for the first time, if last node is set,

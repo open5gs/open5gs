@@ -75,6 +75,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <limits.h>
+#include <inttypes.h>
 
 #include "ogs-core.h"
 #include "context.h"
@@ -86,6 +87,156 @@
 #ifndef OGS_GTPV1_U_UDP_PORT
 #define OGS_GTPV1_U_UDP_PORT 2152
 #endif
+
+#define SMF_TESTBED_API_VERSION "5g3e-smf-api/v1"
+#define SMF_PDU_INFO_SCHEMA "5g3e.smf.pdu-info/v1"
+#define SMF_UPF_INFO_SCHEMA "5g3e.smf.upf-info/v1"
+#define SMF_UPF_ADMIN_SCHEMA "5g3e.smf.upf-admin/v1"
+
+static void add_testbed_api_metadata(
+        cJSON *root, const char *endpoint, const char *schema);
+
+/*
+ * UPF administrative state (research: explicit UPF member states required by
+ * PROJECT_GOAL.md). A UPF marked "draining" stays PFCP-associated but is removed
+ * from migration-target eligibility, so the controller can quiesce a UPF before
+ * scale-in without racing its own bookkeeping. Kept as a small SMF-side table
+ * keyed by the peer IP string (same representation /upf-info reports and
+ * /pdu-migrate accepts) so the shared PFCP node struct is left untouched.
+ */
+#define SMF_UPF_ADMIN_TABLE_MAX 64
+static struct {
+    char addr[OGS_ADDRSTRLEN];
+    bool draining;
+} smf_upf_admin_table[SMF_UPF_ADMIN_TABLE_MAX];
+
+int smf_upf_admin_is_draining(const char *addr)
+{
+    int i;
+    if (!addr || !addr[0])
+        return 0;
+    for (i = 0; i < SMF_UPF_ADMIN_TABLE_MAX; i++) {
+        if (smf_upf_admin_table[i].addr[0] &&
+                strcmp(smf_upf_admin_table[i].addr, addr) == 0)
+            return smf_upf_admin_table[i].draining ? 1 : 0;
+    }
+    return 0;
+}
+
+void smf_upf_admin_set(const char *addr, int draining)
+{
+    int i, free_slot = -1;
+    if (!addr || !addr[0])
+        return;
+    for (i = 0; i < SMF_UPF_ADMIN_TABLE_MAX; i++) {
+        if (smf_upf_admin_table[i].addr[0] == '\0') {
+            if (free_slot < 0)
+                free_slot = i;
+            continue;
+        }
+        if (strcmp(smf_upf_admin_table[i].addr, addr) == 0) {
+            smf_upf_admin_table[i].draining = draining ? true : false;
+            return;
+        }
+    }
+    if (!draining)
+        return; /* clearing an unknown peer is a no-op */
+    if (free_slot >= 0) {
+        ogs_cpystrn(smf_upf_admin_table[free_slot].addr, addr, OGS_ADDRSTRLEN);
+        smf_upf_admin_table[free_slot].draining = true;
+    } else {
+        ogs_warn("[UPF-ADMIN] admin table full; cannot mark %s draining", addr);
+    }
+}
+
+size_t smf_handle_upf_admin(char *buf, size_t buflen,
+        const char *method, const char *body, size_t body_len,
+        int *status_code)
+{
+    cJSON *root = NULL, *request = NULL, *upf = NULL, *admin_state = NULL;
+    const char *state_str = NULL;
+    int draining = 0;
+    size_t out;
+
+    (void)body_len;
+
+    if (!buf || buflen == 0)
+        return 0;
+    if (status_code)
+        *status_code = 200;
+
+    root = cJSON_CreateObject();
+    if (!root) { if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; } buf[0] = '\0'; return 0; }
+    add_testbed_api_metadata(root, "/upf-admin", SMF_UPF_ADMIN_SCHEMA);
+
+    if (!method || strcmp(method, "POST") != 0) {
+        if (status_code) *status_code = 405;
+        cJSON_AddStringToObject(root, "result", "rejected");
+        cJSON_AddStringToObject(root, "reason", "post_required");
+        goto finalize;
+    }
+
+    request = (body && body[0]) ? cJSON_Parse(body) : NULL;
+    if (!request) {
+        if (status_code) *status_code = 400;
+        cJSON_AddStringToObject(root, "result", "rejected");
+        cJSON_AddStringToObject(root, "reason", "invalid_json");
+        goto finalize;
+    }
+
+    upf = cJSON_GetObjectItemCaseSensitive(request, "upf");
+    admin_state = cJSON_GetObjectItemCaseSensitive(request, "admin_state");
+    if (!cJSON_IsString(upf) || !upf->valuestring ||
+            !cJSON_IsString(admin_state) || !admin_state->valuestring) {
+        if (status_code) *status_code = 400;
+        cJSON_AddStringToObject(root, "result", "rejected");
+        cJSON_AddStringToObject(root, "reason", "upf_and_admin_state_required");
+        cJSON_Delete(request);
+        goto finalize;
+    }
+
+    state_str = admin_state->valuestring;
+    if (strcmp(state_str, "draining") == 0) {
+        draining = 1;
+    } else if (strcmp(state_str, "active") == 0) {
+        draining = 0;
+    } else {
+        if (status_code) *status_code = 400;
+        cJSON_AddStringToObject(root, "result", "rejected");
+        cJSON_AddStringToObject(root, "reason", "admin_state_must_be_draining_or_active");
+        cJSON_Delete(request);
+        goto finalize;
+    }
+
+    smf_upf_admin_set(upf->valuestring, draining);
+    cJSON_AddStringToObject(root, "result", "accepted");
+    cJSON_AddStringToObject(root, "upf", upf->valuestring);
+    cJSON_AddStringToObject(root, "admin_state", draining ? "draining" : "active");
+    cJSON_Delete(request);
+
+finalize:
+    {
+        char *tmp = cJSON_PrintUnformatted(root);
+        cJSON_Delete(root);
+        if (!tmp) { if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; } buf[0] = '\0'; return 0; }
+        out = strlen(tmp);
+        if (out >= buflen) out = buflen - 1;
+        memcpy(buf, tmp, out);
+        buf[out] = '\0';
+        cJSON_free(tmp);
+    }
+    return out;
+}
+
+static void add_testbed_api_metadata(cJSON *root, const char *endpoint, const char *schema)
+{
+    if (!root)
+        return;
+    cJSON_AddStringToObject(root, "api_version", SMF_TESTBED_API_VERSION);
+    cJSON_AddStringToObject(root, "schema", schema);
+    cJSON_AddStringToObject(root, "endpoint", endpoint);
+    cJSON_AddStringToObject(root, "integer_encoding", "numeric fields are kept for compatibility; *_str or *_us fields are integer-safe strings");
+}
 
 /* Only used in ip_is_unspecified (currently disabled) */
 /* static const uint8_t zero6[OGS_IPV6_LEN] = {0}; */
@@ -340,6 +491,13 @@ static cJSON *build_migration_object_5g(const smf_sess_t *sess)
                 (double)sess->migration.target_upf_n4_seid);
         if (!seid) { cJSON_Delete(migration); return NULL; }
         cJSON_AddItemToObjectCS(migration, "target_upf_n4_seid", seid);
+
+        char seidbuf[32];
+        snprintf(seidbuf, sizeof seidbuf, "%" PRIu64,
+                (uint64_t)sess->migration.target_upf_n4_seid);
+        cJSON *seid_str = cJSON_CreateString(seidbuf);
+        if (!seid_str) { cJSON_Delete(migration); return NULL; }
+        cJSON_AddItemToObjectCS(migration, "target_upf_n4_seid_str", seid_str);
     }
 
     if (sess->migration.target_local_ul_teid ||
@@ -378,6 +536,13 @@ static cJSON *build_migration_object_5g(const smf_sess_t *sess)
 
         cJSON_AddItemToObjectCS(target_n3, "upf", upf);
         cJSON_AddItemToObjectCS(migration, "target_n3", target_n3);
+    }
+
+    {
+        /* Live per-phase timings for research instrumentation. */
+        cJSON *timings = smf_migration_timings_to_json(sess);
+        if (timings)
+            cJSON_AddItemToObjectCS(migration, "timings_us", timings);
     }
 
     if (migration->child == NULL) {
@@ -709,6 +874,13 @@ static cJSON *build_single_pdu_object(const smf_sess_t *sess, int *any_active, i
         cJSON *ts = cJSON_CreateNumber((double)sess->ue_location_timestamp);
         if (!ts) { cJSON_Delete(pdu); return NULL; }
         cJSON_AddItemToObjectCS(pdu, "ue_location_timestamp", ts);
+
+        char tsbuf[32];
+        snprintf(tsbuf, sizeof tsbuf, "%" PRId64,
+                (int64_t)sess->ue_location_timestamp);
+        cJSON *ts_str = cJSON_CreateString(tsbuf);
+        if (!ts_str) { cJSON_Delete(pdu); return NULL; }
+        cJSON_AddItemToObjectCS(pdu, "ue_location_timestamp_us", ts_str);
     }
 
     return pdu;
@@ -751,6 +923,21 @@ static cJSON *build_ue_object(const smf_ue_t *ue)
     return ueo;
 }
 
+/*
+ * Concurrency invariant (load-bearing): the testbed dumpers below read live
+ * smf_sess_t / migration / PFCP-peer state without locks. This is safe ONLY
+ * because the Prometheus metrics server is NOT started with an MHD internal
+ * thread. Its listen fd is registered on ogs_app()->pollset and MHD_run() is
+ * driven from mhd_server_run() on the SMF main event loop (see
+ * lib/metrics/prometheus/context.c). These handlers therefore run cooperatively
+ * on the same single thread as the GSM/PFCP/NGAP state machines that mutate the
+ * session, so no torn reads of SEID/TEID/node pointers can occur.
+ *
+ * If anyone ever adds MHD_USE_INTERNAL_POLLING_THREAD / MHD_USE_SELECT_INTERNALLY
+ * to the metrics daemon, this invariant breaks and these reads must be moved
+ * behind a snapshot taken on the main loop. Keep that in mind before changing
+ * the metrics server threading model.
+ */
 size_t smf_dump_pdu_info_paged(char *buf, size_t buflen, size_t page, size_t page_size)
 {
     if (!buf || buflen == 0) return 0;
@@ -768,6 +955,7 @@ size_t smf_dump_pdu_info_paged(char *buf, size_t buflen, size_t page, size_t pag
 
     cJSON *root = cJSON_CreateObject();
     if (!root) { if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; } if (buflen) buf[0] = '\0'; return 0; }
+    add_testbed_api_metadata(root, "/pdu-info", SMF_PDU_INFO_SCHEMA);
 
     cJSON *items = cJSON_CreateArray();
     if (!items) { cJSON_Delete(root); if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; } if (buflen) buf[0] = '\0'; return 0; }
@@ -792,6 +980,15 @@ size_t smf_dump_pdu_info_paged(char *buf, size_t buflen, size_t page, size_t pag
     }
 
     cJSON_AddItemToObjectCS(root, "items", items);
+
+    /* Attach the recent-migration ring on the first page only; the exporter
+     * reads it once and dedupes on seq. Avoids repeating it across pages. */
+    if (start_index == 0) {
+        cJSON *recent = smf_migration_recent_to_json();
+        if (recent)
+            cJSON_AddItemToObjectCS(root, "recent_migrations", recent);
+    }
+
     json_pager_add_trailing(root, no_paging, page, page_size, emitted, has_next && !oom, "/pdu-info", oom);
 
     return json_pager_finalize(root, buf, buflen);
@@ -835,6 +1032,7 @@ size_t smf_dump_upf_info(char *buf, size_t buflen, size_t page, size_t page_size
         buf[0] = '\0';
         return 0;
     }
+    add_testbed_api_metadata(root, "/upf-info", SMF_UPF_INFO_SCHEMA);
 
     ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, node) {
         cJSON *item = NULL;
@@ -880,6 +1078,8 @@ size_t smf_dump_upf_info(char *buf, size_t buflen, size_t page, size_t page_size
         cJSON_AddItemToObjectCS(item, "ftup", ftup);
         cJSON_AddItemToObjectCS(item, "configured", configured);
         cJSON_AddItemToObjectCS(item, "dynamic", dynamic);
+        cJSON_AddStringToObject(item, "admin_state",
+                smf_upf_admin_is_draining(ipbuf) ? "draining" : "active");
 
         if (node->num_of_dnn > 0) {
             int i;

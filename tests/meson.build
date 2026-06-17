@@ -34,3 +34,8 @@ subdir('310014')
 subdir('handover')
 subdir('non3gpp')
 subdir('transfer')
+
+test('testbed-api-contracts',
+    python3,
+    args : [files('testbed-api-contracts.py')],
+    suite: 'unit')

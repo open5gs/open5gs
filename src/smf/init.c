@@ -98,6 +98,7 @@ int smf_initialize(void)
     ogs_metrics_register_custom_ep(smf_dump_pdu_info, "/pdu-info");
     ogs_metrics_register_custom_ep(smf_dump_upf_info, "/upf-info");
     ogs_metrics_register_custom_req_ep(smf_handle_pdu_migrate, "/pdu-migrate");
+    ogs_metrics_register_custom_req_ep(smf_handle_upf_admin, "/upf-admin");
 
     initialized = 1;
 

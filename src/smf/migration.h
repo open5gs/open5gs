@@ -21,6 +21,7 @@
 #define SMF_MIGRATION_H
 
 #include "context.h"
+#include "sbi/openapi/external/cJSON.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +29,14 @@ extern "C" {
 
 const char *smf_migration_state_name(smf_migration_state_e state);
 bool smf_migration_active(const smf_sess_t *sess);
+
+/* Set migration state and stamp the monotonic entry time for that state. */
+void smf_migration_set_state(smf_sess_t *sess, smf_migration_state_e state);
+/* Append a "recent_migrations" cJSON array (most-recent-first) for /pdu-info.
+ * Returns NULL when the ring is empty. */
+cJSON *smf_migration_recent_to_json(void);
+/* Live per-phase timings for an in-flight migration; NULL if idle. */
+cJSON *smf_migration_timings_to_json(const smf_sess_t *sess);
 void smf_migration_clear(smf_sess_t *sess);
 int smf_migration_send_path_switch_request(smf_sess_t *sess);
 int smf_migration_handle_path_switch_response(

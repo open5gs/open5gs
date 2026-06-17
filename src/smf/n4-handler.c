@@ -376,7 +376,7 @@ uint8_t smf_5gc_n4_handle_migration_target_establishment_response(
     ogs_assert(up_f_seid);
 
     sess->migration.target_upf_n4_seid = be64toh(up_f_seid->seid);
-    sess->migration.state = SMF_MIGRATION_STATE_TARGET_READY;
+    smf_migration_set_state(sess, SMF_MIGRATION_STATE_TARGET_READY);
 
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }

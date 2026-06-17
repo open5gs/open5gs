@@ -1,0 +1,8 @@
+ARG BASE_IMAGE=open5gs-live-migration:dev
+FROM ${BASE_IMAGE}
+
+WORKDIR /open5gs
+
+COPY src/smf /open5gs/src/smf
+
+RUN ninja -C build src/smf/open5gs-smfd install

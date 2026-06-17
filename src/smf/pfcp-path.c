@@ -19,6 +19,7 @@
 
 #include "sbi-path.h"
 #include "pfcp-path.h"
+#include "migration.h"
 
 /* Converts PFCP "Usage Report" "Report Trigger" bitmask to Gy "Reporting-Reason" AVP enum value.
  * PFCP: 3GPP TS 29.244 sec 8.2.41
@@ -329,6 +330,19 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
     case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
         ogs_warn("No PFCP session establishment response");
 
+        if (sess->migration.state == SMF_MIGRATION_STATE_TARGET_PREPARING) {
+            /* The timed-out establishment was the live-migration target
+             * prepare, not the session's own setup. The session is still
+             * healthy on the source UPF; only the migration may fail. The
+             * generic event below would reach the session FSM in a state
+             * that does not expect it and tear nothing down cleanly. */
+            ogs_error("[MIGRATE supi:%s psi:%d] target UPF prepare timed "
+                    "out; failing the migration, session stays on source",
+                    smf_ue->supi, sess->psi);
+            smf_migration_mark_failed(sess);
+            break;
+        }
+
         e = smf_event_new(SMF_EVT_N4_TIMER);
         ogs_assert(e);
         e->sess_id = sess->id;
@@ -363,7 +377,23 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
 
         ogs_error("%s", strerror);
 
-        if (trigger == OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED ||
+        if (trigger == OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_SOURCE ||
+            trigger == OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_TARGET) {
+
+            /* Live-migration cleanup of a UPF-side PFCP state timed out.
+             * The PDU session itself stays valid (post-switch it is bound
+             * to the target; an aborted prepare keeps it on the source),
+             * so only the migration record may fail — never the SMF, and
+             * never the session. Skip the session-removal event below. */
+            if (trigger == OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_SOURCE)
+                smf_migration_handle_source_deletion_response(sess, false);
+            else
+                smf_migration_handle_target_deletion_response(sess, false);
+
+            ogs_free(strerror);
+            break;
+
+        } else if (trigger == OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED ||
             trigger == OGS_PFCP_DELETE_TRIGGER_PCF_INITIATED) {
 
             /* Nothing */
@@ -378,8 +408,10 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
                     OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL, strerror,
                     NULL, NULL));
         } else {
-            ogs_fatal("Unknown trigger [%d]", trigger);
-            ogs_assert_if_reached();
+            ogs_error("Unknown PFCP deletion trigger [%d]; "
+                    "not removing the session", trigger);
+            ogs_free(strerror);
+            break;
         }
 
         ogs_free(strerror);

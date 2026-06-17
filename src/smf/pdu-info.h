@@ -40,6 +40,13 @@ size_t smf_dump_pdu_info_paged(char *buf, size_t buflen,
         size_t page, size_t page_size);
 size_t smf_dump_upf_info(char *buf, size_t buflen,
         size_t page, size_t page_size);
+
+/* UPF administrative (draining) state for safe scale-in. */
+int smf_upf_admin_is_draining(const char *addr);
+void smf_upf_admin_set(const char *addr, int draining);
+size_t smf_handle_upf_admin(char *buf, size_t buflen,
+        const char *method, const char *body, size_t body_len,
+        int *status_code);
 #ifdef __cplusplus
 }
 #endif

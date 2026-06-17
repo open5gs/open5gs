@@ -18,11 +18,15 @@
  */
 
 #include "migration.h"
+#include "pdu-info.h"
 #include "gsm-build.h"
 #include "ngap-build.h"
 #include "pfcp-path.h"
 #include "sbi-path.h"
 #include "sbi/openapi/external/cJSON.h"
+
+#define SMF_TESTBED_API_VERSION "5g3e-smf-api/v1"
+#define SMF_PDU_MIGRATE_SCHEMA "5g3e.smf.pdu-migrate/v1"
 
 static bool is_action(const cJSON *action, const char *name)
 {
@@ -106,6 +110,16 @@ static void migration_json_add_number(
         if (!cJSON_ReplaceItemInObjectCaseSensitive(root, name, item))
             cJSON_AddItemToObjectCS(root, name, item);
     }
+}
+
+static void migration_json_add_metadata(cJSON *root)
+{
+    if (!root)
+        return;
+    migration_json_add_string(root, "api_version", SMF_TESTBED_API_VERSION);
+    migration_json_add_string(root, "schema", SMF_PDU_MIGRATE_SCHEMA);
+    migration_json_add_string(root, "integer_encoding",
+            "numeric fields are kept for compatibility; large counters are exposed as integer-safe strings when present");
 }
 
 static int migration_ue_ip_string(smf_sess_t *sess, char *buf, size_t len)
@@ -247,6 +261,81 @@ const char *smf_migration_state_name(smf_migration_state_e state)
     }
 }
 
+void smf_migration_set_state(smf_sess_t *sess, smf_migration_state_e state)
+{
+    ogs_assert(sess);
+
+    sess->migration.state = state;
+    if (state >= 0 && state < SMF_MIGRATION_STATE_MAX)
+        sess->migration.state_ts_us[state] = ogs_get_monotonic_time();
+}
+
+static void migration_node_addr_copy(
+        ogs_pfcp_node_t *node, char *dst, size_t dstlen)
+{
+    const char *s = NULL;
+
+    if (!dst || dstlen == 0)
+        return;
+    if (node && node->addr_list)
+        s = ogs_sockaddr_to_string_static(node->addr_list);
+    ogs_cpystrn(dst, s ? s : "", dstlen);
+}
+
+/* Capture a finished migration into the global ring. Must run before
+ * smf_migration_clear() wipes the per-session timing fields. */
+static void migration_record_finish(
+        smf_sess_t *sess, smf_migration_outcome_e outcome)
+{
+    smf_context_t *smf = smf_self();
+    smf_migration_record_t *rec;
+    smf_ue_t *smf_ue = NULL;
+    const ogs_time_t *ts;
+    ogs_time_t now;
+
+    ogs_assert(sess);
+    if (!smf)
+        return;
+
+    now = ogs_get_monotonic_time();
+    ts = sess->migration.state_ts_us;
+
+    rec = &smf->migration_stats.records[smf->migration_stats.head];
+    memset(rec, 0, sizeof(*rec));
+
+    rec->seq = ++smf->migration_stats.seq;
+    rec->psi = sess->psi;
+    rec->outcome = outcome;
+    rec->recorded_at = ogs_time_now();
+
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    if (smf_ue && smf_ue->supi)
+        ogs_cpystrn(rec->supi, smf_ue->supi, sizeof(rec->supi));
+
+    migration_node_addr_copy(
+            sess->migration.source_node, rec->source_upf, sizeof(rec->source_upf));
+    migration_node_addr_copy(
+            sess->migration.target_node, rec->target_upf, sizeof(rec->target_upf));
+
+    if (ts[SMF_MIGRATION_STATE_TARGET_PREPARING] &&
+            ts[SMF_MIGRATION_STATE_TARGET_READY])
+        rec->prepare_us = ts[SMF_MIGRATION_STATE_TARGET_READY] -
+            ts[SMF_MIGRATION_STATE_TARGET_PREPARING];
+    if (ts[SMF_MIGRATION_STATE_ROUTE_PROGRAMMING] &&
+            ts[SMF_MIGRATION_STATE_SWITCH_CONFIRMED])
+        rec->switch_us = ts[SMF_MIGRATION_STATE_SWITCH_CONFIRMED] -
+            ts[SMF_MIGRATION_STATE_ROUTE_PROGRAMMING];
+    if (ts[SMF_MIGRATION_STATE_SOURCE_DRAINING])
+        rec->drain_us = now - ts[SMF_MIGRATION_STATE_SOURCE_DRAINING];
+    if (sess->migration.started_us)
+        rec->total_us = now - sess->migration.started_us;
+
+    smf->migration_stats.head =
+        (smf->migration_stats.head + 1) % SMF_MIGRATION_RECORD_RING;
+    if (smf->migration_stats.count < SMF_MIGRATION_RECORD_RING)
+        smf->migration_stats.count++;
+}
+
 bool smf_migration_active(const smf_sess_t *sess)
 {
     if (!sess)
@@ -289,6 +378,8 @@ void smf_migration_clear(smf_sess_t *sess)
 static void migration_metrics_finish(
         smf_sess_t *sess, smf_metric_type_global_t counter)
 {
+    smf_migration_outcome_e outcome = SMF_MIGRATION_OUTCOME_FAILED;
+
     ogs_assert(sess);
 
     if (sess->migration.metrics_active) {
@@ -297,6 +388,19 @@ static void migration_metrics_finish(
     }
 
     smf_metrics_inst_global_inc(counter);
+
+    switch (counter) {
+    case SMF_METR_GLOB_CTR_SMF_MIGRATION_COMPLETED:
+        outcome = SMF_MIGRATION_OUTCOME_COMPLETED;
+        break;
+    case SMF_METR_GLOB_CTR_SMF_MIGRATION_ROLLED_BACK:
+        outcome = SMF_MIGRATION_OUTCOME_ROLLED_BACK;
+        break;
+    default:
+        outcome = SMF_MIGRATION_OUTCOME_FAILED;
+        break;
+    }
+    migration_record_finish(sess, outcome);
 }
 
 void smf_migration_mark_failed(smf_sess_t *sess)
@@ -305,6 +409,121 @@ void smf_migration_mark_failed(smf_sess_t *sess)
 
     migration_metrics_finish(sess, SMF_METR_GLOB_CTR_SMF_MIGRATION_FAILED);
     sess->migration.state = SMF_MIGRATION_STATE_FAILED;
+}
+
+static void smf_migration_finish_target_rollback(
+        smf_sess_t *sess, bool cleanup_confirmed)
+{
+    bool record_terminal;
+
+    ogs_assert(sess);
+
+    record_terminal = sess->migration.metrics_active;
+    if (cleanup_confirmed) {
+        if (record_terminal)
+            migration_metrics_finish(
+                    sess, SMF_METR_GLOB_CTR_SMF_MIGRATION_ROLLED_BACK);
+    } else {
+        ogs_warn("[MIGRATE] target cleanup did not confirm; "
+                "clearing pre-switch migration state while source session stays active");
+        if (record_terminal)
+            migration_metrics_finish(sess, SMF_METR_GLOB_CTR_SMF_MIGRATION_FAILED);
+    }
+
+    smf_migration_clear(sess);
+    sess->migration.state = SMF_MIGRATION_STATE_ROLLED_BACK;
+}
+
+static const char *migration_outcome_name(smf_migration_outcome_e outcome)
+{
+    switch (outcome) {
+    case SMF_MIGRATION_OUTCOME_COMPLETED:
+        return "completed";
+    case SMF_MIGRATION_OUTCOME_ROLLED_BACK:
+        return "rolled_back";
+    default:
+        return "failed";
+    }
+}
+
+cJSON *smf_migration_recent_to_json(void)
+{
+    smf_context_t *smf = smf_self();
+    cJSON *array = NULL;
+    uint32_t i;
+
+    if (!smf || smf->migration_stats.count == 0)
+        return NULL;
+
+    array = cJSON_CreateArray();
+    if (!array)
+        return NULL;
+
+    /* Walk newest-first so the exporter sees the highest seq early. */
+    for (i = 0; i < smf->migration_stats.count; i++) {
+        uint32_t idx = (smf->migration_stats.head + SMF_MIGRATION_RECORD_RING
+                - 1 - i) % SMF_MIGRATION_RECORD_RING;
+        smf_migration_record_t *rec = &smf->migration_stats.records[idx];
+        cJSON *o = cJSON_CreateObject();
+        if (!o)
+            break;
+
+        cJSON_AddNumberToObject(o, "seq", (double)rec->seq);
+        cJSON_AddStringToObject(o, "supi", rec->supi);
+        cJSON_AddNumberToObject(o, "psi", (double)rec->psi);
+        cJSON_AddStringToObject(o, "source_upf", rec->source_upf);
+        cJSON_AddStringToObject(o, "target_upf", rec->target_upf);
+        cJSON_AddStringToObject(o, "outcome",
+                migration_outcome_name(rec->outcome));
+        cJSON_AddNumberToObject(o, "prepare_us", (double)rec->prepare_us);
+        cJSON_AddNumberToObject(o, "switch_us", (double)rec->switch_us);
+        cJSON_AddNumberToObject(o, "drain_us", (double)rec->drain_us);
+        cJSON_AddNumberToObject(o, "total_us", (double)rec->total_us);
+        cJSON_AddNumberToObject(o, "recorded_at_us", (double)rec->recorded_at);
+
+        cJSON_AddItemToArray(array, o);
+    }
+
+    return array;
+}
+
+cJSON *smf_migration_timings_to_json(const smf_sess_t *sess)
+{
+    cJSON *o = NULL;
+    const ogs_time_t *ts;
+    ogs_time_t now;
+    smf_migration_state_e state;
+
+    if (!sess || sess->migration.state == SMF_MIGRATION_STATE_IDLE)
+        return NULL;
+
+    o = cJSON_CreateObject();
+    if (!o)
+        return NULL;
+
+    now = ogs_get_monotonic_time();
+    ts = sess->migration.state_ts_us;
+    state = sess->migration.state;
+
+    cJSON_AddStringToObject(o, "current_state", smf_migration_state_name(state));
+    if (state >= 0 && state < SMF_MIGRATION_STATE_MAX && ts[state])
+        cJSON_AddNumberToObject(o, "elapsed_in_state_us",
+                (double)(now - ts[state]));
+    if (sess->migration.started_us)
+        cJSON_AddNumberToObject(o, "total_elapsed_us",
+                (double)(now - sess->migration.started_us));
+    if (ts[SMF_MIGRATION_STATE_TARGET_PREPARING] &&
+            ts[SMF_MIGRATION_STATE_TARGET_READY])
+        cJSON_AddNumberToObject(o, "prepare_us",
+                (double)(ts[SMF_MIGRATION_STATE_TARGET_READY] -
+                    ts[SMF_MIGRATION_STATE_TARGET_PREPARING]));
+    if (ts[SMF_MIGRATION_STATE_ROUTE_PROGRAMMING] &&
+            ts[SMF_MIGRATION_STATE_SWITCH_CONFIRMED])
+        cJSON_AddNumberToObject(o, "switch_us",
+                (double)(ts[SMF_MIGRATION_STATE_SWITCH_CONFIRMED] -
+                    ts[SMF_MIGRATION_STATE_ROUTE_PROGRAMMING]));
+
+    return o;
 }
 
 static void migration_replace_sockaddr(
@@ -394,7 +613,7 @@ static int migration_commit_target(smf_sess_t *sess)
                 &sess->local_dl_addr6, &sess->migration.target_local_dl_addr6);
     }
 
-    sess->migration.state = SMF_MIGRATION_STATE_SWITCH_CONFIRMED;
+    smf_migration_set_state(sess, SMF_MIGRATION_STATE_SWITCH_CONFIRMED);
 
     ogs_info("[MIGRATE] path switch confirmed; session now bound to target UPF");
 
@@ -420,9 +639,14 @@ int smf_migration_send_path_switch_request(smf_sess_t *sess)
         return OGS_ERROR;
     }
 
-    sess->migration.state = SMF_MIGRATION_STATE_ROUTE_PROGRAMMING;
+    smf_migration_set_state(sess, SMF_MIGRATION_STATE_ROUTE_PROGRAMMING);
     if (migration_run_route_hook(sess, "program", "target") != OGS_OK) {
-        sess->migration.state = SMF_MIGRATION_STATE_FAILED;
+        /* Roll back the prepared target. ROUTE_PROGRAMMING is an accepted input
+         * to send_target_deletion(), which owns the state transition (->ABORTING
+         * or ->ROLLED_BACK) and the migrations-active gauge decrement via the
+         * deletion-response handler. Do not pre-set FAILED here: it was
+         * immediately overwritten and risked leaving the gauge owned by no
+         * terminal path. */
         smf_migration_send_target_deletion(sess);
         return OGS_ERROR;
     }
@@ -437,7 +661,7 @@ int smf_migration_send_path_switch_request(smf_sess_t *sess)
     ogs_assert(param.n2smbuf);
     param.n1n2_failure_txf_notif_uri = true;
 
-    sess->migration.state = SMF_MIGRATION_STATE_PATH_SWITCHING;
+    smf_migration_set_state(sess, SMF_MIGRATION_STATE_PATH_SWITCHING);
 
     smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
 
@@ -483,7 +707,7 @@ int smf_migration_send_source_deletion(smf_sess_t *sess)
         return OGS_ERROR;
     }
 
-    sess->migration.state = SMF_MIGRATION_STATE_SOURCE_DRAINING;
+    smf_migration_set_state(sess, SMF_MIGRATION_STATE_SOURCE_DRAINING);
     if (migration_run_route_hook(sess, "withdraw", "source") != OGS_OK) {
         smf_migration_mark_failed(sess);
         return OGS_ERROR;
@@ -514,6 +738,8 @@ int smf_migration_send_target_deletion(smf_sess_t *sess)
     case SMF_MIGRATION_STATE_PATH_SWITCHING:
     case SMF_MIGRATION_STATE_FAILED:
         break;
+    case SMF_MIGRATION_STATE_ABORTING:
+        return OGS_OK;
     default:
         ogs_error("Migration target cleanup invalid state [%s]",
                 smf_migration_state_name(sess->migration.state));
@@ -521,15 +747,14 @@ int smf_migration_send_target_deletion(smf_sess_t *sess)
     }
 
     if (!sess->migration.target_node || !sess->migration.target_upf_n4_seid) {
-        smf_migration_clear(sess);
-        sess->migration.state = SMF_MIGRATION_STATE_ROLLED_BACK;
+        smf_migration_finish_target_rollback(sess, true);
         return OGS_OK;
     }
 
     if (migration_run_route_hook(sess, "withdraw", "target") != OGS_OK)
         ogs_warn("[MIGRATE] route withdraw failed during target cleanup");
 
-    sess->migration.state = SMF_MIGRATION_STATE_ABORTING;
+    smf_migration_set_state(sess, SMF_MIGRATION_STATE_ABORTING);
     rv = smf_5gc_pfcp_send_session_deletion_request_to_node(
             sess, sess->migration.target_node, NULL,
             OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_TARGET,
@@ -564,14 +789,11 @@ void smf_migration_handle_target_deletion_response(
     ogs_assert(sess);
 
     if (!success) {
-        smf_migration_mark_failed(sess);
+        smf_migration_finish_target_rollback(sess, false);
         return;
     }
 
-    migration_metrics_finish(
-            sess, SMF_METR_GLOB_CTR_SMF_MIGRATION_ROLLED_BACK);
-    smf_migration_clear(sess);
-    sess->migration.state = SMF_MIGRATION_STATE_ROLLED_BACK;
+    smf_migration_finish_target_rollback(sess, true);
     ogs_info("[MIGRATE] target UPF PFCP state deleted");
 }
 
@@ -601,6 +823,7 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
         return 0;
     }
 
+    migration_json_add_metadata(root);
     migration_json_add_string(root, "endpoint", "/pdu-migrate");
 
     if (strcmp(method, "POST") != 0) {
@@ -796,6 +1019,14 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
         return migration_json_finalize(root, buf, buflen);
     }
 
+    if (smf_upf_admin_is_draining(target_upf->valuestring)) {
+        cJSON_Delete(request);
+        *status_code = 409;
+        migration_json_add_string(root, "result", "rejected");
+        migration_json_add_string(root, "reason", "target_upf_draining");
+        return migration_json_finalize(root, buf, buflen);
+    }
+
     if (target_node == sess->pfcp_node) {
         cJSON_Delete(request);
         *status_code = 400;
@@ -850,11 +1081,12 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
 
     smf_migration_clear(sess);
 
-    sess->migration.state = SMF_MIGRATION_STATE_TARGET_PREPARING;
+    sess->migration.started_us = ogs_get_monotonic_time();
     sess->migration.source_node = sess->pfcp_node;
     sess->migration.target_node = target_node;
     sess->migration.source_upf_n4_seid = sess->upf_n4_seid;
     sess->migration.metrics_active = true;
+    smf_migration_set_state(sess, SMF_MIGRATION_STATE_TARGET_PREPARING);
     smf_metrics_inst_global_inc(SMF_METR_GLOB_CTR_SMF_MIGRATION_ATTEMPTS);
     smf_metrics_inst_global_inc(SMF_METR_GLOB_GAUGE_SMF_MIGRATIONS_ACTIVE);
 

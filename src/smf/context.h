@@ -77,7 +77,38 @@ typedef enum {
     SMF_MIGRATION_STATE_ABORTING,
     SMF_MIGRATION_STATE_ROLLED_BACK,
     SMF_MIGRATION_STATE_FAILED,
+
+    SMF_MIGRATION_STATE_MAX,    /* sentinel: array bound, not a real state */
 } smf_migration_state_e;
+
+/*
+ * Research instrumentation: a small ring of recently finished migrations with
+ * per-phase durations. The Python smf_exporter reads these out of /pdu-info and
+ * turns them into Prometheus histograms; it dedupes on `seq`. Strings are fixed
+ * buffers so recording a record never allocates on the SMF event loop.
+ */
+#define SMF_MIGRATION_RECORD_RING 32
+#define SMF_MIGRATION_RECORD_ADDR_LEN 64
+
+typedef enum {
+    SMF_MIGRATION_OUTCOME_COMPLETED = 0,
+    SMF_MIGRATION_OUTCOME_ROLLED_BACK,
+    SMF_MIGRATION_OUTCOME_FAILED,
+} smf_migration_outcome_e;
+
+typedef struct smf_migration_record_s {
+    uint64_t    seq;            /* monotonic id; exporter dedupes on this */
+    char        supi[OGS_MAX_IMSI_BCD_LEN + sizeof("imsi-")];
+    uint8_t     psi;
+    char        source_upf[SMF_MIGRATION_RECORD_ADDR_LEN];
+    char        target_upf[SMF_MIGRATION_RECORD_ADDR_LEN];
+    smf_migration_outcome_e outcome;
+    int64_t     prepare_us;     /* target_preparing -> target_ready */
+    int64_t     switch_us;      /* route_programming -> switch_confirmed */
+    int64_t     drain_us;       /* source_draining -> completed */
+    int64_t     total_us;       /* started -> terminal */
+    ogs_time_t  recorded_at;    /* wall-clock GMT of terminal transition */
+} smf_migration_record_t;
 
 typedef struct smf_nsmf_pdusession_param_s {
     OpenAPI_request_indication_e request_indication;
@@ -177,6 +208,14 @@ typedef struct smf_context_s {
 #define SMF_UE_IS_LAST_SESSION(__sMF) \
      ((__sMF) && (ogs_list_count(&(__sMF)->sess_list)) == 1)
     ogs_list_t      smf_ue_list;
+
+    /* Recently finished live migrations (see smf_migration_record_t). */
+    struct {
+        smf_migration_record_t  records[SMF_MIGRATION_RECORD_RING];
+        uint32_t                head;   /* next write slot */
+        uint32_t                count;  /* valid records, <= ring size */
+        uint64_t                seq;    /* monotonic record id source */
+    } migration_stats;
 } smf_context_t;
 
 typedef struct smf_gtp_node_s {
@@ -685,6 +724,12 @@ typedef struct smf_sess_s {
         ogs_sockaddr_t *target_local_ul_addr6;
 
         bool metrics_active;
+
+        /* Research timing: monotonic timestamps for phase-duration analysis.
+         * started_us is set when the migration begins; state_ts_us[s] is the
+         * monotonic time the session most recently entered state s. */
+        ogs_time_t started_us;
+        ogs_time_t state_ts_us[SMF_MIGRATION_STATE_MAX];
     } migration;
 
     /* Charging */
