@@ -22,8 +22,9 @@ lib_fuzzing_engine = get_option('lib_fuzzing_engine')
 # All fuzzer sources.
 gtp_message_source = files('gtp-message-fuzz.c')
 nas_message_source = files('nas-message-fuzz.c')
+ngap_message_source = files('ngap-message-fuzz.c')
 
-# Build all executable 
+# Build all executable
 executable(
     'gtp_message_fuzz',
     sources : gtp_message_source,
@@ -37,5 +38,13 @@ executable(
     sources : nas_message_source,
     c_args : [testunit_core_cc_flags, sbi_cc_flags],
     dependencies : [libnas_eps_dep],
+    link_args: lib_fuzzing_engine
+)
+
+executable(
+    'ngap_message_fuzz',
+    sources : ngap_message_source,
+    c_args : [testunit_core_cc_flags, sbi_cc_flags],
+    dependencies : [libngap_dep, libcore_dep],
     link_args: lib_fuzzing_engine
 )
