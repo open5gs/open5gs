@@ -623,7 +623,8 @@ bool pcf_npcf_smpolicycontrol_handle_delete(pcf_sess_t *sess,
     }
 
     ogs_list_for_each(&sess->app_list, app_session) {
-        pcf_sbi_send_policyauthorization_terminate_notify(app_session);
+        pcf_sbi_send_policyauthorization_terminate_notify(app_session,
+                OpenAPI_termination_cause_PDU_SESSION_TERMINATION);
     }
 
     if (pcf_sessions_number_by_snssai_and_dnn(

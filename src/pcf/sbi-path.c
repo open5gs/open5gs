@@ -684,7 +684,8 @@ bool pcf_sbi_send_smpolicycontrol_delete_notify(
     return rc;
 }
 
-bool pcf_sbi_send_policyauthorization_terminate_notify(pcf_app_t *app)
+bool pcf_sbi_send_policyauthorization_terminate_notify(pcf_app_t *app,
+        OpenAPI_termination_cause_e term_cause)
 {
     bool rc;
     ogs_sbi_request_t *request = NULL;
@@ -694,7 +695,8 @@ bool pcf_sbi_send_policyauthorization_terminate_notify(pcf_app_t *app)
     client = app->naf.client;
     ogs_assert(client);
 
-    request = pcf_naf_callback_build_policyauthorization_terminate(app, NULL);
+    request = pcf_naf_callback_build_policyauthorization_terminate(
+            app, &term_cause);
     if (!request) {
         ogs_error("pcf_naf_callback_build_policyauthorization_terminate() "
                 "failed");

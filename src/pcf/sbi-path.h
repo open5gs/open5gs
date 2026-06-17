@@ -55,7 +55,8 @@ bool pcf_sbi_send_smpolicycontrol_delete_notify(
         pcf_sess_t *sess, pcf_app_t *app_session,
         OpenAPI_sm_policy_decision_t *SmPolicyDecision);
 
-bool pcf_sbi_send_policyauthorization_terminate_notify(pcf_app_t *app);
+bool pcf_sbi_send_policyauthorization_terminate_notify(pcf_app_t *app,
+        OpenAPI_termination_cause_e term_cause);
 
 #ifdef __cplusplus
 }

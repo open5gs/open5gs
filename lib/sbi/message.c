@@ -209,6 +209,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_app_session_context_free(message->AppSessionContext);
     if (message->AppSessionContextUpdateDataPatch)
         OpenAPI_app_session_context_update_data_patch_free(message->AppSessionContextUpdateDataPatch);
+    if (message->TerminationInfo)
+        OpenAPI_termination_info_free(message->TerminationInfo);
     if (message->SmPolicyNotification)
         OpenAPI_sm_policy_notification_free(message->SmPolicyNotification);
     if (message->TerminationNotification)
@@ -1704,6 +1706,10 @@ static char *build_json(ogs_sbi_message_t *message)
         item = OpenAPI_app_session_context_update_data_patch_convertToJSON(
                 message->AppSessionContextUpdateDataPatch);
         ogs_assert(item);
+    } else if (message->TerminationInfo) {
+        item = OpenAPI_termination_info_convertToJSON(
+                message->TerminationInfo);
+        ogs_assert(item);
     } else if (message->SmPolicyNotification) {
         item = OpenAPI_sm_policy_notification_convertToJSON(
                 message->SmPolicyNotification);
@@ -2889,6 +2895,14 @@ static int parse_json(ogs_sbi_message_t *message,
                         SWITCH(message->h.resource.component[2])
                         CASE(OGS_SBI_RESOURCE_NAME_DELETE)
                             /* Nothing */
+                            break;
+                        CASE(OGS_SBI_RESOURCE_NAME_TERMINATE)
+                            message->TerminationInfo =
+                                OpenAPI_termination_info_parseFromJSON(item);
+                            if (!message->TerminationInfo) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
                             break;
                         DEFAULT
                             rv = OGS_ERROR;
