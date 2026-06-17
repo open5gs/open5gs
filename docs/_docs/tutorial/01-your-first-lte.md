@@ -161,6 +161,11 @@ $ make test
 
 #### 3. Open5GS
 
+**Tip:** MongoDB is used as the database for PCF/UDR and PCRF/HSS.
+{: .notice--info}
+
+**Note:** If you already have an external MongoDB server, you can skip the MongoDB step below and add the `--no-install-recommends` flag when installing the Open5GS packages (e.g. `sudo apt install --no-install-recommends open5gs`).
+{: .notice--warning}
 
 The Open5GS package is available on the recent versions of *Ubuntu*.
 ```bash

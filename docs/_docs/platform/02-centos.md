@@ -83,6 +83,12 @@ $ sudo dnf config-manager --set-enabled elrepo-testing
 ### Install MongoDB using the package manager:
 ---
 
+**Tip:** MongoDB is used as the database for PCF/UDR and PCRF/HSS.
+{: .notice--info}
+
+**Note:** If you use an external MongoDB server, you can skip this section.
+{: .notice--warning}
+
 Create a repository file to install the MongoDB packages:
 
 ```bash

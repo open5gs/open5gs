@@ -25,6 +25,12 @@ $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/
 ### Getting MongoDB
 ---
 
+**Tip:** MongoDB is used as the database for PCF/UDR and PCRF/HSS.
+{: .notice--info}
+
+**Note:** If you use an external MongoDB server, you can skip this section.
+{: .notice--warning}
+
 Install MongoDB with Package Manager.
 ```bash
 $ brew tap mongodb/brew
