@@ -1967,7 +1967,9 @@ bool smf_nsmf_handle_created_data_in_vsmf(
                     ogs_sbi_bitrate_from_string(sessionAmbr->downlink);
         }
 
-        sess->h_smf_id = PduSessionCreatedData->h_smf_instance_id;
+        if (sess->h_smf_id)
+            ogs_free(sess->h_smf_id);
+        sess->h_smf_id = ogs_strdup(PduSessionCreatedData->h_smf_instance_id);
 
         if (!recvmsg->http.location) {
             ogs_error("[%s:%d] No http.location", smf_ue->supi, sess->psi);

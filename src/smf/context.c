@@ -2144,6 +2144,8 @@ void smf_sess_remove(smf_sess_t *sess)
     /* H-SMF */
     if (sess->h_smf_uri)
         ogs_free(sess->h_smf_uri);
+    if (sess->h_smf_id)
+        ogs_free(sess->h_smf_id);
     if (sess->h_smf.client)
         ogs_sbi_client_remove(sess->h_smf.client);
     if (sess->vsmf_pdu_session_uri)
