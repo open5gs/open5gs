@@ -56,7 +56,7 @@ void test_s2b_handle_create_session_response(
         return;
     }
 
-    if (rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence == 0) {
+    if (rsp->pgw_s5_s8_s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence == 0) {
         ogs_error("No S5/S8 TEID");
         return;
     }
@@ -94,7 +94,7 @@ void test_s2b_handle_create_session_response(
 
     }
 
-    smf_s2b_c_teid = rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.data;
+    smf_s2b_c_teid = rsp->pgw_s5_s8_s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.data;
     ogs_assert(smf_s2b_c_teid);
 
     sess->smf_s2b_c_teid = be32toh(smf_s2b_c_teid->teid);

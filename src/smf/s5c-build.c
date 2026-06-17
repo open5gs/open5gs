@@ -93,11 +93,11 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
         ogs_error("ogs_gtp2_sockaddr_to_f_teid() failed");
         goto cleanup;
     }
-    rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
+    rsp->pgw_s5_s8_s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         presence = 1;
-    rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
+    rsp->pgw_s5_s8_s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         data = &smf_s5c_teid;
-    rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
+    rsp->pgw_s5_s8_s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         len = len;
 
     /* PDN Address Allocation */
@@ -163,9 +163,9 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
                     sess->gtp.ue_apco.data, sess->gtp.ue_apco.len);
             goto cleanup;
         }
-        rsp->additional_protocol_configuration_options.presence = 1;
-        rsp->additional_protocol_configuration_options.data = apco_buf;
-        rsp->additional_protocol_configuration_options.len = apco_len;
+        rsp->additional_protocol_configuration_options_apco.presence = 1;
+        rsp->additional_protocol_configuration_options_apco.data = apco_buf;
+        rsp->additional_protocol_configuration_options_apco.len = apco_len;
     }
 
     /* ePCO */

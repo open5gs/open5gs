@@ -464,9 +464,9 @@ uint8_t smf_s5c_handle_create_session_request(
     }
 
     /* APCO */
-    if (req->additional_protocol_configuration_options.presence) {
+    if (req->additional_protocol_configuration_options_apco.presence) {
         OGS_TLV_STORE_DATA(&sess->gtp.ue_apco,
-                &req->additional_protocol_configuration_options);
+                &req->additional_protocol_configuration_options_apco);
     }
 
     /* Set User Location Information */
@@ -502,11 +502,11 @@ uint8_t smf_s5c_handle_create_session_request(
     }
 
     /* Set Node Identifier */
-    if (req->_aaa_server_identifier.presence) {
+    if (req->aaa_server_identifier.presence) {
         ogs_gtp2_node_identifier_t node_identifier;
         decoded = ogs_gtp2_parse_node_identifier(
-                &node_identifier, &req->_aaa_server_identifier);
-        if (req->_aaa_server_identifier.len == decoded) {
+                &node_identifier, &req->aaa_server_identifier);
+        if (req->aaa_server_identifier.len == decoded) {
             if (sess->aaa_server_identifier.name)
                 ogs_free(sess->aaa_server_identifier.name);
             sess->aaa_server_identifier.name = ogs_memdup(
@@ -522,10 +522,10 @@ uint8_t smf_s5c_handle_create_session_request(
             sess->aaa_server_identifier.realm[node_identifier.realm_len] = 0;
         } else {
             ogs_error("Invalid AAA Server Identifier [%d != %d]",
-                    req->_aaa_server_identifier.len, decoded);
+                    req->aaa_server_identifier.len, decoded);
             ogs_log_hexdump(OGS_LOG_ERROR,
-                    req->_aaa_server_identifier.data,
-                    req->_aaa_server_identifier.len);
+                    req->aaa_server_identifier.data,
+                    req->aaa_server_identifier.len);
         }
     }
 

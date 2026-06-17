@@ -170,19 +170,19 @@ ogs_pkbuf_t *test_s2b_build_create_session_request(
     req->recovery.presence = 1;
     req->recovery.u8 = 66;
 
-    req->additional_protocol_configuration_options.presence = 1;
-    req->additional_protocol_configuration_options.data =
+    req->additional_protocol_configuration_options_apco.presence = 1;
+    req->additional_protocol_configuration_options_apco.data =
         (uint8_t *)"\x80\x00\x0d\x00";
-    req->additional_protocol_configuration_options.len = 4;
+    req->additional_protocol_configuration_options_apco.len = 4;
 
     memset(&node_identifier, 0, sizeof(ogs_gtp2_node_identifier_t));
     node_identifier.name = "aaa.localdomain";
     node_identifier.name_len = strlen(node_identifier.name);
     node_identifier.realm = "localdomain";
     node_identifier.realm_len = strlen(node_identifier.realm);
-    req->_aaa_server_identifier.presence = 1;
+    req->aaa_server_identifier.presence = 1;
     ogs_gtp2_build_node_identifier(
-            &req->_aaa_server_identifier, &node_identifier,
+            &req->aaa_server_identifier, &node_identifier,
             node_identifier_buf, OGS_GTP2_MAX_NODE_IDENTIFIER_LEN);
 
     gtp_message.h.type = type;

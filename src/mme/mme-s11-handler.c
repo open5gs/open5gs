@@ -336,7 +336,7 @@ void mme_s11_handle_create_session_response(
         /* 2G->4G mobility: PAA/S5C TEID may already exist from SGSN */
         break;
     default:
-        if (rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence == 0) {
+        if (rsp->pgw_s5_s8_s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence == 0) {
             ogs_error("[%s] No S5C TEID [Cause:%d]",
                     mme_ue->imsi_bcd, session_cause);
             fail_cause = OGS_GTP2_CAUSE_CONDITIONAL_IE_MISSING;
@@ -504,8 +504,8 @@ void mme_s11_handle_create_session_response(
     target_ue->sgw_s11_teid = be32toh(sgw_s11_teid->teid);
 
     /* Control Plane(UL) : PGW-S5C */
-    if (rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence) {
-        pgw_s5c_teid = rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.data;
+    if (rsp->pgw_s5_s8_s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.presence) {
+        pgw_s5c_teid = rsp->pgw_s5_s8_s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.data;
         ogs_assert(pgw_s5c_teid);
         sess->pgw_s5c_teid = be32toh(pgw_s5c_teid->teid);
         if (OGS_OK !=

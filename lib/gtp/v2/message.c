@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -18,10 +18,10 @@
  */
 
 /*******************************************************************************
- * This file had been created by gtp-tlv.py script v0.1.0
+ * This file had been created by gtp-tlv.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2023-08-26 16:35:12.648272 by acetcom
- * from 29274-h70.docx
+ * Created on: 2026-06-17 10:33:02.236292 by acetcom
+ * from r19.6.0/29274-j60.docx
  ******************************************************************************/
 
 #include "ogs-gtp.h"
@@ -1863,6 +1863,50 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_alternative_imsi_0 =
     { NULL }
 };
 
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_nf_instance_id_0 =
+{
+    OGS_TLV_VAR_STR,
+    "NF Instance ID",
+    OGS_GTP2_NF_INSTANCE_ID_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_nf_instance_id_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_timer_in_seconds_0 =
+{
+    OGS_TLV_VAR_STR,
+    "Timer in Seconds",
+    OGS_GTP2_TIMER_IN_SECONDS_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_timer_in_seconds_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_mdt_configuration_nr_0 =
+{
+    OGS_TLV_VAR_STR,
+    "MDT Configuration NR",
+    OGS_GTP2_MDT_CONFIGURATION_NR_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_mdt_configuration_nr_t),
+    { NULL }
+};
+
+ogs_tlv_desc_t ogs_gtp2_tlv_desc_uri_0 =
+{
+    OGS_TLV_VAR_STR,
+    "URI",
+    OGS_GTP2_URI_TYPE,
+    0,
+    0,
+    sizeof(ogs_gtp2_tlv_uri_t),
+    { NULL }
+};
+
 ogs_tlv_desc_t ogs_gtp2_tlv_desc_pc5_qos_parameters_0 =
 {
     OGS_TLV_COMPOUND,
@@ -2044,6 +2088,8 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_pdn_connection_0 =
         &ogs_gtp2_tlv_desc_pdn_type_0,
         &ogs_gtp2_tlv_desc_header_compression_configuration_0,
         &ogs_gtp2_tlv_desc_pgw_change_info_0,
+        &ogs_gtp2_tlv_desc_ip_address_2,
+        &ogs_gtp2_tlv_desc_fqdn_2,
         &ogs_gtp2_tlv_desc_up_security_policy_0,
         NULL,
     }
@@ -2254,6 +2300,8 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_session_request =
         &ogs_gtp2_tlv_desc_secondary_rat_usage_data_report_0,
         &ogs_gtp2_tlv_desc_up_function_selection_indication_flags_0,
         &ogs_gtp2_tlv_desc_apn_rate_control_status_0,
+        &ogs_gtp2_tlv_desc_pscell_id_0,
+        &ogs_gtp2_tlv_desc_uri_0,
     NULL,
 }};
 
@@ -2569,6 +2617,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_create_bearer_request =
         &ogs_gtp2_tlv_desc_overload_control_information_1,
         &ogs_gtp2_tlv_desc_f_container_0,
         &ogs_gtp2_tlv_desc_pgw_change_info_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
     NULL,
 }};
 
@@ -2625,6 +2674,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_update_bearer_request =
         &ogs_gtp2_tlv_desc_overload_control_information_1,
         &ogs_gtp2_tlv_desc_f_container_0,
         &ogs_gtp2_tlv_desc_pgw_change_info_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
     NULL,
 }};
 
@@ -2682,6 +2732,7 @@ ogs_tlv_desc_t ogs_gtp2_tlv_desc_delete_bearer_request =
         &ogs_gtp2_tlv_desc_apn_rate_control_status_0,
         &ogs_gtp2_tlv_desc_epco_0,
         &ogs_gtp2_tlv_desc_pgw_change_info_0,
+        &ogs_gtp2_tlv_desc_f_teid_0,
     NULL,
 }};
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -19,7 +19,7 @@ from docx import Document
 from docx.document import Document as _Document
 from docx.oxml.text.paragraph import CT_P
 from docx.oxml.table import CT_Tbl
-from docx.table import _Cell, Table
+from docx.table import _Cell, _Row, Table
 from docx.text.paragraph import Paragraph
 
 import re, os, sys, string
@@ -27,7 +27,7 @@ import datetime
 import getopt
 import getpass
 
-version = "0.1.0"
+version = "0.2.0"
 
 msg_list = {}
 type_list = {}
@@ -60,7 +60,7 @@ def write_file(f, string):
 def output_header_to_file(f):
     now = datetime.datetime.now()
     f.write("""/*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -95,48 +95,160 @@ def usage():
     print("-c [dir]  Cache files to given directory")
     print("-h        Print this help and return")
 
+def v_token(v):
+    v = re.sub('3GPP', '', v)
+    v = re.sub(r'[^A-Za-z0-9_]', '_', v)
+    v = re.sub(r'_+', '_', v)
+    v = re.sub(r'^_|_$', '', v)
+    return v
+
 def v_upper(v):
-    return re.sub('3GPP', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper())
+    return v_token(v).upper()
 
 def v_lower(v):
-    return re.sub('3gpp', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower())
+    return v_token(v).lower()
+
+def compact_row_cells(cells):
+    """Return logical cells, hiding python-docx duplicates for merged cells."""
+    compacted = []
+    seen = set()
+    for cell in cells:
+        tc = cell._tc
+        if tc in seen:
+            continue
+        seen.add(tc)
+        compacted.append(cell)
+    return compacted
+
+def clean_cell_text(text):
+    text = re.sub(r'\s+', ' ', text or '')
+    return text.strip()
+
+def normalize_ie_type(name):
+    raw_ie_type = clean_cell_text(name)
+
+    # Some 29.274 table rows write the long name followed by the short
+    # canonical IE name in parentheses, e.g.
+    # "Additional Protocol Configuration Options (APCO)".  Preserve those
+    # aliases before stripping parenthesized notes, otherwise the lookup will
+    # become "Additional Protocol Configuration Options" while the IE type
+    # list key is "APCO".
+    alias = re.findall(r'\(([^\)]*)\)\s*$', raw_ie_type)
+    if alias:
+        alias = clean_cell_text(alias[-1])
+        if alias in type_list.keys():
+            return alias
+        if alias in ['APCO', 'IP4CP', 'LDN', 'PTI', 'TWMI']:
+            return alias
+
+    if 'APCO' in raw_ie_type:
+        return 'APCO'
+    if 'LDN' in raw_ie_type or raw_ie_type == 'Local Distinguished Name':
+        return 'LDN'
+    if 'IPv4 Configuration Parameters (IP4CP)' in raw_ie_type or \
+            raw_ie_type == 'IPv4 Configuration Parameters':
+        return 'IP4CP'
+
+    ie_type = re.sub(r'\s*\([A-Za-z]*\s*NOTE.*\)\s*$', '', raw_ie_type)
+    ie_type = re.sub(r'\s*\([^\)]*\)\s*$', '', ie_type)
+
+    if 'LDN' in ie_type:
+        ie_type = 'LDN'
+    elif 'Charging Id' in ie_type:
+        ie_type = 'Charging ID'
+    elif 'H(e)NB Information Reporting' in ie_type:
+        ie_type = 'eNB Information Reporting'
+    elif 'Charging characteristics' in ie_type:
+        ie_type = 'Charging Characteristics'
+    elif 'Change To Report Flags' in ie_type:
+        ie_type = 'Change to Report Flags'
+    elif 'APN RATE Control Status' in ie_type:
+        ie_type = 'APN Rate Control Status'
+    elif 'Remote UE IP information' in ie_type:
+        ie_type = 'Remote UE IP Information'
+    elif 'Procedure Transaction ID' in ie_type:
+        ie_type = 'PTI'
+
+    return ie_type
+
+def normalize_ie_value(name):
+    value = clean_cell_text(name)
+    value = re.sub(r'\s*\([^\)]*\)\s*$', '', value)
+    return value
+
+def normalize_comment(comment):
+    comment = (comment or '').encode('ascii', 'ignore').decode('utf-8')
+    comment = re.sub(r'\n|"|\'|\\', '', comment)
+    return comment
 
 def get_cells(cells):
-    instance = cells[4].text
-    if instance.isdigit() is not True:
+    cells = compact_row_cells(cells)
+    if len(cells) < 5:
         return None
-    ie_type = re.sub('\s*$', '', re.sub('\s*\n*\s*\([A-z]*\s*NOTE.*\)*', '', cells[3].text))
-    if ie_type.find('LDN') != -1:
-        ie_type = 'LDN'
-    elif ie_type.find('APCO') != -1:
-        ie_type = 'APCO'
-    elif ie_type.find('Charging Id') != -1:
-        ie_type = 'Charging ID'
-    elif ie_type.find('H(e)NB Information Reporting') != -1:
-        ie_type = 'eNB Information Reporting'
-    elif ie_type.find('IPv4 Configuration Parameters (IP4CP)') != -1:
-        ie_type = 'IP4CP'
-    elif ie_type.find('Charging characteristics') != -1:
-        ie_type = 'Charging Characteristics'
-    elif ie_type.find('Change To Report Flags') != -1:
-        ie_type = 'Change to Report Flags'
-    elif ie_type.find('APN RATE Control Status') != -1:
-        ie_type = 'APN Rate Control Status'
+
+    # GTPv2-C IE tables normally use:
+    # IE value | Presence | Comment | IE Type | Instance
+    # Newer 3GPP Word documents may expose merged cells differently, so find
+    # the instance column from the right rather than assuming cells[4].
+    instance_idx = -1
+    for n in range(len(cells) - 1, -1, -1):
+        text = clean_cell_text(cells[n].text)
+        if text.isdigit():
+            instance_idx = n
+            break
+    if instance_idx < 0:
+        return None
+
+    instance = clean_cell_text(cells[instance_idx].text)
+    ie_type_idx = instance_idx - 1
+    if ie_type_idx < 0:
+        return None
+
+    ie_type = normalize_ie_type(cells[ie_type_idx].text)
     if ie_type not in type_list.keys():
         assert False, "Unknown IE type : [" \
-                + cells[3].text + "]" + "(" + ie_type + ")"
-    presence = cells[1].text
-    presence = re.sub('\n', '', presence);
-    ie_value = re.sub('\s*\n*\s*\([^\)]*\)*', '', cells[0].text)
-    ie_value = re.sub('\n', '', ie_value);
-    comment = cells[2].text.encode('ascii', 'ignore').decode('utf-8')
-    comment = re.sub('\n|\"|\'|\\\\', '', comment);
+                + cells[ie_type_idx].text + "]" + "(" + ie_type + ")"
+
+    presence = clean_cell_text(cells[1].text) if len(cells) > 1 else ''
+    presence = re.sub(r'\s+', '', presence)
+    ie_value = normalize_ie_value(cells[0].text)
+    comment = normalize_comment(cells[2].text if len(cells) > 2 else '')
 
     if int(instance) > int(type_list[ie_type]["max_instance"]):
         type_list[ie_type]["max_instance"] = instance
         write_file(f, "type_list[\"" + ie_type + "\"][\"max_instance\"] = \"" + instance + "\"\n")
 
     return { "ie_type" : ie_type, "ie_value" : ie_value, "presence" : presence, "instance" : instance, "comment" : comment }
+
+def find_group_ie_header_cell(row):
+    cells = compact_row_cells(row.cells)
+    for n, cell in enumerate(cells):
+        text = cell.text
+        if 'IE Type' not in text:
+            continue
+        if len(re.findall(r'\d+', text)) == 0:
+            continue
+        return n
+    return -1
+
+def is_gtp_ie_table(table):
+    if not table.rows:
+        return False
+    cells = compact_row_cells(table.rows[0].cells)
+    text = ' '.join(clean_cell_text(cell.text) for cell in cells)
+    return 'IE Type' in text and ('Instance' in text or 'Ins.' in text or 'Octet' in text)
+
+def find_message_table_index(tables, msg_name, fallback):
+    """Find a message IE table by paragraph text, falling back to old index."""
+    candidates = []
+    needle = msg_name.lower()
+    for i, paragraph, table in tables:
+        p = clean_cell_text(paragraph).lower()
+        if needle in p and is_gtp_ie_table(table):
+            candidates.append(i)
+    if candidates:
+        return candidates[0]
+    return fallback
 
 def write_cells_to_file(name, cells):
     write_file(f, name + ".append({ \"ie_type\" : \"" + cells["ie_type"] + \
@@ -209,9 +321,15 @@ for o, a in opts:
         sys.exit(2)
 
 if os.path.isfile(filename) and os.access(filename, os.R_OK):
-    file = open(filename, 'r')
+    pass
 else:
     d_error("Cannot find file : " + filename)
+
+os.makedirs(cachedir, exist_ok=True)
+os.makedirs(outdir, exist_ok=True)
+
+document = Document(filename)
+tables = document_paragraph_tables(document)
 
 d_info("[Message List]")
 cachefile = cachedir + 'tlv-msg-list.py'
@@ -219,11 +337,10 @@ if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     exec(open(cachefile).read())
     print("Read from " + cachefile)
 else:
-    document = Document(filename)
     f = open(cachefile, 'w')
 
     msg_table = ""
-    for i, paragraph, table in document_paragraph_tables(document):
+    for i, paragraph, table in tables:
         cell = table.rows[0].cells[0]
         if cell.text.find('Message Type value') != -1:
             msg_table = table
@@ -231,8 +348,11 @@ else:
             write_file(f, "# [%s] Index = %d\n" % (paragraph, i))
 
     for row in msg_table.rows[2:-4]:
-        key = row.cells[1].text
-        type = row.cells[0].text
+        cells = compact_row_cells(row.cells)
+        if len(cells) < 2:
+            continue
+        key = cells[1].text
+        type = clean_cell_text(cells[0].text)
         if type.isdigit() is False:
             continue
         if int(type) in range(128, 160):
@@ -241,8 +361,8 @@ else:
             continue
         if key.find('Reserved') != -1:
             continue
-        key = re.sub('\s*\n*\s*\([^\)]*\)*', '', key)
-        key = re.sub('\n', '', key);
+        key = re.sub(r'\s*\n*\s*\([^\)]*\)*', '', key)
+        key = re.sub(r'\n', '', key);
         msg_list[key] = { "type": type }
         write_file(f, "msg_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }\n")
     f.close()
@@ -253,11 +373,10 @@ if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     exec(open(cachefile).read())
     print("Read from " + cachefile)
 else:
-    document = Document(filename)
     f = open(cachefile, 'w')
 
     ie_table = ""
-    for i, paragraph, table in document_paragraph_tables(document):
+    for i, paragraph, table in tables:
         cell = table.rows[0].cells[0]
         if cell.text.find('IE Type value') != -1:
             ie_table = table
@@ -265,8 +384,11 @@ else:
             write_file(f, "# [%s] Index = %d\n" % (paragraph, i))
 
     for row in ie_table.rows[1:-5]:
-        key = row.cells[1].text
-        type = row.cells[0].text
+        cells = compact_row_cells(row.cells)
+        if len(cells) < 2:
+            continue
+        key = cells[1].text
+        type = clean_cell_text(cells[0].text)
         if type.isdigit() is False:
             continue
         if key.find('Reserved') != -1:
@@ -286,9 +408,12 @@ else:
         elif key.find('Procedure Transaction ID') != -1:
             key = 'PTI'
         else:
-            key = re.sub('.*\(', '', row.cells[1].text)
-            key = re.sub('\)', '', key)
-            key = re.sub('\s*$', '', key)
+            if '(' in key and ')' in key:
+                key = re.sub(r'.*\(', '', key)
+                key = re.sub(r'\)', '', key)
+                key = re.sub(r'\s*$', '', key)
+            else:
+                key = normalize_ie_type(key)
 
         type_list[key] = { "type": type , "max_instance" : "0" }
         write_file(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type)
@@ -302,20 +427,23 @@ if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     exec(open(cachefile).read())
     print("Read from " + cachefile)
 else:
-    document = Document(filename)
     f = open(cachefile, 'w')
 
-    for i, paragraph, table in document_paragraph_tables(document):
-        if table.rows[0].cells[0].text.find('Octet') != -1 and \
-            table.rows[0].cells[2].text.find('IE Type') != -1:
+    for i, paragraph, table in tables:
+        if table.rows[0].cells[0].text.find('Octet') != -1:
             d_print("Table Index = %d\n" % i)
 
-            row = table.rows[0];
+            row = table.rows[0]
+            header_idx = find_group_ie_header_cell(row)
+            if header_idx < 0:
+                continue
 
-            if len(re.findall('\d+', row.cells[2].text)) == 0:
-                continue;
-            ie_type = re.findall('\d+', row.cells[2].text)[0]
-            ie_name = re.sub('\s*IE Type.*', '', row.cells[2].text)
+            cells = compact_row_cells(row.cells)
+            if len(re.findall(r'\d+', cells[header_idx].text)) == 0:
+                continue
+            ie_type = re.findall(r'\d+', cells[header_idx].text)[0]
+            ie_name = re.sub(r'\s*IE Type.*', '', cells[header_idx].text)
+            ie_name = normalize_ie_type(ie_name)
 
             write_file(f, "# [%s] Index = %d\n" % (paragraph, i))
 
@@ -349,9 +477,6 @@ else:
 
                     ies_is_added = True
                     for ie in group_list[ie_name]["ies"]:
-                        if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
-                            ies_is_added = False
-                    for ie in ies:
                         if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
                             ies_is_added = False
                     if ies_is_added is True:
@@ -404,12 +529,14 @@ for key in msg_list.keys():
             exec(open(cachefile).read())
             print("Read from " + cachefile)
         else:
-            document = Document(filename)
             f = open(cachefile, 'w')
 
             ies = []
             write_file(f, "ies = []\n")
-            table = document.tables[msg_list[key]["table"]]
+            table_index = find_message_table_index(tables, key, msg_list[key]["table"])
+            if table_index != msg_list[key]["table"]:
+                write_file(f, "# Auto-detected table index = %d; old index = %d\n" % (table_index, msg_list[key]["table"]))
+            table = document.tables[table_index]
             for row in table.rows[1:]:
                 cells = get_cells(row.cells)
                 if cells is None:

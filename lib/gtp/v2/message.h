@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -18,10 +18,10 @@
  */
 
 /*******************************************************************************
- * This file had been created by gtp-tlv.py script v0.1.0
+ * This file had been created by gtp-tlv.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2023-08-26 16:35:12.642445 by acetcom
- * from 29274-h70.docx
+ * Created on: 2026-06-17 10:33:02.228966 by acetcom
+ * from r19.6.0/29274-j60.docx
  ******************************************************************************/
 
 #if !defined(OGS_GTP_INSIDE) && !defined(OGS_GTP_COMPILATION)
@@ -277,6 +277,10 @@ typedef struct ogs_gtp2_header_s {
 #define OGS_GTP2_PSCELL_ID_TYPE 217
 #define OGS_GTP2_UP_SECURITY_POLICY_TYPE 218
 #define OGS_GTP2_ALTERNATIVE_IMSI_TYPE 219
+#define OGS_GTP2_NF_INSTANCE_ID_TYPE 220
+#define OGS_GTP2_TIMER_IN_SECONDS_TYPE 221
+#define OGS_GTP2_MDT_CONFIGURATION_NR_TYPE 222
+#define OGS_GTP2_URI_TYPE 223
 
 /* Information Element TLV Descriptor */
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_imsi_0;
@@ -446,6 +450,10 @@ extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_group_id_1;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_pscell_id_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_up_security_policy_0;
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_alternative_imsi_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_nf_instance_id_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_timer_in_seconds_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_mdt_configuration_nr_0;
+extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_uri_0;
 
 /* Group Information Element TLV Descriptor */
 extern ogs_tlv_desc_t ogs_gtp2_tlv_desc_pc5_qos_parameters_0;
@@ -653,6 +661,10 @@ typedef ogs_tlv_octet_t ogs_gtp2_tlv_group_id_t;
 typedef ogs_tlv_octet_t ogs_gtp2_tlv_pscell_id_t;
 typedef ogs_tlv_octet_t ogs_gtp2_tlv_up_security_policy_t;
 typedef ogs_tlv_octet_t ogs_gtp2_tlv_alternative_imsi_t;
+typedef ogs_tlv_octet_t ogs_gtp2_tlv_nf_instance_id_t;
+typedef ogs_tlv_octet_t ogs_gtp2_tlv_timer_in_seconds_t;
+typedef ogs_tlv_octet_t ogs_gtp2_tlv_mdt_configuration_nr_t;
+typedef ogs_tlv_octet_t ogs_gtp2_tlv_uri_t;
 
 /* Structure for Group Information Element */
 typedef struct ogs_gtp2_tlv_pc5_qos_parameters_s {
@@ -734,7 +746,7 @@ typedef struct ogs_gtp2_tlv_pdn_connection_s {
     ogs_gtp2_tlv_charging_characteristics_t charging_characteristics;
     ogs_gtp2_tlv_change_reporting_action_t change_reporting_action;
     ogs_gtp2_tlv_csg_information_reporting_action_t csg_information_reporting_action;
-    ogs_gtp2_tlv_enb_information_reporting_t hnb_information_reporting;
+    ogs_gtp2_tlv_enb_information_reporting_t h_e_nb_information_reporting;
     ogs_gtp2_tlv_indication_t indication_flags;
     ogs_gtp2_tlv_signalling_priority_indication_t signalling_priority_indication;
     ogs_gtp2_tlv_change_to_report_flags_t change_to_report_flags;
@@ -745,6 +757,8 @@ typedef struct ogs_gtp2_tlv_pdn_connection_s {
     ogs_gtp2_tlv_pdn_type_t pdn_type;
     ogs_gtp2_tlv_header_compression_configuration_t header_compression_configuration;
     ogs_gtp2_tlv_pgw_change_info_t pgw_change_info;
+    ogs_gtp2_tlv_ip_address_t new_pgw_c_smf_ip_address;
+    ogs_gtp2_tlv_fqdn_t new_pgw_node_name;
     ogs_gtp2_tlv_up_security_policy_t up_security_policy;
 } ogs_gtp2_tlv_pdn_connection_t;
 
@@ -818,9 +832,9 @@ typedef struct ogs_gtp2_create_session_request_s {
     ogs_gtp2_tlv_signalling_priority_indication_t signalling_priority_indication;
     ogs_gtp2_tlv_ip_address_t ue_local_ip_address;
     ogs_gtp2_tlv_port_number_t ue_udp_port;
-    ogs_gtp2_tlv_apco_t additional_protocol_configuration_options;
-    ogs_gtp2_tlv_ip_address_t hnb_local_ip_address;
-    ogs_gtp2_tlv_port_number_t hnb_udp_port;
+    ogs_gtp2_tlv_apco_t additional_protocol_configuration_options_apco;
+    ogs_gtp2_tlv_ip_address_t h_e_nb_local_ip_address;
+    ogs_gtp2_tlv_port_number_t h_e_nb_udp_port;
     ogs_gtp2_tlv_ip_address_t mme_s4_sgsn_identifier;
     ogs_gtp2_tlv_twan_identifier_t twan_identifier;
     ogs_gtp2_tlv_ip_address_t epdg_ip_address;
@@ -835,7 +849,7 @@ typedef struct ogs_gtp2_create_session_request_s {
     ogs_gtp2_tlv_twan_identifier_timestamp_t wlan_location_timestamp;
     ogs_gtp2_tlv_f_container_t nbifom_container;
     ogs_gtp2_tlv_remote_ue_context_t remote_ue_context_connected;
-    ogs_gtp2_tlv_node_identifier_t _aaa_server_identifier;
+    ogs_gtp2_tlv_node_identifier_t aaa_server_identifier;
     ogs_gtp2_tlv_epco_t extended_protocol_configuration_options;
     ogs_gtp2_tlv_serving_plmn_rate_control_t serving_plmn_rate_control;
     ogs_gtp2_tlv_counter_t mo_exception_data_counter;
@@ -846,15 +860,17 @@ typedef struct ogs_gtp2_create_session_request_s {
     ogs_gtp2_tlv_secondary_rat_usage_data_report_t secondary_rat_usage_data_report;
     ogs_gtp2_tlv_up_function_selection_indication_flags_t up_function_selection_indication_flags;
     ogs_gtp2_tlv_apn_rate_control_status_t apn_rate_control_status;
+    ogs_gtp2_tlv_pscell_id_t pscell_id;
+    ogs_gtp2_tlv_uri_t trace_collection_entity_uri;
 } ogs_gtp2_create_session_request_t;
 
 typedef struct ogs_gtp2_create_session_response_s {
     ogs_gtp2_tlv_cause_t cause;
     ogs_gtp2_tlv_change_reporting_action_t change_reporting_action;
     ogs_gtp2_tlv_csg_information_reporting_action_t csg_information_reporting_action;
-    ogs_gtp2_tlv_enb_information_reporting_t hnb_information_reporting;
+    ogs_gtp2_tlv_enb_information_reporting_t h_e_nb_information_reporting;
     ogs_gtp2_tlv_f_teid_t sender_f_teid_for_control_plane;
-    ogs_gtp2_tlv_f_teid_t pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface;
+    ogs_gtp2_tlv_f_teid_t pgw_s5_s8_s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface;
     ogs_gtp2_tlv_paa_t pdn_address_allocation;
     ogs_gtp2_tlv_apn_restriction_t apn_restriction;
     ogs_gtp2_tlv_ambr_t aggregate_maximum_bit_rate;
@@ -870,7 +886,7 @@ typedef struct ogs_gtp2_create_session_response_s {
     ogs_gtp2_tlv_ldn_t sgw_ldn;
     ogs_gtp2_tlv_ldn_t pgw_ldn;
     ogs_gtp2_tlv_epc_timer_t pgw_back_off_time;
-    ogs_gtp2_tlv_apco_t additional_protocol_configuration_options;
+    ogs_gtp2_tlv_apco_t additional_protocol_configuration_options_apco;
     ogs_gtp2_tlv_ip4cp_t trusted_wlan_ipv4_parameters;
     ogs_gtp2_tlv_indication_t indication_flags;
     ogs_gtp2_tlv_presence_reporting_area_action_t presence_reporting_area_action;
@@ -910,8 +926,8 @@ typedef struct ogs_gtp2_modify_bearer_request_s {
     ogs_gtp2_tlv_port_number_t ue_udp_port;
     ogs_gtp2_tlv_ldn_t mme_s4_sgsn_ldn;
     ogs_gtp2_tlv_ldn_t sgw_ldn;
-    ogs_gtp2_tlv_ip_address_t hnb_local_ip_address;
-    ogs_gtp2_tlv_port_number_t hnb_udp_port;
+    ogs_gtp2_tlv_ip_address_t h_e_nb_local_ip_address;
+    ogs_gtp2_tlv_port_number_t h_e_nb_udp_port;
     ogs_gtp2_tlv_ip_address_t mme_s4_sgsn_identifier;
     ogs_gtp2_tlv_cn_operator_selection_entity_t cn_operator_selection_entity;
     ogs_gtp2_tlv_presence_reporting_area_information_t presence_reporting_area_information;
@@ -938,7 +954,7 @@ typedef struct ogs_gtp2_modify_bearer_response_s {
     ogs_gtp2_tlv_bearer_context_t bearer_contexts_marked_for_removal;
     ogs_gtp2_tlv_change_reporting_action_t change_reporting_action;
     ogs_gtp2_tlv_csg_information_reporting_action_t csg_information_reporting_action;
-    ogs_gtp2_tlv_enb_information_reporting_t hnb_information_reporting;
+    ogs_gtp2_tlv_enb_information_reporting_t h_e_nb_information_reporting;
     ogs_gtp2_tlv_fqdn_t charging_gateway_name;
     ogs_gtp2_tlv_ip_address_t charging_gateway_address;
     ogs_gtp2_tlv_fq_csid_t pgw_fq_csid;
@@ -1083,7 +1099,7 @@ typedef struct ogs_gtp2_create_bearer_request_s {
     ogs_gtp2_tlv_fq_csid_t sgw_fq_csid;
     ogs_gtp2_tlv_change_reporting_action_t change_reporting_action;
     ogs_gtp2_tlv_csg_information_reporting_action_t csg_information_reporting_action;
-    ogs_gtp2_tlv_enb_information_reporting_t hnb_information_reporting;
+    ogs_gtp2_tlv_enb_information_reporting_t h_e_nb_information_reporting;
     ogs_gtp2_tlv_presence_reporting_area_action_t presence_reporting_area_action;
     ogs_gtp2_tlv_indication_t indication_flags;
     ogs_gtp2_tlv_load_control_information_t pgw_s_node_level_load_control_information;
@@ -1093,6 +1109,7 @@ typedef struct ogs_gtp2_create_bearer_request_s {
     ogs_gtp2_tlv_overload_control_information_t sgw_s_overload_control_information;
     ogs_gtp2_tlv_f_container_t nbifom_container;
     ogs_gtp2_tlv_pgw_change_info_t pgw_change_info;
+    ogs_gtp2_tlv_f_teid_t sender_f_teid_for_control_plane;
 } ogs_gtp2_create_bearer_request_t;
 
 typedef struct ogs_gtp2_create_bearer_response_s {
@@ -1127,7 +1144,7 @@ typedef struct ogs_gtp2_update_bearer_request_s {
     ogs_gtp2_tlv_ambr_t aggregate_maximum_bit_rate;
     ogs_gtp2_tlv_change_reporting_action_t change_reporting_action;
     ogs_gtp2_tlv_csg_information_reporting_action_t csg_information_reporting_action;
-    ogs_gtp2_tlv_enb_information_reporting_t hnb_information_reporting;
+    ogs_gtp2_tlv_enb_information_reporting_t h_e_nb_information_reporting;
     ogs_gtp2_tlv_indication_t indication_flags;
     ogs_gtp2_tlv_fq_csid_t pgw_fq_csid;
     ogs_gtp2_tlv_fq_csid_t sgw_fq_csid;
@@ -1139,6 +1156,7 @@ typedef struct ogs_gtp2_update_bearer_request_s {
     ogs_gtp2_tlv_overload_control_information_t sgw_s_overload_control_information;
     ogs_gtp2_tlv_f_container_t nbifom_container;
     ogs_gtp2_tlv_pgw_change_info_t pgw_change_info;
+    ogs_gtp2_tlv_f_teid_t sender_f_teid_for_control_plane;
 } ogs_gtp2_update_bearer_request_t;
 
 typedef struct ogs_gtp2_update_bearer_response_s {
@@ -1186,6 +1204,7 @@ typedef struct ogs_gtp2_delete_bearer_request_s {
     ogs_gtp2_tlv_apn_rate_control_status_t apn_rate_control_status;
     ogs_gtp2_tlv_epco_t extended_protocol_configuration_options;
     ogs_gtp2_tlv_pgw_change_info_t pgw_change_info;
+    ogs_gtp2_tlv_f_teid_t sender_f_teid_for_control_plane;
 } ogs_gtp2_delete_bearer_request_t;
 
 typedef struct ogs_gtp2_delete_bearer_response_s {

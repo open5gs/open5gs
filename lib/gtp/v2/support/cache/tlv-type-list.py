@@ -141,3 +141,7 @@ type_list["Group Id"] = { "type" : "216", "max_instance" : "0" }
 type_list["PSCell ID"] = { "type" : "217", "max_instance" : "0" }
 type_list["UP Security Policy"] = { "type" : "218", "max_instance" : "0" }
 type_list["Alternative IMSI"] = { "type" : "219", "max_instance" : "0" }
+type_list["NF Instance ID"] = { "type" : "220", "max_instance" : "0" }
+type_list["Timer in Seconds"] = { "type" : "221", "max_instance" : "0" }
+type_list["MDT Configuration NR"] = { "type" : "222", "max_instance" : "0" }
+type_list["URI"] = { "type" : "223", "max_instance" : "0" }

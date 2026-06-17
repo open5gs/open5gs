@@ -1,6 +1,6 @@
 # Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
 # Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
-# Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2023-2026 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -21,7 +21,7 @@ from docx import Document
 from docx.document import Document as _Document
 from docx.oxml.text.paragraph import CT_P
 from docx.oxml.table import CT_Tbl
-from docx.table import _Cell, Table
+from docx.table import _Cell, _Row, Table
 from docx.text.paragraph import Paragraph
 
 import re, os, sys, string
@@ -29,7 +29,7 @@ import datetime
 import getopt
 import getpass
 
-version = "0.1.0"
+version = "0.2.0"
 
 msg_list = {}
 type_list = {}
@@ -63,7 +63,7 @@ def output_header_to_file(f):
     f.write("""/*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
- * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2023-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -89,8 +89,8 @@ def output_header_to_file(f):
     f.write(" ******************************************************************************/\n\n")
 
 def usage():
-    print("Python generating TLV build/parser for GTPv2-C v%s" % (version))
-    print("Usage: python gtp-tlv.py [options]")
+    print("Python generating TLV build/parser for GTPv1-C v%s" % (version))
+    print("Usage: python gtp1-tlv.py [options]")
     print("Available options:")
     print("-d        Enable script debug")
     print("-f [file] Input file to parse")
@@ -98,41 +98,87 @@ def usage():
     print("-c [dir]  Cache files to given directory")
     print("-h        Print this help and return")
 
+def clean_text(v):
+    v = v.replace('\\xa0', ' ')
+    v = re.sub(r'\s+', ' ', v)
+    return v.strip()
+
+def c_ident(v):
+    v = re.sub(r'3GPP', '', v, flags=re.IGNORECASE)
+    v = re.sub(r'[^0-9A-Za-z]+', '_', v)
+    v = re.sub(r'_+', '_', v).strip('_')
+    if not v:
+        v = 'unnamed'
+    if v[0].isdigit():
+        v = '_' + v
+    return v
+
 def v_upper(v):
-    return re.sub('3GPP', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).upper())
+    return c_ident(v).upper()
 
 def v_lower(v):
-    return re.sub('3gpp', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower())
+    return c_ident(v).lower()
 
-def ie_reference2type(reference):
-    ie_type = 'foobar'
+def compact_cells(cells):
+    # python-docx returns repeated _Cell objects for horizontally merged cells.
+    # Keep one logical cell per underlying XML tc element.
+    out = []
+    seen = set()
+    for cell in cells:
+        ident = id(cell._tc)
+        if ident in seen:
+            continue
+        seen.add(ident)
+        out.append(cell)
+    return out
+
+def normalize_reference(reference):
+    reference = clean_text(reference)
+    reference = re.sub(r'"|\'|\\', '', reference)
+    if reference == 'GSN Address 7.7.32':
+        return '7.7.32'
+    m = re.search(r'\b(\d+[A-Z]?(?:\.\d+[A-Z]?)+)\b', reference)
+    if m:
+        return m.group(1)
+    return reference
+
+def ie_reference2type(reference, ie_value=None):
+    reference = normalize_reference(reference)
     for k, v in type_list.items():
         if v["reference"] == reference:
             return k
-    raise ValueError('no IE type found for reference \"%s\"' % reference)
+
+    # Fallback for malformed Word rows: sometimes the reference column is
+    # duplicated from the IE name. This lets the unmodified TS 29.060 document
+    # work without hand-editing the table.
+    if ie_value:
+        ie_value = clean_text(ie_value)
+        if ie_value in type_list:
+            return ie_value
+        for k in type_list.keys():
+            if k.lower() == ie_value.lower():
+                return k
+
+    raise ValueError('no IE type found for reference "%s"' % reference)
 
 def get_cells(cells):
-    if (len(cells) < 3):
-        #"FIXME: Table 7.5A.9: Information Elements in a Delete MBMS Context Request" format in document is broken:
+    cells = compact_cells(cells)
+    if len(cells) < 3:
         d_info("Expected length 3: %r" % repr(cells))
         return None
-    presence = cells[1].text
-    presence = re.sub('\n', '', presence);
-    ie_value = re.sub('\s*\n*\s*\([^\)]*\)*', '', cells[0].text)
-    ie_value = re.sub('\\xa0', ' ', ie_value) # drop unicode char "No-Break Space" in "Higher bitrates than 16 Mbps flag"
-    ie_value = re.sub('\n', ' ', ie_value)
-    comment = cells[2].text.encode('ascii', 'ignore').decode('utf-8').rstrip()
-    comment = re.sub('\n|\"|\'|\\\\', '', comment);
-    if comment == 'GSN Address 7.7.32':
-        reference = '7.7.32'
-    else:
-        reference = comment
+
+    texts = [clean_text(c.text) for c in cells]
+    if not texts or texts[0].lower().startswith('information element'):
+        return None
+
+    ie_value = re.sub(r'\s*\([^)]*\)\s*$', '', texts[0]).strip()
+    presence = texts[1]
+    reference = normalize_reference(texts[2])
 
     if ie_value == '' and reference == '7.7.16':
-        # For some unknown reason "cells[0].text" is '' in this row
         ie_value = 'Teardown Ind'
 
-    return { "ie_value" : ie_value, "presence" : presence, "reference": reference, }
+    return { "ie_value" : ie_value, "presence" : presence, "reference": reference }
 
 def write_cells_to_file(name, cells):
     write_file(f, name + ".append({ " + \
@@ -203,6 +249,9 @@ for o, a in opts:
         usage()
         sys.exit(2)
 
+os.makedirs(cachedir, exist_ok=True)
+os.makedirs(outdir, exist_ok=True)
+
 if os.path.isfile(filename) and os.access(filename, os.R_OK):
     file = open(filename, 'r')
 else:
@@ -236,8 +285,8 @@ else:
             continue
         if key.find('Reserved') != -1:
             continue
-        key = re.sub('\s*\n*\s*\([^\)]*\)*', '', key)
-        key = re.sub('\n', '', key)
+        key = re.sub(r'\s*\n*\s*\([^\)]*\)*', '', key)
+        key = re.sub(r'\n', '', key)
         msg_list[key] = { "type": type }
         write_file(f, "msg_list[\"" + key + "\"] = { \"type\" : \"" + type + "\" }\n")
     f.close()
@@ -261,28 +310,33 @@ else:
             write_file(f, "# [%s] Index = %d\n" % (paragraph, i))
 
     for row in ie_table.rows[1:-3]:
-        type = row.cells[0].text
-        format = row.cells[1].text
-        key = row.cells[2].text
-        reference = row.cells[3].text
-        len_type = row.cells[4].text
-        if key.find('Reserved') != -1:
+        cells = compact_cells(row.cells)
+        if len(cells) < 5:
             continue
-        if key.find('Spare') != -1:
+        type = clean_text(cells[0].text)
+        format = clean_text(cells[1].text)
+        key_cell = clean_text(cells[2].text)
+        reference = normalize_reference(cells[3].text)
+        len_type = clean_text(cells[4].text)
+        if not type.isdigit():
             continue
-        else:
-            key = re.sub('.*\(', '', row.cells[2].text)
-            key = re.sub('\)', '', key)
-            key = re.sub('\s*$', '', key)
-            if key == '' and type == '19':
-                # For some unknown reason "row.cells[2].text" is '' in this row
-                key = 'Teardown Ind'
+        if key_cell.find('Reserved') != -1:
+            continue
+        if key_cell.find('Spare') != -1:
+            continue
+        key = re.sub(r'.*\(', '', key_cell)
+        key = re.sub(r'\)', '', key)
+        key = clean_text(key)
+        if key == '' and type == '19':
+            key = 'Teardown Ind'
+        if not key:
+            continue
         type_list[key] = { 'type': type , 'reference': reference, 'format': format }
         write_file(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type)
         write_file(f, "\", \"reference\" : \"" + reference)
         write_file(f, "\", \"format\" : \"" + format)
         if (format.find('TLV') != -1 or format.find('TV') != -1) and len_type.find('Fixed') != -1:
-            size = int(row.cells[5].text)
+            size = int(clean_text(cells[5].text))
             type_list[key]['size'] = size
             write_file(f, "\", \"size\" : " + str(size))
         else:
@@ -515,7 +569,7 @@ for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("typedef struct ogs_gtp1_" + v_lower(k) + "_s {\n")
         for ies in msg_list[k]["ies"]:
-            f.write("    ogs_gtp1_tlv_" + v_lower(ie_reference2type(ies["reference"])) + "_t " + \
+            f.write("    ogs_gtp1_tlv_" + v_lower(ie_reference2type(ies["reference"], ies["ie_value"])) + "_t " + \
                     v_lower(ies["ie_value"]) + ";\n")
         f.write("} ogs_gtp1_" + v_lower(k) + "_t;\n")
         f.write("\n")
@@ -594,7 +648,7 @@ for (k, v) in sorted_msg_list:
             #if k == 'Create PDP Context Request' and ies["ie_value"] == 'SGSN Address for user traffic':
             #    f.write("        &ogs_tlv_desc_more1,\n")
             #else:
-                f.write("        &ogs_gtp1_tlv_desc_%s,\n" % v_lower(ie_reference2type(ies["reference"])))
+                f.write("        &ogs_gtp1_tlv_desc_%s,\n" % v_lower(ie_reference2type(ies["reference"], ies["ie_value"])))
         f.write("    NULL,\n")
         f.write("}};\n\n")
 f.write("\n")

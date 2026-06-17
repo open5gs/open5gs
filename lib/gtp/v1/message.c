@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  * Copyright (C) 2022 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
- * Copyright (C) 2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2023-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -20,10 +20,10 @@
  */
 
 /*******************************************************************************
- * This file had been created by gtp1-tlv.py script v0.1.0
+ * This file had been created by gtp1-tlv.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2023-12-11 17:21:37.071241 by pespin
- * from 29060-h40.docx
+ * Created on: 2026-06-17 13:06:16.877079 by acetcom
+ * from r19.0.0/29060-j00.docx
  ******************************************************************************/
 
 #include "ogs-gtp.h"
