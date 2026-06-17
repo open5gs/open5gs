@@ -19,6 +19,7 @@
 
 #include "ogs-sctp.h"
 #include "ogs-gtp.h"
+#include "ogs-sbi.h"
 
 #include "mme-context.h"
 #include "mme-sm.h"
@@ -33,6 +34,7 @@
 #include "metrics/prometheus/json_pager.h"
 #include "enb-info.h"
 #include "ue-info.h"
+#include "admin-handler.h"
 
 static ogs_thread_t *thread;
 static void mme_main(void *data);
@@ -50,6 +52,15 @@ int mme_initialize(void)
     mme_metrics_init();
 
     ogs_gtp_context_init(OGS_MAX_NUM_OF_GTPU_RESOURCE);
+
+    /*
+     * Init the shared SBI context before mme_context_parse_config so the
+     * mme.yaml `admin.server[]` parser can register listener addresses
+     * via ogs_sbi_server_add(). MME is not a 3GPP NF, but the SBI lib's
+     * HTTP/2 server is reused here for the non-3GPP admin endpoint.
+     */
+    ogs_sbi_context_init(OpenAPI_nf_type_MME);
+
     mme_context_init();
 
     rv = ogs_gtp_xact_init();
@@ -86,6 +97,9 @@ int mme_initialize(void)
     rv = s1ap_open();
     if (rv != OGS_OK) return OGS_ERROR;
 
+    rv = mme_admin_server_open();
+    if (rv != OGS_OK) return OGS_ERROR;
+
     thread = ogs_thread_create(mme_main, NULL);
     if (!thread) return OGS_ERROR;
 
@@ -102,9 +116,13 @@ void mme_terminate(void)
 
     ogs_thread_destroy(thread);
 
+    mme_admin_server_close();
+
     mme_gtp_close();
     sgsap_close();
     s1ap_close();
+
+    ogs_sbi_context_final();
 
     ogs_metrics_context_close(ogs_metrics_self());
 
@@ -156,6 +174,22 @@ static void mme_main(void *data)
                 break;
 
             ogs_assert(e);
+
+            /*
+             * The shared lib/sbi server callback pushes a generic
+             * ogs_event_t (shorter layout than mme_event_t) with
+             * id=OGS_EVENT_SBI_SERVER onto the app queue. Both event
+             * types share the same `int id` at offset 0, so reading
+             * the id here is well-defined. Admin traffic is diverted
+             * to a synchronous handler before the MME FSM, which has
+             * no case for the SBI event family.
+             */
+            if (((ogs_event_t *)e)->id == OGS_EVENT_SBI_SERVER) {
+                mme_admin_process_sbi_server_event((ogs_event_t *)e);
+                ogs_event_free(e);
+                continue;
+            }
+
             ogs_fsm_dispatch(&mme_sm, e);
             mme_event_free(e);
         }
