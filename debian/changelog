@@ -1,3 +1,45 @@
+open5gs (2.8.0) unstable; urgency=medium
+
+  * Upgrade to Release-19
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 23:17:47 +0900
+
+open5gs (2.8.0~resolute) resolute; urgency=medium
+
+  * Upgrade to Release-19
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 23:13:49 +0900
+
+open5gs (2.8.0~questing) questing; urgency=medium
+
+  * Upgrade to Release-19
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 23:11:19 +0900
+
+open5gs (2.8.0~noble) noble; urgency=medium
+
+  * Upgrade to Release-19
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 23:06:00 +0900
+
+open5gs (2.8.0~jammy) jammy; urgency=medium
+
+  * Upgrade to Release-19
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 23:02:46 +0900
+
+open5gs (2.8.0~focal) focal; urgency=medium
+
+  * Upgrade to Release-19
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 22:59:14 +0900
+
+open5gs (2.8.0~bionic) bionic; urgency=medium
+
+  * Upgrade to Release-19
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 22:48:53 +0900
+
 open5gs (2.7.7) unstable; urgency=medium
 
   * Bug Fixed

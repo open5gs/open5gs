@@ -593,6 +593,7 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                         nnrf_oauth2 = ogs_strndup(v_start, v_end-v_start);
                         break;
                     default:
+                        break;
                     }
                 }
             }
