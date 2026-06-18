@@ -1813,12 +1813,59 @@ if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
     ])
 endif
 
+# The generated OpenAPI model has a very large number of source files
+# (~1,800). Linking all of the resulting object files in a single command
+# can exceed the system's maximum command-line length (ARG_MAX), which
+# makes the build fail with "ninja: fatal: posix_spawn: Argument list too
+# long" on some builders (e.g. Launchpad/focal).
+#
+# To avoid this, the sources are split into fixed-size groups, each built as
+# an intermediate static library, which are then combined into the final
+# shared library with link_whole. Using a fixed chunk size (rather than a
+# fixed number of chunks) keeps each archive command-line bounded even as
+# more model files are added over time, while link_whole preserves every
+# symbol in the resulting library.
+
+libsbi_openapi_chunk_size = 400
+
+libsbi_openapi_static_libs = []
+libsbi_openapi_chunk_sources = []
+libsbi_openapi_chunk_index = 0
+
+foreach source : libsbi_openapi_sources
+    libsbi_openapi_chunk_sources += [source]
+
+    if libsbi_openapi_chunk_sources.length() == libsbi_openapi_chunk_size
+        libsbi_openapi_static_libs += [static_library(
+            'ogssbi-openapi-@0@'.format(libsbi_openapi_chunk_index),
+            sources : libsbi_openapi_chunk_sources,
+            c_args : sbi_openapi_cc_flags,
+            include_directories : [libsbi_openapi_inc, libinc],
+            dependencies : libcore_dep,
+            pic : true,
+            install : false)]
+
+        libsbi_openapi_chunk_sources = []
+        libsbi_openapi_chunk_index += 1
+    endif
+endforeach
+
+if libsbi_openapi_chunk_sources.length() > 0
+    libsbi_openapi_static_libs += [static_library(
+        'ogssbi-openapi-@0@'.format(libsbi_openapi_chunk_index),
+        sources : libsbi_openapi_chunk_sources,
+        c_args : sbi_openapi_cc_flags,
+        include_directories : [libsbi_openapi_inc, libinc],
+        dependencies : libcore_dep,
+        pic : true,
+        install : false)]
+endif
+
 libsbi_openapi = library('ogssbi-openapi',
-    sources : libsbi_openapi_sources,
     version : libogslib_version,
-    c_args : sbi_openapi_cc_flags,
     include_directories : [libsbi_openapi_inc, libinc],
     dependencies : libcore_dep,
+    link_whole : libsbi_openapi_static_libs,
     install : true)
 
 libsbi_openapi_dep = declare_dependency(

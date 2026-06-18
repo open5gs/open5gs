@@ -700,12 +700,59 @@ libasn1c_s1ap_sources = files('''
 
 libasn1c_s1ap_inc = include_directories('.')
 
+# The generated S1AP ASN.1 code has a very large number of source
+# files. Linking all of the resulting object files in a single command can
+# exceed the system's maximum command-line length (ARG_MAX), which makes the
+# build fail with "ninja: fatal: posix_spawn: Argument list too long" on some
+# builders (e.g. Launchpad/focal).
+#
+# To avoid this, the sources are split into fixed-size groups, each built as
+# an intermediate static library, which are then combined into the final
+# shared library with link_whole. Using a fixed chunk size (rather than a
+# fixed number of chunks) keeps each archive command-line bounded even as
+# more files are added over time, while link_whole preserves every symbol in
+# the resulting library.
+
+libasn1c_s1ap_chunk_size = 400
+
+libasn1c_s1ap_static_libs = []
+libasn1c_s1ap_chunk_sources = []
+libasn1c_s1ap_chunk_index = 0
+
+foreach source : libasn1c_s1ap_sources
+    libasn1c_s1ap_chunk_sources += [source]
+
+    if libasn1c_s1ap_chunk_sources.length() == libasn1c_s1ap_chunk_size
+        libasn1c_s1ap_static_libs += [static_library(
+            'ogsasn1c-s1ap-@0@'.format(libasn1c_s1ap_chunk_index),
+            sources : libasn1c_s1ap_chunk_sources,
+            c_args : libasn1c_common_cc_flags,
+            include_directories : libasn1c_s1ap_inc,
+            dependencies : [libasn1c_common_dep, libasn1c_util_dep],
+            pic : true,
+            install : false)]
+
+        libasn1c_s1ap_chunk_sources = []
+        libasn1c_s1ap_chunk_index += 1
+    endif
+endforeach
+
+if libasn1c_s1ap_chunk_sources.length() > 0
+    libasn1c_s1ap_static_libs += [static_library(
+        'ogsasn1c-s1ap-@0@'.format(libasn1c_s1ap_chunk_index),
+        sources : libasn1c_s1ap_chunk_sources,
+        c_args : libasn1c_common_cc_flags,
+        include_directories : libasn1c_s1ap_inc,
+        dependencies : [libasn1c_common_dep, libasn1c_util_dep],
+        pic : true,
+        install : false)]
+endif
+
 libasn1c_s1ap = library('ogsasn1c-s1ap',
-    sources : libasn1c_s1ap_sources,
     version : libogslib_version,
-    c_args : libasn1c_common_cc_flags,
     include_directories : libasn1c_s1ap_inc,
     dependencies : [libasn1c_common_dep, libasn1c_util_dep],
+    link_whole : libasn1c_s1ap_static_libs,
     install : true)
 
 libasn1c_s1ap_dep = declare_dependency(
