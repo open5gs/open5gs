@@ -2,43 +2,43 @@ open5gs (2.8.0) unstable; urgency=medium
 
   * Upgrade to Release-19
 
- -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 23:17:47 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 18 Jun 2026 08:26:16 +0000
 
-open5gs (2.8.0~resolute) resolute; urgency=medium
-
-  * Upgrade to Release-19
-
- -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 23:13:49 +0900
-
-open5gs (2.8.0~questing) questing; urgency=medium
+open5gs (2.8.0~resolute5) resolute; urgency=medium
 
   * Upgrade to Release-19
 
- -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 23:11:19 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 18 Jun 2026 08:19:58 +0000
 
-open5gs (2.8.0~noble) noble; urgency=medium
-
-  * Upgrade to Release-19
-
- -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 23:06:00 +0900
-
-open5gs (2.8.0~jammy) jammy; urgency=medium
+open5gs (2.8.0~questing2) questing; urgency=medium
 
   * Upgrade to Release-19
 
- -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 23:02:46 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 18 Jun 2026 06:11:15 +0000
 
-open5gs (2.8.0~focal) focal; urgency=medium
-
-  * Upgrade to Release-19
-
- -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 22:59:14 +0900
-
-open5gs (2.8.0~bionic) bionic; urgency=medium
+open5gs (2.8.0~noble2) noble; urgency=medium
 
   * Upgrade to Release-19
 
- -- Sukchan Lee <acetcom@gmail.com>  Wed, 17 Jun 2026 22:48:53 +0900
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 18 Jun 2026 05:04:18 +0000
+
+open5gs (2.8.0~jammy2) jammy; urgency=medium
+
+  * Upgrade to Release-19
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 18 Jun 2026 04:56:45 +0000
+
+open5gs (2.8.0~focal2) focal; urgency=medium
+
+  * Upgrade to Release-19
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 18 Jun 2026 04:44:06 +0000
+
+open5gs (2.8.0~bionic2) bionic; urgency=medium
+
+  * Upgrade to Release-19
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 18 Jun 2026 02:02:19 +0000
 
 open5gs (2.7.7) unstable; urgency=medium
 

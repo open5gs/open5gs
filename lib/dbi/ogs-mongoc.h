@@ -24,7 +24,13 @@
 #ifndef OGS_MONGOC_H
 #define OGS_MONGOC_H
 
+#if defined(OGS_HAVE_MONGOC_MONGOC_H)
+#include <mongoc/mongoc.h>
+#elif defined(OGS_HAVE_MONGOC_H)
 #include <mongoc.h>
+#else
+#error "No supported mongoc header found"
+#endif
 
 #ifdef __cplusplus
 extern "C" {

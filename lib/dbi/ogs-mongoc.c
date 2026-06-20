@@ -17,8 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <mongoc.h>
-
 #include "ogs-dbi.h"
 
 int __ogs_dbi_domain;
