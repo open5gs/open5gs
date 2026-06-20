@@ -2356,7 +2356,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 
     if (send_ue_security_capability) {
         ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
-        ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+        ASN_SEQUENCE_ADD(PathSwitchRequestAcknowledge->protocolIEs, ie);
 
         ie->id = NGAP_ProtocolIE_ID_id_UESecurityCapabilities;
         ie->criticality = NGAP_Criticality_reject;
