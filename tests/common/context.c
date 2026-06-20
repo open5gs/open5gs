@@ -1485,7 +1485,7 @@ int test_db_insert_ue(test_ue_t *test_ue, bson_t *doc)
     key = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
     ogs_assert(key);
 
-#if defined(MONGOC_CHECK_VERSION) && MONGOC_CHECK_VERSION(1, 9, 0)
+#if MONGOC_CHECK_VERSION(1, 11, 0)
     count = mongoc_collection_count_documents(
             collection,
             key,
@@ -1524,7 +1524,7 @@ int test_db_insert_ue(test_ue_t *test_ue, bson_t *doc)
     key = BCON_NEW("imsi", BCON_UTF8(test_ue->imsi));
     ogs_assert(key);
     do {
-#if defined(MONGOC_CHECK_VERSION) && MONGOC_CHECK_VERSION(1, 9, 0)
+#if MONGOC_CHECK_VERSION(1, 11, 0)
         count = mongoc_collection_count_documents(
                 collection,
                 key,
