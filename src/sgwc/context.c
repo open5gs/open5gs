@@ -41,6 +41,86 @@ static int num_of_sgwc_sess = 0;
 static void stats_add_sgwc_session(void);
 static void stats_remove_sgwc_session(void);
 
+static const char *sgwc_tunnel_interface_type_name(uint8_t interface_type)
+{
+    switch (interface_type) {
+    case OGS_GTP2_F_TEID_S5_S8_SGW_GTP_U:
+        return "S5/S8";
+    case OGS_GTP2_F_TEID_S1_U_SGW_GTP_U:
+        return "S1-U";
+    case OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING:
+        return "DL-data-forwarding";
+    case OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING:
+        return "UL-data-forwarding";
+    default:
+        return "unknown";
+    }
+}
+
+static bool sgwc_tunnel_is_indirect(uint8_t interface_type)
+{
+    return interface_type ==
+        OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING ||
+        interface_type ==
+        OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING;
+}
+
+static bool sgwc_pdr_trace_needed(
+        sgwc_sess_t *sess, uint8_t interface_type)
+{
+    ogs_assert(sess);
+
+    return sgwc_tunnel_is_indirect(interface_type) ||
+        ogs_list_count(&sess->pfcp.pdr_list) >= OGS_MAX_NUM_OF_PDR - 4;
+}
+
+void sgwc_pdr_trace_session(sgwc_sess_t *sess, const char *reason)
+{
+    sgwc_ue_t *sgwc_ue = NULL;
+    sgwc_bearer_t *bearer = NULL;
+    sgwc_tunnel_t *tunnel = NULL;
+    ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_far_t *far = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(reason);
+
+    sgwc_ue = sgwc_ue_find_by_id(sess->sgwc_ue_id);
+
+    ogs_info("[PDR-TRACE] %s: IMSI[%s] sess-id=%u pfcp-sess=%p "
+            "APN[%s] SGW-S5C-TEID[0x%x] PGW-S5C-TEID[0x%x] "
+            "pdr=%d/%d pdr-id-free=%lld bearer-count=%d",
+            reason, sgwc_ue ? sgwc_ue->imsi_bcd : "unknown",
+            (unsigned)sess->id, &sess->pfcp,
+            sess->session.name ? sess->session.name : "(null)",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid,
+            ogs_list_count(&sess->pfcp.pdr_list), OGS_MAX_NUM_OF_PDR,
+            (long long)sess->pfcp.pdr_id_pool.avail,
+            ogs_list_count(&sess->bearer_list));
+
+    ogs_list_for_each(&sess->bearer_list, bearer) {
+        ogs_info("[PDR-TRACE]   bearer-id=%u ebi=%u tunnel-count=%d",
+                (unsigned)bearer->id, (unsigned)bearer->ebi,
+                ogs_list_count(&bearer->tunnel_list));
+
+        ogs_list_for_each(&bearer->tunnel_list, tunnel) {
+            pdr = tunnel->pdr;
+            far = tunnel->far;
+
+            ogs_info("[PDR-TRACE]     tunnel-id=%u type=%s(%u) "
+                    "pdr-id=%u pdr-teid=0x%x far-id=%u "
+                    "local-teid=0x%x remote-teid=0x%x",
+                    (unsigned)tunnel->id,
+                    sgwc_tunnel_interface_type_name(tunnel->interface_type),
+                    (unsigned)tunnel->interface_type,
+                    pdr ? (unsigned)pdr->id : 0,
+                    pdr ? pdr->teid : 0,
+                    far ? (unsigned)far->id : 0,
+                    tunnel->local_teid, tunnel->remote_teid);
+        }
+    }
+}
+
 void sgwc_context_init(void)
 {
     ogs_assert(context_initialized == 0);
@@ -728,7 +808,12 @@ sgwc_tunnel_t *sgwc_tunnel_add(
 
     pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     if (!pdr) {
-        ogs_error("ogs_pfcp_pdr_add() failed");
+        ogs_error("[PDR-TRACE] ogs_pfcp_pdr_add() failed: "
+                "bearer-id=%u tunnel-type=%s(%u)",
+                (unsigned)bearer->id,
+                sgwc_tunnel_interface_type_name(interface_type),
+                (unsigned)interface_type);
+        sgwc_pdr_trace_session(sess, "SGW-C tunnel allocation failed");
         sgwc_tunnel_remove(tunnel);
         return NULL;
     }
@@ -808,16 +893,27 @@ sgwc_tunnel_t *sgwc_tunnel_add(
         pdr->f_teid.teid = tunnel->local_teid;
     }
 
+    if (sgwc_pdr_trace_needed(sess, interface_type))
+        sgwc_pdr_trace_session(sess, "SGW-C tunnel allocated");
+
     return tunnel;
 }
 
 int sgwc_tunnel_remove(sgwc_tunnel_t *tunnel)
 {
     sgwc_bearer_t *bearer = NULL;
+    sgwc_sess_t *sess = NULL;
 
     ogs_assert(tunnel);
     bearer = sgwc_bearer_find_by_id(tunnel->bearer_id);
     ogs_assert(bearer);
+    sess = sgwc_sess_find_by_id(bearer->sess_id);
+    ogs_assert(sess);
+
+    if (tunnel->pdr &&
+            sgwc_pdr_trace_needed(sess, tunnel->interface_type)) {
+        sgwc_pdr_trace_session(sess, "SGW-C tunnel removing");
+    }
 
     ogs_list_remove(&bearer->tunnel_list, tunnel);
 

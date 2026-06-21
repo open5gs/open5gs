@@ -564,6 +564,18 @@ void sgwc_sxa_handle_session_modification_response(
         cause_value = OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
     }
 
+    if (sess) {
+        ogs_info("[PDR-TRACE] PFCP modification response: IMSI[%s] "
+                "sess-id=%u flags=0x%llx pfcp-cause=%d "
+                "pdr=%d/%d pdr-id-free=%lld assoc-xact-id=%u",
+                sgwc_ue ? sgwc_ue->imsi_bcd : "unknown",
+                (unsigned)sess->id, (unsigned long long)flags,
+                pfcp_rsp->cause.presence ? pfcp_rsp->cause.u8 : -1,
+                ogs_list_count(&sess->pfcp.pdr_list), OGS_MAX_NUM_OF_PDR,
+                (long long)sess->pfcp.pdr_id_pool.avail,
+                pfcp_xact->assoc_xact_id);
+    }
+
     if (cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
         uint8_t pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
         uint8_t offending_ie_value = 0;
@@ -747,12 +759,13 @@ void sgwc_sxa_handle_session_modification_response(
      */
     if (flags & OGS_PFCP_MODIFY_REMOVE) {
         if (flags & OGS_PFCP_MODIFY_INDIRECT) {
+            int removed_tunnel_count = 0;
+
             s11_xact = ogs_gtp_xact_find_by_id(pfcp_xact->assoc_xact_id);
             if (!s11_xact) {
-                ogs_error("GTP transaction(S11) has already been removed [%d]",
+                ogs_warn("[PDR-TRACE] S11 transaction has already been "
+                        "removed [%u]; continue local indirect tunnel cleanup",
                         pfcp_xact->assoc_xact_id);
-                ogs_pfcp_xact_commit(pfcp_xact);
-                return;
             }
 
             ogs_pfcp_xact_commit(pfcp_xact);
@@ -773,10 +786,24 @@ void sgwc_sxa_handle_session_modification_response(
                             OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING ||
                                 tunnel->interface_type ==
                             OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING) {
+                                removed_tunnel_count++;
                                 sgwc_tunnel_remove(tunnel);
                             }
                         }
                     }
+                }
+
+                ogs_info("[PDR-TRACE] Indirect tunnel cleanup complete: "
+                        "IMSI[%s] assoc-xact-id=%u removed-tunnels=%d "
+                        "s11-xact=%s",
+                        sgwc_ue->imsi_bcd, pfcp_xact->assoc_xact_id,
+                        removed_tunnel_count, s11_xact ? "present" : "missing");
+
+                if (!s11_xact) {
+                    ogs_warn("[PDR-TRACE] Delete Indirect Data Forwarding "
+                            "Tunnel Response suppressed because the S11 "
+                            "transaction has already been removed");
+                    return;
                 }
 
                 gtp_rsp = &send_message.

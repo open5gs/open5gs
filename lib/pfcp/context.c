@@ -68,6 +68,12 @@ void ogs_pfcp_context_init(void)
     ogs_pool_init(&ogs_pfcp_pdr_teid_pool, ogs_pfcp_pdr_pool.size);
     ogs_pool_random_id_generate(&ogs_pfcp_pdr_teid_pool);
 
+    ogs_info("[PDR-TRACE] PFCP PDR pools initialized: "
+            "pdr-total=%lld teid-total=%lld pdr-per-session=%d",
+            (long long)ogs_pfcp_pdr_pool.size,
+            (long long)ogs_pfcp_pdr_teid_pool.size,
+            OGS_MAX_NUM_OF_PDR);
+
     pdr_random_to_index = ogs_calloc(
             sizeof(ogs_pool_id_t), ogs_pfcp_pdr_pool.size+1);
     ogs_assert(pdr_random_to_index);
@@ -1273,6 +1279,32 @@ void ogs_pfcp_sess_clear(ogs_pfcp_sess_t *sess)
     if (sess->bar) ogs_pfcp_bar_delete(sess->bar);
 }
 
+static void pdr_trace_session(ogs_pfcp_sess_t *sess, const char *reason)
+{
+    ogs_pfcp_pdr_t *pdr = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(reason);
+
+    ogs_error("[PDR-TRACE] %s: pfcp-sess=%p active=%d/%d "
+            "pdr-id-free=%lld global-pdr-free=%lld global-teid-free=%lld",
+            reason, sess, ogs_list_count(&sess->pdr_list),
+            OGS_MAX_NUM_OF_PDR, (long long)sess->pdr_id_pool.avail,
+            (long long)ogs_pfcp_pdr_pool.avail,
+            (long long)ogs_pfcp_pdr_teid_pool.avail);
+
+    ogs_list_for_each(&sess->pdr_list, pdr) {
+        ogs_error("[PDR-TRACE]   pdr-id=%u teid=0x%x src-if=%d "
+                "src-if-type=%d f-teid=0x%x f-teid-len=%d "
+                "ch=%d chid=%d choose-id=%u far-id=%u apn=%s",
+                (unsigned)pdr->id, pdr->teid, pdr->src_if,
+                pdr->src_if_type, pdr->f_teid.teid, pdr->f_teid_len,
+                pdr->f_teid.ch, pdr->chid, (unsigned)pdr->choose_id,
+                pdr->far ? (unsigned)pdr->far->id : 0,
+                pdr->apn ? pdr->apn : "(null)");
+    }
+}
+
 static int precedence_compare(ogs_pfcp_pdr_t *pdr1, ogs_pfcp_pdr_t *pdr2)
 {
     if (pdr1->precedence == pdr2->precedence)
@@ -1286,12 +1318,14 @@ static int precedence_compare(ogs_pfcp_pdr_t *pdr1, ogs_pfcp_pdr_t *pdr2)
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess)
 {
     ogs_pfcp_pdr_t *pdr = NULL;
+    int pdr_count;
 
     ogs_assert(sess);
 
     ogs_pool_alloc(&ogs_pfcp_pdr_pool, &pdr);
     if (pdr == NULL) {
-        ogs_error("pdr_pool() failed");
+        ogs_error("[PDR-TRACE] pdr_pool() failed");
+        pdr_trace_session(sess, "Global PDR allocation failed");
         return NULL;
     }
     memset(pdr, 0, sizeof *pdr);
@@ -1301,14 +1335,22 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess)
 
     /* Set TEID */
     ogs_pool_alloc(&ogs_pfcp_pdr_teid_pool, &pdr->teid_node);
-    ogs_assert(pdr->teid_node);
+    if (pdr->teid_node == NULL) {
+        ogs_error("[PDR-TRACE] pdr_teid_pool() failed");
+        pdr_trace_session(sess, "Global PDR TEID allocation failed");
+        ogs_pool_free(&ogs_pfcp_pdr_pool, pdr);
+        return NULL;
+    }
 
     pdr->teid = *(pdr->teid_node);
 
     /* Set PDR-ID */
     ogs_pool_alloc(&sess->pdr_id_pool, &pdr->id_node);
     if (pdr->id_node == NULL) {
-        ogs_error("pdr_id_pool() failed");
+        ogs_error("[PDR-TRACE] pdr_id_pool() failed");
+        pdr_trace_session(sess, "Per-session PDR ID allocation failed");
+
+        ogs_pool_free(&ogs_pfcp_pdr_teid_pool, pdr->teid_node);
         ogs_pool_free(&ogs_pfcp_pdr_pool, pdr);
         return NULL;
     }
@@ -1318,6 +1360,14 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess)
 
     pdr->sess = sess;
     ogs_list_add(&sess->pdr_list, pdr);
+
+    pdr_count = ogs_list_count(&sess->pdr_list);
+    if (pdr_count >= OGS_MAX_NUM_OF_PDR - 4) {
+        ogs_info("[PDR-TRACE] PDR allocated near capacity: "
+                "pfcp-sess=%p pdr-id=%u active=%d/%d pdr-id-free=%lld",
+                sess, (unsigned)pdr->id, pdr_count, OGS_MAX_NUM_OF_PDR,
+                (long long)sess->pdr_id_pool.avail);
+    }
 
     return pdr;
 }
@@ -1581,11 +1631,18 @@ void ogs_pfcp_pdr_associate_qer(ogs_pfcp_pdr_t *pdr, ogs_pfcp_qer_t *qer)
 void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
 {
     int i;
+    int pdr_count;
+    ogs_pfcp_sess_t *sess = NULL;
+    ogs_pfcp_pdr_id_t pdr_id;
 
     ogs_assert(pdr);
     ogs_assert(pdr->sess);
 
-    ogs_list_remove(&pdr->sess->pdr_list, pdr);
+    sess = pdr->sess;
+    pdr_id = pdr->id;
+    pdr_count = ogs_list_count(&sess->pdr_list);
+
+    ogs_list_remove(&sess->pdr_list, pdr);
 
     ogs_pfcp_rule_remove_all(pdr);
 
@@ -1609,7 +1666,7 @@ void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
         ogs_free(pdr->dnn);
 
     if (pdr->id_node)
-        ogs_pool_free(&pdr->sess->pdr_id_pool, pdr->id_node);
+        ogs_pool_free(&sess->pdr_id_pool, pdr->id_node);
 
     if (pdr->ipv4_framed_routes) {
         for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
@@ -1630,6 +1687,16 @@ void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
     }
 
     ogs_pool_free(&ogs_pfcp_pdr_teid_pool, pdr->teid_node);
+
+    if (pdr_count >= OGS_MAX_NUM_OF_PDR - 4) {
+        ogs_info("[PDR-TRACE] PDR released near capacity: "
+                "pfcp-sess=%p pdr-id=%u active=%d->%d/%d "
+                "pdr-id-free=%lld global-teid-free=%lld",
+                sess, (unsigned)pdr_id, pdr_count, pdr_count - 1,
+                OGS_MAX_NUM_OF_PDR, (long long)sess->pdr_id_pool.avail,
+                (long long)ogs_pfcp_pdr_teid_pool.avail);
+    }
+
     ogs_pool_free(&ogs_pfcp_pdr_pool, pdr);
 }
 

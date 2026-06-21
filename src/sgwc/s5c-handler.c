@@ -683,6 +683,18 @@ void sgwc_s5c_handle_create_bearer_request(
     ogs_assert(sgwc_ue);
 
     bearer = sgwc_bearer_add(sess);
+    if (!bearer) {
+        ogs_error("[PDR-TRACE] Create Bearer allocation failed: "
+                "IMSI[%s] sess-id=%u linked-ebi=%u bearer-ebi=%u "
+                "pdr=%d/%d pdr-id-free=%lld",
+                sgwc_ue->imsi_bcd, (unsigned)sess->id,
+                (unsigned)req->linked_eps_bearer_id.u8,
+                (unsigned)req->bearer_contexts.eps_bearer_id.u8,
+                ogs_list_count(&sess->pfcp.pdr_list), OGS_MAX_NUM_OF_PDR,
+                (long long)sess->pfcp.pdr_id_pool.avail);
+        sgwc_pdr_trace_session(sess,
+                "Create Bearer Request before assertion");
+    }
     ogs_assert(bearer);
     ul_tunnel = sgwc_ul_tunnel_in_bearer(bearer);
     ogs_assert(ul_tunnel);

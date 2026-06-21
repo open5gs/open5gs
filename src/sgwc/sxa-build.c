@@ -126,6 +126,7 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
     ogs_pfcp_far_t *far = NULL;
     sgwc_tunnel_t *tunnel = NULL;
     sgwc_bearer_t *bearer = NULL;
+    sgwc_ue_t *sgwc_ue = NULL;
 
     int num_of_remove_pdr = 0;
     int num_of_remove_far = 0;
@@ -294,6 +295,19 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
                 num_of_update_pdr, num_of_update_far);
         ogs_assert_if_reached();
     }
+
+    sgwc_ue = sgwc_ue_find_by_id(sess->sgwc_ue_id);
+    ogs_info("[PDR-TRACE] PFCP modification built: IMSI[%s] sess-id=%u "
+            "flags=0x%llx pdr=%d/%d pdr-id-free=%lld "
+            "remove-pdr=%d remove-far=%d create-pdr=%d create-far=%d "
+            "update-pdr=%d update-far=%d",
+            sgwc_ue ? sgwc_ue->imsi_bcd : "unknown",
+            (unsigned)sess->id, (unsigned long long)modify_flags,
+            ogs_list_count(&sess->pfcp.pdr_list), OGS_MAX_NUM_OF_PDR,
+            (long long)sess->pfcp.pdr_id_pool.avail,
+            num_of_remove_pdr, num_of_remove_far,
+            num_of_create_pdr, num_of_create_far,
+            num_of_update_pdr, num_of_update_far);
 
     pfcp_message->h.type = type;
     pkbuf = ogs_pfcp_build_msg(pfcp_message);

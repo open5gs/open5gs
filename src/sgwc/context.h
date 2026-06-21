@@ -183,6 +183,7 @@ sgwc_tunnel_t *sgwc_tunnel_add(
         sgwc_bearer_t *bearer, uint8_t interface_type);
 int sgwc_tunnel_remove(sgwc_tunnel_t *tunnel);
 void sgwc_tunnel_remove_all(sgwc_bearer_t *bearer);
+void sgwc_pdr_trace_session(sgwc_sess_t *sess, const char *reason);
 sgwc_tunnel_t *sgwc_tunnel_find_by_teid(sgwc_ue_t *sgwc_ue, uint32_t teid);
 sgwc_tunnel_t *sgwc_tunnel_find_by_interface_type(
         sgwc_bearer_t *bearer, uint8_t interface_type);
