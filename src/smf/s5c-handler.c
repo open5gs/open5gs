@@ -755,8 +755,23 @@ void smf_s5c_handle_modify_bearer_request(
         }
 
         if (indication && indication->handover_indication) {
-            ogs_assert(OGS_OK == smf_epc_pfcp_send_deactivation(sess,
-                    OGS_GTP2_CAUSE_ACCESS_CHANGED_FROM_NON_3GPP_TO_3GPP));
+            /*
+             * Handover from Non-3GPP to 3GPP.
+             *
+             * The Modify Bearer Response has already been sent above, so the
+             * 3GPP-side procedure has completed successfully. Deactivating the
+             * old WLAN session is a best-effort cleanup step: if no matching
+             * WLAN session exists (e.g. it was already released, or the
+             * handover indication was set without a Non-3GPP leg), there is
+             * simply nothing to deactivate. A peer must not be able to crash
+             * the SMF by triggering this path, so log and continue instead of
+             * asserting.
+             */
+            rv = smf_epc_pfcp_send_deactivation(sess,
+                    OGS_GTP2_CAUSE_ACCESS_CHANGED_FROM_NON_3GPP_TO_3GPP);
+            if (rv != OGS_OK)
+                ogs_error("smf_epc_pfcp_send_deactivation() failed "
+                        "[cause:ACCESS_CHANGED_FROM_NON_3GPP_TO_3GPP]");
         }
     }
 }
