@@ -960,6 +960,35 @@ bool smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
     return rc;
 }
 
+bool smf_sbi_try_send_sm_context_status_notify_before_release(
+        smf_sess_t *sess)
+{
+    smf_ue_t *smf_ue = NULL;
+
+    ogs_assert(sess);
+
+    /*
+     * EPC sessions have no AMF peer to notify.
+     */
+    if (sess->epc)
+        return true;
+
+    /*
+     * No AMF discovery completed for this session — either the session
+     * was abandoned mid-establishment or AMF context had already been
+     * released. Either way nothing to notify.
+     */
+    if (!sess->namf.client) {
+        smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+        ogs_debug("[%s:%d] No namf.client; skipping "
+                "SmContextStatusNotify before release",
+                smf_ue && smf_ue->supi ? smf_ue->supi : "?", sess->psi);
+        return true;
+    }
+
+    return smf_sbi_send_sm_context_status_notify(sess);
+}
+
 void smf_sbi_send_pdu_session_create_error(
         ogs_sbi_stream_t *stream,
         int status, ogs_sbi_app_errno_e err, int n1SmCause,
