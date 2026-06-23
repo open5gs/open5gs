@@ -865,12 +865,12 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
 
     if (action && !is_action(action, "prepare") &&
         !is_action(action, "switch") && !is_action(action, "drain") &&
-        !is_action(action, "abort")) {
+        !is_action(action, "abort") && !is_action(action, "status")) {
         cJSON_Delete(request);
         *status_code = 400;
         migration_json_add_string(root, "result", "rejected");
         migration_json_add_string(root, "reason",
-                "action_must_be_prepare_switch_drain_or_abort");
+                "action_must_be_prepare_switch_drain_abort_or_status");
         return migration_json_finalize(root, buf, buflen);
     }
 
@@ -879,7 +879,8 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
     migration_json_add_string(root, "action",
             is_action(action, "switch") ? "switch" :
             is_action(action, "drain") ? "drain" :
-            is_action(action, "abort") ? "abort" : "prepare");
+            is_action(action, "abort") ? "abort" :
+            is_action(action, "status") ? "status" : "prepare");
     if (target_upf && target_upf->valuestring)
         migration_json_add_string(root, "target_upf", target_upf->valuestring);
 
@@ -903,6 +904,16 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
 
     migration_json_add_string(root, "migration_state",
             smf_migration_state_name(sess->migration.state));
+
+    if (is_action(action, "status")) {
+        cJSON_Delete(request);
+        *status_code = 200;
+        migration_json_add_string(root, "result", "accepted");
+        migration_json_add_string(root, "reason", "status");
+        migration_json_add_string(root, "migration_state",
+                smf_migration_state_name(sess->migration.state));
+        return migration_json_finalize(root, buf, buflen);
+    }
 
     if (is_action(action, "switch")) {
         rv = smf_migration_send_path_switch_request(sess);
@@ -977,6 +988,21 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
     }
 
     if (smf_migration_active(sess)) {
+        char *active_target = migration_node_string(sess->migration.target_node);
+        if (active_target &&
+            target_upf && target_upf->valuestring &&
+            strstr(active_target, target_upf->valuestring)) {
+            ogs_free(active_target);
+            cJSON_Delete(request);
+            *status_code = 202;
+            migration_json_add_string(root, "result", "accepted");
+            migration_json_add_string(root, "reason", "prepare_already_active");
+            migration_json_add_string(root, "migration_state",
+                    smf_migration_state_name(sess->migration.state));
+            return migration_json_finalize(root, buf, buflen);
+        }
+        if (active_target)
+            ogs_free(active_target);
         cJSON_Delete(request);
         *status_code = 409;
         migration_json_add_string(root, "result", "rejected");

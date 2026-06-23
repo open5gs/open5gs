@@ -46,6 +46,9 @@ def main() -> int:
         "target_upf_not_associated",
         "target_upf_ftup_required",
         "migration_already_active",
+        "action_must_be_prepare_switch_drain_abort_or_status",
+        'is_action(action, "status")',
+        "prepare_already_active",
     ):
         require(migration, token, "src/smf/migration.c")
 
