@@ -781,7 +781,10 @@ f.write("""int ogs_nas_emm_decode(ogs_nas_eps_message_t *message, ogs_pkbuf_t *p
         ogs_assert(ogs_pkbuf_push(pkbuf, 1));
         decoded -= 1;
         size = ogs_nas_eps_decode_service_request(message, pkbuf);
-        ogs_assert(size >= 0);
+        if (size < 0) {
+            ogs_error("ogs_nas_eps_decode_service_request() failed");
+            return OGS_ERROR;
+        }
         decoded += size;
 
         goto out;
@@ -797,8 +800,8 @@ for (k, v) in sorted_msg_list:
         if len(msg_list[k]["ies"]) != 0:
             f.write("        size = ogs_nas_eps_decode_%s(message, pkbuf);\n" % v_lower(k))
             f.write("        if (size < 0) {\n")
-            f.write("           ogs_error(\"ogs_nas_5gs_decode_%s() failed\");\n" % v_lower(k))
-            f.write("           return size;\n")
+            f.write("           ogs_error(\"ogs_nas_eps_decode_%s() failed\");\n" % v_lower(k))
+            f.write("           return OGS_ERROR;\n")
             f.write("        }\n\n")
             f.write("        decoded += size;\n")
         f.write("        break;\n")
@@ -844,8 +847,8 @@ for (k, v) in sorted_msg_list:
         if len(msg_list[k]["ies"]) != 0:
             f.write("        size = ogs_nas_eps_decode_%s(message, pkbuf);\n" % v_lower(k))
             f.write("        if (size < 0) {\n")
-            f.write("           ogs_error(\"ogs_nas_5gs_decode_%s() failed\");\n" % v_lower(k))
-            f.write("           return size;\n")
+            f.write("           ogs_error(\"ogs_nas_eps_decode_%s() failed\");\n" % v_lower(k))
+            f.write("           return OGS_ERROR;\n")
             f.write("        }\n\n")
             f.write("        decoded += size;\n")
         f.write("        break;\n")
