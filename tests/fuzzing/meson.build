@@ -24,6 +24,8 @@ gtp_message_source = files('gtp-message-fuzz.c')
 nas_message_source = files('nas-message-fuzz.c')
 ngap_message_source = files('ngap-message-fuzz.c')
 s1ap_message_source = files('s1ap-message-fuzz.c')
+pfcp_message_source = files('pfcp-message-fuzz.c')
+nas_5gs_message_source = files('nas-5gs-message-fuzz.c')
 
 # Build all executable
 executable(
@@ -55,5 +57,21 @@ executable(
     sources : s1ap_message_source,
     c_args : [testunit_core_cc_flags, sbi_cc_flags],
     dependencies : [libs1ap_dep, libcore_dep],
+    link_args: lib_fuzzing_engine
+)
+
+executable(
+    'pfcp_message_fuzz',
+    sources : pfcp_message_source,
+    c_args : [testunit_core_cc_flags, sbi_cc_flags],
+    dependencies : [libpfcp_dep, libcore_dep],
+    link_args: lib_fuzzing_engine
+)
+
+executable(
+    'nas_5gs_message_fuzz',
+    sources : nas_5gs_message_source,
+    c_args : [testunit_core_cc_flags, sbi_cc_flags],
+    dependencies : [libnas_5gs_dep, libcore_dep],
     link_args: lib_fuzzing_engine
 )
