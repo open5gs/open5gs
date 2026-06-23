@@ -98,6 +98,7 @@ typedef enum {
 
 typedef struct smf_migration_record_s {
     uint64_t    seq;            /* monotonic id; exporter dedupes on this */
+    uint64_t    migration_id;   /* API id assigned when migration starts */
     char        supi[OGS_MAX_IMSI_BCD_LEN + sizeof("imsi-")];
     uint8_t     psi;
     char        source_upf[SMF_MIGRATION_RECORD_ADDR_LEN];
@@ -215,6 +216,7 @@ typedef struct smf_context_s {
         uint32_t                head;   /* next write slot */
         uint32_t                count;  /* valid records, <= ring size */
         uint64_t                seq;    /* monotonic record id source */
+        uint64_t                next_id; /* monotonic in-flight migration id */
     } migration_stats;
 } smf_context_t;
 
@@ -708,6 +710,7 @@ typedef struct smf_sess_s {
     /* Live UPF migration staging. Inert until migration code advances state. */
     struct {
         smf_migration_state_e state;
+        uint64_t id;
 
         ogs_pfcp_node_t *source_node;
         ogs_pfcp_node_t *target_node;

@@ -535,9 +535,15 @@ mhd_server_access_handler(void *cls, struct MHD_Connection *connection,
     ogs_metrics_custom_ep_t *node = NULL;
     ogs_list_for_each(&ogs_metrics_self()->custom_eps, node) {
         if (!strcmp(node->endpoint, url)) {
-            return serve_json_from_dumper(connection,
-                    node->handler,
-                    page, page_size);
+            if (node->handler) {
+                return serve_json_from_dumper(connection,
+                        node->handler,
+                        page, page_size);
+            }
+            if (node->request_handler) {
+                return serve_json_from_request_handler(connection,
+                        node->request_handler, method, "", 0);
+            }
         }
     }
 

@@ -472,6 +472,20 @@ static cJSON *build_migration_object_5g(const smf_sess_t *sess)
     migration = cJSON_CreateObject();
     if (!migration) return NULL;
 
+    if (sess->migration.id) {
+        char idbuf[32];
+        cJSON *id = cJSON_CreateNumber((double)sess->migration.id);
+        cJSON *id_str = NULL;
+        if (!id) { cJSON_Delete(migration); return NULL; }
+        cJSON_AddItemToObjectCS(migration, "migration_id", id);
+
+        snprintf(idbuf, sizeof idbuf, "%" PRIu64,
+                (uint64_t)sess->migration.id);
+        id_str = cJSON_CreateString(idbuf);
+        if (!id_str) { cJSON_Delete(migration); return NULL; }
+        cJSON_AddItemToObjectCS(migration, "migration_id_str", id_str);
+    }
+
     if (sess->migration.source_node && sess->migration.source_node->addr_list) {
         cJSON *source = cJSON_CreateString(ogs_sockaddr_to_string_static(
                     sess->migration.source_node->addr_list));

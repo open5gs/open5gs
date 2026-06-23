@@ -25,8 +25,13 @@
 #include "sbi-path.h"
 #include "sbi/openapi/external/cJSON.h"
 
+#include <errno.h>
+#include <limits.h>
+#include <stdlib.h>
+
 #define SMF_TESTBED_API_VERSION "5g3e-smf-api/v1"
 #define SMF_PDU_MIGRATE_SCHEMA "5g3e.smf.pdu-migrate/v1"
+#define SMF_MIGRATION_JSON_NUMBER_EPSILON 0.000001
 
 static bool is_action(const cJSON *action, const char *name)
 {
@@ -37,8 +42,90 @@ static bool is_action(const cJSON *action, const char *name)
 }
 
 static char *migration_node_string(ogs_pfcp_node_t *node);
+static void migration_json_add_string(
+        cJSON *root, const char *name, const char *value);
+static void migration_json_add_number(
+        cJSON *root, const char *name, double value);
 static void migration_metrics_finish(
         smf_sess_t *sess, smf_metric_type_global_t counter);
+
+static bool migration_json_nonempty_string(const cJSON *item)
+{
+    return item && cJSON_IsString(item) &&
+        item->valuestring && item->valuestring[0];
+}
+
+static bool migration_json_integral_psi(const cJSON *item)
+{
+    double delta;
+
+    if (!item || !cJSON_IsNumber(item))
+        return false;
+    if (item->valueint < 1 || item->valueint > 255)
+        return false;
+
+    delta = item->valuedouble - (double)item->valueint;
+    return delta > -SMF_MIGRATION_JSON_NUMBER_EPSILON &&
+        delta < SMF_MIGRATION_JSON_NUMBER_EPSILON;
+}
+
+static int migration_json_uint64(const cJSON *item, uint64_t *value)
+{
+    unsigned long long parsed;
+    char *end = NULL;
+
+    ogs_assert(value);
+
+    if (!item)
+        return OGS_ERROR;
+
+    if (cJSON_IsString(item) && item->valuestring) {
+        const char *s = item->valuestring;
+
+        if (s[0] < '0' || s[0] > '9')
+            return OGS_ERROR;
+
+        errno = 0;
+        parsed = strtoull(s, &end, 10);
+        if (errno || end == s || *end != '\0' || parsed == 0)
+            return OGS_ERROR;
+
+        *value = (uint64_t)parsed;
+        return OGS_OK;
+    }
+
+    if (cJSON_IsNumber(item)) {
+        double d = item->valuedouble;
+        double delta;
+
+        if (d < 1 || d > (double)ULLONG_MAX)
+            return OGS_ERROR;
+
+        parsed = (unsigned long long)d;
+        delta = d - (double)parsed;
+        if (delta < -SMF_MIGRATION_JSON_NUMBER_EPSILON ||
+            delta > SMF_MIGRATION_JSON_NUMBER_EPSILON)
+            return OGS_ERROR;
+
+        *value = (uint64_t)parsed;
+        return OGS_OK;
+    }
+
+    return OGS_ERROR;
+}
+
+static void migration_json_add_migration_id(cJSON *root, uint64_t migration_id)
+{
+    char buf[32];
+
+    if (!root || !migration_id)
+        return;
+
+    migration_json_add_number(root, "migration_id", (double)migration_id);
+    ogs_snprintf(buf, sizeof(buf), "%llu",
+            (unsigned long long)migration_id);
+    migration_json_add_string(root, "migration_id_str", buf);
+}
 
 static size_t migration_json_finalize(cJSON *root, char *buf, size_t buflen)
 {
@@ -229,6 +316,110 @@ static char *migration_node_string(ogs_pfcp_node_t *node)
     return ogs_strdup(node_string ? node_string : "");
 }
 
+static uint64_t migration_next_id(void)
+{
+    smf_context_t *smf = smf_self();
+
+    ogs_assert(smf);
+
+    smf->migration_stats.next_id++;
+    if (smf->migration_stats.next_id == 0)
+        smf->migration_stats.next_id++;
+
+    return smf->migration_stats.next_id;
+}
+
+static bool migration_target_cleanup_allowed(const smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    switch (sess->migration.state) {
+    case SMF_MIGRATION_STATE_TARGET_PREPARING:
+    case SMF_MIGRATION_STATE_TARGET_READY:
+    case SMF_MIGRATION_STATE_ROUTE_PROGRAMMING:
+        return true;
+    case SMF_MIGRATION_STATE_FAILED:
+        return !sess->migration.state_ts_us[SMF_MIGRATION_STATE_PATH_SWITCHING] &&
+            !sess->migration.state_ts_us[SMF_MIGRATION_STATE_SWITCH_CONFIRMED] &&
+            !sess->migration.state_ts_us[SMF_MIGRATION_STATE_SOURCE_DRAINING];
+    default:
+        return false;
+    }
+}
+
+static int migration_validate_followup_request(
+        cJSON *request, smf_sess_t *sess, const char **reason, int *status_code)
+{
+    cJSON *migration_id = NULL;
+    cJSON *migration_id_str = NULL;
+    cJSON *source_upf = NULL;
+    cJSON *target_upf = NULL;
+    uint64_t requested_id = 0;
+
+    ogs_assert(request);
+    ogs_assert(sess);
+    ogs_assert(reason);
+    ogs_assert(status_code);
+
+    *reason = NULL;
+    *status_code = 409;
+
+    if (!sess->migration.id) {
+        *reason = "no_active_migration";
+        return OGS_ERROR;
+    }
+
+    migration_id = cJSON_GetObjectItemCaseSensitive(request, "migration_id");
+    migration_id_str =
+        cJSON_GetObjectItemCaseSensitive(request, "migration_id_str");
+    if (!migration_id && !migration_id_str) {
+        *status_code = 400;
+        *reason = "migration_id_required";
+        return OGS_ERROR;
+    }
+    if (migration_json_uint64(
+                migration_id ? migration_id : migration_id_str,
+                &requested_id) != OGS_OK) {
+        *status_code = 400;
+        *reason = "migration_id_invalid";
+        return OGS_ERROR;
+    }
+    if (requested_id != sess->migration.id) {
+        *reason = "migration_id_mismatch";
+        return OGS_ERROR;
+    }
+
+    source_upf = cJSON_GetObjectItemCaseSensitive(request, "source_upf");
+    if (source_upf) {
+        if (!migration_json_nonempty_string(source_upf)) {
+            *status_code = 400;
+            *reason = "source_upf_invalid";
+            return OGS_ERROR;
+        }
+        if (smf_upf_node_find_by_addr(source_upf->valuestring) !=
+                sess->migration.source_node) {
+            *reason = "source_upf_mismatch";
+            return OGS_ERROR;
+        }
+    }
+
+    target_upf = cJSON_GetObjectItemCaseSensitive(request, "target_upf");
+    if (target_upf) {
+        if (!migration_json_nonempty_string(target_upf)) {
+            *status_code = 400;
+            *reason = "target_upf_invalid";
+            return OGS_ERROR;
+        }
+        if (smf_upf_node_find_by_addr(target_upf->valuestring) !=
+                sess->migration.target_node) {
+            *reason = "target_upf_mismatch";
+            return OGS_ERROR;
+        }
+    }
+
+    return OGS_OK;
+}
+
 const char *smf_migration_state_name(smf_migration_state_e state)
 {
     switch (state) {
@@ -304,6 +495,7 @@ static void migration_record_finish(
     memset(rec, 0, sizeof(*rec));
 
     rec->seq = ++smf->migration_stats.seq;
+    rec->migration_id = sess->migration.id;
     rec->psi = sess->psi;
     rec->outcome = outcome;
     rec->recorded_at = ogs_time_now();
@@ -469,6 +661,7 @@ cJSON *smf_migration_recent_to_json(void)
             break;
 
         cJSON_AddNumberToObject(o, "seq", (double)rec->seq);
+        migration_json_add_migration_id(o, rec->migration_id);
         cJSON_AddStringToObject(o, "supi", rec->supi);
         cJSON_AddNumberToObject(o, "psi", (double)rec->psi);
         cJSON_AddStringToObject(o, "source_upf", rec->source_upf);
@@ -731,16 +924,10 @@ int smf_migration_send_target_deletion(smf_sess_t *sess)
 
     ogs_assert(sess);
 
-    switch (sess->migration.state) {
-    case SMF_MIGRATION_STATE_TARGET_PREPARING:
-    case SMF_MIGRATION_STATE_TARGET_READY:
-    case SMF_MIGRATION_STATE_ROUTE_PROGRAMMING:
-    case SMF_MIGRATION_STATE_PATH_SWITCHING:
-    case SMF_MIGRATION_STATE_FAILED:
-        break;
-    case SMF_MIGRATION_STATE_ABORTING:
+    if (sess->migration.state == SMF_MIGRATION_STATE_ABORTING)
         return OGS_OK;
-    default:
+
+    if (!migration_target_cleanup_allowed(sess)) {
         ogs_error("Migration target cleanup invalid state [%s]",
                 smf_migration_state_name(sess->migration.state));
         return OGS_ERROR;
@@ -806,6 +993,7 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
     cJSON *supi = NULL;
     cJSON *psi = NULL;
     cJSON *target_upf = NULL;
+    cJSON *source_upf = NULL;
     cJSON *action = NULL;
     smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
@@ -851,15 +1039,16 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
     supi = cJSON_GetObjectItemCaseSensitive(request, "supi");
     psi = cJSON_GetObjectItemCaseSensitive(request, "psi");
     target_upf = cJSON_GetObjectItemCaseSensitive(request, "target_upf");
+    source_upf = cJSON_GetObjectItemCaseSensitive(request, "source_upf");
     action = cJSON_GetObjectItemCaseSensitive(request, "action");
 
-    if (!cJSON_IsString(supi) || !supi->valuestring ||
-        !cJSON_IsNumber(psi) || psi->valuedouble < 1 || psi->valuedouble > 255) {
+    if (!migration_json_nonempty_string(supi) ||
+        !migration_json_integral_psi(psi)) {
         cJSON_Delete(request);
         *status_code = 400;
         migration_json_add_string(root, "result", "rejected");
         migration_json_add_string(root, "reason",
-                "required_fields_are_supi_psi");
+                "required_fields_are_non_empty_supi_integral_psi");
         return migration_json_finalize(root, buf, buflen);
     }
 
@@ -883,6 +1072,8 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
             is_action(action, "status") ? "status" : "prepare");
     if (target_upf && target_upf->valuestring)
         migration_json_add_string(root, "target_upf", target_upf->valuestring);
+    if (source_upf && source_upf->valuestring)
+        migration_json_add_string(root, "source_upf", source_upf->valuestring);
 
     smf_ue = smf_ue_find_by_supi(supi->valuestring);
     if (!smf_ue) {
@@ -904,6 +1095,7 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
 
     migration_json_add_string(root, "migration_state",
             smf_migration_state_name(sess->migration.state));
+    migration_json_add_migration_id(root, sess->migration.id);
 
     if (is_action(action, "status")) {
         cJSON_Delete(request);
@@ -912,10 +1104,26 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
         migration_json_add_string(root, "reason", "status");
         migration_json_add_string(root, "migration_state",
                 smf_migration_state_name(sess->migration.state));
+        migration_json_add_migration_id(root, sess->migration.id);
         return migration_json_finalize(root, buf, buflen);
     }
 
     if (is_action(action, "switch")) {
+        const char *reject_reason = NULL;
+        int reject_status = 409;
+
+        if (migration_validate_followup_request(
+                    request, sess, &reject_reason, &reject_status) != OGS_OK) {
+            cJSON_Delete(request);
+            *status_code = reject_status;
+            migration_json_add_string(root, "result", "rejected");
+            migration_json_add_string(root, "reason", reject_reason);
+            migration_json_add_string(root, "migration_state",
+                    smf_migration_state_name(sess->migration.state));
+            migration_json_add_migration_id(root, sess->migration.id);
+            return migration_json_finalize(root, buf, buflen);
+        }
+
         rv = smf_migration_send_path_switch_request(sess);
         if (rv != OGS_OK) {
             cJSON_Delete(request);
@@ -925,6 +1133,7 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
                     "path_switch_request_failed");
             migration_json_add_string(root, "migration_state",
                     smf_migration_state_name(sess->migration.state));
+            migration_json_add_migration_id(root, sess->migration.id);
             return migration_json_finalize(root, buf, buflen);
         }
 
@@ -933,10 +1142,39 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
         migration_json_add_string(root, "result", "accepted");
         migration_json_add_string(root, "migration_state",
                 smf_migration_state_name(sess->migration.state));
+        migration_json_add_migration_id(root, sess->migration.id);
         return migration_json_finalize(root, buf, buflen);
     }
 
     if (is_action(action, "abort")) {
+        const char *reject_reason = NULL;
+        int reject_status = 409;
+
+        if (migration_validate_followup_request(
+                    request, sess, &reject_reason, &reject_status) != OGS_OK) {
+            cJSON_Delete(request);
+            *status_code = reject_status;
+            migration_json_add_string(root, "result", "rejected");
+            migration_json_add_string(root, "reason", reject_reason);
+            migration_json_add_string(root, "migration_state",
+                    smf_migration_state_name(sess->migration.state));
+            migration_json_add_migration_id(root, sess->migration.id);
+            return migration_json_finalize(root, buf, buflen);
+        }
+
+        if (sess->migration.state != SMF_MIGRATION_STATE_ABORTING &&
+            !migration_target_cleanup_allowed(sess)) {
+            cJSON_Delete(request);
+            *status_code = 409;
+            migration_json_add_string(root, "result", "rejected");
+            migration_json_add_string(root, "reason",
+                    "target_cleanup_not_allowed_after_switch_sent");
+            migration_json_add_string(root, "migration_state",
+                    smf_migration_state_name(sess->migration.state));
+            migration_json_add_migration_id(root, sess->migration.id);
+            return migration_json_finalize(root, buf, buflen);
+        }
+
         rv = smf_migration_send_target_deletion(sess);
         if (rv != OGS_OK) {
             cJSON_Delete(request);
@@ -946,6 +1184,7 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
                     "target_cleanup_request_failed");
             migration_json_add_string(root, "migration_state",
                     smf_migration_state_name(sess->migration.state));
+            migration_json_add_migration_id(root, sess->migration.id);
             return migration_json_finalize(root, buf, buflen);
         }
 
@@ -954,10 +1193,26 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
         migration_json_add_string(root, "result", "accepted");
         migration_json_add_string(root, "migration_state",
                 smf_migration_state_name(sess->migration.state));
+        migration_json_add_migration_id(root, sess->migration.id);
         return migration_json_finalize(root, buf, buflen);
     }
 
     if (is_action(action, "drain")) {
+        const char *reject_reason = NULL;
+        int reject_status = 409;
+
+        if (migration_validate_followup_request(
+                    request, sess, &reject_reason, &reject_status) != OGS_OK) {
+            cJSON_Delete(request);
+            *status_code = reject_status;
+            migration_json_add_string(root, "result", "rejected");
+            migration_json_add_string(root, "reason", reject_reason);
+            migration_json_add_string(root, "migration_state",
+                    smf_migration_state_name(sess->migration.state));
+            migration_json_add_migration_id(root, sess->migration.id);
+            return migration_json_finalize(root, buf, buflen);
+        }
+
         rv = smf_migration_send_source_deletion(sess);
         if (rv != OGS_OK) {
             cJSON_Delete(request);
@@ -967,6 +1222,7 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
                     "source_drain_request_failed");
             migration_json_add_string(root, "migration_state",
                     smf_migration_state_name(sess->migration.state));
+            migration_json_add_migration_id(root, sess->migration.id);
             return migration_json_finalize(root, buf, buflen);
         }
 
@@ -975,10 +1231,11 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
         migration_json_add_string(root, "result", "accepted");
         migration_json_add_string(root, "migration_state",
                 smf_migration_state_name(sess->migration.state));
+        migration_json_add_migration_id(root, sess->migration.id);
         return migration_json_finalize(root, buf, buflen);
     }
 
-    if (!cJSON_IsString(target_upf) || !target_upf->valuestring) {
+    if (!migration_json_nonempty_string(target_upf)) {
         cJSON_Delete(request);
         *status_code = 400;
         migration_json_add_string(root, "result", "rejected");
@@ -987,26 +1244,31 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
         return migration_json_finalize(root, buf, buflen);
     }
 
+    target_node = smf_upf_node_find_by_addr(target_upf->valuestring);
+    if (!target_node) {
+        cJSON_Delete(request);
+        *status_code = 404;
+        migration_json_add_string(root, "result", "rejected");
+        migration_json_add_string(root, "reason", "target_upf_not_found");
+        return migration_json_finalize(root, buf, buflen);
+    }
+
     if (smf_migration_active(sess)) {
-        char *active_target = migration_node_string(sess->migration.target_node);
-        if (active_target &&
-            target_upf && target_upf->valuestring &&
-            strstr(active_target, target_upf->valuestring)) {
-            ogs_free(active_target);
+        if (target_node == sess->migration.target_node) {
             cJSON_Delete(request);
             *status_code = 202;
             migration_json_add_string(root, "result", "accepted");
             migration_json_add_string(root, "reason", "prepare_already_active");
             migration_json_add_string(root, "migration_state",
                     smf_migration_state_name(sess->migration.state));
+            migration_json_add_migration_id(root, sess->migration.id);
             return migration_json_finalize(root, buf, buflen);
         }
-        if (active_target)
-            ogs_free(active_target);
         cJSON_Delete(request);
         *status_code = 409;
         migration_json_add_string(root, "result", "rejected");
         migration_json_add_string(root, "reason", "migration_already_active");
+        migration_json_add_migration_id(root, sess->migration.id);
         return migration_json_finalize(root, buf, buflen);
     }
 
@@ -1033,15 +1295,6 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
         *status_code = 409;
         migration_json_add_string(root, "result", "rejected");
         migration_json_add_string(root, "reason", "session_not_active");
-        return migration_json_finalize(root, buf, buflen);
-    }
-
-    target_node = smf_upf_node_find_by_addr(target_upf->valuestring);
-    if (!target_node) {
-        cJSON_Delete(request);
-        *status_code = 404;
-        migration_json_add_string(root, "result", "rejected");
-        migration_json_add_string(root, "reason", "target_upf_not_found");
         return migration_json_finalize(root, buf, buflen);
     }
 
@@ -1107,6 +1360,7 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
 
     smf_migration_clear(sess);
 
+    sess->migration.id = migration_next_id();
     sess->migration.started_us = ogs_get_monotonic_time();
     sess->migration.source_node = sess->pfcp_node;
     sess->migration.target_node = target_node;
@@ -1136,6 +1390,7 @@ size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
     migration_json_add_string(root, "result", "accepted");
     migration_json_add_string(root, "migration_state",
             smf_migration_state_name(sess->migration.state));
+    migration_json_add_migration_id(root, sess->migration.id);
 
     return migration_json_finalize(root, buf, buflen);
 }

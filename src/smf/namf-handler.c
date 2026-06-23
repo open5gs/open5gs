@@ -64,8 +64,7 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
                     recvmsg->res_status);
             if (state == SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION &&
                 smf_migration_active(sess)) {
-                sess->migration.state = SMF_MIGRATION_STATE_FAILED;
-                smf_migration_send_target_deletion(sess);
+                smf_migration_mark_failed(sess);
             }
             break;
         }
@@ -93,8 +92,7 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
             } else {
                 if (state == SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION &&
                     smf_migration_active(sess)) {
-                    sess->migration.state = SMF_MIGRATION_STATE_FAILED;
-                    smf_migration_send_target_deletion(sess);
+                    smf_migration_mark_failed(sess);
                     break;
                 }
                 ogs_error("Not implemented [cause:%d]",
@@ -106,8 +104,7 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
                 OpenAPI_n1_n2_message_transfer_cause_ATTEMPTING_TO_REACH_UE) {
                 if (state == SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION &&
                     smf_migration_active(sess)) {
-                    sess->migration.state = SMF_MIGRATION_STATE_FAILED;
-                    smf_migration_send_target_deletion(sess);
+                    smf_migration_mark_failed(sess);
                 }
                 if (recvmsg->http.location)
                     smf_sess_set_paging_n1n2message_location(
@@ -129,8 +126,7 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
             } else {
                 if (state == SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION &&
                     smf_migration_active(sess)) {
-                    sess->migration.state = SMF_MIGRATION_STATE_FAILED;
-                    smf_migration_send_target_deletion(sess);
+                    smf_migration_mark_failed(sess);
                     break;
                 }
                 ogs_error("Not implemented [cause:%d]",
@@ -140,8 +136,7 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
         } else {
             if (state == SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION &&
                 smf_migration_active(sess)) {
-                sess->migration.state = SMF_MIGRATION_STATE_FAILED;
-                smf_migration_send_target_deletion(sess);
+                smf_migration_mark_failed(sess);
             }
 
     /*

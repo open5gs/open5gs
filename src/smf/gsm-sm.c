@@ -2119,8 +2119,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             if (sess->migration.state == SMF_MIGRATION_STATE_PATH_SWITCHING) {
                 ogs_error("[%s:%d] Migration PDU Resource Modify failed",
                         smf_ue->supi, sess->psi);
-                sess->migration.state = SMF_MIGRATION_STATE_FAILED;
-                smf_migration_send_target_deletion(sess);
+                smf_migration_mark_failed(sess);
                 smf_sbi_send_sm_context_update_error_log(
                         stream, OGS_SBI_HTTP_STATUS_CONFLICT,
                         "Migration PDU Resource Modify failed", smf_ue->supi);
