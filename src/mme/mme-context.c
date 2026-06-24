@@ -5081,6 +5081,42 @@ ogs_session_t *mme_default_session(mme_ue_t *mme_ue)
     return NULL;
 }
 
+ogs_session_t *mme_resolve_session_for_requested_apn(
+        mme_ue_t *mme_ue, const char *requested_apn)
+{
+    ogs_session_t *session = NULL;
+
+    ogs_assert(mme_ue);
+    ogs_assert(requested_apn);
+
+    /* First, try exact match against subscription. */
+    session = mme_session_find_by_apn(mme_ue, requested_apn);
+    if (session)
+        return session;
+
+    /* 3GPP TS 23.401 §5.3.1.1: if the requested APN is not
+     * subscribed, the MME may select a default APN configured for
+     * the subscriber. This handles UEs that are pre-configured for
+     * a different operator's APN (e.g. a customer router whose APN
+     * stays set to a public-PLMN value across SIM swaps) but should
+     * still be admitted to the local PLMN with the subscribed
+     * default APN.
+     *
+     * The fallback is implicitly opt-in per subscriber: it only
+     * fires if the subscription contains a session whose
+     * context_identifier matches the UE-level default — i.e. an
+     * operator that prefers strict reject for a given subscriber
+     * simply does not configure a default-indicator session. */
+    session = mme_default_session(mme_ue);
+    if (session) {
+        ogs_info("Requested APN[%s] not subscribed — substituting "
+                 "default APN[%s] (per TS 23.401 §5.3.1.1)",
+                 requested_apn, session->name);
+    }
+
+    return session;
+}
+
 int mme_find_served_tai(ogs_eps_tai_t *tai)
 {
     int i = 0, j = 0, k = 0;
