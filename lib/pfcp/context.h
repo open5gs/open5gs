@@ -50,6 +50,7 @@ typedef struct ogs_pfcp_context_s {
     ogs_list_t      pfcp_list6;     /* PFCP IPv6 Server List */
     ogs_sockaddr_t  *pfcp_advertise; /* PFCP Advertise Addr */
     ogs_sockaddr_t  *pfcp_advertise6;
+    char            *pfcp_node_id;  /* Stable PFCP Node ID override */
     ogs_sock_t      *pfcp_sock;     /* PFCP IPv4 Socket */
     ogs_sock_t      *pfcp_sock6;    /* PFCP IPv6 Socket */
     ogs_sockaddr_t  *pfcp_addr;     /* PFCP IPv4 Address */

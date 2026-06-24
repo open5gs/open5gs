@@ -120,6 +120,9 @@ void ogs_pfcp_context_final(void)
 
     ogs_pfcp_node_remove_all(&self.pfcp_peer_list);
 
+    ogs_free(self.pfcp_node_id);
+    self.pfcp_node_id = NULL;
+
     ogs_pool_final(&ogs_pfcp_node_pool);
 
     context_initialized = 0;
@@ -341,6 +344,21 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                         } while (ogs_yaml_iter_type(
                                                     &hostname_iter) ==
                                                 YAML_SEQUENCE_NODE);
+                                    } else if (!strcmp(server_key, "node_id") ||
+                                               !strcmp(server_key, "node-id") ||
+                                               !strcmp(server_key, "identity")) {
+                                        const char *v =
+                                            ogs_yaml_iter_value(&server_iter);
+                                        if (v && strlen(v) > 0) {
+                                            if (strlen(v) >= OGS_MAX_FQDN_LEN) {
+                                                ogs_error("PFCP node_id is too long [%s]",
+                                                        v);
+                                                return OGS_ERROR;
+                                            }
+                                            ogs_free(self.pfcp_node_id);
+                                            self.pfcp_node_id = ogs_strdup(v);
+                                            ogs_assert(self.pfcp_node_id);
+                                        }
                                     } else if (!strcmp(server_key, "port")) {
                                         const char *v =
                                             ogs_yaml_iter_value(&server_iter);
@@ -1094,8 +1112,8 @@ ogs_pfcp_node_t *ogs_pfcp_node_add(ogs_list_t *list,
 ogs_pfcp_node_t *ogs_pfcp_node_find(ogs_list_t *list,
     ogs_pfcp_node_id_t *node_id, ogs_sockaddr_t *from)
 {
-    ogs_pfcp_node_t *cur, *match = NULL;
-    int matches = 0;
+    ogs_pfcp_node_t *cur, *match = NULL, *node_id_match = NULL;
+    int matches = 0, node_id_matches = 0;
 
     ogs_assert(list);
     ogs_assert(node_id || from);
@@ -1111,6 +1129,8 @@ ogs_pfcp_node_t *ogs_pfcp_node_find(ogs_list_t *list,
         if (cur->node_id.type != OGS_PFCP_NODE_ID_UNKNOWN && node_id) {
             if (!ogs_pfcp_node_id_compare(&cur->node_id, node_id))
                 continue;
+            node_id_match = cur;
+            node_id_matches++;
         }
         if (!from)
             return cur;
@@ -1120,6 +1140,17 @@ ogs_pfcp_node_t *ogs_pfcp_node_find(ogs_list_t *list,
                                          from, /* compare_port= */ true)) {
             return cur;
         }
+    }
+
+    /*
+     * Kubernetes can restart a dynamically-created UPF under the same logical
+     * PFCP Node ID but with a fresh pod IP. Treat a unique FQDN Node ID match
+     * as the same peer and let ogs_pfcp_node_merge() learn the new source
+     * address, instead of allocating a new PFCP node forever.
+     */
+    if (node_id && node_id->type == OGS_PFCP_NODE_ID_FQDN &&
+        node_id_matches == 1) {
+        return node_id_match;
     }
 
     /*
@@ -1209,16 +1240,25 @@ int ogs_pfcp_node_merge(ogs_pfcp_node_t *node,
 
                 tmp_list = ogs_pfcp_node_id_to_addrinfo(&node->node_id);
                 if (!tmp_list) {
-                    ogs_error("DNS resolution failed for FQDN [%s]",
-                              node->node_id.fqdn);
-                    return OGS_ERROR;
-                }
+                    if (!from) {
+                        ogs_error("DNS resolution failed for FQDN [%s]",
+                                  ogs_pfcp_node_id_to_string_static(&node->node_id));
+                        return OGS_ERROR;
+                    }
 
-                ogs_freeaddrinfo(node->addr_list);
-                node->addr_list = tmp_list;
-                node->last_dns_refresh = now;
-                node->current_addr = NULL;
-                tmp_list = NULL;
+                    ogs_warn("DNS resolution failed for FQDN [%s]; "
+                             "using PFCP source address [%s]",
+                             ogs_pfcp_node_id_to_string_static(&node->node_id),
+                             ogs_sockaddr_to_string_static(from));
+                    node->last_dns_refresh = now;
+                    node->current_addr = NULL;
+                } else {
+                    ogs_freeaddrinfo(node->addr_list);
+                    node->addr_list = tmp_list;
+                    node->last_dns_refresh = now;
+                    node->current_addr = NULL;
+                    tmp_list = NULL;
+                }
             }
         }
         /* If IPv4/IPv6, convert immediately. */

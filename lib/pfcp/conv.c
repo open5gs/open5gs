@@ -24,6 +24,7 @@ int ogs_pfcp_sockaddr_to_node_id(ogs_pfcp_node_id_t *node_id, int *len)
     const int hdr_len = 1;
     char *hostname = NULL;
 
+    const char *configured_node_id = ogs_pfcp_self()->pfcp_node_id;
     ogs_sockaddr_t *advertise = ogs_pfcp_self()->pfcp_advertise;
     ogs_sockaddr_t *advertise6 = ogs_pfcp_self()->pfcp_advertise6;
     ogs_sockaddr_t *addr = ogs_pfcp_self()->pfcp_addr;
@@ -33,6 +34,21 @@ int ogs_pfcp_sockaddr_to_node_id(ogs_pfcp_node_id_t *node_id, int *len)
     ogs_assert(node_id);
 
     memset(node_id, 0, sizeof *node_id);
+
+    if (configured_node_id && strlen(configured_node_id) > 0) {
+        size_t configured_node_id_len = strlen(configured_node_id);
+        if (configured_node_id_len >= OGS_MAX_FQDN_LEN) {
+            ogs_error("Configured PFCP node_id is too long [%s]",
+                    configured_node_id);
+            return OGS_ERROR;
+        }
+
+        node_id->type = OGS_PFCP_NODE_ID_FQDN;
+        *len = ogs_fqdn_build(node_id->fqdn,
+                    configured_node_id, (int)configured_node_id_len) + hdr_len;
+
+        return OGS_OK;
+    }
 
     if (advertise || advertise6) {
         hostname = ogs_gethostname(advertise ? advertise : advertise6);
