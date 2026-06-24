@@ -3314,13 +3314,25 @@ void s1ap_handle_enb_configuration_transfer(
 
         target_enb = mme_enb_find_by_enb_id(target_enb_id);
         if (target_enb == NULL) {
-            ogs_error("eNB configuration transfer : "
-                        "cannot find target eNB-id[0x%x]", target_enb_id);
-            r = s1ap_send_error_indication(enb, NULL, NULL,
-                    S1AP_Cause_PR_radioNetwork,
-                    S1AP_CauseRadioNetwork_unknown_targetID);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
+            /* 3GPP TS 36.413 §8.7.1.2 instructs the MME to
+             * forward SON Configuration Transfer "if the target
+             * eNB is known" and defines no response for the
+             * unknown-target case. ErrorIndication with cause
+             * unknown-targetID is technically permitted by §8.4.1
+             * (procedure cannot be initiated due to unknown
+             * target) but in practice it can sustain retransmit
+             * loops on eNB stacks where the X2-Setup retry
+             * counter is effectively unbounded: each unanswered
+             * Configuration Transfer accumulates state on the
+             * source eNB until an internal watchdog forces a
+             * box reboot. Silent discard follows the spec wording
+             * ("if known" → otherwise no action) and breaks the
+             * loop without changing protocol semantics for any
+             * spec-compliant peer. */
+            ogs_warn("ENB Configuration Transfer: "
+                     "target eNB-id[0x%x] not connected — "
+                     "silently discarding (TS 36.413 §8.7.1.2)",
+                     target_enb_id);
             return;
         }
 
