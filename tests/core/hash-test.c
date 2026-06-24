@@ -168,10 +168,13 @@ static void same_value(abts_case *tc, void *data)
     ogs_hash_destroy(h);
 }
 
-static unsigned int hash_custom( const char *key, int *klen)
+static unsigned int hash_custom( const char *key, int *klen, unsigned int seed)
 {
     unsigned int hash = 0;
     unsigned int len = *klen;
+
+    (void)seed; /* Unused */
+
     while( len ) {
         (len) --;
         hash = hash * 33 + key[ len ];
