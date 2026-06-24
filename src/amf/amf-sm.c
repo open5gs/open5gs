@@ -196,14 +196,33 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 CASE(OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES)
                     SWITCH(sbi_message.h.method)
                     CASE(OGS_SBI_HTTP_METHOD_POST)
-                        rv = amf_namf_comm_handle_n1_n2_message_transfer(
-                                stream, &sbi_message);
-                        if (rv != OGS_OK) {
-                            ogs_assert(true ==
-                                ogs_sbi_server_send_error(stream,
-                                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                                    &sbi_message,
-                                    "No N1N2MessageTransferReqData", NULL, NULL));
+                        {
+                            /*
+                             * Propagate the real failure cause from the
+                             * handler. Defaults preserve the legacy
+                             * behaviour for any return sites that haven't
+                             * been updated; the UE-not-found and PDU-
+                             * session-not-found paths now return
+                             * 3GPP TS 29.518-compliant 404 Not Found so
+                             * SMF can distinguish "resource gone" from
+                             * "malformed request" and release the
+                             * stranded PDU session instead of leaking it.
+                             */
+                            int http_status =
+                                OGS_SBI_HTTP_STATUS_BAD_REQUEST;
+                            const char *http_reason =
+                                "No N1N2MessageTransferReqData";
+
+                            rv = amf_namf_comm_handle_n1_n2_message_transfer(
+                                    stream, &sbi_message,
+                                    &http_status, &http_reason);
+                            if (rv != OGS_OK) {
+                                ogs_assert(true ==
+                                    ogs_sbi_server_send_error(stream,
+                                        http_status,
+                                        &sbi_message,
+                                        http_reason, NULL, NULL));
+                            }
                         }
                         break;
 
