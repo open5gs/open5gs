@@ -3003,10 +3003,25 @@ static bool gnb_ta_is_supported(
             for (k = 0;
                     k < gnb->supported_ta_list[i].bplmn_list[j].num_of_s_nssai;
                     k++) {
-                if (gnb->supported_ta_list[i].bplmn_list[j].s_nssai[k].sst ==
-                        s_nssai->sst &&
-                    gnb->supported_ta_list[i].bplmn_list[j].s_nssai[k].sd.v ==
-                        s_nssai->sd.v)
+                ogs_s_nssai_t *gnb_snssai = &gnb->supported_ta_list[i].
+                        bplmn_list[j].s_nssai[k];
+
+                /* SST must always match exactly */
+                if (gnb_snssai->sst != s_nssai->sst)
+                    continue;
+
+                /* 3GPP TS 23.501 §5.15.2.1 / TS 23.003 §28.4.2:
+                 * S-NSSAI without SD (encoded as 0xFFFFFF) is the
+                 * "default slice" for that SST and matches any SD
+                 * within the same SST. Required to support gNBs
+                 * that broadcast SST-only S-NSSAI in SIB1.
+                 */
+                if (gnb_snssai->sd.v == OGS_S_NSSAI_NO_SD_VALUE ||
+                    s_nssai->sd.v == OGS_S_NSSAI_NO_SD_VALUE)
+                    return true;
+
+                /* Both sides have explicit SD — require strict equality */
+                if (gnb_snssai->sd.v == s_nssai->sd.v)
                     return true;
             }
         }
@@ -3134,10 +3149,41 @@ bool amf_update_allowed_nssai(amf_ue_t *amf_ue)
                     &amf_ue->rejected_nssai.
                         s_nssai[amf_ue->rejected_nssai.num_of_s_nssai];
             bool ta_supported = false;
+            ogs_s_nssai_t requested_resolved;
+
+            /* Working copy — may be substituted below for no-SD case */
+            requested_resolved.sst = requested->sst;
+            requested_resolved.sd.v = requested->sd.v;
+
+            /* 3GPP TS 23.501 §5.15.2.1 / §5.15.5.2.1:
+             * If the requested S-NSSAI has SD absent (encoded 0xFFFFFF,
+             * "Default Slice for SST"), substitute it with the subscriber's
+             * defaultSingleNssai for that SST before strict-matching.
+             * This honors the spec-defined Default-Slice semantics without
+             * touching shared utility libraries (lib/proto/types.c).
+             */
+            if (requested_resolved.sd.v == OGS_S_NSSAI_NO_SD_VALUE) {
+                int s;
+                for (s = 0; s < amf_ue->num_of_slice; s++) {
+                    if (amf_ue->slice[s].s_nssai.sst ==
+                            requested_resolved.sst &&
+                        amf_ue->slice[s].default_indicator == true) {
+                        ogs_debug("[%s] Substituting no-SD requested "
+                                "S-NSSAI[SST:%d] with subscriber default "
+                                "SD:0x%06x (TS 23.501 §5.15.5.2.1)",
+                                amf_ue->supi,
+                                requested_resolved.sst,
+                                amf_ue->slice[s].s_nssai.sd.v);
+                        requested_resolved.sd.v =
+                                amf_ue->slice[s].s_nssai.sd.v;
+                        break;
+                    }
+                }
+            }
 
             slice = ogs_slice_find_by_s_nssai(
                     amf_ue->slice, amf_ue->num_of_slice,
-                    (ogs_s_nssai_t *)requested);
+                    &requested_resolved);
             if (slice)
                 ta_supported = gnb_ta_is_supported(gnb,
                         &amf_ue->nr_tai.plmn_id, amf_ue->nr_tai.tac,
@@ -3145,8 +3191,14 @@ bool amf_update_allowed_nssai(amf_ue_t *amf_ue)
 
             if (ta_supported == true) {
 
-                allowed->sst = requested->sst;
-                allowed->sd.v = requested->sd.v;
+                /* Allowed-NSSAI returned to UE uses the resolved SD so
+                 * that subsequent procedures (PDU session, NSSF selection,
+                 * plmn_support strict checks via memcmp in
+                 * amf_ue_save_to_release_session_list) see a concrete
+                 * SD value, not 0xFFFFFF.
+                 */
+                allowed->sst = requested_resolved.sst;
+                allowed->sd.v = requested_resolved.sd.v;
                 allowed->mapped_hplmn_sst_presence =
                         requested->mapped_hplmn_sst_presence;
                 allowed->mapped_hplmn_sst = requested->mapped_hplmn_sst;
