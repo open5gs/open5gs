@@ -4335,6 +4335,32 @@ bool mme_sess_have_session_release_pending(mme_sess_t *sess)
     return false;
 }
 
+bool mme_ue_voice_over_ps_supported(mme_ue_t *mme_ue)
+{
+    int i;
+
+    if (!ogs_global_conf()->parameter.vops_per_apn)
+        return true;
+
+    if (!mme_ue)
+        return false;
+
+    /*
+     * Match the IMS APN by either the bare "ims" name or the
+     * GSMA IR.88 / TS 23.003 §9.1.2 FQDN form
+     * "ims.mncXXX.mccYYY.gprs" (4G) — the latter is what most
+     * roaming-aware HSSes hand out. Match is case-insensitive.
+     */
+    for (i = 0; i < mme_ue->num_of_session; i++) {
+        const char *apn = mme_ue->session[i].name;
+        if (apn &&
+                (ogs_strcasecmp(apn, "ims") == 0 ||
+                 ogs_strncasecmp(apn, "ims.", 4) == 0))
+            return true;
+    }
+    return false;
+}
+
 int mme_ue_xact_count(mme_ue_t *mme_ue, uint8_t org)
 {
     sgw_ue_t *sgw_ue = NULL;
