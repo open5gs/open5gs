@@ -1971,6 +1971,8 @@ void s1ap_handle_ue_context_release_request(
     ogs_debug("    IP[%s] ENB_ID[%d]",
             OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
+    /* Do not use s1ap_find_enb_ue_by_message_ue_ids() here. */
+
     if (!ENB_UE_S1AP_ID) {
         ogs_error("No ENB_UE_S1AP_ID");
         r = s1ap_send_error_indication(enb, NULL, NULL,
@@ -1997,10 +1999,45 @@ void s1ap_handle_ue_context_release_request(
         ogs_assert(r != OGS_ERROR);
         return;
     }
+
+    /*
+     * This procedure intentionally reports an unknown eNB UE context
+     * at warning level below, while the generic helper reports it as an error.
+     */
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
     if (!enb_ue) {
         ogs_warn("No ENB UE Context : MME_UE_S1AP_ID[%d]",
                 (int)*MME_UE_S1AP_ID);
+        r = s1ap_send_error_indication(enb,
+                MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (enb_ue->enb_id != enb->id) {
+        ogs_error("MME_UE_S1AP_ID[%lld] does not belong to this eNB "
+                "[UE:eNB-ID:%llu, Message:eNB-ID:%llu]",
+                (long long)*MME_UE_S1AP_ID,
+                (unsigned long long)enb_ue->enb_id,
+                (unsigned long long)enb->id);
+        r = s1ap_send_error_indication(enb,
+                MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (enb_ue->enb_ue_s1ap_id != *ENB_UE_S1AP_ID) {
+        ogs_error("Invalid ENB_UE_S1AP_ID[%lld] for "
+                "MME_UE_S1AP_ID[%lld] [expected:%u]",
+                (long long)*ENB_UE_S1AP_ID,
+                (long long)*MME_UE_S1AP_ID,
+                enb_ue->enb_ue_s1ap_id);
         r = s1ap_send_error_indication(enb,
                 MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
                 S1AP_Cause_PR_radioNetwork,
@@ -2092,6 +2129,8 @@ void s1ap_handle_ue_context_release_complete(
     ogs_debug("    IP[%s] ENB_ID[%d]",
             OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
+    /* Do not use s1ap_find_enb_ue_by_message_ue_ids() here. */
+
     if (!ENB_UE_S1AP_ID) {
         ogs_error("No ENB_UE_S1AP_ID");
         r = s1ap_send_error_indication(enb, NULL, NULL,
@@ -2131,6 +2170,31 @@ void s1ap_handle_ue_context_release_complete(
         return;
     }
 
+    if (enb_ue->enb_id != enb->id) {
+        ogs_error("MME_UE_S1AP_ID[%lld] does not belong to this eNB "
+                "[UE:eNB-ID:%llu, Message:eNB-ID:%llu]",
+                (long long)*MME_UE_S1AP_ID,
+                (unsigned long long)enb_ue->enb_id,
+                (unsigned long long)enb->id);
+        r = s1ap_send_error_indication(enb,
+                MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    /*
+     * Do not add the eNB UE S1AP ID consistency check used by
+     * s1ap_find_enb_ue_by_message_ue_ids():
+     *
+     *     if (enb_ue->enb_ue_s1ap_id != *ENB_UE_S1AP_ID)
+     *
+     * UEContextReleaseComplete is resolved by MME_UE_S1AP_ID. Keep the
+     * existing completion behavior after verifying that the sender eNB owns
+     * the resolved eNB UE context.
+     */
     s1ap_handle_ue_context_release_action(enb_ue);
 }
 
