@@ -45,7 +45,7 @@ static bool hss_cx_user_name_to_bcd(
 
     bcd[0] = '\0';
 
-    for (i = 0; user_name[i]; i++) {
+    for (i = 0; user_name[i] && user_name[i] != '@'; i++) {
         if (user_name[i] >= '0' && user_name[i] <= '9') {
             if (j + 1 >= bcd_len)
                 return false;
