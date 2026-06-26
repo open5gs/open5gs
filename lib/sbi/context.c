@@ -3039,6 +3039,55 @@ ogs_sbi_subscription_data_t *ogs_sbi_subscription_data_find(char *id)
     return subscription_data;
 }
 
+bool ogs_sbi_nf_status_subscription_exists(
+        const char *req_nf_instance_id,
+        OpenAPI_nf_type_e nf_type,
+        OpenAPI_service_name_e service_name,
+        bool confirmed_only)
+{
+    ogs_sbi_subscription_data_t *subscription_data = NULL;
+    bool nf_type_present = (nf_type != OpenAPI_nf_type_NULL);
+    bool service_name_present = (service_name != OpenAPI_service_name_NULL);
+
+    ogs_assert(req_nf_instance_id);
+
+    ogs_list_for_each(
+            &ogs_sbi_self()->subscription_data_list, subscription_data) {
+        if (!subscription_data->req_nf_instance_id)
+            continue;
+
+        if (strcmp(subscription_data->req_nf_instance_id,
+                    req_nf_instance_id) != 0)
+            continue;
+
+        if (subscription_data->flags & OGS_SBI_SUBSCRIPTION_DELETE_SENT)
+            continue;
+
+        /*
+         * confirmed_only: count a subscription only after the NRF has accepted
+         * it, i.e. SubscriptionId and resource URI have been assigned from the
+         * 201 Created response. A locally pending request is not yet a valid
+         * notification context.
+         */
+        if (confirmed_only &&
+                (!subscription_data->id || !subscription_data->resource_uri))
+            continue;
+
+        if (nf_type_present &&
+            subscription_data->subscr_cond.nf_type != OpenAPI_nf_type_NULL &&
+            subscription_data->subscr_cond.nf_type == nf_type)
+            return true;
+
+        if (service_name_present &&
+            subscription_data->subscr_cond.service_name !=
+                OpenAPI_service_name_NULL &&
+            subscription_data->subscr_cond.service_name == service_name)
+            return true;
+    }
+
+    return false;
+}
+
 bool ogs_sbi_supi_in_vplmn(char *supi)
 {
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
