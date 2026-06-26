@@ -243,7 +243,7 @@ int amf_nsmf_pdusession_handle_create_sm_context(
 
 int amf_nsmf_pdusession_handle_update_sm_context(
         amf_ue_t *amf_ue, ran_ue_t *ran_ue, amf_sess_t *sess,
-        int state, ogs_sbi_message_t *recvmsg)
+        int state, ogs_pool_id_t target_ue_id, ogs_sbi_message_t *recvmsg)
 {
     int r;
 
@@ -763,8 +763,10 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 if (AMF_SESSION_SYNC_DONE(amf_ue, state)) {
                     ran_ue_t *target_ue = NULL;
 
-                    ogs_assert(ran_ue);
-                    target_ue = ran_ue_find_by_id(ran_ue->target_ue_id);
+                    if (target_ue_id >= OGS_MIN_POOL_ID &&
+                            target_ue_id <= OGS_MAX_POOL_ID)
+                        target_ue = ran_ue_find_by_id(target_ue_id);
+
                     if (target_ue) {
                         r = ngap_send_ran_ue_context_release_command(
                                 target_ue,
@@ -774,8 +776,8 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                         ogs_expect(r == OGS_OK);
                         ogs_assert(r != OGS_ERROR);
                     } else {
-                        ogs_warn("[%s] RAN-NG Context has already been removed",
-                                amf_ue->supi);
+                        ogs_warn("[%s] Target RAN-NG Context has already "
+                                "been removed", amf_ue->supi);
                     }
                 }
 

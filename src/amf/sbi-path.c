@@ -226,6 +226,8 @@ int amf_sess_sbi_discover_and_send(
         ogs_assert(ctx);
 
         ctx->ran_ue_id = ran_ue->id;
+        ctx->target_ue_id = ran_ue->target_ue_id;
+
         xact->user_data = ctx;
         xact->user_data_free = amf_sbi_xact_ctx_free;
     }

@@ -69,6 +69,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     ogs_pool_id_t sbi_xact_id = OGS_INVALID_POOL_ID;
     int state = AMF_CREATE_SM_CONTEXT_NO_STATE;
     ogs_pool_id_t ran_ue_id = OGS_INVALID_POOL_ID;
+    ogs_pool_id_t target_ue_id = OGS_INVALID_POOL_ID;
     ogs_sbi_stream_t *stream = NULL;
     ogs_pool_id_t stream_id = OGS_INVALID_POOL_ID;
     ogs_sbi_request_t *sbi_request = NULL;
@@ -550,6 +551,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
                 if (ctx->ran_ue_id != OGS_INVALID_POOL_ID)
                     ran_ue_id = ctx->ran_ue_id;
+                if (ctx->target_ue_id != OGS_INVALID_POOL_ID)
+                    target_ue_id = ctx->target_ue_id;
             }
 
             ogs_sbi_xact_remove(sbi_xact);
@@ -606,7 +609,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             SWITCH(sbi_message.h.resource.component[2])
             CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
                 amf_nsmf_pdusession_handle_update_sm_context(
-                        amf_ue, ran_ue, sess, state, &sbi_message);
+                        amf_ue, ran_ue, sess, state, target_ue_id,
+                        &sbi_message);
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_RELEASE)

@@ -40,6 +40,15 @@ typedef struct amf_sbi_xact_ctx_s {
      * may change before the asynchronous response arrives.
      */
     ogs_pool_id_t ran_ue_id;
+
+    /*
+     * Snapshot of the target RAN-UE identifier for handover cancel.
+     *
+     * The source RAN-UE context can be removed before the asynchronous
+     * Update SM Context response arrives. Keep the target identifier in
+     * the SBI transaction so the target context can still be released.
+     */
+    ogs_pool_id_t target_ue_id;
 } amf_sbi_xact_ctx_t;
 
 int amf_sbi_open(void);
