@@ -615,6 +615,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
 
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue_from_stmsi = NULL;
+    bool enb_ue_new = false;
 
     ogs_assert(enb);
     ogs_assert(enb->sctp.sock);
@@ -682,6 +683,13 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
             ogs_assert(r != OGS_ERROR);
             return;
         }
+        /* This enb_ue was newly allocated by this InitialUEMessage.
+         * If a subsequent mandatory-IE validation fails below, it must be
+         * released before returning; otherwise a malformed InitialUEMessage
+         * can exhaust enb_ue_pool. An already-existing enb_ue (the 'else'
+         * branch) is NOT removed, so a legitimate active context is never
+         * torn down by a malformed/duplicated message. */
+        enb_ue_new = true;
 
         /* Find MME_UE if S_TMSI included */
         if (S_TMSI) {
@@ -704,6 +712,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                         S1AP_CauseProtocol_semantic_error);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+                if (enb_ue_new) enb_ue_remove(enb_ue);
                 return;
             }
             memcpy(&nas_guti.mme_code, S_TMSI->mMEC.buf, S_TMSI->mMEC.size);
@@ -717,6 +726,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                         S1AP_CauseProtocol_semantic_error);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+                if (enb_ue_new) enb_ue_remove(enb_ue);
                 return;
             }
             memcpy(&nas_guti.m_tmsi, S_TMSI->m_TMSI.buf, S_TMSI->m_TMSI.size);
@@ -754,6 +764,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                 S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
+        if (enb_ue_new) enb_ue_remove(enb_ue);
         return;
     }
 
@@ -763,6 +774,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                 S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
+        if (enb_ue_new) enb_ue_remove(enb_ue);
         return;
     }
 
@@ -772,6 +784,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                 S1AP_Cause_PR_protocol, S1AP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
+        if (enb_ue_new) enb_ue_remove(enb_ue);
         return;
     }
 
@@ -786,6 +799,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                 S1AP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
+        if (enb_ue_new) enb_ue_remove(enb_ue);
         return;
     }
     tAC = &TAI->tAC;
@@ -798,6 +812,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                 S1AP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
+        if (enb_ue_new) enb_ue_remove(enb_ue);
         return;
     }
     memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf,
@@ -816,6 +831,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                 S1AP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
+        if (enb_ue_new) enb_ue_remove(enb_ue);
         return;
     }
     cell_ID = &EUTRAN_CGI->cell_ID;
@@ -829,6 +845,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
                 S1AP_CauseProtocol_semantic_error);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
+        if (enb_ue_new) enb_ue_remove(enb_ue);
         return;
     }
 

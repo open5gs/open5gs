@@ -846,6 +846,10 @@ int s1ap_send_handover_request(
             source_totarget_transparentContainer);
     if (!s1apbuf) {
         ogs_error("s1ap_build_handover_request() failed");
+        /* Release the target enb_ue allocated above before returning,
+         * otherwise a build failure leaks the context from enb_ue_pool. */
+        enb_ue_source_deassociate_target(target_ue);
+        enb_ue_remove(target_ue);
         return OGS_ERROR;
     }
 
