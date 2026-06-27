@@ -1207,6 +1207,10 @@ OpenAPI_media_component_t *OpenAPI_media_component_parseFromJSON(cJSON *media_co
                     ogs_error("OpenAPI_media_component_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_media_component_parseFromJSON() failed [med_sub_comps]");
+                    goto end;
+                }
                 OpenAPI_list_add(med_sub_compsList, localMapKeyPair);
             }
         }

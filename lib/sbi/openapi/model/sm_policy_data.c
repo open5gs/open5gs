@@ -215,6 +215,10 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_
                     ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [sm_policy_snssai_data]");
+                    goto end;
+                }
                 OpenAPI_list_add(sm_policy_snssai_dataList, localMapKeyPair);
             }
         }
@@ -238,6 +242,10 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [um_data_limits]");
                     goto end;
                 }
                 OpenAPI_list_add(um_data_limitsList, localMapKeyPair);
@@ -264,6 +272,10 @@ OpenAPI_sm_policy_data_t *OpenAPI_sm_policy_data_parseFromJSON(cJSON *sm_policy_
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_data_parseFromJSON() failed [um_data]");
                     goto end;
                 }
                 OpenAPI_list_add(um_dataList, localMapKeyPair);

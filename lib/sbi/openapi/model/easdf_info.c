@@ -283,6 +283,10 @@ OpenAPI_easdf_info_t *OpenAPI_easdf_info_parseFromJSON(cJSON *easdf_infoJSON)
                     ogs_error("OpenAPI_easdf_info_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_easdf_info_parseFromJSON() failed [n6_tunnel_info_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(n6_tunnel_info_listList, localMapKeyPair);
             }
         }

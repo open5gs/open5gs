@@ -159,6 +159,10 @@ OpenAPI_traffic_influence_info_t *OpenAPI_traffic_influence_info_parseFromJSON(c
                     ogs_error("OpenAPI_traffic_influence_info_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_traffic_influence_info_parseFromJSON() failed [traff_cont_decs]");
+                    goto end;
+                }
                 OpenAPI_list_add(traff_cont_decsList, localMapKeyPair);
             }
         }

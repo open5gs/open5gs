@@ -605,6 +605,10 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
                     ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [dnn_configurations]");
+                    goto end;
+                }
                 OpenAPI_list_add(dnn_configurationsList, localMapKeyPair);
             }
         }
@@ -650,6 +654,10 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [shared_vn_group_data_ids]");
+                    goto end;
+                }
                 OpenAPI_list_add(shared_vn_group_data_idsList, localMapKeyPair);
             }
         }
@@ -691,6 +699,10 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [odb_exempted_dnn_data]");
                     goto end;
                 }
                 OpenAPI_list_add(odb_exempted_dnn_dataList, localMapKeyPair);
@@ -738,6 +750,10 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
                     ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [expected_ue_behaviours_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(expected_ue_behaviours_listList, localMapKeyPair);
             }
         }
@@ -762,6 +778,10 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [expected_ue_behaviour_data]");
                     goto end;
                 }
                 OpenAPI_list_add(expected_ue_behaviour_dataList, localMapKeyPair);
@@ -790,6 +810,10 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
                     ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [app_specific_expected_ue_behaviour_data]");
+                    goto end;
+                }
                 OpenAPI_list_add(app_specific_expected_ue_behaviour_dataList, localMapKeyPair);
             }
         }
@@ -814,6 +838,10 @@ OpenAPI_session_management_subscription_data_1_t *OpenAPI_session_management_sub
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_session_management_subscription_data_1_parseFromJSON() failed [suggested_packet_num_dl_list]");
                     goto end;
                 }
                 OpenAPI_list_add(suggested_packet_num_dl_listList, localMapKeyPair);

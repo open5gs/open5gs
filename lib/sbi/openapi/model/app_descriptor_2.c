@@ -133,6 +133,10 @@ OpenAPI_app_descriptor_2_t *OpenAPI_app_descriptor_2_parseFromJSON(cJSON *app_de
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_app_descriptor_2_parseFromJSON() failed [app_ids]");
+                    goto end;
+                }
                 OpenAPI_list_add(app_idsList, localMapKeyPair);
             }
         }

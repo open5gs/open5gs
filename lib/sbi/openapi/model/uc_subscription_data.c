@@ -99,6 +99,10 @@ OpenAPI_uc_subscription_data_t *OpenAPI_uc_subscription_data_parseFromJSON(cJSON
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), (void *)OpenAPI_user_consent_FromString(localMapObject->string));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_uc_subscription_data_parseFromJSON() failed [user_consent_per_purpose_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(user_consent_per_purpose_listList, localMapKeyPair);
             }
         }

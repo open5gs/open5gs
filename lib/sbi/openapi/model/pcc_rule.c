@@ -1193,6 +1193,10 @@ OpenAPI_pcc_rule_t *OpenAPI_pcc_rule_parseFromJSON(cJSON *pcc_ruleJSON)
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_pcc_rule_parseFromJSON() failed [nsc_supp_feats]");
+                    goto end;
+                }
                 OpenAPI_list_add(nsc_supp_featsList, localMapKeyPair);
             }
         }

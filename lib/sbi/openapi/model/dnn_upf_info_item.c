@@ -625,6 +625,10 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [dnai_nw_instance_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(dnai_nw_instance_listList, localMapKeyPair);
             }
         }
@@ -673,6 +677,10 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [private_ipv4_address_ranges_per_ip_domain]");
                     goto end;
                 }
                 OpenAPI_list_add(private_ipv4_address_ranges_per_ip_domainList, localMapKeyPair);

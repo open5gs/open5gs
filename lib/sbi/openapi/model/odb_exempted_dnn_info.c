@@ -160,6 +160,10 @@ OpenAPI_odb_exempted_dnn_info_t *OpenAPI_odb_exempted_dnn_info_parseFromJSON(cJS
                     ogs_error("OpenAPI_odb_exempted_dnn_info_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_odb_exempted_dnn_info_parseFromJSON() failed [odb_exempted_conditions_data]");
+                    goto end;
+                }
                 OpenAPI_list_add(odb_exempted_conditions_dataList, localMapKeyPair);
             }
         }

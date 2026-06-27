@@ -256,6 +256,10 @@ OpenAPI_policy_data_for_individual_ue_t *OpenAPI_policy_data_for_individual_ue_p
                     ogs_error("OpenAPI_policy_data_for_individual_ue_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_policy_data_for_individual_ue_parseFromJSON() failed [um_data]");
+                    goto end;
+                }
                 OpenAPI_list_add(um_dataList, localMapKeyPair);
             }
         }
@@ -280,6 +284,10 @@ OpenAPI_policy_data_for_individual_ue_t *OpenAPI_policy_data_for_individual_ue_p
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_policy_data_for_individual_ue_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_policy_data_for_individual_ue_parseFromJSON() failed [operator_specific_data_set]");
                     goto end;
                 }
                 OpenAPI_list_add(operator_specific_data_setList, localMapKeyPair);

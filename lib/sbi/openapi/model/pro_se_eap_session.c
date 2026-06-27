@@ -216,6 +216,10 @@ OpenAPI_pro_se_eap_session_t *OpenAPI_pro_se_eap_session_parseFromJSON(cJSON *pr
                     ogs_error("OpenAPI_pro_se_eap_session_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_pro_se_eap_session_parseFromJSON() failed [_links]");
+                    goto end;
+                }
                 OpenAPI_list_add(_linksList, localMapKeyPair);
             }
         }

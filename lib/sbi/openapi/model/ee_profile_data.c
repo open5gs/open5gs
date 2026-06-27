@@ -222,6 +222,10 @@ OpenAPI_ee_profile_data_t *OpenAPI_ee_profile_data_parseFromJSON(cJSON *ee_profi
                     ogs_error("OpenAPI_ee_profile_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ee_profile_data_parseFromJSON() failed [allowed_mtc_provider]");
+                    goto end;
+                }
                 OpenAPI_list_add(allowed_mtc_providerList, localMapKeyPair);
             }
         }

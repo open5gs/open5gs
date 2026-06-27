@@ -177,6 +177,10 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence
                 }
                 *localDouble = localMapObject->valuedouble;
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), localDouble);
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sequence_number_parseFromJSON() failed [last_indexes]");
+                    goto end;
+                }
                 OpenAPI_list_add(last_indexesList, localMapKeyPair);
             }
         }

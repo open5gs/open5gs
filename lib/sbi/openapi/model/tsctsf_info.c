@@ -216,6 +216,10 @@ OpenAPI_tsctsf_info_t *OpenAPI_tsctsf_info_parseFromJSON(cJSON *tsctsf_infoJSON)
                     ogs_error("OpenAPI_tsctsf_info_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_tsctsf_info_parseFromJSON() failed [s_nssai_info_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(s_nssai_info_listList, localMapKeyPair);
             }
         }

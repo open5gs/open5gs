@@ -2348,6 +2348,10 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_context_create_data_parseFromJSON() failed [additional_hsmf_set_id_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(additional_hsmf_set_id_listList, localMapKeyPair);
             }
         }
@@ -2414,6 +2418,10 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_context_create_data_parseFromJSON() failed [additional_smf_set_id_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(additional_smf_set_id_listList, localMapKeyPair);
             }
         }
@@ -2966,6 +2974,10 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_parseFromJSON(c
                 }
                 *localInt = localMapObject->valueint;
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), localInt);
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_context_create_data_parseFromJSON() failed [nrf_oauth2_required]");
+                    goto end;
+                }
                 OpenAPI_list_add(nrf_oauth2_requiredList, localMapKeyPair);
             }
         }

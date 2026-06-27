@@ -450,6 +450,10 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
                     ogs_error("OpenAPI_search_result_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_search_result_parseFromJSON() failed [nf_instance_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(nf_instance_listList, localMapKeyPair);
             }
         }

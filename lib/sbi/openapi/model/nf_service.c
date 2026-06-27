@@ -1141,6 +1141,10 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
                 cJSON *localMapObject = allowed_operations_per_nf_type_local_map;
                 double *localDouble = NULL;
                 int *localInt = NULL;
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_nf_service_parseFromJSON() failed [allowed_operations_per_nf_type]");
+                    goto end;
+                }
                 OpenAPI_list_add(allowed_operations_per_nf_typeList, localMapKeyPair);
             }
         }
@@ -1160,6 +1164,10 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
                 cJSON *localMapObject = allowed_operations_per_nf_instance_local_map;
                 double *localDouble = NULL;
                 int *localInt = NULL;
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_nf_service_parseFromJSON() failed [allowed_operations_per_nf_instance]");
+                    goto end;
+                }
                 OpenAPI_list_add(allowed_operations_per_nf_instanceList, localMapKeyPair);
             }
         }
@@ -1192,6 +1200,10 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_nf_service_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_nf_service_parseFromJSON() failed [allowed_scopes_rule_set]");
                     goto end;
                 }
                 OpenAPI_list_add(allowed_scopes_rule_setList, localMapKeyPair);
@@ -1343,6 +1355,10 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_nf_service_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_nf_service_parseFromJSON() failed [supported_vendor_specific_features]");
                     goto end;
                 }
                 OpenAPI_list_add(supported_vendor_specific_featuresList, localMapKeyPair);

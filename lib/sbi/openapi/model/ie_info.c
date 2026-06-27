@@ -234,6 +234,10 @@ OpenAPI_ie_info_t *OpenAPI_ie_info_parseFromJSON(cJSON *ie_infoJSON)
                 }
                 *localInt = localMapObject->valueint;
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), localInt);
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ie_info_parseFromJSON() failed [is_modifiable_by_ipx]");
+                    goto end;
+                }
                 OpenAPI_list_add(is_modifiable_by_ipxList, localMapKeyPair);
             }
         }

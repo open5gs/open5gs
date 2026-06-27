@@ -613,6 +613,10 @@ OpenAPI_traffic_influ_data_patch_t *OpenAPI_traffic_influ_data_patch_parseFromJS
                     ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_traffic_influ_data_patch_parseFromJSON() failed [traffic_data_sets]");
+                    goto end;
+                }
                 OpenAPI_list_add(traffic_data_setsList, localMapKeyPair);
             }
         }

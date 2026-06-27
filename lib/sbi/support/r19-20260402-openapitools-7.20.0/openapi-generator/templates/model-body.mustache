@@ -613,6 +613,18 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
                 goto end;
             }
                             {{/isString}}
+                            {{#isDate}}
+            if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
+                ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+                goto end;
+            }
+                            {{/isDate}}
+                            {{#isDateTime}}
+            if (cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
+                ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+                goto end;
+            }
+                            {{/isDateTime}}
                             {{#isByteArray}}
             if(cJSON_AddStringToObject(localMapObject, localKeyValue->key, (char*)localKeyValue->value) == NULL) {
                 ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
@@ -1015,6 +1027,20 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
                 *localInt = localMapObject->valueint;
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), localInt);
                             {{/isBoolean}}
+                            {{#isDate}}
+                if (!cJSON_IsString(localMapObject) && !cJSON_IsNull(localMapObject)) {
+                    ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
+                    goto end;
+                }
+                localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), cJSON_IsNull(localMapObject) ? NULL : ogs_strdup(localMapObject->valuestring));
+                            {{/isDate}}
+                            {{#isDateTime}}
+                if (!cJSON_IsString(localMapObject) && !cJSON_IsNull(localMapObject)) {
+                    ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
+                    goto end;
+                }
+                localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), cJSON_IsNull(localMapObject) ? NULL : ogs_strdup(localMapObject->valuestring));
+                            {{/isDateTime}}
                         {{/isMap}}
                     {{/isPrimitiveType}}
                     {{^isPrimitiveType}}
@@ -1035,6 +1061,10 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
                     {{/isPrimitiveType}}
                 {{/items}}
             {{/isEnum}}
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
+                    goto end;
+                }
                 OpenAPI_list_add({{{name}}}List, localMapKeyPair);
             }
         }

@@ -1619,6 +1619,10 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [shared_vn_group_data_ids]");
+                    goto end;
+                }
                 OpenAPI_list_add(shared_vn_group_data_idsList, localMapKeyPair);
             }
         }
@@ -1992,6 +1996,10 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
                     ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [odb_exempted_dnn_data]");
+                    goto end;
+                }
                 OpenAPI_list_add(odb_exempted_dnn_dataList, localMapKeyPair);
             }
         }
@@ -2052,6 +2060,10 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), (void *)OpenAPI_mdt_user_consent_FromString(localMapObject->string));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [adjacent_plmn_mdt_user_consents]");
+                    goto end;
+                }
                 OpenAPI_list_add(adjacent_plmn_mdt_user_consentsList, localMapKeyPair);
             }
         }
@@ -2189,6 +2201,10 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [expected_ue_behaviour_data]");
                     goto end;
                 }
                 OpenAPI_list_add(expected_ue_behaviour_dataList, localMapKeyPair);
@@ -2331,6 +2347,10 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [adjacent_plmn_restrictions]");
                     goto end;
                 }
                 OpenAPI_list_add(adjacent_plmn_restrictionsList, localMapKeyPair);
@@ -2515,6 +2535,10 @@ OpenAPI_access_and_mobility_subscription_data_t *OpenAPI_access_and_mobility_sub
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_access_and_mobility_subscription_data_parseFromJSON() failed [ladn_service_areas]");
                     goto end;
                 }
                 OpenAPI_list_add(ladn_service_areasList, localMapKeyPair);

@@ -120,6 +120,10 @@ OpenAPI_uri_list_t *OpenAPI_uri_list_parseFromJSON(cJSON *uri_listJSON)
                     ogs_error("OpenAPI_uri_list_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_uri_list_parseFromJSON() failed [_links]");
+                    goto end;
+                }
                 OpenAPI_list_add(_linksList, localMapKeyPair);
             }
         }

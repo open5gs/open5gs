@@ -407,6 +407,10 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
                     ogs_error("OpenAPI_scp_info_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_scp_info_parseFromJSON() failed [scp_domain_info_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(scp_domain_info_listList, localMapKeyPair);
             }
         }
@@ -445,6 +449,10 @@ OpenAPI_scp_info_t *OpenAPI_scp_info_parseFromJSON(cJSON *scp_infoJSON)
                 }
                 *localDouble = localMapObject->valuedouble;
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), localDouble);
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_scp_info_parseFromJSON() failed [scp_ports]");
+                    goto end;
+                }
                 OpenAPI_list_add(scp_portsList, localMapKeyPair);
             }
         }

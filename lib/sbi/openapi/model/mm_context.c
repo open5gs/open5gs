@@ -947,6 +947,10 @@ OpenAPI_mm_context_t *OpenAPI_mm_context_parseFromJSON(cJSON *mm_contextJSON)
                     ogs_error("OpenAPI_mm_context_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_mm_context_parseFromJSON() failed [dereg_inact_timer_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(dereg_inact_timer_listList, localMapKeyPair);
             }
         }

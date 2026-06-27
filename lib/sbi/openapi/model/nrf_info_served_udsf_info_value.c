@@ -181,6 +181,10 @@ OpenAPI_nrf_info_served_udsf_info_value_t *OpenAPI_nrf_info_served_udsf_info_val
                     ogs_error("OpenAPI_nrf_info_served_udsf_info_value_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_nrf_info_served_udsf_info_value_parseFromJSON() failed [storage_id_ranges]");
+                    goto end;
+                }
                 OpenAPI_list_add(storage_id_rangesList, localMapKeyPair);
             }
         }

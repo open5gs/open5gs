@@ -113,6 +113,10 @@ OpenAPI_scp_domain_routing_information_t *OpenAPI_scp_domain_routing_information
                     ogs_error("OpenAPI_scp_domain_routing_information_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_scp_domain_routing_information_parseFromJSON() failed [scp_domain_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(scp_domain_listList, localMapKeyPair);
             }
         }

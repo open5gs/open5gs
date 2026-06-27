@@ -449,6 +449,10 @@ OpenAPI_shared_data_1_t *OpenAPI_shared_data_1_parseFromJSON(cJSON *shared_data_
                     ogs_error("OpenAPI_shared_data_1_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_shared_data_1_parseFromJSON() failed [shared_dnn_configurations]");
+                    goto end;
+                }
                 OpenAPI_list_add(shared_dnn_configurationsList, localMapKeyPair);
             }
         }
@@ -486,6 +490,10 @@ OpenAPI_shared_data_1_t *OpenAPI_shared_data_1_parseFromJSON(cJSON *shared_data_
                     ogs_error("OpenAPI_shared_data_1_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_shared_data_1_parseFromJSON() failed [shared_snssai_infos]");
+                    goto end;
+                }
                 OpenAPI_list_add(shared_snssai_infosList, localMapKeyPair);
             }
         }
@@ -512,6 +520,10 @@ OpenAPI_shared_data_1_t *OpenAPI_shared_data_1_parseFromJSON(cJSON *shared_data_
                     ogs_error("OpenAPI_shared_data_1_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_shared_data_1_parseFromJSON() failed [shared_vn_group_datas]");
+                    goto end;
+                }
                 OpenAPI_list_add(shared_vn_group_datasList, localMapKeyPair);
             }
         }
@@ -534,6 +546,10 @@ OpenAPI_shared_data_1_t *OpenAPI_shared_data_1_parseFromJSON(cJSON *shared_data_
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), (void *)OpenAPI_shared_data_treatment_instruction_FromString(localMapObject->string));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_shared_data_1_parseFromJSON() failed [treatment_instructions]");
+                    goto end;
+                }
                 OpenAPI_list_add(treatment_instructionsList, localMapKeyPair);
             }
         }

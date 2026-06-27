@@ -518,6 +518,10 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
                     ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [pra_infos]");
+                    goto end;
+                }
                 OpenAPI_list_add(pra_infosList, localMapKeyPair);
             }
         }
@@ -565,6 +569,10 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
                     ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [ue_policy_sections]");
+                    goto end;
+                }
                 OpenAPI_list_add(ue_policy_sectionsList, localMapKeyPair);
             }
         }
@@ -610,6 +618,10 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [allowed_route_sel_descs]");
                     goto end;
                 }
                 OpenAPI_list_add(allowed_route_sel_descsList, localMapKeyPair);
@@ -722,6 +734,10 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_se
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ue_policy_set_parseFromJSON() failed [spend_lim_info]");
                     goto end;
                 }
                 OpenAPI_list_add(spend_lim_infoList, localMapKeyPair);

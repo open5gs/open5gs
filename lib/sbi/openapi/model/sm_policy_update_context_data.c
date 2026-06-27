@@ -2081,6 +2081,10 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
                     ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [rep_pra_infos]");
+                    goto end;
+                }
                 OpenAPI_list_add(rep_pra_infosList, localMapKeyPair);
             }
         }
@@ -2610,6 +2614,10 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
                     ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [qos_mon_cap_repos]");
+                    goto end;
+                }
                 OpenAPI_list_add(qos_mon_cap_reposList, localMapKeyPair);
             }
         }
@@ -2634,6 +2642,10 @@ OpenAPI_sm_policy_update_context_data_t *OpenAPI_sm_policy_update_context_data_p
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_update_context_data_parseFromJSON() failed [n3g_dev_infos]");
                     goto end;
                 }
                 OpenAPI_list_add(n3g_dev_infosList, localMapKeyPair);

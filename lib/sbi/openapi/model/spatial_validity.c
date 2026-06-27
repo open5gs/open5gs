@@ -113,6 +113,10 @@ OpenAPI_spatial_validity_t *OpenAPI_spatial_validity_parseFromJSON(cJSON *spatia
                     ogs_error("OpenAPI_spatial_validity_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_spatial_validity_parseFromJSON() failed [presence_info_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(presence_info_listList, localMapKeyPair);
             }
         }

@@ -803,6 +803,10 @@ OpenAPI_app_session_context_req_data_t *OpenAPI_app_session_context_req_data_par
                     ogs_error("OpenAPI_app_session_context_req_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_app_session_context_req_data_parseFromJSON() failed [med_components]");
+                    goto end;
+                }
                 OpenAPI_list_add(med_componentsList, localMapKeyPair);
             }
         }

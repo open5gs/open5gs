@@ -308,6 +308,10 @@ OpenAPI_sdm_subs_modification_t *OpenAPI_sdm_subs_modification_parseFromJSON(cJS
                     ogs_error("OpenAPI_sdm_subs_modification_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sdm_subs_modification_parseFromJSON() failed [expected_ue_behaviour_thresholds]");
+                    goto end;
+                }
                 OpenAPI_list_add(expected_ue_behaviour_thresholdsList, localMapKeyPair);
             }
         }

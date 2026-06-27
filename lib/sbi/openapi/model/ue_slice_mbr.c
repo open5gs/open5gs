@@ -157,6 +157,10 @@ OpenAPI_ue_slice_mbr_t *OpenAPI_ue_slice_mbr_parseFromJSON(cJSON *ue_slice_mbrJS
                     ogs_error("OpenAPI_ue_slice_mbr_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ue_slice_mbr_parseFromJSON() failed [slice_mbr]");
+                    goto end;
+                }
                 OpenAPI_list_add(slice_mbrList, localMapKeyPair);
             }
         }

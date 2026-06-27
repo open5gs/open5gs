@@ -738,6 +738,10 @@ OpenAPI_modify_200_response_t *OpenAPI_modify_200_response_parseFromJSON(cJSON *
                     ogs_error("OpenAPI_modify_200_response_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_modify_200_response_parseFromJSON() failed [expected_ue_behaviour_thresholds]");
+                    goto end;
+                }
                 OpenAPI_list_add(expected_ue_behaviour_thresholdsList, localMapKeyPair);
             }
         }

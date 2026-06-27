@@ -152,6 +152,10 @@ OpenAPI_ue_identifiers_t *OpenAPI_ue_identifiers_parseFromJSON(cJSON *ue_identif
                     ogs_error("OpenAPI_ue_identifiers_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ue_identifiers_parseFromJSON() failed [ue_id_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(ue_id_listList, localMapKeyPair);
             }
         }
@@ -176,6 +180,10 @@ OpenAPI_ue_identifiers_t *OpenAPI_ue_identifiers_parseFromJSON(cJSON *ue_identif
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_ue_identifiers_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ue_identifiers_parseFromJSON() failed [ue_id_gpsi_list]");
                     goto end;
                 }
                 OpenAPI_list_add(ue_id_gpsi_listList, localMapKeyPair);

@@ -208,6 +208,10 @@ OpenAPI_conditional_cag_info_1_t *OpenAPI_conditional_cag_info_1_parseFromJSON(c
                     ogs_error("OpenAPI_conditional_cag_info_1_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_conditional_cag_info_1_parseFromJSON() failed [cag_specific_valid_time_period_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(cag_specific_valid_time_period_listList, localMapKeyPair);
             }
         }

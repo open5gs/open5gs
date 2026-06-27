@@ -1009,6 +1009,10 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
                     ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [traffic_data_sets]");
+                    goto end;
+                }
                 OpenAPI_list_add(traffic_data_setsList, localMapKeyPair);
             }
         }
@@ -1352,6 +1356,10 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_traffic_influ_data_parseFromJSON() failed [nsc_supp_feats]");
+                    goto end;
+                }
                 OpenAPI_list_add(nsc_supp_featsList, localMapKeyPair);
             }
         }

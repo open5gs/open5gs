@@ -636,6 +636,10 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
                     ogs_error("OpenAPI_policy_association_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_policy_association_parseFromJSON() failed [pras]");
+                    goto end;
+                }
                 OpenAPI_list_add(prasList, localMapKeyPair);
             }
         }
@@ -708,6 +712,10 @@ OpenAPI_policy_association_t *OpenAPI_policy_association_parseFromJSON(cJSON *po
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_policy_association_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_policy_association_parseFromJSON() failed [slice_usg_ctrl_info_sets]");
                     goto end;
                 }
                 OpenAPI_list_add(slice_usg_ctrl_info_setsList, localMapKeyPair);

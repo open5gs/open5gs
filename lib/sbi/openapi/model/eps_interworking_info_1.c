@@ -122,6 +122,10 @@ OpenAPI_eps_interworking_info_1_t *OpenAPI_eps_interworking_info_1_parseFromJSON
                     ogs_error("OpenAPI_eps_interworking_info_1_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_eps_interworking_info_1_parseFromJSON() failed [eps_iwk_pgws]");
+                    goto end;
+                }
                 OpenAPI_list_add(eps_iwk_pgwsList, localMapKeyPair);
             }
         }

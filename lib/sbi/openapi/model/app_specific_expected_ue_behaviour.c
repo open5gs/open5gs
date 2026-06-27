@@ -157,6 +157,10 @@ OpenAPI_app_specific_expected_ue_behaviour_t *OpenAPI_app_specific_expected_ue_b
                     ogs_error("OpenAPI_app_specific_expected_ue_behaviour_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_app_specific_expected_ue_behaviour_parseFromJSON() failed [app_specific_expected_ue_behaviour_data]");
+                    goto end;
+                }
                 OpenAPI_list_add(app_specific_expected_ue_behaviour_dataList, localMapKeyPair);
             }
         }

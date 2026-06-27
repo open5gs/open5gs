@@ -678,6 +678,10 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
                     ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [spend_lim_info]");
+                    goto end;
+                }
                 OpenAPI_list_add(spend_lim_infoList, localMapKeyPair);
             }
         }
@@ -753,6 +757,10 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
                     ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [ref_um_data_limit_ids]");
+                    goto end;
+                }
                 OpenAPI_list_add(ref_um_data_limit_idsList, localMapKeyPair);
             }
         }
@@ -819,6 +827,10 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
                     ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [pra_infos]");
+                    goto end;
+                }
                 OpenAPI_list_add(pra_infosList, localMapKeyPair);
             }
         }
@@ -844,6 +856,10 @@ OpenAPI_sm_policy_dnn_data_t *OpenAPI_sm_policy_dnn_data_parseFromJSON(cJSON *sm
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_dnn_data_parseFromJSON() failed [bdt_ref_ids]");
+                    goto end;
+                }
                 OpenAPI_list_add(bdt_ref_idsList, localMapKeyPair);
             }
         }

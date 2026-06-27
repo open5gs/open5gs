@@ -171,6 +171,10 @@ OpenAPI_cag_data_t *OpenAPI_cag_data_parseFromJSON(cJSON *cag_dataJSON)
                     ogs_error("OpenAPI_cag_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_cag_data_parseFromJSON() failed [cag_infos]");
+                    goto end;
+                }
                 OpenAPI_list_add(cag_infosList, localMapKeyPair);
             }
         }
@@ -194,6 +198,10 @@ OpenAPI_cag_data_t *OpenAPI_cag_data_parseFromJSON(cJSON *cag_dataJSON)
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_cag_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_cag_data_parseFromJSON() failed [conditional_cag_infos]");
                     goto end;
                 }
                 OpenAPI_list_add(conditional_cag_infosList, localMapKeyPair);

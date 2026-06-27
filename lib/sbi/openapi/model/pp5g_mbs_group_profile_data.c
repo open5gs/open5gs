@@ -122,6 +122,10 @@ OpenAPI_pp5g_mbs_group_profile_data_t *OpenAPI_pp5g_mbs_group_profile_data_parse
                     ogs_error("OpenAPI_pp5g_mbs_group_profile_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_pp5g_mbs_group_profile_data_parseFromJSON() failed [allowed_mbs_infos]");
+                    goto end;
+                }
                 OpenAPI_list_add(allowed_mbs_infosList, localMapKeyPair);
             }
         }

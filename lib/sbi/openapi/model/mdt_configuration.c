@@ -928,6 +928,10 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), (void *)OpenAPI_report_amount_mdt_FromString(localMapObject->string));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_mdt_configuration_parseFromJSON() failed [report_amount_per_measurement_lte]");
+                    goto end;
+                }
                 OpenAPI_list_add(report_amount_per_measurement_lteList, localMapKeyPair);
             }
         }
@@ -950,6 +954,10 @@ OpenAPI_mdt_configuration_t *OpenAPI_mdt_configuration_parseFromJSON(cJSON *mdt_
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), (void *)OpenAPI_report_amount_mdt_FromString(localMapObject->string));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_mdt_configuration_parseFromJSON() failed [report_amount_per_measurement_nr]");
+                    goto end;
+                }
                 OpenAPI_list_add(report_amount_per_measurement_nrList, localMapKeyPair);
             }
         }

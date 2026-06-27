@@ -108,6 +108,10 @@ OpenAPI_iptv_config_data_patch_t *OpenAPI_iptv_config_data_patch_parseFromJSON(c
                     ogs_error("OpenAPI_iptv_config_data_patch_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_iptv_config_data_patch_parseFromJSON() failed [multi_acc_ctrls]");
+                    goto end;
+                }
                 OpenAPI_list_add(multi_acc_ctrlsList, localMapKeyPair);
             }
         }

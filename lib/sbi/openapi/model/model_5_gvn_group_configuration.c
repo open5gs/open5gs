@@ -270,6 +270,10 @@ OpenAPI_model_5_gvn_group_configuration_t *OpenAPI_model_5_gvn_group_configurati
                     ogs_error("OpenAPI_model_5_gvn_group_configuration_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_model_5_gvn_group_configuration_parseFromJSON() failed [members_data]");
+                    goto end;
+                }
                 OpenAPI_list_add(members_dataList, localMapKeyPair);
             }
         }

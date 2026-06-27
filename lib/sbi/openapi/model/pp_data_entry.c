@@ -399,6 +399,10 @@ OpenAPI_pp_data_entry_t *OpenAPI_pp_data_entry_parseFromJSON(cJSON *pp_data_entr
                     ogs_error("OpenAPI_pp_data_entry_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_pp_data_entry_parseFromJSON() failed [ecs_addr_config_info_per_plmn]");
+                    goto end;
+                }
                 OpenAPI_list_add(ecs_addr_config_info_per_plmnList, localMapKeyPair);
             }
         }

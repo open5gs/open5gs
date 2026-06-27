@@ -1426,6 +1426,10 @@ OpenAPI_events_notification_t *OpenAPI_events_notification_parseFromJSON(cJSON *
                     ogs_error("OpenAPI_events_notification_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_events_notification_parseFromJSON() failed [qos_mon_cap_repos]");
+                    goto end;
+                }
                 OpenAPI_list_add(qos_mon_cap_reposList, localMapKeyPair);
             }
         }
