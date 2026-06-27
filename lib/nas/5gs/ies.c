@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-06-15 16:17:36.434612 by acetcom
+ * Created on: 2026-06-27 11:33:22.424250 by acetcom
  * from r19.6.2/24501-j62-ch8-ch9.docx
  ******************************************************************************/
 
@@ -203,8 +203,9 @@ int ogs_nas_5gs_decode_dnn(ogs_nas_dnn_t *dnn, ogs_pkbuf_t *pkbuf)
 
     {
         char data_network_name[OGS_MAX_DNN_LEN+1];
-        dnn->length = ogs_fqdn_parse(data_network_name, dnn->value, ogs_min(dnn->length, OGS_MAX_DNN_LEN));
-        if (dnn->length > 0) {
+        int parsed = ogs_fqdn_parse(data_network_name, dnn->value, ogs_min(dnn->length, OGS_MAX_DNN_LEN));
+        if (parsed > 0) {
+            dnn->length = parsed;
             ogs_cpystrn(dnn->value, data_network_name, ogs_min(dnn->length, OGS_MAX_DNN_LEN)+1);
         } else {
             ogs_error("UE not APN setting");

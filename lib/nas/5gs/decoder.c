@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-06-15 16:17:36.453801 by acetcom
+ * Created on: 2026-06-27 11:33:22.443948 by acetcom
  * from r19.6.2/24501-j62-ch8-ch9.docx
  ******************************************************************************/
 
@@ -5047,7 +5047,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_registration_request(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_registration_request() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5056,7 +5056,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_registration_accept(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_registration_accept() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5065,7 +5065,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_registration_complete(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_registration_complete() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5074,7 +5074,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_registration_reject(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_registration_reject() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5083,7 +5083,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_deregistration_request_from_ue(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_deregistration_request_from_ue() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5094,7 +5094,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_deregistration_request_to_ue(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_deregistration_request_to_ue() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5105,7 +5105,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_service_request(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_service_request() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5114,7 +5114,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_service_reject(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_service_reject() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5123,7 +5123,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_service_accept(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_service_accept() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5132,7 +5132,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_configuration_update_command(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_configuration_update_command() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5143,7 +5143,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_authentication_request(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_authentication_request() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5152,7 +5152,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_authentication_response(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_authentication_response() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5161,7 +5161,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_authentication_reject(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_authentication_reject() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5170,7 +5170,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_authentication_failure(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_authentication_failure() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5179,7 +5179,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_authentication_result(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_authentication_result() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5188,7 +5188,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_identity_request(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_identity_request() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5197,7 +5197,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_identity_response(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_identity_response() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5206,7 +5206,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_security_mode_command(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_security_mode_command() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5215,7 +5215,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_security_mode_complete(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_security_mode_complete() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5224,7 +5224,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_security_mode_reject(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_security_mode_reject() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5233,7 +5233,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_5gmm_status(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_5gmm_status() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5242,7 +5242,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_notification(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_notification() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5251,7 +5251,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_notification_response(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_notification_response() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5260,7 +5260,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_ul_nas_transport(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_ul_nas_transport() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5269,7 +5269,7 @@ int ogs_nas_5gmm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_dl_nas_transport(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_dl_nas_transport() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5307,7 +5307,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_establishment_request(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_establishment_request() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5316,7 +5316,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_establishment_accept(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_establishment_accept() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5325,7 +5325,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_establishment_reject(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_establishment_reject() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5334,7 +5334,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_authentication_command(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_authentication_command() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5343,7 +5343,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_authentication_complete(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_authentication_complete() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5352,7 +5352,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_authentication_result(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_authentication_result() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5361,7 +5361,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_modification_request(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_modification_request() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5370,7 +5370,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_modification_reject(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_modification_reject() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5379,7 +5379,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_modification_command(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_modification_command() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5388,7 +5388,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_modification_complete(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_modification_complete() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5397,7 +5397,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_modification_command_reject(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_modification_command_reject() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5406,7 +5406,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_release_request(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_release_request() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5415,7 +5415,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_release_reject(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_release_reject() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5424,7 +5424,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_release_command(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_release_command() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5433,7 +5433,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_pdu_session_release_complete(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_pdu_session_release_complete() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;
@@ -5442,7 +5442,7 @@ int ogs_nas_5gsm_decode(ogs_nas_5gs_message_t *message, ogs_pkbuf_t *pkbuf)
         size = ogs_nas_5gs_decode_5gsm_status(message, pkbuf);
         if (size < 0) {
            ogs_error("ogs_nas_5gs_decode_5gsm_status() failed");
-           return size;
+           return OGS_ERROR;
         }
 
         decoded += size;

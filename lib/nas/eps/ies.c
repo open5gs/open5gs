@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-06-23 17:17:22.474073 by acetcom
+ * Created on: 2026-06-27 11:33:07.974030 by acetcom
  * from r19.6.0/24301-j60-ch8-ch9.docx
  ******************************************************************************/
 
@@ -3977,8 +3977,9 @@ int ogs_nas_eps_decode_access_point_name(ogs_nas_access_point_name_t *access_poi
 
     {
         char apn[OGS_MAX_APN_LEN+1];
-        access_point_name->length = ogs_fqdn_parse(apn, access_point_name->apn, ogs_min(access_point_name->length, OGS_MAX_APN_LEN));
-        if (access_point_name->length > 0) {
+        int parsed = ogs_fqdn_parse(apn, access_point_name->apn, ogs_min(access_point_name->length, OGS_MAX_APN_LEN));
+        if (parsed > 0) {
+            access_point_name->length = parsed;
             ogs_cpystrn(access_point_name->apn, apn, ogs_min(access_point_name->length, OGS_MAX_APN_LEN)+1);
         } else {
             ogs_error("UE not APN setting");
