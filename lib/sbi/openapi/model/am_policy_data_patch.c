@@ -159,6 +159,10 @@ OpenAPI_am_policy_data_patch_t *OpenAPI_am_policy_data_patch_parseFromJSON(cJSON
                     ogs_error("OpenAPI_am_policy_data_patch_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_am_policy_data_patch_parseFromJSON() failed [spend_lim_info]");
+                    goto end;
+                }
                 OpenAPI_list_add(spend_lim_infoList, localMapKeyPair);
             }
         }

@@ -181,6 +181,10 @@ OpenAPI_udsf_info_t *OpenAPI_udsf_info_parseFromJSON(cJSON *udsf_infoJSON)
                     ogs_error("OpenAPI_udsf_info_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_udsf_info_parseFromJSON() failed [storage_id_ranges]");
+                    goto end;
+                }
                 OpenAPI_list_add(storage_id_rangesList, localMapKeyPair);
             }
         }

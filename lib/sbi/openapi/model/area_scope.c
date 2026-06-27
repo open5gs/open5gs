@@ -447,6 +447,10 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
                     ogs_error("OpenAPI_area_scope_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_area_scope_parseFromJSON() failed [tac_info_per_plmn]");
+                    goto end;
+                }
                 OpenAPI_list_add(tac_info_per_plmnList, localMapKeyPair);
             }
         }
@@ -471,6 +475,10 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_area_scope_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_area_scope_parseFromJSON() failed [cag_info_per_plmn]");
                     goto end;
                 }
                 OpenAPI_list_add(cag_info_per_plmnList, localMapKeyPair);
@@ -499,6 +507,10 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
                     ogs_error("OpenAPI_area_scope_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_area_scope_parseFromJSON() failed [nid_info_per_plmn]");
+                    goto end;
+                }
                 OpenAPI_list_add(nid_info_per_plmnList, localMapKeyPair);
             }
         }
@@ -525,6 +537,10 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
                     ogs_error("OpenAPI_area_scope_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_area_scope_parseFromJSON() failed [cell_id_nid_info_per_plmn]");
+                    goto end;
+                }
                 OpenAPI_list_add(cell_id_nid_info_per_plmnList, localMapKeyPair);
             }
         }
@@ -549,6 +565,10 @@ OpenAPI_area_scope_t *OpenAPI_area_scope_parseFromJSON(cJSON *area_scopeJSON)
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_area_scope_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_area_scope_parseFromJSON() failed [tac_nid_info_per_plmn]");
                     goto end;
                 }
                 OpenAPI_list_add(tac_nid_info_per_plmnList, localMapKeyPair);

@@ -1026,6 +1026,10 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
                     ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [pra_statuses]");
+                    goto end;
+                }
                 OpenAPI_list_add(pra_statusesList, localMapKeyPair);
             }
         }
@@ -1085,6 +1089,10 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
                     ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [part_allowed_nssai]");
+                    goto end;
+                }
                 OpenAPI_list_add(part_allowed_nssaiList, localMapKeyPair);
             }
         }
@@ -1109,6 +1117,10 @@ OpenAPI_policy_association_update_request_t *OpenAPI_policy_association_update_r
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_policy_association_update_request_parseFromJSON() failed [snssais_part_rejected]");
                     goto end;
                 }
                 OpenAPI_list_add(snssais_part_rejectedList, localMapKeyPair);

@@ -207,6 +207,10 @@ OpenAPI_scp_domain_info_t *OpenAPI_scp_domain_info_parseFromJSON(cJSON *scp_doma
                 }
                 *localDouble = localMapObject->valuedouble;
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), localDouble);
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_scp_domain_info_parseFromJSON() failed [scp_ports]");
+                    goto end;
+                }
                 OpenAPI_list_add(scp_portsList, localMapKeyPair);
             }
         }

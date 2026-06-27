@@ -637,6 +637,10 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
                 }
                 *localInt = localMapObject->valueint;
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), localInt);
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [nrf_oauth2_required]");
+                    goto end;
+                }
                 OpenAPI_list_add(nrf_oauth2_requiredList, localMapKeyPair);
             }
         }
@@ -741,6 +745,10 @@ OpenAPI_authorized_network_slice_info_t *OpenAPI_authorized_network_slice_info_p
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_authorized_network_slice_info_parseFromJSON() failed [snssai_info_rsp_data]");
                     goto end;
                 }
                 OpenAPI_list_add(snssai_info_rsp_dataList, localMapKeyPair);

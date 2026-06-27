@@ -210,6 +210,10 @@ OpenAPI_nrf_info_served_sepp_info_list_value_t *OpenAPI_nrf_info_served_sepp_inf
                 }
                 *localDouble = localMapObject->valuedouble;
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), localDouble);
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_nrf_info_served_sepp_info_list_value_parseFromJSON() failed [sepp_ports]");
+                    goto end;
+                }
                 OpenAPI_list_add(sepp_portsList, localMapKeyPair);
             }
         }

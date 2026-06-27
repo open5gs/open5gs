@@ -210,6 +210,10 @@ OpenAPI_sepp_info_t *OpenAPI_sepp_info_parseFromJSON(cJSON *sepp_infoJSON)
                 }
                 *localDouble = localMapObject->valuedouble;
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), localDouble);
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sepp_info_parseFromJSON() failed [sepp_ports]");
+                    goto end;
+                }
                 OpenAPI_list_add(sepp_portsList, localMapKeyPair);
             }
         }

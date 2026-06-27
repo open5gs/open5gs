@@ -320,6 +320,10 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dat
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_identity_data_parseFromJSON() failed [application_port_ids]");
+                    goto end;
+                }
                 OpenAPI_list_add(application_port_idsList, localMapKeyPair);
             }
         }
@@ -344,6 +348,10 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dat
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_identity_data_parseFromJSON() failed [af_id_gpsis]");
+                    goto end;
+                }
                 OpenAPI_list_add(af_id_gpsisList, localMapKeyPair);
             }
         }
@@ -368,6 +376,10 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dat
                     goto end;
                 }
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), ogs_strdup(localMapObject->valuestring));
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_identity_data_parseFromJSON() failed [mtc_provider_gpsis]");
+                    goto end;
+                }
                 OpenAPI_list_add(mtc_provider_gpsisList, localMapKeyPair);
             }
         }

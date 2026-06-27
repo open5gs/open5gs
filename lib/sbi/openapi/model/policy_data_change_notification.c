@@ -603,6 +603,10 @@ OpenAPI_policy_data_change_notification_t *OpenAPI_policy_data_change_notificati
                     ogs_error("OpenAPI_policy_data_change_notification_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_policy_data_change_notification_parseFromJSON() failed [op_spec_data_map]");
+                    goto end;
+                }
                 OpenAPI_list_add(op_spec_data_mapList, localMapKeyPair);
             }
         }

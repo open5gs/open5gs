@@ -215,6 +215,10 @@ OpenAPI_usage_mon_data_limit_t *OpenAPI_usage_mon_data_limit_parseFromJSON(cJSON
                     ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_usage_mon_data_limit_parseFromJSON() failed [scopes]");
+                    goto end;
+                }
                 OpenAPI_list_add(scopesList, localMapKeyPair);
             }
         }

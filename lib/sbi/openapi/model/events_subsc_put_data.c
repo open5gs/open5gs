@@ -2007,6 +2007,10 @@ OpenAPI_events_subsc_put_data_t *OpenAPI_events_subsc_put_data_parseFromJSON(cJS
                     ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_events_subsc_put_data_parseFromJSON() failed [qos_mon_cap_repos]");
+                    goto end;
+                }
                 OpenAPI_list_add(qos_mon_cap_reposList, localMapKeyPair);
             }
         }

@@ -1072,6 +1072,10 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
                     ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [sess_rules]");
+                    goto end;
+                }
                 OpenAPI_list_add(sess_rulesList, localMapKeyPair);
             }
         }
@@ -1097,6 +1101,10 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [pcc_rules]");
                     goto end;
                 }
                 OpenAPI_list_add(pcc_rulesList, localMapKeyPair);
@@ -1134,6 +1142,10 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
                     ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [qos_decs]");
+                    goto end;
+                }
                 OpenAPI_list_add(qos_decsList, localMapKeyPair);
             }
         }
@@ -1159,6 +1171,10 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [chg_decs]");
                     goto end;
                 }
                 OpenAPI_list_add(chg_decsList, localMapKeyPair);
@@ -1205,6 +1221,10 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
                     ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [traff_cont_decs]");
+                    goto end;
+                }
                 OpenAPI_list_add(traff_cont_decsList, localMapKeyPair);
             }
         }
@@ -1230,6 +1250,10 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [um_decs]");
                     goto end;
                 }
                 OpenAPI_list_add(um_decsList, localMapKeyPair);
@@ -1259,6 +1283,10 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
                     ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [qos_chars]");
+                    goto end;
+                }
                 OpenAPI_list_add(qos_charsList, localMapKeyPair);
             }
         }
@@ -1284,6 +1312,10 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [qos_mon_decs]");
                     goto end;
                 }
                 OpenAPI_list_add(qos_mon_decsList, localMapKeyPair);
@@ -1320,6 +1352,10 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [conds]");
                     goto end;
                 }
                 OpenAPI_list_add(condsList, localMapKeyPair);
@@ -1445,6 +1481,10 @@ OpenAPI_sm_policy_decision_t *OpenAPI_sm_policy_decision_parseFromJSON(cJSON *sm
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_decision_parseFromJSON() failed [pra_infos]");
                     goto end;
                 }
                 OpenAPI_list_add(pra_infosList, localMapKeyPair);

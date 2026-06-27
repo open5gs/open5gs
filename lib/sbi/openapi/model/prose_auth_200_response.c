@@ -139,6 +139,10 @@ OpenAPI_prose_auth_200_response_t *OpenAPI_prose_auth_200_response_parseFromJSON
                     ogs_error("OpenAPI_prose_auth_200_response_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_prose_auth_200_response_parseFromJSON() failed [_links]");
+                    goto end;
+                }
                 OpenAPI_list_add(_linksList, localMapKeyPair);
             }
         }

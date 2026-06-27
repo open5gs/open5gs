@@ -122,6 +122,10 @@ OpenAPI_pp5g_vn_group_profile_data_t *OpenAPI_pp5g_vn_group_profile_data_parseFr
                     ogs_error("OpenAPI_pp5g_vn_group_profile_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_pp5g_vn_group_profile_data_parseFromJSON() failed [allowed_mtc_providers]");
+                    goto end;
+                }
                 OpenAPI_list_add(allowed_mtc_providersList, localMapKeyPair);
             }
         }

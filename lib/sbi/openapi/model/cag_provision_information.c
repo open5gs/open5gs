@@ -220,6 +220,10 @@ OpenAPI_cag_provision_information_t *OpenAPI_cag_provision_information_parseFrom
                     ogs_error("OpenAPI_cag_provision_information_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_cag_provision_information_parseFromJSON() failed [additional_valid_time_period_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(additional_valid_time_period_listList, localMapKeyPair);
             }
         }

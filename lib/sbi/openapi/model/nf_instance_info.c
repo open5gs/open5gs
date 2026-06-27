@@ -178,6 +178,10 @@ OpenAPI_nf_instance_info_t *OpenAPI_nf_instance_info_parseFromJSON(cJSON *nf_ins
                 }
                 *localDouble = localMapObject->valuedouble;
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), localDouble);
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_nf_instance_info_parseFromJSON() failed [nrf_altered_priorities]");
+                    goto end;
+                }
                 OpenAPI_list_add(nrf_altered_prioritiesList, localMapKeyPair);
             }
         }

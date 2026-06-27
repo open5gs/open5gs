@@ -859,6 +859,10 @@ OpenAPI_ext_amf_event_subscription_t *OpenAPI_ext_amf_event_subscription_parseFr
                     ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ext_amf_event_subscription_parseFromJSON() failed [aoi_state_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(aoi_state_listList, localMapKeyPair);
             }
         }

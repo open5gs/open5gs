@@ -395,6 +395,10 @@ OpenAPI_ee_subscription_1_t *OpenAPI_ee_subscription_1_parseFromJSON(cJSON *ee_s
                     ogs_error("OpenAPI_ee_subscription_1_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ee_subscription_1_parseFromJSON() failed [monitoring_configurations]");
+                    goto end;
+                }
                 OpenAPI_list_add(monitoring_configurationsList, localMapKeyPair);
             }
         }

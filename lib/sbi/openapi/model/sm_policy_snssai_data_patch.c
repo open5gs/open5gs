@@ -142,6 +142,10 @@ OpenAPI_sm_policy_snssai_data_patch_t *OpenAPI_sm_policy_snssai_data_patch_parse
                     ogs_error("OpenAPI_sm_policy_snssai_data_patch_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_sm_policy_snssai_data_patch_parseFromJSON() failed [sm_policy_dnn_data]");
+                    goto end;
+                }
                 OpenAPI_list_add(sm_policy_dnn_dataList, localMapKeyPair);
             }
         }

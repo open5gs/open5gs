@@ -265,6 +265,10 @@ OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_parseFromJSON(cJSON *am_policy_
                     ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [pra_infos]");
+                    goto end;
+                }
                 OpenAPI_list_add(pra_infosList, localMapKeyPair);
             }
         }
@@ -335,6 +339,10 @@ OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_parseFromJSON(cJSON *am_policy_
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_am_policy_data_parseFromJSON() failed [spend_lim_info]");
                     goto end;
                 }
                 OpenAPI_list_add(spend_lim_infoList, localMapKeyPair);

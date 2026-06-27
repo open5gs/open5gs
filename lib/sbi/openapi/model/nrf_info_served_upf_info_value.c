@@ -804,6 +804,10 @@ OpenAPI_nrf_info_served_upf_info_value_t *OpenAPI_nrf_info_served_upf_info_value
                     ogs_error("OpenAPI_nrf_info_served_upf_info_value_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_nrf_info_served_upf_info_value_parseFromJSON() failed [n6_tunnel_info_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(n6_tunnel_info_listList, localMapKeyPair);
             }
         }

@@ -617,6 +617,10 @@ OpenAPI_app_session_context_update_data_t *OpenAPI_app_session_context_update_da
                     ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_app_session_context_update_data_parseFromJSON() failed [med_components]");
+                    goto end;
+                }
                 OpenAPI_list_add(med_componentsList, localMapKeyPair);
             }
         }

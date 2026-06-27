@@ -113,6 +113,10 @@ OpenAPI_service_specific_authorization_info_t *OpenAPI_service_specific_authoriz
                     ogs_error("OpenAPI_service_specific_authorization_info_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_service_specific_authorization_info_parseFromJSON() failed [service_specific_authorization_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(service_specific_authorization_listList, localMapKeyPair);
             }
         }

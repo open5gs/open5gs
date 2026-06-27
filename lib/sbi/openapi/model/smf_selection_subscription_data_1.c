@@ -183,6 +183,10 @@ OpenAPI_smf_selection_subscription_data_1_t *OpenAPI_smf_selection_subscription_
                     ogs_error("OpenAPI_smf_selection_subscription_data_1_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_smf_selection_subscription_data_1_parseFromJSON() failed [subscribed_snssai_infos]");
+                    goto end;
+                }
                 OpenAPI_list_add(subscribed_snssai_infosList, localMapKeyPair);
             }
         }

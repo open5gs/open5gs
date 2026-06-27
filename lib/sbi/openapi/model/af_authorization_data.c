@@ -113,6 +113,10 @@ OpenAPI_af_authorization_data_t *OpenAPI_af_authorization_data_parseFromJSON(cJS
                     ogs_error("OpenAPI_af_authorization_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_af_authorization_data_parseFromJSON() failed [af_auth_data]");
+                    goto end;
+                }
                 OpenAPI_list_add(af_auth_dataList, localMapKeyPair);
             }
         }

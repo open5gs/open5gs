@@ -2034,6 +2034,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
                     ogs_error("OpenAPI_ue_context_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ue_context_parseFromJSON() failed [sub_ue_slice_mbr_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(sub_ue_slice_mbr_listList, localMapKeyPair);
             }
         }
@@ -2603,6 +2607,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
                 }
                 *localInt = localMapObject->valueint;
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), localInt);
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ue_context_parseFromJSON() failed [adjacen_plmn_mngt_mdt_inds]");
+                    goto end;
+                }
                 OpenAPI_list_add(adjacen_plmn_mngt_mdt_indsList, localMapKeyPair);
             }
         }
@@ -2721,6 +2729,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
                     ogs_error("OpenAPI_ue_context_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pra_in_am_policy]");
+                    goto end;
+                }
                 OpenAPI_list_add(pra_in_am_policyList, localMapKeyPair);
             }
         }
@@ -2745,6 +2757,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_ue_context_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pra_in_ue_policy]");
                     goto end;
                 }
                 OpenAPI_list_add(pra_in_ue_policyList, localMapKeyPair);
@@ -2858,6 +2874,10 @@ OpenAPI_ue_context_t *OpenAPI_ue_context_parseFromJSON(cJSON *ue_contextJSON)
                     localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), NULL);
                 } else {
                     ogs_error("OpenAPI_ue_context_parseFromJSON() failed [inner]");
+                    goto end;
+                }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_ue_context_parseFromJSON() failed [pcf_ue_slice_mbr_list]");
                     goto end;
                 }
                 OpenAPI_list_add(pcf_ue_slice_mbr_listList, localMapKeyPair);

@@ -167,6 +167,10 @@ OpenAPI_pro_se_authentication_ctx_t *OpenAPI_pro_se_authentication_ctx_parseFrom
                     ogs_error("OpenAPI_pro_se_authentication_ctx_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_pro_se_authentication_ctx_parseFromJSON() failed [_links]");
+                    goto end;
+                }
                 OpenAPI_list_add(_linksList, localMapKeyPair);
             }
         }

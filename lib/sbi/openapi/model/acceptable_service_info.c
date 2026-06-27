@@ -212,6 +212,10 @@ OpenAPI_acceptable_service_info_t *OpenAPI_acceptable_service_info_parseFromJSON
                     ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_acceptable_service_info_parseFromJSON() failed [acc_bw_med_comps]");
+                    goto end;
+                }
                 OpenAPI_list_add(acc_bw_med_compsList, localMapKeyPair);
             }
         }

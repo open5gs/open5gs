@@ -270,6 +270,10 @@ OpenAPI_nssai_t *OpenAPI_nssai_parseFromJSON(cJSON *nssaiJSON)
                     ogs_error("OpenAPI_nssai_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_nssai_parseFromJSON() failed [additional_snssai_data]");
+                    goto end;
+                }
                 OpenAPI_list_add(additional_snssai_dataList, localMapKeyPair);
             }
         }

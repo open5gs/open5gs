@@ -804,6 +804,10 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
                     ogs_error("OpenAPI_upf_info_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_upf_info_parseFromJSON() failed [n6_tunnel_info_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(n6_tunnel_info_listList, localMapKeyPair);
             }
         }

@@ -200,6 +200,10 @@ OpenAPI_nsi_information_t *OpenAPI_nsi_information_parseFromJSON(cJSON *nsi_info
                 }
                 *localInt = localMapObject->valueint;
                 localMapKeyPair = OpenAPI_map_create(ogs_strdup(localMapObject->string), localInt);
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_nsi_information_parseFromJSON() failed [nrf_oauth2_required]");
+                    goto end;
+                }
                 OpenAPI_list_add(nrf_oauth2_requiredList, localMapKeyPair);
             }
         }

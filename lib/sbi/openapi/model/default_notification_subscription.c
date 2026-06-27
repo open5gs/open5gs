@@ -346,6 +346,10 @@ OpenAPI_default_notification_subscription_t *OpenAPI_default_notification_subscr
                     ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_default_notification_subscription_parseFromJSON() failed [service_info_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(service_info_listList, localMapKeyPair);
             }
         }

@@ -108,6 +108,10 @@ OpenAPI_am_policy_info_container_t *OpenAPI_am_policy_info_container_parseFromJS
                     ogs_error("OpenAPI_am_policy_info_container_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_am_policy_info_container_parseFromJSON() failed [slice_usg_ctrl_info_sets]");
+                    goto end;
+                }
                 OpenAPI_list_add(slice_usg_ctrl_info_setsList, localMapKeyPair);
             }
         }

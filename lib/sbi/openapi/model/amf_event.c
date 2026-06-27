@@ -827,6 +827,10 @@ OpenAPI_amf_event_t *OpenAPI_amf_event_parseFromJSON(cJSON *amf_eventJSON)
                     ogs_error("OpenAPI_amf_event_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_amf_event_parseFromJSON() failed [presence_info_list]");
+                    goto end;
+                }
                 OpenAPI_list_add(presence_info_listList, localMapKeyPair);
             }
         }

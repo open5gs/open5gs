@@ -844,6 +844,10 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
                     ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [inner]");
                     goto end;
                 }
+                if (localMapKeyPair == NULL) {
+                    ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [ext_preferred_locality]");
+                    goto end;
+                }
                 OpenAPI_list_add(ext_preferred_localityList, localMapKeyPair);
             }
         }
