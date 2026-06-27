@@ -745,11 +745,61 @@ void sgwc_s11_handle_delete_session_request(
      ********************/
     ogs_assert(sgwc_ue);
     ogs_assert(sess);
-    ogs_assert(sess->gnode);
     ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
     ogs_info("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+
+    if (!sess->gnode) {
+        /*
+         * The PGW(SMF) S5/S8 GTP-C peer for this session was never
+         * established (e.g. the Create Session toward the PGW never
+         * completed), so the Delete Session Request cannot be forwarded
+         * to the PGW.
+         *
+         * Instead of aborting, tear down the local SGW-U(PFCP) state so
+         * that stale F-TEIDs do not linger on the SGW-U, and answer the
+         * MME. The Sxa Session Deletion Response handler converts the
+         * carried Delete Session Request into a Delete Session Response,
+         * sends it to the MME and removes the session context.
+         */
+        ogs_error("No PGW GTP-C peer; deleting session locally "
+                "[IMSI:%s, EBI:%d]",
+                sgwc_ue->imsi_bcd, req->linked_eps_bearer_id.u8);
+
+        if (sess->pfcp_node) {
+            ogs_assert(OGS_OK ==
+                sgwc_pfcp_send_session_deletion_request(
+                    sess, s11_xact->id, gtpbuf));
+        } else {
+            /*
+             * No SGW-U(PFCP) peer either: there is no reachable SGW-U,
+             * so there are no orphan F-TEIDs to clean up remotely and
+             * nothing can leak. Acknowledge the MME and drop the local
+             * context.
+             *
+             * Cause is REQUEST_ACCEPTED (not an error) because the
+             * session WAS found and IS being deleted here; the MME's
+             * Delete Session Request is fully satisfied. Returning an
+             * error cause would be inaccurate and could make the MME
+             * retry or leave its bearer context stuck.
+             *
+             * NOTE: ogs_gtp_send_error_message() is just the generic
+             * helper for building a cause-only GTP-C response; despite
+             * the name it is the idiomatic way to emit this minimal
+             * Delete Session Response (see the cleanup: path below).
+             */
+            ogs_error("No SGW-U PFCP peer; removing session context "
+                    "[IMSI:%s, EBI:%d]",
+                    sgwc_ue->imsi_bcd, req->linked_eps_bearer_id.u8);
+            ogs_gtp_send_error_message(
+                    s11_xact, sgwc_ue->mme_s11_teid,
+                    OGS_GTP2_DELETE_SESSION_RESPONSE_TYPE,
+                    OGS_GTP2_CAUSE_REQUEST_ACCEPTED);
+            sgwc_sess_remove(sess);
+        }
+        return;
+    }
 
     if (indication &&
         indication->operation_indication == 0 &&
@@ -1881,8 +1931,23 @@ void sgwc_s11_handle_bearer_resource_command(
     ogs_assert(bearer);
     sess = sgwc_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
-    ogs_assert(sess->gnode);
     ogs_assert(sgwc_ue);
+
+    if (!sess->gnode) {
+        /*
+         * The PGW(SMF) S5/S8 GTP-C peer was never established for this
+         * session, so the Bearer Resource Command cannot be forwarded to
+         * the PGW. Reject the procedure towards the MME instead of
+         * aborting.
+         */
+        ogs_error("No PGW GTP-C peer; rejecting Bearer Resource Command "
+                "[IMSI:%s]", sgwc_ue->imsi_bcd);
+        ogs_gtp_send_error_message(
+                s11_xact, sgwc_ue->mme_s11_teid,
+                OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
+                OGS_GTP2_CAUSE_CONTEXT_NOT_FOUND);
+        return;
+    }
 
     ogs_info("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgwc_ue->mme_s11_teid, sgwc_ue->sgw_s11_teid);
