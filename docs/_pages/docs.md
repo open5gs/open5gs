@@ -21,6 +21,7 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [VoLTE Setup with Kamailio IMS and Open5GS](tutorial/02-VoLTE-setup)
   - [Dockerized VoLTE Setup](tutorial/03-VoLTE-dockerized)
   - [Roaming](tutorial/05-roaming)
+  - [SEPP-based 5G Roaming Lab](https://medium.com/@panpavlidis98/building-sepp-based-5g-roaming-with-open5gs-docker-and-packetrusher-e4ebb9a08209) - Single-VM cloud-native SEPP roaming lab using Open5GS, Docker, and PacketRusher.
   - [infoAPI for accessing UE, gNB/eNB, and session data](tutorial/07-infoAPI-UE-gNB-session-data)
 
 - In the lab
