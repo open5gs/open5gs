@@ -43,6 +43,10 @@ int smf_migration_handle_path_switch_response(
         smf_sess_t *sess, ogs_sbi_stream_t *stream);
 int smf_migration_send_source_deletion(smf_sess_t *sess);
 int smf_migration_send_target_deletion(smf_sess_t *sess);
+void smf_migration_handle_source_buffering_response(
+        smf_sess_t *sess, bool success);
+void smf_migration_handle_source_release_response(
+        smf_sess_t *sess, bool success);
 void smf_migration_handle_source_deletion_response(
         smf_sess_t *sess, bool success);
 void smf_migration_handle_target_deletion_response(

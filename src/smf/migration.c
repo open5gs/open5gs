@@ -48,6 +48,9 @@ static void migration_json_add_number(
         cJSON *root, const char *name, double value);
 static void migration_metrics_finish(
         smf_sess_t *sess, smf_metric_type_global_t counter);
+static int migration_send_ngap_path_switch_request(smf_sess_t *sess);
+static int migration_send_source_release_request(smf_sess_t *sess);
+static int migration_send_source_deletion_request(smf_sess_t *sess);
 
 static bool migration_json_nonempty_string(const cJSON *item)
 {
@@ -337,10 +340,15 @@ static bool migration_target_cleanup_allowed(const smf_sess_t *sess)
     case SMF_MIGRATION_STATE_TARGET_PREPARING:
     case SMF_MIGRATION_STATE_TARGET_READY:
     case SMF_MIGRATION_STATE_ROUTE_PROGRAMMING:
+    case SMF_MIGRATION_STATE_SOURCE_BUFFERING:
         return true;
+    case SMF_MIGRATION_STATE_SOURCE_RELEASING:
+        return !sess->migration.state_ts_us[SMF_MIGRATION_STATE_PATH_SWITCHING] &&
+            !sess->migration.state_ts_us[SMF_MIGRATION_STATE_SWITCH_CONFIRMED];
     case SMF_MIGRATION_STATE_FAILED:
         return !sess->migration.state_ts_us[SMF_MIGRATION_STATE_PATH_SWITCHING] &&
             !sess->migration.state_ts_us[SMF_MIGRATION_STATE_SWITCH_CONFIRMED] &&
+            !sess->migration.state_ts_us[SMF_MIGRATION_STATE_SOURCE_RELEASING] &&
             !sess->migration.state_ts_us[SMF_MIGRATION_STATE_SOURCE_DRAINING];
     default:
         return false;
@@ -433,10 +441,14 @@ const char *smf_migration_state_name(smf_migration_state_e state)
         return "target_ready";
     case SMF_MIGRATION_STATE_ROUTE_PROGRAMMING:
         return "route_programming";
+    case SMF_MIGRATION_STATE_SOURCE_BUFFERING:
+        return "source_buffering";
     case SMF_MIGRATION_STATE_PATH_SWITCHING:
         return "path_switching";
     case SMF_MIGRATION_STATE_SWITCH_CONFIRMED:
         return "switch_confirmed";
+    case SMF_MIGRATION_STATE_SOURCE_RELEASING:
+        return "source_releasing";
     case SMF_MIGRATION_STATE_SOURCE_DRAINING:
         return "source_draining";
     case SMF_MIGRATION_STATE_COMPLETED:
@@ -538,8 +550,10 @@ bool smf_migration_active(const smf_sess_t *sess)
     case SMF_MIGRATION_STATE_TARGET_PREPARING:
     case SMF_MIGRATION_STATE_TARGET_READY:
     case SMF_MIGRATION_STATE_ROUTE_PROGRAMMING:
+    case SMF_MIGRATION_STATE_SOURCE_BUFFERING:
     case SMF_MIGRATION_STATE_PATH_SWITCHING:
     case SMF_MIGRATION_STATE_SWITCH_CONFIRMED:
+    case SMF_MIGRATION_STATE_SOURCE_RELEASING:
     case SMF_MIGRATION_STATE_SOURCE_DRAINING:
     case SMF_MIGRATION_STATE_ABORTING:
         return true;
@@ -758,6 +772,151 @@ static void migration_update_pdr_f_teid(
     }
 }
 
+static bool migration_is_source_downlink_pdr(ogs_pfcp_pdr_t *pdr)
+{
+    ogs_pfcp_far_t *far = NULL;
+
+    if (!pdr)
+        return false;
+
+    far = pdr->far;
+    return pdr->src_if == OGS_PFCP_INTERFACE_CORE &&
+        far && far->dst_if == OGS_PFCP_INTERFACE_ACCESS;
+}
+
+static int migration_snapshot_source_dl_fars(
+        smf_sess_t *sess, ogs_pfcp_far_t **fars,
+        ogs_pfcp_apply_action_t *apply_actions, int *num_of_fars)
+{
+    ogs_pfcp_pdr_t *pdr = NULL;
+    int count = 0;
+
+    ogs_assert(sess);
+    ogs_assert(fars);
+    ogs_assert(apply_actions);
+    ogs_assert(num_of_fars);
+
+    ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
+        ogs_pfcp_far_t *far = pdr->far;
+
+        if (!migration_is_source_downlink_pdr(pdr))
+            continue;
+
+        if ((far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) == 0) {
+            ogs_error("[MIGRATE] source DL FAR[%u] is not forwarding "
+                    "before buffering", far->id);
+            return OGS_ERROR;
+        }
+
+        if (count >= OGS_MAX_NUM_OF_PDR) {
+            ogs_error("[MIGRATE] too many source DL FARs to snapshot");
+            return OGS_ERROR;
+        }
+
+        fars[count] = far;
+        apply_actions[count] = far->apply_action;
+        count++;
+    }
+
+    if (count == 0) {
+        ogs_error("[MIGRATE] no source DL PDR/FAR found for buffering");
+        return OGS_ERROR;
+    }
+
+    *num_of_fars = count;
+    return OGS_OK;
+}
+
+static void migration_restore_fars(
+        ogs_pfcp_far_t **fars, ogs_pfcp_apply_action_t *apply_actions,
+        int num_of_fars)
+{
+    int i;
+
+    ogs_assert(fars);
+    ogs_assert(apply_actions);
+
+    for (i = 0; i < num_of_fars; i++) {
+        ogs_assert(fars[i]);
+        fars[i]->apply_action = apply_actions[i];
+    }
+}
+
+static int migration_send_source_buffering_request(smf_sess_t *sess)
+{
+    int rv;
+    int num_of_fars = 0;
+    ogs_pfcp_far_t *fars[OGS_MAX_NUM_OF_PDR];
+    ogs_pfcp_apply_action_t apply_actions[OGS_MAX_NUM_OF_PDR];
+
+    ogs_assert(sess);
+
+    if (!sess->migration.source_node || !sess->migration.source_upf_n4_seid) {
+        ogs_error("Migration source state is incomplete");
+        smf_migration_mark_failed(sess);
+        return OGS_ERROR;
+    }
+
+    if (migration_snapshot_source_dl_fars(
+                sess, fars, apply_actions, &num_of_fars) != OGS_OK) {
+        smf_migration_mark_failed(sess);
+        return OGS_ERROR;
+    }
+
+    smf_migration_set_state(sess, SMF_MIGRATION_STATE_SOURCE_BUFFERING);
+
+    rv = smf_5gc_pfcp_send_all_pdr_modification_request_to_node(
+            sess, sess->migration.source_node,
+            sess->migration.source_upf_n4_seid, NULL,
+            OGS_PFCP_MODIFY_DL_ONLY |
+            OGS_PFCP_MODIFY_DEACTIVATE |
+            OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_BUFFER,
+            0, 0);
+
+    migration_restore_fars(fars, apply_actions, num_of_fars);
+
+    if (rv != OGS_OK)
+        ogs_error("[MIGRATE] source UPF buffering request failed");
+
+    return rv;
+}
+
+static int migration_send_ngap_path_switch_request(smf_sess_t *sess)
+{
+    smf_n1_n2_message_transfer_param_t param;
+
+    ogs_assert(sess);
+
+    if (sess->migration.state != SMF_MIGRATION_STATE_SOURCE_BUFFERING) {
+        ogs_error("Migration path switch requires source_buffering, current [%s]",
+                smf_migration_state_name(sess->migration.state));
+        return OGS_ERROR;
+    }
+
+    if (!sess->migration.target_local_ul_teid ||
+        (!sess->migration.target_local_ul_addr &&
+         !sess->migration.target_local_ul_addr6)) {
+        ogs_error("Migration switch missing target UL NG-U endpoint");
+        return OGS_ERROR;
+    }
+
+    memset(&param, 0, sizeof(param));
+    param.state = SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION;
+    param.n1smbuf = gsm_build_pdu_session_modification_command(sess, 0, 0);
+    ogs_assert(param.n1smbuf);
+    param.n2smbuf =
+        ngap_build_pdu_session_resource_modify_request_transfer_for_migration(
+                sess);
+    ogs_assert(param.n2smbuf);
+    param.n1n2_failure_txf_notif_uri = true;
+
+    smf_migration_set_state(sess, SMF_MIGRATION_STATE_PATH_SWITCHING);
+
+    smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
+
+    return OGS_OK;
+}
+
 static int migration_commit_target(smf_sess_t *sess)
 {
     ogs_assert(sess);
@@ -815,7 +974,7 @@ static int migration_commit_target(smf_sess_t *sess)
 
 int smf_migration_send_path_switch_request(smf_sess_t *sess)
 {
-    smf_n1_n2_message_transfer_param_t param;
+    int rv;
 
     ogs_assert(sess);
 
@@ -844,19 +1003,11 @@ int smf_migration_send_path_switch_request(smf_sess_t *sess)
         return OGS_ERROR;
     }
 
-    memset(&param, 0, sizeof(param));
-    param.state = SMF_NETWORK_REQUESTED_PDU_SESSION_MODIFICATION;
-    param.n1smbuf = gsm_build_pdu_session_modification_command(sess, 0, 0);
-    ogs_assert(param.n1smbuf);
-    param.n2smbuf =
-        ngap_build_pdu_session_resource_modify_request_transfer_for_migration(
-                sess);
-    ogs_assert(param.n2smbuf);
-    param.n1n2_failure_txf_notif_uri = true;
-
-    smf_migration_set_state(sess, SMF_MIGRATION_STATE_PATH_SWITCHING);
-
-    smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
+    rv = migration_send_source_buffering_request(sess);
+    if (rv != OGS_OK) {
+        smf_migration_send_target_deletion(sess);
+        return rv;
+    }
 
     return OGS_OK;
 }
@@ -882,15 +1033,71 @@ int smf_migration_handle_path_switch_response(
     return OGS_OK;
 }
 
-int smf_migration_send_source_deletion(smf_sess_t *sess)
+static int migration_send_source_release_request(smf_sess_t *sess)
+{
+    int rv;
+    int num_of_fars = 0;
+    ogs_pfcp_far_t *fars[OGS_MAX_NUM_OF_PDR];
+    ogs_pfcp_apply_action_t apply_actions[OGS_MAX_NUM_OF_PDR];
+
+    ogs_assert(sess);
+
+    if (sess->migration.state != SMF_MIGRATION_STATE_SWITCH_CONFIRMED &&
+        sess->migration.state != SMF_MIGRATION_STATE_SOURCE_BUFFERING) {
+        ogs_error("Migration source release requires switch_confirmed or "
+                "source_buffering, "
+                "current [%s]", smf_migration_state_name(sess->migration.state));
+        return OGS_ERROR;
+    }
+
+    if (!sess->migration.source_node || !sess->migration.source_upf_n4_seid) {
+        ogs_error("Migration source state is incomplete");
+        smf_migration_mark_failed(sess);
+        return OGS_ERROR;
+    }
+
+    if (!sess->migration.source_buffering_active) {
+        if (sess->migration.state == SMF_MIGRATION_STATE_SWITCH_CONFIRMED)
+            return migration_send_source_deletion_request(sess);
+
+        ogs_error("[MIGRATE] source release requested before buffering was active");
+        return OGS_ERROR;
+    }
+
+    if (migration_snapshot_source_dl_fars(
+                sess, fars, apply_actions, &num_of_fars) != OGS_OK) {
+        smf_migration_mark_failed(sess);
+        return OGS_ERROR;
+    }
+
+    smf_migration_set_state(sess, SMF_MIGRATION_STATE_SOURCE_RELEASING);
+
+    rv = smf_5gc_pfcp_send_all_pdr_modification_request_to_node(
+            sess, sess->migration.source_node,
+            sess->migration.source_upf_n4_seid, NULL,
+            OGS_PFCP_MODIFY_DL_ONLY |
+            OGS_PFCP_MODIFY_ACTIVATE |
+            OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_RELEASE,
+            0, 0);
+    if (rv != OGS_OK) {
+        smf_migration_mark_failed(sess);
+        return rv;
+    }
+
+    return OGS_OK;
+}
+
+static int migration_send_source_deletion_request(smf_sess_t *sess)
 {
     int rv;
 
     ogs_assert(sess);
 
-    if (sess->migration.state != SMF_MIGRATION_STATE_SWITCH_CONFIRMED) {
-        ogs_error("Migration source drain requires switch_confirmed, "
-                "current [%s]", smf_migration_state_name(sess->migration.state));
+    if (sess->migration.state != SMF_MIGRATION_STATE_SWITCH_CONFIRMED &&
+        sess->migration.state != SMF_MIGRATION_STATE_SOURCE_RELEASING) {
+        ogs_error("Migration source drain requires switch_confirmed or "
+                "source_releasing, current [%s]",
+                smf_migration_state_name(sess->migration.state));
         return OGS_ERROR;
     }
 
@@ -916,6 +1123,84 @@ int smf_migration_send_source_deletion(smf_sess_t *sess)
     }
 
     return OGS_OK;
+}
+
+int smf_migration_send_source_deletion(smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    if (sess->migration.state != SMF_MIGRATION_STATE_SWITCH_CONFIRMED) {
+        ogs_error("Migration source drain requires switch_confirmed, "
+                "current [%s]", smf_migration_state_name(sess->migration.state));
+        return OGS_ERROR;
+    }
+
+    if (sess->migration.source_buffering_active)
+        return migration_send_source_release_request(sess);
+
+    return migration_send_source_deletion_request(sess);
+}
+
+void smf_migration_handle_source_buffering_response(
+        smf_sess_t *sess, bool success)
+{
+    int rv;
+
+    ogs_assert(sess);
+
+    if (sess->migration.state != SMF_MIGRATION_STATE_SOURCE_BUFFERING) {
+        ogs_warn("[MIGRATE] source buffering response ignored in state [%s]",
+                smf_migration_state_name(sess->migration.state));
+        return;
+    }
+
+    if (!success) {
+        ogs_warn("[MIGRATE] source UPF buffering failed; rolling back target");
+        smf_migration_send_target_deletion(sess);
+        return;
+    }
+
+    sess->migration.source_buffering_active = true;
+    ogs_info("[MIGRATE] source UPF buffering armed; sending NGAP path switch");
+
+    rv = migration_send_ngap_path_switch_request(sess);
+    if (rv != OGS_OK) {
+        ogs_error("[MIGRATE] NGAP path switch request failed after source "
+                "buffering; releasing source buffer before rollback");
+        migration_send_source_release_request(sess);
+    }
+}
+
+void smf_migration_handle_source_release_response(
+        smf_sess_t *sess, bool success)
+{
+    ogs_assert(sess);
+
+    if (sess->migration.state != SMF_MIGRATION_STATE_SOURCE_RELEASING) {
+        ogs_warn("[MIGRATE] source release response ignored in state [%s]",
+                smf_migration_state_name(sess->migration.state));
+        return;
+    }
+
+    if (!success) {
+        ogs_error("[MIGRATE] source UPF buffer release failed; keeping source "
+                "PFCP state for manual recovery");
+        smf_migration_mark_failed(sess);
+        return;
+    }
+
+    sess->migration.source_buffering_active = false;
+    ogs_info("[MIGRATE] source UPF buffered packets released");
+
+    if (sess->migration.state_ts_us[SMF_MIGRATION_STATE_SWITCH_CONFIRMED]) {
+        if (migration_send_source_deletion_request(sess) != OGS_OK)
+            ogs_error("[MIGRATE] source UPF deletion request failed after "
+                    "buffer release");
+    } else {
+        if (smf_migration_send_target_deletion(sess) != OGS_OK)
+            ogs_error("[MIGRATE] target cleanup request failed after pre-switch "
+                    "source buffer release");
+    }
 }
 
 int smf_migration_send_target_deletion(smf_sess_t *sess)

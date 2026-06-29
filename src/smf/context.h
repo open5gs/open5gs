@@ -70,8 +70,10 @@ typedef enum {
     SMF_MIGRATION_STATE_TARGET_PREPARING,
     SMF_MIGRATION_STATE_TARGET_READY,
     SMF_MIGRATION_STATE_ROUTE_PROGRAMMING,
+    SMF_MIGRATION_STATE_SOURCE_BUFFERING,
     SMF_MIGRATION_STATE_PATH_SWITCHING,
     SMF_MIGRATION_STATE_SWITCH_CONFIRMED,
+    SMF_MIGRATION_STATE_SOURCE_RELEASING,
     SMF_MIGRATION_STATE_SOURCE_DRAINING,
     SMF_MIGRATION_STATE_COMPLETED,
     SMF_MIGRATION_STATE_ABORTING,
@@ -726,6 +728,7 @@ typedef struct smf_sess_s {
         ogs_sockaddr_t *target_local_ul_addr;
         ogs_sockaddr_t *target_local_ul_addr6;
 
+        bool source_buffering_active;
         bool metrics_active;
 
         /* Research timing: monotonic timestamps for phase-duration analysis.

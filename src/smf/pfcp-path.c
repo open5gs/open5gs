@@ -356,6 +356,21 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
         }
         break;
     case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
+        if (xact->modify_flags &
+                OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_BUFFER) {
+            ogs_error("[MIGRATE supi:%s psi:%d] source UPF buffering "
+                    "timed out", smf_ue->supi, sess->psi);
+            smf_migration_handle_source_buffering_response(sess, false);
+            break;
+        }
+        if (xact->modify_flags &
+                OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_RELEASE) {
+            ogs_error("[MIGRATE supi:%s psi:%d] source UPF buffer release "
+                    "timed out", smf_ue->supi, sess->psi);
+            smf_migration_handle_source_release_response(sess, false);
+            break;
+        }
+
         strerror = ogs_msprintf("[%s:%d] No PFCP session modification response",
                 smf_ue->supi, sess->psi);
         ogs_assert(strerror);
@@ -554,11 +569,11 @@ static void bearer_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
     }
 }
 
-int smf_pfcp_send_modify_list(
+static int smf_pfcp_send_modify_list_with_seid(
         smf_sess_t *sess,
         ogs_pkbuf_t *(*modify_list)(
             uint8_t type, smf_sess_t *sess, ogs_pfcp_xact_t *xact),
-        ogs_pfcp_xact_t *xact, ogs_time_t duration)
+        ogs_pfcp_xact_t *xact, uint64_t upf_n4_seid, ogs_time_t duration)
 {
     int rv;
     ogs_pkbuf_t *n4buf = NULL;
@@ -566,12 +581,13 @@ int smf_pfcp_send_modify_list(
 
     ogs_assert(sess);
     ogs_assert(xact);
+    ogs_assert(upf_n4_seid);
 
     xact->local_seid = sess->smf_n4_seid;
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
-    h.seid = sess->upf_n4_seid;
+    h.seid = upf_n4_seid;
 
     n4buf = (*modify_list)(h.type, sess, xact);
     if (!n4buf) {
@@ -595,6 +611,18 @@ int smf_pfcp_send_modify_list(
 
         return rv;
     }
+}
+
+int smf_pfcp_send_modify_list(
+        smf_sess_t *sess,
+        ogs_pkbuf_t *(*modify_list)(
+            uint8_t type, smf_sess_t *sess, ogs_pfcp_xact_t *xact),
+        ogs_pfcp_xact_t *xact, ogs_time_t duration)
+{
+    ogs_assert(sess);
+
+    return smf_pfcp_send_modify_list_with_seid(
+            sess, modify_list, xact, sess->upf_n4_seid, duration);
 }
 
 int smf_5gc_pfcp_send_session_establishment_request_to_node(
@@ -691,16 +719,32 @@ int smf_5gc_pfcp_send_all_pdr_modification_request(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
         uint64_t flags, int trigger, ogs_time_t duration)
 {
+    ogs_assert(sess);
+
+    return smf_5gc_pfcp_send_all_pdr_modification_request_to_node(
+            sess, sess->pfcp_node, sess->upf_n4_seid, stream, flags,
+            trigger, duration);
+}
+
+int smf_5gc_pfcp_send_all_pdr_modification_request_to_node(
+        smf_sess_t *sess, ogs_pfcp_node_t *node, uint64_t upf_n4_seid,
+        ogs_sbi_stream_t *stream, uint64_t flags, int trigger,
+        ogs_time_t duration)
+{
     int rv;
     ogs_pfcp_xact_t *xact = NULL;
     ogs_pfcp_pdr_t *pdr = NULL;
 
     ogs_assert(sess);
-    if ((flags & OGS_PFCP_MODIFY_ERROR_INDICATION) == 0)
+    ogs_assert(node);
+    ogs_assert(upf_n4_seid);
+    if ((flags & (OGS_PFCP_MODIFY_ERROR_INDICATION |
+                  OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_BUFFER |
+                  OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_RELEASE)) == 0)
         ogs_assert(stream);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, sess_5gc_timeout, OGS_UINT_TO_POINTER(sess->id));
+            node, sess_5gc_timeout, OGS_UINT_TO_POINTER(sess->id));
     if (!xact) {
         ogs_error("ogs_pfcp_xact_local_create() failed");
         return OGS_ERROR;
@@ -720,8 +764,9 @@ int smf_5gc_pfcp_send_all_pdr_modification_request(
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr)
         ogs_list_add(&sess->pdr_to_modify_list, &pdr->to_modify_node);
 
-    rv = smf_pfcp_send_modify_list(
-            sess, smf_n4_build_pdr_to_modify_list, xact, duration);
+    rv = smf_pfcp_send_modify_list_with_seid(
+            sess, smf_n4_build_pdr_to_modify_list, xact, upf_n4_seid,
+            duration);
     ogs_expect(rv == OGS_OK);
 
     return rv;

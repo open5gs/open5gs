@@ -80,6 +80,12 @@ def main() -> int:
         "target_upf_draining",
         "target_is_source",
         "target_upf_not_eligible",
+        "source_buffering",
+        "source_releasing",
+        "smf_migration_handle_source_buffering_response",
+        "smf_migration_handle_source_release_response",
+        "OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_BUFFER",
+        "OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_RELEASE",
     ):
         require(migration, token, "src/smf/migration.c")
 
