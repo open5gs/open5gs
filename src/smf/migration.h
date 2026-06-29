@@ -51,6 +51,7 @@ void smf_migration_handle_source_deletion_response(
         smf_sess_t *sess, bool success);
 void smf_migration_handle_target_deletion_response(
         smf_sess_t *sess, bool success);
+void smf_migration_handle_pfcp_node_deassociated(ogs_pfcp_node_t *node);
 void smf_migration_mark_failed(smf_sess_t *sess);
 size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
         const char *method, const char *body, size_t body_len,

@@ -640,6 +640,49 @@ static void smf_migration_finish_target_rollback(
     sess->migration.state = SMF_MIGRATION_STATE_ROLLED_BACK;
 }
 
+static bool migration_committed_to_target(const smf_sess_t *sess)
+{
+    return sess && sess->migration.state_ts_us[
+        SMF_MIGRATION_STATE_SWITCH_CONFIRMED] != 0;
+}
+
+static bool migration_source_node_associated(const smf_sess_t *sess)
+{
+    return sess && sess->migration.source_node &&
+        OGS_FSM_CHECK(&sess->migration.source_node->sm,
+                smf_pfcp_state_associated);
+}
+
+static void smf_migration_finish_post_switch_source_cleanup(
+        smf_sess_t *sess, bool cleanup_confirmed, const char *reason)
+{
+    ogs_assert(sess);
+
+    if (!migration_committed_to_target(sess)) {
+        smf_migration_mark_failed(sess);
+        return;
+    }
+
+    if (!cleanup_confirmed) {
+        ogs_warn("[MIGRATE] %s; completing migration because "
+                "path_switch_committed_to_target",
+                reason ? reason : "source UPF cleanup did not confirm");
+    }
+
+    sess->migration.source_buffering_active = false;
+
+    if (!sess->migration.state_ts_us[SMF_MIGRATION_STATE_SOURCE_DRAINING]) {
+        smf_migration_set_state(sess, SMF_MIGRATION_STATE_SOURCE_DRAINING);
+        if (migration_run_route_hook(sess, "withdraw", "source") != OGS_OK)
+            ogs_warn("[MIGRATE] source route withdraw failed during "
+                    "best-effort post-switch cleanup");
+    }
+
+    migration_metrics_finish(sess, SMF_METR_GLOB_CTR_SMF_MIGRATION_COMPLETED);
+    smf_migration_clear(sess);
+    sess->migration.state = SMF_MIGRATION_STATE_COMPLETED;
+}
+
 static const char *migration_outcome_name(smf_migration_outcome_e outcome)
 {
     switch (outcome) {
@@ -1051,6 +1094,11 @@ static int migration_send_source_release_request(smf_sess_t *sess)
     }
 
     if (!sess->migration.source_node || !sess->migration.source_upf_n4_seid) {
+        if (migration_committed_to_target(sess)) {
+            smf_migration_finish_post_switch_source_cleanup(
+                    sess, false, "source UPF state missing during release");
+            return OGS_OK;
+        }
         ogs_error("Migration source state is incomplete");
         smf_migration_mark_failed(sess);
         return OGS_ERROR;
@@ -1066,6 +1114,11 @@ static int migration_send_source_release_request(smf_sess_t *sess)
 
     if (migration_snapshot_source_dl_fars(
                 sess, fars, apply_actions, &num_of_fars) != OGS_OK) {
+        if (migration_committed_to_target(sess)) {
+            smf_migration_finish_post_switch_source_cleanup(
+                    sess, false, "source UPF FAR snapshot failed during release");
+            return OGS_OK;
+        }
         smf_migration_mark_failed(sess);
         return OGS_ERROR;
     }
@@ -1080,6 +1133,11 @@ static int migration_send_source_release_request(smf_sess_t *sess)
             OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_RELEASE,
             0, 0);
     if (rv != OGS_OK) {
+        if (migration_committed_to_target(sess)) {
+            smf_migration_finish_post_switch_source_cleanup(
+                    sess, false, "source UPF buffer release send failed");
+            return OGS_OK;
+        }
         smf_migration_mark_failed(sess);
         return rv;
     }
@@ -1102,6 +1160,11 @@ static int migration_send_source_deletion_request(smf_sess_t *sess)
     }
 
     if (!sess->migration.source_node || !sess->migration.source_upf_n4_seid) {
+        if (migration_committed_to_target(sess)) {
+            smf_migration_finish_post_switch_source_cleanup(
+                    sess, false, "source UPF state missing during deletion");
+            return OGS_OK;
+        }
         ogs_error("Migration source state is incomplete");
         smf_migration_mark_failed(sess);
         return OGS_ERROR;
@@ -1109,8 +1172,8 @@ static int migration_send_source_deletion_request(smf_sess_t *sess)
 
     smf_migration_set_state(sess, SMF_MIGRATION_STATE_SOURCE_DRAINING);
     if (migration_run_route_hook(sess, "withdraw", "source") != OGS_OK) {
-        smf_migration_mark_failed(sess);
-        return OGS_ERROR;
+        ogs_warn("[MIGRATE] source route withdraw failed; continuing "
+                "best-effort post-switch UPF cleanup");
     }
 
     rv = smf_5gc_pfcp_send_session_deletion_request_to_node(
@@ -1118,6 +1181,11 @@ static int migration_send_source_deletion_request(smf_sess_t *sess)
             OGS_PFCP_DELETE_TRIGGER_UPF_MIGRATION_SOURCE,
             sess->migration.source_upf_n4_seid);
     if (rv != OGS_OK) {
+        if (migration_committed_to_target(sess)) {
+            smf_migration_finish_post_switch_source_cleanup(
+                    sess, false, "source UPF deletion send failed");
+            return OGS_OK;
+        }
         smf_migration_mark_failed(sess);
         return rv;
     }
@@ -1128,6 +1196,19 @@ static int migration_send_source_deletion_request(smf_sess_t *sess)
 int smf_migration_send_source_deletion(smf_sess_t *sess)
 {
     ogs_assert(sess);
+
+    if (sess->migration.state == SMF_MIGRATION_STATE_SOURCE_RELEASING ||
+        sess->migration.state == SMF_MIGRATION_STATE_SOURCE_DRAINING) {
+        if (!migration_source_node_associated(sess)) {
+            smf_migration_finish_post_switch_source_cleanup(
+                    sess, false, "source UPF unavailable during drain retry");
+            return OGS_OK;
+        }
+
+        ogs_warn("[MIGRATE] source UPF cleanup already in progress in "
+                "state [%s]", smf_migration_state_name(sess->migration.state));
+        return OGS_OK;
+    }
 
     if (sess->migration.state != SMF_MIGRATION_STATE_SWITCH_CONFIRMED) {
         ogs_error("Migration source drain requires switch_confirmed, "
@@ -1183,8 +1264,14 @@ void smf_migration_handle_source_release_response(
     }
 
     if (!success) {
-        ogs_error("[MIGRATE] source UPF buffer release failed; keeping source "
-                "PFCP state for manual recovery");
+        if (migration_committed_to_target(sess)) {
+            smf_migration_finish_post_switch_source_cleanup(
+                    sess, false, "source UPF buffer release failed");
+            return;
+        }
+
+        ogs_error("[MIGRATE] source UPF buffer release failed before path "
+                "switch commit; keeping migration failed for manual recovery");
         smf_migration_mark_failed(sess);
         return;
     }
@@ -1245,13 +1332,13 @@ void smf_migration_handle_source_deletion_response(
     ogs_assert(sess);
 
     if (!success) {
-        smf_migration_mark_failed(sess);
+        smf_migration_finish_post_switch_source_cleanup(
+                sess, false, "source UPF PFCP state deletion failed");
         return;
     }
 
-    migration_metrics_finish(sess, SMF_METR_GLOB_CTR_SMF_MIGRATION_COMPLETED);
-    smf_migration_clear(sess);
-    sess->migration.state = SMF_MIGRATION_STATE_COMPLETED;
+    smf_migration_finish_post_switch_source_cleanup(
+            sess, true, "source UPF PFCP state deleted");
     ogs_info("[MIGRATE] source UPF PFCP state deleted");
 }
 
@@ -1267,6 +1354,42 @@ void smf_migration_handle_target_deletion_response(
 
     smf_migration_finish_target_rollback(sess, true);
     ogs_info("[MIGRATE] target UPF PFCP state deleted");
+}
+
+void smf_migration_handle_pfcp_node_deassociated(ogs_pfcp_node_t *node)
+{
+    smf_ue_t *smf_ue = NULL;
+
+    if (!node)
+        return;
+
+    ogs_list_for_each(&smf_self()->smf_ue_list, smf_ue) {
+        smf_sess_t *sess = NULL;
+
+        ogs_assert(smf_ue);
+
+        ogs_list_for_each(&smf_ue->sess_list, sess) {
+            ogs_assert(sess);
+
+            if (!smf_migration_active(sess))
+                continue;
+
+            if (sess->migration.source_node == node &&
+                migration_committed_to_target(sess)) {
+                smf_migration_finish_post_switch_source_cleanup(
+                        sess, false,
+                        "source UPF PFCP association lost during post-switch cleanup");
+                continue;
+            }
+
+            if (sess->migration.source_node == node &&
+                sess->migration.state == SMF_MIGRATION_STATE_SOURCE_BUFFERING) {
+                ogs_warn("[MIGRATE] source UPF de-associated before path "
+                        "switch; rolling back target");
+                smf_migration_send_target_deletion(sess);
+            }
+        }
+    }
 }
 
 size_t smf_handle_pdu_migrate(char *buf, size_t buflen,

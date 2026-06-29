@@ -84,6 +84,10 @@ def main() -> int:
         "source_releasing",
         "smf_migration_handle_source_buffering_response",
         "smf_migration_handle_source_release_response",
+        "smf_migration_handle_pfcp_node_deassociated",
+        "source UPF PFCP association lost during post-switch cleanup",
+        "source UPF cleanup already in progress",
+        "path_switch_committed_to_target",
         "OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_BUFFER",
         "OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_RELEASE",
     ):
