@@ -671,6 +671,7 @@ sgwc_tunnel_t *sgwc_tunnel_add(
 
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
+    sgwc_ue_t *sgwc_ue = NULL;
 
     ogs_pfcp_interface_t src_if = OGS_PFCP_INTERFACE_UNKNOWN;
     ogs_pfcp_interface_t dst_if = OGS_PFCP_INTERFACE_UNKNOWN;
@@ -728,7 +729,13 @@ sgwc_tunnel_t *sgwc_tunnel_add(
 
     pdr = ogs_pfcp_pdr_add(&sess->pfcp);
     if (!pdr) {
-        ogs_error("ogs_pfcp_pdr_add() failed");
+        sgwc_ue = sgwc_ue_find_by_id(bearer->sgwc_ue_id);
+        ogs_error("Cannot add PDR [IMSI:%s] [APN:%s] [EBI:%u] "
+                "[interface-type:%u] [PDR:%d/%d]",
+                sgwc_ue ? sgwc_ue->imsi_bcd : "unknown",
+                sess->session.name ? sess->session.name : "unknown",
+                (unsigned)bearer->ebi, (unsigned)interface_type,
+                ogs_list_count(&sess->pfcp.pdr_list), OGS_MAX_NUM_OF_PDR);
         sgwc_tunnel_remove(tunnel);
         return NULL;
     }
