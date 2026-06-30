@@ -1073,6 +1073,13 @@ int smf_migration_handle_path_switch_response(
 
     ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
 
+    rv = smf_migration_send_source_deletion(sess);
+    if (rv != OGS_OK && migration_committed_to_target(sess)) {
+        smf_migration_finish_post_switch_source_cleanup(
+                sess, false,
+                "source UPF cleanup dispatch failed after path switch response");
+    }
+
     return OGS_OK;
 }
 
@@ -1387,6 +1394,34 @@ void smf_migration_handle_pfcp_node_deassociated(ogs_pfcp_node_t *node)
                 ogs_warn("[MIGRATE] source UPF de-associated before path "
                         "switch; rolling back target");
                 smf_migration_send_target_deletion(sess);
+            }
+        }
+    }
+}
+
+void smf_migration_handle_pfcp_node_restoration(ogs_pfcp_node_t *node)
+{
+    smf_ue_t *smf_ue = NULL;
+
+    if (!node)
+        return;
+
+    ogs_list_for_each(&smf_self()->smf_ue_list, smf_ue) {
+        smf_sess_t *sess = NULL;
+
+        ogs_assert(smf_ue);
+
+        ogs_list_for_each(&smf_ue->sess_list, sess) {
+            ogs_assert(sess);
+
+            if (!smf_migration_active(sess))
+                continue;
+
+            if (sess->migration.source_node == node &&
+                migration_committed_to_target(sess)) {
+                smf_migration_finish_post_switch_source_cleanup(
+                        sess, false,
+                        "source UPF PFCP restoration during post-switch cleanup");
             }
         }
     }

@@ -196,6 +196,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
 
         if (node->restoration_required == true) {
             pfcp_restoration(node);
+            smf_migration_handle_pfcp_node_restoration(node);
             node->restoration_required = false;
             ogs_error("PFCP restoration");
         }
@@ -253,6 +254,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
          * Restoration can be performed immediately.
          */
                     pfcp_restoration(node);
+                    smf_migration_handle_pfcp_node_restoration(node);
                     node->restoration_required = false;
                     ogs_error("PFCP restoration");
                 }
@@ -280,6 +282,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
          * Restoration can be performed immediately.
          */
                     pfcp_restoration(node);
+                    smf_migration_handle_pfcp_node_restoration(node);
                     node->restoration_required = false;
                     ogs_error("PFCP restoration");
                 }
