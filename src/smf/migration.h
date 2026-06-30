@@ -43,10 +43,16 @@ int smf_migration_handle_path_switch_response(
         smf_sess_t *sess, ogs_sbi_stream_t *stream);
 int smf_migration_send_source_deletion(smf_sess_t *sess);
 int smf_migration_send_target_deletion(smf_sess_t *sess);
+void smf_migration_handle_source_buffering_response(
+        smf_sess_t *sess, bool success);
+void smf_migration_handle_source_release_response(
+        smf_sess_t *sess, bool success);
 void smf_migration_handle_source_deletion_response(
         smf_sess_t *sess, bool success);
 void smf_migration_handle_target_deletion_response(
         smf_sess_t *sess, bool success);
+void smf_migration_handle_pfcp_node_deassociated(ogs_pfcp_node_t *node);
+void smf_migration_handle_pfcp_node_restoration(ogs_pfcp_node_t *node);
 void smf_migration_mark_failed(smf_sess_t *sess);
 size_t smf_handle_pdu_migrate(char *buf, size_t buflen,
         const char *method, const char *body, size_t body_len,

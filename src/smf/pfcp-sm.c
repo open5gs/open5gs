@@ -20,6 +20,7 @@
 #include "sbi-path.h"
 #include "pfcp-path.h"
 #include "local-path.h"
+#include "migration.h"
 
 #include "n4-handler.h"
 
@@ -195,6 +196,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
 
         if (node->restoration_required == true) {
             pfcp_restoration(node);
+            smf_migration_handle_pfcp_node_restoration(node);
             node->restoration_required = false;
             ogs_error("PFCP restoration");
         }
@@ -204,6 +206,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
     case OGS_FSM_EXIT_SIG:
         ogs_info("PFCP de-associated %s",
             ogs_sockaddr_to_string_static(node->addr_list));
+        smf_migration_handle_pfcp_node_deassociated(node);
         ogs_timer_stop(node->t_no_heartbeat);
 
         smf_metrics_inst_global_dec(SMF_METR_GLOB_GAUGE_PFCP_PEERS_ACTIVE);
@@ -251,6 +254,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
          * Restoration can be performed immediately.
          */
                     pfcp_restoration(node);
+                    smf_migration_handle_pfcp_node_restoration(node);
                     node->restoration_required = false;
                     ogs_error("PFCP restoration");
                 }
@@ -278,6 +282,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
          * Restoration can be performed immediately.
          */
                     pfcp_restoration(node);
+                    smf_migration_handle_pfcp_node_restoration(node);
                     node->restoration_required = false;
                     ogs_error("PFCP restoration");
                 }

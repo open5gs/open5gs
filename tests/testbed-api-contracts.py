@@ -80,6 +80,19 @@ def main() -> int:
         "target_upf_draining",
         "target_is_source",
         "target_upf_not_eligible",
+        "source_buffering",
+        "source_releasing",
+        "smf_migration_handle_source_buffering_response",
+        "smf_migration_handle_source_release_response",
+        "smf_migration_handle_pfcp_node_deassociated",
+        "smf_migration_handle_pfcp_node_restoration",
+        "source UPF cleanup dispatch failed after path switch response",
+        "source UPF PFCP association lost during post-switch cleanup",
+        "source UPF PFCP restoration during post-switch cleanup",
+        "source UPF cleanup already in progress",
+        "path_switch_committed_to_target",
+        "OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_BUFFER",
+        "OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_RELEASE",
     ):
         require(migration, token, "src/smf/migration.c")
 

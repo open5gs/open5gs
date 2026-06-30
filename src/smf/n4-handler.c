@@ -436,6 +436,28 @@ void smf_5gc_n4_handle_session_modification_response(
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
     }
 
+    if (flags & OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_BUFFER) {
+        if (!sess) {
+            ogs_error("[MIGRATE] source buffering response has no session");
+            return;
+        }
+
+        smf_migration_handle_source_buffering_response(
+                sess, status == OGS_SBI_HTTP_STATUS_OK);
+        return;
+    }
+
+    if (flags & OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_RELEASE) {
+        if (!sess) {
+            ogs_error("[MIGRATE] source release response has no session");
+            return;
+        }
+
+        smf_migration_handle_source_release_response(
+                sess, status == OGS_SBI_HTTP_STATUS_OK);
+        return;
+    }
+
     if (status == OGS_SBI_HTTP_STATUS_OK) {
         int i;
 

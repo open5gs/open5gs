@@ -119,6 +119,8 @@ typedef struct ogs_pfcp_xact_s {
 #define OGS_PFCP_MODIFY_URR_TIME_QUOTA ((uint64_t)1<<32)
 #define OGS_PFCP_MODIFY_URR_VOLUME_THRESH ((uint64_t)1<<33)
 #define OGS_PFCP_MODIFY_URR_TIME_THRESH ((uint64_t)1<<34)
+#define OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_BUFFER ((uint64_t)1<<35)
+#define OGS_PFCP_MODIFY_UPF_MIGRATION_SOURCE_RELEASE ((uint64_t)1<<36)
     uint64_t        modify_flags;
 
 #define OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED 1
