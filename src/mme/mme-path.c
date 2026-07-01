@@ -280,7 +280,15 @@ void mme_send_after_paging(mme_ue_t *mme_ue, bool failed)
                 mme_gtp_send_delete_bearer_response(
                     bearer, OGS_GTP2_CAUSE_UNABLE_TO_PAGE_UE));
         } else {
-            r = nas_eps_send_deactivate_bearer_context_request(bearer);
+            /*
+             * Use the NAS ESM cause carried across paging (stored when the
+             * Delete Bearer Request was received). This preserves
+             * "reactivation requested" for an ECM-IDLE UE so the (IMS) PDN
+             * connection is re-established after paging. See
+             * mme_s11_handle_delete_bearer_request().
+             */
+            r = nas_eps_send_deactivate_bearer_context_request(
+                    bearer, mme_ue->paging.esm_cause);
             ogs_expect(r == OGS_OK);
             ogs_assert(r != OGS_ERROR);
         }

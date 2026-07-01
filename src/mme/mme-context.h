@@ -752,6 +752,7 @@ struct mme_ue_s {
         ogs_debug("[%s] Clear Paging Info", (__mME)->imsi_bcd); \
         (__mME)->paging.type = 0; \
         (__mME)->paging.failed = false; \
+        (__mME)->paging.esm_cause = OGS_NAS_ESM_CAUSE_REGULAR_DEACTIVATION; \
     } while(0)
 
 #define MME_STORE_PAGING_INFO(__mME, __tYPE, __dATA) \
@@ -775,6 +776,8 @@ struct mme_ue_s {
         int type;
         void *data;
         bool failed;
+        uint8_t esm_cause; /* NAS ESM cause carried across paging to the
+                            * deferred (post-paging) deactivation/detach */
     } paging;
 
     /* SGW UE context */

@@ -134,7 +134,8 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                     mme_gtp_send_delete_session_request(enb_ue, sgw_ue, sess,
                         OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST));
             } else {
-                r = nas_eps_send_deactivate_bearer_context_request(bearer);
+                r = nas_eps_send_deactivate_bearer_context_request(
+                        bearer, OGS_NAS_ESM_CAUSE_REGULAR_DEACTIVATION);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             }
@@ -342,7 +343,8 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
                     mme_gtp_send_delete_session_request(enb_ue, sgw_ue, sess,
                     OGS_GTP_DELETE_SEND_DEACTIVATE_BEARER_CONTEXT_REQUEST));
             } else {
-                r = nas_eps_send_deactivate_bearer_context_request(bearer);
+                r = nas_eps_send_deactivate_bearer_context_request(
+                        bearer, OGS_NAS_ESM_CAUSE_REGULAR_DEACTIVATION);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             }

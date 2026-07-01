@@ -1796,11 +1796,50 @@ uint8_t smf_n4_handle_session_report_request(
     /* Error Indication is handled last */
     if (report_type.error_indication_report && far) {
         if (sess->epc == true) {
-            ogs_error("[%s:%s] Error Indication from SGW-C",
-                smf_ue->imsi_bcd, sess->session.name);
-            ogs_assert(OGS_OK ==
-                smf_epc_pfcp_send_session_deletion_request(
-                    sess, OGS_INVALID_POOL_ID));
+            /*
+             * 3GPP TS 23.007 (GTP-U Error Indication at the PGW):
+             *  - default bearer   -> deactivate all bearers of the PDN
+             *                        connection (the PDN connection is released).
+             *  - dedicated bearer -> deactivate only that bearer.
+             *
+             * The Error Indication Report identifies the broken GTP-U tunnel
+             * through the remote F-TEID carried in the downlink FAR. Running a
+             * PGW-initiated bearer deactivation makes the PFCP modification
+             * response send a Delete Bearer Request to the SGW-C/MME, so the
+             * MME deactivates the EPS bearer towards the UE (NAS Deactivate
+             * EPS Bearer Context Request).
+             *
+             * Deleting the PFCP session locally (as before) never notified the
+             * MME, so the UE kept a stale PDN connection: data on other APNs
+             * still worked, but the UE could not originate a new VoLTE call
+             * until it re-attached (airplane-mode toggle).
+             */
+            ogs_list_for_each(&sess->bearer_list, bearer) {
+                if (bearer->dl_far == far)
+                    break;
+            }
+            if (!bearer) {
+                ogs_error("[%s:%s] Error Indication from SGW-U: "
+                        "no bearer found for FAR",
+                    smf_ue->imsi_bcd, sess->session.name);
+            } else if (bearer == smf_default_bearer_in_sess(sess)) {
+                ogs_error("[%s:%s] Error Indication from SGW-U "
+                        "[EBI:%d] (default bearer)",
+                    smf_ue->imsi_bcd, sess->session.name, bearer->ebi);
+                ogs_assert(OGS_OK ==
+                    smf_epc_pfcp_send_deactivation(
+                        sess, OGS_GTP2_CAUSE_REACTIVATION_REQUESTED));
+            } else {
+                ogs_error("[%s:%s] Error Indication from SGW-U "
+                        "[EBI:%d] (dedicated bearer)",
+                    smf_ue->imsi_bcd, sess->session.name, bearer->ebi);
+                ogs_assert(OGS_OK ==
+                    smf_epc_pfcp_send_one_bearer_modification_request(
+                        bearer, OGS_INVALID_POOL_ID,
+                        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
+                        OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                        OGS_GTP2_CAUSE_UNDEFINED_VALUE));
+            }
         } else {
             ogs_warn("[%s:%s] Error Indication from gNB",
                 smf_ue->supi, sess->session.name);
