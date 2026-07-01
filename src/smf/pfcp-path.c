@@ -1050,6 +1050,37 @@ int smf_epc_pfcp_send_deactivation(smf_sess_t *sess, uint8_t gtp_cause)
         }
         break;
 
+    case OGS_GTP2_CAUSE_REACTIVATION_REQUESTED:
+        /*
+         * GTP-U Error Indication on the default bearer (TS 23.007):
+         * deactivate all bearers of this PDN connection. The PFCP
+         * modification response then sends a Delete Bearer Request for the
+         * default bearer (Linked EBI) to the SGW-C/MME.
+         *
+         * The "Reactivation requested" cause is used so the MME maps it to
+         * NAS ESM cause #39 "reactivation requested" (3GPP TS 29.274
+         * clause 7.2.9.2 and Table C.3), instructing the UE to re-establish
+         * the PDN connection (e.g. the IMS PDN for VoLTE) instead of just
+         * deactivating it.
+         */
+        if (ogs_list_first(&sess->bearer_list) == NULL) {
+            ogs_error("No Bearer List in Session");
+            return OGS_ERROR;
+        }
+
+        /* Deactivate this PDN connection */
+        rv = smf_epc_pfcp_send_all_pdr_modification_request(
+                sess, OGS_INVALID_POOL_ID, NULL,
+                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
+                OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                OGS_GTP2_CAUSE_REACTIVATION_REQUESTED);
+        if (rv != OGS_OK) {
+            ogs_error("smf_epc_pfcp_send_all_pdr_modification_request() "
+                    "failed");
+            return OGS_ERROR;
+        }
+        break;
+
     default:
         ogs_fatal("Invalid GTP-Cause[%d]", gtp_cause);
         ogs_assert_if_reached();

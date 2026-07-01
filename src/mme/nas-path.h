@@ -56,7 +56,8 @@ int nas_eps_send_activate_dedicated_bearer_context_request(
 void nas_eps_send_activate_all_dedicated_bearers(mme_bearer_t *default_bearer);
 int nas_eps_send_modify_bearer_context_request(
         mme_bearer_t *bearer, int qos_presence, int tft_presence);
-int nas_eps_send_deactivate_bearer_context_request(mme_bearer_t *bearer);
+int nas_eps_send_deactivate_bearer_context_request(
+        mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause);
 int nas_eps_send_bearer_resource_allocation_reject(
         mme_ue_t *mme_ue, uint8_t pti, ogs_nas_esm_cause_t esm_cause);
 int nas_eps_send_bearer_resource_modification_reject(

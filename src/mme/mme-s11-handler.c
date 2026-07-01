@@ -859,7 +859,8 @@ void mme_s11_handle_delete_session_response(
             return;
         }
 
-        r = nas_eps_send_deactivate_bearer_context_request(bearer);
+        r = nas_eps_send_deactivate_bearer_context_request(
+                bearer, OGS_NAS_ESM_CAUSE_REGULAR_DEACTIVATION);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
 
@@ -1336,6 +1337,7 @@ void mme_s11_handle_delete_bearer_request(
 {
     int r;
     uint8_t cause_value = OGS_GTP2_CAUSE_UNDEFINED_VALUE;
+    ogs_nas_esm_cause_t esm_cause = OGS_NAS_ESM_CAUSE_REGULAR_DEACTIVATION;
 
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
@@ -1438,15 +1440,47 @@ void mme_s11_handle_delete_bearer_request(
     ogs_assert(xact->id >= OGS_MIN_POOL_ID && xact->id <= OGS_MAX_POOL_ID);
     bearer->delete.xact_id = xact->id;
 
+    /*
+     * 3GPP TS 29.274 Table C.3: map the GTPv2 Cause in the Delete Bearer
+     * Request to the NAS ESM cause. For the default bearer, "Reactivation
+     * requested" (GTPv2 cause #8) is mapped to ESM cause #39 "reactivation
+     * requested" so the UE re-establishes the PDN connection (e.g. the IMS
+     * PDN for VoLTE). Any other case results in a regular deactivation.
+     *
+     * Cause #8 is defined for the default bearer (PGW-initiated default
+     * bearer deactivation), so the mapping is restricted to the Linked EBI
+     * (default bearer) case. A Cause #8 carried on a dedicated bearer is
+     * ignored and that bearer is deactivated normally.
+     *
+     * The mapped cause is applied on the ECM-CONNECTED path below, and is
+     * carried across paging via mme_ue->paging.esm_cause for the ECM-IDLE
+     * path (see mme-path.c, MME_PAGING_TYPE_DELETE_BEARER).
+     *
+     * LIMITATION: Table C.3 also maps "reactivation requested" to the NAS
+     * "re-attach required" detach type when this is the *last* PDN
+     * connection in E-UTRAN. That is not implemented: this EPC does not
+     * support Attach without PDN connectivity or SCEF PDN connections, and
+     * in a normal deployment a UE keeps at least one other (e.g. internet)
+     * PDN, so the last-PDN case does not arise here. The last default
+     * bearer is deactivated with ESM cause #39 as well.
+     */
+    if (req->cause.presence && req->cause.data &&
+            req->linked_eps_bearer_id.presence) {
+        ogs_gtp2_cause_t *cause = req->cause.data;
+        if (cause->value == OGS_GTP2_CAUSE_REACTIVATION_REQUESTED)
+            esm_cause = OGS_NAS_ESM_CAUSE_REACTIVATION_REQUESTED;
+    }
+
     if (ECM_IDLE(mme_ue)) {
         MME_STORE_PAGING_INFO(mme_ue,
             MME_PAGING_TYPE_DELETE_BEARER, bearer->id);
+        mme_ue->paging.esm_cause = esm_cause;
         r = s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else {
         MME_CLEAR_PAGING_INFO(mme_ue);
-        r = nas_eps_send_deactivate_bearer_context_request(bearer);
+        r = nas_eps_send_deactivate_bearer_context_request(bearer, esm_cause);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     }
