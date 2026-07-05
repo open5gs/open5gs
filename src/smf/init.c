@@ -26,6 +26,7 @@
 #include "ogs-metrics.h"
 #include "metrics/prometheus/json_pager.h"
 #include "migration.h"
+#include "operator-state.h"
 #include "pdu-info.h"
 
 static ogs_thread_t *thread;
@@ -73,6 +74,8 @@ int smf_initialize(void)
 
     rv = smf_context_parse_config();
     if (rv != OGS_OK) return rv;
+
+    smf_operator_state_init();
 
     rv = ogs_pfcp_ue_pool_generate();
     if (rv != OGS_OK) return rv;
@@ -145,6 +148,8 @@ void smf_terminate(void)
     ogs_metrics_context_close(ogs_metrics_self());
 
     smf_fd_final();
+
+    smf_operator_state_final();
 
     smf_context_final();
 

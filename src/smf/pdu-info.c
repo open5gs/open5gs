@@ -80,6 +80,7 @@
 #include "ogs-core.h"
 #include "context.h"
 #include "migration.h"
+#include "operator-state.h"
 #include "pdu-info.h"
 #include "sbi/openapi/external/cJSON.h"
 #include "metrics/prometheus/json_pager.h"
@@ -95,6 +96,9 @@
 
 static void add_testbed_api_metadata(
         cJSON *root, const char *endpoint, const char *schema);
+static int smf_count_sessions_on_upf(ogs_pfcp_node_t *node);
+static cJSON *smf_upf_reject_reasons_to_json(
+        bool associated, bool ftup, bool draining);
 
 /*
  * UPF administrative state (research: explicit UPF member states required by
@@ -123,7 +127,8 @@ int smf_upf_admin_is_draining(const char *addr)
     return 0;
 }
 
-void smf_upf_admin_set(const char *addr, int draining)
+static void smf_upf_admin_set_internal(
+        const char *addr, int draining, bool persist)
 {
     int i, free_slot = -1;
     if (!addr || !addr[0])
@@ -136,17 +141,34 @@ void smf_upf_admin_set(const char *addr, int draining)
         }
         if (strcmp(smf_upf_admin_table[i].addr, addr) == 0) {
             smf_upf_admin_table[i].draining = draining ? true : false;
+            if (persist)
+                smf_operator_state_record_upf_admin(addr, draining);
             return;
         }
     }
-    if (!draining)
+    if (!draining) {
+        if (persist)
+            smf_operator_state_record_upf_admin(addr, draining);
         return; /* clearing an unknown peer is a no-op */
+    }
     if (free_slot >= 0) {
         ogs_cpystrn(smf_upf_admin_table[free_slot].addr, addr, OGS_ADDRSTRLEN);
         smf_upf_admin_table[free_slot].draining = true;
+        if (persist)
+            smf_operator_state_record_upf_admin(addr, draining);
     } else {
         ogs_warn("[UPF-ADMIN] admin table full; cannot mark %s draining", addr);
     }
+}
+
+void smf_upf_admin_set(const char *addr, int draining)
+{
+    smf_upf_admin_set_internal(addr, draining, true);
+}
+
+void smf_upf_admin_restore(const char *addr, int draining)
+{
+    smf_upf_admin_set_internal(addr, draining, false);
 }
 
 size_t smf_handle_upf_admin(char *buf, size_t buflen,
@@ -236,6 +258,48 @@ static void add_testbed_api_metadata(cJSON *root, const char *endpoint, const ch
     cJSON_AddStringToObject(root, "schema", schema);
     cJSON_AddStringToObject(root, "endpoint", endpoint);
     cJSON_AddStringToObject(root, "integer_encoding", "numeric fields are kept for compatibility; *_str or *_us fields are integer-safe strings");
+}
+
+static int smf_count_sessions_on_upf(ogs_pfcp_node_t *node)
+{
+    smf_ue_t *ue = NULL;
+    smf_sess_t *sess = NULL;
+    int count = 0;
+
+    if (!node)
+        return 0;
+
+    ogs_list_for_each(&smf_self()->smf_ue_list, ue)
+        ogs_list_for_each(&ue->sess_list, sess)
+            if (sess->pfcp_node == node)
+                count++;
+
+    return count;
+}
+
+static cJSON *smf_upf_reject_reasons_to_json(
+        bool associated, bool ftup, bool draining)
+{
+    cJSON *reasons = cJSON_CreateArray();
+    cJSON *reason = NULL;
+
+    if (!reasons)
+        return NULL;
+
+    if (!associated) {
+        reason = cJSON_CreateString("pfcp_not_associated");
+        if (reason) cJSON_AddItemToArray(reasons, reason);
+    }
+    if (!ftup) {
+        reason = cJSON_CreateString("ftup_not_advertised");
+        if (reason) cJSON_AddItemToArray(reasons, reason);
+    }
+    if (draining) {
+        reason = cJSON_CreateString("admin_draining");
+        if (reason) cJSON_AddItemToArray(reasons, reason);
+    }
+
+    return reasons;
 }
 
 /* Only used in ip_is_unspecified (currently disabled) */
@@ -970,6 +1034,14 @@ size_t smf_dump_pdu_info_paged(char *buf, size_t buflen, size_t page, size_t pag
     cJSON *root = cJSON_CreateObject();
     if (!root) { if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; } if (buflen) buf[0] = '\0'; return 0; }
     add_testbed_api_metadata(root, "/pdu-info", SMF_PDU_INFO_SCHEMA);
+    {
+        cJSON *recovery = smf_operator_state_recovery_to_json();
+        if (recovery) {
+            cJSON_AddBoolToObject(root, "recovery_required",
+                    smf_operator_state_recovery_required());
+            cJSON_AddItemToObjectCS(root, "recovery", recovery);
+        }
+    }
 
     cJSON *items = cJSON_CreateArray();
     if (!items) { cJSON_Delete(root); if (buflen >= 3) { memcpy(buf, "{}", 3); return 2; } if (buflen) buf[0] = '\0'; return 0; }
@@ -1047,6 +1119,14 @@ size_t smf_dump_upf_info(char *buf, size_t buflen, size_t page, size_t page_size
         return 0;
     }
     add_testbed_api_metadata(root, "/upf-info", SMF_UPF_INFO_SCHEMA);
+    {
+        cJSON *recovery = smf_operator_state_recovery_to_json();
+        if (recovery) {
+            cJSON_AddBoolToObject(root, "recovery_required",
+                    smf_operator_state_recovery_required());
+            cJSON_AddItemToObjectCS(root, "recovery", recovery);
+        }
+    }
 
     ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, node) {
         cJSON *item = NULL;
@@ -1056,8 +1136,14 @@ size_t smf_dump_upf_info(char *buf, size_t buflen, size_t page, size_t page_size
         cJSON *ftup = NULL;
         cJSON *configured = NULL;
         cJSON *dynamic = NULL;
+        cJSON *reject_reasons = NULL;
         char ipbuf[OGS_ADDRSTRLEN] = "";
         bool is_associated = false;
+        bool is_draining = false;
+        bool has_ftup = false;
+        int active_sessions = 0;
+        int selection_score = 0;
+        const char *health_state = "unassociated";
 
         if (!node || !node->addr_list)
             continue;
@@ -1069,12 +1155,30 @@ size_t smf_dump_upf_info(char *buf, size_t buflen, size_t page, size_t page_size
         item = cJSON_CreateObject();
         address = cJSON_CreateString(OGS_ADDR(node->addr_list, ipbuf));
         pfcp = cJSON_CreateString(ogs_sockaddr_to_string_static(node->addr_list));
+        has_ftup = node->up_function_features.ftup ? true : false;
+        is_draining = smf_upf_admin_is_draining(ipbuf) ? true : false;
+        active_sessions = smf_count_sessions_on_upf(node);
+        selection_score = active_sessions * 100;
+        if (!is_associated)
+            selection_score += 1000000;
+        if (is_draining)
+            selection_score += 500000;
+        if (!has_ftup)
+            selection_score += 10000;
+        if (is_draining)
+            health_state = "draining";
+        else if (!is_associated)
+            health_state = "unassociated";
+        else
+            health_state = "healthy";
         associated = cJSON_CreateBool(is_associated);
-        ftup = cJSON_CreateBool(node->up_function_features.ftup);
+        ftup = cJSON_CreateBool(has_ftup);
         configured = cJSON_CreateBool(node->config_addr != NULL);
         dynamic = cJSON_CreateBool(node->config_addr == NULL);
+        reject_reasons = smf_upf_reject_reasons_to_json(
+                is_associated, has_ftup, is_draining);
         if (!item || !address || !pfcp || !associated || !ftup ||
-            !configured || !dynamic) {
+            !configured || !dynamic || !reject_reasons) {
             if (item) cJSON_Delete(item);
             if (address) cJSON_Delete(address);
             if (pfcp) cJSON_Delete(pfcp);
@@ -1082,6 +1186,7 @@ size_t smf_dump_upf_info(char *buf, size_t buflen, size_t page, size_t page_size
             if (ftup) cJSON_Delete(ftup);
             if (configured) cJSON_Delete(configured);
             if (dynamic) cJSON_Delete(dynamic);
+            if (reject_reasons) cJSON_Delete(reject_reasons);
             oom = true;
             break;
         }
@@ -1093,7 +1198,18 @@ size_t smf_dump_upf_info(char *buf, size_t buflen, size_t page, size_t page_size
         cJSON_AddItemToObjectCS(item, "configured", configured);
         cJSON_AddItemToObjectCS(item, "dynamic", dynamic);
         cJSON_AddStringToObject(item, "admin_state",
-                smf_upf_admin_is_draining(ipbuf) ? "draining" : "active");
+                is_draining ? "draining" : "active");
+        cJSON_AddStringToObject(item, "health_state", health_state);
+        cJSON_AddNumberToObject(item, "active_sessions",
+                (double)active_sessions);
+        cJSON_AddNumberToObject(item, "capacity_sessions", 0);
+        cJSON_AddNumberToObject(item, "weight", 100);
+        cJSON_AddBoolToObject(item, "heartbeat_stale", !is_associated);
+        cJSON_AddBoolToObject(item, "migration_eligible",
+                is_associated && has_ftup && !is_draining);
+        cJSON_AddNumberToObject(item, "selection_score",
+                (double)selection_score);
+        cJSON_AddItemToObjectCS(item, "reject_reasons", reject_reasons);
 
         if (node->num_of_dnn > 0) {
             int i;

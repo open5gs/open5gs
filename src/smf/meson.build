@@ -72,6 +72,7 @@ libsmf_sources = files('''
     metrics.h
     pdu-info.h
     migration.h
+    operator-state.h
 
     init.c
     event.c
@@ -116,6 +117,7 @@ libsmf_sources = files('''
     metrics.c
     pdu-info.c
     migration.c
+    operator-state.c
     ../../lib/metrics/prometheus/json_pager.c
 '''.split())
 

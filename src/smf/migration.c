@@ -18,6 +18,7 @@
  */
 
 #include "migration.h"
+#include "operator-state.h"
 #include "pdu-info.h"
 #include "gsm-build.h"
 #include "ngap-build.h"
@@ -48,6 +49,7 @@ static void migration_json_add_number(
         cJSON *root, const char *name, double value);
 static void migration_metrics_finish(
         smf_sess_t *sess, smf_metric_type_global_t counter);
+static const char *migration_outcome_name(smf_migration_outcome_e outcome);
 static int migration_send_ngap_path_switch_request(smf_sess_t *sess);
 static int migration_send_source_release_request(smf_sess_t *sess);
 static int migration_send_source_deletion_request(smf_sess_t *sess);
@@ -471,6 +473,7 @@ void smf_migration_set_state(smf_sess_t *sess, smf_migration_state_e state)
     sess->migration.state = state;
     if (state >= 0 && state < SMF_MIGRATION_STATE_MAX)
         sess->migration.state_ts_us[state] = ogs_get_monotonic_time();
+    smf_operator_state_record_migration(sess);
 }
 
 static void migration_node_addr_copy(
@@ -538,6 +541,9 @@ static void migration_record_finish(
         (smf->migration_stats.head + 1) % SMF_MIGRATION_RECORD_RING;
     if (smf->migration_stats.count < SMF_MIGRATION_RECORD_RING)
         smf->migration_stats.count++;
+
+    smf_operator_state_record_migration_terminal(
+            sess, migration_outcome_name(outcome));
 }
 
 bool smf_migration_active(const smf_sess_t *sess)
