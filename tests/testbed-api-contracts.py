@@ -38,6 +38,9 @@ def main() -> int:
     namf_handler = read("src/smf/namf-handler.c")
     gsm_sm = read("src/smf/gsm-sm.c")
     metrics = read("lib/metrics/prometheus/context.c")
+    metrics_context = read("lib/metrics/context.c")
+    smf_context = read("src/smf/context.c")
+    operator_state = read("src/smf/operator-state.c")
 
     for token in (
         "SMF_TESTBED_API_VERSION",
@@ -50,8 +53,57 @@ def main() -> int:
         "ue_location_timestamp_us",
         "target_upf_n4_seid_str",
         "migration_id_str",
+        "recovery_required",
+        "recovery",
+        "active_sessions",
+        "capacity_sessions",
+        "health_state",
+        "selection_score",
+        "reject_reasons",
+        "heartbeat_stale",
+        "migration_eligible",
     ):
         require(pdu_info, token, "src/smf/pdu-info.c")
+
+    for token in (
+        "operator_api",
+        "auth",
+        "token_file",
+        "ogs_metrics_custom_ep_auth_configure(",
+        "smf_operator_state_set_path(",
+    ):
+        require(smf_context, token, "src/smf/context.c")
+
+    for token in (
+        "operator_api.auth.mode=bearer requires token or token_file",
+        "read_token_file",
+        "ogs_metrics_custom_ep_auth_mode",
+    ):
+        require(metrics_context, token, "lib/metrics/context.c")
+
+    for token in (
+        "Authorization",
+        "Bearer ",
+        "missing_or_invalid_bearer_token",
+        "WWW-Authenticate",
+        "custom_endpoint_authorized",
+        "custom_ep_auth.bearer",
+    ):
+        require(metrics, token, "lib/metrics/prometheus/context.c")
+
+    for token in (
+        "journal.jsonl",
+        "snapshot.json",
+        "5g3e.smf.operator-state/v1",
+        "recovery_required",
+        "abort_pre_switch_target_and_keep_source",
+        "complete_post_switch_source_cleanup",
+        "verify_target_then_cleanup_or_manual_reconcile",
+        "migration_terminal",
+        "smf_upf_admin_restore",
+        "smf_operator_state_recovery_to_json",
+    ):
+        require(operator_state, token, "src/smf/operator-state.c")
 
     for token in (
         "SMF_TESTBED_API_VERSION",
@@ -76,6 +128,8 @@ def main() -> int:
         "target_cleanup_not_allowed_after_switch_sent",
         "migration_target_cleanup_allowed",
         "target_node == sess->migration.target_node",
+        "smf_operator_state_record_migration",
+        "smf_operator_state_record_migration_terminal",
         "prepare_requires_target_upf",
         "target_upf_draining",
         "target_is_source",

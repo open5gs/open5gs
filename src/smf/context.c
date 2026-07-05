@@ -20,6 +20,8 @@
 #include "context.h"
 #include "gtp-path.h"
 #include "migration.h"
+#include "ogs-metrics.h"
+#include "operator-state.h"
 #include "pdu-info.h"
 #include "pfcp-path.h"
 
@@ -499,6 +501,69 @@ int smf_context_parse_config(void)
                                 ogs_yaml_iter_value(&migration_iter);
                         } else
                             ogs_warn("unknown key `%s`", migration_key);
+                    }
+                } else if (!strcmp(smf_key, "operator_api")) {
+                    ogs_yaml_iter_t operator_iter;
+                    yaml_node_t *node =
+                        yaml_document_get_node(document, smf_iter.pair->value);
+                    ogs_assert(node);
+                    ogs_assert(node->type == YAML_MAPPING_NODE);
+                    ogs_yaml_iter_recurse(&smf_iter, &operator_iter);
+                    while (ogs_yaml_iter_next(&operator_iter)) {
+                        const char *operator_key =
+                            ogs_yaml_iter_key(&operator_iter);
+                        ogs_assert(operator_key);
+                        if (!strcmp(operator_key, "auth")) {
+                            const char *mode = "none";
+                            const char *token = NULL;
+                            const char *token_file = NULL;
+                            ogs_yaml_iter_t auth_iter;
+                            yaml_node_t *auth_node =
+                                yaml_document_get_node(
+                                        document,
+                                        operator_iter.pair->value);
+                            ogs_assert(auth_node);
+                            ogs_assert(auth_node->type == YAML_MAPPING_NODE);
+                            ogs_yaml_iter_recurse(&operator_iter, &auth_iter);
+                            while (ogs_yaml_iter_next(&auth_iter)) {
+                                const char *auth_key =
+                                    ogs_yaml_iter_key(&auth_iter);
+                                ogs_assert(auth_key);
+                                if (!strcmp(auth_key, "mode")) {
+                                    mode = ogs_yaml_iter_value(&auth_iter);
+                                } else if (!strcmp(auth_key, "token")) {
+                                    token = ogs_yaml_iter_value(&auth_iter);
+                                } else if (!strcmp(auth_key, "token_file")) {
+                                    token_file =
+                                        ogs_yaml_iter_value(&auth_iter);
+                                } else
+                                    ogs_warn("unknown key `%s`", auth_key);
+                            }
+                            rv = ogs_metrics_custom_ep_auth_configure(
+                                    mode, token, token_file);
+                            if (rv != OGS_OK)
+                                return rv;
+                        } else if (!strcmp(operator_key, "state")) {
+                            ogs_yaml_iter_t state_iter;
+                            yaml_node_t *state_node =
+                                yaml_document_get_node(
+                                        document,
+                                        operator_iter.pair->value);
+                            ogs_assert(state_node);
+                            ogs_assert(state_node->type == YAML_MAPPING_NODE);
+                            ogs_yaml_iter_recurse(&operator_iter, &state_iter);
+                            while (ogs_yaml_iter_next(&state_iter)) {
+                                const char *state_key =
+                                    ogs_yaml_iter_key(&state_iter);
+                                ogs_assert(state_key);
+                                if (!strcmp(state_key, "path")) {
+                                    smf_operator_state_set_path(
+                                            ogs_yaml_iter_value(&state_iter));
+                                } else
+                                    ogs_warn("unknown key `%s`", state_key);
+                            }
+                        } else
+                            ogs_warn("unknown key `%s`", operator_key);
                     }
                 } else if (!strcmp(smf_key, "ctf")) {
                     ogs_yaml_iter_t ctf_iter;
@@ -1510,6 +1575,24 @@ static bool upf_node_is_draining(ogs_pfcp_node_t *node)
     return smf_upf_admin_is_draining(OGS_ADDR(node->addr_list, buf)) == 1;
 }
 
+static int upf_node_selection_score(
+        ogs_pfcp_node_t *node, int active_sessions,
+        bool eligible, bool draining)
+{
+    int score = active_sessions * 100;
+
+    if (!node || !OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated))
+        score += 1000000;
+    if (draining)
+        score += 500000;
+    if (!eligible)
+        score += 100000;
+    if (node && !node->up_function_features.ftup)
+        score += 10000;
+
+    return score;
+}
+
 /* Least-sessions UPF selection with a deterministic address tie-break.
  *
  * Stock round-robin ignores both load and admin state: it piles new sessions
@@ -1534,6 +1617,7 @@ static ogs_pfcp_node_t *least_sessions_upf_node(smf_sess_t *sess)
     for (pass = 0; pass < 4; pass++) {
         ogs_pfcp_node_t *best = NULL;
         int best_count = 0;
+        int best_score = 0;
         char best_addr[OGS_ADDRSTRLEN] = "";
 
         if (pass >= 1 && ogs_global_conf()->parameter.no_pfcp_rr_select)
@@ -1542,7 +1626,7 @@ static ogs_pfcp_node_t *least_sessions_upf_node(smf_sess_t *sess)
         ogs_list_for_each(&ogs_pfcp_self()->pfcp_peer_list, node) {
             char addr[OGS_ADDRSTRLEN] = "";
             bool eligible, draining;
-            int count;
+            int count, score;
 
             if (!OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated))
                 continue;
@@ -1558,19 +1642,24 @@ static ogs_pfcp_node_t *least_sessions_upf_node(smf_sess_t *sess)
                 continue;
 
             count = sessions_on_upf_node(node);
+            score = upf_node_selection_score(node, count, eligible, draining);
             if (node->addr_list)
                 OGS_ADDR(node->addr_list, addr);
-            if (best == NULL || count < best_count ||
-                (count == best_count && strcmp(addr, best_addr) < 0)) {
+            if (best == NULL || score < best_score ||
+                (score == best_score && count < best_count) ||
+                (score == best_score && count == best_count &&
+                 strcmp(addr, best_addr) < 0)) {
                 best = node;
                 best_count = count;
+                best_score = score;
                 ogs_cpystrn(best_addr, addr, OGS_ADDRSTRLEN);
             }
         }
 
         if (best) {
             ogs_info("[UPF-SELECT] least_sessions pass=%d selected %s "
-                    "with %d active session(s)", pass, best_addr, best_count);
+                    "with %d active session(s), score=%d",
+                    pass, best_addr, best_count, best_score);
             return best;
         }
     }
