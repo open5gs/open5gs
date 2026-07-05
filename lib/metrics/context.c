@@ -23,6 +23,9 @@
 #include "ogs-core.h"
 #include "metrics/ogs-metrics.h"
 
+#include <ctype.h>
+#include <stdio.h>
+
 #define DEFAULT_PROMETHEUS_HTTP_PORT       9090
 
 int __ogs_metrics_domain;
@@ -67,6 +70,11 @@ void ogs_metrics_context_final(void)
 {
     ogs_assert(context_initialized == 1);
 
+    if (self.custom_ep_auth.token) {
+        ogs_free(self.custom_ep_auth.token);
+        self.custom_ep_auth.token = NULL;
+    }
+
     ogs_metrics_spec_final(ogs_metrics_self());
     ogs_metrics_server_final(ogs_metrics_self());
 
@@ -83,6 +91,85 @@ static int ogs_metrics_context_prepare(void)
     self.metrics_port = DEFAULT_PROMETHEUS_HTTP_PORT;
 
     return OGS_OK;
+}
+
+static char *read_token_file(const char *path)
+{
+    FILE *fp = NULL;
+    char raw[4096];
+    size_t n;
+
+    if (!path || !path[0])
+        return NULL;
+
+    fp = fopen(path, "rb");
+    if (!fp) {
+        ogs_error("Cannot open operator API token_file [%s]", path);
+        return NULL;
+    }
+
+    n = fread(raw, 1, sizeof(raw) - 1, fp);
+    if (ferror(fp)) {
+        ogs_error("Cannot read operator API token_file [%s]", path);
+        fclose(fp);
+        return NULL;
+    }
+    fclose(fp);
+
+    raw[n] = '\0';
+    while (n > 0 && isspace((unsigned char)raw[n - 1]))
+        raw[--n] = '\0';
+
+    if (n == 0) {
+        ogs_error("Empty operator API token_file [%s]", path);
+        return NULL;
+    }
+
+    return ogs_strdup(raw);
+}
+
+int ogs_metrics_custom_ep_auth_configure(
+        const char *mode, const char *token, const char *token_file)
+{
+    char *configured_token = NULL;
+
+    if (!mode || !mode[0] || !strcmp(mode, "none")) {
+        self.custom_ep_auth.bearer = false;
+        if (self.custom_ep_auth.token) {
+            ogs_free(self.custom_ep_auth.token);
+            self.custom_ep_auth.token = NULL;
+        }
+        return OGS_OK;
+    }
+
+    if (strcmp(mode, "bearer")) {
+        ogs_error("Invalid operator API auth mode [%s]", mode);
+        return OGS_ERROR;
+    }
+
+    if (token_file && token_file[0])
+        configured_token = read_token_file(token_file);
+    else if (token && token[0])
+        configured_token = ogs_strdup(token);
+
+    if (!configured_token || !configured_token[0]) {
+        if (configured_token)
+            ogs_free(configured_token);
+        ogs_error("operator_api.auth.mode=bearer requires token or token_file");
+        return OGS_ERROR;
+    }
+
+    if (self.custom_ep_auth.token)
+        ogs_free(self.custom_ep_auth.token);
+    self.custom_ep_auth.token = configured_token;
+    self.custom_ep_auth.bearer = true;
+
+    return OGS_OK;
+}
+
+const char *ogs_metrics_custom_ep_auth_mode(void)
+{
+    return self.custom_ep_auth.bearer ? "bearer" : "none";
 }
 
 int ogs_metrics_context_parse_config(const char *local)

@@ -52,6 +52,13 @@ smf:
 #    enabled: auto   # auto(default)|yes|no
 #  migration:
 #    route_hook: /opt/open5gs/bin/smf-upf-migration-route-hook
+  operator_api:
+    auth:
+      mode: none   # none|bearer
+#      token_file: @localstatedir@/lib/open5gs/smf-operator-token
+#      token: change-me
+    state:
+      path: @localstatedir@/lib/open5gs/smf-state
   freeDiameter: @sysconfdir@/freeDiameter/smf.conf
 
 ################################################################################

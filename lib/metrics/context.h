@@ -44,6 +44,10 @@ typedef struct ogs_metrics_context_s {
 
     /* custom endpoints */
     ogs_list_t custom_eps;
+    struct {
+        bool bearer;
+        char *token;
+    } custom_ep_auth;
 } ogs_metrics_context_t;
 
 typedef enum ogs_metrics_histogram_bucket_type_s  {
@@ -135,6 +139,9 @@ void ogs_metrics_register_custom_ep(ogs_metrics_custom_ep_hdlr_t handler,
         const char *endpoint);
 void ogs_metrics_register_custom_req_ep(
         ogs_metrics_custom_req_ep_hdlr_t handler, const char *endpoint);
+int ogs_metrics_custom_ep_auth_configure(
+        const char *mode, const char *token, const char *token_file);
+const char *ogs_metrics_custom_ep_auth_mode(void);
 
 #ifdef __cplusplus
 }

@@ -85,6 +85,12 @@ static OGS_POOL(metrics_server_pool, ogs_metrics_server_t);
 static int ogs_metrics_context_server_start(ogs_metrics_server_t *server);
 static int ogs_metrics_context_server_stop(ogs_metrics_server_t *server);
 
+#if MHD_VERSION >= 0x00097001
+typedef enum MHD_Result _MHD_Result;
+#else
+typedef int _MHD_Result;
+#endif
+
 static size_t get_query_size_t(struct MHD_Connection *connection,
                                const char *key, size_t default_val)
 {
@@ -97,6 +103,71 @@ static size_t get_query_size_t(struct MHD_Connection *connection,
 }
 
 #define CUSTOM_POST_BODY_LIMIT (64 * 1024)
+
+static bool timing_safe_equal(const char *a, const char *b)
+{
+    size_t alen, blen, i, max;
+    unsigned char diff = 0;
+
+    if (!a || !b)
+        return false;
+
+    alen = strlen(a);
+    blen = strlen(b);
+    max = alen > blen ? alen : blen;
+    diff = (unsigned char)(alen ^ blen);
+
+    for (i = 0; i < max; i++) {
+        unsigned char ca = i < alen ? (unsigned char)a[i] : 0;
+        unsigned char cb = i < blen ? (unsigned char)b[i] : 0;
+        diff |= (unsigned char)(ca ^ cb);
+    }
+
+    return diff == 0;
+}
+
+static bool custom_endpoint_authorized(struct MHD_Connection *connection)
+{
+    ogs_metrics_context_t *ctx = ogs_metrics_self();
+    const char *authorization = NULL;
+    const char *token = NULL;
+
+    ogs_assert(ctx);
+
+    if (!ctx->custom_ep_auth.bearer)
+        return true;
+
+    authorization = MHD_lookup_connection_value(
+            connection, MHD_HEADER_KIND, "Authorization");
+    if (!authorization)
+        return false;
+
+    if (strncmp(authorization, "Bearer ", strlen("Bearer ")) != 0)
+        return false;
+
+    token = authorization + strlen("Bearer ");
+    return timing_safe_equal(token, ctx->custom_ep_auth.token);
+}
+
+static _MHD_Result serve_custom_endpoint_auth_failure(
+        struct MHD_Connection *connection)
+{
+    const char *msg =
+        "{\"error\":\"unauthorized\",\"reason\":\"missing_or_invalid_bearer_token\"}";
+    struct MHD_Response *rsp = MHD_create_response_from_buffer(
+            strlen(msg), (void *)msg, MHD_RESPMEM_PERSISTENT);
+    int ret;
+
+    if (!rsp)
+        return (_MHD_Result)MHD_NO;
+
+    MHD_add_response_header(rsp, "Content-Type", "application/json");
+    MHD_add_response_header(rsp, "Access-Control-Allow-Origin", "*");
+    MHD_add_response_header(rsp, "WWW-Authenticate", "Bearer");
+    ret = MHD_queue_response(connection, MHD_HTTP_UNAUTHORIZED, rsp);
+    MHD_destroy_response(rsp);
+    return (_MHD_Result)ret;
+}
 
 static void custom_post_context_free(custom_post_context_t *ctx)
 {
@@ -253,12 +324,6 @@ static void mhd_server_request_completed(
         *con_cls = NULL;
     }
 }
-
-#if MHD_VERSION >= 0x00097001
-typedef enum MHD_Result _MHD_Result;
-#else
-typedef int _MHD_Result;
-#endif
 
 /* Small helper to serve JSON from a registered dumper */
 static _MHD_Result serve_json_from_dumper(struct MHD_Connection *connection,
@@ -462,6 +527,12 @@ static _MHD_Result serve_custom_post(
 
     ogs_list_for_each(&ogs_metrics_self()->custom_eps, node) {
         if (!strcmp(node->endpoint, url) && node->request_handler) {
+            if (!custom_endpoint_authorized(connection)) {
+                ret = serve_custom_endpoint_auth_failure(connection);
+                custom_post_context_free(post);
+                *con_cls = NULL;
+                return (_MHD_Result)ret;
+            }
             ret = serve_json_from_request_handler(connection,
                     node->request_handler, method, body, body_len);
             custom_post_context_free(post);
@@ -535,6 +606,8 @@ mhd_server_access_handler(void *cls, struct MHD_Connection *connection,
     ogs_metrics_custom_ep_t *node = NULL;
     ogs_list_for_each(&ogs_metrics_self()->custom_eps, node) {
         if (!strcmp(node->endpoint, url)) {
+            if (!custom_endpoint_authorized(connection))
+                return serve_custom_endpoint_auth_failure(connection);
             if (node->handler) {
                 return serve_json_from_dumper(connection,
                         node->handler,
