@@ -275,14 +275,22 @@ static int hss_ogs_diam_s6a_air_cb(struct msg **msg, struct avp *avp,
         goto out;
     }
 
+    if (!hdr->avp_value->os.data ||
+            hdr->avp_value->os.len != OGS_PLMN_ID_LEN) {
+        ogs_error("Invalid Visited-PLMN-Id length [%d]",
+                hdr->avp_value ? (int)hdr->avp_value->os.len : -1);
+        result_code = OGS_DIAM_INVALID_AVP_VALUE;
+        error_occurred = 1;
+        goto out;
+    }
     memcpy(&visited_plmn_id, hdr->avp_value->os.data,
-            ogs_min(hdr->avp_value->os.len, sizeof(visited_plmn_id)));
+            sizeof(visited_plmn_id));
 
     /* Generate authentication vectors */
     milenage_generate(opc, auth_info.amf, auth_info.k,
         ogs_uint64_to_buffer(auth_info.sqn, OGS_SQN_LEN, sqn), auth_info.rand,
         autn, ik, ck, ak, xres, &xres_len);
-    ogs_auc_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
+    ogs_auc_kasme(ck, ik, (uint8_t *)&visited_plmn_id, sqn, ak, kasme);
 
     /* Set the Authentication-Info */
     ret = fd_msg_avp_new(ogs_diam_s6a_authentication_info, 0, &avp);
