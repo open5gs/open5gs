@@ -18,6 +18,7 @@
 libinc = include_directories('.')
 
 subdir('core')
+subdir('third-party')
 subdir('proto')
 subdir('dbi')
 subdir('crypt')

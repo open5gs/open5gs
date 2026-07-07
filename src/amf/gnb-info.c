@@ -87,7 +87,7 @@
 #include "context.h"
 #include "gnb-info.h"
 
-#include "sbi/openapi/external/cJSON.h"
+#include "third-party/cjson/cJSON.h"
 #include "metrics/prometheus/json_pager.h"
 
 #ifndef GNB_INFO_PAGE_SIZE_DEFAULT

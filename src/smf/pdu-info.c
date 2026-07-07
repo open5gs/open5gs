@@ -79,7 +79,7 @@
 #include "ogs-core.h"
 #include "context.h"
 #include "pdu-info.h"
-#include "sbi/openapi/external/cJSON.h"
+#include "third-party/cjson/cJSON.h"
 #include "metrics/prometheus/json_pager.h"
 
 #ifndef OGS_GTPV1_U_UDP_PORT
