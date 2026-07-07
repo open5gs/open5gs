@@ -8,7 +8,7 @@
 #define _OpenAPI_up_loc_rep_ind_af_H_
 
 #include <string.h>
-#include "../external/cJSON.h"
+#include "third-party/cjson/cJSON.h"
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"

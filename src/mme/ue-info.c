@@ -91,7 +91,7 @@
 
 #include "metrics/prometheus/json_pager.h"
 #include "metrics/ogs-metrics.h"
-#include "sbi/openapi/external/cJSON.h"
+#include "third-party/cjson/cJSON.h"
 
 #ifndef MME_UE_INFO_PAGE_SIZE_DEFAULT
 #define MME_UE_INFO_PAGE_SIZE_DEFAULT 100U

@@ -8,7 +8,7 @@
 #define _OpenAPI_nrppa_rsp_per_ngran_H_
 
 #include <string.h>
-#include "../external/cJSON.h"
+#include "third-party/cjson/cJSON.h"
 #include "../include/list.h"
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"

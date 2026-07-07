@@ -31,7 +31,7 @@
 
 #include "ogs-core.h"
 #include "ogs-proto.h"
-#include "sbi/openapi/external/cJSON.h"
+#include "third-party/cjson/cJSON.h"
 
 #include "metrics/prometheus/json_pager.h"
 

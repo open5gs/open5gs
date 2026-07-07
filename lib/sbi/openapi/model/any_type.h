@@ -1,7 +1,7 @@
 #ifndef OGS_SBI_ANY_TYPE_H
 #define OGS_SBI_ANY_TYPE_H
 
-#include "../external/cJSON.h"
+#include "third-party/cjson/cJSON.h"
 #include "ogs-core.h"
 
 #ifdef __cplusplus
