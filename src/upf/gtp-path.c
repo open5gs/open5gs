@@ -380,6 +380,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         ogs_pfcp_sess_t *pfcp_sess = NULL;
         ogs_pfcp_pdr_t *pdr = NULL;
         ogs_pfcp_far_t *far = NULL;
+        bool teid_matched = false;
 
         ogs_pfcp_subnet_t *subnet = NULL;
         ogs_pfcp_dev_t *dev = NULL;
@@ -462,6 +463,13 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 if (header_desc.teid != pdr->f_teid.teid)
                     continue;
 
+                /*
+                 * At least one PDR of this session owns the TEID of the
+                 * incoming G-PDU, i.e. the GTP-U tunnel endpoint (and the
+                 * associated bearer/QoS-flow context) does exist locally.
+                 */
+                teid_matched = true;
+
                 /* Check if QFI */
                 if (pdr->qfi && pdr->qfi != header_desc.qos_flow_identifier)
                     continue;
@@ -475,7 +483,46 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             }
 
             if (!pdr) {
+                if (teid_matched) {
+                    /*
+                     * The TEID of the G-PDU is owned by a PDR of this
+                     * session, but the packet did not match the PDR
+                     * (QFI mismatch or SDF filter mismatch), e.g. a
+                     * stray/off-filter uplink packet forwarded by the
+                     * RAN during handover.
+                     *
+                     * 3GPP TS 29.281 clause 7.3.1 mandates a GTP-U Error
+                     * Indication only for a G-PDU "for which no EPS
+                     * Bearer context, PDP context, PDU Session, MBMS
+                     * Bearer context, or RAB exists". Here the bearer
+                     * context and the GTP-U tunnel endpoint do exist;
+                     * only the packet classification failed.
+                     *
+                     * Sending an Error Indication in this case misleads
+                     * the peer: per 3GPP TS 23.007 clause 21 the
+                     * receiving node deletes the associated bearer
+                     * context, so a single off-filter packet (e.g. ICMP)
+                     * on a live dedicated (voice) bearer tears the
+                     * bearer down and drops the ongoing call.
+                     *
+                     * Therefore the off-filter packet is discarded
+                     * without an Error Indication, mirroring the SGW-U
+                     * behaviour.
+                     */
+                    ogs_debug("[DROP] Off-filter G-PDU "
+                            "[TEID:0x%x QFI:%d] from [%s]",
+                            header_desc.teid,
+                            header_desc.qos_flow_identifier,
+                            OGS_ADDR(&from, buf2));
+                    goto cleanup;
+                }
+
                 /*
+                 * The TEID is not owned by any PDR of the session found
+                 * in the TEID hash, so no bearer context exists for this
+                 * G-PDU; keep the legacy behaviour and send the Error
+                 * Indication (3GPP TS 29.281 clause 7.3.1).
+                 *
                  * TS23.527 Restoration procedures
                  * 4.3 UPF Restoration Procedures
                  * 4.3.2 Restoration Procedure for PSA UPF Restart
