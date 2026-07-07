@@ -3341,6 +3341,53 @@ void enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb)
 
     /* Switch to enb */
     enb_ue->enb_id = new_enb->id;
+
+    /*
+     * Re-bind the SCTP output stream to the target eNB if needed.
+     *
+     * enb_ue->enb_ostream_id was allocated in enb_ue_add() in the range
+     * [1, max_num_of_ostreams-1] negotiated with the SOURCE eNB. eNBs
+     * from different vendors can negotiate a different number of SCTP
+     * streams; when the target eNB negotiated fewer streams, the
+     * carried-over stream id is out of range on the new association and
+     * ogs_sctp_senddata() fails with EINVAL(22), so e.g. the
+     * PathSwitchRequestAcknowledge is lost silently and the eNB reports
+     * ho-failure-in-target-EPC-eNB-or-target-system.
+     *
+     * The stream id is re-allocated from the target eNB's range only
+     * when it is out of range, so a handover between eNBs that
+     * negotiated the same stream count is not affected.
+     */
+    if (new_enb->max_num_of_ostreams < 2) {
+        /*
+         * The target eNB negotiated a single SCTP stream: there is no
+         * UE-associated stream available (stream 0 is reserved for the
+         * sole use of non-UE-associated signalling, 3GPP TS 36.412
+         * clause 7, and enb_ue_add() rejects such an eNB as well).
+         * Keep the current stream id unchanged; UE-associated
+         * signalling toward this eNB will fail to be delivered, as
+         * before this change.
+         */
+        ogs_error("Target eNB has no UE-associated SCTP stream "
+                "[MAX:%d]; UE-associated signalling cannot be delivered",
+                new_enb->max_num_of_ostreams);
+        return;
+    }
+
+    if (enb_ue->enb_ostream_id >= new_enb->max_num_of_ostreams) {
+        uint16_t old_ostream_id = enb_ue->enb_ostream_id;
+
+        enb_ue->enb_ostream_id =
+            OGS_NEXT_ID(new_enb->ostream_id, 1,
+                    new_enb->max_num_of_ostreams-1);
+
+        ogs_warn("SCTP output stream re-bound to the target eNB "
+                "[OLD:%d NEW:%d MAX:%d] "
+                "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                old_ostream_id, enb_ue->enb_ostream_id,
+                new_enb->max_num_of_ostreams,
+                enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+    }
 }
 
 enb_ue_t *enb_ue_find_by_enb_ue_s1ap_id(

@@ -1458,6 +1458,53 @@ void ran_ue_switch_to_gnb(ran_ue_t *ran_ue, amf_gnb_t *new_gnb)
 
     /* Switch to gnb */
     ran_ue->gnb_id = new_gnb->id;
+
+    /*
+     * Re-bind the SCTP output stream to the target gNB if needed.
+     *
+     * ran_ue->gnb_ostream_id was allocated in ran_ue_add() in the range
+     * [1, max_num_of_ostreams-1] negotiated with the SOURCE gNB. gNBs
+     * from different vendors can negotiate a different number of SCTP
+     * streams; when the target gNB negotiated fewer streams, the
+     * carried-over stream id is out of range on the new association and
+     * ogs_sctp_senddata() fails with EINVAL(22), so e.g. the
+     * PathSwitchRequestAcknowledge is lost silently.
+     *
+     * The stream id is re-allocated from the target gNB's range only
+     * when it is out of range, so a handover between gNBs that
+     * negotiated the same stream count is not affected.
+     */
+    if (new_gnb->max_num_of_ostreams < 2) {
+        /*
+         * The target gNB negotiated a single SCTP stream: there is no
+         * UE-associated stream available (stream 0 is reserved for the
+         * sole use of non-UE-associated signalling, 3GPP TS 38.412
+         * clause 7, and ran_ue_add() rejects such a gNB as well).
+         * Keep the current stream id unchanged; UE-associated
+         * signalling toward this gNB will fail to be delivered, as
+         * before this change.
+         */
+        ogs_error("Target gNB has no UE-associated SCTP stream "
+                "[MAX:%d]; UE-associated signalling cannot be delivered",
+                new_gnb->max_num_of_ostreams);
+        return;
+    }
+
+    if (ran_ue->gnb_ostream_id >= new_gnb->max_num_of_ostreams) {
+        uint16_t old_ostream_id = ran_ue->gnb_ostream_id;
+
+        ran_ue->gnb_ostream_id =
+            OGS_NEXT_ID(new_gnb->ostream_id, 1,
+                    new_gnb->max_num_of_ostreams-1);
+
+        ogs_warn("SCTP output stream re-bound to the target gNB "
+                "[OLD:%d NEW:%d MAX:%d] "
+                "RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+                old_ostream_id, ran_ue->gnb_ostream_id,
+                new_gnb->max_num_of_ostreams,
+                (long long)ran_ue->ran_ue_ngap_id,
+                (long long)ran_ue->amf_ue_ngap_id);
+    }
 }
 
 ran_ue_t *ran_ue_find_by_ran_ue_ngap_id(
