@@ -1155,6 +1155,13 @@ bool amf_ue_is_rat_restricted(amf_ue_t *amf_ue);
 int amf_instance_get_load(void);
 void amf_ue_save_to_release_session_list(amf_ue_t *amf_ue);
 
+/* True if this UE's subscription includes an IMS-flagged DNN
+ * across any of its subscribed slices. Returns true unconditionally
+ * when the global vops_per_apn flag is disabled, preserving the
+ * historical hardcoded =1 behaviour for the 5GS Network Feature
+ * Support IE in registration accept. */
+bool amf_ue_voice_over_ps_supported(amf_ue_t *amf_ue);
+
 #ifdef __cplusplus
 }
 #endif

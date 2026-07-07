@@ -236,9 +236,14 @@ ogs_pkbuf_t *emm_build_attach_accept(
         eps_network_feature_support->length = 1;
     }
     if (ogs_global_conf()->parameter.no_ims == true) {
-    	eps_network_feature_support->ims_voice_over_ps_session_in_s1_mode = 0;
+        /* Global override (no_ims): IMS VoPS suppressed for every UE. */
+        eps_network_feature_support->ims_voice_over_ps_session_in_s1_mode = 0;
     } else {
-    eps_network_feature_support->ims_voice_over_ps_session_in_s1_mode = 1;
+        /* When vops_per_apn=true, derive from subscriber APN list;
+         * mme_ue_voice_over_ps_supported() short-circuits to true when
+         * vops_per_apn=false (default), preserving legacy behaviour. */
+        eps_network_feature_support->ims_voice_over_ps_session_in_s1_mode =
+            mme_ue_voice_over_ps_supported(mme_ue) ? 1 : 0;
     }
     eps_network_feature_support->extended_protocol_configuration_options = 1;
     if (mme_self()->emergency.dnn)
@@ -697,11 +702,16 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
         tau_accept->eps_network_feature_support.length = 1;
     }
     if (ogs_global_conf()->parameter.no_ims == true) {
-    	tau_accept->eps_network_feature_support.
-        	ims_voice_over_ps_session_in_s1_mode = 0;
-    } else {
+        /* Global override (no_ims): IMS VoPS suppressed for every UE. */
         tau_accept->eps_network_feature_support.
-                ims_voice_over_ps_session_in_s1_mode = 1;
+            ims_voice_over_ps_session_in_s1_mode = 0;
+    } else {
+        /* When vops_per_apn=true, derive from subscriber APN list;
+         * mme_ue_voice_over_ps_supported() short-circuits to true when
+         * vops_per_apn=false (default), preserving legacy behaviour. */
+        tau_accept->eps_network_feature_support.
+            ims_voice_over_ps_session_in_s1_mode =
+                mme_ue_voice_over_ps_supported(mme_ue) ? 1 : 0;
     }
     tau_accept->eps_network_feature_support.
         extended_protocol_configuration_options = 1;
