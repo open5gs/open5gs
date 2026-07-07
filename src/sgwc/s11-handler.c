@@ -1275,10 +1275,11 @@ void sgwc_s11_handle_delete_bearer_response(
      ********************/
     ogs_assert(s11_xact);
     s5c_xact = ogs_gtp_xact_find_by_id(s11_xact->assoc_xact_id);
-    ogs_assert(s5c_xact);
+    /* s5c_xact may be NULL; handled after the transaction is committed. */
 
     if (s11_xact->xid & OGS_GTP_CMD_XACT_ID) {
         /* MME received Bearer Resource Modification Request */
+        ogs_assert(s5c_xact);
         ogs_assert(s5c_xact->data);
         bearer_id = OGS_POINTER_TO_UINT(s5c_xact->data);
         ogs_assert(bearer_id >= OGS_MIN_POOL_ID &&
@@ -1312,6 +1313,50 @@ void sgwc_s11_handle_delete_bearer_response(
 
     rv = ogs_gtp_xact_commit(s11_xact);
     ogs_expect(rv == OGS_OK);
+
+    if (!s5c_xact) {
+        /*
+         * The S5-C transaction of a relayed (PGW-initiated) Delete
+         * Bearer Request has already expired, e.g. the Delete Bearer
+         * Response was delayed by paging an ECM-IDLE UE. There is
+         * nothing to relay back to the PGW anymore, but the local PFCP
+         * session/bearer removal still has to be completed. (This
+         * previously hit ogs_assert(s5c_xact) and crashed the SGW-C.)
+         */
+        ogs_warn("S5-C transaction has already been removed");
+        if (!bearer || !sess) {
+            ogs_error("No Bearer/Session context after S5-C transaction "
+                    "expiry; nothing to clean up");
+            return;
+        }
+
+        /*
+         * The Cause is logged for observability only, mirroring the
+         * normal relay path below: the local PFCP removal is performed
+         * regardless of the Cause. This is PGW-initiated bearer
+         * deactivation - the PGW deletes its side of the bearer in any
+         * case, so keeping the local state on a failure Cause would
+         * leave the SGW forwarding into a dead S5-U tunnel.
+         */
+        if (rsp->cause.presence) {
+            ogs_gtp2_cause_t *cause = rsp->cause.data;
+            ogs_assert(cause);
+            if (cause->value != OGS_GTP2_CAUSE_REQUEST_ACCEPTED)
+                ogs_error("GTP Cause [Value:%d]", cause->value);
+        } else
+            ogs_error("No Cause");
+
+        if (rsp->linked_eps_bearer_id.presence)
+            ogs_assert(OGS_OK ==
+                sgwc_pfcp_send_session_deletion_request(
+                    sess, OGS_INVALID_POOL_ID, NULL));
+        else
+            ogs_assert(OGS_OK ==
+                sgwc_pfcp_send_bearer_modification_request(
+                    bearer, OGS_INVALID_POOL_ID, NULL,
+                    OGS_PFCP_MODIFY_REMOVE));
+        return;
+    }
 
     /************************
      * Check SGWC-UE Context

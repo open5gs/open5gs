@@ -509,7 +509,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                      * without an Error Indication, mirroring the SGW-U
                      * behaviour.
                      */
-                    ogs_debug("[DROP] Off-filter G-PDU "
+                    ogs_error("[DROP] Off-filter G-PDU "
                             "[TEID:0x%x QFI:%d] from [%s]",
                             header_desc.teid,
                             header_desc.qos_flow_identifier,
