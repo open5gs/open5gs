@@ -217,7 +217,17 @@ static int pcrf_rx_aar_cb(struct msg **msg, struct avp *avp,
     ret = fd_msg_search_avp(qry, ogs_diam_rx_framed_ip_address, &avp);
     if (ret == 0 && avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        if (ret == 0 && hdr) {
+        if (ret == 0 && hdr && hdr->avp_value) {
+            if (!hdr->avp_value->os.data ||
+                hdr->avp_value->os.len != OGS_IPV4_LEN) {
+                ogs_error("Invalid Framed-IP-Address length [%zu]",
+                hdr->avp_value->os.len);
+
+                result_code = ER_DIAMETER_INVALID_AVP_VALUE;
+                error_occurred = 1;
+                goto out;
+            }
+
             gx_sid = (os0_t)pcrf_sess_find_by_ipv4(hdr->avp_value->os.data);
             if (!gx_sid) {
                 ogs_warn("Cannot find Gx Session for IPv4:%s",
@@ -226,21 +236,29 @@ static int pcrf_rx_aar_cb(struct msg **msg, struct avp *avp,
         }
     }
 
-    if (!gx_sid) {
-        /* Get Framed-IPv6-Prefix */
-        ret = fd_msg_search_avp(qry, ogs_diam_rx_framed_ipv6_prefix, &avp);
-        if (ret == 0 && avp) {
-            ogs_paa_t *paa = NULL;
+    /* Get Framed-IPv6-Prefix */
+    ret = fd_msg_search_avp(qry, ogs_diam_rx_framed_ipv6_prefix, &avp);
+    if (ret == 0 && avp) {
+        ogs_paa_t *paa = NULL;
 
-            ret = fd_msg_avp_hdr(avp, &hdr);
-            if (ret == 0 && hdr) {
-                paa = (ogs_paa_t *)hdr->avp_value->os.data;
-                if (paa && paa->len == OGS_IPV6_LEN * 8) {
-                    gx_sid = (os0_t)pcrf_sess_find_by_ipv6(paa->addr6);
-                    if (!gx_sid) {
-                        ogs_warn("Cannot find Gx Session for IPv6:%s",
-                                OGS_INET6_NTOP(hdr->avp_value->os.data, buf));
-                    }
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        if (ret == 0 && hdr && hdr->avp_value) {
+            if (!hdr->avp_value->os.data ||
+                hdr->avp_value->os.len != OGS_PAA_IPV6_LEN) {
+                ogs_error("Invalid Framed-IPv6-Prefix length [%zu]",
+                        hdr->avp_value->os.len);
+
+                result_code = ER_DIAMETER_INVALID_AVP_VALUE;
+                error_occurred = 1;
+                goto out;
+            }
+
+            paa = (ogs_paa_t *)hdr->avp_value->os.data;
+            if (paa->len == OGS_IPV6_128_PREFIX_LEN) {
+                gx_sid = (os0_t)pcrf_sess_find_by_ipv6(paa->addr6);
+                if (!gx_sid) {
+                    ogs_warn("Cannot find Gx Session for IPv6:%s",
+                            OGS_INET6_NTOP(paa->addr6, buf));
                 }
             }
         }
