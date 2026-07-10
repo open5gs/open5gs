@@ -241,8 +241,16 @@ int gsm_handle_pdu_session_modification_qos_rules(
         smf_pf_t *pf = NULL;
         smf_bearer_t *qos_flow =
             smf_qos_flow_find_by_qfi(sess, qos_rule[i].identifier);
+
+        ogs_info("[%s:%d] Requested QoS rule "
+                "[code:%d id:%d num_of_packet_filter:%d]",
+                smf_ue->supi, sess->psi,
+                qos_rule[i].code, qos_rule[i].identifier,
+                qos_rule[i].num_of_packet_filter);
+
         if (!qos_flow) {
-            ogs_error("No Qos Flow");
+            ogs_error("[%s:%d] No QoS flow [QRI/QFI:%d]",
+                    smf_ue->supi, sess->psi, qos_rule[i].identifier);
             continue;
         }
 
@@ -410,8 +418,78 @@ int gsm_handle_pdu_session_modification_qos_flow_descriptions(
         smf_bearer_t *qos_flow =
             smf_qos_flow_find_by_qfi(
                     sess, qos_flow_description[i].identifier);
+
+        ogs_info("[%s:%d] Requested QoS flow description "
+                "[code:%d qfi:%d E_bit:%d num_of_parameter:%d]",
+                smf_ue->supi, sess->psi,
+                qos_flow_description[i].code,
+                qos_flow_description[i].identifier,
+                qos_flow_description[i].E_bit,
+                qos_flow_description[i].num_of_parameter);
+
         if (!qos_flow) {
-            ogs_error("No Qos Flow");
+            ogs_error("[%s:%d] No QoS flow [QFI:%d]",
+                    smf_ue->supi, sess->psi,
+                    qos_flow_description[i].identifier);
+            continue;
+        }
+
+        if (qos_flow_description[i].code ==
+                OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION) {
+            /*
+             * Issue #4672: smfd aborted while tearing down a VoNR call.
+             *
+             * Root cause
+             * ----------
+             * The QoS rules IE (TS24.501 9.11.4.13) and the QoS flow
+             * descriptions IE (9.11.4.12) are independent IEs, each with
+             * its own operation codes. Deleting a QoS flow therefore has
+             * three valid encodings:
+             *   1) QoS rule delete only,
+             *   2) QoS flow description delete only,
+             *   3) QoS rule delete + QoS flow description delete, paired
+             *      on the same QFI.
+             * For a GBR QoS flow (e.g. VoNR voice, 5QI 1) form 3) is the
+             * one conformant UEs use: per 9.11.4.13/9.11.4.12 leaving a
+             * GBR QoS rule whose QFI has no associated QoS flow
+             * description (or vice versa) is a syntactical error in the
+             * QoS operation, so the rule and the flow description must be
+             * deleted together.
+             *
+             * In Open5GS, removal of a QoS flow is driven solely by
+             * OGS_PFCP_MODIFY_REMOVE, which only the QoS rules handler
+             * sets (via smf_pf_remove_all() + adding the flow to
+             * qos_flow_to_modify_list; the flow is finally freed by
+             * smf_bearer_remove() in the N4 handler once REMOVE is set).
+             * Previously this handler ignored the operation code and set
+             * OGS_PFCP_MODIFY_QOS_MODIFY for every flow description. On
+             * the paired delete (form 3) that left both REMOVE (from the
+             * rule) and QOS_MODIFY (from this description) set for the
+             * same flow, tripping the invariant asserted in
+             * gsm_handle_pdu_session_modification_request()
+             * (pfcp_flags 0x8080 = REMOVE | QOS_MODIFY) and aborting the
+             * SMF on an otherwise standards-compliant request.
+             *
+             * Fix
+             * ---
+             * A "Delete existing QoS flow description" carries no
+             * parameters (E bit = 0, number of parameters = 0), so there
+             * is nothing to modify here. Skip it and let the paired QoS
+             * rule delete drive the removal. This keeps forms 1) and 3)
+             * working and no longer manufactures QOS_MODIFY out of a
+             * delete.
+             *
+             * Note on form 2) (flow description delete without the paired
+             * rule delete): with this skip, nothing is added to
+             * qos_flow_to_modify_list, so the caller's count check
+             * rejects the request. We deliberately do not treat a lone
+             * flow description delete as a removal: removal in Open5GS is
+             * keyed off the QoS rule, and for a GBR flow a lone flow
+             * description delete is itself a syntactical error under
+             * 9.11.4.12. If future requirements need form 2) to actually
+             * remove the flow, this branch would instead set
+             * OGS_PFCP_MODIFY_REMOVE and add the flow to the modify list.
+             */
             continue;
         }
 
@@ -512,20 +590,45 @@ int gsm_handle_pdu_session_modification_request(
     }
 
     if (pfcp_flags & OGS_PFCP_MODIFY_REMOVE) {
-        ogs_assert((pfcp_flags &
-                    (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
-                    OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
-                    OGS_PFCP_MODIFY_QOS_MODIFY)) == 0);
+        /*
+         * Issue #4672
+         *
+         * pfcp_flags is derived from the content of the UE's
+         * PDU Session Modification Request, so a misbehaving UE can
+         * request a removal combined with a TFT/QoS modification for
+         * the same QoS flow. This is invalid input, not an internal
+         * error: log the exact flag combination and reject the
+         * request instead of aborting the SMF.
+         */
+        if (pfcp_flags &
+                (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
+                OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
+                OGS_PFCP_MODIFY_QOS_MODIFY)) {
+            ogs_error("[%s:%d] Invalid modification request "
+                    "[REMOVE combined with TFT/QOS-MODIFY "
+                    "pfcp_flags:0x%llx]",
+                    smf_ue->supi, sess->psi, (long long)pfcp_flags);
+            ogs_assert_if_reached();
+        }
 
     } else if (pfcp_flags &
                 (OGS_PFCP_MODIFY_TFT_NEW|OGS_PFCP_MODIFY_TFT_ADD|
                 OGS_PFCP_MODIFY_TFT_REPLACE|OGS_PFCP_MODIFY_TFT_DELETE|
                 OGS_PFCP_MODIFY_QOS_MODIFY)) {
 
-        ogs_assert((pfcp_flags & OGS_PFCP_MODIFY_REMOVE) == 0);
+        /* TFT/QoS modification without removal */
+        if (pfcp_flags & OGS_PFCP_MODIFY_REMOVE) {
+            ogs_error("[%s:%d] Invalid modification request "
+                    "[TFT/QOS-MODIFY combined with REMOVE "
+                    "pfcp_flags:0x%llx]",
+                    smf_ue->supi, sess->psi, (long long)pfcp_flags);
+            ogs_assert_if_reached();
+        }
 
     } else {
-        ogs_fatal("Unknown PFCP-Flags : [0x%llx]", (long long)pfcp_flags);
+        ogs_error("[%s:%d] Invalid modification request "
+                "[Unknown pfcp_flags:0x%llx]",
+                smf_ue->supi, sess->psi, (long long)pfcp_flags);
         ogs_assert_if_reached();
     }
 

@@ -4839,6 +4839,131 @@ static void test13_func(abts_case *tc, void *data)
 }
 
 
+static void test_issue4672_func(abts_case *tc, void *data)
+{
+    int rv;
+    ogs_socknode_t *ngap = NULL;
+    ogs_socknode_t *gtpu = NULL;
+    test_ue_t *test_ue = NULL;
+    test_sess_t *sess = NULL;
+    test_bearer_t *qos_flow = NULL;
+    af_sess_t *af_sess = NULL;
+    af_npcf_policyauthorization_param_t af_param;
+
+    ogs_pkbuf_t *gmmbuf = NULL;
+    ogs_pkbuf_t *gsmbuf = NULL;
+    ogs_pkbuf_t *sendbuf = NULL;
+    ogs_pkbuf_t *recvbuf = NULL;
+
+    /*
+     * Issue #4672
+     *
+     * Reproduces the smfd crash observed on a VoNR call teardown.
+     */
+    test_af_qos_reference_setup(tc, "0000004672",
+            &test_ue, &sess, &af_sess, &ngap, &gtpu);
+
+    memset(&af_param, 0, sizeof(af_param));
+    af_param.med_type = OpenAPI_media_type_AUDIO;
+    af_param.qos_reference = "test-audio";
+    af_param.qos_type = 1;
+    af_param.flow_type = 99;
+
+    af_local_send_to_pcf(af_sess, &af_param,
+            af_npcf_policyauthorization_build_create);
+
+    qos_flow = test_af_complete_qos_flow_modify(tc, test_ue, sess, ngap);
+    ogs_assert(qos_flow);
+
+    /* UE-initiated deletion of the dedicated QoS flow (QFI 2) */
+    sess->pti = 8;
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
+    sess->ul_nas_transport_param.dnn = 1;
+    sess->ul_nas_transport_param.s_nssai = 1;
+
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
+    gsmbuf = testgsm_build_pdu_session_modification_request(
+        qos_flow,
+        OGS_5GSM_CAUSE_REGULAR_DEACTIVATION,
+        OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE,
+        OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDUSessionResourceModifyRequest +
+     * DL NAS transport +
+     * PDU session modification command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceModify,
+            test_ue->ngap_procedure_code);
+
+    /*
+     * The QoS rule delete drives removal of the dedicated QoS flow, so
+     * smfd releases QFI 2. Acknowledge the release at NGAP and complete
+     * the modification at NAS, then drop the test-side bearer.
+     */
+    qos_flow = test_qos_flow_find_by_qfi(sess, 2);
+    ogs_assert(qos_flow);
+
+    sendbuf = testngap_build_qos_flow_resource_release_response(qos_flow);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 0;
+
+    sess->pdu_session_establishment_param.ssc_mode = 0;
+    sess->pdu_session_establishment_param.epco = 0;
+
+    gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    test_bearer_remove(qos_flow);
+
+    ogs_msleep(100);
+
+    /*
+     * The dedicated QoS flow was removed by the UE, but the AF/PCF
+     * policy authorization that created it is still active. Tear it
+     * down through the AF (Npcf_PolicyAuthorization delete) so the app
+     * session is terminated cleanly and no dangling status
+     * notification is later sent to a removed app session. Because the
+     * QoS flow is already gone, smfd takes the "already removed" path
+     * in binding.c and issues no further PDUSessionResourceModify, so
+     * there is nothing more to read here. The AF removes af_sess itself
+     * on the delete response (tests/af/af-sm.c), so it must not be
+     * removed again.
+     */
+    af_local_send_to_pcf(af_sess, NULL,
+            af_npcf_policyauthorization_build_delete);
+
+    ogs_msleep(100);
+
+    test_af_qos_reference_cleanup(tc, test_ue, ngap, gtpu);
+}
+
 abts_suite *test_af(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -4863,6 +4988,7 @@ abts_suite *test_af(abts_suite *suite)
     abts_run_test(suite, test11_func, NULL);
     abts_run_test(suite, test12_func, NULL);
     abts_run_test(suite, test13_func, NULL);
+    abts_run_test(suite, test_issue4672_func, NULL);
 
     return suite;
 }
