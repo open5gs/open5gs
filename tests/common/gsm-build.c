@@ -203,6 +203,16 @@ ogs_pkbuf_t *testgsm_build_pdu_session_modification_request(
             qos_rule[0].pf[2].identifier = 3;
             qos_rule[0].pf[3].identifier = 4;
 
+        } else if (qos_rule_code ==
+                OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE) {
+            /*
+             * Delete existing QoS rule: no packet filters are carried
+             * and the encoder omits precedence and the QoS flow
+             * identifier for this operation (TS24.501 9.11.4.13).
+             */
+            qos_rule[0].DQR_bit = 0;
+            qos_rule[0].num_of_packet_filter = 0;
+
         } else {
             ogs_fatal("Unknown qos_rule_code[%d]", qos_rule_code);
             ogs_assert_if_reached();
