@@ -143,6 +143,13 @@ static int hss_ogs_diam_cx_uar_cb(struct msg **msg, struct avp *avp,
         goto out;
     }
 
+    if (user_name[0] == '\0') {
+        ogs_error("Empty User-Name");
+        result_code = OGS_DIAM_INVALID_AVP_VALUE;
+        error_occurred = 1;
+        goto out;
+    }
+
     if (hss_cx_user_name_to_bcd(user_name,
                 imsi_or_msisdn_bcd, sizeof(imsi_or_msisdn_bcd)) == false) {
         ogs_error("Invalid User-Name BCD");
@@ -179,6 +186,13 @@ static int hss_ogs_diam_cx_uar_cb(struct msg **msg, struct avp *avp,
         (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
     if (!public_identity) {
         ogs_error("Failed to duplicate Public-Identity");
+        result_code = OGS_DIAM_INVALID_AVP_VALUE;
+        error_occurred = 1;
+        goto out;
+    }
+
+    if (public_identity[0] == '\0') {
+        ogs_error("Empty Public-Identity");
         result_code = OGS_DIAM_INVALID_AVP_VALUE;
         error_occurred = 1;
         goto out;
@@ -461,6 +475,13 @@ static int hss_ogs_diam_cx_mar_cb(struct msg **msg, struct avp *avp,
         goto out;
     }
 
+    if (user_name[0] == '\0') {
+        ogs_error("Empty User-Name");
+        result_code = OGS_DIAM_INVALID_AVP_VALUE;
+        error_occurred = 1;
+        goto out;
+    }
+
     /* Get Public-Identity AVP (Mandatory) */
     ret = fd_msg_search_avp(qry, ogs_diam_cx_public_identity, &avp);
     if (ret != 0) {
@@ -489,6 +510,13 @@ static int hss_ogs_diam_cx_mar_cb(struct msg **msg, struct avp *avp,
         (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
     if (!public_identity) {
         ogs_error("Failed to duplicate Public-Identity");
+        result_code = OGS_DIAM_INVALID_AVP_VALUE;
+        error_occurred = 1;
+        goto out;
+    }
+
+    if (public_identity[0] == '\0') {
+        ogs_error("Empty Public-Identity");
         result_code = OGS_DIAM_INVALID_AVP_VALUE;
         error_occurred = 1;
         goto out;
@@ -1107,6 +1135,13 @@ static int hss_ogs_diam_cx_sar_cb(struct msg **msg, struct avp *avp,
         goto out;
     }
 
+    if (public_identity[0] == '\0') {
+        ogs_error("Empty Public-Identity");
+        result_code = OGS_DIAM_INVALID_AVP_VALUE;
+        error_occurred = 1;
+        goto out;
+    }
+
     /* Get Server-Name AVP (Mandatory) */
     ret = fd_msg_search_avp(qry, ogs_diam_cx_server_name, &avp);
     if (ret != 0) {
@@ -1155,6 +1190,13 @@ static int hss_ogs_diam_cx_sar_cb(struct msg **msg, struct avp *avp,
             (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
         if (!user_name) {
             ogs_error("Failed to duplicate User-Name");
+            result_code = OGS_DIAM_INVALID_AVP_VALUE;
+            error_occurred = 1;
+            goto out;
+        }
+
+        if (user_name[0] == '\0') {
+            ogs_error("Empty User-Name");
             result_code = OGS_DIAM_INVALID_AVP_VALUE;
             error_occurred = 1;
             goto out;
@@ -1556,6 +1598,13 @@ static int hss_ogs_diam_cx_lir_cb(struct msg **msg, struct avp *avp,
         (char*)hdr->avp_value->os.data, hdr->avp_value->os.len);
     if (!public_identity) {
         ogs_error("Failed to duplicate Public-Identity");
+        result_code = OGS_DIAM_INVALID_AVP_VALUE;
+        error_occurred = 1;
+        goto out;
+    }
+
+    if (public_identity[0] == '\0') {
+        ogs_error("Empty Public-Identity");
         result_code = OGS_DIAM_INVALID_AVP_VALUE;
         error_occurred = 1;
         goto out;
