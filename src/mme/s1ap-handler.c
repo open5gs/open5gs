@@ -4749,6 +4749,25 @@ void s1ap_handle_s1_reset(
                 continue;
             }
 
+            if (enb_ue->enb_id != enb->id) {
+                ogs_error("MME_UE_S1AP_ID[%lld] does not belong to this eNB "
+                        "[UE:eNB-ID:%llu, Message:eNB-ID:%llu]",
+                        (long long)enb_ue->mme_ue_s1ap_id,
+                        (unsigned long long)enb_ue->enb_id,
+                        (unsigned long long)enb->id);
+                continue;
+            }
+
+            if (item->mME_UE_S1AP_ID && item->eNB_UE_S1AP_ID &&
+                    enb_ue->enb_ue_s1ap_id != *item->eNB_UE_S1AP_ID) {
+                ogs_error("Invalid ENB_UE_S1AP_ID[%lld] for "
+                        "MME_UE_S1AP_ID[%lld] [expected:%u]",
+                        (long long)*item->eNB_UE_S1AP_ID,
+                        (long long)enb_ue->mme_ue_s1ap_id,
+                        enb_ue->enb_ue_s1ap_id);
+                continue;
+            }
+
             /* ENB_UE Context where PartOfS1_interface was requested */
             enb_ue->part_of_s1_reset_requested = true;
 

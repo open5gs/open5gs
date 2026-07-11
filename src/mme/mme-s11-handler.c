@@ -1631,14 +1631,18 @@ void mme_s11_handle_release_access_bearers_response(
                 /* All ENB_UE context
                  * where PartOfS1_interface was requested
                  * REMOVED */
-                ogs_assert(enb->s1_reset_ack);
-                r = s1ap_send_to_enb(
-                        enb, enb->s1_reset_ack, S1AP_NON_UE_SIGNALLING);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
+                if (enb->s1_reset_ack) {
+                    r = s1ap_send_to_enb(
+                            enb, enb->s1_reset_ack, S1AP_NON_UE_SIGNALLING);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
 
-                /* Clear S1-Reset Ack Buffer */
-                enb->s1_reset_ack = NULL;
+                    /* Clear S1-Reset Ack Buffer */
+                    enb->s1_reset_ack = NULL;
+                } else {
+                    ogs_error("No S1-Reset Ack buffer [eNB-ID:%llu]",
+                            (unsigned long long)enb->id);
+                }
             }
         } else {
             ogs_error("ENB-S1 Context has already been removed");

@@ -5239,6 +5239,25 @@ void ngap_handle_ng_reset(
 
             ogs_assert(ran_ue);
 
+            if (ran_ue->gnb_id != gnb->id) {
+                ogs_error("AMF_UE_NGAP_ID[%lld] does not belong to this gNB "
+                        "[UE:gNB-ID:%llu, Message:gNB-ID:%llu]",
+                        (long long)ran_ue->amf_ue_ngap_id,
+                        (unsigned long long)ran_ue->gnb_id,
+                        (unsigned long long)gnb->id);
+                continue;
+            }
+
+            if (item->aMF_UE_NGAP_ID && item->rAN_UE_NGAP_ID &&
+                    ran_ue->ran_ue_ngap_id != *item->rAN_UE_NGAP_ID) {
+                ogs_error("Invalid RAN_UE_NGAP_ID[%lld] for "
+                        "AMF_UE_NGAP_ID[%lld] [expected:%lld]",
+                        (long long)*item->rAN_UE_NGAP_ID,
+                        (long long)ran_ue->amf_ue_ngap_id,
+                        (long long)ran_ue->ran_ue_ngap_id);
+                continue;
+            }
+
             /* RAN_UE Context where PartOfNG_interface was requested */
             ran_ue->part_of_ng_reset_requested = true;
 

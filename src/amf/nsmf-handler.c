@@ -927,14 +927,19 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                             /* All GNB_UE context
                              * where PartOfNG_interface was requested
                              * REMOVED */
-                            ogs_assert(gnb->ng_reset_ack);
-                            r = ngap_send_to_gnb(
-                                gnb, gnb->ng_reset_ack, NGAP_NON_UE_SIGNALLING);
-                            ogs_expect(r == OGS_OK);
-                            ogs_assert(r != OGS_ERROR);
+                            if (gnb->ng_reset_ack) {
+                                r = ngap_send_to_gnb(gnb, gnb->ng_reset_ack,
+                                        NGAP_NON_UE_SIGNALLING);
+                                ogs_expect(r == OGS_OK);
+                                ogs_assert(r != OGS_ERROR);
 
-                            /* Clear NG-Reset Ack Buffer */
-                            gnb->ng_reset_ack = NULL;
+                                /* Clear NG-Reset Ack Buffer */
+                                gnb->ng_reset_ack = NULL;
+                            } else {
+                                ogs_error("No NG-Reset Ack buffer "
+                                        "[gNB-ID:%llu]",
+                                        (unsigned long long)gnb->id);
+                            }
                         }
                     } else {
                         ogs_warn("[%s] RAN-NG Context has already been removed",
