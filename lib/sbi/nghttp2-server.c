@@ -1322,6 +1322,18 @@ static int on_frame_recv(nghttp2_session *session,
             if (server->cb(request,
                         OGS_UINT_TO_POINTER(stream->id)) != OGS_OK) {
                 ogs_warn("server callback error");
+
+                /* The callback may have sent a response and closed
+                 * the stream. */
+                stream = nghttp2_session_get_stream_user_data(
+                        session, frame->hd.stream_id);
+                if (!stream) {
+                    ogs_error("The server callback already sent a response "
+                            "but returned an error; it must return OGS_OK "
+                            "instead [%d]", frame->hd.stream_id);
+                    return 0;
+                }
+
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,
                         OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,

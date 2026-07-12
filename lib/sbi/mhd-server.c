@@ -594,9 +594,11 @@ static _MHD_Result access_handler(
         size_t *upload_data_size,
         void **con_cls)
 {
+    int rv;
     ogs_sbi_server_t *server = NULL;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_session_t *sbi_sess = NULL;
+    ogs_pool_id_t sbi_sess_id = OGS_INVALID_POOL_ID;
 
     server = cls;
     ogs_assert(server);
@@ -687,10 +689,22 @@ suspend:
 
     sbi_sess = session_add(server, request, connection);
     ogs_assert(sbi_sess);
+    sbi_sess_id = sbi_sess->id;
 
     ogs_assert(server->cb);
-    if (server->cb(request, OGS_UINT_TO_POINTER(sbi_sess->id)) != OGS_OK) {
+    rv = server->cb(request, OGS_UINT_TO_POINTER(sbi_sess_id));
+    if (rv != OGS_OK) {
         ogs_warn("server callback error");
+
+        /* The callback may have sent a response and removed the session. */
+        sbi_sess = ogs_pool_find_by_id(&session_pool, sbi_sess_id);
+        if (!sbi_sess) {
+            ogs_error("The server callback already sent a response but "
+                    "returned an error; it must return OGS_OK instead [%d]",
+                    sbi_sess_id);
+            return MHD_YES;
+        }
+
         ogs_assert(true ==
                 ogs_sbi_server_send_error((ogs_sbi_stream_t *)sbi_sess,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,

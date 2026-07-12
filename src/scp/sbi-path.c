@@ -127,6 +127,9 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
     ogs_sbi_discovery_option_t *discovery_option = NULL;
     OpenAPI_service_name_e service_name = OpenAPI_service_name_NULL;
     bool discovery_presence = false;
+    bool user_agent_presence = false;
+    bool target_nf_type_presence = false;
+    bool service_names_presence = false;
 
     scp_assoc_t *assoc = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -195,6 +198,11 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
          *  and the field value. Field names are case-insensitive.
          */
         if (!strcasecmp(key, OGS_SBI_USER_AGENT)) {
+            char *v = NULL;
+            char *p = NULL;
+
+            user_agent_presence = true;
+
             /*
              * TS29.500
              * 5.2 HTTP/2 Protocol
@@ -226,8 +234,14 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
              * an SCP) and followed by a "-" and any other specific information
              * if needed afterwards.
              */
-            char *v = strsep(&val, "-");
-            if (v) requester_nf_type = OpenAPI_nf_type_FromString(v);
+            v = ogs_strdup(val);
+            ogs_assert(v);
+
+            p = strchr(v, '-');
+            if (p) *p = '\0';
+
+            requester_nf_type = OpenAPI_nf_type_FromString(v);
+            ogs_free(v);
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_TARGET_APIROOT)) {
             headers.target_apiroot = val;
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_CALLBACK)) {
@@ -235,7 +249,8 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_NRF_URI)) {
             headers.nrf_uri = val;
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_TARGET_NF_TYPE)) {
-            if (val) target_nf_type = OpenAPI_nf_type_FromString(val);
+            target_nf_type_presence = true;
+            target_nf_type = OpenAPI_nf_type_FromString(val);
         } else if (!strcasecmp(key,
                     OGS_SBI_CUSTOM_DISCOVERY_REQUESTER_NF_TYPE)) {
             ogs_warn("Use User-Agent instead of Discovery-requester-nf-type");
@@ -248,6 +263,7 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
             ogs_sbi_discovery_option_set_requester_nf_instance_id(
                     discovery_option, val);
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_SERVICE_NAMES)) {
+            service_names_presence = true;
             if (val) {
                 if (ogs_sbi_discovery_option_parse_service_names(
                             discovery_option, val) != OGS_OK) {
@@ -257,7 +273,7 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
                             "Invalid service-names", val, NULL));
-                    return OGS_ERROR;
+                    return OGS_OK;
                 }
             }
 
@@ -291,7 +307,7 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
                             "Invalid snssais", val, NULL));
-                    return OGS_ERROR;
+                    return OGS_OK;
                 }
             }
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_GUAMI)) {
@@ -304,7 +320,7 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
                             "Invalid guami", val, NULL));
-                    return OGS_ERROR;
+                    return OGS_OK;
                 }
             }
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_DNN)) {
@@ -319,7 +335,7 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
                             "Invalid tai", val, NULL));
-                    return OGS_ERROR;
+                    return OGS_OK;
                 }
             }
         } else if (!strcasecmp(key, OGS_SBI_CUSTOM_DISCOVERY_TARGET_PLMN_LIST)) {
@@ -333,7 +349,7 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
                             "Invalid target-plmn-list", val, NULL));
-                    return OGS_ERROR;
+                    return OGS_OK;
                 }
                 discovery_option->num_of_target_plmn_list = n;
             }
@@ -351,7 +367,7 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
                             "Invalid requester-plmn-list", val, NULL));
-                    return OGS_ERROR;
+                    return OGS_OK;
                 }
                 discovery_option->num_of_requester_plmn_list = n;
             }
@@ -368,20 +384,55 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
     /* Check if Discovery Parameter and Option */
     discovery_presence = false;
 
-    if (!requester_nf_type) {
+    if (!user_agent_presence) {
         ogs_error("[%s] No User-Agent", request->h.uri);
 
         scp_assoc_remove(assoc);
-        return OGS_ERROR;
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                "Missing User-Agent", request->h.uri,
+                "MANDATORY_IE_MISSING"));
+        return OGS_OK;
     }
 
-    if (target_nf_type || service_name) {
-        if (!target_nf_type || !service_name) {
+    if (!requester_nf_type) {
+        ogs_error("[%s] Invalid User-Agent", request->h.uri);
+
+        scp_assoc_remove(assoc);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                "Invalid User-Agent", request->h.uri,
+                "MANDATORY_IE_INCORRECT"));
+        return OGS_OK;
+    }
+
+    if (target_nf_type_presence || service_names_presence) {
+        if (!target_nf_type_presence || !service_names_presence) {
             ogs_error("[%s] No Mandatory Discovery [%d:%d]",
                 request->h.uri, target_nf_type, service_name);
 
             scp_assoc_remove(assoc);
-            return OGS_ERROR;
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                    "Missing mandatory discovery header", request->h.uri,
+                    "MANDATORY_IE_MISSING"));
+            return OGS_OK;
+        }
+
+        if (!target_nf_type || !service_name) {
+            ogs_error("[%s] Invalid Mandatory Discovery [%d:%d]",
+                request->h.uri, target_nf_type, service_name);
+
+            scp_assoc_remove(assoc);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                    "Invalid mandatory discovery header", request->h.uri,
+                    "MANDATORY_IE_INCORRECT"));
+            return OGS_OK;
         }
 
         if (target_nf_type == OpenAPI_nf_type_NRF)
@@ -505,7 +556,12 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                         headers.target_apiroot);
 
                 scp_assoc_remove(assoc);
-                return OGS_ERROR;
+                ogs_assert(true ==
+                    ogs_sbi_server_send_error(stream,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                        "Invalid Target-apiRoot", headers.target_apiroot,
+                        NULL));
+                return OGS_OK;
             }
 
             client = ogs_sbi_client_find(scheme, fqdn, fqdn_port, addr, addr6);
@@ -614,7 +670,16 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                     ogs_error("Invalid nnrf-disc [%s]", nnrf_disc);
 
                     scp_assoc_remove(assoc);
-                    return OGS_ERROR;
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                            "Invalid nnrf-disc", nnrf_disc, NULL));
+
+                    if (nnrf_nfm) ogs_free(nnrf_nfm);
+                    ogs_free(nnrf_disc);
+                    if (nnrf_oauth2) ogs_free(nnrf_oauth2);
+
+                    return OGS_OK;
                 }
 
                 nrf_client = ogs_sbi_client_find(
@@ -630,6 +695,10 @@ static int request_handler(ogs_sbi_request_t *request, void *data)
                         ogs_freeaddrinfo(addr);
                         ogs_freeaddrinfo(addr6);
                         scp_assoc_remove(assoc);
+
+                        if (nnrf_nfm) ogs_free(nnrf_nfm);
+                        ogs_free(nnrf_disc);
+                        if (nnrf_oauth2) ogs_free(nnrf_oauth2);
 
                         return OGS_ERROR;
                     }
@@ -737,21 +806,39 @@ static int response_handler(
     stream = ogs_sbi_stream_find_by_id(stream_id);
 
     if (status != OGS_OK) {
+        int res_status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+        const char *title = "response_handler() failed";
+        const char *cause = NULL;
 
         ogs_log_message(
                 status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
                 "response_handler() failed [%d]", status);
+
+        /*
+         * TS29.500 Table 5.2.7.4-1
+         * A downstream transport failure is a gateway error, not an
+         * internal server error. OGS_TIMEUP (SBI client transaction
+         * deadline) is treated as a reachability error rather than
+         * TIMED_OUT_REQUEST, which has a narrower meaning in 3GPP.
+         * Other failures (e.g. OGS_DONE on local shutdown) keep the
+         * generic 500.
+         */
+        if (status == OGS_ERROR || status == OGS_TIMEUP) {
+            res_status = OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT;
+            title = "Target NF not reachable";
+            cause = "TARGET_NF_NOT_REACHABLE";
+        }
 
         scp_assoc_remove(assoc);
 
         if (stream) {
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                    "response_handler() failed", NULL, NULL));
-        } else
-            ogs_error("STREAM has already been removed [%d]", stream_id);
+                    res_status, NULL, title, NULL, cause));
+            return OGS_OK;
+        }
 
+        ogs_error("STREAM has already been removed [%d]", stream_id);
         return OGS_ERROR;
     }
 
@@ -817,21 +904,39 @@ static int nf_discover_handler(
     stream = ogs_sbi_stream_find_by_id(stream_id);
 
     if (status != OGS_OK) {
+        int error_status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+        const char *title = "nf_discover_handler() failed";
+        const char *cause = NULL;
 
         ogs_log_message(
                 status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
                 "nf_discover_handler() failed [%d]", status);
+
+        /*
+         * TS29.500 Table 5.2.7.4-1
+         * A downstream transport failure is a gateway error, not an
+         * internal server error. OGS_TIMEUP (SBI client transaction
+         * deadline) is treated as a reachability error rather than
+         * TIMED_OUT_REQUEST, which has a narrower meaning in 3GPP.
+         * Other failures (e.g. OGS_DONE on local shutdown) keep the
+         * generic 500.
+         */
+        if (status == OGS_ERROR || status == OGS_TIMEUP) {
+            error_status = OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT;
+            title = "NRF not reachable";
+            cause = "NRF_NOT_REACHABLE";
+        }
 
         scp_assoc_remove(assoc);
 
         if (stream) {
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                    "nf_discover_handler() failed", NULL, NULL));
-        } else
-            ogs_error("STREAM has already been removed [%d]", stream_id);
+                    error_status, NULL, title, NULL, cause));
+            return OGS_OK;
+        }
 
+        ogs_error("STREAM has already been removed [%d]", stream_id);
         return OGS_ERROR;
     }
 
@@ -967,21 +1072,39 @@ static int sepp_discover_handler(
     stream = ogs_sbi_stream_find_by_id(stream_id);
 
     if (status != OGS_OK) {
+        int error_status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+        const char *title = "sepp_discover_handler() failed";
+        const char *cause = NULL;
 
         ogs_log_message(
                 status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
                 "sepp_discover_handler() failed [%d]", status);
+
+        /*
+         * TS29.500 Table 5.2.7.4-1
+         * A downstream transport failure is a gateway error, not an
+         * internal server error. OGS_TIMEUP (SBI client transaction
+         * deadline) is treated as a reachability error rather than
+         * TIMED_OUT_REQUEST, which has a narrower meaning in 3GPP.
+         * Other failures (e.g. OGS_DONE on local shutdown) keep the
+         * generic 500.
+         */
+        if (status == OGS_ERROR || status == OGS_TIMEUP) {
+            error_status = OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT;
+            title = "NRF not reachable";
+            cause = "NRF_NOT_REACHABLE";
+        }
 
         scp_assoc_remove(assoc);
 
         if (stream) {
             ogs_assert(true ==
                 ogs_sbi_server_send_error(stream,
-                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, NULL,
-                    "sepp_discover_handler() failed", NULL, NULL));
-        } else
-            ogs_error("STREAM has already been removed [%d]", stream_id);
+                    error_status, NULL, title, NULL, cause));
+            return OGS_OK;
+        }
 
+        ogs_error("STREAM has already been removed [%d]", stream_id);
         return OGS_ERROR;
     }
 
