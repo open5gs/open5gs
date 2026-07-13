@@ -584,12 +584,6 @@ bool udr_nudr_dr_handle_subscription_provisioned(
         goto cleanup;
     }
 
-    if (!subscription_data.ambr.uplink && !subscription_data.ambr.downlink) {
-        strerror = ogs_msprintf("[%s] No UE-AMBR", supi);
-        status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
-        goto cleanup;
-    }
-
     if (recvmsg->h.resource.component[4]) {
         SWITCH(recvmsg->h.resource.component[4])
         CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
@@ -670,6 +664,20 @@ bool udr_nudr_dr_handle_subscription_provisioned(
             processGpsi = true;
             processUeAmbr = true;
             processNssai = true;
+        }
+
+        /*
+         * UE-AMBR is only meaningful for Access and Mobility
+         * subscription data. Checking it before the dataset dispatch
+         * rejected SMF Selection and Session Management queries of
+         * subscribers without UE-AMBR with 404 as well.
+         */
+        if (processUeAmbr &&
+            !subscription_data.ambr.uplink &&
+            !subscription_data.ambr.downlink) {
+            strerror = ogs_msprintf("[%s] No UE-AMBR", supi);
+            status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
+            goto cleanup;
         }
 
         if (processGpsi) {

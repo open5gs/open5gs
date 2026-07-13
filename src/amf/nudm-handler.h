@@ -28,6 +28,8 @@ extern "C" {
 
 int amf_nudm_sdm_handle_provisioned(
         amf_ue_t *amf_ue, int state, ogs_sbi_message_t *recvmsg);
+int amf_nudm_sdm_handle_provisioned_data_sets(
+        amf_ue_t *amf_ue, int state, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

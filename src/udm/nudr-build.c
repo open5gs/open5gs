@@ -222,8 +222,18 @@ ogs_sbi_request_t *udm_nudr_dr_build_query_subscription_provisioned(
     sendmsg.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA;
     sendmsg.h.resource.component[1] = udm_ue->supi;
+    /*
+     * TS 29.503: the plmn-id query parameter of Nudm_SDM carries the
+     * serving PLMN ID. Prefer it for the {servingPlmnId} of the UDR
+     * resource URI; in network sharing (MOCN) the serving (TAI) PLMN
+     * can differ from the GUAMI PLMN of the AMF. Fall back to the
+     * GUAMI PLMN when the consumer did not send the parameter.
+     */
     sendmsg.h.resource.component[2] =
-        (char *)ogs_plmn_id_to_string(&udm_ue->guami.plmn_id, buf);
+        (char *)ogs_plmn_id_to_string(
+                recvmsg->param.plmn_id_presence ?
+                    &recvmsg->param.plmn_id : &udm_ue->guami.plmn_id,
+                buf);
     sendmsg.h.resource.component[3] =
         (char *)OGS_SBI_RESOURCE_NAME_PROVISIONED_DATA;
     if (recvmsg->h.resource.component[1]) {

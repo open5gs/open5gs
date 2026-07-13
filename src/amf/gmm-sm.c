@@ -416,6 +416,20 @@ void gmm_state_de_registered(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case OpenAPI_service_name_nudm_sdm:
+            /*
+             * A combined SDM response (dataset-names) has no resource
+             * component[1] and is only handled in
+             * gmm_state_initial_context_setup(). Arriving here means the
+             * UE state has changed since the request was sent; ignore it
+             * instead of asserting in the SWITCH DEFAULT below.
+             */
+            if (!sbi_message->h.resource.component[1]) {
+                ogs_warn("[%s] Ignore late dataset-names response "
+                        "[%d] in (%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method);
+                break;
+            }
             if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)) {
@@ -1236,6 +1250,20 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case OpenAPI_service_name_nudm_sdm:
+            /*
+             * A combined SDM response (dataset-names) has no resource
+             * component[1] and is only handled in
+             * gmm_state_initial_context_setup(). Arriving here means the
+             * UE state has changed since the request was sent; ignore it
+             * instead of asserting in the SWITCH DEFAULT below.
+             */
+            if (!sbi_message->h.resource.component[1]) {
+                ogs_warn("[%s] Ignore late dataset-names response "
+                        "[%d] in (%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method);
+                break;
+            }
             if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)) {
@@ -2412,6 +2440,20 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case OpenAPI_service_name_nudm_sdm:
+            /*
+             * A combined SDM response (dataset-names) has no resource
+             * component[1] and is only handled in
+             * gmm_state_initial_context_setup(). Arriving here means the
+             * UE state has changed since the request was sent; ignore it
+             * instead of asserting in the SWITCH DEFAULT below.
+             */
+            if (!sbi_message->h.resource.component[1]) {
+                ogs_warn("[%s] Ignore late dataset-names response "
+                        "[%d] in (%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method);
+                break;
+            }
             if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)) {
@@ -2994,9 +3036,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
                     r = amf_ue_sbi_discover_and_send(
                             OpenAPI_service_name_nudm_sdm, NULL,
-                            amf_nudm_sdm_build_get,
-                            amf_ue, state,
-                            (char *)OGS_SBI_RESOURCE_NAME_AM_DATA);
+                            amf_nudm_sdm_build_get_datasets,
+                            amf_ue, state, NULL);
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
                     break;
@@ -3016,7 +3057,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case OpenAPI_service_name_nudm_sdm:
-            if (!strcmp(sbi_message->h.resource.component[1],
+            if (sbi_message->h.resource.component[1] &&
+                !strcmp(sbi_message->h.resource.component[1],
                         OGS_SBI_RESOURCE_NAME_SDM_SUBSCRIPTIONS) &&
                 !strcmp(sbi_message->h.method, OGS_SBI_HTTP_METHOD_DELETE)) {
 /*
@@ -3040,6 +3082,38 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                         sbi_message->h.resource.component[1]);
 
                 UDM_SDM_CLEAR(amf_ue);
+                break;
+            }
+
+            /*
+             * Combined SDM retrieval:
+             *   GET /nudm-sdm/v2/{supi}?dataset-names=AM,SMF_SEL
+             *
+             * The response carries a single ProvisionedDataSets and has
+             * no resource component[1].
+             */
+            if (!sbi_message->h.resource.component[1]) {
+                if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
+                    ogs_error("[%s] HTTP response error [%d] in "
+                            "(%s:dataset-names)",
+                            amf_ue->supi, sbi_message->res_status,
+                            sbi_message->h.method);
+                    r = nas_5gs_send_gmm_reject_from_sbi(
+                            amf_ue, sbi_message->res_status);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                    break;
+                }
+
+                rv = amf_nudm_sdm_handle_provisioned_data_sets(
+                        amf_ue, state, sbi_message);
+                if (rv != OGS_OK) {
+                    ogs_error("[%s] amf_nudm_sdm_handle_provisioned"
+                            "_data_sets(%s) failed",
+                            amf_ue->supi, sbi_message->h.method);
+                    OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+                }
                 break;
             }
 
@@ -3701,6 +3775,20 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case OpenAPI_service_name_nudm_sdm:
+            /*
+             * A combined SDM response (dataset-names) has no resource
+             * component[1] and is only handled in
+             * gmm_state_initial_context_setup(). Arriving here means the
+             * UE state has changed since the request was sent; ignore it
+             * instead of asserting in the SWITCH DEFAULT below.
+             */
+            if (!sbi_message->h.resource.component[1]) {
+                ogs_warn("[%s] Ignore late dataset-names response "
+                        "[%d] in (%s)",
+                        amf_ue->supi, sbi_message->res_status,
+                        sbi_message->h.method);
+                break;
+            }
             if ((sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_CREATED) &&
                 (sbi_message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)) {
