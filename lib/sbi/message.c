@@ -2075,6 +2075,28 @@ static int parse_json(ogs_sbi_message_t *message,
             break;
 
         case OpenAPI_service_name_nudm_sdm:
+            if (!message->h.resource.component[1]) {
+                /*
+                 * Combined SDM retrieval:
+                 *   GET /nudm-sdm/v2/{supi}?dataset-names=AM,SMF_SEL
+                 *
+                 * The UDM relays the ProvisionedDataSets that the UDR
+                 * built from the requested dataset-names, so parse the
+                 * whole set here in a single response.
+                 */
+                if (message->res_status < 300) {
+                    message->ProvisionedDataSets =
+                        OpenAPI_provisioned_data_sets_parseFromJSON(item);
+                    if (!message->ProvisionedDataSets) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
+                }
+                break;
+            }
+
             SWITCH(message->h.resource.component[1])
             CASE(OGS_SBI_RESOURCE_NAME_NSSAI)
                 if (message->res_status < 300) {
