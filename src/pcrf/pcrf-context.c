@@ -92,33 +92,12 @@ static int pcrf_context_validation(void)
     return OGS_OK;
 }
 
-static int policy_conf_prepare(void)
-{
-    return OGS_OK;
-}
-
-static int policy_conf_validation(void)
-{
-    int rv;
-
-    rv = ogs_app_check_policy_conf();
-    if (rv != OGS_OK) {
-        ogs_error("ogs_app_check_policy_conf() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
-static int parse_policy_conf(ogs_yaml_iter_t *parent)
+static int parse_legacy_policy_conf(ogs_yaml_iter_t *parent)
 {
     int rv;
     ogs_yaml_iter_t policy_array, policy_iter;
 
     ogs_assert(parent);
-
-    rv = policy_conf_prepare();
-    if (rv != OGS_OK) return rv;
 
     ogs_yaml_iter_recurse(parent, &policy_array);
     do {
@@ -180,8 +159,11 @@ static int parse_policy_conf(ogs_yaml_iter_t *parent)
 
     } while (ogs_yaml_iter_type(&policy_array) == YAML_SEQUENCE_NODE);
 
-    rv = policy_conf_validation();
-    if (rv != OGS_OK) return rv;
+    rv = ogs_app_check_policy_conf();
+    if (rv != OGS_OK) {
+        ogs_error("ogs_app_check_policy_conf() failed");
+        return rv;
+    }
 
     return OGS_OK;
 }
@@ -367,10 +349,28 @@ int pcrf_context_parse_config(void)
                     if (v) self.diam_config->stats.interval_sec = atoi(v);
                 } else if (!strcmp(pcrf_key, "metrics")) {
                     /* handle config in metrics library */
-                } else if (!strcmp(pcrf_key, OGS_POLICY_STRING)) {
-                    rv = parse_policy_conf(&pcrf_iter);
+                } else if (!strcmp(pcrf_key, "qos_profiles")) {
+                    if (ogs_app()->policy_file) {
+                        ogs_error("`pcrf.qos_profiles` and `policy_file` "
+                                "cannot be configured together");
+                        return OGS_ERROR;
+                    }
+
+                    rv = ogs_app_parse_qos_profiles_conf(&pcrf_iter);
                     if (rv != OGS_OK) {
-                        ogs_error("parse_policy_conf() failed");
+                        ogs_error("ogs_app_parse_qos_profiles_conf() failed");
+                        return rv;
+                    }
+                } else if (!strcmp(pcrf_key, OGS_POLICY_STRING)) {
+                    if (ogs_app()->policy_file) {
+                        ogs_error("`pcrf.policy` and `policy_file` "
+                                "cannot be configured together");
+                        return OGS_ERROR;
+                    }
+
+                    rv = parse_legacy_policy_conf(&pcrf_iter);
+                    if (rv != OGS_OK) {
+                        ogs_error("parse_legacy_policy_conf() failed");
                         return rv;
                     }
                 } else
@@ -392,7 +392,6 @@ int pcrf_db_qos_data(
     char *supi = NULL;
 
     ogs_app_policy_conf_t *policy_conf = NULL;
-    ogs_app_slice_conf_t *slice_conf = NULL;
 
     ogs_assert(imsi_bcd);
     ogs_assert(apn);
@@ -406,10 +405,8 @@ int pcrf_db_qos_data(
     ogs_assert(supi);
 
     policy_conf = ogs_app_policy_conf_find(supi, NULL);
-    if (policy_conf)
-        slice_conf = ogs_list_first(&policy_conf->slice_list);
 
-    if (slice_conf) {
+    if (policy_conf) {
         rv = ogs_app_config_session_data(supi, NULL, NULL, apn, session_data);
         if (rv != OGS_OK)
             ogs_error("ogs_app_config_session_data() failed for APN(%s)", apn);

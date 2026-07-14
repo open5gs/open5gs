@@ -26,18 +26,17 @@ static uint8_t pcf_qos_index_from_media(
         OpenAPI_media_type_e media_type,
         const char **err_out)
 {
-    int i;
+    const ogs_app_qos_profile_t *qos_profile = NULL;
 
     ogs_assert(err_out);
     *err_out = NULL;
 
     if (qos_reference) {
-        for (i = 0; i < pcf_self()->num_of_qos_profile; i++) {
-            if (!strcmp(pcf_self()->qos_profile[i].reference, qos_reference))
-                return pcf_self()->qos_profile[i].qos_index;
-        }
+        qos_profile = ogs_app_qos_profile_find(qos_reference);
+        if (qos_profile)
+            return qos_profile->qos_index;
 
-        *err_out = "Unknown qosReference - check PCF qos_profiles config";
+        *err_out = "Unknown qosReference - check qos_profiles config";
         return 0;
     }
 

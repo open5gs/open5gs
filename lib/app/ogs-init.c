@@ -437,6 +437,9 @@ static int read_external_config(void)
                 ogs_app()->policy_file, policy_document,
                 "policy", "qos_profiles");
         if (rv != OGS_OK) goto cleanup;
+
+        rv = ogs_app_parse_policy_file(policy_document);
+        if (rv != OGS_OK) goto cleanup;
     }
 
     ogs_app()->subscriber_document = subscriber_document;

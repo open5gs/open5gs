@@ -30,7 +30,6 @@ static OGS_POOL(pcf_app_pool, pcf_app_t);
 
 static int context_initialized = 0;
 
-static void pcf_qos_profile_clear(void);
 static void clear_ipv4addr(pcf_sess_t *sess);
 static void clear_ipv6prefix(pcf_sess_t *sess);
 
@@ -71,8 +70,6 @@ void pcf_context_final(void)
     pcf_ue_am_remove_all();
     pcf_ue_sm_remove_all();
 
-    pcf_qos_profile_clear();
-
     ogs_assert(self.supi_am_hash);
     ogs_hash_destroy(self.supi_am_hash);
     ogs_assert(self.supi_sm_hash);
@@ -95,294 +92,13 @@ pcf_context_t *pcf_self(void)
     return &self;
 }
 
-static void pcf_qos_profile_clear(void)
-{
-    int i;
-
-    for (i = 0; i < self.num_of_qos_profile; i++)
-        ogs_free(self.qos_profile[i].reference);
-
-    memset(self.qos_profile, 0, sizeof(self.qos_profile));
-    self.num_of_qos_profile = 0;
-}
-
 static int pcf_context_prepare(void)
 {
-    pcf_qos_profile_clear();
     return OGS_OK;
 }
 
 static int pcf_context_validation(void)
 {
-    return OGS_OK;
-}
-
-static int slice_conf_prepare(void)
-{
-    return OGS_OK;
-}
-
-static int slice_conf_validation(void)
-{
-    return OGS_OK;
-}
-
-static int parse_slice_conf(
-        ogs_yaml_iter_t *parent, ogs_app_policy_conf_t *policy_conf)
-{
-    int rv;
-    ogs_yaml_iter_t slice_array, slice_iter;
-
-    ogs_assert(parent);
-    ogs_assert(policy_conf);
-
-    rv = slice_conf_prepare();
-    if (rv != OGS_OK) return rv;
-
-    ogs_yaml_iter_recurse(parent, &slice_array);
-    do {
-        ogs_app_slice_conf_t *slice_conf = NULL;
-        ogs_s_nssai_t s_nssai;
-        bool sst_presence = false;
-        bool default_indicator = false;
-
-        s_nssai.sst = 0;
-        s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
-
-        OGS_YAML_ARRAY_NEXT(&slice_array, &slice_iter);
-        while (ogs_yaml_iter_next(&slice_iter)) {
-            const char *slice_key = ogs_yaml_iter_key(&slice_iter);
-            ogs_assert(slice_key);
-            if (!strcmp(slice_key, OGS_SST_STRING)) {
-                const char *v = ogs_yaml_iter_value(&slice_iter);
-                if (v) {
-                    sst_presence = true;
-                    s_nssai.sst = atoi(v);
-                }
-            } else if (!strcmp(slice_key, OGS_SD_STRING)) {
-                const char *v = ogs_yaml_iter_value(&slice_iter);
-                if (v) s_nssai.sd = ogs_s_nssai_sd_from_string(v);
-            } else if (!strcmp(slice_key, OGS_DEFAULT_INDICATOR_STRING)) {
-                default_indicator = ogs_yaml_iter_bool(&slice_iter);
-            }
-        }
-
-        if (sst_presence) {
-            slice_conf = ogs_app_slice_conf_add(policy_conf, &s_nssai);
-            if (!slice_conf) {
-                ogs_error("ogs_app_slice_conf_add() failed [SST:%d,SD:0x%x]",
-                        s_nssai.sst, s_nssai.sd.v);
-                return OGS_ERROR;
-            }
-            slice_conf->data.default_indicator = default_indicator;
-        } else {
-            ogs_error("No SST");
-            return OGS_ERROR;
-        }
-
-        OGS_YAML_ARRAY_RECURSE(&slice_array, &slice_iter);
-        while (ogs_yaml_iter_next(&slice_iter)) {
-            const char *slice_key = ogs_yaml_iter_key(&slice_iter);
-            ogs_assert(slice_key);
-            if (!strcmp(slice_key, OGS_SESSION_STRING)) {
-                rv = ogs_app_parse_session_conf(&slice_iter, slice_conf);
-                if (rv != OGS_OK) {
-                    ogs_error("parse_session_conf() failed");
-                    return rv;
-                }
-            }
-        }
-
-    } while (ogs_yaml_iter_type(&slice_array) == YAML_SEQUENCE_NODE);
-
-    rv = slice_conf_validation();
-    if (rv != OGS_OK) return rv;
-
-    return OGS_OK;
-}
-
-static int policy_conf_prepare(void)
-{
-    return OGS_OK;
-}
-
-static int policy_conf_validation(void)
-{
-    int rv;
-
-    rv = ogs_app_check_policy_conf();
-    if (rv != OGS_OK) {
-        ogs_error("ogs_app_check_policy_conf() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
-static bool pcf_qos_profile_reference_exists(const char *reference)
-{
-    int i;
-
-    ogs_assert(reference);
-
-    for (i = 0; i < self.num_of_qos_profile; i++) {
-        if (!strcmp(self.qos_profile[i].reference, reference))
-            return true;
-    }
-
-    return false;
-}
-
-static int parse_policy_conf(ogs_yaml_iter_t *parent)
-{
-    int rv;
-    ogs_yaml_iter_t policy_array, policy_iter;
-
-    ogs_assert(parent);
-
-    rv = policy_conf_prepare();
-    if (rv != OGS_OK) return rv;
-
-    ogs_yaml_iter_recurse(parent, &policy_array);
-    do {
-        const char *mnc = NULL, *mcc = NULL;
-        ogs_app_policy_conf_t *policy_conf = NULL;
-        ogs_supi_range_t supi_range;
-
-        memset(&supi_range, 0, sizeof(ogs_supi_range_t));
-
-        OGS_YAML_ARRAY_NEXT(&policy_array, &policy_iter);
-        while (ogs_yaml_iter_next(&policy_iter)) {
-            const char *policy_key = ogs_yaml_iter_key(&policy_iter);
-            ogs_assert(policy_key);
-            if (!strcmp(policy_key, "plmn_id")) {
-                ogs_yaml_iter_t plmn_id_iter;
-
-                ogs_yaml_iter_recurse(&policy_iter, &plmn_id_iter);
-                while (ogs_yaml_iter_next(&plmn_id_iter)) {
-                    const char *id_key = ogs_yaml_iter_key(&plmn_id_iter);
-                    ogs_assert(id_key);
-                    if (!strcmp(id_key, "mcc")) {
-                        mcc = ogs_yaml_iter_value(&plmn_id_iter);
-                    } else if (!strcmp(id_key, "mnc")) {
-                        mnc = ogs_yaml_iter_value(&plmn_id_iter);
-                    }
-                }
-            } else if (!strcmp(policy_key, "supi_range")) {
-                rv = ogs_app_parse_supi_range_conf(&policy_iter, &supi_range);
-                if (rv != OGS_OK) {
-                    ogs_error("ogs_app_parse_supi_range_conf() failed");
-                    return rv;
-                }
-            }
-        }
-
-        if (supi_range.num || (mcc && mnc)) {
-            ogs_plmn_id_t plmn_id;
-            if (mcc && mnc)
-                ogs_plmn_id_build(&plmn_id, atoi(mcc), atoi(mnc), strlen(mnc));
-            policy_conf = ogs_app_policy_conf_add(
-                    supi_range.num ? &supi_range : NULL,
-                    (mcc && mnc) ? &plmn_id : NULL);
-            if (!policy_conf) {
-                ogs_error("ogs_app_policy_conf_add() failed "
-                        "[supi_range.num:%d] [MCC:%s, MNC:%s]",
-                        supi_range.num, mcc, mnc);
-                return OGS_ERROR;
-            }
-        } else {
-            ogs_error("No SUPI Range[%d] OR PLMN-ID [MCC:%s, MNC:%s]",
-                    supi_range.num, mcc, mnc);
-            return OGS_ERROR;
-        }
-
-        OGS_YAML_ARRAY_RECURSE(&policy_array, &policy_iter);
-        while (ogs_yaml_iter_next(&policy_iter)) {
-            const char *policy_key = ogs_yaml_iter_key(&policy_iter);
-            ogs_assert(policy_key);
-            if (!strcmp(policy_key, OGS_SLICE_STRING)) {
-                rv = parse_slice_conf(&policy_iter, policy_conf);
-                if (rv != OGS_OK) {
-                    ogs_error("parse_slice_conf() failed");
-                    return rv;
-                }
-            }
-        }
-
-    } while (ogs_yaml_iter_type(&policy_array) == YAML_SEQUENCE_NODE);
-
-    rv = policy_conf_validation();
-    if (rv != OGS_OK) return rv;
-
-    return OGS_OK;
-}
-
-static int parse_qos_profiles_conf(ogs_yaml_iter_t *parent)
-{
-    ogs_yaml_iter_t profile_array, profile_iter;
-
-    ogs_assert(parent);
-
-    ogs_yaml_iter_recurse(parent, &profile_array);
-    do {
-        const char *reference = NULL;
-        const char *qos_index_string = NULL;
-        char *end = NULL;
-        long qos_index = 0;
-
-        OGS_YAML_ARRAY_NEXT(&profile_array, &profile_iter);
-        while (ogs_yaml_iter_next(&profile_iter)) {
-            const char *profile_key = ogs_yaml_iter_key(&profile_iter);
-            ogs_assert(profile_key);
-
-            if (!strcmp(profile_key, "reference")) {
-                reference = ogs_yaml_iter_value(&profile_iter);
-            } else if (!strcmp(profile_key, "qos_index")) {
-                qos_index_string = ogs_yaml_iter_value(&profile_iter);
-            } else {
-                ogs_warn("unknown qos_profiles key `%s`", profile_key);
-            }
-        }
-
-        if (!reference || !reference[0]) {
-            ogs_warn("Ignore qos_profiles entry without reference");
-            goto next;
-        }
-
-        if (!qos_index_string || !qos_index_string[0]) {
-            ogs_warn("Ignore qos_profiles[%s] without qos_index", reference);
-            goto next;
-        }
-
-        qos_index = strtol(qos_index_string, &end, 10);
-        if (*end || qos_index <= 0 || qos_index > UINT8_MAX) {
-            ogs_warn("Ignore qos_profiles[%s] invalid qos_index [%s]",
-                    reference, qos_index_string);
-            goto next;
-        }
-
-        if (pcf_qos_profile_reference_exists(reference)) {
-            ogs_warn("Ignore duplicate qos_profiles reference [%s]", reference);
-            goto next;
-        }
-
-        if (self.num_of_qos_profile >= OGS_PCF_MAX_NUM_OF_QOS_PROFILE) {
-            ogs_warn("Ignore qos_profiles[%s] beyond max [%d]",
-                    reference, OGS_PCF_MAX_NUM_OF_QOS_PROFILE);
-            goto next;
-        }
-
-        self.qos_profile[self.num_of_qos_profile].reference =
-            ogs_strdup(reference);
-        ogs_assert(self.qos_profile[self.num_of_qos_profile].reference);
-        self.qos_profile[self.num_of_qos_profile].qos_index =
-            (uint8_t)qos_index;
-        self.num_of_qos_profile++;
-
-next:
-        ;
-    } while (ogs_yaml_iter_type(&profile_array) == YAML_SEQUENCE_NODE);
-
     return OGS_OK;
 }
 
@@ -425,15 +141,27 @@ int pcf_context_parse_config(void)
                 } else if (!strcmp(pcf_key, "metrics")) {
                     /* handle config in metrics library */
                 } else if (!strcmp(pcf_key, "qos_profiles")) {
-                    rv = parse_qos_profiles_conf(&pcf_iter);
+                    if (ogs_app()->policy_file) {
+                        ogs_error("`pcf.qos_profiles` and `policy_file` "
+                                "cannot be configured together");
+                        return OGS_ERROR;
+                    }
+
+                    rv = ogs_app_parse_qos_profiles_conf(&pcf_iter);
                     if (rv != OGS_OK) {
-                        ogs_error("parse_qos_profiles_conf() failed");
+                        ogs_error("ogs_app_parse_qos_profiles_conf() failed");
                         return rv;
                     }
                 } else if (!strcmp(pcf_key, OGS_POLICY_STRING)) {
-                    rv = parse_policy_conf(&pcf_iter);
+                    if (ogs_app()->policy_file) {
+                        ogs_error("`pcf.policy` and `policy_file` "
+                                "cannot be configured together");
+                        return OGS_ERROR;
+                    }
+
+                    rv = ogs_app_parse_policy_conf(&pcf_iter);
                     if (rv != OGS_OK) {
-                        ogs_error("parse_policy_conf() failed");
+                        ogs_error("ogs_app_parse_policy_conf() failed");
                         return rv;
                     }
                 } else

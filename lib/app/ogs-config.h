@@ -95,6 +95,13 @@ typedef struct ogs_global_conf_s {
 
 } ogs_app_global_conf_t;
 
+#define OGS_APP_MAX_NUM_OF_QOS_PROFILE 64
+
+typedef struct ogs_app_qos_profile_s {
+    char *reference;
+    uint8_t qos_index;
+} ogs_app_qos_profile_t;
+
 typedef struct ogs_local_conf_s {
     struct {
         struct {
@@ -143,6 +150,10 @@ typedef struct ogs_local_conf_s {
     int num_of_serving_plmn_id;
 
     ogs_list_t policy_list;
+
+    ogs_app_qos_profile_t
+        qos_profile[OGS_APP_MAX_NUM_OF_QOS_PROFILE];
+    int num_of_qos_profile;
 
 } ogs_app_local_conf_t;
 
@@ -203,6 +214,12 @@ int ogs_app_parse_sockopt_config(
 int ogs_app_parse_supi_range_conf(
         ogs_yaml_iter_t *parent, ogs_supi_range_t *supi_range);
 
+int ogs_app_parse_policy_file(yaml_document_t *document);
+int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent);
+int ogs_app_parse_qos_profiles_conf(ogs_yaml_iter_t *parent);
+const ogs_app_qos_profile_t *ogs_app_qos_profile_find(
+        const char *reference);
+
 int ogs_app_check_policy_conf(void);
 int ogs_app_parse_session_conf(
         ogs_yaml_iter_t *parent, ogs_app_slice_conf_t *slice_conf);
@@ -218,6 +235,8 @@ ogs_app_slice_conf_t *ogs_app_slice_conf_add(
         ogs_app_policy_conf_t *policy_conf, const ogs_s_nssai_t *s_nssai);
 ogs_app_slice_conf_t *ogs_app_slice_conf_find_by_s_nssai(
         ogs_app_policy_conf_t *policy_conf, const ogs_s_nssai_t *s_nssai);
+ogs_app_slice_conf_t *ogs_app_slice_conf_find_default(
+        ogs_app_policy_conf_t *policy_conf);
 void ogs_app_slice_conf_remove(ogs_app_slice_conf_t *slice_conf);
 void ogs_app_slice_conf_remove_all(ogs_app_policy_conf_t *policy_conf);
 

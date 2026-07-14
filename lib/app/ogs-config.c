@@ -28,6 +28,8 @@ static OGS_POOL(session_conf_pool, ogs_app_session_conf_t);
 
 static int initialized = 0;
 
+static void qos_profile_clear(void);
+
 int ogs_app_config_init(void)
 {
     ogs_assert(initialized == 0);
@@ -50,6 +52,7 @@ void ogs_app_config_final(void)
     ogs_assert(initialized == 1);
 
     ogs_app_policy_conf_remove_all();
+    qos_profile_clear();
 
     ogs_pool_final(&policy_conf_pool);
     ogs_pool_final(&slice_conf_pool);
@@ -1274,6 +1277,290 @@ int ogs_app_parse_session_conf(
     return OGS_OK;
 }
 
+static int parse_slice_conf(
+        ogs_yaml_iter_t *parent, ogs_app_policy_conf_t *policy_conf)
+{
+    int rv;
+    ogs_yaml_iter_t slice_array, slice_iter;
+
+    ogs_assert(parent);
+    ogs_assert(policy_conf);
+
+    ogs_yaml_iter_recurse(parent, &slice_array);
+    do {
+        ogs_app_slice_conf_t *slice_conf = NULL;
+        ogs_s_nssai_t s_nssai;
+        bool sst_presence = false;
+        bool default_indicator = false;
+
+        s_nssai.sst = 0;
+        s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+
+        OGS_YAML_ARRAY_NEXT(&slice_array, &slice_iter);
+        while (ogs_yaml_iter_next(&slice_iter)) {
+            const char *slice_key = ogs_yaml_iter_key(&slice_iter);
+            ogs_assert(slice_key);
+
+            if (!strcmp(slice_key, OGS_SST_STRING)) {
+                const char *v = ogs_yaml_iter_value(&slice_iter);
+                if (v) {
+                    sst_presence = true;
+                    s_nssai.sst = atoi(v);
+                }
+            } else if (!strcmp(slice_key, OGS_SD_STRING)) {
+                const char *v = ogs_yaml_iter_value(&slice_iter);
+                if (v) s_nssai.sd = ogs_s_nssai_sd_from_string(v);
+            } else if (!strcmp(slice_key, OGS_DEFAULT_INDICATOR_STRING)) {
+                default_indicator = ogs_yaml_iter_bool(&slice_iter);
+            }
+        }
+
+        if (!sst_presence) {
+            ogs_error("No SST");
+            return OGS_ERROR;
+        }
+
+        slice_conf = ogs_app_slice_conf_add(policy_conf, &s_nssai);
+        if (!slice_conf) {
+            ogs_error("ogs_app_slice_conf_add() failed [SST:%d,SD:0x%x]",
+                    s_nssai.sst, s_nssai.sd.v);
+            return OGS_ERROR;
+        }
+        slice_conf->data.default_indicator = default_indicator;
+
+        OGS_YAML_ARRAY_RECURSE(&slice_array, &slice_iter);
+        while (ogs_yaml_iter_next(&slice_iter)) {
+            const char *slice_key = ogs_yaml_iter_key(&slice_iter);
+            ogs_assert(slice_key);
+
+            if (!strcmp(slice_key, OGS_SESSION_STRING)) {
+                rv = ogs_app_parse_session_conf(&slice_iter, slice_conf);
+                if (rv != OGS_OK) {
+                    ogs_error("ogs_app_parse_session_conf() failed");
+                    return rv;
+                }
+            }
+        }
+    } while (ogs_yaml_iter_type(&slice_array) == YAML_SEQUENCE_NODE);
+
+    return OGS_OK;
+}
+
+int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent)
+{
+    int rv;
+    ogs_yaml_iter_t policy_array, policy_iter;
+
+    ogs_assert(parent);
+
+    ogs_yaml_iter_recurse(parent, &policy_array);
+    do {
+        ogs_app_policy_conf_t *policy_conf = NULL;
+        ogs_supi_range_t supi_range;
+
+        memset(&supi_range, 0, sizeof(supi_range));
+
+        OGS_YAML_ARRAY_NEXT(&policy_array, &policy_iter);
+        while (ogs_yaml_iter_next(&policy_iter)) {
+            const char *policy_key = ogs_yaml_iter_key(&policy_iter);
+            ogs_assert(policy_key);
+
+            if (!strcmp(policy_key, "supi_range")) {
+                rv = ogs_app_parse_supi_range_conf(
+                        &policy_iter, &supi_range);
+                if (rv != OGS_OK) {
+                    ogs_error("ogs_app_parse_supi_range_conf() failed");
+                    return rv;
+                }
+            } else if (!strcmp(policy_key, "plmn_id")) {
+                ogs_error("`plmn_id` is not supported in policy configuration");
+                return OGS_ERROR;
+            }
+        }
+
+        if (!supi_range.num) {
+            ogs_error("No SUPI Range");
+            return OGS_ERROR;
+        }
+
+        policy_conf = ogs_app_policy_conf_add(&supi_range, NULL);
+        if (!policy_conf) {
+            ogs_error("ogs_app_policy_conf_add() failed "
+                    "[supi_range.num:%d]", supi_range.num);
+            return OGS_ERROR;
+        }
+
+        OGS_YAML_ARRAY_RECURSE(&policy_array, &policy_iter);
+        while (ogs_yaml_iter_next(&policy_iter)) {
+            const char *policy_key = ogs_yaml_iter_key(&policy_iter);
+            ogs_assert(policy_key);
+
+            if (!strcmp(policy_key, OGS_SLICE_STRING)) {
+                rv = parse_slice_conf(&policy_iter, policy_conf);
+                if (rv != OGS_OK) {
+                    ogs_error("parse_slice_conf() failed");
+                    return rv;
+                }
+            }
+        }
+    } while (ogs_yaml_iter_type(&policy_array) == YAML_SEQUENCE_NODE);
+
+    rv = ogs_app_check_policy_conf();
+    if (rv != OGS_OK) {
+        ogs_error("ogs_app_check_policy_conf() failed");
+        return rv;
+    }
+
+    return OGS_OK;
+}
+
+static bool qos_profile_reference_exists(const char *reference)
+{
+    int i;
+
+    ogs_assert(reference);
+
+    for (i = 0; i < local_conf.num_of_qos_profile; i++) {
+        if (!strcmp(local_conf.qos_profile[i].reference, reference))
+            return true;
+    }
+
+    return false;
+}
+
+static void qos_profile_clear(void)
+{
+    int i;
+
+    for (i = 0; i < local_conf.num_of_qos_profile; i++)
+        ogs_free(local_conf.qos_profile[i].reference);
+
+    memset(local_conf.qos_profile, 0, sizeof(local_conf.qos_profile));
+    local_conf.num_of_qos_profile = 0;
+}
+
+int ogs_app_parse_qos_profiles_conf(ogs_yaml_iter_t *parent)
+{
+    ogs_yaml_iter_t profile_array, profile_iter;
+
+    ogs_assert(parent);
+
+    ogs_yaml_iter_recurse(parent, &profile_array);
+    do {
+        const char *reference = NULL;
+        const char *qos_index_string = NULL;
+        char *end = NULL;
+        long qos_index = 0;
+
+        OGS_YAML_ARRAY_NEXT(&profile_array, &profile_iter);
+        while (ogs_yaml_iter_next(&profile_iter)) {
+            const char *profile_key = ogs_yaml_iter_key(&profile_iter);
+            ogs_assert(profile_key);
+
+            if (!strcmp(profile_key, "reference")) {
+                reference = ogs_yaml_iter_value(&profile_iter);
+            } else if (!strcmp(profile_key, "qos_index")) {
+                qos_index_string = ogs_yaml_iter_value(&profile_iter);
+            } else {
+                ogs_warn("unknown qos_profiles key `%s`", profile_key);
+            }
+        }
+
+        if (!reference || !reference[0]) {
+            ogs_warn("Ignore qos_profiles entry without reference");
+            goto next;
+        }
+
+        if (!qos_index_string || !qos_index_string[0]) {
+            ogs_warn("Ignore qos_profiles[%s] without qos_index", reference);
+            goto next;
+        }
+
+        qos_index = strtol(qos_index_string, &end, 10);
+        if (*end || qos_index <= 0 || qos_index > UINT8_MAX) {
+            ogs_warn("Ignore qos_profiles[%s] invalid qos_index [%s]",
+                    reference, qos_index_string);
+            goto next;
+        }
+
+        if (qos_profile_reference_exists(reference)) {
+            ogs_warn("Ignore duplicate qos_profiles reference [%s]",
+                    reference);
+            goto next;
+        }
+
+        if (local_conf.num_of_qos_profile >=
+                OGS_APP_MAX_NUM_OF_QOS_PROFILE) {
+            ogs_warn("Ignore qos_profiles[%s] beyond max [%d]",
+                    reference, OGS_APP_MAX_NUM_OF_QOS_PROFILE);
+            goto next;
+        }
+
+        local_conf.qos_profile[local_conf.num_of_qos_profile].reference =
+            ogs_strdup(reference);
+        ogs_assert(local_conf.qos_profile[
+                local_conf.num_of_qos_profile].reference);
+        local_conf.qos_profile[local_conf.num_of_qos_profile].qos_index =
+            (uint8_t)qos_index;
+        local_conf.num_of_qos_profile++;
+
+next:
+        ;
+    } while (ogs_yaml_iter_type(&profile_array) == YAML_SEQUENCE_NODE);
+
+    return OGS_OK;
+}
+
+const ogs_app_qos_profile_t *ogs_app_qos_profile_find(
+        const char *reference)
+{
+    int i;
+
+    ogs_assert(reference);
+
+    for (i = 0; i < local_conf.num_of_qos_profile; i++) {
+        if (!strcmp(local_conf.qos_profile[i].reference, reference))
+            return &local_conf.qos_profile[i];
+    }
+
+    return NULL;
+}
+
+int ogs_app_parse_policy_file(yaml_document_t *document)
+{
+    int rv;
+    ogs_yaml_iter_t root_iter;
+
+    ogs_assert(document);
+
+    ogs_yaml_iter_init(&root_iter, document);
+    while (ogs_yaml_iter_next(&root_iter)) {
+        const char *root_key = ogs_yaml_iter_key(&root_iter);
+        ogs_assert(root_key);
+
+        if (!strcmp(root_key, OGS_POLICY_STRING)) {
+            rv = ogs_app_parse_policy_conf(&root_iter);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_app_parse_policy_conf() failed");
+                goto cleanup;
+            }
+        } else if (!strcmp(root_key, "qos_profiles")) {
+            rv = ogs_app_parse_qos_profiles_conf(&root_iter);
+            if (rv != OGS_OK) {
+                ogs_error("ogs_app_parse_qos_profiles_conf() failed");
+                goto cleanup;
+            }
+        }
+    }
+
+    return OGS_OK;
+
+cleanup:
+    ogs_app_policy_conf_remove_all();
+    qos_profile_clear();
+    return rv;
+}
+
 ogs_app_policy_conf_t *ogs_app_policy_conf_add(
         ogs_supi_range_t *supi_range, ogs_plmn_id_t *plmn_id)
 {
@@ -1440,6 +1727,20 @@ ogs_app_slice_conf_t *ogs_app_slice_conf_find_by_s_nssai(
 
     return slice_conf;
 }
+ogs_app_slice_conf_t *ogs_app_slice_conf_find_default(
+        ogs_app_policy_conf_t *policy_conf)
+{
+    ogs_app_slice_conf_t *slice_conf = NULL;
+
+    ogs_assert(policy_conf);
+
+    ogs_list_for_each(&policy_conf->slice_list, slice_conf) {
+        if (slice_conf->data.default_indicator == true)
+            return slice_conf;
+    }
+
+    return NULL;
+}
 void ogs_app_slice_conf_remove(ogs_app_slice_conf_t *slice_conf)
 {
     ogs_app_policy_conf_t *policy_conf = NULL;
@@ -1473,11 +1774,11 @@ int ogs_app_check_policy_conf(void)
 
     ogs_list_for_each(&ogs_local_conf()->policy_list, policy_conf) {
         ogs_app_slice_conf_t *slice_conf = NULL;
-        bool default_indicator = false;
+        int num_of_default_slice = 0;
 
         ogs_list_for_each(&policy_conf->slice_list, slice_conf) {
             if (slice_conf->data.default_indicator == true)
-                default_indicator = true;
+                num_of_default_slice++;
 
             if (ogs_list_count(&slice_conf->sess_list) == 0) {
                 ogs_error("At least 1 Session is required");
@@ -1485,8 +1786,9 @@ int ogs_app_check_policy_conf(void)
             }
         }
 
-        if (default_indicator == false) {
-            ogs_error("At least 1 Default S-NSSAI is required");
+        if (num_of_default_slice != 1) {
+            ogs_error("Exactly 1 Default S-NSSAI is required [%d]",
+                    num_of_default_slice);
             return OGS_ERROR;
         }
     }
@@ -1601,7 +1903,7 @@ int ogs_app_config_session_data(
             return OGS_ERROR;
         }
     } else {
-        slice_conf = ogs_list_first(&policy_conf->slice_list);
+        slice_conf = ogs_app_slice_conf_find_default(policy_conf);
         if (!slice_conf) {
             ogs_error("No default SLICE for EPC");
             return OGS_ERROR;
