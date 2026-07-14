@@ -21,7 +21,8 @@
 
 int __ogs_app_domain;
 
-static int read_config(void);
+static int read_yaml_document(const char *path, void **document);
+static int read_external_config(void);
 static int parse_config(void);
 
 int ogs_app_initialize(
@@ -83,10 +84,13 @@ int ogs_app_initialize(
     else
         ogs_app()->file = default_config;
 
-    rv = read_config();
+    rv = read_yaml_document(ogs_app()->file, &ogs_app()->document);
     if (rv != OGS_OK) return rv;
 
     rv = parse_config();
+    if (rv != OGS_OK) return rv;
+
+    rv = read_external_config();
     if (rv != OGS_OK) return rv;
 
     /**************************************************************************
@@ -143,6 +147,11 @@ int ogs_app_initialize(
 
         ogs_info("Configuration: '%s'", ogs_app()->file);
 
+        if (ogs_app()->subscriber_file)
+            ogs_info("Subscriber File: '%s'", ogs_app()->subscriber_file);
+        if (ogs_app()->policy_file)
+            ogs_info("Policy File: '%s'", ogs_app()->policy_file);
+
         if (ogs_app()->logger.file) {
             ogs_info("File Logging: '%s'", ogs_app()->logger.file);
 
@@ -177,82 +186,268 @@ void ogs_app_terminate(void)
     ogs_core_terminate();
 }
 
-static int read_config(void)
+static void log_yaml_parser_error(
+        const char *path, yaml_parser_t *parser)
 {
-    FILE *file;
-    yaml_parser_t parser;
-    yaml_document_t *document = NULL;
+    ogs_assert(path);
+    ogs_assert(parser);
 
-    ogs_assert(ogs_app()->file);
+    ogs_fatal("Failed to parse configuration file '%s'", path);
 
-    file = fopen(ogs_app()->file, "rb");
-    if (!file) {
-        ogs_fatal("cannot open file `%s`", ogs_app()->file);
+    switch (parser->error) {
+    case YAML_MEMORY_ERROR:
+        ogs_error("Memory error: Not enough memory for parsing");
+        break;
+    case YAML_READER_ERROR:
+        if (parser->problem_value != -1)
+            ogs_error("Reader error - %s: #%X at %zd", parser->problem,
+                parser->problem_value, parser->problem_offset);
+        else
+            ogs_error("Reader error - %s at %zd", parser->problem,
+                parser->problem_offset);
+        break;
+    case YAML_SCANNER_ERROR:
+        if (parser->context)
+            ogs_error("Scanner error - %s at line %zu, column %zu "
+                    "%s at line %zu, column %zu", parser->context,
+                    parser->context_mark.line+1,
+                    parser->context_mark.column+1,
+                    parser->problem, parser->problem_mark.line+1,
+                    parser->problem_mark.column+1);
+        else
+            ogs_error("Scanner error - %s at line %zu, column %zu",
+                    parser->problem, parser->problem_mark.line+1,
+                    parser->problem_mark.column+1);
+        break;
+    case YAML_PARSER_ERROR:
+        if (parser->context)
+            ogs_error("Parser error - %s at line %zu, column %zu "
+                    "%s at line %zu, column %zu", parser->context,
+                    parser->context_mark.line+1,
+                    parser->context_mark.column+1,
+                    parser->problem, parser->problem_mark.line+1,
+                    parser->problem_mark.column+1);
+        else
+            ogs_error("Parser error - %s at line %zu, column %zu",
+                    parser->problem, parser->problem_mark.line+1,
+                    parser->problem_mark.column+1);
+        break;
+    default:
+        ogs_assert_if_reached();
+        break;
+    }
+}
+
+static int validate_yaml_document(
+        const char *path, yaml_document_t *document)
+{
+    yaml_node_t *root = NULL;
+    yaml_node_pair_t *pair = NULL;
+
+    ogs_assert(path);
+    ogs_assert(document);
+
+    root = yaml_document_get_root_node(document);
+    if (!root) {
+        ogs_error("Configuration file '%s' is empty", path);
         return OGS_ERROR;
     }
 
-    ogs_assert(yaml_parser_initialize(&parser));
+    if (root->type != YAML_MAPPING_NODE) {
+        ogs_error("The root of configuration file '%s' must be a mapping",
+                path);
+        return OGS_ERROR;
+    }
+
+    for (pair = root->data.mapping.pairs.start;
+            pair < root->data.mapping.pairs.top; pair++) {
+        yaml_node_t *key_node =
+            yaml_document_get_node(document, pair->key);
+        yaml_node_t *value_node =
+            yaml_document_get_node(document, pair->value);
+
+        if (!key_node || key_node->type != YAML_SCALAR_NODE || !value_node) {
+            ogs_error("Invalid root entry in configuration file '%s'", path);
+            return OGS_ERROR;
+        }
+    }
+
+    return OGS_OK;
+}
+
+static int read_yaml_document(const char *path, void **document)
+{
+    FILE *file = NULL;
+    yaml_parser_t parser;
+    yaml_document_t *new_document = NULL;
+    int rv;
+
+    ogs_assert(path);
+    ogs_assert(document);
+    ogs_assert(*document == NULL);
+
+    file = fopen(path, "rb");
+    if (!file) {
+        ogs_fatal("cannot open file `%s`", path);
+        return OGS_ERROR;
+    }
+
+    if (!yaml_parser_initialize(&parser)) {
+        ogs_fatal("Failed to initialize YAML parser for '%s'", path);
+        ogs_assert(!fclose(file));
+        return OGS_ERROR;
+    }
     yaml_parser_set_input_file(&parser, file);
 
-    document = calloc(1, sizeof(yaml_document_t));
-    if (!yaml_parser_load(&parser, document)) {
-        ogs_fatal("Failed to parse configuration file '%s'", ogs_app()->file);
-        switch (parser.error) {
-        case YAML_MEMORY_ERROR:
-            ogs_error("Memory error: Not enough memory for parsing");
-            break;
-        case YAML_READER_ERROR:
-            if (parser.problem_value != -1)
-                ogs_error("Reader error - %s: #%X at %zd", parser.problem,
-                    parser.problem_value, parser.problem_offset);
-            else
-                ogs_error("Reader error - %s at %zd", parser.problem,
-                    parser.problem_offset);
-            break;
-        case YAML_SCANNER_ERROR:
-            if (parser.context)
-                ogs_error("Scanner error - %s at line %zu, column %zu "
-                        "%s at line %zu, column %zu", parser.context,
-                        parser.context_mark.line+1,
-                        parser.context_mark.column+1,
-                        parser.problem, parser.problem_mark.line+1,
-                        parser.problem_mark.column+1);
-            else
-                ogs_error("Scanner error - %s at line %zu, column %zu",
-                        parser.problem, parser.problem_mark.line+1,
-                        parser.problem_mark.column+1);
-            break;
-        case YAML_PARSER_ERROR:
-            if (parser.context)
-                ogs_error("Parser error - %s at line %zu, column %zu "
-                        "%s at line %zu, column %zu", parser.context,
-                        parser.context_mark.line+1,
-                        parser.context_mark.column+1,
-                        parser.problem, parser.problem_mark.line+1,
-                        parser.problem_mark.column+1);
-            else
-                ogs_error("Parser error - %s at line %zu, column %zu",
-                        parser.problem, parser.problem_mark.line+1,
-                        parser.problem_mark.column+1);
-            break;
-        default:
-            /* Couldn't happen. */
-            ogs_assert_if_reached();
-            break;
-        }
-
-        free(document);
+    new_document = calloc(1, sizeof(yaml_document_t));
+    if (!new_document) {
+        ogs_error("calloc() failed");
         yaml_parser_delete(&parser);
         ogs_assert(!fclose(file));
         return OGS_ERROR;
     }
 
-    ogs_app()->document = document;
+    if (!yaml_parser_load(&parser, new_document)) {
+        log_yaml_parser_error(path, &parser);
+        free(new_document);
+        yaml_parser_delete(&parser);
+        ogs_assert(!fclose(file));
+        return OGS_ERROR;
+    }
 
     yaml_parser_delete(&parser);
     ogs_assert(!fclose(file));
 
+    rv = validate_yaml_document(path, new_document);
+    if (rv != OGS_OK) {
+        yaml_document_delete(new_document);
+        free(new_document);
+        return rv;
+    }
+
+    *document = new_document;
     return OGS_OK;
+}
+
+static int validate_sequence_of_mappings(
+        const char *path, const char *key, ogs_yaml_iter_t *root_iter)
+{
+    ogs_yaml_iter_t sequence_iter;
+    int index = 0;
+
+    ogs_assert(path);
+    ogs_assert(key);
+    ogs_assert(root_iter);
+
+    ogs_yaml_iter_recurse(root_iter, &sequence_iter);
+    if (ogs_yaml_iter_type(&sequence_iter) != YAML_SEQUENCE_NODE) {
+        ogs_error("`%s` in '%s' must be a sequence", key, path);
+        return OGS_ERROR;
+    }
+
+    while (ogs_yaml_iter_next(&sequence_iter)) {
+        ogs_yaml_iter_t entry_iter;
+
+        ogs_yaml_iter_recurse(&sequence_iter, &entry_iter);
+        if (ogs_yaml_iter_type(&entry_iter) != YAML_MAPPING_NODE) {
+            ogs_error("`%s[%d]` in '%s' must be a mapping",
+                    key, index, path);
+            return OGS_ERROR;
+        }
+        index++;
+    }
+
+    return OGS_OK;
+}
+
+static int validate_external_document(
+        const char *path, yaml_document_t *document,
+        const char *required_key, const char *optional_key)
+{
+    ogs_yaml_iter_t root_iter;
+    bool required_found = false;
+    bool optional_found = false;
+
+    ogs_assert(path);
+    ogs_assert(document);
+    ogs_assert(required_key);
+
+    ogs_yaml_iter_init(&root_iter, document);
+    while (ogs_yaml_iter_next(&root_iter)) {
+        const char *key = ogs_yaml_iter_key(&root_iter);
+        int rv;
+
+        ogs_assert(key);
+
+        if (!strcmp(key, required_key)) {
+            if (required_found) {
+                ogs_error("Duplicate `%s` in '%s'", required_key, path);
+                return OGS_ERROR;
+            }
+            required_found = true;
+
+            rv = validate_sequence_of_mappings(path, key, &root_iter);
+            if (rv != OGS_OK) return rv;
+        } else if (optional_key && !strcmp(key, optional_key)) {
+            if (optional_found) {
+                ogs_error("Duplicate `%s` in '%s'", optional_key, path);
+                return OGS_ERROR;
+            }
+            optional_found = true;
+
+            rv = validate_sequence_of_mappings(path, key, &root_iter);
+            if (rv != OGS_OK) return rv;
+        } else {
+            ogs_error("Unknown key `%s` in '%s'", key, path);
+            return OGS_ERROR;
+        }
+    }
+
+    if (!required_found) {
+        ogs_error("No `%s` in '%s'", required_key, path);
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+static int read_external_config(void)
+{
+    void *subscriber_document = NULL;
+    void *policy_document = NULL;
+    int rv;
+
+    if (ogs_app()->subscriber_file) {
+        rv = read_yaml_document(
+                ogs_app()->subscriber_file, &subscriber_document);
+        if (rv != OGS_OK) goto cleanup;
+
+        rv = validate_external_document(
+                ogs_app()->subscriber_file, subscriber_document,
+                "subscriber", NULL);
+        if (rv != OGS_OK) goto cleanup;
+    }
+
+    if (ogs_app()->policy_file) {
+        rv = read_yaml_document(
+                ogs_app()->policy_file, &policy_document);
+        if (rv != OGS_OK) goto cleanup;
+
+        rv = validate_external_document(
+                ogs_app()->policy_file, policy_document,
+                "policy", "qos_profiles");
+        if (rv != OGS_OK) goto cleanup;
+    }
+
+    ogs_app()->subscriber_document = subscriber_document;
+    ogs_app()->policy_document = policy_document;
+
+    return OGS_OK;
+
+cleanup:
+    ogs_app_yaml_document_free(&subscriber_document);
+    ogs_app_yaml_document_free(&policy_document);
+    return OGS_ERROR;
 }
 
 static int context_prepare(void)
@@ -324,6 +519,35 @@ static void parse_config_logger_file(ogs_yaml_iter_t *logger_iter,
     }
 }
 
+static int parse_config_scalar(
+        ogs_yaml_iter_t *iter, const char *key, const char **value)
+{
+    const char *new_value = NULL;
+
+    ogs_assert(iter);
+    ogs_assert(key);
+    ogs_assert(value);
+
+    if (*value) {
+        ogs_error("Duplicate `%s`", key);
+        return OGS_ERROR;
+    }
+
+    if (!ogs_yaml_iter_has_value(iter)) {
+        ogs_error("`%s` must be a scalar", key);
+        return OGS_ERROR;
+    }
+
+    new_value = ogs_yaml_iter_value(iter);
+    if (!new_value || !new_value[0]) {
+        ogs_error("`%s` must not be empty", key);
+        return OGS_ERROR;
+    }
+
+    *value = new_value;
+    return OGS_OK;
+}
+
 static int parse_config(void)
 {
     int rv;
@@ -341,7 +565,17 @@ static int parse_config(void)
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
         if (!strcmp(root_key, "db_uri")) {
-            ogs_app()->db_uri = ogs_yaml_iter_value(&root_iter);
+            rv = parse_config_scalar(
+                    &root_iter, root_key, &ogs_app()->db_uri);
+            if (rv != OGS_OK) return rv;
+        } else if (!strcmp(root_key, "subscriber_file")) {
+            rv = parse_config_scalar(
+                    &root_iter, root_key, &ogs_app()->subscriber_file);
+            if (rv != OGS_OK) return rv;
+        } else if (!strcmp(root_key, "policy_file")) {
+            rv = parse_config_scalar(
+                    &root_iter, root_key, &ogs_app()->policy_file);
+            if (rv != OGS_OK) return rv;
         } else if (!strcmp(root_key, "logger")) {
             ogs_yaml_iter_t logger_iter;
             ogs_yaml_iter_recurse(&root_iter, &logger_iter);

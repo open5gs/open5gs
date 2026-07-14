@@ -23,6 +23,20 @@ static ogs_app_context_t self;
 
 static int initialized = 0;
 
+void ogs_app_yaml_document_free(void **document)
+{
+    yaml_document_t *yaml_document = NULL;
+
+    ogs_assert(document);
+
+    yaml_document = *document;
+    if (yaml_document) {
+        yaml_document_delete(yaml_document);
+        free(yaml_document);
+        *document = NULL;
+    }
+}
+
 int ogs_app_context_init(void)
 {
     ogs_assert(initialized == 0);
@@ -38,10 +52,9 @@ void ogs_app_context_final(void)
 {
     ogs_assert(initialized == 1);
 
-    if (self.document) {
-        yaml_document_delete(self.document);
-        free(self.document);
-    }
+    ogs_app_yaml_document_free(&self.document);
+    ogs_app_yaml_document_free(&self.subscriber_document);
+    ogs_app_yaml_document_free(&self.policy_document);
 
     if (self.pollset)
         ogs_pollset_destroy(self.pollset);

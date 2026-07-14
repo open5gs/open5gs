@@ -36,6 +36,12 @@ typedef struct ogs_app_context_s {
 
     const char *db_uri;
 
+    const char *subscriber_file;
+    void *subscriber_document;
+
+    const char *policy_file;
+    void *policy_document;
+
     struct {
         ogs_log_ts_e timestamp;
     } logger_default;
@@ -92,6 +98,8 @@ typedef struct ogs_app_context_s {
 
 int ogs_app_context_init(void);
 void ogs_app_context_final(void);
+
+void ogs_app_yaml_document_free(void **document);
 
 ogs_app_context_t *ogs_app(void);
 
