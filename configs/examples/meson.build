@@ -16,6 +16,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 examples_conf = '''
+    5gc-sepp1-policy.yaml
+    5gc-sepp2-policy.yaml
+    5gc-sepp3-policy.yaml
     5gc-sepp1-999-70.yaml
     5gc-sepp2-001-01.yaml
     5gc-sepp3-315-010.yaml

@@ -1,0 +1,302 @@
+subscriber:
+  - supi: "999700000000001"
+    security:
+      k: "465b5ce8b199b49faa5f0a2ee238a6bc"
+      opc: "e8ed289deba952e4283b54e88e6183ca"
+      amf: "8000"
+      sqn: 0
+    msisdn: []
+    ambr:
+      downlink:
+        value: 1000000000
+        unit: 0
+      uplink:
+        value: 1000000000
+        unit: 0
+    access_restriction_data: 32
+    network_access_mode: 0
+    subscriber_status: 0
+    operator_determined_barring: 0
+    subscribed_rau_tau_timer: 12
+    slice:
+      - sst: 1
+        default_indicator: true
+        session:
+          - name: internet
+            type: 3
+            ambr:
+              downlink:
+                value: 1000000000
+                unit: 0
+              uplink:
+                value: 1000000000
+                unit: 0
+            qos:
+              index: 9
+              arp:
+                priority_level: 8
+                pre_emption_capability: 1
+                pre_emption_vulnerability: 2
+
+################################################################################
+# Open5GS Subscriber Configuration
+################################################################################
+#
+# This file contains subscriber data shared by:
+#
+#   - HSS for EPS subscribers over S6a/Cx/SWx
+#   - UDR for 5GS subscribers over Nudr_DataRepository
+#
+# Each entry defines exactly one subscriber. Subscriber ranges are not
+# supported because authentication credentials, SQN state, MSISDNs and
+# static IP addresses are unique for each subscriber.
+#
+# UDR behavior:
+#   - Uses all slices of the subscriber.
+#   - Uses sst, sd and default_indicator as S-NSSAI information.
+#   - Exposes msisdn entries as GPSIs.
+#   - Uses qos.index as 5QI.
+#
+# HSS behavior:
+#   - Uses only the session list of the slice marked default_indicator: true.
+#   - Treats those session entries as EPS APN configurations.
+#   - Ignores sst and sd. They are not reflected in EPS subscription data.
+#   - Uses qos.index as QCI.
+#
+# Every subscriber must contain exactly one slice with
+# default_indicator: true. A subscriber with no default slice, or with
+# more than one, is rejected at startup. Additional slices must be
+# non-default and are used only by the UDR.
+#
+# For EPS/5GS interworking, sessions continued between EPS and 5GS keep
+# their identity because the APN and DNN configurations come from the
+# same session entry.
+#
+################################################################################
+# Subscriber lookup order
+################################################################################
+#
+# Configure the top-level subscriber_file option in the HSS and UDR
+# configuration files to load this file, for example:
+#
+#   subscriber_file: @sysconfdir@/open5gs/subscriber.yaml
+#
+# A configured file that is missing or fails to parse is a startup error.
+# If subscriber_file is not configured, subscriber data is looked up only
+# in MongoDB.
+#
+# When subscriber_file is configured, subscriber data for each SUPI is
+# looked up in the following order:
+#
+#   1. This file.
+#   2. MongoDB, when db_uri is configured and the SUPI is not found in
+#      this file.
+#
+# A SUPI must not exist in both this file and MongoDB. When db_uri is
+# configured, every SUPI in this file is looked up in MongoDB at startup
+# and duplication is a startup error. Subscriber data for one SUPI is
+# therefore always served by exactly one source.
+#
+# If the subscriber list in this file is empty, every lookup falls through to
+# MongoDB. If db_uri is not configured either, no subscriber data is
+# available and registration fails.
+#
+################################################################################
+# Subscriber definition rules
+################################################################################
+#
+# supi:
+#   The subscriber's IMSI-based SUPI, written as decimal IMSI digits
+#   without the "imsi-" prefix. Duplicate SUPIs in this file are a
+#   startup error.
+#
+# security:
+#   Milenage authentication parameters. Configure exactly one of op and
+#   opc; configuring both or neither is a startup error. K is
+#   subscriber-specific. OP may be shared by multiple subscribers, while
+#   OPc is normally subscriber-specific.
+#
+#   k, op, opc : 32 hexadecimal digits
+#   amf        : 4 hexadecimal digits
+#   sqn        : 0 to 2^48-1
+#
+# security.sqn:
+#   Initial 48-bit sequence number. The runtime SQN is maintained in
+#   memory per SUPI and is not written back to this file.
+#
+#   After a restart, the runtime SQN is reset to the configured value.
+#   If the network-side SQN is behind the USIM, the next AKA may
+#   require one standard synchronization recovery exchange using AUTS,
+#   as specified in 3GPP TS 33.102.
+#
+#   The HSS and UDR maintain independent runtime SQN state. When the
+#   same SUPI is served by both, the next AKA performed by a side
+#   whose SQN is behind the USIM may require synchronization recovery.
+#
+# msisdn:
+#   Optional list of MSISDNs in international digit format. The UDR
+#   exposes them as GPSIs.
+#
+# K, OP and OPc are secret values. Restrict read access to this file.
+#
+################################################################################
+# Field reference
+################################################################################
+#
+# qos.index:
+#   Interpreted as QCI when the default slice is used by the HSS and as
+#   5QI when the subscriber is used by the UDR. The default slice must
+#   use a value supported by both consumers; non-default slices are
+#   used only by the UDR and need only a valid 5QI.
+#
+# Session type:
+#   1: IPv4
+#   2: IPv6
+#   3: IPv4v6
+#
+# Bit-rate unit:
+#   0: bps
+#   1: Kbps
+#   2: Mbps
+#   3: Gbps
+#   4: Tbps
+#
+# ARP:
+#   priority_level            : 1 to 15
+#   pre_emption_vulnerability : 1: Disabled, 2: Enabled
+#   pre_emption_capability    : 1: Disabled, 2: Enabled
+#
+# sst: Slice/Service Type
+# sd : Optional 6-digit hexadecimal string. Quote the value to avoid
+#      YAML integer interpretation, e.g. sd: "000001"
+#
+# ue.ipv4 / ue.ipv6:
+#   Optional static UE IP address for the session, applied to both the
+#   EPS APN and the 5GS DNN. Field names follow the MongoDB subscriber
+#   schema.
+#
+# smf.ipv4 / smf.ipv6:
+#   Optional address used to select the SMF (PGW-C) serving the session.
+#
+# lbo_roaming_allowed:
+#   Optional. Local breakout while roaming (default false).
+#
+# The following fields are used only by the HSS and are ignored by
+# the UDR:
+#
+#   access_restriction_data      : Access restriction bit mask (default 32)
+#   subscriber_status            : See 3GPP TS 29.272 (default 0)
+#   operator_determined_barring  : See 3GPP TS 29.272 (default 0)
+#   network_access_mode          : See 3GPP TS 29.272 (default 0)
+#   subscribed_rau_tau_timer     : Minutes (default 12)
+#
+################################################################################
+# Subscriber examples
+################################################################################
+#
+# o Subscriber with a static IP address and a UDR-only slice
+#
+#   - The default slice provides APN configurations to the HSS and the
+#     default S-NSSAI subscription to the UDR.
+#   - The second slice is non-default and is used only by the UDR.
+#
+#subscriber:
+#  - supi: "001010000000001"
+#    security:
+#      k: "00112233445566778899AABBCCDDEEFF"
+#      opc: "00112233445566778899AABBCCDDEEFF"
+#      # op: "00112233445566778899AABBCCDDEEFF"
+#      amf: "8000"
+#      sqn: 0
+#    msisdn:
+#      - "821012345678"
+#    ambr:
+#      downlink:
+#        value: 1
+#        unit: 3
+#      uplink:
+#        value: 1
+#        unit: 3
+#    slice:
+#      - sst: 1
+#        sd: "000001"
+#        default_indicator: true
+#        session:
+#          - name: internet
+#            type: 3
+#            lbo_roaming_allowed: false
+#            ue:
+#              ipv4: 10.45.0.5
+#              ipv6: 2001:db8:cafe::5
+#            ambr:
+#              downlink:
+#                value: 1
+#                unit: 3
+#              uplink:
+#                value: 1
+#                unit: 3
+#            qos:
+#              index: 9
+#              arp:
+#                priority_level: 8
+#                pre_emption_vulnerability: 1
+#                pre_emption_capability: 1
+#
+#      - sst: 2
+#        sd: "000002"
+#        default_indicator: false
+#        session:
+#          - name: low-latency
+#            type: 3
+#            ambr:
+#              downlink:
+#                value: 2
+#                unit: 3
+#              uplink:
+#                value: 1
+#                unit: 3
+#            qos:
+#              index: 3
+#              arp:
+#                priority_level: 4
+#                pre_emption_vulnerability: 1
+#                pre_emption_capability: 1
+#
+# o Minimal subscriber
+#
+#   - HSS-only fields are omitted and take their default values.
+#
+#subscriber:
+#  - supi: "001010000000002"
+#    security:
+#      k: "112233445566778899AABBCCDDEEFF00"
+#      opc: "112233445566778899AABBCCDDEEFF00"
+#      amf: "8000"
+#      sqn: 0
+#    ambr:
+#      downlink:
+#        value: 1
+#        unit: 3
+#      uplink:
+#        value: 1
+#        unit: 3
+#    slice:
+#      - sst: 1
+#        default_indicator: true
+#        session:
+#          - name: internet
+#            type: 3
+#            ambr:
+#              downlink:
+#                value: 1
+#                unit: 3
+#              uplink:
+#                value: 1
+#                unit: 3
+#            qos:
+#              index: 9
+#              arp:
+#                priority_level: 8
+#                pre_emption_vulnerability: 1
+#                pre_emption_capability: 1
+#

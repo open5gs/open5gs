@@ -36,6 +36,8 @@ open5gs_conf = '''
     udm.yaml
     udr.yaml
     pcf.yaml
+    policy.yaml
+    subscriber.yaml
     nssf.yaml
     bsf.yaml
 '''.split()
