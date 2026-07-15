@@ -31,6 +31,8 @@ static bool esm_pdn_connectivity_reject_t3396_allowed(
     case OGS_NAS_ESM_CAUSE_MISSING_OR_UNKNOWN_APN:
     case OGS_NAS_ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED:
     case OGS_NAS_ESM_CAUSE_REQUESTED_SERVICE_OPTION_NOT_SUBSCRIBED:
+    case OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED:
+    case OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED:
         return true;
     default:
         return false;

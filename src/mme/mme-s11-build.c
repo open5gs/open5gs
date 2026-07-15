@@ -215,9 +215,10 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
             req->pdn_type.u8 =
                 (session->session_type & sess->ue_request_type.type);
             if (req->pdn_type.u8 == 0) {
-                ogs_fatal("Cannot derive PDN Type [UE:%d,HSS:%d]",
-                    sess->ue_request_type.type, session->session_type);
-                ogs_assert_if_reached();
+                ogs_error("Incompatible PDN Type [UE:%d,HSS:%d]",
+                    sess->ue_request_type.type,
+                    session->session_type);
+                return NULL;
             }
         } else {
             ogs_error("Invalid PDN-TYPE[%d]", session->session_type);

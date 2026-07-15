@@ -137,9 +137,20 @@ int esm_handle_pdn_connectivity_request(
             if (derived_pdn_type == 0) {
                 ogs_error("Cannot derived PDN Type [UE:%d,HSS:%d]",
                     sess->ue_request_type.type, sess->session->session_type);
+                ogs_nas_esm_cause_t cause;
+                
+                if (sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV4 &&
+                    sess->ue_request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV6) {
+                    cause = OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
+                } else if (sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV6 &&
+                           sess->ue_request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4) {
+                    cause = OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
+                } else {
+                    cause = OGS_NAS_ESM_CAUSE_REQUESTED_SERVICE_OPTION_NOT_SUBSCRIBED;
+                }
+                
                 r = nas_eps_send_pdn_connectivity_reject(
-                        sess, OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE,
-                        create_action);
+                        sess, cause, create_action);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 return OGS_ERROR;
@@ -269,9 +280,20 @@ int esm_handle_information_response(
             if (derived_pdn_type == 0) {
                 ogs_error("Cannot derived PDN Type [UE:%d,HSS:%d]",
                     sess->ue_request_type.type, sess->session->session_type);
+                ogs_nas_esm_cause_t cause;
+                
+                if (sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV4 &&
+                    sess->ue_request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV6) {
+                    cause = OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
+                } else if (sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV6 &&
+                           sess->ue_request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4) {
+                    cause = OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
+                } else {
+                    cause = OGS_NAS_ESM_CAUSE_REQUESTED_SERVICE_OPTION_NOT_SUBSCRIBED;
+                }
+                
                 r = nas_eps_send_pdn_connectivity_reject(
-                        sess, OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE,
-                        OGS_GTP_CREATE_IN_ATTACH_REQUEST);
+                        sess, cause, OGS_GTP_CREATE_IN_ATTACH_REQUEST);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 return OGS_ERROR;
