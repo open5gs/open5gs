@@ -39,14 +39,15 @@ policy:
 #   - Uses all slices of the selected policy.
 #   - Uses sst, sd and default_indicator as S-NSSAI information.
 #   - Uses qos.index as 5QI.
-#   - Uses qos_profiles for AF-supplied qosReference mapping.
+#   - Uses qos_profiles by reference for an AF-supplied qosReference.
+#   - Uses qos_profiles by media_type when qosReference is absent.
 #
 # PCRF behavior:
 #   - Uses only the session list of the slice marked default_indicator: true.
 #   - Treats those session entries as EPS APN policies.
 #   - Ignores sst and sd. They are not reflected in Gx policy.
 #   - Uses qos.index as QCI.
-#   - Ignores qos_profiles.
+#   - Uses qos_profiles by media_type for Rx media components.
 #
 # Every policy must contain exactly one slice with default_indicator: true.
 # A policy with no default slice, or with more than one, is rejected at
@@ -141,26 +142,45 @@ policy:
 #      YAML integer interpretation, e.g. sd: "000001"
 #
 ################################################################################
-# QoS Profile Mapping (PCF only, Npcf_PolicyAuthorization / TS 29.514)
+# QoS Profile Mapping (PCF and PCRF)
 ################################################################################
 #
-# Maps AF-supplied qosReference strings to configured 5QI values.
-# Required only when an AF supplies qosReference in MediaComponent.
-# The PCRF ignores this section.
+# Each profile maps qos_index to one or both of the following lookup keys:
+#
+#   reference : AF-supplied qosReference used by the PCF.
+#   media_type: audio, video or control, used by both the PCF and PCRF.
+#
+# At least one of reference or media_type is required. qos_index is always
+# required. A profile containing both keys can provide one shared mapping for
+# a 5GS qosReference and the corresponding EPS/5GS media type.
+#
+# PCF lookup:
+#   - When qosReference is supplied, PCF looks up reference. An unknown
+#     reference is rejected.
+#   - When qosReference is absent, PCF looks up media_type. If no profile
+#     matches, the default mapping is audio=1, video=2 and control=5.
+#
+# PCRF lookup:
+#   - PCRF looks up media_type for Rx media components. If no profile matches,
+#     the default mapping is audio=1, video=2 and control=5.
+#
+# qos_index is interpreted as 5QI by the PCF and as QCI by the PCRF. When a
+# profile is shared by both, configure a value supported by both consumers.
 #
 # Example:
 #
 #qos_profiles:
 #  - reference: "conversational-voice"
+#    media_type: audio
 #    qos_index: 1
 #  - reference: "conversational-video"
+#    media_type: video
 #    qos_index: 2
 #  - reference: "ims-signalling"
+#    media_type: control
 #    qos_index: 5
 #  - reference: "standard-data"
 #    qos_index: 9
-#  - reference: "low-latency"
-#    qos_index: 3
 #
 ################################################################################
 # Policy examples

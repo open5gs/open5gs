@@ -97,8 +97,16 @@ typedef struct ogs_global_conf_s {
 
 #define OGS_APP_MAX_NUM_OF_QOS_PROFILE 64
 
+typedef enum {
+    OGS_APP_QOS_PROFILE_MEDIA_TYPE_NONE = 0,
+    OGS_APP_QOS_PROFILE_MEDIA_TYPE_AUDIO,
+    OGS_APP_QOS_PROFILE_MEDIA_TYPE_VIDEO,
+    OGS_APP_QOS_PROFILE_MEDIA_TYPE_CONTROL,
+} ogs_app_qos_profile_media_type_e;
+
 typedef struct ogs_app_qos_profile_s {
     char *reference;
+    ogs_app_qos_profile_media_type_e media_type;
     uint8_t qos_index;
 } ogs_app_qos_profile_t;
 
@@ -219,6 +227,8 @@ int ogs_app_parse_policy_conf(ogs_yaml_iter_t *parent);
 int ogs_app_parse_qos_profiles_conf(ogs_yaml_iter_t *parent);
 const ogs_app_qos_profile_t *ogs_app_qos_profile_find(
         const char *reference);
+const ogs_app_qos_profile_t *ogs_app_qos_profile_find_by_media_type(
+        ogs_app_qos_profile_media_type_e media_type);
 
 int ogs_app_check_policy_conf(void);
 int ogs_app_parse_session_conf(

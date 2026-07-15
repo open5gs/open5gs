@@ -27,6 +27,9 @@ static uint8_t pcf_qos_index_from_media(
         const char **err_out)
 {
     const ogs_app_qos_profile_t *qos_profile = NULL;
+    ogs_app_qos_profile_media_type_e profile_media_type =
+        OGS_APP_QOS_PROFILE_MEDIA_TYPE_NONE;
+    uint8_t default_qos_index = 0;
 
     ogs_assert(err_out);
     *err_out = NULL;
@@ -42,11 +45,17 @@ static uint8_t pcf_qos_index_from_media(
 
     switch (media_type) {
     case OpenAPI_media_type_AUDIO:
-        return OGS_QOS_INDEX_1;
+        profile_media_type = OGS_APP_QOS_PROFILE_MEDIA_TYPE_AUDIO;
+        default_qos_index = OGS_QOS_INDEX_1;
+        break;
     case OpenAPI_media_type_VIDEO:
-        return OGS_QOS_INDEX_2;
+        profile_media_type = OGS_APP_QOS_PROFILE_MEDIA_TYPE_VIDEO;
+        default_qos_index = OGS_QOS_INDEX_2;
+        break;
     case OpenAPI_media_type_CONTROL:
-        return OGS_QOS_INDEX_5;
+        profile_media_type = OGS_APP_QOS_PROFILE_MEDIA_TYPE_CONTROL;
+        default_qos_index = OGS_QOS_INDEX_5;
+        break;
     case OpenAPI_media_type_NULL:
         *err_out = "Media-Type is Required";
         return 0;
@@ -54,6 +63,13 @@ static uint8_t pcf_qos_index_from_media(
         *err_out = "Unknown Media-Type";
         return 0;
     }
+
+    qos_profile =
+        ogs_app_qos_profile_find_by_media_type(profile_media_type);
+    if (qos_profile)
+        return qos_profile->qos_index;
+
+    return default_qos_index;
 }
 
 bool pcf_npcf_am_policy_control_handle_create(pcf_ue_am_t *pcf_ue_am,

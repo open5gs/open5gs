@@ -1421,19 +1421,52 @@ static bool qos_profile_reference_exists(const char *reference)
     ogs_assert(reference);
 
     for (i = 0; i < local_conf.num_of_qos_profile; i++) {
-        if (!strcmp(local_conf.qos_profile[i].reference, reference))
+        if (local_conf.qos_profile[i].reference &&
+            !strcmp(local_conf.qos_profile[i].reference, reference))
             return true;
     }
 
     return false;
 }
 
+static bool qos_profile_media_type_exists(
+        ogs_app_qos_profile_media_type_e media_type)
+{
+    int i;
+
+    ogs_assert(media_type != OGS_APP_QOS_PROFILE_MEDIA_TYPE_NONE);
+
+    for (i = 0; i < local_conf.num_of_qos_profile; i++) {
+        if (local_conf.qos_profile[i].media_type == media_type)
+            return true;
+    }
+
+    return false;
+}
+
+static ogs_app_qos_profile_media_type_e qos_profile_media_type_from_string(
+        const char *string)
+{
+    ogs_assert(string);
+
+    if (!strcmp(string, "audio"))
+        return OGS_APP_QOS_PROFILE_MEDIA_TYPE_AUDIO;
+    if (!strcmp(string, "video"))
+        return OGS_APP_QOS_PROFILE_MEDIA_TYPE_VIDEO;
+    if (!strcmp(string, "control"))
+        return OGS_APP_QOS_PROFILE_MEDIA_TYPE_CONTROL;
+
+    return OGS_APP_QOS_PROFILE_MEDIA_TYPE_NONE;
+}
+
 static void qos_profile_clear(void)
 {
     int i;
 
-    for (i = 0; i < local_conf.num_of_qos_profile; i++)
-        ogs_free(local_conf.qos_profile[i].reference);
+    for (i = 0; i < local_conf.num_of_qos_profile; i++) {
+        if (local_conf.qos_profile[i].reference)
+            ogs_free(local_conf.qos_profile[i].reference);
+    }
 
     memset(local_conf.qos_profile, 0, sizeof(local_conf.qos_profile));
     local_conf.num_of_qos_profile = 0;
@@ -1448,7 +1481,11 @@ int ogs_app_parse_qos_profiles_conf(ogs_yaml_iter_t *parent)
     ogs_yaml_iter_recurse(parent, &profile_array);
     do {
         const char *reference = NULL;
+        const char *media_type_string = NULL;
         const char *qos_index_string = NULL;
+        const char *profile_name = NULL;
+        ogs_app_qos_profile_media_type_e media_type =
+            OGS_APP_QOS_PROFILE_MEDIA_TYPE_NONE;
         char *end = NULL;
         long qos_index = 0;
 
@@ -1459,6 +1496,8 @@ int ogs_app_parse_qos_profiles_conf(ogs_yaml_iter_t *parent)
 
             if (!strcmp(profile_key, "reference")) {
                 reference = ogs_yaml_iter_value(&profile_iter);
+            } else if (!strcmp(profile_key, "media_type")) {
+                media_type_string = ogs_yaml_iter_value(&profile_iter);
             } else if (!strcmp(profile_key, "qos_index")) {
                 qos_index_string = ogs_yaml_iter_value(&profile_iter);
             } else {
@@ -1466,42 +1505,70 @@ int ogs_app_parse_qos_profiles_conf(ogs_yaml_iter_t *parent)
             }
         }
 
-        if (!reference || !reference[0]) {
-            ogs_warn("Ignore qos_profiles entry without reference");
+        if ((!reference || !reference[0]) &&
+            (!media_type_string || !media_type_string[0])) {
+            ogs_warn("Ignore qos_profiles entry without "
+                    "reference or media_type");
             goto next;
         }
 
+        if (media_type_string && media_type_string[0]) {
+            media_type = qos_profile_media_type_from_string(media_type_string);
+            if (media_type == OGS_APP_QOS_PROFILE_MEDIA_TYPE_NONE) {
+                ogs_warn("Ignore qos_profiles invalid media_type [%s]",
+                        media_type_string);
+                goto next;
+            }
+        }
+
+        profile_name = reference && reference[0] ?
+            reference : media_type_string;
+
         if (!qos_index_string || !qos_index_string[0]) {
-            ogs_warn("Ignore qos_profiles[%s] without qos_index", reference);
+            ogs_warn("Ignore qos_profiles[%s] without qos_index",
+                    profile_name);
             goto next;
         }
 
         qos_index = strtol(qos_index_string, &end, 10);
         if (*end || qos_index <= 0 || qos_index > UINT8_MAX) {
             ogs_warn("Ignore qos_profiles[%s] invalid qos_index [%s]",
-                    reference, qos_index_string);
+                    profile_name, qos_index_string);
             goto next;
         }
 
-        if (qos_profile_reference_exists(reference)) {
+        if (reference && reference[0] &&
+            qos_profile_reference_exists(reference)) {
             ogs_warn("Ignore duplicate qos_profiles reference [%s]",
                     reference);
+            goto next;
+        }
+
+        if (media_type != OGS_APP_QOS_PROFILE_MEDIA_TYPE_NONE &&
+            qos_profile_media_type_exists(media_type)) {
+            ogs_warn("Ignore duplicate qos_profiles media_type [%s]",
+                    media_type_string);
             goto next;
         }
 
         if (local_conf.num_of_qos_profile >=
                 OGS_APP_MAX_NUM_OF_QOS_PROFILE) {
             ogs_warn("Ignore qos_profiles[%s] beyond max [%d]",
-                    reference, OGS_APP_MAX_NUM_OF_QOS_PROFILE);
+                    profile_name, OGS_APP_MAX_NUM_OF_QOS_PROFILE);
             goto next;
         }
 
-        local_conf.qos_profile[local_conf.num_of_qos_profile].reference =
-            ogs_strdup(reference);
-        ogs_assert(local_conf.qos_profile[
-                local_conf.num_of_qos_profile].reference);
-        local_conf.qos_profile[local_conf.num_of_qos_profile].qos_index =
-            (uint8_t)qos_index;
+        if (reference && reference[0]) {
+            local_conf.qos_profile[
+                local_conf.num_of_qos_profile].reference =
+                    ogs_strdup(reference);
+            ogs_assert(local_conf.qos_profile[
+                    local_conf.num_of_qos_profile].reference);
+        }
+        local_conf.qos_profile[
+            local_conf.num_of_qos_profile].media_type = media_type;
+        local_conf.qos_profile[
+            local_conf.num_of_qos_profile].qos_index = (uint8_t)qos_index;
         local_conf.num_of_qos_profile++;
 
 next:
@@ -1519,7 +1586,23 @@ const ogs_app_qos_profile_t *ogs_app_qos_profile_find(
     ogs_assert(reference);
 
     for (i = 0; i < local_conf.num_of_qos_profile; i++) {
-        if (!strcmp(local_conf.qos_profile[i].reference, reference))
+        if (local_conf.qos_profile[i].reference &&
+            !strcmp(local_conf.qos_profile[i].reference, reference))
+            return &local_conf.qos_profile[i];
+    }
+
+    return NULL;
+}
+
+const ogs_app_qos_profile_t *ogs_app_qos_profile_find_by_media_type(
+        ogs_app_qos_profile_media_type_e media_type)
+{
+    int i;
+
+    ogs_assert(media_type != OGS_APP_QOS_PROFILE_MEDIA_TYPE_NONE);
+
+    for (i = 0; i < local_conf.num_of_qos_profile; i++) {
+        if (local_conf.qos_profile[i].media_type == media_type)
             return &local_conf.qos_profile[i];
     }
 

@@ -65,6 +65,38 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg);
 static int encode_pcc_rule_definition(
         struct avp *avp, ogs_pcc_rule_t *pcc_rule, int flow_presence);
 
+static uint8_t pcrf_qos_index_from_media_type(uint32_t media_type)
+{
+    const ogs_app_qos_profile_t *qos_profile = NULL;
+    ogs_app_qos_profile_media_type_e profile_media_type =
+        OGS_APP_QOS_PROFILE_MEDIA_TYPE_NONE;
+    uint8_t default_qos_index = 0;
+
+    switch (media_type) {
+    case OGS_DIAM_RX_MEDIA_TYPE_AUDIO:
+        profile_media_type = OGS_APP_QOS_PROFILE_MEDIA_TYPE_AUDIO;
+        default_qos_index = OGS_QOS_INDEX_1;
+        break;
+    case OGS_DIAM_RX_MEDIA_TYPE_VIDEO:
+        profile_media_type = OGS_APP_QOS_PROFILE_MEDIA_TYPE_VIDEO;
+        default_qos_index = OGS_QOS_INDEX_2;
+        break;
+    case OGS_DIAM_RX_MEDIA_TYPE_CONTROL:
+        profile_media_type = OGS_APP_QOS_PROFILE_MEDIA_TYPE_CONTROL;
+        default_qos_index = OGS_QOS_INDEX_5;
+        break;
+    default:
+        return 0;
+    }
+
+    qos_profile =
+        ogs_app_qos_profile_find_by_media_type(profile_media_type);
+    if (qos_profile)
+        return qos_profile->qos_index;
+
+    return default_qos_index;
+}
+
 static __inline__ struct sess_state *new_state(os0_t sid)
 {
     struct sess_state *new = NULL;
@@ -1129,17 +1161,9 @@ int pcrf_gx_send_rar(
             ogs_media_component_t *media_component =
                 &rx_message->ims_data.media_component[i];
 
-            switch(media_component->media_type) {
-            case OGS_DIAM_RX_MEDIA_TYPE_AUDIO:
-                qos_index = OGS_QOS_INDEX_1;
-                break;
-            case OGS_DIAM_RX_MEDIA_TYPE_VIDEO:
-                qos_index = OGS_QOS_INDEX_2;
-                break;
-            case OGS_DIAM_RX_MEDIA_TYPE_CONTROL:
-                qos_index = OGS_QOS_INDEX_5;
-                break;
-            default:
+            qos_index = pcrf_qos_index_from_media_type(
+                    media_component->media_type);
+            if (!qos_index) {
                 ogs_error("Not implemented : [Media-Type:%d]",
                         media_component->media_type);
                 rx_message->result_code = OGS_DIAM_INVALID_AVP_VALUE;
@@ -1162,7 +1186,7 @@ int pcrf_gx_send_rar(
                  */
                 if (sess_data->rat_type != OGS_DIAM_RAT_TYPE_WLAN &&
                     (gx_message.session_data.
-                        session.qos.index != OGS_QOS_INDEX_5 ||
+                        session.qos.index != qos_index ||
                     gx_message.session_data.
                         session.qos.arp.priority_level != 1)) {
                     ogs_error("CHECK WEBUI : Even the Default "

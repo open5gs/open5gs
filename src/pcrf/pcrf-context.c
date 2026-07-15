@@ -356,6 +356,10 @@ int pcrf_context_parse_config(void)
                         return OGS_ERROR;
                     }
 
+                    ogs_warn("Legacy inline `pcrf.qos_profiles` is "
+                            "deprecated; move it to policy.yaml and set "
+                            "the top-level `policy_file`");
+
                     rv = ogs_app_parse_qos_profiles_conf(&pcrf_iter);
                     if (rv != OGS_OK) {
                         ogs_error("ogs_app_parse_qos_profiles_conf() failed");
@@ -367,6 +371,10 @@ int pcrf_context_parse_config(void)
                                 "cannot be configured together");
                         return OGS_ERROR;
                     }
+
+                    ogs_warn("Legacy inline `pcrf.policy` is deprecated; "
+                            "move it to policy.yaml and set the top-level "
+                            "`policy_file`");
 
                     rv = parse_legacy_policy_conf(&pcrf_iter);
                     if (rv != OGS_OK) {
