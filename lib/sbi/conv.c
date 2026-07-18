@@ -79,6 +79,48 @@ static int parse_scheme_output(
     return OGS_OK;
 }
 
+static char *supi_from_imsi_parts(
+        const char *mcc, const char *mnc, const char *msin)
+{
+    int mcc_len, mnc_len;
+    char *supi = NULL;
+
+    ogs_assert(mcc);
+    ogs_assert(mnc);
+    ogs_assert(msin);
+
+    mcc_len = strlen(mcc);
+    if (mcc_len != 3 || ogs_bcd_string_is_valid(mcc, 3) == false) {
+        ogs_error("Invalid MCC [%s]", mcc);
+        return NULL;
+    }
+
+    mnc_len = strlen(mnc);
+    if ((mnc_len != 2 && mnc_len != 3) ||
+            ogs_bcd_string_is_valid(mnc, 3) == false) {
+        ogs_error("Invalid MNC [%s]", mnc);
+        return NULL;
+    }
+
+    /*
+     * TS 23.003 Clause 2.2:
+     * The overall number of digits in IMSI shall not exceed 15 digits.
+     *
+     * MCC(3 digits) + MNC(2 or 3 digits) + MSIN <= 15 digits
+     */
+    if (ogs_bcd_string_is_valid(msin,
+                OGS_MAX_IMSI_BCD_LEN - (mcc_len + mnc_len)) == false) {
+        ogs_error("Invalid MSIN [MCC:%s,MNC:%s,MSIN:%s]", mcc, mnc, msin);
+        return NULL;
+    }
+
+    supi = ogs_msprintf("%s-%s%s%s", OGS_ID_SUPI_TYPE_IMSI, mcc, mnc, msin);
+    if (!supi)
+        ogs_error("ogs_msprintf() failed");
+
+    return supi;
+}
+
 char *ogs_supi_from_suci(char *suci)
 {
 #define MAX_SUCI_TOKEN 16
@@ -116,8 +158,10 @@ char *ogs_supi_from_suci(char *suci)
                 uint8_t home_network_pki_value = atoi(array[6]);
 
                 if (protection_scheme_id == OGS_PROTECTION_SCHEME_NULL) {
-                    supi = ogs_msprintf("imsi-%s%s%s",
-                            array[2], array[3], array[7]);
+                    supi = supi_from_imsi_parts(array[2], array[3], array[7]);
+                    if (!supi)
+                        ogs_error("supi_from_imsi_parts[%s:%s:%s] failed",
+                                array[2], array[3], array[7]);
                 } else if (protection_scheme_id ==
                             OGS_PROTECTION_SCHEME_PROFILE_A ||
                         protection_scheme_id ==
@@ -217,9 +261,10 @@ char *ogs_supi_from_suci(char *suci)
                     ogs_buffer_to_bcd(
                         plain_text.data, plain_text.size, plain_bcd);
 
-                    supi = ogs_msprintf("imsi-%s%s%s",
-                            array[2], array[3], plain_bcd);
-                    ogs_assert(supi);
+                    supi = supi_from_imsi_parts(array[2], array[3], plain_bcd);
+                    if (!supi)
+                        ogs_error("supi_from_imsi_parts[%s:%s:%s] failed",
+                                array[2], array[3], plain_bcd);
 
                     if (plain_text.data)
                         ogs_free(plain_text.data);

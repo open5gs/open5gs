@@ -76,15 +76,29 @@ char *ogs_nas_5gs_suci_from_mobile_identity(
     char *scheme_output_string_or_bcd = NULL;
 
     ogs_assert(mobile_identity);
-    ogs_assert(mobile_identity->buffer);
 
-    ogs_assert(mobile_identity->length >=
-            (OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1));
+    if (!mobile_identity->buffer) {
+        ogs_error("No 5GS Mobile Identity buffer");
+        return NULL;
+    }
+    if (mobile_identity->length <
+            (OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1)) {
+        ogs_error("Too short SUCI Mobile Identity [%d:%d]",
+                mobile_identity->length,
+                OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1);
+        return NULL;
+    }
 
     mobile_identity_suci =
         (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
     ogs_assert(mobile_identity_suci);
 
+    if (mobile_identity_suci->h.type !=
+            OGS_NAS_5GS_MOBILE_IDENTITY_SUCI) {
+        ogs_error("Not a SUCI Mobile Identity [%d]",
+                mobile_identity_suci->h.type);
+        return NULL;
+    }
     if (mobile_identity_suci->h.supi_format !=
             OGS_NAS_5GS_SUPI_FORMAT_IMSI) {
         ogs_error("Not implemented SUPI format [%d]",
@@ -171,6 +185,26 @@ char *ogs_nas_5gs_suci_from_mobile_identity(
     } else {
         ogs_buffer_to_bcd(scheme_output, scheme_output_size,
                 scheme_output_string_or_bcd);
+
+        /*
+         * TS 23.003 Clause 2.2:
+         * The overall number of digits in IMSI shall not exceed 15 digits.
+         *
+         * MCC(3 digits) + MNC(2 or 3 digits) + MSIN <= 15 digits
+         *
+         * With Profile <A|B>, the MSIN is concealed. It is validated
+         * in ogs_supi_from_suci() after de-concealment instead.
+         */
+        if (ogs_bcd_string_is_valid(scheme_output_string_or_bcd,
+                OGS_MAX_IMSI_BCD_LEN -
+                    (3 + ogs_plmn_id_mnc_len(&plmn_id))) == false) {
+            ogs_error("ogs_bcd_string_is_valid() failed [MNC digits:%d, "
+                    "MSIN:%s]", ogs_plmn_id_mnc_len(&plmn_id),
+                    scheme_output_string_or_bcd);
+            ogs_free(scheme_output_string_or_bcd);
+            ogs_free(suci);
+            return NULL;
+        }
     }
 
     suci = ogs_mstrcatf(suci, "%s-%d-%d-%s",

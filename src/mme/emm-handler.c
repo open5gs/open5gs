@@ -224,6 +224,19 @@ int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
                     eps_mobile_identity->length);
             return OGS_ERROR;
         }
+        ogs_nas_eps_imsi_to_bcd(
+            &eps_mobile_identity->imsi, eps_mobile_identity->length,
+            imsi_bcd);
+        if (ogs_imsi_bcd_is_valid(imsi_bcd) == false) {
+            ogs_error("Invalid IMSI in Attach Request [%s]", imsi_bcd);
+            r = nas_eps_send_attach_reject(enb_ue, mme_ue,
+                    OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                    OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
+        }
+
         memcpy(&mme_ue->nas_mobile_identity_imsi,
             &eps_mobile_identity->imsi, eps_mobile_identity->length);
 
@@ -237,10 +250,16 @@ int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
             return OGS_ERROR;
         }
 
-        ogs_nas_eps_imsi_to_bcd(
-            &eps_mobile_identity->imsi, eps_mobile_identity->length,
-            imsi_bcd);
-        mme_ue_set_imsi(mme_ue, imsi_bcd);
+        if (mme_ue_set_imsi(mme_ue, imsi_bcd) != OGS_OK) {
+            ogs_error("mme_ue_set_imsi() failed in Attach Request [%s]",
+                    imsi_bcd);
+            r = nas_eps_send_attach_reject(enb_ue, mme_ue,
+                    OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                    OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
+        }
 
         ogs_info("    IMSI[%s]", imsi_bcd);
 
@@ -462,6 +481,18 @@ int emm_handle_identity_response(
             ogs_assert(r != OGS_ERROR);
             return OGS_ERROR;
         }
+        ogs_nas_eps_imsi_to_bcd(
+            &mobile_identity->imsi, mobile_identity->length, imsi_bcd);
+        if (ogs_imsi_bcd_is_valid(imsi_bcd) == false) {
+            ogs_error("Invalid IMSI in Identity Response [%s]", imsi_bcd);
+            r = nas_eps_send_attach_reject(enb_ue, mme_ue,
+                    OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                    OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
+        }
+
         memcpy(&mme_ue->nas_mobile_identity_imsi,
             &mobile_identity->imsi, mobile_identity->length);
 
@@ -475,9 +506,16 @@ int emm_handle_identity_response(
             return OGS_ERROR;
         }
 
-        ogs_nas_eps_imsi_to_bcd(
-            &mobile_identity->imsi, mobile_identity->length, imsi_bcd);
-        mme_ue_set_imsi(mme_ue, imsi_bcd);
+        if (mme_ue_set_imsi(mme_ue, imsi_bcd) != OGS_OK) {
+            ogs_error("mme_ue_set_imsi() failed in Identity Response [%s]",
+                    imsi_bcd);
+            r = nas_eps_send_attach_reject(enb_ue, mme_ue,
+                    OGS_NAS_EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                    OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
+        }
 
         if (mme_ue->imsi_len != OGS_MAX_IMSI_LEN) {
             ogs_error("Invalid IMSI LEN[%d]", mme_ue->imsi_len);

@@ -157,8 +157,33 @@ void mme_gn_handle_sgsn_context_request(
              rai.lai.lac, rai.rac);
 
     if (req->imsi.presence) {
-        char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+        /*
+         * The Gn IMSI IE is a raw TBCD octet string controlled by the peer.
+         * Eight octets without a filler nibble decode to 16 digits, and
+         * ogs_buffer_to_bcd() also writes a trailing NUL.
+         * Use a 17-byte temporary buffer so malformed input can be
+         * decoded safely and rejected by ogs_imsi_bcd_is_valid(), which
+         * still enforces the 15-digit IMSI limit.
+         */
+        char imsi_bcd[OGS_MAX_IMSI_LEN*2+1];
+
+        if (!req->imsi.len || req->imsi.len > OGS_MAX_IMSI_LEN) {
+            ogs_error("[Gn] Invalid IMSI length in SGSN Context Request "
+                    "[%u]", req->imsi.len);
+            mme_gtp1_send_sgsn_context_response(NULL,
+                    OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT, xact);
+            return;
+        }
+
         ogs_buffer_to_bcd(req->imsi.data, req->imsi.len, imsi_bcd);
+        if (ogs_imsi_bcd_is_valid(imsi_bcd) == false) {
+            ogs_error("[Gn] Invalid IMSI in SGSN Context Request [%s]",
+                    imsi_bcd);
+            mme_gtp1_send_sgsn_context_response(NULL,
+                    OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT, xact);
+            return;
+        }
+
         ogs_debug("    IMSI[%s]", imsi_bcd);
         mme_ue = mme_ue_find_by_imsi(req->imsi.data, req->imsi.len);
         if (!mme_ue)
@@ -311,7 +336,15 @@ int mme_gn_handle_sgsn_context_response(
 {
     int rv;
     int gtp1_cause, emm_cause = OGS_NAS_EMM_CAUSE_NETWORK_FAILURE;
-    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    /*
+     * The Gn IMSI IE is a raw TBCD octet string controlled by the peer.
+     * Eight octets without a filler nibble decode to 16 digits, and
+     * ogs_buffer_to_bcd() also writes a trailing NUL.
+     * Use a 17-byte temporary buffer so malformed input can be
+     * decoded safely and rejected by ogs_imsi_bcd_is_valid(), which
+     * still enforces the 15-digit IMSI limit.
+     */
+    char imsi_bcd[OGS_MAX_IMSI_LEN*2+1];
     ogs_gtp1_mm_context_decoded_t gtp1_mm_ctx;
     ogs_gtp1_pdp_context_decoded_t gtp1_pdp_ctx;
     enb_ue_t *enb_ue = NULL;
@@ -362,10 +395,28 @@ int mme_gn_handle_sgsn_context_response(
         gtp1_cause = OGS_GTP1_CAUSE_MANDATORY_IE_MISSING;
         goto nack_and_reject;
     }
+    if (!resp->imsi.len || resp->imsi.len > OGS_MAX_IMSI_LEN) {
+        ogs_error("[Gn] Invalid IMSI length in SGSN Context Response "
+                "[%u]", resp->imsi.len);
+        gtp1_cause = OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+        goto nack_and_reject;
+    }
 
     ogs_buffer_to_bcd(resp->imsi.data, resp->imsi.len, imsi_bcd);
+    if (ogs_imsi_bcd_is_valid(imsi_bcd) == false) {
+        ogs_error("[Gn] Invalid IMSI in SGSN Context Response [%s]",
+                imsi_bcd);
+        gtp1_cause = OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+        goto nack_and_reject;
+    }
+
     ogs_info("    IMSI[%s]", imsi_bcd);
-    mme_ue_set_imsi(mme_ue, imsi_bcd);
+    if (mme_ue_set_imsi(mme_ue, imsi_bcd) != OGS_OK) {
+        ogs_error("mme_ue_set_imsi() failed in SGSN Context Response "
+                "[%s]", imsi_bcd);
+        gtp1_cause = OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+        goto nack_and_reject;
+    }
 
     if (!resp->tunnel_endpoint_identifier_control_plane.presence) {
         ogs_error("[Gn] Rx SGSN Context Response with no Tunnel Endpoint Identifier Control Plane!");

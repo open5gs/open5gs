@@ -1023,8 +1023,8 @@ amf_ue_t *amf_ue_find_by_supi(char *supi);
 amf_ue_t *amf_ue_find_by_ue_context_id(char *ue_context_id);
 
 amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message);
-void amf_ue_set_suci(amf_ue_t *amf_ue,
-        ogs_nas_5gs_mobile_identity_t *mobile_identity);
+/* Takes ownership of suci. */
+void amf_ue_set_suci(amf_ue_t *amf_ue, char *suci);
 void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi);
 
 OpenAPI_rat_type_e amf_ue_rat_type(amf_ue_t *amf_ue);

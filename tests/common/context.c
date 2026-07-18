@@ -1027,6 +1027,58 @@ static void test_ue_set_mobile_identity(test_ue_t *test_ue,
             scheme_output, scheme_output_size);
     ogs_assert(scheme_output_size);
 
+    if (mobile_identity_suci->protection_scheme_id ==
+            OGS_PROTECTION_SCHEME_NULL) {
+        ogs_plmn_id_t plmn_id;
+        int max_msin_digits = 0;
+        char *msin_bcd = NULL;
+
+        /*
+         * TS 23.003 Clause 2.2:
+         * The overall number of digits in IMSI shall not exceed 15 digits.
+         *
+         * Only a null-scheme SUCI carries a TBCD-encoded cleartext MSIN.
+         * Profile A and B scheme outputs are opaque ECIES data and must
+         * never be decoded or rewritten by this test helper.
+         *
+         * The null-scheme strings in the test code commonly assume a
+         * 10-digit MSIN with a 2-digit MNC. When the serving PLMN uses a
+         * 3-digit MNC, remove only excess leading zero padding so the IMSI
+         * remains within 15 digits. Never drop a significant digit.
+         */
+        ogs_nas_to_plmn_id(&plmn_id,
+                &mobile_identity_suci->nas_plmn_id);
+        max_msin_digits = OGS_MAX_IMSI_BCD_LEN -
+            (3 + ogs_plmn_id_mnc_len(&plmn_id));
+
+        msin_bcd = ogs_calloc(1, scheme_output_size*2+1);
+        ogs_assert(msin_bcd);
+
+        ogs_buffer_to_bcd(scheme_output, scheme_output_size, msin_bcd);
+
+        if ((int)strlen(msin_bcd) > max_msin_digits) {
+            int i;
+            int excess = (int)strlen(msin_bcd) - max_msin_digits;
+            int scheme_output_len = 0;
+
+            for (i = 0; i < excess; i++) {
+                if (msin_bcd[i] != '0')
+                    ogs_error("Cannot trim non-zero MSIN prefix [%d:%s]",
+                            i, msin_bcd);
+                ogs_assert(msin_bcd[i] == '0');
+            }
+
+            memmove(msin_bcd, msin_bcd + excess,
+                    strlen(msin_bcd + excess) + 1);
+
+            ogs_bcd_to_buffer(
+                    msin_bcd, scheme_output, &scheme_output_len);
+            scheme_output_size = scheme_output_len;
+        }
+
+        ogs_free(msin_bcd);
+    }
+
     mobile_identity = &test_ue->mobile_identity;
 
     mobile_identity->length =
@@ -1045,6 +1097,7 @@ static void test_ue_set_mobile_identity(test_ue_t *test_ue,
     if (test_ue->suci)
         ogs_free(test_ue->suci);
     test_ue->suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
+    ogs_assert(test_ue->suci);
     if (test_ue->supi)
         ogs_free(test_ue->supi);
     test_ue->supi = ogs_supi_from_suci(test_ue->suci);

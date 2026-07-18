@@ -180,7 +180,7 @@ udm_ue_t *udm_ue_add(char *suci)
 
     udm_ue->supi = ogs_supi_from_supi_or_suci(udm_ue->suci);
     if (!udm_ue->supi) {
-        ogs_error("No memory for udm_ue->supi [%s]", suci);
+        ogs_error("ogs_supi_from_supi_or_suci() failed [%s]", suci);
         ogs_free(udm_ue->suci);
         ogs_free(udm_ue->ctx_id);
         ogs_pool_id_free(&udm_ue_pool, udm_ue);

@@ -37,6 +37,7 @@ void testgmm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
                 &message.gmm.registration_request);
         break;
     case OGS_NAS_5GS_REGISTRATION_REJECT:
+        test_ue->gmm_cause = message.gmm.registration_reject.gmm_cause;
         break;
     case OGS_NAS_5GS_SERVICE_ACCEPT:
         testgmm_handle_service_accept(test_ue, &message.gmm.service_accept);

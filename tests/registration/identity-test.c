@@ -472,6 +472,143 @@ static void pull_3122_v270_func(abts_case *tc, void *data)
 }
 #endif
 
+#if 0 /* Disabled to avoid expected error logs from this negative test. */
+static void test_overlong_suci_func(abts_case *tc, void *data)
+{
+    int rv;
+    ogs_socknode_t *ngap;
+    ogs_socknode_t *gtpu;
+    ogs_pkbuf_t *gmmbuf;
+    ogs_pkbuf_t *sendbuf;
+    ogs_pkbuf_t *recvbuf;
+
+    ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
+    ogs_nas_5gs_mobile_identity_t *mobile_identity = NULL;
+    int scheme_output_len = 0;
+    int scheme_output_size = 0;
+    uint8_t *scheme_output = NULL;
+    char *msin_bcd = NULL;
+    uint8_t *buffer = NULL;
+    test_ue_t *test_ue = NULL;
+
+    /* Setup Test UE Context */
+    memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
+
+    mobile_identity_suci.h.supi_format = OGS_NAS_5GS_SUPI_FORMAT_IMSI;
+    mobile_identity_suci.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_SUCI;
+    mobile_identity_suci.routing_indicator1 = 0;
+    mobile_identity_suci.routing_indicator2 = 0xf;
+    mobile_identity_suci.routing_indicator3 = 0xf;
+    mobile_identity_suci.routing_indicator4 = 0xf;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
+    mobile_identity_suci.home_network_pki_value = 0;
+
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000203190");
+    ogs_assert(test_ue);
+
+    test_ue->nr_cgi.cell_id = 0x40001;
+
+    test_ue->nas.registration.tsc = 0;
+    test_ue->nas.registration.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.registration.follow_on_request = 1;
+    test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
+
+    test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
+    test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
+
+    /*
+     * INVALID SUCI
+     *
+     * Start with a valid 15-digit IMSI and append two MSIN digits.
+     * Rebuild the BCD output so an odd-length MSIN keeps its filler
+     * nibble only at the end. The resulting 17-digit IMSI is
+     * syntactically encoded but semantically invalid under
+     * TS 23.003 Clause 2.2.
+     *
+     * Note that test_ue_add_by_suci() cannot build an invalid SUCI
+     * since test_ue_set_mobile_identity() asserts a valid SUPI,
+     * so update test_ue->mobile_identity directly.
+     */
+    mobile_identity = &test_ue->mobile_identity;
+
+    scheme_output = (uint8_t *)mobile_identity->buffer +
+        OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE;
+    scheme_output_size = mobile_identity->length -
+        OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE;
+
+    msin_bcd = ogs_calloc(1, scheme_output_size*2 + 3);
+    ogs_assert(msin_bcd);
+    ogs_buffer_to_bcd(scheme_output, scheme_output_size, msin_bcd);
+    strcat(msin_bcd, "99");
+
+    buffer = ogs_calloc(1,
+            OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE +
+            (strlen(msin_bcd) + 1) / 2);
+    ogs_assert(buffer);
+    memcpy(buffer, mobile_identity->buffer,
+            OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE);
+    ogs_bcd_to_buffer(msin_bcd,
+            buffer + OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE,
+            &scheme_output_len);
+    ogs_free(msin_bcd);
+
+    ogs_free(mobile_identity->buffer);
+    mobile_identity->buffer = buffer;
+    mobile_identity->length =
+        OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + scheme_output_len;
+
+    /* gNB connects to AMF */
+    ngap = testngap_client(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, ngap);
+
+    /* gNB connects to UPF */
+    gtpu = test_gtpu_server(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, gtpu);
+
+    /* Send NG-Setup Reqeust */
+    sendbuf = testngap_build_ng_setup_request(0x4000, 29);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive NG-Setup Response */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* Send Registration request */
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+                NGAP_RRCEstablishmentCause_mo_Signalling, false, true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Registration reject
+     * with Cause #95 (Semantically incorrect message) */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            OGS_NAS_5GS_REGISTRATION_REJECT, test_ue->gmm_message_type);
+    ABTS_INT_EQUAL(tc,
+            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+            test_ue->gmm_cause);
+
+    ogs_msleep(300);
+
+    /* gNB disonncect from UPF */
+    testgnb_gtpu_close(gtpu);
+
+    /* gNB disonncect from AMF */
+    testgnb_ngap_close(ngap);
+
+    /* Clear Test UE Context */
+    test_ue_remove(test_ue);
+}
+#endif
+
 abts_suite *test_identity(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -479,6 +616,9 @@ abts_suite *test_identity(abts_suite *suite)
     abts_run_test(suite, test1_func, NULL);
 #if 0 /* Deprecated to resolve issue #3131 */
     abts_run_test(suite, pull_3122_v270_func, NULL);
+#endif
+#if 0 /* Disabled to avoid expected error logs from this negative test. */
+    abts_run_test(suite, test_overlong_suci_func, NULL);
 #endif
 
     return suite;

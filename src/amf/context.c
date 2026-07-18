@@ -1910,7 +1910,6 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
     ogs_nas_5gs_service_request_t *service_request = NULL;
     ogs_nas_5gs_mobile_identity_t *mobile_identity = NULL;
     ogs_nas_5gs_mobile_identity_header_t *mobile_identity_header = NULL;
-    ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci = NULL;
     ogs_nas_5gs_mobile_identity_guti_t *mobile_identity_guti = NULL;
     ogs_nas_5gs_mobile_identity_s_tmsi_t *mobile_identity_s_tmsi = NULL;
     ogs_nas_5gs_guti_t nas_guti;
@@ -1937,35 +1936,6 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
 
         switch (mobile_identity_header->type) {
         case OGS_NAS_5GS_MOBILE_IDENTITY_SUCI:
-            if (mobile_identity->length <
-                    (OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1)) {
-                ogs_error("Too short SUCI Mobile Identity [%d:%d]",
-                        mobile_identity->length,
-                        OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1);
-                return NULL;
-            }
-
-            mobile_identity_suci =
-                (ogs_nas_5gs_mobile_identity_suci_t *)mobile_identity->buffer;
-            ogs_assert(mobile_identity_suci);
-
-            if (mobile_identity_suci->h.supi_format !=
-                    OGS_NAS_5GS_SUPI_FORMAT_IMSI) {
-                ogs_error("Not implemented SUPI format [%d]",
-                    mobile_identity_suci->h.supi_format);
-                return NULL;
-            }
-            if (mobile_identity_suci->protection_scheme_id !=
-                    OGS_PROTECTION_SCHEME_NULL &&
-                mobile_identity_suci->protection_scheme_id !=
-                    OGS_PROTECTION_SCHEME_PROFILE_A &&
-                mobile_identity_suci->protection_scheme_id !=
-                    OGS_PROTECTION_SCHEME_PROFILE_B) {
-                ogs_error("Invalid ProtectionSchemeID(%d) in SUCI",
-                    mobile_identity_suci->protection_scheme_id);
-                return NULL;
-            }
-
             suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
             if (!suci) {
                 ogs_error("Cannot get the SUCI from Mobilie Identity");
@@ -2343,19 +2313,11 @@ static void amf_ue_release_old_context(
     amf_ue_remove(old_amf_ue);
 }
 
-void amf_ue_set_suci(amf_ue_t *amf_ue,
-        ogs_nas_5gs_mobile_identity_t *mobile_identity)
+void amf_ue_set_suci(amf_ue_t *amf_ue, char *suci)
 {
     amf_ue_t *old_amf_ue = NULL;
-    char *suci = NULL;
 
     ogs_assert(amf_ue);
-    ogs_assert(mobile_identity);
-    ogs_assert(mobile_identity->buffer);
-    ogs_assert(mobile_identity->length >=
-            (OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1));
-
-    suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
     ogs_assert(suci);
 
     /* Check if OLD amf_ue_t is existed */
