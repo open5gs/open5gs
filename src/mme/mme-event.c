@@ -101,6 +101,9 @@ const char *mme_event_get_name(mme_event_t *e)
         return "MME_EVENT_GN_MESSAGE";
     case MME_EVENT_GN_TIMER:
         return "MME_EVENT_GN_TIMER";
+
+    case MME_EVENT_DNS_RESOLVED:
+        return "MME_EVENT_DNS_RESOLVED";
     default:
        break;
     }

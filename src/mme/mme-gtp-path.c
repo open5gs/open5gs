@@ -26,6 +26,7 @@
 #include "s1ap-path.h"
 #include "mme-s11-build.h"
 #include "mme-sm.h"
+#include "mme-dns.h"
 
 static void _gtpv1v2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 {
@@ -165,6 +166,10 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
     ogs_assert(mme_ue);
     enb_ue = enb_ue_find_by_id(mme_ue->enb_ue_id);
 
+    if (type == OGS_GTP2_CREATE_SESSION_REQUEST_TYPE &&
+        mme_dns_retry_on_gtp_timeout(sess))
+        return;
+
     switch (type) {
     case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
         /*
@@ -262,6 +267,18 @@ void mme_gtp_close(void)
 }
 
 int mme_gtp_send_create_session_request(
+        enb_ue_t *enb_ue, mme_sess_t *sess, int create_action)
+{
+    if (mme_dns_enabled()) {
+        int rc = mme_dns_prepare(enb_ue, sess, create_action);
+        if (rc == MME_DNS_DEFERRED)
+            return OGS_OK;  /* CSR is sent on MME_EVENT_DNS_RESOLVED */
+    }
+    return mme_gtp_send_create_session_request_now(
+            enb_ue, sess, create_action);
+}
+
+int mme_gtp_send_create_session_request_now(
         enb_ue_t *enb_ue, mme_sess_t *sess, int create_action)
 {
     int rv;

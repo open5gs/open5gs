@@ -34,6 +34,7 @@
 #include "mme-fd-path.h"
 #include "mme-s6a-handler.h"
 #include "mme-path.h"
+#include "mme-dns.h"
 
 void mme_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
@@ -857,6 +858,10 @@ cleanup:
             ogs_error("Unknown timer[%s:%d]",
                     mme_timer_get_name(e->timer_id), e->timer_id);
         }
+        break;
+
+    case MME_EVENT_DNS_RESOLVED:
+        mme_dns_handle_resolved(e);
         break;
 
     case MME_EVENT_GN_MESSAGE:

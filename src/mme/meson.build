@@ -47,6 +47,7 @@ libmme_sources = files('''
     mme-sm.h
     mme-path.h
     mme-dns-select.h
+    mme-dns.h
     metrics.h
 
     mme-init.c
@@ -88,6 +89,11 @@ libmme_sources = files('''
     ue-info.c
     ../../lib/metrics/prometheus/json_pager.c
 '''.split())
+
+if libcares_dep.found()
+    libmme_sources += files('mme-dns.c')
+    libmme_c_args += '-DMME_HAVE_CARES=1'
+endif
 
 libmme = static_library('mme',
     sources : libmme_sources,

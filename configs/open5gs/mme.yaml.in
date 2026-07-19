@@ -122,6 +122,22 @@ mme:
 #        - address: 127.0.2.4
 #          e_cell_id: [12345, a9413, 98765]
 #
+#  o DNS-based SGW/PGW selection (3GPP TS 29.303 S-NAPTR)
+#    When the `dns` section is present (and the MME was built with c-ares),
+#    the SGW is selected by TAI-FQDN and the PGW by APN-FQDN via
+#    NAPTR -> SRV -> A / NAPTR -> A lookups. On any DNS failure the MME
+#    falls back to the static gtpc.client.sgwc/smf configuration above.
+#  dns:
+#    server:
+#      - address: 10.11.12.13
+#      - address: 10.11.12.14
+#        port: 53
+#    timeout: 2            # seconds per query round
+#    retries: 2
+#    protocol: auto        # auto | s5 | s8 (auto: s8 for inbound roamers)
+#    cache_ttl: 60         # NAPTR/SRV cache TTL in seconds
+#    guard_timeout: 3000   # overall resolution guard in milliseconds
+#
 #  o One SGSN is defined.
 #    If prefer_ipv4 is not true, [fd69:f21d:873c:fa::2] is selected.
 #  gtpc:
