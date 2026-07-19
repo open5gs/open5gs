@@ -29,6 +29,7 @@
 #include "s1ap-path.h"
 #include "sgsap-path.h"
 #include "mme-gtp-path.h"
+#include "mme-dns.h"
 #include "metrics.h"
 #include "metrics/prometheus/json_pager.h"
 #include "enb-info.h"
@@ -80,6 +81,9 @@ int mme_initialize(void)
     rv = mme_gtp_open();
     if (rv != OGS_OK) return OGS_ERROR;
 
+    rv = mme_dns_open();
+    if (rv != OGS_OK) return OGS_ERROR;
+
     rv = sgsap_open();
     if (rv != OGS_OK) return OGS_ERROR;
 
@@ -102,6 +106,7 @@ void mme_terminate(void)
 
     ogs_thread_destroy(thread);
 
+    mme_dns_close();
     mme_gtp_close();
     sgsap_close();
     s1ap_close();

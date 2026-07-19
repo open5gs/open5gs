@@ -53,6 +53,8 @@ typedef enum {
     MME_EVENT_GN_MESSAGE,
     MME_EVENT_GN_TIMER,
 
+    MME_EVENT_DNS_RESOLVED,
+
     MAX_NUM_OF_MME_EVENT,
 
 } mme_event_e;
@@ -98,6 +100,7 @@ typedef struct mme_event_s {
     ogs_pool_id_t enb_ue_id;
     ogs_pool_id_t sgw_ue_id;
     ogs_pool_id_t mme_ue_id;
+    ogs_pool_id_t sess_id;
     ogs_pool_id_t bearer_id;
     ogs_pool_id_t gtp_xact_id;
 

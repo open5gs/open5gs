@@ -94,6 +94,22 @@ typedef struct mme_context_s {
     ogs_sockaddr_t  *pgw_addr;      /* First IPv4 Address Selected */
     ogs_sockaddr_t  *pgw_addr6;     /* First IPv6 Address Selected */
 
+    /* DNS-based SGW/PGW selection (3GPP TS 29.303) */
+#define MME_DNS_MAX_SERVER 4
+    struct {
+        bool enabled;               /* `mme.dns` section present */
+        int num_of_server;
+        struct {
+            const char *address;
+            uint16_t port;          /* default 53 */
+        } server[MME_DNS_MAX_SERVER];
+        int timeout;                /* seconds per query round, default 2 */
+        int retries;                /* default 2 */
+        int protocol;               /* mme_dns_proto_e: auto | s5 | s8 */
+        int cache_ttl;              /* NAPTR/SRV cache TTL (s), default 60 */
+        int guard_timeout;          /* overall guard (ms), default 3000 */
+    } dns;
+
     ogs_list_t      enb_list;       /* ENB S1AP Client List */
 
     ogs_list_t      vlr_list;       /* VLR SGsAP Client List */
@@ -190,6 +206,10 @@ typedef struct mme_sgw_s {
     int             num_of_tac;
     uint32_t        e_cell_id[OGS_MAX_NUM_OF_CELL_ID];
     int             num_of_e_cell_id;
+
+    /* Node discovered via DNS (TS 29.303), not from the configuration
+     * file. Such nodes are kept for the lifetime of the process. */
+    bool            dns_origin;
 
     ogs_list_t      sgw_ue_list;
 } mme_sgw_t;
@@ -968,6 +988,9 @@ typedef struct mme_sess_s {
 
     /* Save Extended Protocol Configuration Options from PGW */
     ogs_tlv_octet_t pgw_epco;
+
+    /* DNS-based gateway selection state (mme-dns.c pool id) */
+    ogs_pool_id_t   dns_id;
 } mme_sess_t;
 
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \

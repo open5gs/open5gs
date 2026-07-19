@@ -27,6 +27,7 @@
 #include "s1ap-handler.h"
 #include "mme-sm.h"
 #include "mme-gtp-path.h"
+#include "mme-dns.h"
 
 #define MAX_CELL_PER_ENB            8
 
@@ -219,6 +220,15 @@ static int mme_context_prepare(void)
     self.time.t3396.value = 720;
     /* Set the default T3412 to 9 minutes for backward compatibility. */
     self.time.t3412.value = 540;
+
+    /* DNS-based SGW/PGW selection defaults (inactive until `mme.dns`
+     * is present in the configuration file) */
+    self.dns.enabled = false;
+    self.dns.timeout = 2;
+    self.dns.retries = 2;
+    self.dns.protocol = 0;      /* MME_DNS_PROTO_AUTO */
+    self.dns.cache_ttl = 60;
+    self.dns.guard_timeout = 3000;
 
     return OGS_OK;
 }
@@ -2562,6 +2572,106 @@ int mme_context_parse_config(void)
                     }
                 } else if (!strcmp(mme_key, "metrics")) {
                     /* handle config in metrics library */
+                } else if (!strcmp(mme_key, "dns")) {
+#ifndef MME_HAVE_CARES
+                    ogs_error("`mme.dns` is configured, but this MME was "
+                            "built without c-ares support");
+                    return OGS_ERROR;
+#else
+                    ogs_yaml_iter_t dns_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &dns_iter);
+                    self.dns.enabled = true;
+                    while (ogs_yaml_iter_next(&dns_iter)) {
+                        const char *dns_key = ogs_yaml_iter_key(&dns_iter);
+                        ogs_assert(dns_key);
+                        if (!strcmp(dns_key, "server")) {
+                            ogs_yaml_iter_t server_array, server_iter;
+                            ogs_yaml_iter_recurse(&dns_iter, &server_array);
+                            do {
+                                const char *address = NULL;
+                                uint16_t port = 53;
+
+                                if (ogs_yaml_iter_type(&server_array) ==
+                                        YAML_MAPPING_NODE) {
+                                    memcpy(&server_iter, &server_array,
+                                            sizeof(ogs_yaml_iter_t));
+                                } else if (ogs_yaml_iter_type(&server_array) ==
+                                        YAML_SEQUENCE_NODE) {
+                                    if (!ogs_yaml_iter_next(&server_array))
+                                        break;
+                                    ogs_yaml_iter_recurse(
+                                            &server_array, &server_iter);
+                                } else if (ogs_yaml_iter_type(&server_array) ==
+                                        YAML_SCALAR_NODE) {
+                                    break;
+                                } else
+                                    ogs_assert_if_reached();
+
+                                while (ogs_yaml_iter_next(&server_iter)) {
+                                    const char *server_key =
+                                        ogs_yaml_iter_key(&server_iter);
+                                    ogs_assert(server_key);
+                                    if (!strcmp(server_key, "address")) {
+                                        address =
+                                            ogs_yaml_iter_value(&server_iter);
+                                    } else if (!strcmp(server_key, "port")) {
+                                        const char *v =
+                                            ogs_yaml_iter_value(&server_iter);
+                                        if (v) port = atoi(v);
+                                    } else
+                                        ogs_warn("unknown key `%s`",
+                                                server_key);
+                                }
+
+                                if (address &&
+                                    self.dns.num_of_server <
+                                        MME_DNS_MAX_SERVER) {
+                                    self.dns.server[
+                                        self.dns.num_of_server].address =
+                                            address;
+                                    self.dns.server[
+                                        self.dns.num_of_server].port = port;
+                                    self.dns.num_of_server++;
+                                }
+                            } while (ogs_yaml_iter_type(&server_array) ==
+                                    YAML_SEQUENCE_NODE);
+                        } else if (!strcmp(dns_key, "timeout")) {
+                            const char *v = ogs_yaml_iter_value(&dns_iter);
+                            if (v) self.dns.timeout = atoi(v);
+                        } else if (!strcmp(dns_key, "retries")) {
+                            const char *v = ogs_yaml_iter_value(&dns_iter);
+                            if (v) self.dns.retries = atoi(v);
+                        } else if (!strcmp(dns_key, "cache_ttl")) {
+                            const char *v = ogs_yaml_iter_value(&dns_iter);
+                            if (v) self.dns.cache_ttl = atoi(v);
+                        } else if (!strcmp(dns_key, "guard_timeout")) {
+                            const char *v = ogs_yaml_iter_value(&dns_iter);
+                            if (v) self.dns.guard_timeout = atoi(v);
+                        } else if (!strcmp(dns_key, "protocol")) {
+                            const char *v = ogs_yaml_iter_value(&dns_iter);
+                            if (v) {
+                                if (!strcmp(v, "auto"))
+                                    self.dns.protocol = 0;
+                                else if (!strcmp(v, "s5"))
+                                    self.dns.protocol = 1;
+                                else if (!strcmp(v, "s8"))
+                                    self.dns.protocol = 2;
+                                else {
+                                    ogs_error("unknown mme.dns.protocol "
+                                            "`%s` (auto|s5|s8)", v);
+                                    return OGS_ERROR;
+                                }
+                            }
+                        } else
+                            ogs_warn("unknown key `%s`", dns_key);
+                    }
+
+                    if (self.dns.num_of_server == 0) {
+                        ogs_error("`mme.dns` is configured "
+                                "without any `server`");
+                        return OGS_ERROR;
+                    }
+#endif /* MME_HAVE_CARES */
                 } else if (!strcmp(mme_key, "emergency")) {
                     ogs_yaml_iter_t emerg_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &emerg_iter);
@@ -4646,6 +4756,8 @@ void mme_sess_remove(mme_sess_t *sess)
     OGS_NAS_CLEAR_DATA(&sess->ue_epco);
     OGS_TLV_CLEAR_DATA(&sess->pgw_pco);
     OGS_TLV_CLEAR_DATA(&sess->pgw_epco);
+
+    mme_dns_sess_clear(sess);
 
     ogs_pool_id_free(&mme_sess_pool, sess);
 

@@ -24,6 +24,7 @@
 
 #include "s1ap-path.h"
 #include "mme-gtp-path.h"
+#include "mme-dns.h"
 #include "nas-path.h"
 #include "mme-fd-path.h"
 #include "sgsap-path.h"
@@ -608,6 +609,10 @@ void mme_s11_handle_create_session_response(
     return;
 
 fail:
+    /* DNS-based selection: try the next PGW candidate before giving up */
+    if (mme_dns_retry_on_csr_failure(sess))
+        return;
+
     mme_s11_create_session_fail(enb_ue, mme_ue,
             create_action, fail_cause, fail_reason);
     return;

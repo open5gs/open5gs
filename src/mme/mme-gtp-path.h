@@ -31,6 +31,9 @@ void mme_gtp_close(void);
 
 int mme_gtp_send_create_session_request(
         enb_ue_t *enb_ue, mme_sess_t *sess, int create_action);
+/* Bypasses DNS-based gateway selection (used once selection is done) */
+int mme_gtp_send_create_session_request_now(
+        enb_ue_t *enb_ue, mme_sess_t *sess, int create_action);
 int mme_gtp_send_modify_bearer_request(
         enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         int uli_presence, int modify_action);

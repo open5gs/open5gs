@@ -65,6 +65,23 @@ mme_metrics_spec_def_t mme_metrics_spec_def_global[_MME_METR_GLOB_MAX] = {
     .name = "enb",
     .description = "eNodeBs",
 },
+/* Global Counters: */
+[MME_METR_GLOB_CTR_DNS_QUERY_TOTAL] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "dns_query_total",
+    .description = "DNS queries issued for SGW/PGW selection",
+},
+[MME_METR_GLOB_CTR_DNS_QUERY_FAILED] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "dns_query_failed",
+    .description = "Failed DNS-based SGW/PGW selections "
+                   "(fell back to static configuration)",
+},
+[MME_METR_GLOB_CTR_DNS_CACHE_HIT] = {
+    .type = OGS_METRICS_METRIC_TYPE_COUNTER,
+    .name = "dns_cache_hit",
+    .description = "DNS lookups answered from the local cache",
+},
 };
 int mme_metrics_init_inst_global(void)
 {
