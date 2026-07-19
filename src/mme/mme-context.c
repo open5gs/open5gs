@@ -3114,6 +3114,51 @@ mme_hssmap_t *mme_hssmap_find_by_imsi_bcd(const char *imsi_bcd)
     return NULL;
 }
 
+void mme_ue_set_hss_identity(mme_ue_t *mme_ue,
+        const uint8_t *host, size_t host_len,
+        const uint8_t *realm, size_t realm_len)
+{
+    ogs_assert(mme_ue);
+
+    /* Diameter AVPs are OctetStrings and not NUL-terminated,
+     * so a length-bounded duplication is required */
+    if (host && host_len) {
+        if (mme_ue->hss_host &&
+                (strlen(mme_ue->hss_host) != host_len ||
+                 memcmp(mme_ue->hss_host, host, host_len) != 0))
+            ogs_info("[%s] HSS identity changed [%s] -> [%.*s]",
+                    mme_ue->imsi_bcd, mme_ue->hss_host,
+                    (int)host_len, host);
+        if (mme_ue->hss_host)
+            ogs_free(mme_ue->hss_host);
+        mme_ue->hss_host = ogs_strndup((const char *)host, host_len);
+        ogs_assert(mme_ue->hss_host);
+    }
+
+    if (realm && realm_len) {
+        if (mme_ue->hss_realm)
+            ogs_free(mme_ue->hss_realm);
+        mme_ue->hss_realm = ogs_strndup((const char *)realm, realm_len);
+        ogs_assert(mme_ue->hss_realm);
+    }
+}
+
+void mme_ue_clear_hss_identity(mme_ue_t *mme_ue)
+{
+    ogs_assert(mme_ue);
+
+    if (mme_ue->hss_host) {
+        ogs_debug("[%s] Forget HSS identity [%s]",
+                mme_ue->imsi_bcd, mme_ue->hss_host);
+        ogs_free(mme_ue->hss_host);
+        mme_ue->hss_host = NULL;
+    }
+    if (mme_ue->hss_realm) {
+        ogs_free(mme_ue->hss_realm);
+        mme_ue->hss_realm = NULL;
+    }
+}
+
 mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 {
     mme_enb_t *enb = NULL;
@@ -3853,6 +3898,9 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     /* Clear Transparent Container */
     OGS_ASN_CLEAR_DATA(&mme_ue->container);
+
+    /* Clear learned HSS identity */
+    mme_ue_clear_hss_identity(mme_ue);
 
     /* Delete All Timers */
     CLEAR_MME_UE_ALL_TIMERS(mme_ue);

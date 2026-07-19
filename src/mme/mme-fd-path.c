@@ -69,6 +69,15 @@ static void mme_add_hss_destination(mme_ue_t *mme_ue, struct msg *req)
         host = mme_ue->hssmap->host;
     }
 
+    /* TS 29.272 clause 7.16: if the MME knows the identity of the HSS
+     * for this user (learned from the Origin-Host/Origin-Realm of a
+     * previous successful answer), it takes precedence over the
+     * statically configured HSS map */
+    if (mme_ue->hss_host)
+        host = mme_ue->hss_host;
+    if (mme_ue->hss_realm)
+        realm = mme_ue->hss_realm;
+
     if (realm == NULL)
         realm = fd_g_config->cnf_diamrlm;
 
@@ -90,6 +99,33 @@ static void mme_add_hss_destination(mme_ue_t *mme_ue, struct msg *req)
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
+    }
+}
+
+/* TS 29.272 clause 7.16: learn the HSS identity for this subscriber from
+ * the Origin-Host/Origin-Realm of a successful answer; forget it when the
+ * request could not be delivered (routing errors 3xxx, e.g. the learned
+ * HSS is down) or the HSS no longer knows the user (Experimental-Result
+ * 5001, e.g. the subscriber was migrated to another HSS), so that the
+ * next request is realm-routed again */
+static void mme_update_hss_identity(mme_ue_t *mme_ue,
+        ogs_diam_s6a_message_t *s6a_message,
+        const uint8_t *ohost, size_t ohost_len,
+        const uint8_t *orealm, size_t orealm_len)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(s6a_message);
+
+    if (s6a_message->result_code == ER_DIAMETER_SUCCESS) {
+        mme_ue_set_hss_identity(mme_ue, ohost, ohost_len,
+                orealm, orealm_len);
+    } else if ((s6a_message->err &&
+                s6a_message->result_code >= 3000 &&
+                s6a_message->result_code < 4000) ||
+               (s6a_message->exp_err &&
+                s6a_message->result_code ==
+                    OGS_DIAM_S6A_ERROR_USER_UNKNOWN)) {
+        mme_ue_clear_hss_identity(mme_ue);
     }
 }
 
@@ -903,6 +939,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     ogs_diam_s6a_message_t *s6a_message;
     ogs_diam_s6a_aia_message_t *aia_message;
     ogs_diam_e_utran_vector_t *e_utran_vector;
+    const uint8_t *ohost = NULL, *orealm = NULL;
+    size_t ohost_len = 0, orealm_len = 0;
 
     /* Initialize variables */
     sess_data = NULL;
@@ -1022,6 +1060,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
+        ohost = hdr->avp_value->os.data;
+        ohost_len = hdr->avp_value->os.len;
         ogs_debug("    From '%.*s'",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     } else {
@@ -1041,6 +1081,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
+        orealm = hdr->avp_value->os.data;
+        orealm_len = hdr->avp_value->os.len;
         ogs_debug("         ('%.*s')",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     } else {
@@ -1048,6 +1090,10 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
         error++;
         goto cleanup;
     }
+
+    /* Learn or forget the HSS identity serving this subscriber */
+    mme_update_hss_identity(mme_ue, s6a_message,
+            ohost, ohost_len, orealm, orealm_len);
 
     if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
         if (s6a_message->err)
@@ -1458,6 +1504,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     ogs_diam_s6a_ula_message_t *ula_message;
     ogs_subscription_data_t *subscription_data;
     uint32_t subdatamask;
+    const uint8_t *ohost = NULL, *orealm = NULL;
+    size_t ohost_len = 0, orealm_len = 0;
 
     /* Initialize variables */
     sess_data = NULL;
@@ -1573,6 +1621,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
+        ohost = hdr->avp_value->os.data;
+        ohost_len = hdr->avp_value->os.len;
         ogs_debug("    From '%.*s'",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     } else {
@@ -1592,6 +1642,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
+        orealm = hdr->avp_value->os.data;
+        orealm_len = hdr->avp_value->os.len;
         ogs_debug("         ('%.*s')",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     } else {
@@ -1599,6 +1651,10 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
         error++;
         goto cleanup;
     }
+
+    /* Learn or forget the HSS identity serving this subscriber */
+    mme_update_hss_identity(mme_ue, s6a_message,
+            ohost, ohost_len, orealm, orealm_len);
 
     /* AVP: 'ULA-Flags'(1406)
      * The ULA-Flags AVP contains a bit mask, whose meanings are defined in
@@ -1862,6 +1918,8 @@ static void mme_s6a_pua_cb(void *data, struct msg **msg)
     enb_ue_t *enb_ue;
     ogs_diam_s6a_message_t *s6a_message;
     ogs_diam_s6a_pua_message_t *pua_message;
+    const uint8_t *ohost = NULL, *orealm = NULL;
+    size_t ohost_len = 0, orealm_len = 0;
 
     /* Initialize variables */
     sess_data = NULL;
@@ -1974,6 +2032,8 @@ static void mme_s6a_pua_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
+        ohost = hdr->avp_value->os.data;
+        ohost_len = hdr->avp_value->os.len;
         ogs_debug("    From '%.*s'",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     } else {
@@ -1993,6 +2053,8 @@ static void mme_s6a_pua_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
+        orealm = hdr->avp_value->os.data;
+        orealm_len = hdr->avp_value->os.len;
         ogs_debug("         ('%.*s')",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     } else {
@@ -2000,6 +2062,10 @@ static void mme_s6a_pua_cb(void *data, struct msg **msg)
         error++;
         goto cleanup;
     }
+
+    /* Learn or forget the HSS identity serving this subscriber */
+    mme_update_hss_identity(mme_ue, s6a_message,
+            ohost, ohost_len, orealm, orealm_len);
 
     /* AVP: 'PUA-Flags'(1442)
      * The PUA-Flags AVP contains a bit mask, whose meanings are defined in
