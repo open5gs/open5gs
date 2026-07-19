@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+libcares_dep = dependency('libcares', required : false)
+libmme_c_args = []
+
 libmme_sources = files('''
     mme-event.h
     mme-timer.h
@@ -86,13 +89,15 @@ libmme_sources = files('''
 
 libmme = static_library('mme',
     sources : libmme_sources,
+    c_args : libmme_c_args,
     dependencies : [libmetrics_dep,
                     libsctp_dep,
                     libs1ap_dep,
                     libnas_eps_dep,
                     libdiameter_s6a_dep,
                     libgtp_dep,
-                    libsbi_dep],
+                    libsbi_dep,
+                    libcares_dep],
     install : false)
 
 libmme_dep = declare_dependency(
@@ -103,7 +108,8 @@ libmme_dep = declare_dependency(
                     libnas_eps_dep,
                     libdiameter_s6a_dep,
                     libsbi_dep,
-                    libgtp_dep])
+                    libgtp_dep,
+                    libcares_dep])
 
 mme_sources = files('''
     app-init.c
