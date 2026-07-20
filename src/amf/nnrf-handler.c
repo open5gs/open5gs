@@ -286,8 +286,6 @@ void amf_nnrf_handle_failed_amf_discovery(
     ogs_assert(sbi_object->type > OGS_SBI_OBJ_BASE &&
                 sbi_object->type < OGS_SBI_OBJ_TOP);
 
-    ogs_sbi_xact_remove(sbi_xact);
-
     switch(sbi_object->type) {
     case OGS_SBI_OBJ_UE_TYPE:
         amf_ue = amf_ue_find_by_id(sbi_object_id);
@@ -342,4 +340,6 @@ void amf_nnrf_handle_failed_amf_discovery(
                 OpenAPI_service_name_ToString(service_name), sbi_object->type);
         ogs_assert_if_reached();
     }
+    
+    ogs_sbi_xact_remove(sbi_xact);
 }
