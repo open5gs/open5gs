@@ -28,6 +28,48 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __esm_log_domain
 
+/*
+ * Check whether the PDN Type requested by the UE is compatible with
+ * the PDN Type provided by the subscription (HSS).
+ *
+ * This check MUST be performed before building Create Session Request;
+ * mme_s11_build_create_session_request() asserts on an incompatible
+ * PDN Type, so an unchecked UE request would crash the MME.
+ *
+ * Returns 0 if compatible, otherwise the ESM cause to be used
+ * in PDN CONNECTIVITY REJECT.
+ */
+static ogs_nas_esm_cause_t esm_check_pdn_type(mme_sess_t *sess)
+{
+    uint8_t derived_pdn_type;
+
+    ogs_assert(sess);
+    ogs_assert(sess->session);
+
+    if (sess->session->session_type != OGS_PDU_SESSION_TYPE_IPV4 &&
+        sess->session->session_type != OGS_PDU_SESSION_TYPE_IPV6 &&
+        sess->session->session_type != OGS_PDU_SESSION_TYPE_IPV4V6) {
+        /* Subscription data is broken - this is not UE input */
+        ogs_fatal("Invalid PDN_TYPE[%d]", sess->session->session_type);
+        ogs_assert_if_reached();
+    }
+
+    derived_pdn_type =
+        (sess->session->session_type & sess->ue_request_type.type);
+    if (derived_pdn_type == 0) {
+        ogs_error("Incompatible PDN Type [UE:%d,HSS:%d]",
+                sess->ue_request_type.type, sess->session->session_type);
+        if (sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV4)
+            return OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
+        else if (sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV6)
+            return OGS_NAS_ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
+        else
+            return OGS_NAS_ESM_CAUSE_REQUESTED_SERVICE_OPTION_NOT_SUBSCRIBED;
+    }
+
+    return 0;
+}
+
 int esm_handle_pdn_connectivity_request(
         enb_ue_t *enb_ue, mme_bearer_t *bearer,
         ogs_nas_eps_pdn_connectivity_request_t *req,
@@ -36,6 +78,7 @@ int esm_handle_pdn_connectivity_request(
     int r;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
+    ogs_nas_esm_cause_t esm_cause;
     uint8_t security_protected_required = 0;
     const char *emergency_dnn = mme_self()->emergency.dnn;
     bool emergency;
@@ -128,26 +171,6 @@ int esm_handle_pdn_connectivity_request(
             ogs_warn("Invalid APN[%s]", apn);
             return OGS_ERROR;
         }
-
-        if (sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV4 ||
-            sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
-            sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-            uint8_t derived_pdn_type =
-                (sess->session->session_type & sess->ue_request_type.type);
-            if (derived_pdn_type == 0) {
-                ogs_error("Cannot derived PDN Type [UE:%d,HSS:%d]",
-                    sess->ue_request_type.type, sess->session->session_type);
-                r = nas_eps_send_pdn_connectivity_reject(
-                        sess, OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE,
-                        create_action);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return OGS_ERROR;
-            }
-        } else {
-            ogs_fatal("Invalid PDN_TYPE[%d]", sess->session->session_type);
-            ogs_assert_if_reached();
-        }
     }
 
     if (req->presencemask &
@@ -168,6 +191,17 @@ int esm_handle_pdn_connectivity_request(
     }
 
     if (security_protected_required) {
+        if (sess->session) {
+            esm_cause = esm_check_pdn_type(sess);
+            if (esm_cause) {
+                r = nas_eps_send_pdn_connectivity_reject(
+                        sess, esm_cause, create_action);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+                return OGS_ERROR;
+            }
+        }
+
         CLEAR_BEARER_TIMER(bearer->t3489);
         r = nas_eps_send_esm_information_request(bearer);
         ogs_expect(r == OGS_OK);
@@ -187,6 +221,22 @@ int esm_handle_pdn_connectivity_request(
 
         ogs_assert(sess->session->name);
         ogs_debug("    APN[%s]", sess->session->name);
+
+        /*
+         * The PDN Type of the Default APN has not been validated
+         * against the UE requested PDN Type. Check it here before
+         * building Create Session Request; otherwise an incompatible
+         * combination would hit the assert in
+         * mme_s11_build_create_session_request() and crash the MME.
+         */
+        esm_cause = esm_check_pdn_type(sess);
+        if (esm_cause) {
+            r = nas_eps_send_pdn_connectivity_reject(
+                    sess, esm_cause, create_action);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
+        }
 
         default_bearer = mme_default_bearer_in_sess(sess);
         if (default_bearer) {
@@ -222,6 +272,7 @@ int esm_handle_information_response(
 {
     int r;
     mme_ue_t *mme_ue = NULL;
+    ogs_nas_esm_cause_t esm_cause;
 
     ogs_assert(rsp);
 
@@ -261,24 +312,13 @@ int esm_handle_information_response(
         ogs_assert(sess->session->name);
         ogs_debug("    APN[%s]", sess->session->name);
 
-        if (sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV4 ||
-            sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV6 ||
-            sess->session->session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-            uint8_t derived_pdn_type =
-                (sess->session->session_type & sess->ue_request_type.type);
-            if (derived_pdn_type == 0) {
-                ogs_error("Cannot derived PDN Type [UE:%d,HSS:%d]",
-                    sess->ue_request_type.type, sess->session->session_type);
-                r = nas_eps_send_pdn_connectivity_reject(
-                        sess, OGS_NAS_ESM_CAUSE_UNKNOWN_PDN_TYPE,
-                        OGS_GTP_CREATE_IN_ATTACH_REQUEST);
-                ogs_expect(r == OGS_OK);
-                ogs_assert(r != OGS_ERROR);
-                return OGS_ERROR;
-            }
-        } else {
-            ogs_fatal("Invalid PDN_TYPE[%d]", sess->session->session_type);
-            ogs_assert_if_reached();
+        esm_cause = esm_check_pdn_type(sess);
+        if (esm_cause) {
+            r = nas_eps_send_pdn_connectivity_reject(
+                    sess, esm_cause, OGS_GTP_CREATE_IN_ATTACH_REQUEST);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
         }
 
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
