@@ -132,7 +132,38 @@ int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
      */
     CLEAR_MME_UE_ALL_TIMERS(mme_ue);
 
-    CLEAR_EPS_BEARER_ID(mme_ue);
+    /*
+     * Do NOT unconditionally clear the EBI bitmap here.
+     *
+     * On re-attach with the same IMSI, mme_ue_find_by_message() reuses
+     * the existing mme_ue_t whose previous sessions and bearers may
+     * still be alive.  Clearing the bitmap while those bearer contexts
+     * exist breaks the invariant "EBI bits of live bearers are set in
+     * ebi_bitmap": the subsequent teardown of the old bearers then
+     * frees EBIs that are no longer marked allocated, and a new
+     * default-bearer allocation racing with the (asynchronous) old
+     * session deletion could hand out a duplicate EBI.
+     *
+     * EBI lifetime is owned by mme_ebi_alloc()/mme_ebi_free() on the
+     * bearer add/remove path.  When live sessions exist, let the old
+     * bearer teardown release the bits.  When no session exists, the
+     * bitmap must already be zero; a non-zero value indicates a leak,
+     * which we log and heal visibly instead of silently masking.
+     */
+    if (ogs_list_empty(&mme_ue->sess_list)) {
+        if (mme_ue->ebi_bitmap) {
+            ogs_error("[EBI-TRACK] STALE-BITMAP at Attach Request: "
+                    "no session but bitmap[0x%04x] ue_id[%d] IMSI[%s]",
+                    mme_ue->ebi_bitmap, mme_ue->id, mme_ue->imsi_bcd);
+            mme_ebi_track_dump(mme_ue, "STALE-BITMAP");
+            CLEAR_EPS_BEARER_ID(mme_ue);
+        }
+    } else {
+        ogs_info("[EBI-TRACK] Attach Request with live sessions: "
+                "keeping bitmap[0x%04x] ue_id[%d] IMSI[%s]; "
+                "old bearer teardown owns EBI release",
+                mme_ue->ebi_bitmap, mme_ue->id, mme_ue->imsi_bcd);
+    }
     CLEAR_SERVICE_INDICATOR(mme_ue);
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);

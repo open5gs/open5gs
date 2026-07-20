@@ -659,6 +659,9 @@ struct mme_ue_s {
 #define CLEAR_EPS_BEARER_ID(__mME) \
     do { \
         ogs_assert((__mME)); \
+        ogs_info("[EBI-TRACK] CLEAR_EPS_BEARER_ID ue_id[%d] IMSI[%s] " \
+                "bitmap[0x%04x]", \
+                (__mME)->id, (__mME)->imsi_bcd, (__mME)->ebi_bitmap); \
         (__mME)->ebi_bitmap = 0; \
     } while(0)
 
@@ -1012,6 +1015,10 @@ typedef struct mme_bearer_s {
 
     uint8_t         ebi;            /* EPS Bearer ID */
 
+    /* [EBI-TRACK] when this bearer context was created, so leaked
+     * bearers can be identified by their age at dump time. */
+    ogs_time_t      trace_created;
+
     uint32_t        enb_s1u_teid;
     ogs_ip_t        enb_s1u_ip;
     uint32_t        sgw_s1u_teid;
@@ -1288,6 +1295,10 @@ mme_m_tmsi_t *mme_m_tmsi_alloc(void);
 int mme_m_tmsi_free(mme_m_tmsi_t *tmsi);
 
 uint8_t mme_ebi_alloc(mme_ue_t *mme_ue);
+
+/* [EBI-TRACK] instrumentation helpers */
+const char *mme_ebi_track_esm_state_name(mme_bearer_t *bearer);
+void mme_ebi_track_dump(mme_ue_t *mme_ue, const char *reason);
 int mme_ebi_free(mme_ue_t *mme_ue, int ebi);
 int mme_ebi_reserve(mme_ue_t *mme_ue, int ebi);
 

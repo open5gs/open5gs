@@ -723,6 +723,14 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
                             "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
                             mme_ue->imsi_bcd, mme_ue->nas_eps.type,
                             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+                    ogs_warn("[EBI-TRACK]     EBI[%d] ESM[%s] AGE[%lldms] "
+                            "bitmap[0x%04x]",
+                            bearer->ebi,
+                            mme_ebi_track_esm_state_name(bearer),
+                            bearer->trace_created ? (long long)
+                                ogs_time_to_msec(ogs_time_now() -
+                                    bearer->trace_created) : -1LL,
+                            mme_ue->ebi_bitmap);
                     continue;
                 }
 
