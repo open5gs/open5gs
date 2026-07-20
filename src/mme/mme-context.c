@@ -3805,6 +3805,8 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 
     ogs_list_add(&self.mme_ue_list, mme_ue);
 
+    ogs_info("[EBI-TRACK] UE-CREATED ue_id[%d] bitmap[0x%04x]",
+            mme_ue->id, mme_ue->ebi_bitmap);
     ogs_info("[Added] Number of MME-UEs is now %d",
             ogs_list_count(&self.mme_ue_list));
 
@@ -3870,10 +3872,12 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     mme_sess_remove_all(mme_ue);
     mme_session_remove_all(mme_ue);
 
+    ogs_info("[EBI-TRACK] UE-REMOVED ue_id[%d] IMSI[%s] bitmap[0x%04x]",
+            mme_ue->id, mme_ue->imsi_bcd, mme_ue->ebi_bitmap);
+
     ogs_pool_free(&mme_s11_teid_pool, mme_ue->mme_s11_teid_node);
     ogs_pool_free(&mme_gn_teid_pool, mme_ue->gn.mme_gn_teid_node);
     ogs_pool_id_free(&mme_ue_pool, mme_ue);
-
     ogs_info("[Removed] Number of MME-UEs is now %d",
             ogs_list_count(&self.mme_ue_list));
 }
@@ -4135,6 +4139,7 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
     mme_sess_t *old_sess = NULL;
     mme_bearer_t *old_bearer = NULL;
     sgw_ue_t *sgw_ue = NULL, *old_sgw_ue = NULL;
+    uint16_t target_bitmap_before = 0;
     ogs_assert(mme_ue && imsi_bcd);
 
     /*
@@ -4240,6 +4245,13 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
      * Another GTPv2-C Transaction can cause fatal errors.
      */
             /* Phase-1 : Change MME-UE Context in Session Context */
+            target_bitmap_before = mme_ue->ebi_bitmap;
+            ogs_info("[EBI-TRACK] UE-MIGRATION begin: "
+                    "old_ue_id[%d] new_ue_id[%d] "
+                    "old_bitmap[0x%04x] new_bitmap[0x%04x] IMSI[%s]",
+                    old_mme_ue->id, mme_ue->id,
+                    old_mme_ue->ebi_bitmap, mme_ue->ebi_bitmap,
+                    mme_ue->imsi_bcd);
             ogs_list_for_each(&old_mme_ue->sess_list, old_sess) {
                 ogs_list_for_each(&old_sess->bearer_list, old_bearer) {
                     old_bearer->mme_ue_id = mme_ue->id;
@@ -4247,12 +4259,37 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
                     if (mme_ebi_reserve(mme_ue, old_bearer->ebi) == OGS_OK)
                         ogs_info("Bearer reserved (EBI=%d IMSI=%s)",
                                 old_bearer->ebi, mme_ue->imsi_bcd);
-                    else
-                        ogs_error("Failed to reserve bearer (EBI=%d IMSI=%s)",
-                                old_bearer->ebi, mme_ue->imsi_bcd);
+                    else {
+                        /*
+                         * Interpreting the collision:
+                         *   - EBI bit set in target_bitmap_before:
+                         *     the target UE carried a stale reservation
+                         *     from before this migration.
+                         *   - EBI bit set only in target_bitmap_now:
+                         *     the source held duplicate bearer contexts
+                         *     with the same EBI (cross-check with the
+                         *     source dump's duplicate field).
+                         *
+                         * The target UE is NOT dumped here: its
+                         * sess_list is still empty before Phase-2, so a
+                         * SUMMARY would misreport the legitimately
+                         * migrated reservations as bitmap_only.
+                         */
+                        ogs_error("[EBI-TRACK] UE-MIGRATION reserve failed "
+                                "EBI[%d] target_bitmap_before[0x%04x] "
+                                "target_bitmap_now[0x%04x] IMSI[%s]",
+                                old_bearer->ebi,
+                                target_bitmap_before,
+                                mme_ue->ebi_bitmap,
+                                mme_ue->imsi_bcd);
+                        mme_ebi_track_dump(old_mme_ue,
+                                "UE-MIGRATION-SOURCE-RESERVE-FAIL");
+                    }
                 }
                 old_sess->mme_ue_id = mme_ue->id;
             }
+            ogs_info("[EBI-TRACK] UE-MIGRATION end: new_bitmap[0x%04x]",
+                    mme_ue->ebi_bitmap);
 
             /* Phase-2 : Move Session Context from OLD to NEW MME-UE Context */
             ogs_assert(ogs_list_empty(&mme_ue->sess_list));
@@ -4727,7 +4764,11 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
         return NULL;
     }
 
-    ogs_info("Bearer added (EBI=%d IMSI=%s)", bearer->ebi, mme_ue->imsi_bcd);
+    ogs_info("[EBI-TRACK] Bearer added (EBI=%d ue_id=%d IMSI=%s "
+            "bitmap=0x%04x)",
+            bearer->ebi, mme_ue->id, mme_ue->imsi_bcd, mme_ue->ebi_bitmap);
+
+    bearer->trace_created = ogs_time_now();
 
     bearer->mme_ue_id = mme_ue->id;
     bearer->sess_id = sess->id;
@@ -4759,7 +4800,14 @@ void mme_bearer_remove(mme_bearer_t *bearer)
     sess = mme_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
 
-    ogs_info("Bearer removed (EBI=%d IMSI=%s)", bearer->ebi, mme_ue->imsi_bcd);
+    ogs_info("[EBI-TRACK] Bearer removing (EBI=%d ue_id=%d IMSI=%s ESM=%s "
+            "AGE=%lldms bitmap_before=0x%04x)",
+            bearer->ebi, mme_ue->id, mme_ue->imsi_bcd,
+            mme_ebi_track_esm_state_name(bearer),
+            bearer->trace_created ? (long long)
+                ogs_time_to_msec(ogs_time_now() - bearer->trace_created) :
+                -1LL,
+            mme_ue->ebi_bitmap);
 
     memset(&e, 0, sizeof(e));
     e.bearer_id = bearer->id;
@@ -5276,6 +5324,113 @@ int mme_m_tmsi_free(mme_m_tmsi_t *m_tmsi)
  * Bitmap-based tracking avoids ownership issues with pool-internal
  * pointers (ebi_node) and supports safe EBI reservation.
  */
+/* [EBI-TRACK] instrumentation ------------------------------------------
+ *
+ * Debug aid for the 2026-07-19 production MME crash:
+ *   ERROR: No available EBI (range 5-15)
+ *   ERROR: Bearer add failed: EBI pool exhausted
+ *   FATAL: mme_s11_handle_create_bearer_request: Assertion `bearer' failed.
+ *
+ * Shortly before the crash, the same UE retained bearer contexts
+ * (EBI 10..15) outside ESM-ACTIVE state ("No active EPS bearer [n]").
+ * Those contexts, or their corresponding EBI bitmap reservations,
+ * were apparently not released before subsequent Create Bearer
+ * Requests exhausted the per-UE EBI range.  These helpers surface
+ * every EBI state change and dump all bearer contexts of a UE so
+ * the leak path can be identified, not to prove a presumed cause.
+ */
+const char *mme_ebi_track_esm_state_name(mme_bearer_t *bearer)
+{
+    ogs_assert(bearer);
+
+    if (OGS_FSM_CHECK(&bearer->sm, esm_state_active))
+        return "ACTIVE";
+    if (OGS_FSM_CHECK(&bearer->sm, esm_state_inactive))
+        return "INACTIVE";
+    if (OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect))
+        return "PDN-WILL-DISCONNECT";
+    if (OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_did_disconnect))
+        return "PDN-DID-DISCONNECT";
+    if (OGS_FSM_CHECK(&bearer->sm, esm_state_bearer_deactivated))
+        return "BEARER-DEACTIVATED";
+    if (OGS_FSM_CHECK(&bearer->sm, esm_state_exception))
+        return "EXCEPTION";
+
+    return "UNKNOWN";
+}
+
+void mme_ebi_track_dump(mme_ue_t *mme_ue, const char *reason)
+{
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *bearer = NULL;
+    ogs_time_t now = ogs_time_now();
+    int num_bearer = 0;
+    uint8_t ebi;
+    uint16_t ebi_mask = 0;
+    uint16_t bearer_bitmap = 0, duplicate_bitmap = 0;
+    uint16_t bitmap_only, bearer_only;
+
+    ogs_assert(mme_ue);
+
+    for (ebi = MIN_EPS_BEARER_ID; ebi <= MAX_EPS_BEARER_ID; ebi++)
+        ebi_mask |= (1U << ebi);
+
+    ogs_error("[EBI-TRACK] ===== EBI DUMP (%s) ue_id[%d] IMSI[%s] "
+            "bitmap[0x%04x] =====",
+            reason ? reason : "-",
+            mme_ue->id, mme_ue->imsi_bcd, mme_ue->ebi_bitmap);
+
+    ogs_list_for_each(&mme_ue->sess_list, sess) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            num_bearer++;
+            if (bearer->ebi >= MIN_EPS_BEARER_ID &&
+                bearer->ebi <= MAX_EPS_BEARER_ID) {
+                uint16_t ebi_bit = (uint16_t)(1U << bearer->ebi);
+
+                if (bearer_bitmap & ebi_bit)
+                    duplicate_bitmap |= ebi_bit;
+                bearer_bitmap |= ebi_bit;
+            } else {
+                /* Diagnostic code must not crash on a corrupted
+                 * context: guard the shift below against out-of-range
+                 * EBI values instead of computing (1U << ebi) blindly. */
+                ogs_error("[EBI-TRACK]   INVALID EBI[%d] "
+                        "outside range[%d-%d]",
+                        bearer->ebi,
+                        MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
+            }
+            ogs_error("[EBI-TRACK]   EBI[%d] APN[%s] ESM[%s] AGE[%lldms] "
+                    "ENB_S1U_TEID[0x%x] SGW_S1U_TEID[0x%x]",
+                    bearer->ebi,
+                    (sess->session && sess->session->name) ?
+                        sess->session->name : "-",
+                    mme_ebi_track_esm_state_name(bearer),
+                    bearer->trace_created ? (long long)
+                        ogs_time_to_msec(now - bearer->trace_created) : -1LL,
+                    bearer->enb_s1u_teid, bearer->sgw_s1u_teid);
+        }
+    }
+
+    /* Reconcile the EBI bitmap against the actual bearer contexts:
+     *   bitmap_only  != 0 : EBI bit set but no bearer context
+     *                       (missing mme_ebi_free() or migration bug)
+     *   bearer_only  != 0 : bearer context exists but EBI bit clear
+     *                       (freed while the context survived)
+     *   duplicate    != 0 : two bearer contexts share the same EBI
+     *   all zero + full   : genuine bearer context accumulation */
+    bitmap_only = (mme_ue->ebi_bitmap & ebi_mask) & ~bearer_bitmap;
+    bearer_only = bearer_bitmap & ~(mme_ue->ebi_bitmap & ebi_mask);
+
+    ogs_error("[EBI-TRACK] SUMMARY bitmap[0x%04x] bearer_bitmap[0x%04x] "
+            "bitmap_only[0x%04x] bearer_only[0x%04x] duplicate[0x%04x]",
+            mme_ue->ebi_bitmap, bearer_bitmap,
+            bitmap_only, bearer_only, duplicate_bitmap);
+
+    ogs_error("[EBI-TRACK] ===== END DUMP: %d bearer context(s) =====",
+            num_bearer);
+}
+/* --------------------------------------------------------------------- */
+
 uint8_t mme_ebi_alloc(mme_ue_t *mme_ue)
 {
     uint8_t ebi;
@@ -5285,14 +5440,17 @@ uint8_t mme_ebi_alloc(mme_ue_t *mme_ue)
     for (ebi = MIN_EPS_BEARER_ID; ebi <= MAX_EPS_BEARER_ID; ebi++) {
 
         if (!(mme_ue->ebi_bitmap & (1 << ebi))) {
-            mme_ue->ebi_bitmap |= (1 << ebi);
-            ogs_debug("EBI allocated [%d]", ebi);
+            mme_ue->ebi_bitmap |= (1U << ebi);
+            ogs_info("[EBI-TRACK] EBI allocated [%d] ue_id[%d] IMSI[%s] "
+                    "bitmap[0x%04x]",
+                    ebi, mme_ue->id, mme_ue->imsi_bcd, mme_ue->ebi_bitmap);
             return ebi;
         }
     }
 
     ogs_error("No available EBI (range %d-%d)",
             MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
+    mme_ebi_track_dump(mme_ue, "ALLOC-FAIL");
 
     return INVALID_EPS_BEARER_ID; /* no available EBI */
 }
@@ -5306,9 +5464,21 @@ int mme_ebi_free(mme_ue_t *mme_ue, int ebi)
         return OGS_ERROR;
     }
 
-    mme_ue->ebi_bitmap &= ~(1 << ebi);
+    if (!(mme_ue->ebi_bitmap & (1U << ebi))) {
+        /* Not necessarily a double free: a missed bitmap migration or
+         * an ownership change after a failed reservation also lands
+         * here.  Either way this must not happen in normal operation,
+         * so dump the full context. */
+        ogs_error("[EBI-TRACK] FREE-UNRESERVED EBI[%d] not marked "
+                "allocated ue_id[%d] IMSI[%s] bitmap[0x%04x]",
+                ebi, mme_ue->id, mme_ue->imsi_bcd, mme_ue->ebi_bitmap);
+        mme_ebi_track_dump(mme_ue, "FREE-UNRESERVED");
+    }
 
-    ogs_debug("EBI freed [%d]", ebi);
+    mme_ue->ebi_bitmap &= ~(1U << ebi);
+
+    ogs_info("[EBI-TRACK] EBI freed [%d] ue_id[%d] IMSI[%s] bitmap[0x%04x]",
+            ebi, mme_ue->id, mme_ue->imsi_bcd, mme_ue->ebi_bitmap);
 
     return OGS_OK;
 }
@@ -5322,13 +5492,22 @@ int mme_ebi_reserve(mme_ue_t *mme_ue, int ebi)
         return OGS_ERROR;
     }
 
-    if (mme_ue->ebi_bitmap & (1 << ebi)) {
-        ogs_error("EBI [%d] already reserved", ebi);
+    if (mme_ue->ebi_bitmap & (1U << ebi)) {
+        /* No mme_ebi_track_dump() here: the only caller is the
+         * Phase-1 UE migration loop, where the target UE's sess_list
+         * is still empty while its bitmap already holds legitimately
+         * migrated reservations -- a dump SUMMARY at this point would
+         * misreport those pending bits as bitmap_only. */
+        ogs_error("[EBI-TRACK] RESERVE-COLLISION EBI[%d] already reserved "
+                "ue_id[%d] IMSI[%s] bitmap[0x%04x]",
+                ebi, mme_ue->id, mme_ue->imsi_bcd, mme_ue->ebi_bitmap);
         return OGS_ERROR;
     }
 
-    mme_ue->ebi_bitmap |= (1 << ebi);
-    ogs_debug("EBI reserved [%d]", ebi);
+    mme_ue->ebi_bitmap |= (1U << ebi);
+    ogs_info("[EBI-TRACK] EBI reserved [%d] ue_id[%d] IMSI[%s] "
+            "bitmap[0x%04x]",
+            ebi, mme_ue->id, mme_ue->imsi_bcd, mme_ue->ebi_bitmap);
     return OGS_OK;
 }
 
