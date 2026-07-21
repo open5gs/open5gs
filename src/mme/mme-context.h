@@ -1311,6 +1311,8 @@ mme_bearer_t *mme_bearer_find_by_id(ogs_pool_id_t id);
 void mme_session_remove_all(mme_ue_t *mme_ue);
 ogs_session_t *mme_session_find_by_apn(mme_ue_t *mme_ue, const char *apn);
 ogs_session_t *mme_default_session(mme_ue_t *mme_ue);
+ogs_session_t *mme_resolve_session_for_requested_apn(
+        mme_ue_t *mme_ue, const char *requested_apn);
 
 int mme_find_served_tai(ogs_eps_tai_t *tai);
 
