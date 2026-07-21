@@ -311,6 +311,11 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
         break;
     case OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE:
     case OGS_DIAM_S6A_CT_SGSN_UPDATE_PROCEDURE:
+        /* The subscriber is moving away from this MME: the learned HSS
+         * identity may no longer be valid, forget it so that any further
+         * request is realm-routed again */
+        mme_ue_clear_hss_identity(mme_ue);
+
         mme_ue->detach_type = MME_DETACH_TYPE_HSS_IMPLICIT;
 
         /* 3GPP TS 23.401 D.3.5.5 8), 3GPP TS 23.060 6.9.1.2.2 8):

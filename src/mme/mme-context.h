@@ -904,6 +904,12 @@ struct mme_ue_s {
 
     mme_csmap_t     *csmap;
     mme_hssmap_t    *hssmap;
+
+    /* HSS identity dynamically learned from the Origin-Host/Origin-Realm
+     * of successful S6a answers (AIA/ULA), used as Destination-Host/Realm
+     * in subsequent requests as per 3GPP TS 29.272 clause 7.16 */
+    char            *hss_host;
+    char            *hss_realm;
 };
 
 #define MME_UE_REMOVE_WITH_PAGING_FAIL(__mME) \
@@ -1158,6 +1164,11 @@ void mme_hssmap_remove(mme_hssmap_t *hssmap);
 void mme_hssmap_remove_all(void);
 
 mme_hssmap_t *mme_hssmap_find_by_imsi_bcd(const char *imsi_bcd);
+
+void mme_ue_set_hss_identity(mme_ue_t *mme_ue,
+        const uint8_t *host, size_t host_len,
+        const uint8_t *realm, size_t realm_len);
+void mme_ue_clear_hss_identity(mme_ue_t *mme_ue);
 
 mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
 int mme_enb_remove(mme_enb_t *enb);
