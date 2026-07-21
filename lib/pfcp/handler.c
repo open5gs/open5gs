@@ -1702,9 +1702,9 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
         urr->meas_method = message->measurement_method.u8;
 
     if (message->reporting_triggers.presence) {
-        urr->rep_triggers.reptri_5 = message->reporting_triggers.u24 & 0xFF;
+        urr->rep_triggers.reptri_5 = (message->reporting_triggers.u24 >> 16) & 0xFF;
         urr->rep_triggers.reptri_6 = (message->reporting_triggers.u24 >> 8) & 0xFF;
-        urr->rep_triggers.reptri_7 = (message->reporting_triggers.u24 >> 16) & 0xFF;
+        urr->rep_triggers.reptri_7 = message->reporting_triggers.u24 & 0xFF;
     }
 
     if (message->measurement_period.presence) {
