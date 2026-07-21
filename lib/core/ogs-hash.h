@@ -47,8 +47,10 @@ extern "C" {
 
 typedef struct ogs_hash_t ogs_hash_t;
 typedef struct ogs_hash_index_t ogs_hash_index_t;
-typedef unsigned int (*ogs_hashfunc_t)(const char *key, int *klen);
-unsigned int ogs_hashfunc_default(const char *key, int *klen);
+typedef unsigned int (*ogs_hashfunc_t)(
+        const char *key, int *klen, unsigned int seed);
+unsigned int ogs_hashfunc_default(const char *key,
+        int *klen, unsigned int seed);
 
 ogs_hash_t *ogs_hash_make(void);
 ogs_hash_t *ogs_hash_make_custom(ogs_hashfunc_t ogs_hash_func);
