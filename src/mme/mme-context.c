@@ -4729,6 +4729,10 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, uint8_t pti)
 
     sess->mme_ue_id = mme_ue->id;
     sess->pti = pti;
+    /* Explicit for clarity: OGS_INVALID_POOL_ID happens to be 0, so the
+     * pool calloc already guarantees this, but the DNS selection code
+     * depends on it and must not break if the constant ever changes. */
+    sess->dns_id = OGS_INVALID_POOL_ID;
 
     bearer = mme_bearer_add(sess);
     ogs_assert(bearer);

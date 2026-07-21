@@ -25,6 +25,7 @@ RUN dnf -y install \
         libcurl-devel \
         libnghttp2-devel \
         libtalloc-devel \
+        c-ares-devel \
         iproute
 
 RUN dnf -y install meson

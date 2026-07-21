@@ -266,6 +266,13 @@ void mme_gtp_close(void)
     ogs_socknode_remove_all(&ogs_gtp_self()->gtpc_list6);
 }
 
+/*
+ * NOTE: OGS_OK does not guarantee that the CSR has been sent.
+ * With DNS-based selection enabled the request may be deferred until
+ * MME_EVENT_DNS_RESOLVED; callers asserting on OGS_OK (e.g. inside
+ * ogs_assert(OGS_OK == ...)) rely on this and MUST NOT expect a GTP
+ * transaction to exist on return.
+ */
 int mme_gtp_send_create_session_request(
         enb_ue_t *enb_ue, mme_sess_t *sess, int create_action)
 {

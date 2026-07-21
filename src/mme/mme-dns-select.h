@@ -133,10 +133,14 @@ int mme_dns_candidates_from_naptr(
 
 /*
  * Resolve an "s"-flagged candidate's target name from its SRV answer:
- * pick the lowest-priority record (RFC 2782 weight is ignored).
- * Clears needs_srv.
+ * pick the lowest-priority record (RFC 2782 weight is ignored) and
+ * clear needs_srv. Returns false - leaving the candidate untouched,
+ * needs_srv still set - when the answer contains no usable target
+ * (every record has an empty target or "." = service not available,
+ * RFC 2782); the caller MUST then skip this candidate instead of
+ * retrying it.
  */
-void mme_dns_candidate_apply_srv(mme_dns_candidate_t *cand,
+bool mme_dns_candidate_apply_srv(mme_dns_candidate_t *cand,
         const mme_dns_srv_record_t *recs, int num_recs);
 
 #ifdef __cplusplus

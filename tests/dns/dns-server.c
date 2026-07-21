@@ -75,6 +75,14 @@ static int put_name(uint8_t *buf, int off, const char *name)
 {
     const char *p = name;
 
+    /* Root name "." encodes as a single null label (RFC 1035 3.1);
+     * needed to serve SRV records with target "." = service not
+     * available (RFC 2782) */
+    if (name[0] == '.' && name[1] == 0) {
+        buf[off++] = 0;
+        return off;
+    }
+
     while (*p) {
         const char *dot = strchr(p, '.');
         size_t l = dot ? (size_t)(dot - p) : strlen(p);

@@ -30,6 +30,7 @@ RUN apt-get update && \
         libnghttp2-dev \
         libtins-dev \
         libtalloc-dev \
+        libc-ares-dev \
         iproute2 \
         ca-certificates \
         netbase \

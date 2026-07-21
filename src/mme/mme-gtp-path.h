@@ -29,6 +29,8 @@ extern "C" {
 int mme_gtp_open(void);
 void mme_gtp_close(void);
 
+/* OGS_OK may mean the CSR was deferred until MME_EVENT_DNS_RESOLVED
+ * (DNS-based selection); no GTP transaction is guaranteed on return. */
 int mme_gtp_send_create_session_request(
         enb_ue_t *enb_ue, mme_sess_t *sess, int create_action);
 /* Bypasses DNS-based gateway selection (used once selection is done) */

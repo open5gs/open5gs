@@ -237,16 +237,33 @@ static void dns_select_test_srv(abts_case *tc, void *data)
     srv[2].priority = 10; srv[2].weight = 200; /* weight ignored */
     strcpy(srv[2].target, "host-c.example.org");
 
-    mme_dns_candidate_apply_srv(&cand, srv, 3);
+    ABTS_TRUE(tc, mme_dns_candidate_apply_srv(&cand, srv, 3));
     ABTS_STR_EQUAL(tc, "host-a.example.org", cand.fqdn);
     ABTS_INT_EQUAL(tc, 2123, cand.port);
     ABTS_TRUE(tc, !cand.needs_srv);
 
-    /* Empty SRV set leaves the candidate untouched */
+    /* Empty SRV set: returns false, candidate untouched */
     memset(&cand, 0, sizeof(cand));
     strcpy(cand.fqdn, "unchanged");
     cand.needs_srv = true;
-    mme_dns_candidate_apply_srv(&cand, NULL, 0);
+    ABTS_TRUE(tc, !mme_dns_candidate_apply_srv(&cand, NULL, 0));
+    ABTS_STR_EQUAL(tc, "unchanged", cand.fqdn);
+    ABTS_TRUE(tc, cand.needs_srv);
+
+    /* SRV records with no usable target ("." = service not available,
+     * RFC 2782): returns false so the caller knows it must SKIP this
+     * candidate - retrying it would loop forever (see leg_advance in
+     * mme-dns.c) */
+    memset(&cand, 0, sizeof(cand));
+    strcpy(cand.fqdn, "unchanged");
+    cand.needs_srv = true;
+    {
+        mme_dns_srv_record_t dot[2];
+        memset(dot, 0, sizeof(dot));
+        dot[0].priority = 10; strcpy(dot[0].target, ".");
+        dot[1].priority = 20; /* empty target */
+        ABTS_TRUE(tc, !mme_dns_candidate_apply_srv(&cand, dot, 2));
+    }
     ABTS_STR_EQUAL(tc, "unchanged", cand.fqdn);
     ABTS_TRUE(tc, cand.needs_srv);
 }

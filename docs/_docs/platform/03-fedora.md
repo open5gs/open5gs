@@ -76,7 +76,7 @@ $ ip link show
 
 Install the depedencies for building the source code.
 ```bash
-$ sudo dnf install python3 ninja-build gcc gcc-c++ flex bison git cmake lksctp-tools-devel libidn-devel gnutls-devel libgcrypt-devel openssl-devel cyrus-sasl-devel libyaml-devel mongo-c-driver-devel libmicrohttpd-devel libcurl-devel libnghttp2-devel libtalloc-devel iproute
+$ sudo dnf install python3 ninja-build gcc gcc-c++ flex bison git cmake lksctp-tools-devel libidn-devel c-ares-devel gnutls-devel libgcrypt-devel openssl-devel cyrus-sasl-devel libyaml-devel mongo-c-driver-devel libmicrohttpd-devel libcurl-devel libnghttp2-devel libtalloc-devel iproute
 ```
 
 Install Meson
