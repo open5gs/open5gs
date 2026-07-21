@@ -1318,7 +1318,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
         if (gsm_header->message_type ==
                 OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST) {
 
-            int i, j, k;
+            int i, j;
 
             nas_s_nssai = &ul_nas_transport->s_nssai;
             ogs_assert(nas_s_nssai);
@@ -1364,49 +1364,25 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                         amf_ue->slice[i].s_nssai.sd.v ==
                             amf_ue->allowed_nssai.s_nssai[j].sd.v) {
 
-                        if (ul_nas_transport->presencemask &
-                                OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT) {
-                            for (k = 0;
-                                    k < amf_ue->slice[i].num_of_session; k++) {
-                                if (k >= OGS_MAX_NUM_OF_SESS) {
-                                    ogs_warn("Ignore max session "
-                                        "count overflow [%d>=%d]",
-                                        amf_ue->slice[i].num_of_session,
-                                        OGS_MAX_NUM_OF_SESS);
-                                    break;
-                                }
-                                if (!ogs_strcasecmp(dnn->value,
-                                            amf_ue->slice[i].session[k].name)) {
+                        {
+                            const char *requested_dnn =
+                                (ul_nas_transport->presencemask &
+                                 OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT)
+                                    ? dnn->value : NULL;
+                            ogs_session_t *resolved =
+                                amf_resolve_session_for_requested_dnn(
+                                    amf_ue, &amf_ue->slice[i],
+                                    requested_dnn);
+                            if (resolved) {
+                                selected_slice = amf_ue->slice + i;
+                                ogs_assert(selected_slice);
 
-                                    selected_slice = amf_ue->slice + i;
-                                    ogs_assert(selected_slice);
-
-                                    if (sess->dnn)
-                                        ogs_free(sess->dnn);
-                                    sess->dnn = ogs_strdup(dnn->value);
-                                    ogs_assert(sess->dnn);
-
-                                    sess->lbo_roaming_allowed =
-                                        amf_ue->slice[i].
-                                        session[k].lbo_roaming_allowed;
-                                } else {
-                                    continue;
-                                }
-                            }
-
-                        } else {
-                            selected_slice = amf_ue->slice + i;
-                            ogs_assert(selected_slice);
-
-                            if (selected_slice->num_of_session) {
                                 if (sess->dnn)
                                     ogs_free(sess->dnn);
-                                sess->dnn = ogs_strdup(
-                                        selected_slice->session[0].name);
+                                sess->dnn = ogs_strdup(resolved->name);
                                 ogs_assert(sess->dnn);
                                 sess->lbo_roaming_allowed =
-                                    amf_ue->slice[i].
-                                    session[0].lbo_roaming_allowed;
+                                    resolved->lbo_roaming_allowed;
                             }
                         }
                     }
@@ -1415,7 +1391,11 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
 
             if (!selected_slice || !sess->dnn) {
                 ogs_warn("[%s] Ue requested DNN \"%s\" Not Supported OR "
-                            "Not Subscribed in the Slice", amf_ue->supi, dnn->value);
+                            "Not Subscribed in the Slice",
+                            amf_ue->supi,
+                            (ul_nas_transport->presencemask &
+                             OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT)
+                                ? dnn->value : "(none)");
                 r = nas_5gs_send_gmm_status(amf_ue,
                         OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE);
                 ogs_expect(r == OGS_OK);
