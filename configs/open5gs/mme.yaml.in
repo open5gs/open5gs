@@ -127,8 +127,23 @@ mme:
 #    the SGW is selected by TAI-FQDN and the PGW by APN-FQDN via
 #    NAPTR -> SRV -> A / NAPTR -> A lookups. On any DNS failure the MME
 #    falls back to the static gtpc.client.sgwc/smf configuration above.
+#
+#    LIMITATION - ROAMING SUBSCRIBERS: the APN-FQDN is always built with
+#    the SERVING PLMN. For a roaming subscriber (IMSI PLMN differs from
+#    the serving PLMN) the home-PLMN APN-OI required to locate the home
+#    PGW over S8 (GSMA IR.88) is NOT derived yet. DNS-based PGW selection
+#    therefore only works for such subscribers if the serving operator
+#    provisions x-s8-gtp records for the APN in its own DNS zone;
+#    otherwise the MME falls back to the static PGW configuration.
+#    SGW selection (TAI-FQDN, serving PLMN) is unaffected.
+#
+#    Other limitations: A records only (no AAAA/IPv6 gateways), RFC 2782
+#    SRV weights ignored (priority-only), non-terminal NAPTR not followed,
+#    DNS-discovered SGW nodes are kept for the lifetime of the process.
 #  dns:
-#    server:
+#    server:                # bare IPv4/IPv6 literals only - no brackets,
+#                           # no %scope suffix (link-local resolvers are
+#                           # not supported)
 #      - address: 10.11.12.13
 #      - address: 10.11.12.14
 #        port: 53

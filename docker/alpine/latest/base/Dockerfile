@@ -25,4 +25,5 @@ RUN apk update && \
         curl-dev \
         nghttp2-dev \
         talloc-dev \
+        c-ares-dev \
         iproute2

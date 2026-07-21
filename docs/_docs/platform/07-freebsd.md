@@ -148,7 +148,7 @@ This is important that you must reboot as shown below.
 
 Install the depedencies for building the source code.
 ```bash
-$ sudo pkg install meson cmake ninja gcc bison gsed pkgconf git cmake mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd nghttp2 talloc
+$ sudo pkg install meson cmake ninja gcc bison gsed pkgconf git cmake mongo-c-driver gnutls libgcrypt libidn c-ares libyaml libmicrohttpd nghttp2 talloc
 ```
 
 Configure gcc PATH

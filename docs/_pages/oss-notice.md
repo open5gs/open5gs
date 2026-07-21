@@ -106,6 +106,11 @@ If you have any questions or concerns, please contact us at <a href="mailto:acet
 - Copyright (C) Andrew Tridgell 2004-2005, Stefan Metzmacher 2006
 - LICENSE: [LGPL-2.1-or-later](https://www.gnu.org/licenses/lgpl-3.0.html)
 
+##### c-ares
+- [https://c-ares.org/](https://c-ares.org/)
+- Copyright (c) The c-ares project and its contributors
+- LICENSE: [MIT](https://opensource.org/licenses/MIT)
+
 ##### usrsctp
 - [https://github.com/sctplab/usrsctp](https://github.com/sctplab/usrsctp)
 - Copyright (c) 2015, Randall Stewart and Michael Tuexen

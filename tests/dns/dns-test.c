@@ -49,6 +49,22 @@ static const test_dns_record_t good_records[] = {
     { .qname = PGW_NAME, .qtype = TEST_DNS_T_A, .ipv4 = "127.0.0.4" },
 };
 
+/*
+ * Regression records for the SRV "no usable target" case: the SGW
+ * NAPTR (flag "s") points at an SRV whose only record has target "."
+ * (service not available, RFC 2782). The MME must skip the candidate
+ * and fall back - a broken MME re-reads the same cache entry forever
+ * and the whole event loop hangs, so this test failing by TIMEOUT is
+ * the regression signature. No PGW records: that leg falls back too.
+ */
+static const test_dns_record_t srv_dot_records[] = {
+    { .qname = TAI_FQDN, .qtype = TEST_DNS_T_NAPTR,
+      .order = 10, .preference = 10, .flags = "s",
+      .service = "x-3gpp-sgw:x-s5-gtp", .replacement = SRV_NAME },
+    { .qname = SRV_NAME, .qtype = TEST_DNS_T_SRV,
+      .priority = 10, .weight = 0, .port = 0, .target = "." },
+};
+
 static void attach_and_detach(abts_case *tc, const char *scheme_output)
 {
     int rv;
@@ -320,6 +336,27 @@ static void test3_timeout_fallback(abts_case *tc, void *data)
     ABTS_TRUE(tc, test_dns_server_num_queries(NULL) >= 1);
 }
 
+/* SRV answer whose only record has target ".": the MME must skip the
+ * candidate and fall back to the static configuration. A regressed MME
+ * hangs its event loop re-reading the same SRV cache entry, so this
+ * test failing by TIMEOUT (no S1AP progress) is the regression
+ * signature. */
+static void test4_srv_dot_fallback(abts_case *tc, void *data)
+{
+    /* Let the (negative) cache entries of the previous case expire */
+    ogs_msleep(1200);
+
+    test_dns_server_set_records(
+            srv_dot_records, OGS_ARRAY_SIZE(srv_dot_records));
+    test_dns_server_reset_counters();
+
+    attach_and_detach(tc, "3746000063");
+
+    /* The chain must have been followed up to the unusable SRV */
+    ABTS_TRUE(tc, test_dns_server_num_queries("tac-lb01.tac-hb00") >= 1);
+    ABTS_TRUE(tc, test_dns_server_num_queries("_gtp._udp") >= 1);
+}
+
 abts_suite *test_dns_select(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -327,6 +364,7 @@ abts_suite *test_dns_select(abts_suite *suite)
     abts_run_test(suite, test1_dns_selection, NULL);
     abts_run_test(suite, test2_empty_fallback, NULL);
     abts_run_test(suite, test3_timeout_fallback, NULL);
+    abts_run_test(suite, test4_srv_dot_fallback, NULL);
 
     return suite;
 }

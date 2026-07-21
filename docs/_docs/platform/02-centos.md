@@ -115,7 +115,7 @@ a base CentOS Stream 8 installation.
 
 
 ```bash
-$ sudo dnf install python3 meson cmake ninja-build gcc gcc-c++ flex bison git cmake lksctp-tools-devel libidn-devel gnutls-devel libgcrypt-devel openssl-devel cyrus-sasl-devel libyaml-devel mongo-c-driver-devel libmicrohttpd-devel libcurl-devel libnghttp2-devel libtalloc-devel
+$ sudo dnf install python3 meson cmake ninja-build gcc gcc-c++ flex bison git cmake lksctp-tools-devel libidn-devel c-ares-devel gnutls-devel libgcrypt-devel openssl-devel cyrus-sasl-devel libyaml-devel mongo-c-driver-devel libmicrohttpd-devel libcurl-devel libnghttp2-devel libtalloc-devel
 ```
 
 ### Install iproute IP interface tools.

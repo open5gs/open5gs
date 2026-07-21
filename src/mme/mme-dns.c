@@ -27,6 +27,19 @@
  * keep FSM discipline.
  */
 
+/*
+ * c-ares >= 1.28 deprecates the legacy ares_query() /
+ * ares_parse_{naptr,srv,a}_reply() API in favor of
+ * ares_query_dnsrec() / ares_dns_parse(), which breaks the build under
+ * -Werror. We deliberately stay on the legacy API so the MME still
+ * builds against the c-ares shipped by current LTS distributions
+ * (e.g. Ubuntu 22.04 / Debian 12: 1.18). CARES_NO_DEPRECATED is the
+ * official c-ares switch to drop the deprecation attributes; it is a
+ * no-op on < 1.28. Migrating to the ares_dns_record API (which would
+ * also give us real NAPTR/SRV TTLs instead of the cache_ttl fallback)
+ * is left for when the minimum c-ares version can be raised.
+ */
+#define CARES_NO_DEPRECATED
 #include <ares.h>
 
 #include "mme-dns.h"
@@ -44,6 +57,15 @@
 #define MME_DNS_MAX_RR      8
 #define MME_DNS_MAX_CSR_ATTEMPTS 3
 #define MME_DNS_NEGATIVE_TTL     5  /* seconds, capped by dns.cache_ttl */
+
+/*
+ * Upper bound on cached entries. Expired entries are otherwise reclaimed
+ * only when the same key is read again, so without a cap a deployment
+ * with many TACs/APNs and short TTLs would accumulate dead entries
+ * indefinitely. When the cap is reached, expired entries are swept;
+ * if the cache is still full, the entries closest to expiry are evicted.
+ */
+#define MME_DNS_CACHE_MAX_ENTRIES 4096
 
 static int negative_ttl(void)
 {
@@ -88,6 +110,18 @@ typedef struct mme_dns_resolution_s {
     mme_dns_proto_e proto;
     mme_dns_leg_t sgw;
     mme_dns_leg_t pgw;
+
+    /*
+     * The SGW the UE was on when this resolution was created — the
+     * restore target if DNS selection ends in fallback AFTER the UE
+     * was already switched to a DNS-discovered SGW. On initial attach
+     * this is the statically selected SGW; for an additional PDN it
+     * may itself be a DNS-discovered node (which is then where the
+     * UE's S11 lives, i.e. still the right restore target). Any node
+     * stored here was successfully connected and is never removed
+     * afterwards, so the pointer stays valid.
+     */
+    mme_sgw_t *fallback_sgw;
 
     int csr_attempts;
 } mme_dns_resolution_t;
@@ -235,6 +269,40 @@ static mme_dns_cache_entry_t *cache_get(int qtype, const char *fqdn)
     return entry;
 }
 
+/* Sweep expired entries; if the cache is still at capacity, evict the
+ * entries closest to expiry until one slot is free. Runs on the MME
+ * main thread only. */
+static void cache_make_room(void)
+{
+    ogs_hash_index_t *hi = NULL;
+    mme_dns_cache_entry_t *entry = NULL, *victim = NULL;
+    ogs_time_t now = ogs_time_now();
+
+    if (ogs_hash_count(g_cache) < MME_DNS_CACHE_MAX_ENTRIES)
+        return;
+
+    for (hi = ogs_hash_first(g_cache); hi; hi = ogs_hash_next(hi)) {
+        entry = ogs_hash_this_val(hi);
+        if (entry->expire < now) {
+            ogs_hash_set(g_cache, entry->key, OGS_HASH_KEY_STRING, NULL);
+            ogs_free(entry);
+        }
+    }
+
+    while (ogs_hash_count(g_cache) >= MME_DNS_CACHE_MAX_ENTRIES) {
+        victim = NULL;
+        for (hi = ogs_hash_first(g_cache); hi; hi = ogs_hash_next(hi)) {
+            entry = ogs_hash_this_val(hi);
+            if (!victim || entry->expire < victim->expire)
+                victim = entry;
+        }
+        if (!victim)
+            break;
+        ogs_hash_set(g_cache, victim->key, OGS_HASH_KEY_STRING, NULL);
+        ogs_free(victim);
+    }
+}
+
 static mme_dns_cache_entry_t *cache_put(
         int qtype, const char *fqdn, int ttl_sec)
 {
@@ -243,9 +311,17 @@ static mme_dns_cache_entry_t *cache_put(
     entry = ogs_calloc(1, sizeof(*entry));
     ogs_assert(entry);
     ogs_snprintf(entry->key, sizeof(entry->key), "%d:%s", qtype, fqdn);
+
+    /* Only a genuinely new key needs a free slot: updating an existing
+     * key replaces it in place, and calling cache_make_room() in that
+     * case would evict one unrelated entry per refresh once the cache
+     * is at capacity. */
+    old = ogs_hash_get(g_cache, entry->key, OGS_HASH_KEY_STRING);
+    if (!old)
+        cache_make_room();
+
     entry->expire = ogs_time_now() + ogs_time_from_sec(ttl_sec);
 
-    old = ogs_hash_get(g_cache, entry->key, OGS_HASH_KEY_STRING);
     if (old) {
         ogs_hash_set(g_cache, old->key, OGS_HASH_KEY_STRING, NULL);
         ogs_free(old);
@@ -320,10 +396,33 @@ static void post_resolved(mme_dns_resolution_t *res)
     e->enb_ue_id = res->enb_ue_id;
     e->create_action = res->create_action;
 
-    rv = ogs_queue_push(ogs_app()->queue, e);
+    /*
+     * post_resolved() runs on the MME main loop - the same thread
+     * that drains the event queue. ogs_queue_push() would block
+     * indefinitely on a full queue, and since the only consumer is
+     * the thread doing the pushing, that is a self-deadlock. Use the
+     * non-blocking trypush and recover via the guard timer instead.
+     */
+    rv = ogs_queue_trypush(ogs_app()->queue, e);
     if (rv != OGS_OK) {
-        ogs_error("mme-dns: ogs_queue_push() failed:%d", (int)rv);
+        ogs_error("mme-dns: ogs_queue_trypush() failed:%d", (int)rv);
         mme_event_free(e);
+        if (rv == OGS_RETRY && !g_closing) {
+            /*
+             * The queue is temporarily full. Without the event the
+             * deferred CSR would never be sent and the attach would
+             * stall until the NAS timers give up. Return to PENDING
+             * and restart the guard timer: the legs are already
+             * done, so when it fires check_completion() simply
+             * posts the completed result again. OGS_DONE means the
+             * queue was terminated (shutdown) - no retry then.
+             */
+            res->state = MME_DNS_ST_PENDING;
+            if (res->t_guard)
+                ogs_timer_start(res->t_guard,
+                        ogs_time_from_msec(
+                            mme_self()->dns.guard_timeout));
+        }
         return;
     }
     ogs_pollset_notify(ogs_app()->pollset);
@@ -594,8 +693,15 @@ static void leg_advance(mme_dns_resolution_t *res, mme_dns_leg_t *leg)
                 leg->cursor++;
                 continue;
             }
-            mme_dns_candidate_apply_srv(&leg->cand[leg->cursor],
-                    entry->u.srv, entry->num);
+            if (!mme_dns_candidate_apply_srv(&leg->cand[leg->cursor],
+                    entry->u.srv, entry->num)) {
+                /* The answer had records but no usable target (e.g. all
+                 * targets are "." = service not available, RFC 2782).
+                 * The candidate is untouched: skip it, or this loop
+                 * would re-read the same cache entry forever and hang
+                 * the MME event loop. */
+                leg->cursor++;
+            }
             continue;
         }
 
@@ -642,6 +748,32 @@ static mme_dns_candidate_t *leg_result(mme_dns_leg_t *leg)
     return &leg->cand[leg->cursor];
 }
 
+/* Switch the UE back to the SGW it was on before this resolution
+ * switched it away (no-op when it never moved). Needed on every
+ * apply_sgw() path that gives up: after a previous pass already moved
+ * the UE to a DNS-discovered SGW, doing nothing would re-send the CSR
+ * to that (possibly dead) node instead of the intended fallback. */
+static void restore_fallback_sgw(mme_dns_resolution_t *res,
+        mme_sess_t *sess)
+{
+    mme_ue_t *mme_ue = NULL;
+    sgw_ue_t *sgw_ue = NULL;
+
+    if (!res->fallback_sgw)
+        return;
+
+    mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
+    if (!mme_ue)
+        return;
+    sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
+    if (!sgw_ue || sgw_ue->sgw == res->fallback_sgw)
+        return;
+
+    ogs_warn("mme-dns: restoring the SGW selected before "
+            "DNS-based selection");
+    sgw_ue_switch_to_sgw(sgw_ue, res->fallback_sgw);
+}
+
 static void apply_sgw(mme_dns_resolution_t *res, mme_sess_t *sess)
 {
     mme_dns_candidate_t *cand = NULL;
@@ -652,8 +784,20 @@ static void apply_sgw(mme_dns_resolution_t *res, mme_sess_t *sess)
     int rv;
 
     cand = leg_result(&res->sgw);
-    if (!cand)
+    if (!cand) {
+        /*
+         * SGW leg produced no usable candidate (fallback). Normally
+         * the UE is still on the SGW it started with and this is a
+         * no-op - but if a previous pass of this resolution already
+         * switched the UE to a DNS-discovered SGW (which then timed
+         * out, and the retry candidate failed to resolve), restore
+         * the original SGW so "DNS failure never blocks the attach"
+         * holds on this path too.
+         */
+        if (res->sgw.active && res->sgw.fallback)
+            restore_fallback_sgw(res, sess);
         return;
+    }
 
     mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
     if (!mme_ue)
@@ -672,9 +816,13 @@ static void apply_sgw(mme_dns_resolution_t *res, mme_sess_t *sess)
 
         sgw = mme_sgw_add(addr);
         if (!sgw) {
+            /* Unreachable today (mme_sgw_add() asserts on pool
+             * exhaustion), kept defensively should it ever return
+             * NULL gracefully */
             ogs_error("mme-dns: mme_sgw_add() failed, "
-                    "using statically selected SGW");
+                    "using the previously selected SGW");
             ogs_free(addr);
+            restore_fallback_sgw(res, sess);
             return;
         }
         sgw->dns_origin = true;
@@ -684,9 +832,10 @@ static void apply_sgw(mme_dns_resolution_t *res, mme_sess_t *sess)
                 &sgw->gnode);
         if (rv != OGS_OK) {
             ogs_error("mme-dns: ogs_gtp_connect() to [%s] failed, "
-                    "using statically selected SGW",
+                    "using the previously selected SGW",
                     OGS_ADDR(&cand->addr, buf));
             mme_sgw_remove(sgw);
+            restore_fallback_sgw(res, sess);
             return;
         }
     }
@@ -762,6 +911,16 @@ int mme_dns_prepare(enb_ue_t *enb_ue, mme_sess_t *sess, int create_action)
     res->sess_id = sess->id;
     res->enb_ue_id = enb_ue ? enb_ue->id : OGS_INVALID_POOL_ID;
     res->create_action = create_action;
+
+    /* Remember the SGW currently serving the UE so a later fallback
+     * can restore it even after apply_sgw() switched the UE away */
+    {
+        mme_ue_t *mme_ue = mme_ue_find_by_id(sess->mme_ue_id);
+        sgw_ue_t *sgw_ue = mme_ue ?
+            sgw_ue_find_by_id(mme_ue->sgw_ue_id) : NULL;
+        if (sgw_ue)
+            res->fallback_sgw = sgw_ue->sgw;
+    }
     res->state = MME_DNS_ST_PENDING;
     res->csr_attempts = 0;
 
@@ -780,7 +939,14 @@ int mme_dns_prepare(enb_ue_t *enb_ue, mme_sess_t *sess, int create_action)
     }
 
     /* PGW leg: skipped when the HSS provided a PGW address
-     * (MIP6-Agent-Info), which always takes precedence. */
+     * (MIP6-Agent-Info), which always takes precedence.
+     *
+     * LIMITATION: the APN-FQDN is built with the SERVING PLMN
+     * (mme_ue->tai.plmn_id). For roaming subscribers the home-PLMN
+     * APN-OI (TS 23.003 9.1.1, needs an IMSI MNC-length table) is not
+     * derived, so locating the home PGW over S8 per GSMA IR.88 only
+     * works if the serving operator provisions x-s8-gtp records for
+     * the APN in its own zone. See configs/open5gs/mme.yaml.in. */
     if (!sess->session->smf_ip.ipv4 && !sess->session->smf_ip.ipv6) {
         res->pgw.svc = MME_DNS_SVC_PGW;
         if (mme_dns_build_apn_fqdn(res->pgw.fqdn, sizeof(res->pgw.fqdn),
@@ -832,12 +998,34 @@ void mme_dns_handle_resolved(mme_event_t *e)
 
     apply_sgw(res, sess);
 
-    res->state = MME_DNS_ST_CONSUMED;
-    res->csr_attempts++;
-
     rv = mme_gtp_send_create_session_request_now(
             enb_ue, sess, res->create_action);
-    ogs_expect(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        /*
+         * The deferred CSR could not be built or committed - nothing
+         * was sent. Undo any SGW switch apply_sgw() performed (no-op
+         * if the UE never moved), or the UE would stay anchored to
+         * the DNS SGW while the resolution - and with it the
+         * fallback_sgw anchor - is discarded, and the next NAS retry
+         * would capture the DNS SGW as its fallback. Then clear the
+         * resolution so that retry starts a fresh selection instead
+         * of finding a stale CONSUMED resolution and
+         * short-circuiting to SEND_NOW.
+         */
+        ogs_error("mme-dns: failed to send deferred "
+                "Create Session Request");
+        restore_fallback_sgw(res, sess);
+        mme_dns_sess_clear(sess);
+        return;
+    }
+
+    /* Only after the CSR transaction was successfully committed
+     * (ogs_gtp_xact_commit() swallows sendto failures, so this is a
+     * build+commit guarantee, not a wire guarantee): the GTP-timeout
+     * retry hook keys on CONSUMED, which is meaningless if no
+     * transaction exists */
+    res->state = MME_DNS_ST_CONSUMED;
+    res->csr_attempts++;
 }
 
 static bool retry_leg(mme_sess_t *sess, mme_dns_leg_t *leg)
@@ -916,7 +1104,7 @@ int mme_dns_open(void)
 {
     int i, rc, optmask = 0;
     struct ares_options opt;
-    char csv[MME_DNS_MAX_SERVER * (OGS_ADDRSTRLEN + 8)];
+    char csv[MME_DNS_MAX_SERVER * (OGS_ADDRSTRLEN + 8)] = "";
     size_t used = 0;
 
     if (!mme_self()->dns.enabled)
@@ -926,6 +1114,58 @@ int mme_dns_open(void)
         ogs_error("mme-dns: no IPv4 GTP-C socket; DNS-based selection "
                 "supports A records only and cannot be enabled");
         return OGS_ERROR;
+    }
+
+    /*
+     * Validate the resolver addresses and build the c-ares server CSV
+     * BEFORE any c-ares initialization, so a configuration error can
+     * simply return without having to unwind the channel/library.
+     *
+     * Each address must be a bare IPv4/IPv6 literal:
+     * - inet_pton() rejects hostnames, %scope suffixes, brackets and
+     *   any other malformed input, which also enforces the <= 45 char
+     *   premise of the fixed CSV buffer below (ogs_snprintf() returns
+     *   the WOULD-BE length on truncation, so an unbounded string
+     *   could otherwise push `used` past the buffer)
+     * - bare link-local IPv6 (fe80::/10) is rejected too: c-ares
+     *   would need the "[fe80::1]:53%eth0" form - scope after the
+     *   port, outside the brackets - plus a dynamically sized CSV,
+     *   and link-local resolvers are not worth that complexity for
+     *   an MME
+     *
+     * c-ares CSV requires an IPv6 address with a port to be
+     * bracketed: "[2001:db8::53]:53". Unbracketed, the whole string -
+     * "2001:db8::53:53" - happens to parse as a VALID IPv6 address
+     * with the default port, so the MME would silently query the
+     * wrong server (verified on c-ares 1.34.5). The resolver's
+     * address family is independent of the A-records-only gateway
+     * limitation.
+     */
+    for (i = 0; i < mme_self()->dns.num_of_server; i++) {
+        const char *address = mme_self()->dns.server[i].address;
+        struct in_addr addr4;
+        struct in6_addr addr6;
+        bool is_ipv6 = false;
+
+        if (inet_pton(AF_INET, address, &addr4) == 1) {
+            is_ipv6 = false;
+        } else if (inet_pton(AF_INET6, address, &addr6) == 1) {
+            if (IN6_IS_ADDR_LINKLOCAL(&addr6)) {
+                ogs_error("mme-dns: link-local DNS resolver [%s] "
+                        "is not supported", address);
+                return OGS_ERROR;
+            }
+            is_ipv6 = true;
+        } else {
+            ogs_error("mme-dns: dns.server address [%s] must be a "
+                    "bare IPv4 or IPv6 literal", address);
+            return OGS_ERROR;
+        }
+
+        used += ogs_snprintf(csv + used, sizeof(csv) - used,
+                is_ipv6 ? "%s[%s]:%d" : "%s%s:%d",
+                i ? "," : "", address,
+                mme_self()->dns.server[i].port);
     }
 
     rc = ares_library_init(ARES_LIB_INIT_ALL);
@@ -943,6 +1183,19 @@ int mme_dns_open(void)
     optmask |= ARES_OPT_FLAGS;
     opt.sock_state_cb = dns_sock_state_cb;
     optmask |= ARES_OPT_SOCK_STATE_CB;
+#ifdef ARES_OPT_QUERY_CACHE
+    /*
+     * c-ares >= 1.31 enables an internal query cache by default (keyed
+     * by the wire TTL, up to 1 hour). The MME maintains its own cache
+     * honoring the operator-configured dns.cache_ttl and the negative
+     * TTL; with the c-ares cache active, entries the MME expired on
+     * purpose would still be answered internally without touching the
+     * wire, silently overriding cache_ttl (and breaking the e2e tests,
+     * which count queries on a stub server). Disable it - 0 = off.
+     */
+    opt.qcache_max_ttl = 0;
+    optmask |= ARES_OPT_QUERY_CACHE;
+#endif
 
     rc = ares_init_options(&g_channel, &opt, optmask);
     if (rc != ARES_SUCCESS) {
@@ -951,13 +1204,6 @@ int mme_dns_open(void)
         return OGS_ERROR;
     }
 
-    csv[0] = 0;
-    for (i = 0; i < mme_self()->dns.num_of_server; i++) {
-        used += ogs_snprintf(csv + used, sizeof(csv) - used, "%s%s:%d",
-                i ? "," : "",
-                mme_self()->dns.server[i].address,
-                mme_self()->dns.server[i].port);
-    }
     rc = ares_set_servers_ports_csv(g_channel, csv);
     if (rc != ARES_SUCCESS) {
         ogs_error("ares_set_servers_ports_csv(%s) failed: %s",

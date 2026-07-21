@@ -254,7 +254,7 @@ int mme_dns_candidates_from_naptr(
     return num_cand;
 }
 
-void mme_dns_candidate_apply_srv(mme_dns_candidate_t *cand,
+bool mme_dns_candidate_apply_srv(mme_dns_candidate_t *cand,
         const mme_dns_srv_record_t *recs, int num_recs)
 {
     const mme_dns_srv_record_t *best = NULL;
@@ -263,7 +263,7 @@ void mme_dns_candidate_apply_srv(mme_dns_candidate_t *cand,
     ogs_assert(cand);
 
     if (!recs || num_recs <= 0)
-        return;
+        return false;
 
     for (i = 0; i < num_recs; i++) {
         if (!recs[i].target[0] || strcmp(recs[i].target, ".") == 0)
@@ -273,9 +273,11 @@ void mme_dns_candidate_apply_srv(mme_dns_candidate_t *cand,
     }
 
     if (!best)
-        return;
+        return false;
 
     ogs_cpystrn(cand->fqdn, best->target, sizeof(cand->fqdn));
     cand->port = best->port;
     cand->needs_srv = false;
+
+    return true;
 }
