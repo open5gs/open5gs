@@ -121,6 +121,13 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
                 ogs_warn("Session has already been removed");
                 break;
             }
+            /*
+             * Notify AMF before clearing per TS 29.518 §5.2.5 /
+             * TS 23.502 §4.3.4. Without the notify, AMF retains a stale
+             * smContextRef and stutters with 404 retries on every later
+             * UE Service Request until its own timer expires.
+             */
+            smf_sbi_try_send_sm_context_status_notify_before_release(sess);
             SMF_SESS_CLEAR(sess);
             break;
         default:
@@ -398,6 +405,13 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                 ogs_warn("Session has already been removed");
                 break;
             }
+            /*
+             * Notify AMF before clearing per TS 29.518 §5.2.5 /
+             * TS 23.502 §4.3.4. Without the notify, AMF retains a stale
+             * smContextRef and stutters with 404 retries on every later
+             * UE Service Request until its own timer expires.
+             */
+            smf_sbi_try_send_sm_context_status_notify_before_release(sess);
             SMF_SESS_CLEAR(sess);
             break;
         default:
