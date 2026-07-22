@@ -36,6 +36,34 @@ static uint8_t emm_cause_from_diameter(
 static uint8_t mme_ue_session_from_slice_data(mme_ue_t *mme_ue,
     ogs_slice_data_t *slice_data);
 
+static void mme_s6a_update_hss_identity(mme_ue_t *mme_ue,
+        ogs_diam_s6a_message_t *s6a_message)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(s6a_message);
+
+    if (s6a_message->result_code == ER_DIAMETER_SUCCESS) {
+        if (!s6a_message->origin_host_len ||
+            !s6a_message->origin_realm_len)
+            return;
+
+        mme_ue_set_hss_identity(mme_ue,
+                s6a_message->origin_host,
+                s6a_message->origin_host_len,
+                s6a_message->origin_realm,
+                s6a_message->origin_realm_len);
+    } else if ((s6a_message->err &&
+                (s6a_message->result_code ==
+                    ER_DIAMETER_UNABLE_TO_DELIVER ||
+                 s6a_message->result_code ==
+                    ER_DIAMETER_REALM_NOT_SERVED)) ||
+            (s6a_message->exp_err &&
+             s6a_message->result_code ==
+                OGS_DIAM_S6A_ERROR_USER_UNKNOWN)) {
+        mme_ue_clear_hss_identity(mme_ue);
+    }
+}
+
 uint8_t mme_s6a_handle_aia(
         mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
 {
@@ -44,6 +72,9 @@ uint8_t mme_s6a_handle_aia(
 
     ogs_assert(mme_ue);
     ogs_assert(s6a_message);
+
+    mme_s6a_update_hss_identity(mme_ue, s6a_message);
+
     aia_message = &s6a_message->aia_message;
     ogs_assert(aia_message);
     e_utran_vector = &aia_message->e_utran_vector;
@@ -83,6 +114,9 @@ uint8_t mme_s6a_handle_ula(
 
     ogs_assert(mme_ue);
     ogs_assert(s6a_message);
+
+    mme_s6a_update_hss_identity(mme_ue, s6a_message);
+
     ula_message = &s6a_message->ula_message;
     ogs_assert(ula_message);
     subscription_data = &ula_message->subscription_data;
@@ -311,6 +345,9 @@ void mme_s6a_handle_clr(mme_ue_t *mme_ue, ogs_diam_s6a_message_t *s6a_message)
         break;
     case OGS_DIAM_S6A_CT_MME_UPDATE_PROCEDURE:
     case OGS_DIAM_S6A_CT_SGSN_UPDATE_PROCEDURE:
+        /* The subscriber is moving away from this MME. Forget the learned
+         * serving HSS so any later S6a request is realm-routed again. */
+        mme_ue_clear_hss_identity(mme_ue);
         mme_ue->detach_type = MME_DETACH_TYPE_HSS_IMPLICIT;
 
         /* 3GPP TS 23.401 D.3.5.5 8), 3GPP TS 23.060 6.9.1.2.2 8):
