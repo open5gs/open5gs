@@ -65,8 +65,16 @@ static void mme_add_hss_destination(mme_ue_t *mme_ue, struct msg *req)
     ogs_assert(req);
 
     if (mme_ue->hssmap) {
+        /* Preserve the existing hss_map routing policy for backward
+         * compatibility. The configured/derived host and realm remain an
+         * inseparable pair and take precedence over learned identity. */
         realm = mme_ue->hssmap->realm;
         host = mme_ue->hssmap->host;
+    } else if (mme_ue->hss_host && mme_ue->hss_realm) {
+        /* TS 29.272 clause 7.1.6: when the serving HSS identity is known,
+         * include both Destination-Host and Destination-Realm. */
+        host = mme_ue->hss_host;
+        realm = mme_ue->hss_realm;
     }
 
     if (realm == NULL)
@@ -91,6 +99,39 @@ static void mme_add_hss_destination(mme_ue_t *mme_ue, struct msg *req)
         ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
     }
+}
+
+/* Copy a successful answer's HSS identity into the event message. The
+ * freeDiameter callback does not modify mme_ue; the MME event thread applies
+ * the pair after receiving MME_EVENT_S6A_MESSAGE. */
+static void mme_store_hss_identity(ogs_diam_s6a_message_t *s6a_message,
+        const uint8_t *ohost, size_t ohost_len,
+        const uint8_t *orealm, size_t orealm_len)
+{
+    ogs_assert(s6a_message);
+
+    if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
+        return;
+
+    if (!ohost || !ohost_len || !orealm || !orealm_len) {
+        ogs_warn("Cannot learn incomplete HSS identity "
+                "[host:%s/%zu realm:%s/%zu]",
+                ohost ? "present" : "missing", ohost_len,
+                orealm ? "present" : "missing", orealm_len);
+        return;
+    }
+
+    if (ohost_len >= sizeof(s6a_message->origin_host) ||
+        orealm_len >= sizeof(s6a_message->origin_realm)) {
+        ogs_warn("Cannot learn oversized HSS identity [%zu/%zu]",
+                ohost_len, orealm_len);
+        return;
+    }
+
+    memcpy(s6a_message->origin_host, ohost, ohost_len);
+    s6a_message->origin_host_len = (uint16_t)ohost_len;
+    memcpy(s6a_message->origin_realm, orealm, orealm_len);
+    s6a_message->origin_realm_len = (uint16_t)orealm_len;
 }
 
 /* s6a process Subscription-Data from avp */
@@ -903,6 +944,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     ogs_diam_s6a_message_t *s6a_message;
     ogs_diam_s6a_aia_message_t *aia_message;
     ogs_diam_e_utran_vector_t *e_utran_vector;
+    const uint8_t *ohost = NULL, *orealm = NULL;
+    size_t ohost_len = 0, orealm_len = 0;
 
     /* Initialize variables */
     sess_data = NULL;
@@ -1022,6 +1065,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
+        ohost = hdr->avp_value->os.data;
+        ohost_len = hdr->avp_value->os.len;
         ogs_debug("    From '%.*s'",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     } else {
@@ -1041,6 +1086,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
+        orealm = hdr->avp_value->os.data;
+        orealm_len = hdr->avp_value->os.len;
         ogs_debug("         ('%.*s')",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     } else {
@@ -1048,6 +1095,9 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
         error++;
         goto cleanup;
     }
+
+    mme_store_hss_identity(s6a_message,
+            ohost, ohost_len, orealm, orealm_len);
 
     if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
         if (s6a_message->err)
@@ -1458,6 +1508,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     ogs_diam_s6a_ula_message_t *ula_message;
     ogs_subscription_data_t *subscription_data;
     uint32_t subdatamask;
+    const uint8_t *ohost = NULL, *orealm = NULL;
+    size_t ohost_len = 0, orealm_len = 0;
 
     /* Initialize variables */
     sess_data = NULL;
@@ -1573,6 +1625,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
+        ohost = hdr->avp_value->os.data;
+        ohost_len = hdr->avp_value->os.len;
         ogs_debug("    From '%.*s'",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     } else {
@@ -1592,6 +1646,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
+        orealm = hdr->avp_value->os.data;
+        orealm_len = hdr->avp_value->os.len;
         ogs_debug("         ('%.*s')",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     } else {
@@ -1599,6 +1655,9 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
         error++;
         goto cleanup;
     }
+
+    mme_store_hss_identity(s6a_message,
+            ohost, ohost_len, orealm, orealm_len);
 
     /* AVP: 'ULA-Flags'(1406)
      * The ULA-Flags AVP contains a bit mask, whose meanings are defined in

@@ -323,6 +323,9 @@ mme:
 #    o realm and host are optional
 #    o realm will be generated from plmn_id if not provided
 #    o host will not be used if not provided
+#    o If no hss_map entry matches, the MME learns Origin-Host/Origin-Realm
+#      from successful S6a answers and uses them as Destination-Host/Realm
+#      in subsequent requests
 #  hss_map:
 #    - plmn_id:
 #        mcc: 001

@@ -237,6 +237,14 @@ typedef struct ogs_diam_s6a_message_s {
     uint32_t                        *err;
     uint32_t                        *exp_err;
 
+    /* Origin-Host/Origin-Realm copied by the freeDiameter callback and
+     * consumed by the MME event thread. DiameterIdentity is limited to
+     * 255 octets; OGS_MAX_FQDN_LEN provides enough storage. */
+    uint8_t                         origin_host[OGS_MAX_FQDN_LEN];
+    uint16_t                        origin_host_len;
+    uint8_t                         origin_realm[OGS_MAX_FQDN_LEN];
+    uint16_t                        origin_realm_len;
+
     ogs_diam_s6a_idr_message_t      idr_message;
     ogs_diam_s6a_clr_message_t      clr_message;
     ogs_diam_s6a_aia_message_t      aia_message;
