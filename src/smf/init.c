@@ -18,6 +18,7 @@
  */
 
 #include "context.h"
+#include "cdr-context.h"
 #include "fd-path.h"
 #include "gtp-path.h"
 #include "pfcp-path.h"
@@ -90,6 +91,8 @@ int smf_initialize(void)
     rv = smf_sbi_open();
     if (rv != 0) return OGS_ERROR;
 
+    smf_cdr_init();
+
     thread = ogs_thread_create(smf_main, NULL);
     if (!thread) return OGS_ERROR;
 
@@ -143,6 +146,8 @@ void smf_terminate(void)
     smf_fd_final();
 
     smf_context_final();
+
+    smf_cdr_final();
 
     ogs_pfcp_context_final();
     ogs_sbi_context_final();
