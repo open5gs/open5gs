@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2026 by DNL
 
 # This file is part of Open5GS.
 
@@ -15,23 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testinc = include_directories('.')
+testunit_cdr_sources = files('''
+    abts-main.c
+    cdr-test.c
+'''.split())
 
-subdir('core')
-subdir('crypt')
-subdir('sctp')
-subdir('unit')
-subdir('cdr')
-subdir('af')
-subdir('common')
-subdir('app')
-subdir('registration')
-subdir('vonr')
-subdir('slice')
-subdir('attach')
-subdir('volte')
-subdir('csfb')
-subdir('310014')
-subdir('handover')
-subdir('non3gpp')
-subdir('transfer')
+testunit_cdr_exe = executable('cdr',
+    sources : testunit_cdr_sources,
+    c_args : testunit_core_cc_flags,
+    include_directories : testinc,
+    dependencies : [libcore_dep, libcdr_dep])
+
+test('cdr', testunit_cdr_exe, is_parallel : false, suite: 'unit')
