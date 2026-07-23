@@ -249,6 +249,7 @@ void upf_n4_handle_session_modification_request(
     int num_of_created_pdr = 0;
     uint8_t cause_value = 0;
     uint8_t offending_ie_value = 0;
+    ogs_pfcp_user_plane_report_t report;
     int i;
 
     ogs_assert(xact);
@@ -425,14 +426,36 @@ void upf_n4_handle_session_modification_request(
         }
     }
 
+    /* QAURR: immediate usage reports for all URRs (TS 29.244 8.2.31) */
+    memset(&report, 0, sizeof(report));
+    if (req->pfcpsmreq_flags.presence) {
+        ogs_pfcp_smreq_flags_t smreq_flags;
+        smreq_flags.value = req->pfcpsmreq_flags.u8;
+        if (smreq_flags.query_all_urrs) {
+            ogs_pfcp_urr_t *urr = NULL;
+            size_t num_of_reports = 0;
+            ogs_list_for_each(&sess->pfcp.urr_list, urr) {
+                ogs_assert(num_of_reports <
+                        OGS_ARRAY_SIZE(report.usage_report));
+                upf_sess_urr_acc_fill_usage_report(
+                        sess, urr, &report, num_of_reports);
+                report.usage_report[num_of_reports].
+                    rep_trigger.immediate_report = 1;
+                num_of_reports++;
+                upf_sess_urr_acc_snapshot(sess, urr);
+            }
+            report.num_of_usage_report = num_of_reports;
+        }
+    }
+
     if (ogs_pfcp_self()->up_function_features.ftup == 0)
         ogs_assert(OGS_OK ==
             upf_pfcp_send_session_modification_response(
-                xact, sess, NULL, 0));
+                xact, sess, NULL, 0, &report));
     else
         ogs_assert(OGS_OK ==
             upf_pfcp_send_session_modification_response(
-                xact, sess, created_pdr, num_of_created_pdr));
+                xact, sess, created_pdr, num_of_created_pdr, &report));
     return;
 
 cleanup:
