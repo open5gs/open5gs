@@ -1065,6 +1065,38 @@ int amf_context_parse_config(void)
                         } else
                             ogs_warn("unknown key `%s`", time_key);
                     }
+                } else if (!strcmp(amf_key, "eir")) {
+                    ogs_yaml_iter_t eir_iter;
+                    ogs_yaml_iter_recurse(&amf_iter, &eir_iter);
+                    while (ogs_yaml_iter_next(&eir_iter)) {
+                        const char *eir_key = ogs_yaml_iter_key(&eir_iter);
+                        ogs_assert(eir_key);
+                        if (!strcmp(eir_key, "enabled")) {
+                            self.eir.enabled =
+                                ogs_yaml_iter_bool(&eir_iter);
+                        } else if (!strcmp(eir_key, "unknown_action")) {
+                            const char *v = ogs_yaml_iter_value(&eir_iter);
+                            if (v && !strcmp(v, "reject"))
+                                self.eir.unknown_action =
+                                    AMF_EIR_ACTION_REJECT;
+                            else if (!v || !strcmp(v, "allow"))
+                                self.eir.unknown_action =
+                                    AMF_EIR_ACTION_ALLOW;
+                            else
+                                ogs_warn("invalid unknown_action `%s`", v);
+                        } else if (!strcmp(eir_key, "failure_action")) {
+                            const char *v = ogs_yaml_iter_value(&eir_iter);
+                            if (v && !strcmp(v, "reject"))
+                                self.eir.failure_action =
+                                    AMF_EIR_ACTION_REJECT;
+                            else if (!v || !strcmp(v, "allow"))
+                                self.eir.failure_action =
+                                    AMF_EIR_ACTION_ALLOW;
+                            else
+                                ogs_warn("invalid failure_action `%s`", v);
+                        } else
+                            ogs_warn("unknown key `%s`", eir_key);
+                    }
                 } else if (!strcmp(amf_key, "default")) {
                     /* handle config in sbi library */
                 } else if (!strcmp(amf_key, "sbi")) {
