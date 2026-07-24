@@ -22,6 +22,7 @@
 #include "pfcp-path.h"
 #include "gtp-path.h"
 #include "n4-handler.h"
+#include "cdr-context.h"
 #include "binding.h"
 #include "sbi-path.h"
 #include "ngap-path.h"
@@ -1226,6 +1227,9 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
     up_f_seid = rsp->up_f_seid.data;
     ogs_assert(up_f_seid);
     sess->upf_n4_seid = be64toh(up_f_seid->seid);
+
+    smf_cdr_sess_start(sess);
+
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 
@@ -1266,8 +1270,9 @@ void smf_epc_n4_handle_session_modification_response(
 
     /* OGS_PFCP_MODIFY_URR: Modification Response was originally triggered by
        PFCP Session Report Request, xact->assoc_xact is not a gtp_xact. No
-       need to do anything. */
-    if (!(flags & OGS_PFCP_MODIFY_URR)) {
+       need to do anything.
+       OGS_PFCP_MODIFY_URR_QUERY: locally triggered QAURR (offline CDR). */
+    if (!(flags & (OGS_PFCP_MODIFY_URR|OGS_PFCP_MODIFY_URR_QUERY))) {
         gtp_xact = ogs_gtp_xact_find_by_id(xact->assoc_xact_id);
         gtp_pti = xact->gtp_pti;
         gtp_cause = xact->gtp_cause;
@@ -1289,6 +1294,40 @@ void smf_epc_n4_handle_session_modification_response(
         }
     } else {
         ogs_error("No Cause");
+        return;
+    }
+
+    /* Usage Report from a QAURR query (offline CDR time-limit closure) */
+    if (flags & OGS_PFCP_MODIFY_URR_QUERY) {
+        smf_bearer_t *urr_bearer = smf_default_bearer_in_sess(sess);
+        for (i = 0; i < (int)OGS_ARRAY_SIZE(rsp->usage_report); i++) {
+            ogs_pfcp_tlv_usage_report_session_modification_response_t
+                *use_rep = &rsp->usage_report[i];
+            int16_t decoded;
+            ogs_pfcp_volume_measurement_t volume;
+            if (use_rep->presence == 0)
+                break;
+            if (use_rep->urr_id.presence == 0)
+                continue;
+            if (!urr_bearer || !urr_bearer->urr ||
+                urr_bearer->urr->id != use_rep->urr_id.u32)
+                continue;
+            decoded = ogs_pfcp_parse_volume_measurement(
+                    &volume, &use_rep->volume_measurement);
+            if (use_rep->volume_measurement.len != decoded) {
+                ogs_error("Invalid Volume Measurement");
+                continue;
+            }
+            smf_cdr_sess_usage(sess,
+                    volume.ulvol ? volume.uplink_volume : 0,
+                    volume.dlvol ? volume.downlink_volume : 0,
+                    use_rep->time_of_first_packet.presence ?
+                        ogs_time_from_ntp32(
+                            use_rep->time_of_first_packet.u32) : 0,
+                    use_rep->time_of_last_packet.presence ?
+                        ogs_time_from_ntp32(
+                            use_rep->time_of_last_packet.u32) : 0);
+        }
         return;
     }
 
@@ -1560,7 +1599,19 @@ uint8_t smf_epc_n4_handle_session_deletion_response(
                 &rep_trig, &use_rep->usage_report_trigger);
         sess->gy.reporting_reason =
             smf_pfcp_urr_usage_report_trigger2diam_gy_reporting_reason(&rep_trig);
+        smf_cdr_sess_usage(sess,
+                volume.ulvol ? volume.uplink_volume : 0,
+                volume.dlvol ? volume.downlink_volume : 0,
+                use_rep->time_of_first_packet.presence ?
+                    ogs_time_from_ntp32(
+                        use_rep->time_of_first_packet.u32) : 0,
+                use_rep->time_of_last_packet.presence ?
+                    ogs_time_from_ntp32(
+                        use_rep->time_of_last_packet.u32) : 0);
     }
+
+    /* final usage accumulated: write the last record of this session */
+    smf_cdr_sess_stop(sess, true);
 
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
@@ -1756,6 +1807,15 @@ uint8_t smf_n4_handle_session_report_request(
                     &rep_trig, &use_rep->usage_report_trigger);
             sess->gy.reporting_reason =
                 smf_pfcp_urr_usage_report_trigger2diam_gy_reporting_reason(&rep_trig);
+            smf_cdr_sess_usage(sess,
+                    volume.ulvol ? volume.uplink_volume : 0,
+                    volume.dlvol ? volume.downlink_volume : 0,
+                    use_rep->time_of_first_packet.presence ?
+                        ogs_time_from_ntp32(
+                            use_rep->time_of_first_packet.u32) : 0,
+                    use_rep->time_of_last_packet.presence ?
+                        ogs_time_from_ntp32(
+                            use_rep->time_of_last_packet.u32) : 0);
         }
         switch (smf_use_gy_iface()) {
         case 1:

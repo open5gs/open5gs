@@ -148,6 +148,18 @@ typedef struct smf_context_s {
 
     uint16_t        mtu;            /* MTU to advertise in PCO */
 
+    /* Offline CDR generation (TS 32.251/32.298/32.297) */
+    struct {
+        bool        enabled;
+        const char  *directory;
+        const char  *node_id;
+        uint32_t    default_rating_group;
+        int         file_rotation_interval;    /* seconds */
+        uint64_t    file_max_size;             /* octets */
+        int         record_time_limit;         /* seconds, 0 = disabled */
+        uint64_t    record_volume_limit;       /* UL+DL octets, 0 = disabled */
+    } cdr;
+
     struct  {
         const char *integrity_protection_indication;
         const char *confidentiality_protection_indication;
@@ -651,6 +663,20 @@ typedef struct smf_sess_s {
     struct {
         uint32_t id;
     } charging;
+
+    /* Offline CDR state (see cdr-context.c) */
+    struct {
+        bool        active;
+        bool        pending_time_limit;
+        uint64_t    vol_uplink;
+        uint64_t    vol_downlink;
+        ogs_time_t  time_of_first_usage;
+        ogs_time_t  time_of_last_usage;
+        ogs_time_t  opening_time;
+        ogs_time_t  start_time;
+        uint32_t    sequence;       /* partial record counter */
+        ogs_timer_t *t_time_limit;
+    } cdr;
 
     /* AAA Node Identifier */
     struct {

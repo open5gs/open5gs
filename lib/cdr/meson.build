@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2026 by DNL
 
 # This file is part of Open5GS.
 
@@ -15,24 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-libinc = include_directories('.')
+libcdr_sources = files('''
+    ogs-cdr.h
+    ber.h
 
-subdir('core')
-subdir('third-party')
-subdir('proto')
-subdir('cdr')
-subdir('dbi')
-subdir('crypt')
-subdir('ipfw')
-subdir('tun')
-subdir('app')
-subdir('metrics')
-subdir('sctp')
-subdir('diameter')
-subdir('asn1c')
-subdir('ngap')
-subdir('s1ap')
-subdir('nas')
-subdir('gtp')
-subdir('pfcp')
-subdir('sbi')
+    ber.c
+    pgw-record.c
+    sgw-record.c
+    file.c
+'''.split())
+
+libcdr_inc = include_directories('.')
+
+libcdr = library('ogscdr',
+    sources : libcdr_sources,
+    version : libogslib_version,
+    c_args : '-DOGS_CDR_COMPILATION',
+    include_directories : [libcdr_inc, libinc],
+    install : true)
+
+libcdr_dep = declare_dependency(
+    link_with : libcdr,
+    include_directories : [libcdr_inc, libinc])

@@ -334,9 +334,21 @@ ogs_pkbuf_t *smf_n4_build_pdr_to_modify_list(
             num_of_update_urr++;
         }
     }
+
+    if (modify_flags & OGS_PFCP_MODIFY_URR_QUERY) {
+        /* QAURR: UP function returns immediate usage reports
+         * for all URRs of this PFCP session */
+        ogs_pfcp_smreq_flags_t smreq_flags;
+        smreq_flags.value = req->pfcpsmreq_flags.u8;
+        smreq_flags.query_all_urrs = 1;
+        req->pfcpsmreq_flags.u8 = smreq_flags.value;
+        req->pfcpsmreq_flags.presence = 1;
+    }
+
     ogs_assert(num_of_remove_pdr + num_of_remove_far + num_of_create_pdr +
             num_of_create_far + num_of_update_pdr + num_of_update_far +
-            num_of_update_qer + num_of_update_urr);
+            num_of_update_qer + num_of_update_urr +
+            ((modify_flags & OGS_PFCP_MODIFY_URR_QUERY) ? 1 : 0));
 
     pfcp_message->h.type = type;
     pkbuf = ogs_pfcp_build_msg(pfcp_message);
@@ -631,10 +643,21 @@ ogs_pkbuf_t *smf_n4_build_qos_flow_to_modify_list(
         }
     }
 
+    if (modify_flags & OGS_PFCP_MODIFY_URR_QUERY) {
+        /* QAURR: UP function returns immediate usage reports
+         * for all URRs of this PFCP session */
+        ogs_pfcp_smreq_flags_t smreq_flags;
+        smreq_flags.value = req->pfcpsmreq_flags.u8;
+        smreq_flags.query_all_urrs = 1;
+        req->pfcpsmreq_flags.u8 = smreq_flags.value;
+        req->pfcpsmreq_flags.presence = 1;
+    }
+
     ogs_assert(num_of_remove_pdr + num_of_remove_far + num_of_remove_qer +
             num_of_remove_urr + num_of_create_pdr + num_of_create_far +
             num_of_create_qer + num_of_create_urr + num_of_update_pdr +
-            num_of_update_far + num_of_update_qer + num_of_update_urr);
+            num_of_update_far + num_of_update_qer + num_of_update_urr +
+            ((modify_flags & OGS_PFCP_MODIFY_URR_QUERY) ? 1 : 0));
 
     pfcp_message->h.type = type;
     pkbuf = ogs_pfcp_build_msg(pfcp_message);

@@ -264,6 +264,17 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         }
 
         ogs_assert(pdr);
+
+        /* Offline SGW-CDR accounting */
+        if (pdr->sess && pdr->num_of_urr) {
+            int u;
+            sgwu_sess_t *acc_sess = SGWU_SESS(pdr->sess);
+            bool is_uplink = (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS);
+            for (u = 0; u < pdr->num_of_urr; u++)
+                sgwu_sess_urr_acc_add(acc_sess, pdr->urr[u],
+                        pkbuf->len, is_uplink);
+        }
+
         ogs_assert(true == ogs_pfcp_up_handle_pdr(
                     pdr, header_desc.type, len, &header_desc, pkbuf, &report));
 

@@ -21,6 +21,7 @@
 #include "pfcp-path.h"
 
 #include "s5c-handler.h"
+#include "cdr-context.h"
 
 static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
 {
@@ -323,6 +324,11 @@ void sgwc_s5c_handle_create_session_response(
     }
     /* Setup GTP Node */
     OGS_SETUP_GTP_NODE(sess, pgw);
+
+    /* Offline SGW-CDR: Charging-Id from the PGW + record opening */
+    if (rsp->bearer_contexts_created[0].charging_id.presence)
+        sess->charging_id = rsp->bearer_contexts_created[0].charging_id.u32;
+    sgwc_cdr_sess_start(sess);
 
     ogs_assert(ogs_list_count(&sess->bearer_list));
     ogs_info("    sess_id=%d xact=%p", sess->id, s11_xact);

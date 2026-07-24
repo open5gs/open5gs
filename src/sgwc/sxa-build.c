@@ -281,8 +281,19 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
         }
     }
 
+    if (modify_flags & OGS_PFCP_MODIFY_URR_QUERY) {
+        /* QAURR: UP function returns immediate usage reports
+         * for all URRs of this PFCP session */
+        ogs_pfcp_smreq_flags_t smreq_flags;
+        smreq_flags.value = req->pfcpsmreq_flags.u8;
+        smreq_flags.query_all_urrs = 1;
+        req->pfcpsmreq_flags.u8 = smreq_flags.value;
+        req->pfcpsmreq_flags.presence = 1;
+    }
+
     total = num_of_remove_pdr + num_of_remove_far + num_of_create_pdr +
-            num_of_create_far + num_of_update_pdr + num_of_update_far;
+            num_of_create_far + num_of_update_pdr + num_of_update_far +
+            ((modify_flags & OGS_PFCP_MODIFY_URR_QUERY) ? 1 : 0);
 
     if (!total) {
         ogs_error("PFCP Session Modification build invalid state: "

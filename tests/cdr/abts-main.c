@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2026 by DNL
  *
  * This file is part of Open5GS.
  *
@@ -17,25 +17,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef UPF_N4_BUILD_H
-#define UPF_N4_BUILD_H
+#include "core/abts.h"
 
-#include "ogs-gtp.h"
+abts_suite *test_cdr_encode(abts_suite *suite);
+abts_suite *test_cdr_file(abts_suite *suite);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+const struct testlist {
+    abts_suite *(*func)(abts_suite *suite);
+} alltests[] = {
+    { test_cdr_encode },
+    { test_cdr_file },
+    { NULL },
+};
 
-ogs_pkbuf_t *upf_n4_build_session_establishment_response(uint8_t type,
-    upf_sess_t *sess, ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr);
-ogs_pkbuf_t *upf_n4_build_session_modification_response(uint8_t type,
-    upf_sess_t *sess, ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr,
-    ogs_pfcp_user_plane_report_t *report);
-ogs_pkbuf_t *upf_n4_build_session_deletion_response(uint8_t type,
-    upf_sess_t *sess);
+int main(int argc, const char *const argv[])
+{
+    int i;
+    int rv;
+    const char *argv_out[argc+3]; /* '-e error' is always added */
+    abts_suite *suite = NULL;
 
-#ifdef __cplusplus
+    rv = abts_main(argc, argv, argv_out);
+    if (rv != 0) return rv;
+
+    for (i = 0; alltests[i].func; i++)
+        suite = alltests[i].func(suite);
+
+    return abts_report(suite);
 }
-#endif
-
-#endif /* UPF_N4_BUILD_H */

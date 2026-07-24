@@ -18,6 +18,7 @@
  */
 
 #include "context.h"
+#include "pfcp-path.h"
 
 static sgwu_context_t self;
 
@@ -276,4 +277,122 @@ sgwu_sess_t *sgwu_sess_add_by_message(ogs_pfcp_message_t *message)
     ogs_assert(sess);
 
     return sess;
+}
+
+void sgwu_sess_urr_acc_add(sgwu_sess_t *sess,
+        ogs_pfcp_urr_t *urr, size_t size, bool is_uplink)
+{
+    sgwu_sess_urr_acc_t *urr_acc = NULL;
+    uint64_t vol;
+
+    ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
+    urr_acc = &sess->urr_acc[urr->id-1];
+
+    if (urr_acc->time_start == 0)
+        urr_acc->time_start = ogs_time_ntp32_now();
+
+    urr_acc->total_octets += size;
+    urr_acc->total_pkts++;
+    if (is_uplink) {
+        urr_acc->ul_octets += size;
+        urr_acc->ul_pkts++;
+    } else {
+        urr_acc->dl_octets += size;
+        urr_acc->dl_pkts++;
+    }
+
+    urr_acc->time_of_last_packet = ogs_time_now();
+    if (urr_acc->time_of_first_packet == 0)
+        urr_acc->time_of_first_packet = urr_acc->time_of_last_packet;
+
+    /* generate report if volume threshold is reached */
+    vol = urr_acc->total_octets - urr_acc->last_report.total_octets;
+    if (urr->rep_triggers.volume_threshold && urr->vol_threshold.tovol &&
+        vol >= urr->vol_threshold.total_volume) {
+        ogs_pfcp_user_plane_report_t report;
+        memset(&report, 0, sizeof(report));
+        sgwu_sess_urr_acc_fill_usage_report(sess, urr, &report, 0);
+        report.num_of_usage_report = 1;
+        sgwu_sess_urr_acc_snapshot(sess, urr);
+
+        ogs_assert(OGS_OK ==
+            sgwu_pfcp_send_session_report_request(sess, &report));
+    }
+}
+
+/* report struct must be memzeroed before first use of this function.
+ * report->num_of_usage_report must be set by the caller */
+void sgwu_sess_urr_acc_fill_usage_report(sgwu_sess_t *sess,
+        const ogs_pfcp_urr_t *urr,
+        ogs_pfcp_user_plane_report_t *report, unsigned int idx)
+{
+    sgwu_sess_urr_acc_t *urr_acc = NULL;
+    ogs_time_t last_report_timestamp;
+    ogs_time_t now;
+
+    ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
+    urr_acc = &sess->urr_acc[urr->id-1];
+
+    now = ogs_time_now();
+
+    if (urr_acc->last_report.timestamp)
+        last_report_timestamp = urr_acc->last_report.timestamp;
+    else
+        last_report_timestamp = ogs_time_from_ntp32(urr_acc->time_start);
+
+    report->type.usage_report = 1;
+    report->usage_report[idx].id = urr->id;
+    report->usage_report[idx].seqn = urr_acc->report_seqn++;
+    report->usage_report[idx].start_time = urr_acc->time_start;
+    report->usage_report[idx].end_time = ogs_time_to_ntp32(now);
+    report->usage_report[idx].vol_measurement =
+        (ogs_pfcp_volume_measurement_t){
+        .dlnop = 1,
+        .ulnop = 1,
+        .tonop = 1,
+        .dlvol = 1,
+        .ulvol = 1,
+        .tovol = 1,
+        .total_volume =
+            urr_acc->total_octets - urr_acc->last_report.total_octets,
+        .uplink_volume =
+            urr_acc->ul_octets - urr_acc->last_report.ul_octets,
+        .downlink_volume =
+            urr_acc->dl_octets - urr_acc->last_report.dl_octets,
+        .total_n_packets =
+            urr_acc->total_pkts - urr_acc->last_report.total_pkts,
+        .uplink_n_packets =
+            urr_acc->ul_pkts - urr_acc->last_report.ul_pkts,
+        .downlink_n_packets =
+            urr_acc->dl_pkts - urr_acc->last_report.dl_pkts,
+    };
+    if (now >= last_report_timestamp)
+        report->usage_report[idx].dur_measurement =
+            ((now - last_report_timestamp) + (OGS_USEC_PER_SEC/2)) /
+                OGS_USEC_PER_SEC;
+    report->usage_report[idx].time_of_first_packet =
+        ogs_time_to_ntp32(urr_acc->time_of_first_packet);
+    report->usage_report[idx].time_of_last_packet =
+        ogs_time_to_ntp32(urr_acc->time_of_last_packet);
+
+    if (urr->rep_triggers.volume_threshold && urr->vol_threshold.tovol &&
+        report->usage_report[idx].vol_measurement.total_volume >=
+            urr->vol_threshold.total_volume)
+        report->usage_report[idx].rep_trigger.volume_threshold = 1;
+}
+
+void sgwu_sess_urr_acc_snapshot(sgwu_sess_t *sess, ogs_pfcp_urr_t *urr)
+{
+    sgwu_sess_urr_acc_t *urr_acc = NULL;
+
+    ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
+    urr_acc = &sess->urr_acc[urr->id-1];
+
+    urr_acc->last_report.total_octets = urr_acc->total_octets;
+    urr_acc->last_report.dl_octets = urr_acc->dl_octets;
+    urr_acc->last_report.ul_octets = urr_acc->ul_octets;
+    urr_acc->last_report.total_pkts = urr_acc->total_pkts;
+    urr_acc->last_report.dl_pkts = urr_acc->dl_pkts;
+    urr_acc->last_report.ul_pkts = urr_acc->ul_pkts;
+    urr_acc->last_report.timestamp = ogs_time_now();
 }

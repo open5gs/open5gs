@@ -20,6 +20,7 @@
 #include "pfcp-path.h"
 #include "gtp-path.h"
 #include "sxa-handler.h"
+#include "cdr-context.h"
 
 static uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause)
 {
@@ -494,6 +495,40 @@ void sgwc_sxa_handle_session_modification_response(
     ogs_assert(flags);
 
     cause_value = OGS_GTP2_CAUSE_REQUEST_ACCEPTED;
+
+    if (flags & OGS_PFCP_MODIFY_URR_QUERY) {
+        /* locally-triggered QAURR (offline CDR): consume usage, no GTP */
+        if (!sess) {
+            ogs_pool_id_t sess_id = OGS_POINTER_TO_UINT(pfcp_xact->data);
+            if (sess_id >= OGS_MIN_POOL_ID && sess_id <= OGS_MAX_POOL_ID)
+                sess = sgwc_sess_find_by_id(sess_id);
+        }
+        ogs_pfcp_xact_commit(pfcp_xact);
+        if (sess && pfcp_rsp->cause.presence &&
+            pfcp_rsp->cause.u8 == OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+            {
+        int ui;
+        for (ui = 0; ui < (int)OGS_ARRAY_SIZE(pfcp_rsp->usage_report); ui++) {
+            int16_t decoded;
+            ogs_pfcp_volume_measurement_t volume;
+            if (pfcp_rsp->usage_report[ui].presence == 0)
+                break;
+            if (pfcp_rsp->usage_report[ui].volume_measurement.presence == 0)
+                continue;
+            decoded = ogs_pfcp_parse_volume_measurement(
+                    &volume, &pfcp_rsp->usage_report[ui].volume_measurement);
+            if (pfcp_rsp->usage_report[ui].volume_measurement.len != decoded) {
+                ogs_error("Invalid Volume Measurement");
+                continue;
+            }
+            sgwc_cdr_sess_usage(sess,
+                    volume.ulvol ? volume.uplink_volume : 0,
+                    volume.dlvol ? volume.downlink_volume : 0);
+        }
+    }
+        }
+        return;
+    }
 
     if (flags & OGS_PFCP_MODIFY_SESSION) {
         if (!sess) {
@@ -1438,6 +1473,31 @@ void sgwc_sxa_handle_session_deletion_response(
 
     ogs_pfcp_xact_commit(pfcp_xact);
 
+    /* Offline SGW-CDR: final usage, then the last record of the session */
+    if (sess && cause_value == OGS_GTP2_CAUSE_REQUEST_ACCEPTED) {
+        {
+        int ui;
+        for (ui = 0; ui < (int)OGS_ARRAY_SIZE(pfcp_rsp->usage_report); ui++) {
+            int16_t decoded;
+            ogs_pfcp_volume_measurement_t volume;
+            if (pfcp_rsp->usage_report[ui].presence == 0)
+                break;
+            if (pfcp_rsp->usage_report[ui].volume_measurement.presence == 0)
+                continue;
+            decoded = ogs_pfcp_parse_volume_measurement(
+                    &volume, &pfcp_rsp->usage_report[ui].volume_measurement);
+            if (pfcp_rsp->usage_report[ui].volume_measurement.len != decoded) {
+                ogs_error("Invalid Volume Measurement");
+                continue;
+            }
+            sgwc_cdr_sess_usage(sess,
+                    volume.ulvol ? volume.uplink_volume : 0,
+                    volume.dlvol ? volume.downlink_volume : 0);
+        }
+    }
+        sgwc_cdr_sess_stop(sess, true);
+    }
+
     if (!gtp_message) goto cleanup;
 
     if (gtp_message->h.type == OGS_GTP2_DELETE_SESSION_REQUEST_TYPE) {
@@ -1583,6 +1643,33 @@ void sgwc_sxa_handle_session_report_request(
             pfcp_xact, sess, OGS_PFCP_CAUSE_REQUEST_ACCEPTED));
 
     report_type.value = pfcp_req->report_type.u8;
+
+    /* Offline SGW-CDR: usage report (volume threshold) from SGW-U */
+    if (report_type.usage_report) {
+        {
+        int ui;
+        for (ui = 0; ui < (int)OGS_ARRAY_SIZE(pfcp_req->usage_report); ui++) {
+            int16_t decoded;
+            ogs_pfcp_volume_measurement_t volume;
+            if (pfcp_req->usage_report[ui].presence == 0)
+                break;
+            if (pfcp_req->usage_report[ui].volume_measurement.presence == 0)
+                continue;
+            decoded = ogs_pfcp_parse_volume_measurement(
+                    &volume, &pfcp_req->usage_report[ui].volume_measurement);
+            if (pfcp_req->usage_report[ui].volume_measurement.len != decoded) {
+                ogs_error("Invalid Volume Measurement");
+                continue;
+            }
+            sgwc_cdr_sess_usage(sess,
+                    volume.ulvol ? volume.uplink_volume : 0,
+                    volume.dlvol ? volume.downlink_volume : 0);
+        }
+    }
+        if (!report_type.downlink_data_report &&
+            !report_type.error_indication_report)
+            return;
+    }
 
     if (report_type.downlink_data_report) {
         if (pfcp_req->downlink_data_report.presence == 0) {

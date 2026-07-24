@@ -18,6 +18,7 @@
  */
 
 #include "context.h"
+#include "cdr-context.h"
 #include "gtp-path.h"
 #include "pfcp-path.h"
 
@@ -76,6 +77,16 @@ void smf_context_init(void)
     memset(&self, 0, sizeof(smf_context_t));
     smf_ctf_config_init(&self.ctf_config);
     self.diam_config = &g_diam_conf;
+
+    /* Offline CDR defaults (feature off) */
+    self.cdr.enabled = false;
+    self.cdr.directory = "/var/log/open5gs/cdr";
+    self.cdr.node_id = "smf";
+    self.cdr.default_rating_group = 1;
+    self.cdr.file_rotation_interval = 300;
+    self.cdr.file_max_size = 10 * 1024 * 1024;
+    self.cdr.record_time_limit = 3600;
+    self.cdr.record_volume_limit = 100 * 1024 * 1024;
 
     ogs_log_install_domain(&__ogs_ngap_domain, "ngap", ogs_core()->log.level);
     ogs_log_install_domain(&__ogs_nas_domain, "nas", ogs_core()->log.level);
@@ -502,6 +513,67 @@ int smf_context_parse_config(void)
                                         enabled);
                         } else
                             ogs_warn("unknown key `%s`", ctf_key);
+                    }
+                } else if (!strcmp(smf_key, "cdr")) {
+                    ogs_yaml_iter_t cdr_iter;
+                    ogs_yaml_iter_recurse(&smf_iter, &cdr_iter);
+                    while (ogs_yaml_iter_next(&cdr_iter)) {
+                        const char *cdr_key = ogs_yaml_iter_key(&cdr_iter);
+                        ogs_assert(cdr_key);
+                        if (!strcmp(cdr_key, "enabled")) {
+                            self.cdr.enabled =
+                                ogs_yaml_iter_bool(&cdr_iter);
+                        } else if (!strcmp(cdr_key, "directory")) {
+                            const char *v = ogs_yaml_iter_value(&cdr_iter);
+                            if (v) self.cdr.directory = v;
+                        } else if (!strcmp(cdr_key, "node_id")) {
+                            const char *v = ogs_yaml_iter_value(&cdr_iter);
+                            if (v) self.cdr.node_id = v;
+                        } else if (!strcmp(cdr_key, "default_rating_group")) {
+                            const char *v = ogs_yaml_iter_value(&cdr_iter);
+                            if (v) self.cdr.default_rating_group = atoi(v);
+                        } else if (!strcmp(cdr_key, "file")) {
+                            ogs_yaml_iter_t file_iter;
+                            ogs_yaml_iter_recurse(&cdr_iter, &file_iter);
+                            while (ogs_yaml_iter_next(&file_iter)) {
+                                const char *file_key =
+                                    ogs_yaml_iter_key(&file_iter);
+                                ogs_assert(file_key);
+                                if (!strcmp(file_key, "rotation_interval")) {
+                                    const char *v =
+                                        ogs_yaml_iter_value(&file_iter);
+                                    if (v) self.cdr.file_rotation_interval =
+                                        atoi(v);
+                                } else if (!strcmp(file_key, "max_size")) {
+                                    const char *v =
+                                        ogs_yaml_iter_value(&file_iter);
+                                    if (v) self.cdr.file_max_size =
+                                        (uint64_t)atoll(v);
+                                } else
+                                    ogs_warn("unknown key `%s`", file_key);
+                            }
+                        } else if (!strcmp(cdr_key, "record")) {
+                            ogs_yaml_iter_t rec_iter;
+                            ogs_yaml_iter_recurse(&cdr_iter, &rec_iter);
+                            while (ogs_yaml_iter_next(&rec_iter)) {
+                                const char *rec_key =
+                                    ogs_yaml_iter_key(&rec_iter);
+                                ogs_assert(rec_key);
+                                if (!strcmp(rec_key, "time_limit")) {
+                                    const char *v =
+                                        ogs_yaml_iter_value(&rec_iter);
+                                    if (v) self.cdr.record_time_limit =
+                                        atoi(v);
+                                } else if (!strcmp(rec_key, "volume_limit")) {
+                                    const char *v =
+                                        ogs_yaml_iter_value(&rec_iter);
+                                    if (v) self.cdr.record_volume_limit =
+                                        (uint64_t)atoll(v);
+                                } else
+                                    ogs_warn("unknown key `%s`", rec_key);
+                            }
+                        } else
+                            ogs_warn("unknown key `%s`", cdr_key);
                     }
                 } else if (!strcmp(smf_key, "gtpc")) {
                     /* handle config in gtp library */
@@ -2040,6 +2112,10 @@ void smf_sess_remove(smf_sess_t *sess)
             sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
             sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
+    /* still-active CDR at removal means no final usage report was
+     * received: abnormalRelease from the last accumulated snapshot */
+    smf_cdr_sess_stop(sess, false);
+
     ogs_list_remove(&smf_ue->sess_list, sess);
 
     memset(&e, 0, sizeof(e));
@@ -2931,6 +3007,25 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
 
     ul_far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+
+    /* Offline CDR accounting URR. When Gy is also active it reuses
+     * this URR and overrides thresholds with OCS-granted quota. */
+    if (smf_self()->cdr.enabled) {
+        ogs_pfcp_urr_t *urr = ogs_pfcp_urr_add(&sess->pfcp);
+        ogs_assert(urr);
+        bearer->urr = urr;
+
+        urr->meas_method = OGS_PFCP_MEASUREMENT_METHOD_VOLUME;
+        if (smf_self()->cdr.record_volume_limit) {
+            urr->rep_triggers.volume_threshold = 1;
+            urr->vol_threshold.tovol = 1;
+            urr->vol_threshold.total_volume =
+                smf_self()->cdr.record_volume_limit;
+        }
+
+        ogs_pfcp_pdr_associate_urr(dl_pdr, urr);
+        ogs_pfcp_pdr_associate_urr(ul_pdr, urr);
+    }
 
     bearer->sess_id = sess->id;
 
