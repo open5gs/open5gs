@@ -43,6 +43,17 @@ typedef struct sgwc_context_s {
     ogs_list_t pgw_s5c_list;    /* PGW GTPC Node List */
 
     ogs_hash_t *imsi_ue_hash;   /* hash table (IMSI : SGW_UE) */
+
+    /* Offline SGW-CDR generation (TS 32.251/32.298/32.297) */
+    struct {
+        bool        enabled;
+        const char  *directory;
+        const char  *node_id;
+        int         file_rotation_interval;    /* seconds */
+        uint64_t    file_max_size;             /* octets */
+        int         record_time_limit;         /* seconds, 0 = disabled */
+        uint64_t    record_volume_limit;       /* UL+DL octets, 0 = off */
+    } cdr;
     ogs_hash_t *sgw_s11_teid_hash;  /* hash table (SGW-S11-TEID : SGW_UE) */
     ogs_hash_t *sgwc_sxa_seid_hash; /* hash table (SGWC-SXA-SEID : Session) */
 
@@ -98,6 +109,21 @@ typedef struct sgwc_sess_s {
     ogs_gtp_node_t  *gnode;
     ogs_pfcp_node_t *pfcp_node;
 
+    /* Charging-Id learned from the PGW's Create Session Response */
+    uint32_t        charging_id;
+
+    /* Offline CDR state (see cdr-context.c) */
+    struct {
+        bool        active;
+        bool        pending_time_limit;
+        uint64_t    vol_uplink;
+        uint64_t    vol_downlink;
+        ogs_time_t  opening_time;
+        ogs_time_t  start_time;
+        uint32_t    sequence;       /* partial record counter */
+        ogs_timer_t *t_time_limit;
+    } cdr;
+
     ogs_pool_id_t   sgwc_ue_id;
 } sgwc_sess_t;
 
@@ -107,6 +133,9 @@ typedef struct sgwc_bearer_s {
     ogs_lnode_t     to_modify_node;
 
     uint8_t         ebi;
+
+    /* Offline SGW-CDR accounting URR */
+    ogs_pfcp_urr_t  *urr;
 
     ogs_list_t      tunnel_list;
     ogs_pool_id_t   sess_id;

@@ -84,6 +84,14 @@ void sgwu_sxa_handle_session_establishment_request(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
+    for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
+        if (ogs_pfcp_handle_create_urr(&sess->pfcp, &req->create_urr[i],
+                    &cause_value, &offending_ie_value) == NULL)
+            break;
+    }
+    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+        goto cleanup;
+
     ogs_pfcp_handle_create_bar(&sess->pfcp, &req->create_bar,
                 &cause_value, &offending_ie_value);
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
@@ -169,6 +177,7 @@ void sgwu_sxa_handle_session_modification_request(
         ogs_pfcp_session_modification_request_t *req)
 {
     ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_user_plane_report_t report;
     ogs_pfcp_far_t *far = NULL;
     ogs_pfcp_pdr_t *created_pdr[OGS_MAX_NUM_OF_PDR];
     int num_of_created_pdr = 0;
@@ -326,14 +335,36 @@ void sgwu_sxa_handle_session_modification_request(
         }
     }
 
+    /* QAURR: immediate usage reports for all URRs (TS 29.244 8.2.31) */
+    memset(&report, 0, sizeof(report));
+    if (req->pfcpsmreq_flags.presence) {
+        ogs_pfcp_smreq_flags_t smreq_flags;
+        smreq_flags.value = req->pfcpsmreq_flags.u8;
+        if (smreq_flags.query_all_urrs) {
+            ogs_pfcp_urr_t *urr = NULL;
+            size_t num_of_reports = 0;
+            ogs_list_for_each(&sess->pfcp.urr_list, urr) {
+                ogs_assert(num_of_reports <
+                        OGS_ARRAY_SIZE(report.usage_report));
+                sgwu_sess_urr_acc_fill_usage_report(
+                        sess, urr, &report, num_of_reports);
+                report.usage_report[num_of_reports].
+                    rep_trigger.immediate_report = 1;
+                num_of_reports++;
+                sgwu_sess_urr_acc_snapshot(sess, urr);
+            }
+            report.num_of_usage_report = num_of_reports;
+        }
+    }
+
     if (ogs_pfcp_self()->up_function_features.ftup == 0)
         ogs_assert(OGS_OK ==
             sgwu_pfcp_send_session_modification_response(
-                xact, sess, NULL, 0));
+                xact, sess, NULL, 0, &report));
     else
         ogs_assert(OGS_OK ==
             sgwu_pfcp_send_session_modification_response(
-                xact, sess, created_pdr, num_of_created_pdr));
+                xact, sess, created_pdr, num_of_created_pdr, &report));
     return;
 
 cleanup:

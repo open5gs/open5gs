@@ -21,6 +21,7 @@ libcdr_sources = files('''
 
     ber.c
     pgw-record.c
+    sgw-record.c
     file.c
 '''.split())
 

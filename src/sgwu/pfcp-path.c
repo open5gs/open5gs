@@ -254,7 +254,8 @@ int sgwu_pfcp_send_session_establishment_response(
 
 int sgwu_pfcp_send_session_modification_response(
         ogs_pfcp_xact_t *xact, sgwu_sess_t *sess,
-        ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr)
+        ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr,
+        ogs_pfcp_user_plane_report_t *report)
 {
     int rv;
     ogs_pkbuf_t *sxabuf = NULL;
@@ -267,7 +268,7 @@ int sgwu_pfcp_send_session_modification_response(
     h.seid = sess->sgwc_sxa_f_seid.seid;
 
     sxabuf = sgwu_sxa_build_session_modification_response(
-            h.type, sess, created_pdr, num_of_created_pdr);
+            h.type, sess, created_pdr, num_of_created_pdr, report);
     if (!sxabuf) {
         ogs_error("sgwu_sxa_build_session_modification_response() failed");
         return OGS_ERROR;

@@ -117,6 +117,58 @@ typedef struct ogs_cdr_pgw_record_s {
 int ogs_cdr_encode_pgw_record(
         const ogs_cdr_pgw_record_t *rec, uint8_t *buf, size_t bufsize);
 
+typedef struct ogs_cdr_sgw_record_s {
+    /* subscriber / session identity */
+    uint8_t     imsi[8];            /* TBCD as on wire */
+    int         imsi_len;
+    uint8_t     msisdn[9];          /* TBCD, without NOA octet */
+    int         msisdn_len;
+    uint8_t     imeisv[8];          /* TBCD */
+    int         imeisv_len;
+    char        apn_ni[OGS_CDR_MAX_APN_NI_LEN + 1];
+    uint32_t    charging_id;
+    uint8_t     sgw_addr[4];        /* IPv4 only for now */
+    uint8_t     mme_addr[4];        /* servingNodeAddress */
+    int         has_pgw_addr;
+    uint8_t     pgw_addr[4];        /* p-GWAddressUsed */
+    uint8_t     pdn_type;           /* OGS_CDR_PDN_TYPE_* */
+    int         has_pdn_addr;
+    uint8_t     pdn_addr[4];
+    int         dynamic_address;    /* bool */
+    uint8_t     charging_char[2];
+    int         has_serving_plmn;
+    uint8_t     serving_plmn[3];    /* TBCD MCC/MNC */
+    uint8_t     rat_type;
+    int         has_ms_timezone;
+    uint8_t     ms_timezone[2];
+    uint8_t     uli[OGS_CDR_MAX_ULI_LEN];
+    int         uli_len;
+    char        node_id[OGS_CDR_MAX_NODE_ID_LEN + 1];
+
+    /* record metadata (same closure model as PGWRecord) */
+    time_t      opening_time;
+    time_t      start_time;
+    int         has_stop_time;
+    time_t      stop_time;
+    int         tz_offset_min;
+    uint32_t    duration;
+    int         cause;              /* OGS_CDR_CAUSE_* */
+    uint32_t    record_sequence_number; /* 0 = omit */
+    uint32_t    local_sequence_number;
+
+    /* single ChangeOfCharCondition traffic-volume container */
+    uint64_t    vol_uplink;
+    uint64_t    vol_downlink;
+    time_t      time_of_report;     /* container changeTime */
+} ogs_cdr_sgw_record_t;
+
+/*
+ * Encode one SGWRecord as GPRSRecord CHOICE alternative sGWRecord [78].
+ * Returns encoded length, or -1 on error / buffer too small.
+ */
+int ogs_cdr_encode_sgw_record(
+        const ogs_cdr_sgw_record_t *rec, uint8_t *buf, size_t bufsize);
+
 /* TS 32.297 file closure trigger reasons */
 #define OGS_CDR_FILE_CLOSE_NORMAL           0
 #define OGS_CDR_FILE_CLOSE_SIZE_LIMIT       1

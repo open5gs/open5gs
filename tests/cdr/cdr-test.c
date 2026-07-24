@@ -137,11 +137,40 @@ static void cdr_encode_buffer_too_small(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, -1, ogs_cdr_encode_pgw_record(&r, buf, sizeof(buf)));
 }
 
+static void cdr_encode_sgw_basic(abts_case *tc, void *data)
+{
+    ogs_cdr_sgw_record_t r;
+    uint8_t buf[OGS_CDR_MAX_RECORD_LEN];
+    int len;
+
+    memset(&r, 0, sizeof(r));
+    r.imsi_len = 8;
+    strcpy(r.apn_ni, "internet");
+    r.charging_id = 1;
+    r.pdn_type = OGS_CDR_PDN_TYPE_IPV4;
+    r.rat_type = OGS_CDR_RAT_TYPE_EUTRAN;
+    strcpy(r.node_id, "test-sgw");
+    r.opening_time = TEST_EPOCH;
+    r.start_time = TEST_EPOCH;
+    r.tz_offset_min = TEST_TZ_MIN;
+    r.duration = 60;
+    r.cause = OGS_CDR_CAUSE_NORMAL_RELEASE;
+    r.local_sequence_number = 1;
+    r.time_of_report = TEST_EPOCH + 60;
+
+    len = ogs_cdr_encode_sgw_record(&r, buf, sizeof(buf));
+    ABTS_TRUE(tc, len > 0);
+    /* GPRSRecord CHOICE sGWRecord [78]: high-tag 0xbf 0x4e */
+    ABTS_INT_EQUAL(tc, 0xbf, buf[0]);
+    ABTS_INT_EQUAL(tc, 0x4e, buf[1]);
+}
+
 abts_suite *test_cdr_encode(abts_suite *suite)
 {
     suite = ADD_SUITE(suite);
 
     abts_run_test(suite, cdr_encode_basic, NULL);
+    abts_run_test(suite, cdr_encode_sgw_basic, NULL);
     abts_run_test(suite, cdr_encode_deterministic, NULL);
     abts_run_test(suite, cdr_encode_optional_fields, NULL);
     abts_run_test(suite, cdr_encode_buffer_too_small, NULL);

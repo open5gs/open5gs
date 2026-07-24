@@ -34,7 +34,8 @@ int sgwu_pfcp_send_session_establishment_response(
         ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr);
 int sgwu_pfcp_send_session_modification_response(
         ogs_pfcp_xact_t *xact, sgwu_sess_t *sess,
-        ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr);
+        ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr,
+        ogs_pfcp_user_plane_report_t *report);
 int sgwu_pfcp_send_session_deletion_response(ogs_pfcp_xact_t *xact,
         sgwu_sess_t *sess);
 

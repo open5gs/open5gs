@@ -22,6 +22,10 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <time.h>
+
+/* TS 32.298 TimeStamp (9 octets), implemented in pgw-record.c */
+void ogs_cdr_make_timestamp(uint8_t out[9], time_t t, int tz_offset_min);
 
 /*
  * Minimal BER emitter, definite length form only.
