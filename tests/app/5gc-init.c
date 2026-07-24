@@ -35,6 +35,7 @@ static ogs_thread_t *pcf_threads[OGS_MAX_NF_INSTANCES] = { NULL };
 static ogs_thread_t *nssf_threads[OGS_MAX_NF_INSTANCES] = { NULL };
 static ogs_thread_t *bsf_threads[OGS_MAX_NF_INSTANCES] = { NULL };
 static ogs_thread_t *udr_threads[OGS_MAX_NF_INSTANCES] = { NULL };
+static ogs_thread_t *eir_threads[OGS_MAX_NF_INSTANCES] = { NULL };
 
 
 static void run_threads(const char *nf_name, int count,
@@ -123,6 +124,9 @@ int app_initialize(const char *const argv[])
     if (ogs_global_conf()->parameter.no_udr == 0)
         run_threads("udr", ogs_global_conf()->parameter.udr_count,
                 argv_out, i, udr_threads);
+    if (ogs_global_conf()->parameter.no_eir == 0)
+        run_threads("eir", ogs_global_conf()->parameter.eir_count,
+                argv_out, i, eir_threads);
 
     /*
      * Wait for all sockets listening

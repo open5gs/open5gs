@@ -919,6 +919,64 @@ static void sbi_message_test10(abts_case *tc, void *param)
     }
 }
 
+static void sbi_message_test11(abts_case *tc, void *data)
+{
+    OpenAPI_eir_response_data_t *EirResponseData = NULL;
+    OpenAPI_problem_details_t ProblemDetails;
+    cJSON *item = NULL;
+
+    ABTS_STR_EQUAL(tc, "WHITELISTED",
+        OpenAPI_equipment_status_ToString(
+            OpenAPI_equipment_status_WHITELISTED));
+    ABTS_STR_EQUAL(tc, "BLACKLISTED",
+        OpenAPI_equipment_status_ToString(
+            OpenAPI_equipment_status_BLACKLISTED));
+    ABTS_STR_EQUAL(tc, "GREYLISTED",
+        OpenAPI_equipment_status_ToString(
+            OpenAPI_equipment_status_GREYLISTED));
+
+    ABTS_INT_EQUAL(tc, OpenAPI_equipment_status_WHITELISTED,
+        OpenAPI_equipment_status_FromString("WHITELISTED"));
+    ABTS_INT_EQUAL(tc, OpenAPI_equipment_status_BLACKLISTED,
+        OpenAPI_equipment_status_FromString("BLACKLISTED"));
+    ABTS_INT_EQUAL(tc, OpenAPI_equipment_status_GREYLISTED,
+        OpenAPI_equipment_status_FromString("GREYLISTED"));
+    ABTS_INT_EQUAL(tc, OpenAPI_equipment_status_NULL,
+        OpenAPI_equipment_status_FromString("BOGUS"));
+
+    EirResponseData = OpenAPI_eir_response_data_create(
+            OpenAPI_equipment_status_BLACKLISTED);
+    ogs_assert(EirResponseData);
+
+    item = OpenAPI_eir_response_data_convertToJSON(EirResponseData);
+    ogs_assert(item);
+    OpenAPI_eir_response_data_free(EirResponseData);
+
+    EirResponseData = OpenAPI_eir_response_data_parseFromJSON(item);
+    ogs_assert(EirResponseData);
+    cJSON_Delete(item);
+
+    ABTS_INT_EQUAL(tc, OpenAPI_equipment_status_BLACKLISTED,
+        EirResponseData->status);
+
+    OpenAPI_eir_response_data_free(EirResponseData);
+
+    memset(&ProblemDetails, 0, sizeof(ProblemDetails));
+    ProblemDetails.is_status = true;
+    ProblemDetails.status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
+    ProblemDetails.cause = (char *)"ERROR_EQUIPMENT_UNKNOWN";
+
+    item = OpenAPI_problem_details_convertToJSON(&ProblemDetails);
+    ogs_assert(item);
+
+    ABTS_STR_EQUAL(tc, "ERROR_EQUIPMENT_UNKNOWN",
+        cJSON_GetObjectItemCaseSensitive(item, "cause")->valuestring);
+    ABTS_INT_EQUAL(tc, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+        (int)cJSON_GetObjectItemCaseSensitive(item, "status")->valuedouble);
+
+    cJSON_Delete(item);
+}
+
 abts_suite *test_sbi_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -933,6 +991,7 @@ abts_suite *test_sbi_message(abts_suite *suite)
     abts_run_test(suite, sbi_message_test8, NULL);
     abts_run_test(suite, sbi_message_test9, NULL);
     abts_run_test(suite, sbi_message_test10, NULL);
+    abts_run_test(suite, sbi_message_test11, NULL);
 
     return suite;
 }
