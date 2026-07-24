@@ -21,3 +21,4 @@ $openapi_generator_cli generate -i ./modified/TS29502_Nsmf_PDUSession.yaml -c ./
 $openapi_generator_cli generate -i ./modified/TS29518_Namf_Communication.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
 $openapi_generator_cli generate -i ./modified/TS29510_Nnrf_NFDiscovery.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
 $openapi_generator_cli generate -i ./modified/TS29510_Nnrf_NFManagement.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
+$openapi_generator_cli generate -i ./modified/TS29511_N5g-eir_EquipmentIdentityCheck.yaml -c ./openapi-generator/config.yaml -g c -o ../../openapi || exit 1
