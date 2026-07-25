@@ -216,6 +216,17 @@ int smf_sbi_cleanup_session(
 
 bool smf_sbi_send_sm_context_status_notify(smf_sess_t *sess);
 
+/*
+ * Send Nsmf_PDUSession_SMContextStatusNotify before SMF-locally releasing a
+ * session, per 3GPP TS 29.518 §5.2.5 / TS 23.502 §4.3.4. Skips silently for
+ * EPC sessions (no AMF involved) and for 5GC sessions where AMF discovery
+ * never completed (sess->namf.client is NULL). Used at SMF release paths
+ * that bypass the FSM's own notify-before-release flow (PFCP timer expiry,
+ * exception state, terminal cleanup).
+ */
+bool smf_sbi_try_send_sm_context_status_notify_before_release(
+        smf_sess_t *sess);
+
 void smf_sbi_send_pdu_session_created_data(
         smf_sess_t *sess, ogs_sbi_stream_t *stream);
 void smf_sbi_send_pdu_session_create_error(

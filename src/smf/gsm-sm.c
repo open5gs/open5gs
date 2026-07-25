@@ -4064,6 +4064,15 @@ void smf_gsm_state_session_will_release(ogs_fsm_t *s, smf_event_t *e)
 
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
+        /*
+         * Notify AMF before clearing per TS 29.518 §5.2.5 /
+         * TS 23.502 §4.3.4. Idempotent w.r.t. existing notify calls
+         * earlier in the release pipeline — AMF treats a redundant
+         * notification as 204 No Content, no harm. Closes the gap for
+         * release paths that reach this terminal state without first
+         * having sent the spec-required SmContextStatusNotify.
+         */
+        smf_sbi_try_send_sm_context_status_notify_before_release(sess);
         SMF_SESS_CLEAR(sess);
         break;
 
@@ -4094,6 +4103,12 @@ void smf_gsm_state_exception(ogs_fsm_t *s, smf_event_t *e)
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         ogs_error("[%s:%d] State machine exception", smf_ue->supi, sess->psi);
+        /*
+         * Notify AMF on exception-state cleanup, same idempotent helper
+         * as the will_release terminal state. Without it, an exceptional
+         * release path leaves AMF holding a stale smContextRef.
+         */
+        smf_sbi_try_send_sm_context_status_notify_before_release(sess);
         SMF_SESS_CLEAR(sess);
         break;
 
