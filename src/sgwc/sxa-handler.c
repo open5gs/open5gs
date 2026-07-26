@@ -1622,6 +1622,12 @@ void sgwc_sxa_handle_session_report_request(
             if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
                 ogs_warn("[%s] Error Indication from eNB", sgwc_ue->imsi_bcd);
                 ogs_list_for_each(&sgwc_ue->sess_list, sess) {
+                    if (ogs_list_count(&sess->bearer_list) == 0)
+                        ogs_fatal("No Bearer [imsi:%s sess_id:%d apn:%s "
+                                "sgw_s5c_teid:0x%x pgw_s5c_teid:0x%x]",
+                                sgwc_ue->imsi_bcd, sess->id,
+                                sess->session.name,
+                                sess->sgw_s5c_teid, sess->pgw_s5c_teid);
                     ogs_assert(ogs_list_count(&sess->bearer_list));
                     ogs_info("    sess_id=%d", sess->id);
                     ogs_assert(OGS_OK ==
