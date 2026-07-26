@@ -138,9 +138,15 @@ int ogs_dbi_eir_check_equipment(
             return rv;
     }
 
+    /*
+     * Matches both a missing `supi` field and an explicit `supi: null`,
+     * per MongoDB equality-match semantics; kept consistent with the
+     * eir_generic_unique partial index in ogs-mongoc.c, which cannot use
+     * $exists: false (unsupported in partialFilterExpression).
+     */
     query = BCON_NEW(
             OGS_EIR_PEI_STRING, BCON_UTF8(pei),
-            OGS_EIR_SUPI_STRING, "{", "$exists", BCON_BOOL(false), "}");
+            OGS_EIR_SUPI_STRING, "{", "$eq", BCON_NULL, "}");
     rv = eir_find_one(query, record);
     bson_destroy(query);
 

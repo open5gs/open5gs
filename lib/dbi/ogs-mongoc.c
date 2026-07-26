@@ -156,6 +156,52 @@ ogs_mongoc_t *ogs_mongoc(void)
     return &self;
 }
 
+/*
+ * Guarantees uniqueness of `eir` records at the database level, since the
+ * collection allows both a generic (PEI-only) record and a more specific
+ * (PEI+SUPI) record for the same PEI, and ogs_dbi_eir_check_equipment()
+ * only detects duplicates it happens to encounter during a lookup.
+ */
+static void eir_create_indexes(mongoc_collection_t *collection)
+{
+    bson_t *keys1, *partial1;
+    bson_t *keys2, *partial2;
+    mongoc_index_opt_t opt1, opt2;
+    bson_t reply;
+    bson_error_t error;
+
+    ogs_assert(collection);
+
+    keys1 = BCON_NEW("pei", BCON_INT32(1), "supi", BCON_INT32(1));
+    partial1 = BCON_NEW("supi", "{", "$type", BCON_UTF8("string"), "}");
+    mongoc_index_opt_init(&opt1);
+    opt1.unique = true;
+    opt1.name = "eir_specific_unique";
+    opt1.partial_filter_expression = partial1;
+
+    keys2 = BCON_NEW("pei", BCON_INT32(1));
+    partial2 = BCON_NEW("supi", "{", "$eq", BCON_NULL, "}");
+    mongoc_index_opt_init(&opt2);
+    opt2.unique = true;
+    opt2.name = "eir_generic_unique";
+    opt2.partial_filter_expression = partial2;
+
+    if (!mongoc_collection_create_index_with_opts(
+            collection, keys1, &opt1, NULL, &reply, &error))
+        ogs_error("eir_create_indexes(specific) failed: %s", error.message);
+    bson_destroy(&reply);
+
+    if (!mongoc_collection_create_index_with_opts(
+            collection, keys2, &opt2, NULL, &reply, &error))
+        ogs_error("eir_create_indexes(generic) failed: %s", error.message);
+    bson_destroy(&reply);
+
+    bson_destroy(keys1);
+    bson_destroy(partial1);
+    bson_destroy(keys2);
+    bson_destroy(partial2);
+}
+
 int ogs_dbi_init(const char *db_uri)
 {
     int rv;
@@ -173,6 +219,8 @@ int ogs_dbi_init(const char *db_uri)
         self.collection.eir = mongoc_client_get_collection(
             ogs_mongoc()->client, ogs_mongoc()->name, "eir");
         ogs_assert(self.collection.eir);
+
+        eir_create_indexes(self.collection.eir);
     }
 
     return OGS_OK;

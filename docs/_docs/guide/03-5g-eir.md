@@ -21,7 +21,7 @@ $ open5gs-eird -c /etc/open5gs/eir.yaml
 ## 3. MongoDB records
 ---
 
-Equipment status records live in the `eir` collection. Each record requires `pei` and `status`; `supi` is optional and, when present, makes the record apply only to that subscriber's use of that device.
+Equipment status records live in the `eir` collection. Each record requires `pei` and `status`; `supi` is optional and, when present, makes the record apply only to that subscriber's use of that device. A generic (PEI-only) record must have its `supi` field either omitted entirely or set to `null` — both are treated identically by lookups and by the unique index below; do not set `supi` to an empty string.
 
 ```javascript
 // Generic record: any subscriber using this PEI is whitelisted
@@ -52,12 +52,31 @@ db.eir.insertOne({
 
 A record with an unrecognized `status` value, or more than one record matching the same lookup key, is treated as a database error — it is never interpreted as an implicit whitelist.
 
-Recommended indexes:
+`open5gs-eird` creates the following unique indexes on the `eir` collection automatically at startup, so duplicate records are rejected by MongoDB rather than only being caught if a lookup happens to encounter them:
 
 ```javascript
-db.eir.createIndex({ pei: 1, supi: 1 }, { name: "eir_pei_supi_idx" })
-db.eir.createIndex({ pei: 1 }, { name: "eir_pei_idx" })
+// at most one subscriber-specific record per (pei, supi) pair
+db.eir.createIndex(
+  { pei: 1, supi: 1 },
+  {
+    name: "eir_specific_unique",
+    unique: true,
+    partialFilterExpression: { supi: { $type: "string" } }
+  }
+)
+
+// at most one generic record per pei (supi missing or null)
+db.eir.createIndex(
+  { pei: 1 },
+  {
+    name: "eir_generic_unique",
+    unique: true,
+    partialFilterExpression: { supi: { $eq: null } }
+  }
+)
 ```
+
+(MongoDB's partial index filters do not support `$exists: false`, so the generic index and the DBI lookup both use `supi: { $eq: null }`, which matches a missing `supi` field and an explicit `supi: null` identically.)
 
 ## 4. AMF configuration
 ---
