@@ -62,10 +62,18 @@ void amf_n5geir_eic_handle_equipment_status(
         break;
 
     case OGS_SBI_HTTP_STATUS_NOT_FOUND:
-        ogs_info("[%s] Unknown equipment (5G-EIR)", amf_ue->supi);
-        gmm_ue_equipment_check_complete(amf_ue,
-                amf_self()->eir.unknown_action == AMF_EIR_ACTION_REJECT ?
-                    AMF_EIR_RESULT_REJECT : AMF_EIR_RESULT_ALLOW);
+        if (recvmsg->ProblemDetails && recvmsg->ProblemDetails->cause &&
+                !strcmp(recvmsg->ProblemDetails->cause,
+                    "ERROR_EQUIPMENT_UNKNOWN")) {
+            ogs_info("[%s] Unknown equipment (5G-EIR)", amf_ue->supi);
+            gmm_ue_equipment_check_complete(amf_ue,
+                    amf_self()->eir.unknown_action == AMF_EIR_ACTION_REJECT ?
+                        AMF_EIR_RESULT_REJECT : AMF_EIR_RESULT_ALLOW);
+        } else {
+            ogs_error("[%s] 5G-EIR 404 without "
+                    "ERROR_EQUIPMENT_UNKNOWN cause", amf_ue->supi);
+            gmm_ue_equipment_check_complete(amf_ue, failure_result());
+        }
         break;
 
     default:
