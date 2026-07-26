@@ -139,6 +139,7 @@ typedef struct amf_context_s {
         bool enabled;
         amf_eir_action_e unknown_action;
         amf_eir_action_e failure_action;
+        amf_eir_action_e missing_pei_action;
     } eir;
 
 } amf_context_t;

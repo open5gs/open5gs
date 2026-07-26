@@ -1082,8 +1082,11 @@ int amf_context_parse_config(void)
                             else if (!v || !strcmp(v, "allow"))
                                 self.eir.unknown_action =
                                     AMF_EIR_ACTION_ALLOW;
-                            else
-                                ogs_warn("invalid unknown_action `%s`", v);
+                            else {
+                                ogs_error("invalid unknown_action `%s` "
+                                        "(expected `allow` or `reject`)", v);
+                                return OGS_ERROR;
+                            }
                         } else if (!strcmp(eir_key, "failure_action")) {
                             const char *v = ogs_yaml_iter_value(&eir_iter);
                             if (v && !strcmp(v, "reject"))
@@ -1092,8 +1095,24 @@ int amf_context_parse_config(void)
                             else if (!v || !strcmp(v, "allow"))
                                 self.eir.failure_action =
                                     AMF_EIR_ACTION_ALLOW;
-                            else
-                                ogs_warn("invalid failure_action `%s`", v);
+                            else {
+                                ogs_error("invalid failure_action `%s` "
+                                        "(expected `allow` or `reject`)", v);
+                                return OGS_ERROR;
+                            }
+                        } else if (!strcmp(eir_key, "missing_pei_action")) {
+                            const char *v = ogs_yaml_iter_value(&eir_iter);
+                            if (v && !strcmp(v, "reject"))
+                                self.eir.missing_pei_action =
+                                    AMF_EIR_ACTION_REJECT;
+                            else if (!v || !strcmp(v, "allow"))
+                                self.eir.missing_pei_action =
+                                    AMF_EIR_ACTION_ALLOW;
+                            else {
+                                ogs_error("invalid missing_pei_action `%s` "
+                                        "(expected `allow` or `reject`)", v);
+                                return OGS_ERROR;
+                            }
                         } else
                             ogs_warn("unknown key `%s`", eir_key);
                     }

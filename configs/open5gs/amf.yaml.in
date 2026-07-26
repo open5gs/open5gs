@@ -57,8 +57,9 @@ amf:
       value: 540    # 9 minutes * 60 = 540 seconds
 #  eir:
 #    enabled: true
-#    unknown_action: allow   # allow(default)|reject
-#    failure_action: allow   # allow(default)|reject
+#    unknown_action: allow      # allow(default)|reject
+#    failure_action: allow      # allow(default)|reject
+#    missing_pei_action: allow  # allow(default)|reject
 
 ################################################################################
 # SBI Server
