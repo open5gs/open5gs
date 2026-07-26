@@ -23,7 +23,7 @@ static struct session_handler *smf_s6b_reg = NULL;
 static struct disp_hdl *hdl_s6b_fb = NULL;
 
 struct sess_state {
-    smf_sess_t *sess;
+    ogs_pool_id_t sess_id;
     os0_t       s6b_sid;             /* S6B Session-Id */
 
     ogs_pool_id_t xact_id;
@@ -164,6 +164,21 @@ void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact)
         os0_t sid;
         size_t sidlen;
 
+        if (sess->s6b_sid) {
+            /*
+             * A Diameter session already exists for this PDU session, so
+             * a new state must not be created here. The state is most
+             * likely held by an answer callback at this moment, but any
+             * other cause is handled the same way: give up on this request
+             * rather than leaving two states for one Diameter Session-Id,
+             * which later shows up as a state pointer mismatch.
+             */
+            ogs_error("S6b session state unavailable [%s]", sess->s6b_sid);
+            ret = fd_msg_free(req);
+            ogs_assert(ret == 0);
+            return;
+        }
+
         ret = fd_sess_getsid(session, &sid, &sidlen);
         ogs_assert(ret == 0);
 
@@ -179,7 +194,7 @@ void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact)
         ogs_debug("    Retrieve session: [%s]", sess_data->s6b_sid);
 
     /* Update session state */
-    sess_data->sess = sess;
+    sess_data->sess_id = sess->id;
     sess_data->xact_id = xact ? xact->id : OGS_INVALID_POOL_ID;
 
     /* Set Origin-Host & Origin-Realm */
@@ -342,6 +357,9 @@ void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact)
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
+    ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
+    ogs_assert(ret == 0);
+
     /* Keep a pointer to the session data for debug purpose,
      * in real life we would not need it */
     svg = sess_data;
@@ -389,6 +407,7 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
     ogs_assert(ret == 0);
     if (new != 0) {
         ogs_error("Session should already exist, but new session flag is set");
+        error++;
         goto cleanup;
     }
 
@@ -398,14 +417,38 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
     ogs_assert(ret == 0);
     if (!sess_data) {
         ogs_error("No Session Data");
+        error++;
         goto cleanup;
     }
-    ogs_assert((void *)sess_data == data);
+    if ((void *)sess_data != data) {
+        /*
+         * This answer refers to a state that is no longer the one stored
+         * in the Diameter session. Put the current state back and discard
+         * the answer instead of aborting the process.
+         */
+        ogs_error("S6b state mismatch: retrieved[%p] != expected[%p] [%s]",
+                (void *)sess_data, data, sess_data->s6b_sid);
+        ret = fd_sess_state_store(smf_s6b_reg, session, &sess_data);
+        ogs_assert(ret == 0);
+        error++;
+        goto cleanup;
+    }
 
     ogs_debug("    Retrieve its data: [%s]", sess_data->s6b_sid);
 
-    sess = sess_data->sess;
-    ogs_assert(sess);
+    sess = smf_sess_find_by_id(sess_data->sess_id);
+    if (!sess) {
+        /*
+         * The PDU session is gone, so nothing will use this state again.
+         * Release it here instead of storing it back, where it would hold
+         * a pool entry until the Diameter session expires.
+         */
+        ogs_error("Cannot find session by ID[%d]", sess_data->sess_id);
+        state_cleanup(sess_data, NULL, NULL);
+        sess_data = NULL;
+        error++;
+        goto cleanup;
+    }
 
     /* Allocate S6B message structure */
     s6b_message = ogs_calloc(1, sizeof(ogs_diam_s6b_message_t));
@@ -510,25 +553,27 @@ cleanup:
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
 
     /* Calculate response time */
-    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
-        ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    if (sess_data) {
+        dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
+            ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
 
-    if (ogs_diam_stats_self()->stats.nb_recv) {
-        /* Update average response time */
-        ogs_diam_stats_self()->stats.avg =
-            (ogs_diam_stats_self()->stats.avg *
-             ogs_diam_stats_self()->stats.nb_recv + dur) /
-            (ogs_diam_stats_self()->stats.nb_recv + 1);
+        if (ogs_diam_stats_self()->stats.nb_recv) {
+            /* Update average response time */
+            ogs_diam_stats_self()->stats.avg =
+                (ogs_diam_stats_self()->stats.avg *
+                 ogs_diam_stats_self()->stats.nb_recv + dur) /
+                (ogs_diam_stats_self()->stats.nb_recv + 1);
 
-        /* Update min/max response times */
-        if (dur < ogs_diam_stats_self()->stats.shortest)
+            /* Update min/max response times */
+            if (dur < ogs_diam_stats_self()->stats.shortest)
+                ogs_diam_stats_self()->stats.shortest = dur;
+            if (dur > ogs_diam_stats_self()->stats.longest)
+                ogs_diam_stats_self()->stats.longest = dur;
+        } else {
             ogs_diam_stats_self()->stats.shortest = dur;
-        if (dur > ogs_diam_stats_self()->stats.longest)
             ogs_diam_stats_self()->stats.longest = dur;
-    } else {
-        ogs_diam_stats_self()->stats.shortest = dur;
-        ogs_diam_stats_self()->stats.longest = dur;
-        ogs_diam_stats_self()->stats.avg = dur;
+            ogs_diam_stats_self()->stats.avg = dur;
+        }
     }
 
     /* Update error/success counters */
@@ -632,12 +677,14 @@ void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause)
     ogs_assert(ret == 0);
     if (!sess_data) {
         ogs_error("No Session Data");
+        ret = fd_msg_free(req);
+        ogs_assert(ret == 0);
         return;
     }
     ogs_debug("    Retrieve session: [%s]", sess_data->s6b_sid);
 
     /* Update session state */
-    sess_data->sess = sess;
+    sess_data->sess_id = sess->id;
     sess_data->xact_id = xact ? xact->id : OGS_INVALID_POOL_ID;
 
     /* Set Origin-Host & Origin-Realm */
@@ -688,6 +735,9 @@ void smf_s6b_send_str(smf_sess_t *sess, ogs_gtp_xact_t *xact, uint32_t cause)
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
+    ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
+    ogs_assert(ret == 0);
+
     /* Keep a pointer to the session data for debug purpose,
      * in real life we would not need it */
     svg = sess_data;
@@ -735,6 +785,7 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     ogs_assert(ret == 0);
     if (new != 0) {
         ogs_error("Session should already exist, but new session flag is set");
+        error++;
         goto cleanup;
     }
 
@@ -744,14 +795,38 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     ogs_assert(ret == 0);
     if (!sess_data) {
         ogs_error("No Session Data");
+        error++;
         goto cleanup;
     }
-    ogs_assert((void *)sess_data == data);
+    if ((void *)sess_data != data) {
+        /*
+         * This answer refers to a state that is no longer the one stored
+         * in the Diameter session. Put the current state back and discard
+         * the answer instead of aborting the process.
+         */
+        ogs_error("S6b state mismatch: retrieved[%p] != expected[%p] [%s]",
+                (void *)sess_data, data, sess_data->s6b_sid);
+        ret = fd_sess_state_store(smf_s6b_reg, session, &sess_data);
+        ogs_assert(ret == 0);
+        error++;
+        goto cleanup;
+    }
 
     ogs_debug("    Retrieve its data: [%s]", sess_data->s6b_sid);
 
-    sess = sess_data->sess;
-    ogs_assert(sess);
+    sess = smf_sess_find_by_id(sess_data->sess_id);
+    if (!sess) {
+        /*
+         * The PDU session is gone, so nothing will use this state again.
+         * Release it here instead of storing it back, where it would hold
+         * a pool entry until the Diameter session expires.
+         */
+        ogs_error("Cannot find session by ID[%d]", sess_data->sess_id);
+        state_cleanup(sess_data, NULL, NULL);
+        sess_data = NULL;
+        error++;
+        goto cleanup;
+    }
 
     /* Allocate S6B message structure */
     s6b_message = ogs_calloc(1, sizeof(ogs_diam_s6b_message_t));
