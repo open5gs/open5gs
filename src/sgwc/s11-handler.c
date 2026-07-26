@@ -1514,6 +1514,17 @@ void sgwc_s11_handle_release_access_bearers_request(
 
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
 
+        /*
+         * A PDN connection is never expected to lose its last bearer while
+         * staying in sgwc_ue->sess_list. Keep the assert, but identify the
+         * PDN connection first - the assert alone does not tell which one
+         * it was.
+         */
+        if (ogs_list_count(&sess->bearer_list) == 0)
+            ogs_fatal("No Bearer [imsi:%s sess_id:%d apn:%s "
+                    "sgw_s5c_teid:0x%x pgw_s5c_teid:0x%x]",
+                    sgwc_ue->imsi_bcd, sess->id, sess->session.name,
+                    sess->sgw_s5c_teid, sess->pgw_s5c_teid);
         ogs_assert(ogs_list_count(&sess->bearer_list));
         ogs_info("    sess_id=%d xact=%p", sess->id, s11_xact);
         ogs_assert(OGS_OK ==
@@ -1768,6 +1779,11 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
     ogs_list_for_each(&sgwc_ue->sess_list, sess) {
         bool has_indirect = false;
 
+        if (ogs_list_count(&sess->bearer_list) == 0)
+            ogs_fatal("No Bearer [imsi:%s sess_id:%d apn:%s "
+                    "sgw_s5c_teid:0x%x pgw_s5c_teid:0x%x]",
+                    sgwc_ue->imsi_bcd, sess->id, sess->session.name,
+                    sess->sgw_s5c_teid, sess->pgw_s5c_teid);
         ogs_assert(ogs_list_count(&sess->bearer_list));
         ogs_list_for_each(&sess->bearer_list, bearer) {
             ogs_list_for_each(&bearer->tunnel_list, tunnel) {
