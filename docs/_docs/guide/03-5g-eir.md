@@ -78,6 +78,8 @@ db.eir.createIndex(
 
 (MongoDB's partial index filters do not support `$exists: false`, so the generic index and the DBI lookup both use `supi: { $eq: null }`, which matches a missing `supi` field and an explicit `supi: null` identically.)
 
+`open5gs-eird` also applies a `$jsonSchema` validator to the `eir` collection at startup, requiring `pei` (string) and `status` (one of `WHITELISTED`/`BLACKLISTED`/`GREYLISTED`), and `supi` (string or null, when present). Documents that fail validation are rejected by MongoDB at write time.
+
 ## 4. AMF configuration
 ---
 

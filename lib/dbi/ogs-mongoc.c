@@ -202,6 +202,54 @@ static void eir_create_indexes(mongoc_collection_t *collection)
     bson_destroy(partial2);
 }
 
+/*
+ * Rejects malformed `eir` documents (missing `pei`/`status`, wrong types,
+ * unrecognized `status` values) at write time, on top of the application
+ * level checks in lib/dbi/eir.c and src/eir/n5geir-handler.c.
+ */
+static void eir_apply_schema_validation(mongoc_database_t *database)
+{
+    static const char *validator_json =
+        "{"
+        "  \"collMod\": \"eir\","
+        "  \"validator\": {"
+        "    \"$jsonSchema\": {"
+        "      \"bsonType\": \"object\","
+        "      \"required\": [\"pei\", \"status\"],"
+        "      \"properties\": {"
+        "        \"pei\": { \"bsonType\": \"string\" },"
+        "        \"supi\": { \"bsonType\": [\"string\", \"null\"] },"
+        "        \"status\": {"
+        "          \"enum\": "
+        "            [\"WHITELISTED\", \"BLACKLISTED\", \"GREYLISTED\"]"
+        "        }"
+        "      }"
+        "    }"
+        "  },"
+        "  \"validationLevel\": \"strict\","
+        "  \"validationAction\": \"error\""
+        "}";
+    bson_t *cmd;
+    bson_t reply;
+    bson_error_t error;
+
+    ogs_assert(database);
+
+    cmd = bson_new_from_json((const uint8_t *)validator_json, -1, &error);
+    if (!cmd) {
+        ogs_error("eir_apply_schema_validation() parse failed: %s",
+                error.message);
+        return;
+    }
+
+    if (!mongoc_database_write_command_with_opts(
+            database, cmd, NULL, &reply, &error))
+        ogs_error("eir_apply_schema_validation() failed: %s", error.message);
+
+    bson_destroy(&reply);
+    bson_destroy(cmd);
+}
+
 int ogs_dbi_init(const char *db_uri)
 {
     int rv;
@@ -221,6 +269,8 @@ int ogs_dbi_init(const char *db_uri)
         ogs_assert(self.collection.eir);
 
         eir_create_indexes(self.collection.eir);
+        eir_apply_schema_validation(
+                (mongoc_database_t *)ogs_mongoc()->database);
     }
 
     return OGS_OK;
