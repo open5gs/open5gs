@@ -20,71 +20,6 @@
 #include "sbi-path.h"
 #include "n5geir-handler.h"
 
-static bool value_is_all_digits(const char *value)
-{
-    size_t i;
-
-    if (!value || !value[0])
-        return false;
-
-    for (i = 0; value[i]; i++)
-        if (!isdigit((unsigned char)value[i]))
-            return false;
-
-    return true;
-}
-
-/* IMEI: TAC(8) + serial(6) + check digit(1) = 15 digits. */
-#define EIR_IMEI_DIGITS     15
-/* IMEISV: TAC(8) + serial(6) + software version(2) = 16 digits. */
-#define EIR_IMEISV_DIGITS   16
-/* IMSI: MCC(3) + MNC(2-3) + MSIN, up to 15 digits total. */
-#define EIR_IMSI_MIN_DIGITS 6
-#define EIR_IMSI_MAX_DIGITS 15
-
-static bool pei_is_valid(const char *pei)
-{
-    char *type = NULL, *value = NULL;
-    bool rc = false;
-
-    if (!ogs_id_get_type_value(pei, &type, &value))
-        goto cleanup;
-
-    if (!value_is_all_digits(value))
-        goto cleanup;
-
-    if (!strcmp(type, "imei"))
-        rc = (strlen(value) == EIR_IMEI_DIGITS);
-    else if (!strcmp(type, "imeisv"))
-        rc = (strlen(value) == EIR_IMEISV_DIGITS);
-
-cleanup:
-    ogs_free(type);
-    ogs_free(value);
-    return rc;
-}
-
-static bool supi_is_valid(const char *supi)
-{
-    char *type = NULL, *value = NULL;
-    bool rc = false;
-
-    if (!ogs_id_get_type_value(supi, &type, &value))
-        goto cleanup;
-
-    if (!value_is_all_digits(value))
-        goto cleanup;
-
-    if (!strcmp(type, "imsi"))
-        rc = (strlen(value) >= EIR_IMSI_MIN_DIGITS &&
-              strlen(value) <= EIR_IMSI_MAX_DIGITS);
-
-cleanup:
-    ogs_free(type);
-    ogs_free(value);
-    return rc;
-}
-
 static OpenAPI_equipment_status_e equipment_status_from_dbi(
         ogs_dbi_eir_status_t status)
 {
@@ -121,7 +56,7 @@ bool eir_n5geir_eic_handle_equipment_status(
         return false;
     }
 
-    if (!pei_is_valid(recvmsg->param.pei)) {
+    if (!ogs_dbi_eir_pei_is_valid(recvmsg->param.pei)) {
         ogs_error("Invalid PEI in equipment-status request");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
@@ -130,7 +65,8 @@ bool eir_n5geir_eic_handle_equipment_status(
         return false;
     }
 
-    if (recvmsg->param.supi && !supi_is_valid(recvmsg->param.supi)) {
+    if (recvmsg->param.supi &&
+            !ogs_dbi_eir_supi_is_valid(recvmsg->param.supi)) {
         ogs_error("Invalid SUPI in equipment-status request");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,

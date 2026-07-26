@@ -19,6 +19,71 @@
 
 #include "ogs-dbi.h"
 
+static bool value_is_all_digits(const char *value)
+{
+    size_t i;
+
+    if (!value || !value[0])
+        return false;
+
+    for (i = 0; value[i]; i++)
+        if (!isdigit((unsigned char)value[i]))
+            return false;
+
+    return true;
+}
+
+/* IMEI: TAC(8) + serial(6) + check digit(1) = 15 digits. */
+#define OGS_EIR_IMEI_DIGITS     15
+/* IMEISV: TAC(8) + serial(6) + software version(2) = 16 digits. */
+#define OGS_EIR_IMEISV_DIGITS   16
+/* IMSI: MCC(3) + MNC(2-3) + MSIN, up to 15 digits total. */
+#define OGS_EIR_IMSI_MIN_DIGITS 6
+#define OGS_EIR_IMSI_MAX_DIGITS 15
+
+bool ogs_dbi_eir_pei_is_valid(const char *pei)
+{
+    char *type = NULL, *value = NULL;
+    bool rc = false;
+
+    if (!pei || !ogs_id_get_type_value(pei, &type, &value))
+        goto cleanup;
+
+    if (!value_is_all_digits(value))
+        goto cleanup;
+
+    if (!strcmp(type, "imei"))
+        rc = (strlen(value) == OGS_EIR_IMEI_DIGITS);
+    else if (!strcmp(type, "imeisv"))
+        rc = (strlen(value) == OGS_EIR_IMEISV_DIGITS);
+
+cleanup:
+    ogs_free(type);
+    ogs_free(value);
+    return rc;
+}
+
+bool ogs_dbi_eir_supi_is_valid(const char *supi)
+{
+    char *type = NULL, *value = NULL;
+    bool rc = false;
+
+    if (!supi || !ogs_id_get_type_value(supi, &type, &value))
+        goto cleanup;
+
+    if (!value_is_all_digits(value))
+        goto cleanup;
+
+    if (!strcmp(type, "imsi"))
+        rc = (strlen(value) >= OGS_EIR_IMSI_MIN_DIGITS &&
+              strlen(value) <= OGS_EIR_IMSI_MAX_DIGITS);
+
+cleanup:
+    ogs_free(type);
+    ogs_free(value);
+    return rc;
+}
+
 static ogs_dbi_eir_status_t eir_status_from_string(const char *status)
 {
     if (!status)

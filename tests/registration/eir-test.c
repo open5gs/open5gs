@@ -133,6 +133,70 @@ static void invalid_status_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 }
 
+static void pei_format_validation_func(abts_case *tc, void *data)
+{
+    /* IMEI: 15 digits */
+    ABTS_TRUE(tc, ogs_dbi_eir_pei_is_valid("imei-490154203237518"));
+    /* IMEISV: 16 digits */
+    ABTS_TRUE(tc, ogs_dbi_eir_pei_is_valid("imeisv-4901542032375186"));
+
+    ABTS_TRUE(tc, !ogs_dbi_eir_pei_is_valid(NULL));
+    ABTS_TRUE(tc, !ogs_dbi_eir_pei_is_valid(""));
+    /* wrong prefix */
+    ABTS_TRUE(tc, !ogs_dbi_eir_pei_is_valid("imsi-490154203237518"));
+    /* IMEI one digit short */
+    ABTS_TRUE(tc, !ogs_dbi_eir_pei_is_valid("imei-49015420323751"));
+    /* IMEI one digit too long */
+    ABTS_TRUE(tc, !ogs_dbi_eir_pei_is_valid("imei-4901542032375186"));
+    /* IMEISV wrong length */
+    ABTS_TRUE(tc, !ogs_dbi_eir_pei_is_valid("imeisv-490154203237518"));
+    /* non-digit characters */
+    ABTS_TRUE(tc, !ogs_dbi_eir_pei_is_valid("imei-49015420323751a"));
+    /* extra '-' component */
+    ABTS_TRUE(tc, !ogs_dbi_eir_pei_is_valid("imei-490154203237518-x"));
+}
+
+static void supi_format_validation_func(abts_case *tc, void *data)
+{
+    ABTS_TRUE(tc, ogs_dbi_eir_supi_is_valid("imsi-001011234567895"));
+    /* minimum-length IMSI (6 digits) */
+    ABTS_TRUE(tc, ogs_dbi_eir_supi_is_valid("imsi-123456"));
+    /* maximum-length IMSI (15 digits) */
+    ABTS_TRUE(tc, ogs_dbi_eir_supi_is_valid("imsi-123456789012345"));
+
+    ABTS_TRUE(tc, !ogs_dbi_eir_supi_is_valid(NULL));
+    ABTS_TRUE(tc, !ogs_dbi_eir_supi_is_valid(""));
+    /* wrong prefix */
+    ABTS_TRUE(tc, !ogs_dbi_eir_supi_is_valid("imei-001011234567895"));
+    /* too short */
+    ABTS_TRUE(tc, !ogs_dbi_eir_supi_is_valid("imsi-12345"));
+    /* too long */
+    ABTS_TRUE(tc, !ogs_dbi_eir_supi_is_valid("imsi-1234567890123456"));
+    /* non-digit characters */
+    ABTS_TRUE(tc, !ogs_dbi_eir_supi_is_valid("imsi-00101123456789a"));
+}
+
+static void generic_record_supi_null_equals_missing_func(
+        abts_case *tc, void *data)
+{
+    int rv;
+    ogs_dbi_eir_record_t record;
+
+    /* Inserted with supi omitted, per test_db_insert_eir(pei, NULL, ...) */
+    rv = test_db_insert_eir(TEST_EIR_PEI, NULL, "WHITELISTED");
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Generic PEI-only lookup must still find it (supi: {$eq: null} also
+     * matches a document where supi is missing entirely). */
+    rv = ogs_dbi_eir_check_equipment(NULL, TEST_EIR_PEI, &record);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_DBI_EIR_STATUS_WHITELISTED, record.status);
+    ogs_dbi_eir_record_free(&record);
+
+    rv = test_db_remove_eir(TEST_EIR_PEI, NULL);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+}
+
 static void ambiguous_duplicate_func(abts_case *tc, void *data)
 {
     int rv;
@@ -161,6 +225,9 @@ abts_suite *test_eir(abts_suite *suite)
     abts_run_test(suite, greylisted_func, NULL);
     abts_run_test(suite, unknown_equipment_func, NULL);
     abts_run_test(suite, invalid_status_func, NULL);
+    abts_run_test(suite, pei_format_validation_func, NULL);
+    abts_run_test(suite, supi_format_validation_func, NULL);
+    abts_run_test(suite, generic_record_supi_null_equals_missing_func, NULL);
     abts_run_test(suite, ambiguous_duplicate_func, NULL);
 
     return suite;
