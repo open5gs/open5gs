@@ -708,6 +708,21 @@ void smf_gy_send_ccr(smf_sess_t *sess, ogs_pool_id_t xact_id,
         os0_t sid;
         size_t sidlen;
 
+        if (sess->gy_sid) {
+            /*
+             * A Diameter session already exists for this PDU session, so
+             * a new state must not be created here. The state is most
+             * likely held by an answer callback at this moment, but any
+             * other cause is handled the same way: give up on this request
+             * rather than leaving two states for one Diameter Session-Id,
+             * which later shows up as a state pointer mismatch.
+             */
+            ogs_error("Gy session state unavailable [%s]", sess->gy_sid);
+            ret = fd_msg_free(req);
+            ogs_assert(ret == 0);
+            return;
+        }
+
         ret = fd_sess_getsid(session, &sid, &sidlen);
         ogs_assert(ret == 0);
 
@@ -1008,6 +1023,7 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
     ogs_assert(ret == 0);
     if (new != 0) {
         ogs_error("Session should already exist, but new session flag is set");
+        error++;
         goto cleanup;
     }
 
@@ -1017,9 +1033,22 @@ static void smf_gy_cca_cb(void *data, struct msg **msg)
     ogs_assert(ret == 0);
     if (!sess_data) {
         ogs_error("No Session Data");
+        error++;
         goto cleanup;
     }
-    ogs_assert((void *)sess_data == data);
+    if ((void *)sess_data != data) {
+        /*
+         * This answer refers to a state that is no longer the one stored
+         * in the Diameter session. Put the current state back and discard
+         * the answer instead of aborting the process.
+         */
+        ogs_error("Gy state mismatch: retrieved[%p] != expected[%p] [%s]",
+                (void *)sess_data, data, sess_data->gy_sid);
+        ret = fd_sess_state_store(smf_gy_reg, session, &sess_data);
+        ogs_assert(ret == 0);
+        error++;
+        goto cleanup;
+    }
 
     ogs_debug("    Retrieve its data: [%s]", sess_data->gy_sid);
 
