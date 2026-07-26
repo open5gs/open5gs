@@ -2835,9 +2835,18 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             }
 
             if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST &&
-                amf_self()->eir.enabled && !amf_ue->pei)
-                ogs_warn("[%s] No PEI available, skipping equipment "
-                        "identity check", amf_ue->supi);
+                amf_self()->eir.enabled && !amf_ue->pei) {
+                if (amf_self()->eir.missing_pei_action ==
+                        AMF_EIR_ACTION_REJECT) {
+                    ogs_warn("[%s] No PEI available, rejecting per "
+                            "missing_pei_action policy", amf_ue->supi);
+                    gmm_ue_equipment_check_complete(
+                            amf_ue, AMF_EIR_RESULT_REJECT);
+                    break;
+                }
+                ogs_warn("[%s] No PEI available, allowing per "
+                        "missing_pei_action policy", amf_ue->supi);
+            }
 
             gmm_continue_registration(s, amf_ue);
             break;
