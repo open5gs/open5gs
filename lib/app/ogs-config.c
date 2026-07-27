@@ -652,6 +652,18 @@ int ogs_app_parse_local_conf(const char *local)
                             /* handle config in amf */
                         } else if (!strcmp(time_key, "t3512")) {
                             /* handle config in amf */
+                        } else if (!strcmp(time_key, "t3513")) {
+                            /* handle config in amf */
+                        } else if (!strcmp(time_key, "t3522")) {
+                            /* handle config in amf */
+                        } else if (!strcmp(time_key, "t3550")) {
+                            /* handle config in amf */
+                        } else if (!strcmp(time_key, "t3555")) {
+                            /* handle config in amf */
+                        } else if (!strcmp(time_key, "t3560")) {
+                            /* handle config in amf */
+                        } else if (!strcmp(time_key, "t3570")) {
+                            /* handle config in amf */
                         } else if (!strcmp(time_key, "t3402")) {
                             /* handle config in mme */
                         } else if (!strcmp(time_key, "t3412")) {
