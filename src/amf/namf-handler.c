@@ -25,9 +25,13 @@
 #include "sbi-path.h"
 
 int amf_namf_comm_handle_n1_n2_message_transfer(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg,
+        int *http_status, const char **http_reason)
 {
     int status, r;
+
+    ogs_assert(http_status);
+    ogs_assert(http_reason);
 
     amf_ue_t *amf_ue = NULL;
     ran_ue_t *ran_ue = NULL;
@@ -79,7 +83,19 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
 
     amf_ue = amf_ue_find_by_supi(supi);
     if (!amf_ue) {
+        /*
+         * 3GPP TS 29.518 §5.2.2.3.1 mandates 404 Not Found when the
+         * targeted UE context does not exist. This typically happens
+         * when the RAN releases the UE context (UE inactivity, RRC
+         * idle transition) in the ~ms window between SMF initiating
+         * PDU Session Establishment and the N1N2MessageTransfer
+         * arriving at AMF. Returning a precise 404 lets SMF clean
+         * up the stranded session (see matching SMF fix) instead
+         * of leaking it in pdu_state=inactive forever.
+         */
         ogs_error("No UE context [%s]", supi);
+        *http_status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
+        *http_reason = "No UE context for SUPI";
         return OGS_ERROR;
     }
 
@@ -87,6 +103,8 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     if (!sess) {
         ogs_error("[%s] No PDU Session Context [%d]",
                 amf_ue->supi, pdu_session_id);
+        *http_status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
+        *http_reason = "No PDU Session Context";
         return OGS_ERROR;
     }
 

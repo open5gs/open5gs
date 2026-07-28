@@ -26,8 +26,17 @@ extern "C" {
 
 #include "context.h"
 
+/*
+ * On OGS_ERROR return, *http_status holds the 3GPP-compliant HTTP status
+ * code (404 when UE/PDU-Session context is missing, 400 for malformed
+ * requests) and *http_reason holds a precise human-readable explanation.
+ * Both outputs MUST be initialised by the caller to sensible defaults
+ * (400 / "...") before the call so that return sites which do not set
+ * them remain backwards compatible.
+ */
 int amf_namf_comm_handle_n1_n2_message_transfer(
-        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg,
+        int *http_status, const char **http_reason);
 int amf_namf_callback_handle_sm_context_status(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 int amf_namf_callback_handle_dereg_notify(
