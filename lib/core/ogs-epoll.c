@@ -274,6 +274,6 @@ static int epoll_process(ogs_pollset_t *pollset, ogs_time_t timeout)
                 map->write->handler(when, map->write->fd, map->write->data);
         }
     }
-    
+
     return OGS_OK;
 }
