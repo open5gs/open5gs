@@ -116,7 +116,7 @@ ogs_pkbuf_t *sgwu_sxa_build_session_modification_response(uint8_t type,
     /* Created PDR */
     for (i = 0, j = 0; i < num_of_created_pdr; i++) {
         bool pdr_presence = ogs_pfcp_build_created_pdr(
-                &rsp->created_pdr[i], i, created_pdr[i]);
+                &rsp->created_pdr[j], i, created_pdr[i]);
         if (pdr_presence == true) j++;
     }
 
