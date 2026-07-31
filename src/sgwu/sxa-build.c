@@ -95,7 +95,7 @@ ogs_pkbuf_t *sgwu_sxa_build_session_modification_response(uint8_t type,
     ogs_pfcp_session_modification_response_t *rsp = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
-    int i = 0, j = 0;
+    int i, j;
 
     ogs_debug("Session Modification Response");
 
