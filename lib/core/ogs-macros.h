@@ -66,7 +66,7 @@ extern "C" {
 #endif
 #define OGS_GNUC_NORETURN __attribute__((__noreturn__))
 #else
-#define OGS_GNUC_PRINTF(f, v) 
+#define OGS_GNUC_PRINTF(f, v)
 #define OGS_GNUC_NORETURN
 #endif
 
