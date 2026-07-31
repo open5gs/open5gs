@@ -26,6 +26,10 @@ int __udr_log_domain;
 
 static int context_initialized = 0;
 
+#define UDR_MAX_NUM_OF_SUBSCRIPTION_PER_UE 4
+static int max_num_of_subscription = 0;
+static OGS_POOL(subscription_pool, udr_subscription_t);
+
 void udr_context_init(void)
 {
     ogs_assert(context_initialized == 0);
@@ -38,12 +42,20 @@ void udr_context_init(void)
 
     ogs_thread_mutex_init(&self.db_lock);
 
+    ogs_list_init(&self.subscription_list);
+    max_num_of_subscription =
+        ogs_global_conf()->max.ue * UDR_MAX_NUM_OF_SUBSCRIPTION_PER_UE;
+    ogs_pool_init(&subscription_pool, max_num_of_subscription);
+
     context_initialized = 1;
 }
 
 void udr_context_final(void)
 {
     ogs_assert(context_initialized == 1);
+
+    udr_subscription_remove_all();
+    ogs_pool_final(&subscription_pool);
 
     ogs_thread_mutex_destroy(&self.db_lock);
 
@@ -304,4 +316,69 @@ static int poll_change_stream(void)
 #else
     return OGS_ERROR;
 #endif
+}
+
+udr_subscription_t *udr_subscription_add(void)
+{
+    udr_subscription_t *subscription = NULL;
+
+    ogs_pool_alloc(&subscription_pool, &subscription);
+    if (!subscription) {
+        ogs_error("OVERFLOW subscription_pool [pool:%d]",
+                max_num_of_subscription);
+        return NULL;
+    }
+    memset(subscription, 0, sizeof(udr_subscription_t));
+
+    ogs_list_add(&self.subscription_list, subscription);
+
+    return subscription;
+}
+
+udr_subscription_t *udr_subscription_find_by_id(const char *id)
+{
+    udr_subscription_t *subscription = NULL;
+
+    ogs_assert(id);
+
+    ogs_list_for_each(&self.subscription_list, subscription) {
+        ogs_assert(subscription->id);
+        if (strcmp(subscription->id, id) == 0)
+            break;
+    }
+
+    return subscription;
+}
+
+void udr_subscription_remove(udr_subscription_t *subscription)
+{
+    int i;
+
+    ogs_assert(subscription);
+
+    ogs_list_remove(&self.subscription_list, subscription);
+
+    if (subscription->id)
+        ogs_free(subscription->id);
+    if (subscription->callback_reference)
+        ogs_free(subscription->callback_reference);
+    if (subscription->original_callback_reference)
+        ogs_free(subscription->original_callback_reference);
+    if (subscription->ue_id)
+        ogs_free(subscription->ue_id);
+
+    for (i = 0; i < subscription->num_of_monitored_resource_uri; i++)
+        ogs_free(subscription->monitored_resource_uri[i]);
+
+    ogs_pool_free(&subscription_pool, subscription);
+}
+
+void udr_subscription_remove_all(void)
+{
+    udr_subscription_t *subscription = NULL, *next_subscription = NULL;
+
+    ogs_list_for_each_safe(&self.subscription_list,
+            next_subscription, subscription) {
+        udr_subscription_remove(subscription);
+    }
 }
