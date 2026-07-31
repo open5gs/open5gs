@@ -180,6 +180,32 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
         case OpenAPI_service_name_nudr_dr:
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA)
+                if (message.h.resource.component[1] &&
+                        !strcmp(message.h.resource.component[1],
+                            OGS_SBI_RESOURCE_NAME_SUBS_TO_NOTIFY)) {
+                    SWITCH(message.h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_POST)
+                        udr_nudr_dr_handle_subs_to_notify_create(
+                                stream, &message);
+                        break;
+
+                    CASE(OGS_SBI_HTTP_METHOD_DELETE)
+                        udr_nudr_dr_handle_subs_to_notify_delete(stream,
+                                &message, message.h.resource.component[2]);
+                        break;
+
+                    DEFAULT
+                        ogs_error("Invalid HTTP method [%s]",
+                                message.h.method);
+                        ogs_assert(true ==
+                            ogs_sbi_server_send_error(stream,
+                                OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                                &message, "Invalid HTTP method",
+                                message.h.method, NULL));
+                    END
+                    break;
+                }
+
                 SWITCH(message.h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_DATA)
                     udr_nudr_dr_handle_subscription_authentication(

@@ -112,6 +112,7 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_AUTHENTICATION_STATUS "authentication-status"
 #define OGS_SBI_RESOURCE_NAME_CONTEXT_DATA          "context-data"
 #define OGS_SBI_RESOURCE_NAME_PROVISIONED_DATA      "provisioned-data"
+#define OGS_SBI_RESOURCE_NAME_SUBS_TO_NOTIFY        "subs-to-notify"
 #define OGS_SBI_RESOURCE_NAME_POLICY_DATA           "policy-data"
 #define OGS_SBI_RESOURCE_NAME_UES                   "ues"
 #define OGS_SBI_RESOURCE_NAME_AM_DATA               "am-data"
@@ -542,6 +543,7 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_list_t *PatchItemList;
 
     OpenAPI_subscription_data_t *SubscriptionData;
+    OpenAPI_subscription_data_subscriptions_t *SubscriptionDataSubscriptions;
     OpenAPI_notification_data_t *NotificationData;
     OpenAPI_search_result_t *SearchResult;
     OpenAPI_authentication_info_t *AuthenticationInfo;
