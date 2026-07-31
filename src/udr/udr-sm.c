@@ -19,12 +19,31 @@
 
 #include "sbi-path.h"
 #include "nudr-handler.h"
+#include "udr-timer.h"
+
+#define DB_POLLING_TIME ogs_time_from_msec(100)
+
+static ogs_timer_t *t_db_polling = NULL;
 
 void udr_state_initial(ogs_fsm_t *s, udr_event_t *e)
 {
     udr_sm_debug(e);
 
     ogs_assert(s);
+
+#if MONGOC_CHECK_VERSION(1, 9, 0)
+    if (udr_self()->use_mongodb_change_stream) {
+        if (ogs_dbi_collection_watch_init() != OGS_OK) {
+            ogs_error("Failed to initialize the subscriber change stream; "
+                    "sm-data change notifications will not be sent");
+        } else {
+            t_db_polling = ogs_timer_add(ogs_app()->timer_mgr,
+                    udr_timer_dbi_poll_change_stream, 0);
+            ogs_assert(t_db_polling);
+            ogs_timer_start(t_db_polling, DB_POLLING_TIME);
+        }
+    }
+#endif
 
     OGS_FSM_TRAN(s, &udr_state_operational);
 }
@@ -34,6 +53,9 @@ void udr_state_final(ogs_fsm_t *s, udr_event_t *e)
     udr_sm_debug(e);
 
     ogs_assert(s);
+
+    if (t_db_polling)
+        ogs_timer_delete(t_db_polling);
 }
 
 void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
@@ -59,6 +81,31 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
         break;
 
     case OGS_FSM_EXIT_SIG:
+        if (t_db_polling)
+            ogs_timer_stop(t_db_polling);
+        break;
+
+    case UDR_EVENT_DBI_POLL_TIMER:
+        ogs_assert(e);
+
+        switch (e->h.timer_id) {
+        case UDR_TIMER_DBI_POLL_CHANGE_STREAM:
+            udr_db_poll_change_stream();
+            ogs_timer_start(t_db_polling, DB_POLLING_TIME);
+            break;
+
+        default:
+            ogs_error("Unknown timer[%d]", e->h.timer_id);
+        }
+        break;
+
+    case UDR_EVENT_DBI_MESSAGE:
+        ogs_assert(e);
+        ogs_assert(e->dbi.document);
+
+        udr_handle_change_event(e->dbi.document);
+
+        bson_destroy(e->dbi.document);
         break;
 
     case OGS_EVENT_SBI_SERVER:

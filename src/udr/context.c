@@ -18,6 +18,7 @@
  */
 
 #include "sbi-path.h"
+#include "event.h"
 
 static udr_context_t self;
 
@@ -35,12 +36,16 @@ void udr_context_init(void)
     ogs_log_install_domain(&__ogs_dbi_domain, "dbi", ogs_core()->log.level);
     ogs_log_install_domain(&__udr_log_domain, "udr", ogs_core()->log.level);
 
+    ogs_thread_mutex_init(&self.db_lock);
+
     context_initialized = 1;
 }
 
 void udr_context_final(void)
 {
     ogs_assert(context_initialized == 1);
+
+    ogs_thread_mutex_destroy(&self.db_lock);
 
     context_initialized = 0;
 }
@@ -96,6 +101,13 @@ int udr_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(udr_key, "discovery")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(udr_key, "use_mongodb_change_stream")) {
+#if MONGOC_CHECK_VERSION(1, 9, 0)
+                    self.use_mongodb_change_stream =
+                        ogs_yaml_iter_bool(&udr_iter);
+#else
+                    self.use_mongodb_change_stream = false;
+#endif
                 } else
                     ogs_warn("unknown key `%s`", udr_key);
             }
@@ -106,4 +118,190 @@ int udr_context_parse_config(void)
     if (rv != OGS_OK) return rv;
 
     return OGS_OK;
+}
+
+static bool key_touches_slice(const char *key)
+{
+    return !strcmp(key, "slice") || !strncmp(key, "slice.", strlen("slice."));
+}
+
+/* sm-data is derived from the subscriber's `slice` array, so only
+ * updates that touch `slice` invalidate a subscriber's sm-data resource. */
+static bool update_description_touches_slice(bson_iter_t *update_desc_iter)
+{
+    bson_iter_t area_iter, field_iter;
+
+    bson_iter_recurse(update_desc_iter, &area_iter);
+    while (bson_iter_next(&area_iter)) {
+        const char *area_key = bson_iter_key(&area_iter);
+
+        if (!strcmp(area_key, "updatedFields") &&
+                BSON_ITER_HOLDS_DOCUMENT(&area_iter)) {
+            bson_iter_recurse(&area_iter, &field_iter);
+            while (bson_iter_next(&field_iter))
+                if (key_touches_slice(bson_iter_key(&field_iter)))
+                    return true;
+
+        } else if (!strcmp(area_key, "removedFields") &&
+                BSON_ITER_HOLDS_ARRAY(&area_iter)) {
+            bson_iter_recurse(&area_iter, &field_iter);
+            while (bson_iter_next(&field_iter))
+                if (BSON_ITER_HOLDS_UTF8(&field_iter) &&
+                        key_touches_slice(bson_iter_utf8(&field_iter, NULL)))
+                    return true;
+
+        } else if (!strcmp(area_key, "truncatedArrays") &&
+                BSON_ITER_HOLDS_ARRAY(&area_iter)) {
+            bson_iter_t item_iter;
+            bson_iter_recurse(&area_iter, &field_iter);
+            while (bson_iter_next(&field_iter)) {
+                if (BSON_ITER_HOLDS_DOCUMENT(&field_iter) &&
+                        bson_iter_recurse(&field_iter, &item_iter) &&
+                        bson_iter_find(&item_iter, "field") &&
+                        BSON_ITER_HOLDS_UTF8(&item_iter) &&
+                        key_touches_slice(bson_iter_utf8(&item_iter, NULL)))
+                    return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+int udr_handle_change_event(const bson_t *document)
+{
+    bson_iter_t iter, full_doc_iter;
+    const char *operation_type = NULL;
+    char *imsi_bcd = NULL;
+    char *supi = NULL;
+    bool sm_data_changed = false;
+
+    ogs_assert(document);
+
+    if (!bson_iter_init_find(&iter, document, "operationType") ||
+            !BSON_ITER_HOLDS_UTF8(&iter)) {
+        ogs_error("No 'operationType' field in this document.");
+        return OGS_ERROR;
+    }
+    operation_type = bson_iter_utf8(&iter, NULL);
+
+    if (strcmp(operation_type, "update") &&
+            strcmp(operation_type, "replace")) {
+        /* Inserts/deletes are not handled in this first iteration. */
+        return OGS_OK;
+    }
+
+    if (!bson_iter_init_find(&iter, document, "fullDocument") ||
+            !BSON_ITER_HOLDS_DOCUMENT(&iter)) {
+        ogs_error("No 'fullDocument' field in this document.");
+        return OGS_ERROR;
+    }
+    bson_iter_recurse(&iter, &full_doc_iter);
+    while (bson_iter_next(&full_doc_iter)) {
+        if (!strcmp(bson_iter_key(&full_doc_iter), "imsi") &&
+                BSON_ITER_HOLDS_UTF8(&full_doc_iter)) {
+            uint32_t length = 0;
+            const char *utf8 = bson_iter_utf8(&full_doc_iter, &length);
+            imsi_bcd = ogs_strndup(utf8,
+                    ogs_min(length, OGS_MAX_IMSI_BCD_LEN) + 1);
+            ogs_assert(imsi_bcd);
+        }
+    }
+
+    if (!imsi_bcd) {
+        ogs_error("No 'imsi' field in this document.");
+        return OGS_ERROR;
+    }
+
+    if (!strcmp(operation_type, "replace")) {
+        /* No pre-image is available, so a whole-document replacement is
+         * conservatively treated as an sm-data change. */
+        sm_data_changed = true;
+    } else if (bson_iter_init_find(&iter, document, "updateDescription") &&
+            BSON_ITER_HOLDS_DOCUMENT(&iter)) {
+        sm_data_changed = update_description_touches_slice(&iter);
+    }
+
+    if (sm_data_changed) {
+        supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
+        ogs_assert(supi);
+
+        ogs_info("[%s] sm-data changed", supi);
+
+        /* TODO: notify subscribers monitoring this SUPI's sm-data
+         * resource once SubscriptionDataSubscriptions is implemented. */
+
+        ogs_free(supi);
+    }
+
+    ogs_free(imsi_bcd);
+
+    return OGS_OK;
+}
+
+static int poll_change_stream(void);
+
+int udr_db_poll_change_stream(void)
+{
+    int rv;
+
+    ogs_thread_mutex_lock(&self.db_lock);
+
+    rv = poll_change_stream();
+
+    ogs_thread_mutex_unlock(&self.db_lock);
+
+    return rv;
+}
+
+static int process_change_stream(const bson_t *document)
+{
+    int rv;
+
+    udr_event_t *e = NULL;
+
+    e = udr_event_new(UDR_EVENT_DBI_MESSAGE);
+    ogs_assert(e);
+    e->dbi.document = bson_copy(document);
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        bson_destroy(e->dbi.document);
+        ogs_event_free(e);
+    } else {
+        ogs_pollset_notify(ogs_app()->pollset);
+    }
+
+    return OGS_OK;
+}
+
+static int poll_change_stream(void)
+{
+#if MONGOC_CHECK_VERSION(1, 9, 0)
+    int rv;
+
+    const bson_t *document;
+    const bson_t *err_document;
+    bson_error_t error;
+
+    while (mongoc_change_stream_next(ogs_mongoc()->stream, &document)) {
+        rv = process_change_stream(document);
+        if (rv != OGS_OK) return rv;
+    }
+
+    if (mongoc_change_stream_error_document(ogs_mongoc()->stream, &error,
+            &err_document)) {
+        if (!bson_empty(err_document)) {
+            ogs_debug("Server Error: %s\n",
+                    bson_as_relaxed_extended_json(err_document, NULL));
+        } else {
+            ogs_debug("Client Error: %s\n", error.message);
+        }
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+#else
+    return OGS_ERROR;
+#endif
 }

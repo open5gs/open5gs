@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,40 +17,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef UDR_CONTEXT_H
-#define UDR_CONTEXT_H
-
-#include "ogs-app.h"
-#include "ogs-dbi.h"
-#include "ogs-sbi.h"
-
-#include "udr-sm.h"
+#ifndef UDR_TIMER_H
+#define UDR_TIMER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern int __udr_log_domain;
+typedef enum {
+    UDR_TIMER_DBI_POLL_CHANGE_STREAM = 1,
+} udr_timer_e;
 
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __udr_log_domain
-
-typedef struct udr_context_s {
-    int                 use_mongodb_change_stream;
-    ogs_thread_mutex_t  db_lock;
-} udr_context_t;
-
-void udr_context_init(void);
-void udr_context_final(void);
-udr_context_t *udr_self(void);
-
-int udr_context_parse_config(void);
-
-int udr_db_poll_change_stream(void);
-int udr_handle_change_event(const bson_t *document);
+void udr_timer_dbi_poll_change_stream(void *data);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* UDR_CONTEXT_H */
+#endif /* UDR_TIMER_H */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,40 +17,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef UDR_CONTEXT_H
-#define UDR_CONTEXT_H
-
+#include "udr-timer.h"
+#include "event.h"
 #include "ogs-app.h"
-#include "ogs-dbi.h"
-#include "ogs-sbi.h"
 
-#include "udr-sm.h"
+static void timer_send_event(int timer_id)
+{
+    int rv;
+    udr_event_t *e = NULL;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    e = udr_event_new(UDR_EVENT_DBI_POLL_TIMER);
+    ogs_assert(e);
+    e->h.timer_id = timer_id;
 
-extern int __udr_log_domain;
-
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __udr_log_domain
-
-typedef struct udr_context_s {
-    int                 use_mongodb_change_stream;
-    ogs_thread_mutex_t  db_lock;
-} udr_context_t;
-
-void udr_context_init(void);
-void udr_context_final(void);
-udr_context_t *udr_self(void);
-
-int udr_context_parse_config(void);
-
-int udr_db_poll_change_stream(void);
-int udr_handle_change_event(const bson_t *document);
-
-#ifdef __cplusplus
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_event_free(e);
+    }
 }
-#endif
 
-#endif /* UDR_CONTEXT_H */
+void udr_timer_dbi_poll_change_stream(void *data)
+{
+    timer_send_event(UDR_TIMER_DBI_POLL_CHANGE_STREAM);
+}
