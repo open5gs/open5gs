@@ -171,9 +171,9 @@ static ogs_inline ogs_uint24_t ogs_htobe24(ogs_uint24_t x)
 #define OGS_PASTE_HELPER(n1, n2)    n1##n2
 
 #define OGS_INET_NTOP(src, dst) \
-    inet_ntop(AF_INET, (void *)(uintptr_t)(src), (dst), INET_ADDRSTRLEN)
+    inet_ntop(AF_INET, (const void *)(uintptr_t)(src), (dst), INET_ADDRSTRLEN)
 #define OGS_INET6_NTOP(src, dst) \
-    inet_ntop(AF_INET6, (void *)(src), (dst), INET6_ADDRSTRLEN)
+    inet_ntop(AF_INET6, (const void *)(src), (dst), INET6_ADDRSTRLEN)
 
 #define ogs_max(x , y)  (((x) > (y)) ? (x) : (y))
 #define ogs_min(x , y)  (((x) < (y)) ? (x) : (y))
