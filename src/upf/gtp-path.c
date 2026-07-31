@@ -99,23 +99,28 @@ static uint16_t _get_eth_type(uint8_t *data, uint len) {
     return 0;
 }
 
-static void _gtpv1_tun_recv_common_cb(
-        short when, ogs_socket_t fd, bool has_eth, void *data)
-{
-    ogs_pkbuf_t *recvbuf = NULL;
+/* Drain budget per event loop read event for the UPF data-plane sockets.
+ * Single-packet dispatch caps DL throughput on CPU-constrained UPFs
+ * because the worker thread spends a non-trivial share of its time
+ * in epoll syscall and wakeups rather than packet processing.
+ * Draining up to N packets per callback amortises the dispatch and
+ * PDR-walk overhead and keeps the kernel rx queue from saturating
+ * between wakeups.  32 is a balance between batch efficiency and tail
+ * latency at ~1500 B packets / line rate.
+ */
+#ifndef UPF_SK_DRAIN_BUDGET
+#define UPF_SK_DRAIN_BUDGET 32
+#endif
 
+/* Owns recvbuf passed to it */
+static void _gtpv1_tun_recv_common_one(ogs_socket_t fd, ogs_pkbuf_t *recvbuf, bool has_eth)
+{
     upf_sess_t *sess = NULL;
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_pdr_t *fallback_pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
     ogs_pfcp_user_plane_report_t report;
     int i;
-
-    recvbuf = ogs_tun_read(fd, packet_pool);
-    if (!recvbuf) {
-        ogs_warn("ogs_tun_read() failed");
-        return;
-    }
 
     if (has_eth) {
         ogs_pkbuf_t *replybuf = NULL;
@@ -252,6 +257,16 @@ cleanup:
     ogs_pkbuf_free(recvbuf);
 }
 
+static void _gtpv1_tun_recv_common_cb(short when, ogs_socket_t fd, bool has_eth, void *data)
+{
+    for (unsigned int i = 0; i < UPF_SK_DRAIN_BUDGET; i++) {
+        ogs_pkbuf_t *recvbuf = ogs_tun_read(fd, packet_pool);
+        if (!recvbuf) /* EAGAIN, no more packets to process for now */
+            return;
+        _gtpv1_tun_recv_common_one(fd, recvbuf, has_eth);
+    }
+}
+
 static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     _gtpv1_tun_recv_common_cb(when, fd, false, data);
@@ -262,40 +277,17 @@ static void _gtpv1_tun_recv_eth_cb(short when, ogs_socket_t fd, void *data)
     _gtpv1_tun_recv_common_cb(when, fd, true, data);
 }
 
-static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
+static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pkbuf, const ogs_sockaddr_t *from)
 {
     int len;
-    ssize_t size;
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
 
     upf_sess_t *sess = NULL;
 
-    ogs_pkbuf_t *pkbuf = NULL;
-    ogs_sock_t *sock = NULL;
-    ogs_sockaddr_t from;
-
     ogs_gtp2_header_t *gtp_h = NULL;
     ogs_gtp2_header_desc_t header_desc;
     ogs_pfcp_user_plane_report_t report;
-
-    ogs_assert(fd != INVALID_SOCKET);
-    sock = data;
-    ogs_assert(sock);
-
-    pkbuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);
-    ogs_assert(pkbuf);
-    ogs_pkbuf_reserve(pkbuf, OGS_TUN_MAX_HEADROOM);
-    ogs_pkbuf_put(pkbuf, OGS_MAX_PKT_LEN-OGS_TUN_MAX_HEADROOM);
-
-    size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, &from);
-    if (size <= 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "ogs_recv() failed");
-        goto cleanup;
-    }
-
-    ogs_pkbuf_trim(pkbuf, size);
 
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
@@ -316,16 +308,16 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     if (header_desc.type == OGS_GTPU_MSGTYPE_ECHO_REQ) {
         ogs_pkbuf_t *echo_rsp;
 
-        ogs_info("[RECV] Echo Request from [%s]", OGS_ADDR(&from, buf1));
+        ogs_info("[RECV] Echo Request from [%s]", OGS_ADDR(from, buf1));
         echo_rsp = ogs_gtp2_handle_echo_req(pkbuf);
         ogs_expect(echo_rsp);
         if (echo_rsp) {
             ssize_t sent;
 
             /* Echo reply */
-            ogs_info("[SEND] Echo Response to [%s]", OGS_ADDR(&from, buf1));
+            ogs_info("[SEND] Echo Response to [%s]", OGS_ADDR(from, buf1));
 
-            sent = ogs_sendto(fd, echo_rsp->data, echo_rsp->len, 0, &from);
+            sent = ogs_sendto(fd, echo_rsp->data, echo_rsp->len, 0, from);
             if (sent < 0 || sent != echo_rsp->len) {
                 ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                         "ogs_sendto() failed");
@@ -343,7 +335,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     }
 
     ogs_trace("[RECV] GPU-U Type [%d] from [%s] : TEID[0x%x]",
-            header_desc.type, OGS_ADDR(&from, buf1), header_desc.teid);
+            header_desc.type, OGS_ADDR(from, buf1), header_desc.teid);
 
     /* Remove GTP header and send packets to TUN interface */
     ogs_assert(ogs_pkbuf_pull(pkbuf, len));
@@ -420,10 +412,10 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 ogs_error("[%s] Send Error Indication [TEID:0x%x] to [%s]",
                         OGS_ADDR(&sock->local_addr, buf1),
                         header_desc.teid,
-                        OGS_ADDR(&from, buf2));
+                        OGS_ADDR(from, buf2));
                 ogs_gtp1_send_error_indication(
                         sock, header_desc.teid,
-                        header_desc.qos_flow_identifier, &from);
+                        header_desc.qos_flow_identifier, from);
             }
             goto cleanup;
         }
@@ -513,7 +505,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                             "[TEID:0x%x QFI:%d] from [%s]",
                             header_desc.teid,
                             header_desc.qos_flow_identifier,
-                            OGS_ADDR(&from, buf2));
+                            OGS_ADDR(from, buf2));
                     goto cleanup;
                 }
 
@@ -539,10 +531,10 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                             "[%s] Send Error Indication [TEID:0x%x] to [%s]",
                             OGS_ADDR(&sock->local_addr, buf1),
                             header_desc.teid,
-                            OGS_ADDR(&from, buf2));
+                            OGS_ADDR(from, buf2));
                     ogs_gtp1_send_error_indication(
                             sock, header_desc.teid,
-                            header_desc.qos_flow_identifier, &from);
+                            header_desc.qos_flow_identifier, from);
                 }
                 goto cleanup;
             }
@@ -938,6 +930,37 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
 cleanup:
     ogs_pkbuf_free(pkbuf);
+}
+
+static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
+{
+    ogs_sock_t *sock = NULL;
+
+    ogs_assert(fd != INVALID_SOCKET);
+    sock = data;
+    ogs_assert(sock);
+
+    for (unsigned int i = 0; i < UPF_SK_DRAIN_BUDGET; i++) {
+        ssize_t size;
+        ogs_sockaddr_t from;
+        ogs_pkbuf_t *pkbuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);
+        ogs_assert(pkbuf);
+        ogs_pkbuf_reserve(pkbuf, OGS_TUN_MAX_HEADROOM);
+        ogs_pkbuf_put(pkbuf, OGS_MAX_PKT_LEN-OGS_TUN_MAX_HEADROOM);
+
+        size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, &from);
+        if (size <= 0) {
+            /* EAGAIN on a non-blocking UDP socket means the kernel rx queue
+            * has been drained -- return to the event loop for the next
+            * wakeup.  Surface only real errors. */
+            if (ogs_socket_errno != OGS_EAGAIN)
+                ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "ogs_recv() failed");
+            ogs_pkbuf_free(pkbuf);
+            return;
+        }
+        ogs_pkbuf_trim(pkbuf, size);
+        _gtpv1_u_recv_one(fd, sock, pkbuf, &from);
+    }
 }
 
 int upf_gtp_init(void)
