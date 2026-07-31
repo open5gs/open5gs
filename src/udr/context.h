@@ -53,6 +53,8 @@ typedef struct udr_subscription_s {
 
     int num_of_monitored_resource_uri;
     char *monitored_resource_uri[UDR_MAX_NUM_OF_MONITORED_RESOURCE_URI];
+
+    void *client;                      /* SBI client bound to callback_reference */
 } udr_subscription_t;
 
 typedef struct udr_context_s {

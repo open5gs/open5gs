@@ -86,6 +86,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     if (message->SubscriptionDataSubscriptions)
         OpenAPI_subscription_data_subscriptions_free(
                 message->SubscriptionDataSubscriptions);
+    if (message->DataChangeNotify)
+        OpenAPI_data_change_notify_free(message->DataChangeNotify);
     if (message->NotificationData)
         OpenAPI_notification_data_free(message->NotificationData);
     if (message->SearchResult)
@@ -1655,6 +1657,10 @@ static char *build_json(ogs_sbi_message_t *message)
     } else if (message->SubscriptionDataSubscriptions) {
         item = OpenAPI_subscription_data_subscriptions_convertToJSON(
                 message->SubscriptionDataSubscriptions);
+        ogs_assert(item);
+    } else if (message->DataChangeNotify) {
+        item = OpenAPI_data_change_notify_convertToJSON(
+                message->DataChangeNotify);
         ogs_assert(item);
     } else if (message->N1N2MessageTransferReqData) {
         item = OpenAPI_n1_n2_message_transfer_req_data_convertToJSON(

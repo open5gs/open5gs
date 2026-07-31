@@ -19,6 +19,7 @@
 
 #include "sbi-path.h"
 #include "event.h"
+#include "nudr-handler.h"
 
 static udr_context_t self;
 
@@ -240,8 +241,7 @@ int udr_handle_change_event(const bson_t *document)
 
         ogs_info("[%s] sm-data changed", supi);
 
-        /* TODO: notify subscribers monitoring this SUPI's sm-data
-         * resource once SubscriptionDataSubscriptions is implemented. */
+        udr_nudr_dr_notify_sm_data_change(supi);
 
         ogs_free(supi);
     }
@@ -369,6 +369,9 @@ void udr_subscription_remove(udr_subscription_t *subscription)
 
     for (i = 0; i < subscription->num_of_monitored_resource_uri; i++)
         ogs_free(subscription->monitored_resource_uri[i]);
+
+    if (subscription->client)
+        ogs_sbi_client_remove(subscription->client);
 
     ogs_pool_free(&subscription_pool, subscription);
 }
