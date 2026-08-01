@@ -613,6 +613,18 @@ void sgwc_sxa_handle_session_modification_response(
                             &tunnel->local_addr, &tunnel->local_addr6));
                     tunnel->local_teid = pdr->f_teid.teid;
                 }
+
+                /*
+                 * pfcp_cause_value is final at this point, so the tunnel
+                 * is marked as installed only if the UP function has
+                 * accepted every Created PDR.
+                 */
+                if (pfcp_cause_value == OGS_PFCP_CAUSE_REQUEST_ACCEPTED &&
+                    (tunnel->interface_type ==
+                        OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING ||
+                     tunnel->interface_type ==
+                        OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING))
+                    tunnel->indirect_data_forwarding_created = true;
             }
         }
 
