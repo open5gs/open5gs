@@ -134,6 +134,15 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
     int num_of_update_pdr = 0;
     int num_of_update_far = 0;
 
+    /*
+     * ogs_pfcp_build_create_far() and ogs_pfcp_build_update_far_activate()
+     * share the same static buffer, so Create FAR and Update FAR in the
+     * same message must not use the same index.
+     *
+     * Note that ogs_pfcp_build_update_far_deactivate() does not use it.
+     */
+    int farbuf_index = 0;
+
     uint64_t modify_flags = 0;
     int total = 0;
 
@@ -210,6 +219,29 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
 
                 } else if (modify_flags & OGS_PFCP_MODIFY_CREATE) {
 
+                    if ((modify_flags & OGS_PFCP_MODIFY_INDIRECT) &&
+                        tunnel->indirect_data_forwarding_created) {
+                        /*
+                         * An indirect data forwarding tunnel left over by
+                         * the previous handover is being re-used.
+                         *
+                         * Its PDR is unchanged, so only the FAR has to
+                         * point to the new target eNodeB.
+                         */
+                        far = tunnel->far;
+                        if (far) {
+                            ogs_pfcp_build_update_far_activate(
+                                    &req->update_far[num_of_update_far],
+                                    farbuf_index, far);
+
+                            num_of_update_far++;
+                            farbuf_index++;
+                        } else
+                            ogs_assert_if_reached();
+
+                        continue;
+                    }
+
                     pdr = tunnel->pdr;
                     if (pdr) {
                         ogs_pfcp_build_create_pdr(
@@ -226,9 +258,10 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
                     if (far) {
                         ogs_pfcp_build_create_far(
                                 &req->create_far[num_of_create_far],
-                                num_of_create_far, far);
+                                farbuf_index, far);
 
                         num_of_create_far++;
+                        farbuf_index++;
                     } else
                         ogs_assert_if_reached();
                 }
@@ -255,9 +288,10 @@ ogs_pkbuf_t *sgwc_sxa_build_bearer_to_modify_list(
 
                         ogs_pfcp_build_update_far_activate(
                                 &req->update_far[num_of_update_far],
-                                num_of_update_far, far);
+                                farbuf_index, far);
 
                         num_of_update_far++;
+                        farbuf_index++;
 
                         /* Clear all FAR flags */
                         tunnel->far->smreq_flags.value = 0;
