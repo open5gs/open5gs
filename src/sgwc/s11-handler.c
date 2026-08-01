@@ -1683,12 +1683,29 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
             req_teid = req->bearer_contexts[i].s1_u_enodeb_f_teid.data;
             ogs_assert(req_teid);
 
-            tunnel = sgwc_tunnel_add(bearer,
+            /*
+             * If the indirect data forwarding tunnel of the previous
+             * handover has not been deleted -- the MME does not always
+             * send Delete Indirect Data Forwarding Tunnel Request --
+             * re-use it.
+             *
+             * OGS_MAX_NUM_OF_PDR is dimensioned for a single forwarding
+             * pair per bearer, so allocating a new PDR/FAR on every
+             * handover exhausts the PDR pool of the session.
+             */
+            tunnel = sgwc_tunnel_find_by_interface_type(bearer,
                     OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING);
-            if (!tunnel) {
-                ogs_error("sgwc_tunnel_add() failed");
-                cause_value = OGS_GTP2_CAUSE_SYSTEM_FAILURE;
-                goto cleanup;
+            if (tunnel) {
+                ogs_error("[%s] Re-use indirect DL tunnel [EBI:%d]",
+                        sgwc_ue->imsi_bcd, bearer->ebi);
+            } else {
+                tunnel = sgwc_tunnel_add(bearer,
+                        OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING);
+                if (!tunnel) {
+                    ogs_error("sgwc_tunnel_add() failed");
+                    cause_value = OGS_GTP2_CAUSE_SYSTEM_FAILURE;
+                    goto cleanup;
+                }
             }
 
             tunnel->remote_teid = be32toh(req_teid->teid);
@@ -1731,12 +1748,20 @@ void sgwc_s11_handle_create_indirect_data_forwarding_tunnel_request(
             req_teid = req->bearer_contexts[i].s12_rnc_f_teid.data;
             ogs_assert(req_teid);
 
-            tunnel = sgwc_tunnel_add(bearer,
+            /* See the comment on the DL data forwarding tunnel above */
+            tunnel = sgwc_tunnel_find_by_interface_type(bearer,
                     OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING);
-            if (!tunnel) {
-                ogs_error("sgwc_tunnel_add() failed");
-                cause_value = OGS_GTP2_CAUSE_SYSTEM_FAILURE;
-                goto cleanup;
+            if (tunnel) {
+                ogs_error("[%s] Re-use indirect UL tunnel [EBI:%d]",
+                        sgwc_ue->imsi_bcd, bearer->ebi);
+            } else {
+                tunnel = sgwc_tunnel_add(bearer,
+                        OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING);
+                if (!tunnel) {
+                    ogs_error("sgwc_tunnel_add() failed");
+                    cause_value = OGS_GTP2_CAUSE_SYSTEM_FAILURE;
+                    goto cleanup;
+                }
             }
 
             tunnel->remote_teid = be32toh(req_teid->teid);

@@ -129,6 +129,9 @@ typedef struct sgwc_tunnel_s {
     uint32_t        remote_teid;
     ogs_ip_t        remote_ip;
 
+    /* The indirect PDR/FAR pair has been installed in SGW-U */
+    bool            indirect_data_forwarding_created;
+
     /* Related Context */
     ogs_pool_id_t   bearer_id;
     ogs_gtp_node_t  *gnode;
