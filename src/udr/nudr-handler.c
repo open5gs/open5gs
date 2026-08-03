@@ -1922,9 +1922,6 @@ bool udr_nudr_dr_handle_subs_to_notify_delete(
 static int client_notify_cb(
         int status, ogs_sbi_response_t *response, void *data)
 {
-    int rv;
-    ogs_sbi_message_t message;
-
     if (status != OGS_OK) {
         ogs_log_message(
                 status == OGS_DONE ? OGS_LOG_DEBUG : OGS_LOG_WARN, 0,
@@ -1934,19 +1931,14 @@ static int client_notify_cb(
 
     ogs_assert(response);
 
-    rv = ogs_sbi_parse_response(&message, response);
-    if (rv != OGS_OK) {
-        ogs_error("cannot parse HTTP response");
-        ogs_sbi_message_free(&message);
-        ogs_sbi_response_free(response);
-        return OGS_ERROR;
-    }
-
-    if (message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
-        ogs_warn("DataChangeNotify callback returned [%d]",
-                message.res_status);
-
-    ogs_sbi_message_free(&message);
+    /* callbackReference is consumer-chosen and opaque (TS 29.500 §6.3),
+     * not guaranteed to be an SBI-shaped path, so we read the status
+     * directly instead of running it through ogs_sbi_parse_response(). */
+    if (response->status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
+        ogs_warn("DataChangeNotify callback returned [%d]%s%s",
+                response->status,
+                response->http.content ? ": " : "",
+                response->http.content ? response->http.content : "");
     ogs_sbi_response_free(response);
     return OGS_OK;
 }
