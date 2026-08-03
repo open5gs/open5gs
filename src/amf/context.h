@@ -275,6 +275,7 @@ typedef struct amf_ue_memento_s {
     uint32_t dl_count;
     /* Uplink counter (24-bit stored in uint32_t) */
     uint32_t ul_count;
+    bool ul_count_accepted;
     /* gNB key derived from kasme */
     uint8_t kgnb[OGS_SHA256_DIGEST_SIZE];
 
@@ -505,6 +506,15 @@ struct amf_ue_s {
         } __attribute__ ((packed));
         uint32_t i32;
     } ul_count;
+    /*
+     * Set once an uplink NAS message has been accepted in the current
+     * 5G NAS security context. While it is false, 'ul_count' does not yet
+     * hold a "last accepted" value and the replay check is not applied.
+     *
+     * Both are cleared by the AMF when it takes a new security context
+     * into use, never by the security header type of a received message.
+     */
+    bool            ul_count_accepted;
     /* gNB key derived from kasme */
     uint8_t         kgnb[OGS_SHA256_DIGEST_SIZE];
 
