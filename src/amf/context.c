@@ -2921,6 +2921,7 @@ void amf_ue_save_memento(amf_ue_t *amf_ue, amf_ue_memento_t *memento)
     memcpy(memento->knas_enc, amf_ue->knas_enc, OGS_SHA256_DIGEST_SIZE/2);
     memento->dl_count = amf_ue->dl_count;
     memento->ul_count = amf_ue->ul_count.i32;
+    memento->ul_count_accepted = amf_ue->ul_count_accepted;
     memcpy(memento->kgnb, amf_ue->kgnb, OGS_SHA256_DIGEST_SIZE);
     memcpy(memento->nh, amf_ue->nh, OGS_SHA256_DIGEST_SIZE);
     memento->selected_enc_algorithm = amf_ue->selected_enc_algorithm;
@@ -2948,6 +2949,7 @@ void amf_ue_restore_memento(amf_ue_t *amf_ue, const amf_ue_memento_t *memento)
     memcpy(amf_ue->knas_enc, memento->knas_enc, OGS_SHA256_DIGEST_SIZE/2);
     amf_ue->dl_count = memento->dl_count;
     amf_ue->ul_count.i32 = memento->ul_count;
+    amf_ue->ul_count_accepted = memento->ul_count_accepted;
     memcpy(amf_ue->kgnb, memento->kgnb, OGS_SHA256_DIGEST_SIZE);
     memcpy(amf_ue->nh, memento->nh, OGS_SHA256_DIGEST_SIZE);
     amf_ue->selected_enc_algorithm = memento->selected_enc_algorithm;
