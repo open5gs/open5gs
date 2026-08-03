@@ -5767,6 +5767,7 @@ void mme_ue_save_memento(mme_ue_t *mme_ue, mme_ue_memento_t *memento)
            OGS_SHA256_DIGEST_SIZE / 2);
     memento->dl_count = mme_ue->dl_count;
     memento->ul_count = mme_ue->ul_count.i32;
+    memento->ul_count_accepted = mme_ue->ul_count_accepted;
     memcpy(memento->kenb, mme_ue->kenb, OGS_SHA256_DIGEST_SIZE);
     memcpy(memento->hash_mme, mme_ue->hash_mme, OGS_HASH_MME_LEN);
     memento->nonceue = mme_ue->nonceue;
@@ -5804,6 +5805,7 @@ void mme_ue_restore_memento(mme_ue_t *mme_ue, const mme_ue_memento_t *memento)
            OGS_SHA256_DIGEST_SIZE / 2);
     mme_ue->dl_count = memento->dl_count;
     mme_ue->ul_count.i32 = memento->ul_count;
+    mme_ue->ul_count_accepted = memento->ul_count_accepted;
     memcpy(mme_ue->kenb, memento->kenb, OGS_SHA256_DIGEST_SIZE);
     memcpy(mme_ue->hash_mme, memento->hash_mme, OGS_HASH_MME_LEN);
     mme_ue->nonceue = memento->nonceue;
