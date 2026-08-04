@@ -41,6 +41,7 @@
 #include "pfcp-path.h"
 #include "s5c-build.h"
 #include "gn-build.h"
+#include "dhcpv6.h"
 
 static bool check_if_router_solicit(ogs_pkbuf_t *pkbuf);
 static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst);
@@ -219,6 +220,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             struct ip6_hdr *ip6_h = (struct ip6_hdr *)pkbuf->data;
             ogs_assert(ip6_h);
             send_router_advertisement(sess, ip6_h->ip6_src.s6_addr);
+        } else if (sess->ipv6 && smf_dhcpv6_check(pkbuf) == true) {
+            smf_dhcpv6_handle(sess, pkbuf);
         }
     } else {
         ogs_error("[DROP] Invalid GTPU Type [%d]", header_desc.type);
@@ -607,7 +610,6 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
 
     ogs_pkbuf_t *pkbuf = NULL;
 
-    ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_ue_ip_t *ue_ip = NULL;
     ogs_pfcp_subnet_t *subnet = NULL;
     char ipstr[OGS_ADDRSTRLEN];
@@ -661,6 +663,9 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
     advert_h->nd_ra_code = 0;
     advert_h->nd_ra_curhoplimit = 64;
     advert_h->nd_ra_flags_reserved = 0;
+    /* Hint that DHCPv6 is available when Prefix Delegation is configured */
+    if (subnet->delegated_prefix.bitmap)
+        advert_h->nd_ra_flags_reserved |= ND_RA_FLAG_OTHER;
     advert_h->nd_ra_router_lifetime = htobe16(64800);  /* 64800s */
     advert_h->nd_ra_reachable = 0;
     advert_h->nd_ra_retransmit = 0;
@@ -708,6 +713,24 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
     memcpy(ip6_h->ip6_src.s6_addr, src_ipsub.sub, sizeof src_ipsub.sub);
     memcpy(ip6_h->ip6_dst.s6_addr, ip6_dst, OGS_IPV6_LEN);
 
+    ogs_debug("      Build Router Advertisement");
+    smf_gtp_send_cp_packet_to_ue(sess, pkbuf);
+}
+
+/*
+ * Send a packet from the CP function towards the UE
+ * over the CP2UP GTP-U path (used for Router Advertisement
+ * and DHCPv6 responses).
+ *
+ * Takes over the pkbuf in all cases.
+ */
+void smf_gtp_send_cp_packet_to_ue(smf_sess_t *sess, ogs_pkbuf_t *pkbuf)
+{
+    ogs_pfcp_pdr_t *pdr = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(pkbuf);
+
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
         if (pdr->src_if == OGS_PFCP_INTERFACE_CP_FUNCTION && pdr->gnode) {
             ogs_gtp2_header_desc_t header_desc;
@@ -723,7 +746,7 @@ static void send_router_advertisement(smf_sess_t *sess, uint8_t *ip6_dst)
             ogs_gtp_send_with_teid(
                     gnode->sock, pkbuf, pdr->f_teid.teid, &gnode->addr);
 
-            ogs_debug("      Send Router Advertisement");
+            ogs_debug("      Send CP packet to UE");
             break;
         }
     }
