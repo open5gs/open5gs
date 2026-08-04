@@ -55,6 +55,18 @@ amf:
 #      value: 720   # 12 minutes * 60 = 720 seconds
     t3512:
       value: 540    # 9 minutes * 60 = 540 seconds
+    # t3513:
+    #   value: 2
+    # t3522:
+    #   value: 3
+    # t3550:
+    #   value: 6
+    # t3555:
+    #   value: 6
+    # t3560:
+    #   value: 6
+    # t3570:
+    #   value: 3
 
 ################################################################################
 # SBI Server
