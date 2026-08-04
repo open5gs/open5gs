@@ -23,6 +23,7 @@ smf_headers = ('''
     netinet/ip6.h
     netinet/ip_icmp.h
     netinet/icmp6.h
+    netinet/udp.h
 '''.split())
 
 foreach h : smf_headers
@@ -71,6 +72,7 @@ libsmf_sources = files('''
     local-path.h
     metrics.h
     pdu-info.h
+    dhcpv6.h
 
     init.c
     event.c
@@ -114,6 +116,7 @@ libsmf_sources = files('''
     local-path.c
     metrics.c
     pdu-info.c
+    dhcpv6.c
     ../../lib/metrics/prometheus/json_pager.c
 '''.split())
 
