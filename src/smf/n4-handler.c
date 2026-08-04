@@ -318,6 +318,12 @@ void smf_5gc_n4_handle_session_modification_response(
         ogs_pfcp_far_t *far = NULL;
 
         ogs_assert(sess);
+
+        if (flags & OGS_PFCP_MODIFY_PD_LEASE) {
+            /* PD lease route install/remove : nothing further to do */
+            return;
+        }
+
         for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
             pdr = ogs_pfcp_handle_created_pdr(
                     &sess->pfcp, &rsp->created_pdr[i],
@@ -1293,6 +1299,11 @@ void smf_epc_n4_handle_session_modification_response(
     }
 
     ogs_assert(sess);
+
+    if (flags & OGS_PFCP_MODIFY_PD_LEASE) {
+        /* PD lease route install/remove : nothing further to do */
+        return;
+    }
 
     pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {

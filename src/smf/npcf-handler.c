@@ -666,6 +666,16 @@ bool smf_npcf_smpolicycontrol_handle_create(
         (char *)"permit out 58 from ff02::2/128 to assigned";
     up2cp_pdr->num_of_flow++;
 
+    /* Punt DHCPv6 client messages when Prefix Delegation is configured */
+    if (sess->ipv6 && sess->ipv6->subnet &&
+            sess->ipv6->subnet->delegated_prefix.bitmap) {
+        ogs_assert(up2cp_pdr->num_of_flow < OGS_MAX_NUM_OF_FLOW_IN_PDR);
+        up2cp_pdr->flow[up2cp_pdr->num_of_flow].fd = 1;
+        up2cp_pdr->flow[up2cp_pdr->num_of_flow].description =
+            (char *)"permit out 17 from ff02::1:2/128 547 to assigned";
+        up2cp_pdr->num_of_flow++;
+    }
+
     ogs_assert(OGS_OK ==
         ogs_pfcp_ip_to_outer_header_creation(
             &ogs_gtp_self()->gtpu_ip,
