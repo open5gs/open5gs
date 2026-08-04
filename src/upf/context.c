@@ -683,6 +683,103 @@ uint8_t upf_sess_set_ue_ipv6_framed_routes(upf_sess_t *sess,
     return cause_value;
 }
 
+/*
+ * Add/remove a single framed route without touching the others.
+ * Used by the Session Modification path (e.g. DHCPv6-PD leases),
+ * where routes come and go during the session lifetime.
+ */
+static uint8_t sess_add_ue_framed_route(upf_sess_t *sess,
+        ogs_ipsubnet_t **framed_routes, const char *framed_route)
+{
+    int i;
+    ogs_ipsubnet_t route;
+
+    ogs_assert(sess);
+    ogs_assert(framed_route);
+
+    if (parse_framed_route(&route, framed_route) != OGS_OK) {
+        ogs_warn("Ignoring invalid framed route %s", framed_route);
+        return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+    }
+
+    /* Already installed ? */
+    for (i = 0; *framed_routes &&
+            i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+        if ((*framed_routes)[i].family &&
+                memcmp(&(*framed_routes)[i], &route, sizeof(route)) == 0)
+            return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+    }
+
+    for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+        if (*framed_routes == NULL) {
+            *framed_routes = ogs_calloc(
+                OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI, sizeof(ogs_ipsubnet_t));
+            ogs_assert(*framed_routes);
+        }
+        if (!(*framed_routes)[i].family) {
+            memcpy(&(*framed_routes)[i], &route, sizeof(route));
+            add_framed_route_to_trie(&(*framed_routes)[i], sess);
+            return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+        }
+    }
+
+    ogs_error("No room for framed route %s", framed_route);
+    return OGS_PFCP_CAUSE_NO_RESOURCES_AVAILABLE;
+}
+
+static uint8_t sess_remove_ue_framed_route(upf_sess_t *sess,
+        ogs_ipsubnet_t **framed_routes, const char *framed_route)
+{
+    int i;
+    ogs_ipsubnet_t route;
+
+    ogs_assert(sess);
+    ogs_assert(framed_route);
+
+    if (parse_framed_route(&route, framed_route) != OGS_OK)
+        return OGS_PFCP_CAUSE_REQUEST_ACCEPTED; /* nothing to remove */
+
+    for (i = 0; *framed_routes &&
+            i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+        if ((*framed_routes)[i].family &&
+                memcmp(&(*framed_routes)[i], &route, sizeof(route)) == 0) {
+            free_framed_route_from_trie(&(*framed_routes)[i]);
+            memset(&(*framed_routes)[i], 0, sizeof((*framed_routes)[i]));
+            break;
+        }
+    }
+
+    return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+}
+
+uint8_t upf_sess_add_ue_ipv4_framed_route(upf_sess_t *sess,
+        const char *framed_route)
+{
+    return sess_add_ue_framed_route(sess,
+            &sess->ipv4_framed_routes, framed_route);
+}
+
+uint8_t upf_sess_add_ue_ipv6_framed_route(upf_sess_t *sess,
+        const char *framed_route)
+{
+    return sess_add_ue_framed_route(sess,
+            &sess->ipv6_framed_routes, framed_route);
+}
+
+uint8_t upf_sess_remove_ue_ipv4_framed_route(upf_sess_t *sess,
+        const char *framed_route)
+{
+    return sess_remove_ue_framed_route(sess,
+            &sess->ipv4_framed_routes, framed_route);
+}
+
+uint8_t upf_sess_remove_ue_ipv6_framed_route(upf_sess_t *sess,
+        const char *framed_route)
+{
+    return sess_remove_ue_framed_route(sess,
+            &sess->ipv6_framed_routes, framed_route);
+}
+
 void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bool is_uplink)
 {
     upf_sess_urr_acc_t *urr_acc = NULL;

@@ -286,6 +286,37 @@ void upf_n4_handle_session_modification_request(
         goto cleanup;
 
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
+        ogs_pfcp_pdr_t *remove_pdr = NULL;
+
+        if (req->remove_pdr[i].presence == 0)
+            break;
+
+        /* Remove framed routes carried by this PDR from the lookup trie */
+        if (req->remove_pdr[i].pdr_id.presence) {
+            int j;
+
+            remove_pdr = ogs_pfcp_pdr_find(
+                    &sess->pfcp, req->remove_pdr[i].pdr_id.u16);
+
+            if (remove_pdr && remove_pdr->ipv4_framed_routes) {
+                for (j = 0; j < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; j++) {
+                    if (!remove_pdr->ipv4_framed_routes[j])
+                        break;
+                    upf_sess_remove_ue_ipv4_framed_route(sess,
+                            remove_pdr->ipv4_framed_routes[j]);
+                }
+            }
+
+            if (remove_pdr && remove_pdr->ipv6_framed_routes) {
+                for (j = 0; j < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; j++) {
+                    if (!remove_pdr->ipv6_framed_routes[j])
+                        break;
+                    upf_sess_remove_ue_ipv6_framed_route(sess,
+                            remove_pdr->ipv6_framed_routes[j]);
+                }
+            }
+        }
+
         if (ogs_pfcp_handle_remove_pdr(&sess->pfcp, &req->remove_pdr[i],
                 &cause_value, &offending_ie_value) == false)
             break;
@@ -410,6 +441,33 @@ void upf_n4_handle_session_modification_request(
     for (i = 0; i < num_of_created_pdr; i++) {
         pdr = created_pdr[i];
         ogs_assert(pdr);
+
+        /* Install framed routes (e.g. DHCPv6-PD delegated prefix) */
+        if (pdr->ipv4_framed_routes) {
+            int j;
+
+            for (j = 0; j < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; j++) {
+                if (!pdr->ipv4_framed_routes[j])
+                    break;
+                cause_value = upf_sess_add_ue_ipv4_framed_route(sess,
+                        pdr->ipv4_framed_routes[j]);
+                if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                    goto cleanup;
+            }
+        }
+
+        if (pdr->ipv6_framed_routes) {
+            int j;
+
+            for (j = 0; j < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; j++) {
+                if (!pdr->ipv6_framed_routes[j])
+                    break;
+                cause_value = upf_sess_add_ue_ipv6_framed_route(sess,
+                        pdr->ipv6_framed_routes[j]);
+                if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                    goto cleanup;
+            }
+        }
 
         /* Setup UPF-N3-TEID & QFI Hash */
         if (pdr->f_teid_len) {
