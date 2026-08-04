@@ -2543,6 +2543,47 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             END
             break;
 
+        case OpenAPI_service_name_namf_comm:
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
+                SWITCH(sbi_message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_TRANSFER)
+                CASE(OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE)
+/*
+ * Issues: #4691
+ *
+ * gmm_state_authentication()
+ *
+ * Ignore late Namf_Communication response.
+ *
+ * A UEContextTransfer or RegistrationStatusUpdate response may arrive
+ * while the AMF is already handling a subsequent Registration Request.
+ * In this code path, the response belongs to the previous registration
+ * procedure and does not require any further processing.
+ *
+ * The response is intentionally ignored to avoid unnecessary handling.
+ */
+                    ogs_warn("[%s] Ignoring Namf_Communication response"
+                            "[%d] in (%s:%s)",
+                            amf_ue->supi, sbi_message->res_status,
+                            sbi_message->h.method,
+                            sbi_message->h.resource.component[2]);
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid resource name [%s]",
+                            sbi_message->h.resource.component[2]);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
         default:
             ogs_error("Invalid service name [%s]", sbi_message->h.service.name);
             ogs_assert_if_reached();
@@ -3198,6 +3239,47 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 
                 DEFAULT
                     ogs_error("Unknown method [%s]", sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        case OpenAPI_service_name_namf_comm:
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXTS)
+                SWITCH(sbi_message->h.resource.component[2])
+                CASE(OGS_SBI_RESOURCE_NAME_TRANSFER)
+                CASE(OGS_SBI_RESOURCE_NAME_TRANSFER_UPDATE)
+/*
+ * Issues: #4691
+ *
+ * gmm_state_initial_context_setup()
+ *
+ * Ignore late Namf_Communication response.
+ *
+ * A UEContextTransfer or RegistrationStatusUpdate response may arrive
+ * while the AMF is already handling a subsequent Registration Request.
+ * In this code path, the response belongs to the previous registration
+ * procedure and does not require any further processing.
+ *
+ * The response is intentionally ignored to avoid unnecessary handling.
+ */
+                    ogs_warn("[%s] Ignoring Namf_Communication response"
+                            "[%d] in (%s:%s)",
+                            amf_ue->supi, sbi_message->res_status,
+                            sbi_message->h.method,
+                            sbi_message->h.resource.component[2]);
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid resource name [%s]",
+                            sbi_message->h.resource.component[2]);
                     ogs_assert_if_reached();
                 END
                 break;
