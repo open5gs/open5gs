@@ -21,8 +21,8 @@
 #include "smf/dhcpv6.h"
 #include "core/abts.h"
 
-/* Build a DHCPv6 Solicit with IA_PD + Rapid Commit */
-static int build_solicit(uint8_t *buf)
+/* Build a DHCPv6 Solicit with IA_PD; optionally Rapid Commit */
+static int build_solicit(uint8_t *buf, bool with_rapid_commit)
 {
     uint8_t *p = buf;
 
@@ -34,9 +34,10 @@ static int build_solicit(uint8_t *buf)
     *p++ = 0x00; *p++ = 14;
     memset(p, 0xAA, 14); p += 14;
 
-    /* RAPID_COMMIT */
-    *p++ = 0x00; *p++ = DHCPV6_OPT_RAPID_COMMIT;
-    *p++ = 0x00; *p++ = 0x00;
+    if (with_rapid_commit) {
+        *p++ = 0x00; *p++ = DHCPV6_OPT_RAPID_COMMIT;
+        *p++ = 0x00; *p++ = 0x00;
+    }
 
     /* IA_PD : IAID + T1 + T2, no nested options */
     *p++ = 0x00; *p++ = DHCPV6_OPT_IA_PD;
@@ -91,7 +92,7 @@ static void dhcpv6_test_parse_solicit(abts_case *tc, void *data)
     int len;
     smf_dhcpv6_message_t msg;
 
-    len = build_solicit(buf);
+    len = build_solicit(buf, true);
     ABTS_TRUE(tc, len > 4);
 
     memset(&msg, 0, sizeof(msg));
@@ -146,7 +147,7 @@ static void dhcpv6_test_parse_malformed(abts_case *tc, void *data)
     memset(&msg, 0, sizeof(msg));
     ABTS_INT_EQUAL(tc, OGS_ERROR, smf_dhcpv6_parse(&msg, buf, 3));
 
-    len = build_solicit(buf);
+    len = build_solicit(buf, true);
 
     /* Truncated : option claims more than the buffer holds */
     memset(&msg, 0, sizeof(msg));
@@ -173,6 +174,8 @@ static void dhcpv6_test_pool(abts_case *tc, void *data)
 
     memset(&subnet, 0, sizeof(subnet));
     subnet.family = AF_INET6;
+    ogs_assert(ogs_ipsubnet(&subnet.sub, "2001:db8:cafe::", "48") == OGS_OK);
+    subnet.prefixlen = 48;
 
     /* /48 pool carved into /56 : 256 prefixes */
     ABTS_INT_EQUAL(tc, OGS_OK,
@@ -247,9 +250,35 @@ static void dhcpv6_test_pool_validation(abts_case *tc, void *data)
     /* preferred > valid rejected */
     memset(&subnet, 0, sizeof(subnet));
     subnet.family = AF_INET6;
+    ogs_assert(ogs_ipsubnet(&subnet.sub, "2001:db8:cafe::", "48") == OGS_OK);
+    subnet.prefixlen = 48;
     ABTS_INT_EQUAL(tc, OGS_ERROR,
         ogs_pfcp_subnet_delegated_prefix_set(
             &subnet, "2001:db8:8000::", "48", 56, 100, 200));
+
+    /* delegated range overlapping the session subnet rejected */
+    memset(&subnet, 0, sizeof(subnet));
+    subnet.family = AF_INET6;
+    ogs_assert(ogs_ipsubnet(&subnet.sub, "2001:db8:cafe::", "48") == OGS_OK);
+    subnet.prefixlen = 48;
+    ABTS_INT_EQUAL(tc, OGS_ERROR,
+        ogs_pfcp_subnet_delegated_prefix_set(
+            &subnet, "2001:db8:cafe::", "48", 56, 0, 0));
+
+    /* non-overlapping range accepted */
+    ABTS_INT_EQUAL(tc, OGS_OK,
+        ogs_pfcp_subnet_delegated_prefix_set(
+            &subnet, "2001:db8:8000::", "48", 56, 0, 0));
+    ogs_free(subnet.delegated_prefix.bitmap);
+
+    /* out-of-range length rejected (no uint8_t wrap) */
+    memset(&subnet, 0, sizeof(subnet));
+    subnet.family = AF_INET6;
+    ogs_assert(ogs_ipsubnet(&subnet.sub, "2001:db8:cafe::", "48") == OGS_OK);
+    subnet.prefixlen = 48;
+    ABTS_INT_EQUAL(tc, OGS_ERROR,
+        ogs_pfcp_subnet_delegated_prefix_set(
+            &subnet, "2001:db8:8000::", "48", 300, 0, 0));
 
     /* IPv4 subnet rejected */
     memset(&subnet, 0, sizeof(subnet));
@@ -257,6 +286,126 @@ static void dhcpv6_test_pool_validation(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_ERROR,
         ogs_pfcp_subnet_delegated_prefix_set(
             &subnet, "10.0.0.0", "8", 56, 0, 0));
+}
+
+/* Locate a top-level DHCPv6 option. Returns 1 if found. */
+static int find_option(const uint8_t *data, int len, uint16_t want,
+        uint16_t *olen)
+{
+    const uint8_t *p, *end;
+
+    if (len < 4)
+        return 0;
+
+    p = data + 4;
+    end = data + len;
+    while (p + 4 <= end) {
+        uint16_t code = ((uint16_t)p[0] << 8) | p[1];
+        uint16_t optlen = ((uint16_t)p[2] << 8) | p[3];
+
+        if (p + 4 + optlen > end)
+            return 0;
+        if (code == want) {
+            if (olen)
+                *olen = optlen;
+            return 1;
+        }
+        p += 4 + optlen;
+    }
+    return 0;
+}
+
+/* Rapid Commit must sit after CLIENTID and before IA_PD (common order). */
+static int rapid_commit_between_clientid_and_ia_pd(const uint8_t *data, int len)
+{
+    const uint8_t *p, *end;
+    int saw_clientid = 0, saw_rapid = 0, saw_ia_pd = 0;
+
+    if (len < 4)
+        return 0;
+
+    p = data + 4;
+    end = data + len;
+    while (p + 4 <= end) {
+        uint16_t code = ((uint16_t)p[0] << 8) | p[1];
+        uint16_t optlen = ((uint16_t)p[2] << 8) | p[3];
+
+        if (p + 4 + optlen > end)
+            return 0;
+        if (code == DHCPV6_OPT_CLIENTID)
+            saw_clientid = 1;
+        else if (code == DHCPV6_OPT_RAPID_COMMIT) {
+            if (!saw_clientid || saw_ia_pd)
+                return 0;
+            saw_rapid = 1;
+        } else if (code == DHCPV6_OPT_IA_PD) {
+            saw_ia_pd = 1;
+        }
+        p += 4 + optlen;
+    }
+    return saw_clientid && saw_rapid && saw_ia_pd;
+}
+
+static void fill_test_lease(smf_sess_t *sess)
+{
+    ogs_ipsubnet_t ipsub;
+
+    memset(sess, 0, sizeof(*sess));
+    sess->pd_lease.active = true;
+    sess->pd_lease.preferred_lifetime = 3600;
+    sess->pd_lease.valid_lifetime = 7200;
+    sess->pd_lease.plen = 56;
+    ogs_assert(ogs_ipsubnet(&ipsub, "2001:db8:8001::", NULL) == OGS_OK);
+    memcpy(sess->pd_lease.prefix, ipsub.sub, OGS_IPV6_LEN);
+}
+
+static void dhcpv6_test_rapid_commit_reply(abts_case *tc, void *data)
+{
+    uint8_t reqbuf[160], resp[256];
+    int reqlen, resplen;
+    smf_dhcpv6_message_t req;
+    smf_sess_t sess;
+    uint16_t olen = 0xffff;
+
+    smf_dhcpv6_init();
+    fill_test_lease(&sess);
+
+    /* Rapid-Commit Solicit → Reply MUST carry option 14 length 0 */
+    reqlen = build_solicit(reqbuf, true);
+    memset(&req, 0, sizeof(req));
+    ABTS_INT_EQUAL(tc, OGS_OK, smf_dhcpv6_parse(&req, reqbuf, reqlen));
+    ABTS_TRUE(tc, req.rapid_commit);
+
+    resplen = smf_dhcpv6_encode_response(resp, sizeof(resp),
+            &sess, &req, DHCPV6_MSG_REPLY, DHCPV6_STATUS_SUCCESS);
+    ABTS_TRUE(tc, resplen > 4);
+    ABTS_INT_EQUAL(tc, DHCPV6_MSG_REPLY, resp[0]);
+    ABTS_TRUE(tc, find_option(resp, resplen, DHCPV6_OPT_RAPID_COMMIT, &olen));
+    ABTS_INT_EQUAL(tc, 0, olen);
+    ABTS_TRUE(tc, rapid_commit_between_clientid_and_ia_pd(resp, resplen));
+
+    /* Normal Solicit → Advertise must not include Rapid Commit */
+    reqlen = build_solicit(reqbuf, false);
+    memset(&req, 0, sizeof(req));
+    ABTS_INT_EQUAL(tc, OGS_OK, smf_dhcpv6_parse(&req, reqbuf, reqlen));
+    ABTS_TRUE(tc, !req.rapid_commit);
+
+    resplen = smf_dhcpv6_encode_response(resp, sizeof(resp),
+            &sess, &req, DHCPV6_MSG_ADVERTISE, DHCPV6_STATUS_SUCCESS);
+    ABTS_TRUE(tc, resplen > 4);
+    ABTS_INT_EQUAL(tc, DHCPV6_MSG_ADVERTISE, resp[0]);
+    ABTS_TRUE(tc, !find_option(resp, resplen, DHCPV6_OPT_RAPID_COMMIT, NULL));
+
+    /* Request → Reply must not include Rapid Commit */
+    reqlen = build_request(reqbuf, "2001:db8:8001::", 56);
+    memset(&req, 0, sizeof(req));
+    ABTS_INT_EQUAL(tc, OGS_OK, smf_dhcpv6_parse(&req, reqbuf, reqlen));
+
+    resplen = smf_dhcpv6_encode_response(resp, sizeof(resp),
+            &sess, &req, DHCPV6_MSG_REPLY, DHCPV6_STATUS_SUCCESS);
+    ABTS_TRUE(tc, resplen > 4);
+    ABTS_INT_EQUAL(tc, DHCPV6_MSG_REPLY, resp[0]);
+    ABTS_TRUE(tc, !find_option(resp, resplen, DHCPV6_OPT_RAPID_COMMIT, NULL));
 }
 
 abts_suite *test_dhcpv6(abts_suite *suite)
@@ -268,6 +417,7 @@ abts_suite *test_dhcpv6(abts_suite *suite)
     abts_run_test(suite, dhcpv6_test_parse_malformed, NULL);
     abts_run_test(suite, dhcpv6_test_pool, NULL);
     abts_run_test(suite, dhcpv6_test_pool_validation, NULL);
+    abts_run_test(suite, dhcpv6_test_rapid_commit_reply, NULL);
 
     return suite;
 }
