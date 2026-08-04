@@ -40,6 +40,10 @@
 
 #include <time.h>
 
+#if HAVE_NETINET_IP_H
+#include <netinet/ip.h>
+#endif
+
 #if HAVE_NETINET_IP6_H
 #include <netinet/ip6.h>
 #endif
@@ -271,6 +275,18 @@ static ogs_pkbuf_t *build_response(smf_sess_t *sess,
     if (status == DHCPV6_STATUS_SUCCESS)
         ogs_assert(sess->pd_lease.active);
 
+    /* Worst-case bound before writing anything */
+    {
+        const char *message = dhcpv6_status_name(status);
+        size_t need = 4 +
+            (4 + server_duid_len) + (4 + req->duid_len) +
+            (4 + 12) +
+            (status == DHCPV6_STATUS_SUCCESS ?
+                (4 + 25) : (4 + 2 + strlen(message)));
+
+        ogs_assert(need <= sizeof(dhcp));
+    }
+
     /* DHCPv6 message */
     *p++ = type;
     memcpy(p, req->xid, 3); p += 3;
@@ -285,8 +301,11 @@ static ogs_pkbuf_t *build_response(smf_sess_t *sess,
     ia_pd_len_p = p + 2; /* length filled in below */
     p = put_option_header(p, DHCPV6_OPT_IA_PD, 0);
     p = put_be32(p, req->iaid);
-    p = put_be32(p, sess->pd_lease.valid_lifetime / 2);     /* T1 */
-    p = put_be32(p, sess->pd_lease.valid_lifetime * 4 / 5); /* T2 */
+    /* T1/T2 from the preferred lifetime (uint64 to avoid overflow) */
+    p = put_be32(p, (uint32_t)
+            ((uint64_t)sess->pd_lease.preferred_lifetime / 2));
+    p = put_be32(p, (uint32_t)
+            ((uint64_t)sess->pd_lease.preferred_lifetime * 4 / 5));
 
     if (status == DHCPV6_STATUS_SUCCESS) {
         p = put_option_header(p, DHCPV6_OPT_IAPREFIX, 25);
@@ -379,12 +398,17 @@ static void send_response(smf_sess_t *sess, smf_dhcpv6_message_t *req,
 
 bool smf_dhcpv6_check(ogs_pkbuf_t *pkbuf)
 {
+    struct ip *ip_h = NULL;
     struct ip6_hdr *ip6_h = NULL;
     struct udphdr *udp_h = NULL;
 
     ogs_assert(pkbuf);
 
     if (pkbuf->len < sizeof(*ip6_h) + sizeof(*udp_h))
+        return false;
+
+    ip_h = (struct ip *)pkbuf->data;
+    if (ip_h->ip_v != 6)
         return false;
 
     ip6_h = (struct ip6_hdr *)pkbuf->data;
@@ -528,9 +552,10 @@ void smf_dhcpv6_handle(smf_sess_t *sess, ogs_pkbuf_t *pkbuf)
         if (msg.ia_prefix_present &&
                 msg.prefix_plen == sess->pd_lease.plen &&
                 memcmp(msg.prefix, sess->pd_lease.prefix, OGS_IPV6_LEN) == 0) {
-            smf_sess_pd_lease_release(sess);
+            /* Reply while the lease is still intact, then release */
             send_response(sess, &msg,
                     DHCPV6_MSG_REPLY, DHCPV6_STATUS_SUCCESS);
+            smf_sess_pd_lease_release(sess);
         } else {
             send_response(sess, &msg,
                     DHCPV6_MSG_REPLY, DHCPV6_STATUS_NOBINDING);
@@ -542,10 +567,12 @@ void smf_dhcpv6_handle(smf_sess_t *sess, ogs_pkbuf_t *pkbuf)
                 smf_sess_pd_lease_matches(
                     sess, msg.iaid, msg.duid, msg.duid_len)) {
             ogs_warn("DHCPv6 client declined the delegated prefix");
+            /* Reply while the lease is still intact, then release */
+            send_response(sess, &msg,
+                    DHCPV6_MSG_REPLY, DHCPV6_STATUS_SUCCESS);
             smf_sess_pd_lease_release(sess);
         }
-        send_response(sess, &msg,
-                DHCPV6_MSG_REPLY, DHCPV6_STATUS_SUCCESS);
+        /* No binding : no Reply */
         break;
 
     default:

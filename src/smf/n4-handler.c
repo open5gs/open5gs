@@ -291,6 +291,22 @@ void smf_5gc_n4_handle_session_modification_response(
 
     ogs_pfcp_xact_commit(xact);
 
+    if (flags & OGS_PFCP_MODIFY_PD_LEASE) {
+        /* PD lease route install/remove : roll back the lease
+         * if the UPF did not accept the modification */
+        if (!sess) {
+            ogs_error("No Context");
+            return;
+        }
+        if (!rsp->cause.presence ||
+                rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+            ogs_error("PD lease modification rejected [cause:%d]",
+                    rsp->cause.presence ? rsp->cause.u8 : 0);
+            smf_sess_pd_lease_release(sess);
+        }
+        return;
+    }
+
     status = OGS_SBI_HTTP_STATUS_OK;
 
     if (!sess) {
@@ -318,11 +334,6 @@ void smf_5gc_n4_handle_session_modification_response(
         ogs_pfcp_far_t *far = NULL;
 
         ogs_assert(sess);
-
-        if (flags & OGS_PFCP_MODIFY_PD_LEASE) {
-            /* PD lease route install/remove : nothing further to do */
-            return;
-        }
 
         for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
             pdr = ogs_pfcp_handle_created_pdr(
@@ -1288,6 +1299,18 @@ void smf_epc_n4_handle_session_modification_response(
         return;
     }
 
+    if (flags & OGS_PFCP_MODIFY_PD_LEASE) {
+        /* PD lease route install/remove : roll back the lease
+         * if the UPF did not accept the modification */
+        if (!rsp->cause.presence ||
+                rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+            ogs_error("PD lease modification rejected [cause:%d]",
+                    rsp->cause.presence ? rsp->cause.u8 : 0);
+            smf_sess_pd_lease_release(sess);
+        }
+        return;
+    }
+
     if (rsp->cause.presence) {
         if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
             ogs_error("PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
@@ -1299,11 +1322,6 @@ void smf_epc_n4_handle_session_modification_response(
     }
 
     ogs_assert(sess);
-
-    if (flags & OGS_PFCP_MODIFY_PD_LEASE) {
-        /* PD lease route install/remove : nothing further to do */
-        return;
-    }
 
     pfcp_cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {

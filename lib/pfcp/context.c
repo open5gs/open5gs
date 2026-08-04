@@ -2710,10 +2710,27 @@ static int delegated_prefix_to_index(
     return (int)index;
 }
 
+/* True if the top outer_plen bits of base match outer */
+static bool delegated_prefix_contains(
+        const uint32_t *outer, int outer_plen, const uint32_t *base)
+{
+    int b;
+
+    for (b = 0; b < outer_plen; b++) {
+        int pos = 128 - outer_plen + b;
+        int want = delegated_prefix_test_bit((uint8_t *)outer, pos);
+        int have = delegated_prefix_test_bit((uint8_t *)base, pos);
+        if (want != have)
+            return false;
+    }
+
+    return true;
+}
+
 int ogs_pfcp_subnet_delegated_prefix_set(
         ogs_pfcp_subnet_t *subnet,
         const char *range_ipstr, const char *range_numbits,
-        uint8_t plen, uint32_t valid_lifetime, uint32_t preferred_lifetime)
+        int plen, uint32_t valid_lifetime, uint32_t preferred_lifetime)
 {
     int rv;
     int range_plen;
@@ -2725,6 +2742,11 @@ int ogs_pfcp_subnet_delegated_prefix_set(
 
     if (subnet->family != AF_INET6) {
         ogs_error("delegated_prefix requires an IPv6 subnet");
+        return OGS_ERROR;
+    }
+
+    if (subnet->delegated_prefix.bitmap) {
+        ogs_error("delegated_prefix already configured on this subnet");
         return OGS_ERROR;
     }
 
@@ -2766,6 +2788,18 @@ int ogs_pfcp_subnet_delegated_prefix_set(
         ogs_error("delegated_prefix pool too large "
                 "[range:/%d length:/%d] (max %d bits)",
                 range_plen, plen, OGS_PFCP_MAX_DELEGATED_PREFIX_BITS);
+        return OGS_ERROR;
+    }
+
+    /* The delegated range must not overlap the session subnet */
+    if (delegated_prefix_contains(
+                subnet->sub.sub, subnet->prefixlen,
+                subnet->delegated_prefix.range.sub) ||
+        delegated_prefix_contains(
+                subnet->delegated_prefix.range.sub, range_plen,
+                subnet->sub.sub)) {
+        ogs_error("delegated_prefix range [%s/%s] overlaps "
+                "the session subnet", range_ipstr, range_numbits);
         return OGS_ERROR;
     }
 

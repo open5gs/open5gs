@@ -173,6 +173,8 @@ static void dhcpv6_test_pool(abts_case *tc, void *data)
 
     memset(&subnet, 0, sizeof(subnet));
     subnet.family = AF_INET6;
+    ogs_assert(ogs_ipsubnet(&subnet.sub, "2001:db8:cafe::", "48") == OGS_OK);
+    subnet.prefixlen = 48;
 
     /* /48 pool carved into /56 : 256 prefixes */
     ABTS_INT_EQUAL(tc, OGS_OK,
@@ -247,9 +249,35 @@ static void dhcpv6_test_pool_validation(abts_case *tc, void *data)
     /* preferred > valid rejected */
     memset(&subnet, 0, sizeof(subnet));
     subnet.family = AF_INET6;
+    ogs_assert(ogs_ipsubnet(&subnet.sub, "2001:db8:cafe::", "48") == OGS_OK);
+    subnet.prefixlen = 48;
     ABTS_INT_EQUAL(tc, OGS_ERROR,
         ogs_pfcp_subnet_delegated_prefix_set(
             &subnet, "2001:db8:8000::", "48", 56, 100, 200));
+
+    /* delegated range overlapping the session subnet rejected */
+    memset(&subnet, 0, sizeof(subnet));
+    subnet.family = AF_INET6;
+    ogs_assert(ogs_ipsubnet(&subnet.sub, "2001:db8:cafe::", "48") == OGS_OK);
+    subnet.prefixlen = 48;
+    ABTS_INT_EQUAL(tc, OGS_ERROR,
+        ogs_pfcp_subnet_delegated_prefix_set(
+            &subnet, "2001:db8:cafe::", "48", 56, 0, 0));
+
+    /* non-overlapping range accepted */
+    ABTS_INT_EQUAL(tc, OGS_OK,
+        ogs_pfcp_subnet_delegated_prefix_set(
+            &subnet, "2001:db8:8000::", "48", 56, 0, 0));
+    ogs_free(subnet.delegated_prefix.bitmap);
+
+    /* out-of-range length rejected (no uint8_t wrap) */
+    memset(&subnet, 0, sizeof(subnet));
+    subnet.family = AF_INET6;
+    ogs_assert(ogs_ipsubnet(&subnet.sub, "2001:db8:cafe::", "48") == OGS_OK);
+    subnet.prefixlen = 48;
+    ABTS_INT_EQUAL(tc, OGS_ERROR,
+        ogs_pfcp_subnet_delegated_prefix_set(
+            &subnet, "2001:db8:8000::", "48", 300, 0, 0));
 
     /* IPv4 subnet rejected */
     memset(&subnet, 0, sizeof(subnet));

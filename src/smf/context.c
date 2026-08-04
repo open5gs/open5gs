@@ -20,6 +20,7 @@
 #include "context.h"
 #include "gtp-path.h"
 #include "pfcp-path.h"
+#include "event.h"
 
 static smf_context_t self;
 static ogs_diam_config_t g_diam_conf;
@@ -2021,6 +2022,8 @@ void smf_sess_set_paging_n1n2message_location(
             sess);
 }
 
+static void pd_lease_remove_pdrs(smf_sess_t *sess);
+
 void smf_sess_remove(smf_sess_t *sess)
 {
     int i;
@@ -2063,6 +2066,7 @@ void smf_sess_remove(smf_sess_t *sess)
     ogs_hash_set(self.smf_n4_seid_hash, &sess->smf_n4_seid,
             sizeof(sess->smf_n4_seid), NULL);
 
+    pd_lease_remove_pdrs(sess);
     smf_sess_pd_lease_clear(sess);
 
     if (sess->ipv4) {
@@ -2824,6 +2828,8 @@ void smf_sess_delete_cp_up_data_forwarding(smf_sess_t *sess)
 
 static void pd_lease_timeout(void *data)
 {
+    int rv;
+    smf_event_t *e = NULL;
     smf_sess_t *sess = NULL;
     ogs_pool_id_t sess_id = OGS_INVALID_POOL_ID;
 
@@ -2837,7 +2843,23 @@ static void pd_lease_timeout(void *data)
         return;
     }
 
-    smf_sess_pd_lease_expire(sess);
+    /*
+     * We mustn't release the lease here. Releasing a lease deletes
+     * the lease timer and we must not delete any timers from within
+     * a timer callback. Instead, we shall emit a new event to expire
+     * the lease from the pfcp-sm state machine.
+     */
+    e = smf_event_new(SMF_EVT_N4_TIMER);
+    ogs_assert(e);
+    e->sess_id = sess->id;
+    e->h.timer_id = SMF_TIMER_PD_LEASE_EXPIRY;
+    e->pfcp_node = sess->pfcp_node;
+
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_event_free(e);
+    }
 }
 
 /*

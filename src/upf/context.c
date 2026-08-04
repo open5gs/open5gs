@@ -697,6 +697,7 @@ static uint8_t sess_add_ue_framed_route(upf_sess_t *sess,
     ogs_assert(sess);
     ogs_assert(framed_route);
 
+    memset(&route, 0, sizeof(route));
     if (parse_framed_route(&route, framed_route) != OGS_OK) {
         ogs_warn("Ignoring invalid framed route %s", framed_route);
         return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
@@ -736,6 +737,7 @@ static uint8_t sess_remove_ue_framed_route(upf_sess_t *sess,
     ogs_assert(sess);
     ogs_assert(framed_route);
 
+    memset(&route, 0, sizeof(route));
     if (parse_framed_route(&route, framed_route) != OGS_OK)
         return OGS_PFCP_CAUSE_REQUEST_ACCEPTED; /* nothing to remove */
 

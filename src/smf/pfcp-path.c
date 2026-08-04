@@ -952,12 +952,14 @@ int smf_pfcp_send_pd_lease_modification(smf_sess_t *sess, bool add)
     n4buf = smf_n4_build_pd_lease_modification_request(h.type, sess, add);
     if (!n4buf) {
         ogs_error("smf_n4_build_pd_lease_modification_request() failed");
+        ogs_pfcp_xact_delete(xact);
         return OGS_ERROR;
     }
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, n4buf);
     if (rv != OGS_OK) {
         ogs_error("ogs_pfcp_xact_update_tx() failed");
+        ogs_pfcp_xact_delete(xact);
         return OGS_ERROR;
     }
 

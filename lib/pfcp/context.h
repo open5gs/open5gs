@@ -535,7 +535,7 @@ ogs_pfcp_subnet_t *ogs_pfcp_find_subnet_by_dnn(int family, const char *dnn);
 int ogs_pfcp_subnet_delegated_prefix_set(
         ogs_pfcp_subnet_t *subnet,
         const char *range_ipstr, const char *range_numbits,
-        uint8_t plen, uint32_t valid_lifetime, uint32_t preferred_lifetime);
+        int plen, uint32_t valid_lifetime, uint32_t preferred_lifetime);
 int ogs_pfcp_delegated_prefix_alloc(
         ogs_pfcp_subnet_t *subnet, uint8_t *prefix /* OGS_IPV6_LEN */);
 void ogs_pfcp_delegated_prefix_free(
