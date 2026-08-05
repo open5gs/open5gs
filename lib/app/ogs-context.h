@@ -44,6 +44,7 @@ typedef struct ogs_app_context_s {
         const char *file;
         const char *level;
         const char *domain;
+        const char *format;
         ogs_log_ts_e timestamp;
     } logger;
 

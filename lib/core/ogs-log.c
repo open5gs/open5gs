@@ -72,6 +72,8 @@ typedef struct ogs_log_s {
         uint8_t linefeed:1;)
     } print;
 
+    ogs_log_format_e format;
+
     void (*writer)(ogs_log_t *log, ogs_log_level_e level, const char *string);
 
 } ogs_log_t;
@@ -95,6 +97,8 @@ static OGS_LIST(log_list);
 static OGS_POOL(domain_pool, ogs_log_domain_t);
 static OGS_LIST(domain_list);
 
+static ogs_log_format_e g_log_format = OGS_LOG_FORMAT_TEXT;
+
 static ogs_log_t *add_log(ogs_log_type_e type);
 static int file_cycle(ogs_log_t *log);
 
@@ -107,6 +111,10 @@ static char *log_content(char *buf, char *last,
 static char *log_level(char *buf, char *last,
         ogs_log_level_e level, int use_color);
 static char *log_linefeed(char *buf, char *last);
+
+static char *log_json_timestamp(char *buf, char *last);
+static char *log_json_string(char *buf, char *last,
+        const char *field, const char *value);
 
 static void file_writer(
         ogs_log_t *log, ogs_log_level_e level, const char *string);
@@ -362,6 +370,32 @@ void ogs_log_set_timestamp(ogs_log_ts_e ts_default, ogs_log_ts_e ts_file)
     }
 }
 
+ogs_log_format_e ogs_log_get_format(void)
+{
+    return g_log_format;
+}
+
+void ogs_log_set_format(ogs_log_format_e format)
+{
+    ogs_log_t *log;
+
+    g_log_format = format;
+
+    ogs_list_for_each(&log_list, log)
+        log->format = format;
+}
+
+ogs_log_format_e ogs_log_format_from_string(const char *string)
+{
+    if (!string)
+        return OGS_LOG_FORMAT_TEXT;
+
+    if (!strcasecmp(string, "json"))
+        return OGS_LOG_FORMAT_JSON;
+
+    return OGS_LOG_FORMAT_TEXT;
+}
+
 static ogs_log_level_e ogs_log_level_from_string(const char *string)
 {
     ogs_log_level_e level = OGS_ERROR;
@@ -406,6 +440,7 @@ void ogs_log_vprintf(ogs_log_level_e level, int id,
     ogs_log_domain_t *domain = NULL;
 
     char logstr[OGS_HUGE_LEN];
+    char contentstr[OGS_HUGE_LEN];
     char *p, *last;
 
     int wrote_stderr = 0;
@@ -422,34 +457,43 @@ void ogs_log_vprintf(ogs_log_level_e level, int id,
         p = logstr;
         last = logstr + OGS_HUGE_LEN;
 
-        if (!content_only) {
-            if (log->print.timestamp)
-                p = log_timestamp(p, last, log->print.color);
-            if (log->print.domain)
-                p = log_domain(p, last, domain->name, log->print.color);
-            if (log->print.level)
-                p = log_level(p, last, level, log->print.color);
+        if (log->format == OGS_LOG_FORMAT_JSON) {
+            char *cp = contentstr;
+            char *clast = contentstr + OGS_HUGE_LEN;
+            cp = log_content(cp, clast, format, ap);
+            ogs_log_render_json(logstr, sizeof logstr, level, id, err,
+                    file, line, func, contentstr);
+            log->writer(log, level, logstr);
+        } else {
+            if (!content_only) {
+                if (log->print.timestamp)
+                    p = log_timestamp(p, last, log->print.color);
+                if (log->print.domain)
+                    p = log_domain(p, last, domain->name, log->print.color);
+                if (log->print.level)
+                    p = log_level(p, last, level, log->print.color);
+            }
+
+            p = log_content(p, last, format, ap);
+
+            if (err) {
+                char errbuf[OGS_HUGE_LEN];
+                p = ogs_slprintf(p, last, " (%d:%s)",
+                        (int)err, ogs_strerror(err, errbuf, OGS_HUGE_LEN));
+            }
+
+            if (!content_only) {
+                if (log->print.fileline)
+                    p = ogs_slprintf(p, last, " (%s:%d)", file, line);
+                if (log->print.function)
+                    p = ogs_slprintf(p, last, " %s()", func);
+                if (log->print.linefeed)
+                    p = log_linefeed(p, last);
+            }
+
+            log->writer(log, level, logstr);
         }
 
-        p = log_content(p, last, format, ap);
-
-        if (err) {
-            char errbuf[OGS_HUGE_LEN];
-            p = ogs_slprintf(p, last, " (%d:%s)",
-                    (int)err, ogs_strerror(err, errbuf, OGS_HUGE_LEN));
-        }
-
-        if (!content_only) {
-            if (log->print.fileline)
-                p = ogs_slprintf(p, last, " (%s:%d)", file, line);
-            if (log->print.function)
-                p = ogs_slprintf(p, last, " %s()", func);
-            if (log->print.linefeed) 
-                p = log_linefeed(p, last);
-        }
-
-        log->writer(log, level, logstr);
-        
         if (log->type == OGS_LOG_STDERR_TYPE)
             wrote_stderr = 1;
     }
@@ -464,15 +508,23 @@ void ogs_log_vprintf(ogs_log_level_e level, int id,
         p = logstr;
         last = logstr + OGS_HUGE_LEN;
 
-        if (!content_only) {
-            p = log_timestamp(p, last, use_color);
-            p = log_level(p, last, level, use_color);
-        }
-        p = log_content(p, last, format, ap);
-        if (!content_only) {
-            p = ogs_slprintf(p, last, " (%s:%d)", file, line);
-            p = ogs_slprintf(p, last, " %s()", func);
-            p = log_linefeed(p, last);
+        if (g_log_format == OGS_LOG_FORMAT_JSON) {
+            char *cp = contentstr;
+            char *clast = contentstr + OGS_HUGE_LEN;
+            cp = log_content(cp, clast, format, ap);
+            ogs_log_render_json(logstr, sizeof logstr, level, id, err,
+                    file, line, func, contentstr);
+        } else {
+            if (!content_only) {
+                p = log_timestamp(p, last, use_color);
+                p = log_level(p, last, level, use_color);
+            }
+            p = log_content(p, last, format, ap);
+            if (!content_only) {
+                p = ogs_slprintf(p, last, " (%s:%d)", file, line);
+                p = ogs_slprintf(p, last, " %s()", func);
+                p = log_linefeed(p, last);
+            }
         }
 
         fprintf(stderr, "%s", logstr);
@@ -540,6 +592,8 @@ static ogs_log_t *add_log(ogs_log_type_e type)
     log->print.level = 1;
     log->print.fileline = 1;
     log->print.linefeed = 1;
+
+    log->format = g_log_format;
 
     ogs_list_add(&log_list, log);
 
@@ -645,3 +699,125 @@ static void file_writer(
     fflush(log->file.out);
 }
 
+char *ogs_log_json_timestamp(char *buf, char *last)
+{
+    return log_json_timestamp(buf, last);
+}
+
+char *ogs_log_json_string(char *buf, char *last,
+        const char *field, const char *value)
+{
+    return log_json_string(buf, last, field, value);
+}
+
+void ogs_log_write_raw(ogs_log_level_e level, int domain_id,
+        const char *string)
+{
+    ogs_log_t *log = NULL;
+    ogs_log_domain_t *domain = NULL;
+    int wrote_stderr = 0;
+
+    domain = ogs_pool_find(&domain_pool, domain_id);
+    if (!domain) return;
+    if (domain->level < level) return;
+
+    ogs_list_for_each(&log_list, log) {
+        log->writer(log, level, string);
+        if (log->type == OGS_LOG_STDERR_TYPE)
+            wrote_stderr = 1;
+    }
+
+    if (!wrote_stderr) {
+        fprintf(stderr, "%s", string);
+        fflush(stderr);
+    }
+}
+
+static char *log_json_timestamp(char *buf, char *last)
+{
+    struct timeval tv;
+    struct tm tm;
+    char nowstr[40];
+
+    ogs_gettimeofday(&tv);
+    ogs_gmtime(tv.tv_sec, &tm);
+    strftime(nowstr, sizeof nowstr, "%Y-%m-%dT%H:%M:%S", &tm);
+
+    return ogs_slprintf(buf, last, "\"ts\":\"%s.%03dZ\"",
+            nowstr, (int)(tv.tv_usec / 1000));
+}
+
+static char *log_json_string(char *buf, char *last,
+        const char *field, const char *value)
+{
+    const unsigned char *s;
+
+    buf = ogs_slprintf(buf, last, "\"%s\":\"", field);
+
+    if (value) {
+        for (s = (const unsigned char *)value; *s; s++) {
+            switch (*s) {
+            case '"':  buf = ogs_slprintf(buf, last, "\\\""); break;
+            case '\\': buf = ogs_slprintf(buf, last, "\\\\"); break;
+            case '\b': buf = ogs_slprintf(buf, last, "\\b");  break;
+            case '\f': buf = ogs_slprintf(buf, last, "\\f");  break;
+            case '\n': buf = ogs_slprintf(buf, last, "\\n");  break;
+            case '\r': buf = ogs_slprintf(buf, last, "\\r");  break;
+            case '\t': buf = ogs_slprintf(buf, last, "\\t");  break;
+            default:
+                if (*s < 0x20)
+                    buf = ogs_slprintf(buf, last, "\\u%04x", *s);
+                else
+                    buf = ogs_slprintf(buf, last, "%c", *s);
+                break;
+            }
+            if (buf >= last - 1)
+                break;
+        }
+    }
+
+    buf = ogs_slprintf(buf, last, "\"");
+
+    return buf;
+}
+
+char *ogs_log_render_json(char *buf, size_t buflen, ogs_log_level_e level,
+        int id, ogs_err_t err, const char *file, int line, const char *func,
+        const char *content)
+{
+    ogs_log_domain_t *domain;
+    const char *domain_name = "unknown";
+    const char *level_str;
+    char *p = buf;
+    char *last = buf + buflen;
+
+    domain = ogs_pool_find(&domain_pool, id);
+    if (domain)
+        domain_name = domain->name;
+
+    level_str = (level >= OGS_LOG_NONE && level <= OGS_LOG_TRACE &&
+                 level_strings[level]) ? level_strings[level] : "NONE";
+
+    p = ogs_slprintf(p, last, "{");
+    p = log_json_timestamp(p, last);
+    p = ogs_slprintf(p, last, ",\"level\":\"%s\"", level_str);
+    p = log_json_string(p, last, "domain", domain_name);
+    p = log_json_string(p, last, "message", content ? content : "");
+
+    if (file)
+        p = log_json_string(p, last, "file", file);
+    if (line > 0)
+        p = ogs_slprintf(p, last, ",\"line\":%d", line);
+    if (func)
+        p = log_json_string(p, last, "func", func);
+    if (err) {
+        char errbuf[OGS_HUGE_LEN];
+        p = ogs_slprintf(p, last, ",\"err\":%d", (int)err);
+        p = log_json_string(p, last, "errstr",
+                ogs_strerror(err, errbuf, OGS_HUGE_LEN));
+    }
+
+    p = ogs_slprintf(p, last, "}\n");
+
+    return p;
+}

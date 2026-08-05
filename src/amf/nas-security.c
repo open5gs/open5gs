@@ -18,6 +18,7 @@
  */
 
 #include "nas-security.h"
+#include "log.h"
 
 #define NAS_SECURITY_MAC_SIZE 4
 
@@ -179,7 +180,16 @@ int nas_5gs_security_decode(amf_ue_t *amf_ue,
         if (security_header_type.ciphered) {
             /* decrypt NAS message */
             if (pkbuf->len == 0) {
+                amf_log_error_t error = {
+                    "Cannot decrypt Malformed NAS Message",
+                    OGS_ERROR, "nas_5gs_security_decode"
+                };
                 ogs_error("Cannot decrypt Malformed NAS Message");
+                amf_log_ue_error_event(OGS_LOG_ERROR,
+                    AMF_EVENT_NAS_SECURITY_DECODE_FAILED,
+                    AMF_EVENT_TYPE_PROCEDURE,
+                    amf_ue, NULL,
+                    "Cannot decrypt Malformed NAS Message", &error);
                 return OGS_ERROR;
             }
             ogs_nas_encrypt(amf_ue->selected_enc_algorithm,

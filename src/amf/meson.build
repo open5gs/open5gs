@@ -18,6 +18,9 @@
 libamf_sources = files('''
     metrics.h
 
+    log.h
+    log.c
+
     context.c
     event.c
     timer.c

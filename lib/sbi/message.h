@@ -321,6 +321,10 @@ extern "C" {
     OGS_SBI_CUSTOM_3GPP_COMMON "Client-Credentials"
 #define OGS_SBI_CUSTOM_NRF_URI           \
     OGS_SBI_CUSTOM_3GPP_COMMON "Nrf-Uri"
+#define OGS_SBI_CUSTOM_TRACEPARENT       "traceparent"
+#define OGS_SBI_CUSTOM_CORRELATION_ID    "X-Correlation-ID"
+#define OGS_SBI_CUSTOM_OPEN5GS_AMF_UE_ID "X-Open5GS-Amf-Ue-Id"
+#define OGS_SBI_CUSTOM_OPEN5GS_SESS_ID   "X-Open5GS-Sess-Id"
 #define OGS_SBI_CUSTOM_TARGET_NF_ID      \
     OGS_SBI_CUSTOM_3GPP_COMMON "Target-Nf-Id"
 #define OGS_SBI_CUSTOM_ACCESS_SCOPE      \

@@ -70,6 +70,11 @@ typedef enum {
     OGS_LOG_TS_DISABLED,
 } ogs_log_ts_e;
 
+typedef enum {
+    OGS_LOG_FORMAT_TEXT = 0,
+    OGS_LOG_FORMAT_JSON,
+} ogs_log_format_e;
+
 typedef struct ogs_log_s ogs_log_t;
 typedef struct ogs_log_domain_s ogs_log_domain_t;
 
@@ -97,6 +102,9 @@ int ogs_log_config_domain(const char *domain, const char *level);
 
 void ogs_log_set_mask_level(const char *mask, ogs_log_level_e level);
 void ogs_log_set_timestamp(ogs_log_ts_e ts_default, ogs_log_ts_e ts_file);
+void ogs_log_set_format(ogs_log_format_e format);
+ogs_log_format_e ogs_log_get_format(void);
+ogs_log_format_e ogs_log_format_from_string(const char *string);
 
 void ogs_log_vprintf(ogs_log_level_e level, int id,
     ogs_err_t err, const char *file, int line, const char *func,
@@ -105,6 +113,16 @@ void ogs_log_printf(ogs_log_level_e level, int domain_id,
     ogs_err_t err, const char *file, int line, const char *func,
     int content_only, const char *format, ...)
     OGS_GNUC_PRINTF(8, 9);
+
+char *ogs_log_render_json(char *buf, size_t buflen, ogs_log_level_e level,
+    int domain_id, ogs_err_t err, const char *file, int line,
+    const char *func, const char *content);
+
+char *ogs_log_json_timestamp(char *buf, char *last);
+char *ogs_log_json_string(char *buf, char *last,
+    const char *field, const char *value);
+void ogs_log_write_raw(ogs_log_level_e level, int domain_id,
+    const char *string);
 
 void ogs_log_hexdump_func(ogs_log_level_e level, int domain_id,
     const unsigned char *data, size_t len);

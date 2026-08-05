@@ -20,6 +20,76 @@
 #include "ogs-core.h"
 #include "core/abts.h"
 
+static void test_format(abts_case *tc, void *data)
+{
+    ogs_log_format_e saved = ogs_log_get_format();
+    int core_domain;
+
+    core_domain = ogs_log_get_domain_id("core");
+    ABTS_INT_EQUAL(tc, OGS_LOG_FORMAT_TEXT, ogs_log_get_format());
+
+    ABTS_INT_EQUAL(tc, OGS_LOG_FORMAT_TEXT,
+            ogs_log_format_from_string(NULL));
+    ABTS_INT_EQUAL(tc, OGS_LOG_FORMAT_TEXT,
+            ogs_log_format_from_string("text"));
+    ABTS_INT_EQUAL(tc, OGS_LOG_FORMAT_TEXT,
+            ogs_log_format_from_string("TEXT"));
+    ABTS_INT_EQUAL(tc, OGS_LOG_FORMAT_TEXT,
+            ogs_log_format_from_string("garbage"));
+    ABTS_INT_EQUAL(tc, OGS_LOG_FORMAT_JSON,
+            ogs_log_format_from_string("json"));
+    ABTS_INT_EQUAL(tc, OGS_LOG_FORMAT_JSON,
+            ogs_log_format_from_string("JSON"));
+
+    ogs_log_set_format(OGS_LOG_FORMAT_JSON);
+    ABTS_INT_EQUAL(tc, OGS_LOG_FORMAT_JSON, ogs_log_get_format());
+    ogs_log_set_format(OGS_LOG_FORMAT_TEXT);
+    ABTS_INT_EQUAL(tc, OGS_LOG_FORMAT_TEXT, ogs_log_get_format());
+
+    (void)core_domain;
+    ogs_log_set_format(saved);
+}
+
+static void test_json_escape(abts_case *tc, void *data)
+{
+    char buf[1024];
+    char *end;
+    int core_domain;
+    const char *needle;
+
+    core_domain = ogs_log_get_domain_id("core");
+
+    end = ogs_log_render_json(buf, sizeof buf, OGS_LOG_INFO, core_domain,
+            0, "src/core/init.c", 42, "amf_initialize",
+            "hello \"world\" \\ \b\f\n\r\t end");
+    ABTS_PTR_NOTNULL(tc, end);
+
+    ABTS_PTR_NOTNULL(tc, strstr(buf, "\"file\":\"src/core/init.c\""));
+    ABTS_PTR_NOTNULL(tc, strstr(buf, "\"line\":42"));
+    ABTS_PTR_NOTNULL(tc, strstr(buf, "\"func\":\"amf_initialize\""));
+    ABTS_PTR_NOTNULL(tc, strstr(buf, "\"level\":\"INFO\""));
+    ABTS_PTR_NOTNULL(tc, strstr(buf, "\"domain\":\"core\""));
+
+    needle = strstr(buf, "\"message\":\"");
+    ABTS_PTR_NOTNULL(tc, needle);
+    needle += strlen("\"message\":\"");
+    ABTS_PTR_NOTNULL(tc, strstr(needle, "hello \\\"world\\\" \\\\ \\b\\f\\n\\r\\t end"));
+
+    end = ogs_log_render_json(buf, sizeof buf, OGS_LOG_INFO, core_domain,
+            0, NULL, 0, NULL, "no metadata");
+    ABTS_PTR_NOTNULL(tc, end);
+    ABTS_PTR_EQUAL(tc, NULL, strstr(buf, "\"file\""));
+    ABTS_PTR_EQUAL(tc, NULL, strstr(buf, "\"line\""));
+    ABTS_PTR_EQUAL(tc, NULL, strstr(buf, "\"func\""));
+    ABTS_PTR_NOTNULL(tc, strstr(buf, "\"message\":\"no metadata\""));
+
+    end = ogs_log_render_json(buf, sizeof buf, OGS_LOG_INFO, core_domain,
+            OGS_ECONNREFUSED, "f.c", 1, "f", "boom");
+    ABTS_PTR_NOTNULL(tc, end);
+    ABTS_PTR_NOTNULL(tc, strstr(buf, "\"err\":"));
+    ABTS_PTR_NOTNULL(tc, strstr(buf, "\"errstr\""));
+}
+
 static void test_basic(abts_case *tc, void *data)
 {
     int domain_id = -1;
@@ -108,6 +178,8 @@ abts_suite *test_log(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test_basic, NULL);
+    abts_run_test(suite, test_format, NULL);
+    abts_run_test(suite, test_json_escape, NULL);
 
     return suite;
 }

@@ -919,6 +919,40 @@ static void sbi_message_test10(abts_case *tc, void *param)
     }
 }
 
+static void sbi_message_test11(abts_case *tc, void *data)
+{
+    ogs_sbi_request_t *request = NULL;
+
+    request = ogs_sbi_request_new();
+    ABTS_PTR_NOTNULL(tc, request);
+
+    ogs_sbi_header_set(request->http.headers,
+            OGS_SBI_CUSTOM_TRACEPARENT,
+            "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01");
+    ogs_sbi_header_set(request->http.headers,
+            OGS_SBI_CUSTOM_CORRELATION_ID, "amf:open5gs-amf0:ue:42");
+    ogs_sbi_header_set(request->http.headers,
+            OGS_SBI_CUSTOM_OPEN5GS_AMF_UE_ID, "42");
+    ogs_sbi_header_set(request->http.headers,
+            OGS_SBI_CUSTOM_OPEN5GS_SESS_ID, "7");
+
+    ABTS_STR_EQUAL(tc,
+            "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01",
+            ogs_sbi_header_get(request->http.headers,
+                OGS_SBI_CUSTOM_TRACEPARENT));
+    ABTS_STR_EQUAL(tc, "amf:open5gs-amf0:ue:42",
+            ogs_sbi_header_get(request->http.headers,
+                OGS_SBI_CUSTOM_CORRELATION_ID));
+    ABTS_STR_EQUAL(tc, "42",
+            ogs_sbi_header_get(request->http.headers,
+                OGS_SBI_CUSTOM_OPEN5GS_AMF_UE_ID));
+    ABTS_STR_EQUAL(tc, "7",
+            ogs_sbi_header_get(request->http.headers,
+                OGS_SBI_CUSTOM_OPEN5GS_SESS_ID));
+
+    ogs_sbi_request_free(request);
+}
+
 abts_suite *test_sbi_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -933,6 +967,7 @@ abts_suite *test_sbi_message(abts_suite *suite)
     abts_run_test(suite, sbi_message_test8, NULL);
     abts_run_test(suite, sbi_message_test9, NULL);
     abts_run_test(suite, sbi_message_test10, NULL);
+    abts_run_test(suite, sbi_message_test11, NULL);
 
     return suite;
 }

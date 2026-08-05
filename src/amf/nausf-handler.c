@@ -19,6 +19,7 @@
 
 #include "nausf-handler.h"
 #include "nas-path.h"
+#include "log.h"
 
 int amf_nausf_auth_handle_authenticate(
         amf_ue_t *amf_ue, ogs_sbi_message_t *message)
@@ -194,6 +195,15 @@ int amf_nausf_auth_handle_authenticate_confirmation(
 
         ogs_kdf_kamf(amf_ue->supi, amf_ue->abba, amf_ue->abba_len,
                 kseaf, amf_ue->kamf);
+
+        {
+            ran_ue_t *ran = ran_ue_find_by_id(amf_ue->ran_ue_id);
+            amf_log_ue_event(OGS_LOG_INFO,
+                AMF_EVENT_AUTHENTICATION_COMPLETE,
+                AMF_EVENT_OUTCOME_SUCCESS,
+                AMF_EVENT_TYPE_PROCEDURE,
+                amf_ue, ran, "Authentication complete");
+        }
 
         return OGS_OK;
 

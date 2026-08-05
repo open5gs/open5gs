@@ -26,6 +26,7 @@
 #include "nas-security.h"
 #include "nas-path.h"
 #include "sbi-path.h"
+#include "log.h"
 
 int ngap_open(void)
 {
@@ -409,6 +410,14 @@ int ngap_send_ng_setup_failure(
     ogs_assert(gnb);
 
     ogs_debug("NG-Setup failure");
+    {
+        amf_log_error_t error = {
+            "NG setup failure", (int)cause, "ngap_send_ng_setup_failure"
+        };
+        amf_log_ue_error_event(OGS_LOG_WARN,
+            AMF_EVENT_NG_SETUP_FAILURE, AMF_EVENT_TYPE_PROCEDURE,
+            NULL, NULL, "NG setup failure", &error);
+    }
 
     ngap_buffer = ngap_build_ng_setup_failure(
             group, cause, NGAP_TimeToWait_v10s);

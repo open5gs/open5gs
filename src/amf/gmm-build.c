@@ -20,6 +20,7 @@
 #include "nas-security.h"
 #include "gmm-build.h"
 #include "amf-sm.h"
+#include "log.h"
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
@@ -76,6 +77,27 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
         ogs_debug("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]", amf_ue->supi,
                 ogs_amf_id_hexdump(&amf_ue->next.guti.amf_id),
                 amf_ue->next.guti.m_tmsi);
+        {
+            char raw[128], amf_id_hex[32], m_tmsi_hex[32];
+            amf_log_guti_t guti;
+            uint32_t amf_id = ogs_amf_id_hexdump(&amf_ue->next.guti.amf_id);
+
+            ogs_snprintf(amf_id_hex, sizeof(amf_id_hex), "0x%x", amf_id);
+            ogs_snprintf(m_tmsi_hex, sizeof(m_tmsi_hex), "0x%x",
+                    amf_ue->next.guti.m_tmsi);
+            ogs_snprintf(raw, sizeof(raw),
+                    "5G-S_GUTI[AMF_ID:%s,M_TMSI:%s]",
+                    amf_id_hex, m_tmsi_hex);
+
+            guti.raw = raw;
+            guti.plmn_id_hex = NULL;
+            guti.amf_id_hex = amf_id_hex;
+            guti.m_tmsi_hex = m_tmsi_hex;
+            amf_log_ue_guti_event(OGS_LOG_DEBUG,
+                AMF_EVENT_GUTI_ASSIGNED, AMF_EVENT_OUTCOME_SUCCESS,
+                AMF_EVENT_TYPE_PROCEDURE,
+                amf_ue, ran_ue_find_by_id(amf_ue->ran_ue_id), raw, &guti);
+        }
 
         ogs_nas_5gs_nas_guti_to_mobility_identity_guti(
                 &amf_ue->next.guti, &mobile_identity_guti);
@@ -607,6 +629,27 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
         ogs_info("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]", amf_ue->supi,
                 ogs_amf_id_hexdump(&amf_ue->next.guti.amf_id),
                 amf_ue->next.guti.m_tmsi);
+        {
+            char raw[128], amf_id_hex[32], m_tmsi_hex[32];
+            amf_log_guti_t guti;
+            uint32_t amf_id = ogs_amf_id_hexdump(&amf_ue->next.guti.amf_id);
+
+            ogs_snprintf(amf_id_hex, sizeof(amf_id_hex), "0x%x", amf_id);
+            ogs_snprintf(m_tmsi_hex, sizeof(m_tmsi_hex), "0x%x",
+                    amf_ue->next.guti.m_tmsi);
+            ogs_snprintf(raw, sizeof(raw),
+                    "5G-S_GUTI[AMF_ID:%s,M_TMSI:%s]",
+                    amf_id_hex, m_tmsi_hex);
+
+            guti.raw = raw;
+            guti.plmn_id_hex = NULL;
+            guti.amf_id_hex = amf_id_hex;
+            guti.m_tmsi_hex = m_tmsi_hex;
+            amf_log_ue_guti_event(OGS_LOG_INFO,
+                AMF_EVENT_GUTI_ASSIGNED, AMF_EVENT_OUTCOME_SUCCESS,
+                AMF_EVENT_TYPE_PROCEDURE,
+                amf_ue, ran_ue_find_by_id(amf_ue->ran_ue_id), raw, &guti);
+        }
 
         ogs_nas_5gs_nas_guti_to_mobility_identity_guti(
                 &amf_ue->next.guti, &mobile_identity_guti);

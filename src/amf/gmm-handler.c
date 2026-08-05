@@ -24,6 +24,7 @@
 #include "sbi-path.h"
 
 #include "gmm-handler.h"
+#include "log.h"
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
@@ -184,6 +185,13 @@ ogs_nas_5gmm_cause_t gmm_handle_registration_request(amf_ue_t *amf_ue,
 
         amf_ue_set_suci(amf_ue, mobile_identity);
         ogs_info("[%s]    SUCI", amf_ue->suci);
+        {
+            ran_ue_t *ran = ran_ue_find_by_id(amf_ue->ran_ue_id);
+            amf_log_ue_suci_event(OGS_LOG_INFO,
+                AMF_EVENT_SUCI_RECEIVED, AMF_EVENT_OUTCOME_SUCCESS,
+                AMF_EVENT_TYPE_PROCEDURE,
+                amf_ue, ran, amf_ue->suci, amf_ue->suci);
+        }
         break;
     case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
         if (mobile_identity->length <
@@ -630,6 +638,29 @@ bool gmm_registration_request_from_old_amf(amf_ue_t *amf_ue,
         ogs_plmn_id_hexdump(&plmn_id),
         ogs_amf_id_hexdump(&amf_ue->old_guti.amf_id),
         amf_ue->old_guti.m_tmsi);
+    {
+        char raw[128], plmn_hex[32], amf_id_hex[32], m_tmsi_hex[32];
+        amf_log_guti_t guti;
+        uint32_t plmn = ogs_plmn_id_hexdump(&plmn_id);
+        uint32_t amf_id = ogs_amf_id_hexdump(&amf_ue->old_guti.amf_id);
+
+        ogs_snprintf(plmn_hex, sizeof(plmn_hex), "0x%x", plmn);
+        ogs_snprintf(amf_id_hex, sizeof(amf_id_hex), "0x%x", amf_id);
+        ogs_snprintf(m_tmsi_hex, sizeof(m_tmsi_hex), "0x%x",
+                amf_ue->old_guti.m_tmsi);
+        ogs_snprintf(raw, sizeof(raw),
+                "5G-S_GUTI[PLMN_ID:%s,AMF_ID:%s,M_TMSI:%s]",
+                plmn_hex, amf_id_hex, m_tmsi_hex);
+
+        guti.raw = raw;
+        guti.plmn_id_hex = plmn_hex;
+        guti.amf_id_hex = amf_id_hex;
+        guti.m_tmsi_hex = m_tmsi_hex;
+        amf_log_ue_guti_event(OGS_LOG_INFO,
+            AMF_EVENT_GUTI_RECEIVED, AMF_EVENT_OUTCOME_SUCCESS,
+            AMF_EVENT_TYPE_PROCEDURE,
+            amf_ue, ran_ue_find_by_id(amf_ue->ran_ue_id), raw, &guti);
+    }
 
     for (i = 0; i < amf_self()->num_of_served_guami; i++) {
         if (memcmp(&amf_self()->served_guami[i].plmn_id,
@@ -1074,6 +1105,13 @@ ogs_nas_5gmm_cause_t gmm_handle_identity_response(amf_ue_t *amf_ue,
 
         amf_ue_set_suci(amf_ue, mobile_identity);
         ogs_info("[%s]    SUCI", amf_ue->suci);
+        {
+            ran_ue_t *ran = ran_ue_find_by_id(amf_ue->ran_ue_id);
+            amf_log_ue_suci_event(OGS_LOG_INFO,
+                AMF_EVENT_SUCI_RECEIVED, AMF_EVENT_OUTCOME_SUCCESS,
+                AMF_EVENT_TYPE_PROCEDURE,
+                amf_ue, ran, amf_ue->suci, amf_ue->suci);
+        }
     } else {
         ogs_error("Not supported Identity type[%d]",
                 mobile_identity_header->type);

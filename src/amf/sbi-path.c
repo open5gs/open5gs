@@ -21,6 +21,250 @@
 #include "nas-path.h"
 #include "ngap-path.h"
 #include "nnrf-handler.h"
+#include "log.h"
+
+static void amf_sbi_xact_ctx_free(void *data);
+
+static void amf_sbi_random_hex(char *buf, size_t buflen, size_t byte_len)
+{
+    static const char hex[] = "0123456789abcdef";
+    uint8_t random[16];
+    size_t i;
+
+    ogs_assert(buf);
+    ogs_assert(byte_len <= sizeof(random));
+    ogs_assert(buflen >= (byte_len * 2) + 1);
+
+    ogs_random(random, byte_len);
+    for (i = 0; i < byte_len; i++) {
+        buf[i * 2] = hex[(random[i] >> 4) & 0xf];
+        buf[(i * 2) + 1] = hex[random[i] & 0xf];
+    }
+    buf[byte_len * 2] = '\0';
+}
+
+static amf_sbi_xact_ctx_t *amf_sbi_xact_ctx_new(
+        amf_ue_t *amf_ue, ran_ue_t *ran_ue, amf_sess_t *sess)
+{
+    amf_sbi_xact_ctx_t *ctx = NULL;
+    const char *instance = "unknown";
+
+    ctx = ogs_calloc(1, sizeof(*ctx));
+    ogs_assert(ctx);
+
+    ctx->ran_ue_id = OGS_INVALID_POOL_ID;
+    ctx->amf_ue_id = OGS_INVALID_POOL_ID;
+    ctx->sess_id = OGS_INVALID_POOL_ID;
+    ctx->target_ue_id = OGS_INVALID_POOL_ID;
+
+    if (amf_ue) {
+        ctx->amf_ue_id = amf_ue->id;
+        if (amf_ue->ran_ue_id >= OGS_MIN_POOL_ID &&
+                amf_ue->ran_ue_id <= OGS_MAX_POOL_ID)
+            ctx->ran_ue_id = amf_ue->ran_ue_id;
+    }
+    if (ran_ue) {
+        ctx->ran_ue_id = ran_ue->id;
+        ctx->target_ue_id = ran_ue->target_ue_id;
+        if (ran_ue->amf_ue_id >= OGS_MIN_POOL_ID &&
+                ran_ue->amf_ue_id <= OGS_MAX_POOL_ID)
+            ctx->amf_ue_id = ran_ue->amf_ue_id;
+    }
+    if (sess) {
+        ctx->sess_id = sess->id;
+        if (sess->amf_ue_id >= OGS_MIN_POOL_ID &&
+                sess->amf_ue_id <= OGS_MAX_POOL_ID)
+            ctx->amf_ue_id = sess->amf_ue_id;
+    }
+
+    ctx->trace_id = ogs_malloc(33);
+    ogs_assert(ctx->trace_id);
+    ctx->span_id = ogs_malloc(17);
+    ogs_assert(ctx->span_id);
+
+    amf_sbi_random_hex(ctx->trace_id, 33, 16);
+    amf_sbi_random_hex(ctx->span_id, 17, 8);
+
+    ctx->traceparent = ogs_msprintf("00-%s-%s-01",
+            ctx->trace_id, ctx->span_id);
+    ogs_assert(ctx->traceparent);
+
+    if (ogs_sbi_self()->nf_instance && ogs_sbi_self()->nf_instance->id)
+        instance = ogs_sbi_self()->nf_instance->id;
+
+    if (ctx->amf_ue_id >= OGS_MIN_POOL_ID && ctx->amf_ue_id <= OGS_MAX_POOL_ID)
+        ctx->correlation_id = ogs_msprintf("amf:%s:ue:%d",
+                instance, (int)ctx->amf_ue_id);
+    else
+        ctx->correlation_id = ogs_msprintf("amf:%s:ue:null", instance);
+    ogs_assert(ctx->correlation_id);
+
+    return ctx;
+}
+
+static amf_sbi_xact_ctx_t *amf_sbi_xact_ctx_ensure(
+        ogs_sbi_xact_t *xact, amf_ue_t *amf_ue, ran_ue_t *ran_ue,
+        amf_sess_t *sess)
+{
+    ogs_assert(xact);
+
+    if (!xact->user_data) {
+        xact->user_data = amf_sbi_xact_ctx_new(amf_ue, ran_ue, sess);
+        xact->user_data_free = amf_sbi_xact_ctx_free;
+    }
+
+    return xact->user_data;
+}
+
+static void amf_sbi_request_stamp_headers(
+        ogs_sbi_request_t *request, amf_sbi_xact_ctx_t *ctx)
+{
+    char idbuf[32];
+
+    ogs_assert(request);
+    ogs_assert(ctx);
+
+    if (!amf_self()->sbi_correlation_enabled)
+        return;
+
+    if (ctx->traceparent)
+        ogs_sbi_header_set(request->http.headers,
+                OGS_SBI_CUSTOM_TRACEPARENT, ctx->traceparent);
+    if (ctx->correlation_id)
+        ogs_sbi_header_set(request->http.headers,
+                OGS_SBI_CUSTOM_CORRELATION_ID, ctx->correlation_id);
+    if (ctx->amf_ue_id >= OGS_MIN_POOL_ID && ctx->amf_ue_id <= OGS_MAX_POOL_ID) {
+        ogs_snprintf(idbuf, sizeof(idbuf), "%d", (int)ctx->amf_ue_id);
+        ogs_sbi_header_set(request->http.headers,
+                OGS_SBI_CUSTOM_OPEN5GS_AMF_UE_ID, idbuf);
+    }
+    if (ctx->sess_id >= OGS_MIN_POOL_ID && ctx->sess_id <= OGS_MAX_POOL_ID) {
+        ogs_snprintf(idbuf, sizeof(idbuf), "%d", (int)ctx->sess_id);
+        ogs_sbi_header_set(request->http.headers,
+                OGS_SBI_CUSTOM_OPEN5GS_SESS_ID, idbuf);
+    }
+}
+
+static void amf_sbi_xact_stamp_headers(ogs_sbi_xact_t *xact)
+{
+    ogs_assert(xact);
+    ogs_assert(xact->request);
+
+    if (!xact->user_data)
+        return;
+
+    amf_sbi_request_stamp_headers(xact->request, xact->user_data);
+}
+
+static void amf_sbi_xact_log_request(ogs_sbi_xact_t *xact)
+{
+    amf_sbi_xact_ctx_t *ctx = NULL;
+    amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
+    amf_log_trace_t trace;
+
+    ogs_assert(xact);
+
+    ctx = xact->user_data;
+    if (!ctx)
+        return;
+
+    if (ctx->amf_ue_id >= OGS_MIN_POOL_ID && ctx->amf_ue_id <= OGS_MAX_POOL_ID)
+        amf_ue = amf_ue_find_by_id(ctx->amf_ue_id);
+    if (ctx->ran_ue_id >= OGS_MIN_POOL_ID && ctx->ran_ue_id <= OGS_MAX_POOL_ID)
+        ran_ue = ran_ue_find_by_id(ctx->ran_ue_id);
+
+    trace.trace_id = ctx->trace_id;
+    trace.span_id = ctx->span_id;
+    trace.correlation_id = ctx->correlation_id;
+
+    amf_log_ue_sbi_event(OGS_LOG_INFO,
+        AMF_EVENT_SBI_REQUEST, AMF_EVENT_OUTCOME_UNKNOWN,
+        amf_ue, ran_ue, OpenAPI_service_name_ToString(xact->service_name),
+        &trace);
+}
+
+void amf_sbi_xact_log_response(
+        ogs_sbi_xact_t *xact, ogs_sbi_message_t *message)
+{
+    amf_sbi_xact_ctx_t *ctx = NULL;
+    amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
+    amf_log_trace_t trace;
+    char msg[64];
+    const char *outcome = AMF_EVENT_OUTCOME_SUCCESS;
+    const char *event_name = AMF_EVENT_SBI_RESPONSE;
+    ogs_log_level_e level = OGS_LOG_INFO;
+
+    ogs_assert(xact);
+
+    ctx = xact->user_data;
+    if (!ctx)
+        return;
+
+    if (message && message->res_status >= OGS_SBI_HTTP_STATUS_BAD_REQUEST) {
+        outcome = AMF_EVENT_OUTCOME_FAILURE;
+        event_name = AMF_EVENT_SBI_RESPONSE_HTTP_ERROR;
+        level = OGS_LOG_WARN;
+    }
+
+    if (ctx->amf_ue_id >= OGS_MIN_POOL_ID && ctx->amf_ue_id <= OGS_MAX_POOL_ID)
+        amf_ue = amf_ue_find_by_id(ctx->amf_ue_id);
+    if (ctx->ran_ue_id >= OGS_MIN_POOL_ID && ctx->ran_ue_id <= OGS_MAX_POOL_ID)
+        ran_ue = ran_ue_find_by_id(ctx->ran_ue_id);
+
+    trace.trace_id = ctx->trace_id;
+    trace.span_id = ctx->span_id;
+    trace.correlation_id = ctx->correlation_id;
+
+    if (message)
+        ogs_snprintf(msg, sizeof(msg), "%s response [%d]",
+                OpenAPI_service_name_ToString(xact->service_name),
+                message->res_status);
+    else
+        ogs_snprintf(msg, sizeof(msg), "%s response",
+                OpenAPI_service_name_ToString(xact->service_name));
+
+    amf_log_ue_sbi_event(level,
+        event_name, outcome,
+        amf_ue, ran_ue, msg, &trace);
+}
+
+void amf_sbi_xact_log_timeout(ogs_sbi_xact_t *xact)
+{
+    amf_sbi_xact_ctx_t *ctx = NULL;
+    amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
+    amf_log_trace_t trace;
+    amf_log_error_t error;
+    char msg[64];
+
+    ogs_assert(xact);
+
+    ctx = xact->user_data;
+    if (!ctx)
+        return;
+
+    if (ctx->amf_ue_id >= OGS_MIN_POOL_ID && ctx->amf_ue_id <= OGS_MAX_POOL_ID)
+        amf_ue = amf_ue_find_by_id(ctx->amf_ue_id);
+    if (ctx->ran_ue_id >= OGS_MIN_POOL_ID && ctx->ran_ue_id <= OGS_MAX_POOL_ID)
+        ran_ue = ran_ue_find_by_id(ctx->ran_ue_id);
+
+    trace.trace_id = ctx->trace_id;
+    trace.span_id = ctx->span_id;
+    trace.correlation_id = ctx->correlation_id;
+
+    error.reason = "SBI client wait timer expired";
+    error.code = OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT;
+    error.source = "ogs_timer_sbi_client_wait_expire";
+
+    ogs_snprintf(msg, sizeof(msg), "%s wait timer expired",
+            OpenAPI_service_name_ToString(xact->service_name));
+
+    amf_log_ue_sbi_error_event(OGS_LOG_WARN,
+        AMF_EVENT_SBI_TIMEOUT,
+        amf_ue, ran_ue, msg, &error, &trace);
+}
 
 int amf_sbi_open(void)
 {
@@ -87,6 +331,8 @@ bool amf_sbi_send_request(
 {
     ogs_assert(nf_instance);
     ogs_assert(xact);
+    amf_sbi_xact_stamp_headers(xact);
+    amf_sbi_xact_log_request(xact);
     return ogs_sbi_send_request_to_nf_instance(nf_instance, xact);
 }
 
@@ -139,6 +385,8 @@ int amf_ue_sbi_discover_and_send(
         return OGS_ERROR;
     }
 
+    amf_sbi_xact_ctx_ensure(xact, amf_ue, NULL, NULL);
+
     xact->state = state;
 
     rv = ogs_sbi_discover_and_send(xact);
@@ -157,7 +405,21 @@ int amf_ue_sbi_discover_and_send(
 
 static void amf_sbi_xact_ctx_free(void *data)
 {
-    ogs_free(data);
+    amf_sbi_xact_ctx_t *ctx = data;
+
+    if (!ctx)
+        return;
+
+    if (ctx->trace_id)
+        ogs_free(ctx->trace_id);
+    if (ctx->span_id)
+        ogs_free(ctx->span_id);
+    if (ctx->traceparent)
+        ogs_free(ctx->traceparent);
+    if (ctx->correlation_id)
+        ogs_free(ctx->correlation_id);
+
+    ogs_free(ctx);
 }
 
 int amf_sess_sbi_discover_and_send(
@@ -218,19 +480,8 @@ int amf_sess_sbi_discover_and_send(
         return OGS_ERROR;
     }
 
-    /* Bind per-xact AMF context */
-    if (ran_ue) {
-        amf_sbi_xact_ctx_t *ctx = NULL;
-
-        ctx = ogs_calloc(1, sizeof(*ctx));
-        ogs_assert(ctx);
-
-        ctx->ran_ue_id = ran_ue->id;
-        ctx->target_ue_id = ran_ue->target_ue_id;
-
-        xact->user_data = ctx;
-        xact->user_data_free = amf_sbi_xact_ctx_free;
-    }
+    amf_sbi_xact_ctx_ensure(xact, amf_ue_find_by_id(sess->amf_ue_id),
+            ran_ue, sess);
 
     xact->state = state;
 
@@ -270,6 +521,8 @@ static int client_discover_cb(
 
     ogs_sbi_discovery_option_t *v_discovery_option = NULL;
 
+    amf_log_trace_t trace = { NULL, NULL, NULL };
+
     int current_state, next_state = AMF_CREATE_SM_CONTEXT_NO_STATE;
 
     xact_id = OGS_POINTER_TO_UINT(data);
@@ -277,7 +530,14 @@ static int client_discover_cb(
 
     xact = ogs_sbi_xact_find_by_id(xact_id);
     if (!xact) {
+        amf_log_error_t error = {
+            "SBI transaction has already been removed",
+            (int)xact_id, "ogs_sbi_xact_find_by_id"
+        };
         ogs_error("SBI transaction has already been removed");
+        amf_log_ue_error_event(OGS_LOG_ERROR,
+            AMF_EVENT_SBI_TRANSACTION_MISSING, AMF_EVENT_TYPE_DEPENDENCY,
+            NULL, NULL, "SBI transaction has already been removed", &error);
         if (response)
             ogs_sbi_response_free(response);
         return OGS_ERROR;
@@ -288,6 +548,10 @@ static int client_discover_cb(
 
         if (ctx->ran_ue_id != OGS_INVALID_POOL_ID)
             ran_ue_id = ctx->ran_ue_id;
+
+        trace.trace_id = ctx->trace_id;
+        trace.span_id = ctx->span_id;
+        trace.correlation_id = ctx->correlation_id;
     }
 
     if (ran_ue_id >= OGS_MIN_POOL_ID && ran_ue_id <= OGS_MAX_POOL_ID)
@@ -306,7 +570,14 @@ static int client_discover_cb(
 
     sess = amf_sess_find_by_id(xact->sbi_object_id);
     if (!sess) {
+        amf_log_error_t error = {
+            "Session has already been removed",
+            (int)xact->sbi_object_id, "amf_sess_find_by_id"
+        };
         ogs_error("Session has already been removed");
+        amf_log_ue_sbi_error_event(OGS_LOG_ERROR,
+            AMF_EVENT_SESSION_CONTEXT_MISSING,
+            NULL, ran_ue, "Session has already been removed", &error, &trace);
         ogs_sbi_xact_remove(xact);
         if (response)
             ogs_sbi_response_free(response);
@@ -316,14 +587,29 @@ static int client_discover_cb(
     ogs_assert(sess->sbi.type == OGS_SBI_OBJ_SESS_TYPE);
     amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
     if (!amf_ue) {
+        amf_log_error_t error = {
+            "UE(amf-ue) context has already been removed",
+            (int)sess->amf_ue_id, "amf_ue_find_by_id"
+        };
         ogs_error("UE(amf-ue) context has already been removed");
+        amf_log_ue_sbi_error_event(OGS_LOG_ERROR,
+            AMF_EVENT_AMF_UE_CONTEXT_MISSING,
+            NULL, ran_ue,
+            "UE(amf-ue) context has already been removed", &error, &trace);
         ogs_sbi_xact_remove(xact);
         if (response)
             ogs_sbi_response_free(response);
         return OGS_ERROR;
     }
     if (!ran_ue) {
+        amf_log_error_t error = {
+            "NG context has already been removed",
+            (int)ran_ue_id, "ran_ue_find_by_id"
+        };
         ogs_error("[%s] NG context has already been removed", amf_ue->supi);
+        amf_log_ue_sbi_error_event(OGS_LOG_ERROR,
+            AMF_EVENT_RAN_UE_CONTEXT_MISSING,
+            amf_ue, NULL, "NG context has already been removed", &error, &trace);
         ogs_sbi_xact_remove(xact);
         if (response)
             ogs_sbi_response_free(response);
@@ -344,7 +630,13 @@ static int client_discover_cb(
 
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
+        amf_log_error_t error = {
+            "cannot parse HTTP response", rv, "ogs_sbi_parse_response"
+        };
         ogs_error("cannot parse HTTP response");
+        amf_log_ue_sbi_error_event(OGS_LOG_ERROR,
+            AMF_EVENT_SBI_RESPONSE_PARSE_FAILED,
+            amf_ue, ran_ue, "cannot parse HTTP response", &error, &trace);
         r = nas_5gs_send_back_gsm_message(ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
@@ -354,7 +646,13 @@ static int client_discover_cb(
     }
 
     if (message.res_status != OGS_SBI_HTTP_STATUS_OK) {
+        amf_log_error_t error = {
+            "NF-Discover failed", message.res_status, "nnrf_discover"
+        };
         ogs_error("NF-Discover failed [%d]", message.res_status);
+        amf_log_ue_sbi_error_event(OGS_LOG_ERROR,
+            AMF_EVENT_SBI_DISCOVERY_FAILED,
+            amf_ue, ran_ue, "NF-Discover failed", &error, &trace);
         r = nas_5gs_send_back_gsm_message(ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
@@ -364,7 +662,13 @@ static int client_discover_cb(
     }
 
     if (!message.SearchResult) {
+        amf_log_error_t error = {
+            "No SearchResult", OGS_ERROR, "nnrf_discover"
+        };
         ogs_error("No SearchResult");
+        amf_log_ue_sbi_error_event(OGS_LOG_ERROR,
+            AMF_EVENT_SBI_DISCOVERY_FAILED,
+            amf_ue, ran_ue, "No SearchResult", &error, &trace);
         r = nas_5gs_send_back_gsm_message(ran_ue, sess,
             OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED, AMF_NAS_BACKOFF_TIME);
         ogs_expect(r == OGS_OK);
@@ -396,9 +700,17 @@ static int client_discover_cb(
     nf_instance = ogs_sbi_nf_instance_find_by_discovery_param(
                     target_nf_type, requester_nf_type, discovery_option);
     if (!nf_instance) {
+        amf_log_error_t error = {
+            "NF discover returned no matching NF instance",
+            (int)service_name, "ogs_sbi_nf_instance_find_by_discovery_param"
+        };
         ogs_error("[%s:%d] (NF discover) No [%s]",
                     amf_ue->supi, sess->psi,
                     OpenAPI_service_name_ToString(service_name));
+        amf_log_ue_sbi_error_event(OGS_LOG_ERROR,
+            AMF_EVENT_SBI_DISCOVERY_FAILED,
+            amf_ue, ran_ue,
+            "NF discover returned no matching NF instance", &error, &trace);
         r = nas_5gs_send_back_gsm_message(ran_ue, sess,
                 OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
                 AMF_NAS_BACKOFF_TIME);
@@ -574,19 +886,13 @@ int amf_sess_sbi_discover_by_nsi(
         return OGS_ERROR;
     }
 
-    /* Bind per-xact AMF context */
-    if (ran_ue) {
-        amf_sbi_xact_ctx_t *ctx = NULL;
-
-        ctx = ogs_calloc(1, sizeof(*ctx));
-        ogs_assert(ctx);
-
-        ctx->ran_ue_id = ran_ue->id;
-        xact->user_data = ctx;
-        xact->user_data_free = amf_sbi_xact_ctx_free;
-    }
+    amf_sbi_xact_ctx_ensure(xact, amf_ue_find_by_id(sess->amf_ue_id),
+            ran_ue, sess);
 
     xact->state = state;
+
+    amf_sbi_xact_stamp_headers(xact);
+    amf_sbi_xact_log_request(xact);
 
     return ogs_sbi_client_send_request(
             client, client_discover_cb, xact->request,
@@ -782,6 +1088,9 @@ bool amf_sbi_send_n1_n2_failure_notify(
     bool rc;
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
+    amf_sbi_xact_ctx_t *ctx = NULL;
+    amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
 
     ogs_assert(cause);
     ogs_assert(sess);
@@ -794,10 +1103,27 @@ bool amf_sbi_send_n1_n2_failure_notify(
         return false;
     }
 
+    amf_ue = amf_ue_find_by_id(sess->amf_ue_id);
+    if (sess->ran_ue_id >= OGS_MIN_POOL_ID && sess->ran_ue_id <= OGS_MAX_POOL_ID)
+        ran_ue = ran_ue_find_by_id(sess->ran_ue_id);
+
+    ctx = amf_sbi_xact_ctx_new(amf_ue, ran_ue, sess);
+    amf_sbi_request_stamp_headers(request, ctx);
+    {
+        amf_log_trace_t trace = {
+            ctx->trace_id, ctx->span_id, ctx->correlation_id
+        };
+        amf_log_ue_sbi_event(OGS_LOG_INFO,
+            AMF_EVENT_SBI_REQUEST, AMF_EVENT_OUTCOME_UNKNOWN,
+            amf_ue, ran_ue, OGS_SBI_RESOURCE_NAME_N1_N2_FAILURE_NOTIFY,
+            &trace);
+    }
+
     rc = ogs_sbi_send_request_to_client(
             client, client_notify_cb, request, NULL);
     ogs_expect(rc == true);
 
+    amf_sbi_xact_ctx_free(ctx);
     ogs_sbi_request_free(request);
 
     return rc;

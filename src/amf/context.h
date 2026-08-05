@@ -130,6 +130,18 @@ typedef struct amf_context_s {
         } t3502, t3512;
     } time;
 
+    /*
+     * SBI correlation opt-out flag.
+     *
+     * When true (default), outbound SBI requests are stamped with the
+     * custom trace/correlation headers (traceparent, X-Correlation-ID,
+     * X-Open5GS-Amf-Ue-Id, X-Open5GS-Sess-Id) defined for the AMF RCA
+     * logging architecture. When false, no custom headers are emitted
+     * on the wire; AMF-internal structured logs continue to carry the
+     * trace/span/correlation fields for local correlation.
+     */
+    bool            sbi_correlation_enabled;
+
 } amf_context_t;
 
 typedef struct amf_gnb_s {

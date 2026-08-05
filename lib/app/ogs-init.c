@@ -121,6 +121,14 @@ int ogs_app_initialize(
     ogs_log_set_timestamp(ogs_app()->logger_default.timestamp,
                           ogs_app()->logger.timestamp);
 
+    if (!ogs_app()->logger.format) {
+        const char *env = ogs_env_get("OPEN5GS_LOG_FORMAT");
+        if (env)
+            ogs_app()->logger.format = env;
+    }
+    if (ogs_app()->logger.format)
+        ogs_log_set_format(ogs_log_format_from_string(ogs_app()->logger.format));
+
     /**************************************************************************
      * Stage 5 : Setup Database Module
      */
@@ -151,6 +159,9 @@ int ogs_app_initialize(
 
             if (ogs_app()->logger.domain)
                 ogs_info("LOG-DOMAIN: '%s'", ogs_app()->logger.domain);
+
+            if (ogs_app()->logger.format)
+                ogs_info("LOG-FORMAT: '%s'", ogs_app()->logger.format);
         }
     }
 
@@ -354,6 +365,9 @@ static int parse_config(void)
                         ogs_yaml_iter_value(&logger_iter);
                 } else if (!strcmp(logger_key, "domain")) {
                     ogs_app()->logger.domain =
+                        ogs_yaml_iter_value(&logger_iter);
+                } else if (!strcmp(logger_key, "format")) {
+                    ogs_app()->logger.format =
                         ogs_yaml_iter_value(&logger_iter);
                 }
             }

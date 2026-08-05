@@ -31,6 +31,7 @@
 #include "sbi-path.h"
 #include "amf-sm.h"
 #include "namf-build.h"
+#include "log.h"
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
@@ -1704,6 +1705,14 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
             ogs_info("Registration request");
+            {
+                ran_ue_t *ran = ran_ue_find_by_id(amf_ue->ran_ue_id);
+                amf_log_ue_event(OGS_LOG_INFO,
+                    AMF_EVENT_REGISTRATION_REQUEST,
+                    AMF_EVENT_OUTCOME_SUCCESS,
+                    AMF_EVENT_TYPE_PROCEDURE,
+                    amf_ue, ran, "Registration request");
+            }
             gmm_cause = gmm_handle_registration_request(
                     amf_ue, h, e->ngap.code,
                     &nas_message->gmm.registration_request);
@@ -1954,6 +1963,14 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             CLEAR_AMF_UE_TIMER(amf_ue->t3570);
 
             ogs_info("Identity response");
+            {
+                ran_ue_t *ran = ran_ue_find_by_id(amf_ue->ran_ue_id);
+                amf_log_ue_event(OGS_LOG_INFO,
+                    AMF_EVENT_IDENTITY_RESPONSE,
+                    AMF_EVENT_OUTCOME_SUCCESS,
+                    AMF_EVENT_TYPE_PROCEDURE,
+                    amf_ue, ran, "Identity response");
+            }
             gmm_cause = gmm_handle_identity_response(amf_ue,
                     &nas_message->gmm.identity_response);
             if (gmm_cause != OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
@@ -2289,8 +2306,16 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
         case AMF_TIMER_T3560:
             if (amf_ue->t3560.retry_count >=
                     amf_timer_cfg(AMF_TIMER_T3560)->max_count) {
+                amf_log_error_t error = {
+                    amf_timer_get_name(e->h.timer_id),
+                    e->h.timer_id, "gmm_timer"
+                };
                 ogs_warn("[%s] Retransmission failed. Stop retransmission",
                         amf_ue->suci);
+                amf_log_ue_error_event(OGS_LOG_WARN,
+                    AMF_EVENT_TIMER_RETRY_EXHAUSTED, AMF_EVENT_TYPE_TIMER,
+                    amf_ue, ran_ue_find_by_id(amf_ue->ran_ue_id),
+                    "Retransmission failed. Stop retransmission", &error);
                 r = nas_5gs_send_authentication_reject(amf_ue);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
@@ -2603,6 +2628,11 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_SECURITY_MODE_COMPLETE:
             ogs_debug("[%s] Security mode complete", amf_ue->supi);
+            amf_log_ue_event(OGS_LOG_INFO,
+                AMF_EVENT_SECURITY_MODE_COMPLETE,
+                AMF_EVENT_OUTCOME_SUCCESS,
+                AMF_EVENT_TYPE_PROCEDURE,
+                amf_ue, ran_ue, "Security mode complete");
 
         /*
          * TS24.501
@@ -2895,7 +2925,15 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
         case AMF_TIMER_T3560:
             if (amf_ue->t3560.retry_count >=
                     amf_timer_cfg(AMF_TIMER_T3560)->max_count) {
+                amf_log_error_t error = {
+                    amf_timer_get_name(e->h.timer_id),
+                    e->h.timer_id, "gmm_timer"
+                };
                 ogs_warn("[%s] Retransmission failed. Stop", amf_ue->supi);
+                amf_log_ue_error_event(OGS_LOG_WARN,
+                    AMF_EVENT_TIMER_RETRY_EXHAUSTED, AMF_EVENT_TYPE_TIMER,
+                    amf_ue, ran_ue_find_by_id(amf_ue->ran_ue_id),
+                    "Retransmission failed. Stop", &error);
                 r = nas_5gs_send_gmm_reject(
                         ran_ue_find_by_id(amf_ue->ran_ue_id), amf_ue,
                         OGS_5GMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
@@ -3237,6 +3275,11 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_REGISTRATION_COMPLETE:
             ogs_info("[%s] Registration complete", amf_ue->supi);
+            amf_log_ue_event(OGS_LOG_INFO,
+                AMF_EVENT_REGISTRATION_COMPLETE,
+                AMF_EVENT_OUTCOME_SUCCESS,
+                AMF_EVENT_TYPE_PROCEDURE,
+                amf_ue, ran_ue, "Registration complete");
 
             CLEAR_AMF_UE_TIMER(amf_ue->t3550);
 

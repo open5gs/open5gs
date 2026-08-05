@@ -18,6 +18,7 @@
  */
 
 #include "ngap-path.h"
+#include "log.h"
 
 static amf_context_t self;
 
@@ -125,6 +126,9 @@ static int amf_context_prepare(void)
     self.relative_capacity = 0xff;
 
     self.ngap_port = OGS_NGAP_SCTP_PORT;
+
+    /* SBI correlation headers emit by default; operators may disable. */
+    self.sbi_correlation_enabled = true;
 
     return OGS_OK;
 }
@@ -1014,6 +1018,12 @@ int amf_context_parse_config(void)
                 } else if (!strcmp(amf_key, "amf_name")) {
                     self.amf_name = ogs_yaml_iter_value(&amf_iter);
 
+                } else if (!strcmp(amf_key, "sbi_correlation_enabled")) {
+                    const char *v = ogs_yaml_iter_value(&amf_iter);
+                    if (v)
+                        self.sbi_correlation_enabled =
+                            (!strcasecmp(v, "true") || atoi(v) == 1);
+
                 } else if (!strcmp(amf_key, "time")) {
                     ogs_yaml_iter_t time_iter;
                     ogs_yaml_iter_recurse(&amf_iter, &time_iter);
@@ -1419,6 +1429,11 @@ ran_ue_t *ran_ue_add(amf_gnb_t *gnb, uint64_t ran_ue_ngap_id)
 
     stats_add_ran_ue();
 
+    amf_log_ue_event(OGS_LOG_INFO,
+        AMF_EVENT_RAN_UE_ADD, AMF_EVENT_OUTCOME_SUCCESS,
+        AMF_EVENT_TYPE_PROCEDURE,
+        NULL, ran_ue, "RAN-UE added");
+
     return ran_ue;
 }
 
@@ -1745,6 +1760,14 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
 
     ogs_info("[Added] Number of AMF-UEs is now %d",
             ogs_list_count(&self.amf_ue_list));
+
+    {
+        ran_ue_t *ran = ran_ue_find_by_id(amf_ue->ran_ue_id);
+        amf_log_ue_event(OGS_LOG_INFO,
+            AMF_EVENT_AMF_UE_ADD, AMF_EVENT_OUTCOME_SUCCESS,
+            AMF_EVENT_TYPE_PROCEDURE,
+            amf_ue, ran, "AMF-UE added");
+    }
 
     return amf_ue;
 }

@@ -40,6 +40,8 @@ typedef struct amf_sbi_xact_ctx_s {
      * may change before the asynchronous response arrives.
      */
     ogs_pool_id_t ran_ue_id;
+    ogs_pool_id_t amf_ue_id;
+    ogs_pool_id_t sess_id;
 
     /*
      * Snapshot of the target RAN-UE identifier for handover cancel.
@@ -49,6 +51,11 @@ typedef struct amf_sbi_xact_ctx_s {
      * the SBI transaction so the target context can still be released.
      */
     ogs_pool_id_t target_ue_id;
+
+    char *trace_id;
+    char *span_id;
+    char *traceparent;
+    char *correlation_id;
 } amf_sbi_xact_ctx_t;
 
 int amf_sbi_open(void);
@@ -56,6 +63,10 @@ void amf_sbi_close(void);
 
 bool amf_sbi_send_request(
         ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
+
+void amf_sbi_xact_log_response(
+        ogs_sbi_xact_t *xact, ogs_sbi_message_t *message);
+void amf_sbi_xact_log_timeout(ogs_sbi_xact_t *xact);
 
 #define AMF_CREATE_SM_CONTEXT_NO_STATE                  0
 

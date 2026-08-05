@@ -21,6 +21,7 @@
 #include "ngap-build.h"
 #include "gmm-build.h"
 #include "nas-path.h"
+#include "log.h"
 
 int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
 {
@@ -91,6 +92,11 @@ int nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
     }
 
     ogs_debug("[%s] Registration accept", amf_ue->supi);
+    amf_log_ue_event(OGS_LOG_INFO,
+        AMF_EVENT_REGISTRATION_ACCEPT,
+        AMF_EVENT_OUTCOME_SUCCESS,
+        AMF_EVENT_TYPE_PROCEDURE,
+        amf_ue, ran_ue, "Registration accept");
 
     if (amf_ue->next.m_tmsi) {
         if (amf_ue->t3550.pkbuf) {
@@ -151,6 +157,11 @@ int nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
         ogs_expect(rv == OGS_OK);
 
         ran_ue->initial_context_setup_request_sent = true;
+        amf_log_ue_event(OGS_LOG_INFO,
+            AMF_EVENT_INITIAL_CONTEXT_SETUP_REQUEST,
+            AMF_EVENT_OUTCOME_SUCCESS,
+            AMF_EVENT_TYPE_PROCEDURE,
+            amf_ue, ran_ue, "Initial context setup request");
     } else {
         if (transfer_needed == true) {
             ngapbuf = ngap_ue_build_pdu_session_resource_setup_request(
@@ -284,6 +295,11 @@ int nas_5gs_send_service_accept(amf_ue_t *amf_ue)
         ogs_expect(rv == OGS_OK);
 
         ran_ue->initial_context_setup_request_sent = true;
+        amf_log_ue_event(OGS_LOG_INFO,
+            AMF_EVENT_INITIAL_CONTEXT_SETUP_REQUEST,
+            AMF_EVENT_OUTCOME_SUCCESS,
+            AMF_EVENT_TYPE_PROCEDURE,
+            amf_ue, ran_ue, "Initial context setup request");
     } else {
         if (transfer_needed == true) {
             ngapbuf = ngap_ue_build_pdu_session_resource_setup_request(
@@ -439,6 +455,11 @@ int nas_5gs_send_identity_request(amf_ue_t *amf_ue)
     }
 
     ogs_debug("Identity request");
+    amf_log_ue_event(OGS_LOG_INFO,
+        AMF_EVENT_IDENTITY_REQUEST,
+        AMF_EVENT_OUTCOME_SUCCESS,
+        AMF_EVENT_TYPE_PROCEDURE,
+        amf_ue, ran_ue, "Identity request");
 
     if (amf_ue->t3570.pkbuf) {
         gmmbuf = amf_ue->t3570.pkbuf;
@@ -562,6 +583,11 @@ int nas_5gs_send_security_mode_command(amf_ue_t *amf_ue)
     }
 
     ogs_debug("[%s] Security mode command", amf_ue->supi);
+    amf_log_ue_event(OGS_LOG_INFO,
+        AMF_EVENT_SECURITY_MODE_COMMAND,
+        AMF_EVENT_OUTCOME_SUCCESS,
+        AMF_EVENT_TYPE_PROCEDURE,
+        amf_ue, ran_ue, "Security mode command");
 
     if (amf_ue->t3560.pkbuf) {
         gmmbuf = amf_ue->t3560.pkbuf;
@@ -607,6 +633,11 @@ int nas_5gs_send_configuration_update_command(
     }
 
     ogs_info("[%s] Configuration update command", amf_ue->supi);
+    amf_log_ue_event(OGS_LOG_INFO,
+        AMF_EVENT_CONFIGURATION_UPDATE_COMMAND,
+        AMF_EVENT_OUTCOME_SUCCESS,
+        AMF_EVENT_TYPE_PROCEDURE,
+        amf_ue, ran_ue, "Configuration update command");
 
     if (amf_ue->t3555.pkbuf) {
         gmmbuf = amf_ue->t3555.pkbuf;

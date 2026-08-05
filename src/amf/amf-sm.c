@@ -27,6 +27,7 @@
 #include "nsmf-handler.h"
 #include "nnssf-handler.h"
 #include "nas-security.h"
+#include "log.h"
 
 void amf_state_initial(ogs_fsm_t *s, amf_event_t *e)
 {
@@ -113,7 +114,14 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             strstr(sbi_request->h.uri, OGS_SBI_SERVICE_NAME_NAMF_OAM) != NULL) {
             rv = ogs_sbi_parse_header(&sbi_message, &sbi_request->h);
             if (rv != OGS_OK) {
+                amf_log_error_t error = {
+                    "cannot parse HTTP header", rv, "ogs_sbi_parse_header"
+                };
                 ogs_error("cannot parse HTTP header");
+                amf_log_ue_error_event(OGS_LOG_ERROR,
+                    AMF_EVENT_SBI_SERVER_PARSE_FAILED,
+                    AMF_EVENT_TYPE_DEPENDENCY,
+                    NULL, NULL, "cannot parse HTTP header", &error);
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(
                         stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
@@ -130,8 +138,15 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
          */
         rv = ogs_sbi_parse_request(&sbi_message, sbi_request);
         if (rv != OGS_OK) {
+            amf_log_error_t error = {
+                "cannot parse HTTP sbi_message", rv, "ogs_sbi_parse_request"
+            };
             /* 'sbi_message' buffer is released in ogs_sbi_parse_request() */
             ogs_error("cannot parse HTTP sbi_message");
+            amf_log_ue_error_event(OGS_LOG_ERROR,
+                AMF_EVENT_SBI_SERVER_PARSE_FAILED,
+                AMF_EVENT_TYPE_DEPENDENCY,
+                NULL, NULL, "cannot parse HTTP sbi_message", &error);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(
                     stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
@@ -326,7 +341,14 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(sbi_response);
         rv = ogs_sbi_parse_response(&sbi_message, sbi_response);
         if (rv != OGS_OK) {
+            amf_log_error_t error = {
+                "cannot parse HTTP response", rv, "ogs_sbi_parse_response"
+            };
             ogs_error("cannot parse HTTP response");
+            amf_log_ue_error_event(OGS_LOG_ERROR,
+                AMF_EVENT_SBI_RESPONSE_PARSE_FAILED,
+                AMF_EVENT_TYPE_DEPENDENCY,
+                NULL, NULL, "cannot parse HTTP response", &error);
             ogs_sbi_message_free(&sbi_message);
             ogs_sbi_response_free(sbi_response);
             break;
@@ -463,6 +485,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
                 SWITCH(sbi_message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
+                    amf_sbi_xact_log_response(sbi_xact, &sbi_message);
                     if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK)
                         amf_nnrf_handle_nf_discover(sbi_xact, &sbi_message);
                     else {
@@ -509,6 +532,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
                     sbi_object_id <= OGS_MAX_POOL_ID);
 
+            amf_sbi_xact_log_response(sbi_xact, &sbi_message);
             ogs_sbi_xact_remove(sbi_xact);
 
             amf_ue = amf_ue_find_by_id(sbi_object_id);
@@ -555,6 +579,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                     target_ue_id = ctx->target_ue_id;
             }
 
+            amf_sbi_xact_log_response(sbi_xact, &sbi_message);
             ogs_sbi_xact_remove(sbi_xact);
 
             sess = amf_sess_find_by_id(sbi_object_id);
@@ -683,6 +708,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             state = sbi_xact->state;
 
+            amf_sbi_xact_log_response(sbi_xact, &sbi_message);
             ogs_sbi_xact_remove(sbi_xact);
 
             sess = amf_sess_find_by_id(sbi_object_id);
@@ -804,6 +830,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
+            amf_sbi_xact_log_timeout(sbi_xact);
             amf_nnrf_handle_failed_amf_discovery(sbi_xact);
             break;
 
@@ -910,7 +937,13 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             e->ngap.message = &ngap_message;
             ogs_fsm_dispatch(&gnb->sm, e);
         } else {
+            amf_log_error_t error = {
+                "Cannot decode NGAP message", rc, "ogs_ngap_decode"
+            };
             ogs_error("Cannot decode NGAP message");
+            amf_log_ue_error_event(OGS_LOG_ERROR,
+                AMF_EVENT_NGAP_DECODE_FAILED, AMF_EVENT_TYPE_PROCEDURE,
+                NULL, NULL, "Cannot decode NGAP message", &error);
             r = ngap_send_error_indication(
                     gnb, NULL, NULL, NGAP_Cause_PR_protocol, 
                     NGAP_CauseProtocol_abstract_syntax_error_falsely_constructed_message);
@@ -925,7 +958,14 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     case AMF_EVENT_NGAP_TIMER:
         ran_ue = ran_ue_find_by_id(e->ran_ue_id);
         if (!ran_ue) {
+            amf_log_error_t error = {
+                "NG Context has already been removed",
+                (int)e->ran_ue_id, "ran_ue_find_by_id"
+            };
             ogs_error("NG Context has already been removed");
+            amf_log_ue_error_event(OGS_LOG_ERROR,
+                AMF_EVENT_RAN_UE_CONTEXT_MISSING, AMF_EVENT_TYPE_PROCEDURE,
+                NULL, NULL, "NG Context has already been removed", &error);
             break;
         }
 
@@ -940,12 +980,21 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_timer_delete(e->timer);
             break;
         case AMF_TIMER_NG_HOLDING:
+        {
+            amf_log_error_t error = {
+                amf_timer_get_name(e->h.timer_id),
+                e->h.timer_id, "amf_timer"
+            };
             ogs_warn("Implicit NG release");
             ogs_warn("    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
                   (long long)ran_ue->ran_ue_ngap_id,
                   (long long)ran_ue->amf_ue_ngap_id);
+            amf_log_ue_error_event(OGS_LOG_WARN,
+                AMF_EVENT_TIMER_EXPIRED, AMF_EVENT_TYPE_TIMER,
+                NULL, ran_ue, "Implicit NG release", &error);
             ngap_handle_ue_context_release_action(ran_ue);
             break;
+        }
         default:
             ogs_error("Unknown timer[%s:%d]",
                     amf_timer_get_name(e->h.timer_id), e->h.timer_id);
@@ -959,12 +1008,26 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
         ran_ue = ran_ue_find_by_id(e->ran_ue_id);
         if (!ran_ue) {
+            amf_log_error_t error = {
+                "NG Context has already been removed",
+                (int)e->ran_ue_id, "ran_ue_find_by_id"
+            };
             ogs_error("NG Context has already been removed");
+            amf_log_ue_error_event(OGS_LOG_ERROR,
+                AMF_EVENT_RAN_UE_CONTEXT_MISSING, AMF_EVENT_TYPE_PROCEDURE,
+                NULL, NULL, "NG Context has already been removed", &error);
             break;
         }
 
         if (ogs_nas_5gmm_decode(&nas_message, pkbuf) != OGS_OK) {
+            amf_log_error_t error = {
+                "ogs_nas_5gmm_decode() failed", OGS_ERROR,
+                "ogs_nas_5gmm_decode"
+            };
             ogs_error("ogs_nas_5gmm_decode() failed");
+            amf_log_ue_error_event(OGS_LOG_ERROR,
+                AMF_EVENT_NAS_5GMM_DECODE_FAILED, AMF_EVENT_TYPE_PROCEDURE,
+                NULL, ran_ue, "ogs_nas_5gmm_decode() failed", &error);
             ogs_pkbuf_free(pkbuf);
             break;
         }
@@ -1000,8 +1063,16 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                      * So, we disabled 'ciphered' not to decrypt NAS message */
                     h.ciphered = 0;
                     if (nas_5gs_security_decode(amf_ue, h, pkbuf) != OGS_OK) {
+                        amf_log_error_t error = {
+                            "nas_security_decode() failed", OGS_ERROR,
+                            "nas_5gs_security_decode"
+                        };
                         ogs_error("[%s] nas_security_decode() failed",
                                 amf_ue->suci);
+                        amf_log_ue_error_event(OGS_LOG_ERROR,
+                            AMF_EVENT_NAS_SECURITY_DECODE_FAILED,
+                            AMF_EVENT_TYPE_PROCEDURE, amf_ue, ran_ue,
+                            "nas_security_decode() failed", &error);
                         ogs_pkbuf_free(pkbuf);
                         break;
                     }

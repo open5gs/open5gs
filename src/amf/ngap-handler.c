@@ -21,6 +21,7 @@
 #include "ngap-path.h"
 #include "sbi-path.h"
 #include "nas-path.h"
+#include "log.h"
 
 static bool maximum_number_of_gnbs_is_reached(void)
 {
@@ -748,6 +749,11 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         ogs_assert(r != OGS_ERROR);
         return;
     }
+
+    amf_log_ue_event(OGS_LOG_INFO,
+        AMF_EVENT_INITIAL_UE_MESSAGE, AMF_EVENT_OUTCOME_SUCCESS,
+        AMF_EVENT_TYPE_PROCEDURE,
+        NULL, ran_ue, "InitialUEMessage");
 
     /* Find AMF_UE if 5G-S_TMSI included */
     if (FiveG_S_TMSI) {
