@@ -127,8 +127,8 @@ static int amf_context_prepare(void)
 
     self.ngap_port = OGS_NGAP_SCTP_PORT;
 
-    /* SBI correlation headers emit by default; operators may disable. */
-    self.sbi_correlation_enabled = true;
+    /* Keep custom SBI wire headers opt-in to avoid strict peer rejection. */
+    self.sbi_correlation_enabled = false;
 
     return OGS_OK;
 }

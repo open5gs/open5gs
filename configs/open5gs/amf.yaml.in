@@ -9,7 +9,7 @@ global:
 #    peer: 64
 
 amf:
-  sbi_correlation_enabled: true   # emit traceparent/X-Correlation-ID/X-Open5GS-* SBI headers (default: true)
+  sbi_correlation_enabled: false  # emit experimental traceparent/X-Correlation-ID/X-Open5GS-* SBI headers (default: false)
   sbi:
     server:
       - address: 127.0.0.5
