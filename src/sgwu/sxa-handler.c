@@ -300,6 +300,7 @@ void sgwu_sxa_handle_session_modification_request(
         if (OGS_ERROR == ogs_pfcp_setup_far_gtpu_node(far)) {
             ogs_fatal("CHECK CONFIGURATION: sgwu.gtpu");
             ogs_fatal("ogs_pfcp_setup_far_gtpu_node() failed");
+            cause_value = OGS_PFCP_CAUSE_SYSTEM_FAILURE;
             goto cleanup;
         }
         if (far->gnode)

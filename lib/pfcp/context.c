@@ -1216,6 +1216,20 @@ int ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far)
                 ogs_gtp_self()->gtpu_sock, ogs_gtp_self()->gtpu_sock6, gnode);
         if (rv != OGS_OK) {
             ogs_error("ogs_gtp_connect() failed");
+            /*
+             * ogs_gtp_node_new() zeroes gnode->addr, and only a successful
+             * ogs_gtp_connect() fills it in. On failure the node stays in
+             * gtpu_peer_list with ogs_sa_family == 0, so the next request
+             * carrying the same IP address finds it through
+             * ogs_gtp_node_find_by_ip(), skips ogs_gtp_connect() entirely
+             * and reaches ogs_pfcp_far_f_teid_hash_set(), which aborts:
+             *
+             *   [pfcp] FATAL: Unknown family(0) (../lib/pfcp/context.c)
+             *
+             * OGS_SETUP_GTP_NODE() has not run yet, so no FAR references
+             * this node and removing it here is safe.
+             */
+            ogs_gtp_node_remove(&ogs_gtp_self()->gtpu_peer_list, gnode);
             return rv;
         }
     }
@@ -1255,6 +1269,8 @@ int ogs_pfcp_setup_pdr_gtpu_node(ogs_pfcp_pdr_t *pdr)
                 ogs_gtp_self()->gtpu_sock, ogs_gtp_self()->gtpu_sock6, gnode);
         if (rv != OGS_OK) {
             ogs_error("ogs_gtp_connect() failed");
+            /* Same rollback as ogs_pfcp_setup_far_gtpu_node() */
+            ogs_gtp_node_remove(&ogs_gtp_self()->gtpu_peer_list, gnode);
             return rv;
         }
     }
