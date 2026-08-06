@@ -1,7 +1,7 @@
 logger:
   file:
     path: @localstatedir@/log/open5gs/ausf.log
-#  level: info   # fatal|error|warn|info(default)|debug|trace
+  level: debug
 
 global:
   max:
