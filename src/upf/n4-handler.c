@@ -36,7 +36,8 @@ static void upf_n4_handle_create_urr(upf_sess_t *sess, ogs_pfcp_tlv_create_urr_t
         if (!urr)
             return;
 
-        /* TODO: enable counters somewhere else if ISTM not set, upon first pkt received */
+        /* If ISTM is not set, the reporting interval is started on the
+         * first received packet instead (see upf_sess_urr_acc_add()). */
         if (urr->meas_info.istm) {
             upf_sess_urr_acc_timers_setup(sess, urr);
         }

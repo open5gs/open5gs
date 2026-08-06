@@ -75,7 +75,8 @@ typedef struct upf_sess_urr_acc_s {
     ogs_timer_t *t_validity_time; /* Quota Validity Time expiration handler */
     ogs_timer_t *t_time_quota; /* Time Quota expiration handler */
     ogs_timer_t *t_time_threshold; /* Time Threshold expiration handler */
-    uint32_t time_start; /* When t_time_* started */
+    uint32_t time_start; /* When t_time_* started (realtime, for NTP) */
+    ogs_time_t mono_time_start; /* When t_time_* started (monotonic, for Duration Measurement) */
     ogs_pfcp_urr_ur_seqn_t report_seqn; /* Next seqn to use when reporting */
     uint64_t total_octets;
     uint64_t ul_octets;
@@ -93,7 +94,8 @@ typedef struct upf_sess_urr_acc_s {
         uint64_t total_pkts;
         uint64_t ul_pkts;
         uint64_t dl_pkts;
-        ogs_time_t timestamp;
+        ogs_time_t timestamp; /* realtime */
+        ogs_time_t mono_timestamp; /* monotonic, for Duration Measurement */
     } last_report;
 } upf_sess_urr_acc_t;
 
