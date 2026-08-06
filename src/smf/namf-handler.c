@@ -22,6 +22,52 @@
 #include "binding.h"
 #include "namf-handler.h"
 
+/*
+ * Handle transient 5xx responses from the AMF on
+ * Namf_Communication_N1N2MessageTransfer.
+ *
+ * Per RFC 7231 §6.6 and TS 29.500 §6.7.4, 5xx HTTP responses indicate
+ * transient server-side conditions; the SMF should preserve session
+ * state and rely on the next UE-initiated event (Service Request,
+ * periodic Registration Update) to drive recovery against the
+ * post-recovery AMF, rather than tearing down a half-built session.
+ *
+ * Field-validated by @npm-sdr in https://github.com/open5gs/open5gs/issues/4427
+ * (validation comment on PR #4540): an N1N2MessageTransfer initiated
+ * immediately before an AMF restart received 504, was left without
+ * an FSM transition, and self-recovered on the UE's next Service
+ * Request landing against the post-restart AMF. The observable
+ * behaviour was already correct; this helper just cleans up the log
+ * channel so transient AMF maintenance windows do not pollute the
+ * SMF's ERROR stream.
+ *
+ * Returns true (with a warning-level log line) if the response is a
+ * transient 5xx; the caller should preserve session state and break
+ * out of further response processing. Returns false otherwise so the
+ * caller can fall through to its existing 4xx / unexpected-cause /
+ * non-5xx-with-no-RspData handling.
+ *
+ * `phase` is a short caller-supplied tag ("establishment" /
+ * "post-establishment" / "release") that ends up in the log line so
+ * operators can see which N1N2MessageTransfer code path was affected
+ * by the AMF transient.
+ */
+static bool n1n2_handle_transient_5xx_response(
+        smf_ue_t *smf_ue, smf_sess_t *sess,
+        ogs_sbi_message_t *recvmsg, const char *phase)
+{
+    if (recvmsg->res_status >=
+                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR &&
+        recvmsg->res_status < 600) {
+        ogs_warn("[%s:%d] AMF transient %d on N1N2MessageTransfer "
+                 "(%s) — preserving session state, awaiting "
+                 "UE-initiated recovery",
+                 smf_ue->supi, sess->psi, recvmsg->res_status, phase);
+        return true;
+    }
+    return false;
+}
+
 bool smf_namf_comm_handle_n1_n2_message_transfer(
         smf_sess_t *sess, ogs_sbi_stream_t *stream,
         int state, ogs_sbi_message_t *recvmsg)
@@ -48,7 +94,8 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
  * to apply QoS updates without waiting for V-SMF or RAN setup.
  */
             smf_qos_flow_binding(sess);
-        } else {
+        } else if (!n1n2_handle_transient_5xx_response(
+                    smf_ue, sess, recvmsg, "establishment")) {
             ogs_error("[%s:%d] HTTP response error [%d]",
                 smf_ue->supi, sess->psi, recvmsg->res_status);
         }
@@ -58,8 +105,11 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
     case SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION:
         N1N2MessageTransferRspData = recvmsg->N1N2MessageTransferRspData;
         if (!N1N2MessageTransferRspData) {
-            ogs_error("No N1N2MessageTransferRspData [status:%d]",
-                    recvmsg->res_status);
+            if (!n1n2_handle_transient_5xx_response(
+                        smf_ue, sess, recvmsg, "post-establishment")) {
+                ogs_error("No N1N2MessageTransferRspData [status:%d]",
+                        recvmsg->res_status);
+            }
             break;
         }
 
@@ -141,8 +191,11 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
 
         N1N2MessageTransferRspData = recvmsg->N1N2MessageTransferRspData;
         if (!N1N2MessageTransferRspData) {
-            ogs_error("No N1N2MessageTransferRspData [status:%d]",
-                    recvmsg->res_status);
+            if (!n1n2_handle_transient_5xx_response(
+                        smf_ue, sess, recvmsg, "release")) {
+                ogs_error("No N1N2MessageTransferRspData [status:%d]",
+                        recvmsg->res_status);
+            }
             break;
         }
 
