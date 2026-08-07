@@ -27,6 +27,7 @@ testunit_unit_sources = files('''
     nrf-discovery-test.c
     crash-test.c
     mme-dns-select-test.c
+    ipfw-test.c
 '''.split())
 
 testunit_unit_exe = executable('unit',
@@ -38,6 +39,7 @@ testunit_unit_exe = executable('unit',
                     libngap_dep,
                     libnas_eps_dep,
                     libsbi_dep,
+                    libipfw_dep,
                     libmme_dep])
 
 test('unit', testunit_unit_exe, is_parallel : false, suite: 'unit')
