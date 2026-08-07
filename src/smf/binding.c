@@ -290,6 +290,12 @@ void smf_bearer_binding(smf_sess_t *sess)
 
                 rv = ogs_ipfw_compile_rule(
                         &pf->ipfw_rule, pf->flow_description);
+                if (rv != OGS_OK) {
+                    ogs_error("Invalid Flow-Description[%s]",
+                            pf->flow_description);
+                    smf_pf_remove(pf);
+                    break;
+                }
 /*
  * Refer to lib/ipfw/ogs-ipfw.h
  * Issue #338
@@ -306,13 +312,6 @@ void smf_bearer_binding(smf_sess_t *sess)
  */
                 if (flow->direction == OGS_FLOW_UPLINK_ONLY)
                     ogs_ipfw_rule_swap(&pf->ipfw_rule);
-
-                if (rv != OGS_OK) {
-                    ogs_error("Invalid Flow-Description[%s]",
-                            pf->flow_description);
-                    smf_pf_remove(pf);
-                    break;
-                }
 
                 /*
                  * To add a flow to an existing tft.
@@ -668,6 +667,12 @@ void smf_qos_flow_binding(smf_sess_t *sess)
 
                 rv = ogs_ipfw_compile_rule(
                         &pf->ipfw_rule, pf->flow_description);
+                if (rv != OGS_OK) {
+                    ogs_error("Invalid Flow-Description[%s]",
+                            pf->flow_description);
+                    smf_pf_remove(pf);
+                    break;
+                }
 /*
  * Refer to lib/ipfw/ogs-ipfw.h
  * Issue #338
@@ -684,13 +689,6 @@ void smf_qos_flow_binding(smf_sess_t *sess)
  */
                 if (flow->direction == OGS_FLOW_UPLINK_ONLY)
                     ogs_ipfw_rule_swap(&pf->ipfw_rule);
-
-                if (rv != OGS_OK) {
-                    ogs_error("Invalid Flow-Description[%s]",
-                            pf->flow_description);
-                    smf_pf_remove(pf);
-                    break;
-                }
 
                 /*
                  * To add a flow to an existing tft.

@@ -74,7 +74,26 @@ int resvd_set_number = RESVD_SET;
 int ipfw_socket = -1;
 
 #if 1 /* modifed by acetcom */
-#define errx(eval, ...) ogs_log_message(OGS_LOG_ERROR, 0, __VA_ARGS__)
+/*
+ * errx() is overridden so that a malformed rule cannot exit() the daemon.
+ *
+ * Logging alone, however, lets the parser fall through and build a rule out
+ * of data that was never populated -- an unresolvable address leaves the
+ * address word zeroed and a "0.0.0.0/32" filter is installed, a bad prefix
+ * length leaves the mask zeroed and the filter widens to "any" -- while
+ * ogs_ipfw_compile_rule() still reports success to its caller.
+ *
+ * Record the failure so that ogs_ipfw_compile_rule() can reject the rule.
+ * The flag is cleared immediately before compile_rule() and read immediately
+ * after it returns; rules are compiled on the NF event loop.
+ */
+int ogs_ipfw_parse_error = 0;
+
+#define errx(eval, ...) \
+    do { \
+        ogs_ipfw_parse_error = 1; \
+        ogs_log_message(OGS_LOG_ERROR, 0, __VA_ARGS__); \
+    } while (0)
 #endif
 
 #define	CHECK_LENGTH(v, len) do {				\
@@ -3281,7 +3300,9 @@ add_mactype(ipfw_insn *cmd, char *av, int cblen)
 		return NULL;
 }
 
-static int
+/* Not static: ogs_ipfw_compile_rule() resolves the protocol name here so
+ * that the same table is used on both sides. */
+int
 ipfw_proto_by_name(const char *name)
 {
 	struct protoent *pe;
@@ -3335,6 +3356,7 @@ add_proto0(ipfw_insn *cmd, char *av, u_char *protop)
 	if (*ep != '\0' || proto <= 0) {
 		proto = ipfw_proto_by_name(av);
 		if (proto < 0) {
+			ogs_ipfw_parse_error = 1;
 			ogs_error("Unknown protocol '%s' in flow description "
 					"(getprotobyname() failed; "
 					"check /etc/protocols)", av);
