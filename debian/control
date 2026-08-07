@@ -269,6 +269,20 @@ Description: UDR (Unified Data Repository)
  .
  This package provides the UDR (Unified Data Repository)
 
+Package: open5gs-eir
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         open5gs-common (= ${binary:Version})
+Recommends:
+         mongodb-org | mongodb
+Description: 5G-EIR (5G Equipment Identity Register)
+ Open5GS is a C-language implementation of 5G Core and EPC
+ Packet Core, i.e. the core network of an NR/LTE network (Release-19)
+ .
+ This package provides the 5G-EIR (5G Equipment Identity Register)
+
 Package: open5gs
 Architecture: any
 Multi-Arch: same
@@ -291,11 +305,18 @@ Depends: ${misc:Depends},
          open5gs-nssf (= ${binary:Version}),
          open5gs-bsf (= ${binary:Version}),
          open5gs-udr (= ${binary:Version})
+Recommends:
+         open5gs-eir (= ${binary:Version})
 Description: 5G Core and EPC (metapackage)
  Open5GS is a C-language implementation of 5G Core and EPC
  Packet Core, i.e. the core network of an NR/LTE network (Release-19)
  .
  This is a metapackage that depends on all the open5gs parts.
+ .
+ open5gs-eir (5G-EIR) is a Recommends, not a Depends: the equipment
+ identity check it provides is disabled in the AMF by default
+ (amf.eir.enabled: false), so it is optional signaling functionality
+ rather than a required part of the core.
 
 Package: open5gs-dbg
 Architecture: any

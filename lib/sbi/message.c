@@ -233,6 +233,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_ue_reg_status_update_req_data_free(message->UeRegStatusUpdateReqData);
     if (message->UeRegStatusUpdateRspData)
         OpenAPI_ue_reg_status_update_rsp_data_free(message->UeRegStatusUpdateRspData);
+    if (message->EirResponseData)
+        OpenAPI_eir_response_data_free(message->EirResponseData);
     if (message->links) {
         OpenAPI_clear_and_free_string_list(message->links->items);
         if (message->links->self)
@@ -774,6 +776,14 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
         ogs_sbi_header_set(request->http.params,
                 OGS_SBI_PARAM_IPV6PREFIX, message->param.ipv6prefix);
     }
+    if (message->param.pei) {
+        ogs_sbi_header_set(request->http.params,
+                OGS_SBI_PARAM_PEI, message->param.pei);
+    }
+    if (message->param.supi) {
+        ogs_sbi_header_set(request->http.params,
+                OGS_SBI_PARAM_SUPI, message->param.supi);
+    }
 
     if (message->param.home_plmn_id_presence) {
         OpenAPI_plmn_id_t home_plmn_id;
@@ -1238,6 +1248,10 @@ int ogs_sbi_parse_request(
             message->param.ipv4addr = ogs_hash_this_val(hi);
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_IPV6PREFIX)) {
             message->param.ipv6prefix = ogs_hash_this_val(hi);
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_PEI)) {
+            message->param.pei = ogs_hash_this_val(hi);
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_SUPI)) {
+            message->param.supi = ogs_hash_this_val(hi);
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_PARAM_HOME_PLMN_ID)) {
             char *v = NULL;
             cJSON *item = NULL;
@@ -1753,6 +1767,10 @@ static char *build_json(ogs_sbi_message_t *message)
     } else if (message->UeRegStatusUpdateRspData) {
         item = OpenAPI_ue_reg_status_update_rsp_data_convertToJSON(
                 message->UeRegStatusUpdateRspData);
+        ogs_assert(item);
+    } else if (message->EirResponseData) {
+        item = OpenAPI_eir_response_data_convertToJSON(
+                message->EirResponseData);
         ogs_assert(item);
     }
 
@@ -2901,6 +2919,28 @@ static int parse_json(ogs_sbi_message_t *message,
                     END
                     break;
                 }
+
+            DEFAULT
+                rv = OGS_ERROR;
+                ogs_error("Unknown resource name [%s]",
+                        message->h.resource.component[0]);
+            END
+            break;
+
+        case OpenAPI_service_name_n5g_eir_eic:
+            SWITCH(message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_EQUIPMENT_STATUS)
+                if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                    message->EirResponseData =
+                        OpenAPI_eir_response_data_parseFromJSON(item);
+                    if (!message->EirResponseData) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                } else {
+                    ogs_error("HTTP ERROR Status : %d", message->res_status);
+                }
+                break;
 
             DEFAULT
                 rv = OGS_ERROR;

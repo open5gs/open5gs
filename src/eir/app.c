@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2026 by Erol Yağız Aydın <ygzaydns@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,33 +17,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OGS_DBI_H
-#define OGS_DBI_H
+#include "ogs-app.h"
 
-#include "crypt/ogs-crypt.h"
-#include "app/ogs-app.h"
+int app_initialize(const char *const argv[])
+{
+    int rv;
 
-#define OGS_DBI_INSIDE
+    rv = eir_initialize();
+    if (rv != OGS_OK) {
+        ogs_warn("Failed to initialize EIR");
+        return rv;
+    }
+    ogs_info("EIR initialize...done");
 
-#include "dbi/ogs-mongoc.h"
-#include "dbi/subscription.h"
-#include "dbi/session.h"
-#include "dbi/ims.h"
-#include "dbi/eir.h"
-
-#undef OGS_DBI_INSIDE
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern int __ogs_dbi_domain;
-
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __ogs_dbi_domain
-
-#ifdef __cplusplus
+    return OGS_OK;
 }
-#endif
 
-#endif /* OGS_DBI_H */
+void app_terminate(void)
+{
+    eir_terminate();
+    ogs_info("EIR terminate...done");
+}
