@@ -39,6 +39,7 @@ abts_suite *test_security(abts_suite *suite);
 abts_suite *test_nrf_discovery(abts_suite *suite);
 abts_suite *test_crash(abts_suite *suite);
 abts_suite *test_mme_dns_select(abts_suite *suite);
+abts_suite *test_ipfw(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
@@ -53,6 +54,7 @@ const struct testlist {
     {test_nrf_discovery},
     {test_crash},
     {test_mme_dns_select},
+    {test_ipfw},
     {NULL},
 };
 
