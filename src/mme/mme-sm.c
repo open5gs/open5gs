@@ -355,7 +355,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         break;
     case MME_EVENT_EMM_TIMER:
         mme_ue = mme_ue_find_by_id(e->mme_ue_id);
-        ogs_assert(mme_ue);
+        if (!mme_ue) {
+            ogs_error("MME-UE Context has already been removed");
+            break;
+        }
         ogs_assert(OGS_FSM_STATE(&mme_ue->sm));
 
         ogs_fsm_dispatch(&mme_ue->sm, e);
@@ -515,7 +518,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
     case MME_EVENT_ESM_TIMER:
         bearer = mme_bearer_find_by_id(e->bearer_id);
-        ogs_assert(bearer);
+        if (!bearer) {
+            ogs_error("Bearer Context has already been removed");
+            break;
+        }
         ogs_assert(OGS_FSM_STATE(&bearer->sm));
 
         ogs_fsm_dispatch(&bearer->sm, e);
@@ -938,9 +944,15 @@ cleanup:
 
     case MME_EVENT_GN_TIMER:
         mme_ue = mme_ue_find_by_id(e->mme_ue_id);
-        ogs_assert(mme_ue);
+        if (!mme_ue) {
+            ogs_error("MME-UE Context has already been removed");
+            break;
+        }
         sgw_ue = sgw_ue_find_by_id(mme_ue->sgw_ue_id);
-        ogs_assert(sgw_ue);
+        if (!sgw_ue) {
+            ogs_error("SGW-UE Context has already been removed");
+            break;
+        }
 
         switch (e->timer_id) {
         case MME_TIMER_GN_HOLDING:
