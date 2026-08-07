@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,41 +17,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef UDR_EVENT_H
-#define UDR_EVENT_H
+#include "udr-timer.h"
+#include "event.h"
+#include "ogs-app.h"
 
-#include "ogs-proto.h"
-#include "ogs-dbi.h"
+static void timer_send_event(int timer_id)
+{
+    int rv;
+    udr_event_t *e = NULL;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+    e = udr_event_new(UDR_EVENT_DBI_POLL_TIMER);
+    ogs_assert(e);
+    e->h.timer_id = timer_id;
 
-typedef enum {
-    UDR_EVT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
-
-    UDR_EVENT_DBI_POLL_TIMER,
-    UDR_EVENT_DBI_MESSAGE,
-
-    UDR_EVT_TOP,
-} udr_event_e;
-
-typedef struct udr_event_s {
-    ogs_event_t h;
-
-    struct {
-        bson_t *document;
-    } dbi;
-} udr_event_t;
-
-OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(udr_event_t));
-
-udr_event_t *udr_event_new(int id);
-
-const char *udr_event_get_name(udr_event_t *e);
-
-#ifdef __cplusplus
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_event_free(e);
+    }
 }
-#endif
 
-#endif /* UDR_EVENT_H */
+void udr_timer_dbi_poll_change_stream(void *data)
+{
+    timer_send_event(UDR_TIMER_DBI_POLL_CHANGE_STREAM);
+}

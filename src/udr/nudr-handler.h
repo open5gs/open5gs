@@ -33,6 +33,13 @@ bool udr_nudr_dr_handle_subscription_context(
 bool udr_nudr_dr_handle_subscription_provisioned(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
 
+bool udr_nudr_dr_handle_subs_to_notify_create(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
+bool udr_nudr_dr_handle_subs_to_notify_delete(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *message, char *subs_id);
+
+void udr_nudr_dr_notify_sm_data_change(const char *supi);
+
 bool udr_nudr_dr_handle_policy_data(
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message);
 
