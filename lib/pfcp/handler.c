@@ -813,6 +813,14 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_created_pdr(ogs_pfcp_sess_t *sess,
     if (message->local_f_teid.presence) {
         ogs_pfcp_f_teid_t f_teid;
 
+        if (!message->local_f_teid.data || !message->local_f_teid.len) {
+            ogs_error("Invalid F-TEID");
+            *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
+            *offending_ie_value = OGS_PFCP_F_TEID_TYPE;
+            return NULL;
+        }
+
+        memset(&f_teid, 0, sizeof(f_teid));
         memcpy(&f_teid, message->local_f_teid.data,
                 ogs_min(sizeof(f_teid), message->local_f_teid.len));
         if (f_teid.ipv4 == 0 && f_teid.ipv6 == 0) {
@@ -824,9 +832,11 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_created_pdr(ogs_pfcp_sess_t *sess,
             return NULL;
         }
 
-        pdr->f_teid_len = message->local_f_teid.len;
+        memset(&pdr->f_teid, 0, sizeof(pdr->f_teid));
+        pdr->f_teid_len =
+            ogs_min(message->local_f_teid.len, sizeof(pdr->f_teid));
         memcpy(&pdr->f_teid, message->local_f_teid.data,
-                ogs_min(sizeof(pdr->f_teid), pdr->f_teid_len));
+                pdr->f_teid_len);
         ogs_assert(pdr->f_teid.ipv4 || pdr->f_teid.ipv6);
         pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
     }
@@ -1021,9 +1031,20 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
         }
 
         if (message->pdi.local_f_teid.presence) {
-            pdr->f_teid_len = message->pdi.local_f_teid.len;
+            if (!message->pdi.local_f_teid.data ||
+                !message->pdi.local_f_teid.len) {
+                ogs_error("Invalid F-TEID");
+                *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
+                *offending_ie_value = OGS_PFCP_F_TEID_TYPE;
+                return NULL;
+            }
+
+            memset(&pdr->f_teid, 0, sizeof(pdr->f_teid));
+            pdr->f_teid_len =
+                ogs_min(message->pdi.local_f_teid.len,
+                        sizeof(pdr->f_teid));
             memcpy(&pdr->f_teid, message->pdi.local_f_teid.data,
-                    ogs_min(sizeof(pdr->f_teid), pdr->f_teid_len));
+                    pdr->f_teid_len);
             pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
         }
 
