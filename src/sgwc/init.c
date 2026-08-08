@@ -18,6 +18,7 @@
  */
 
 #include "context.h"
+#include "cdr-context.h"
 
 #include "gtp-path.h"
 #include "pfcp-path.h"
@@ -60,11 +61,14 @@ int sgwc_initialize(void)
     rv = sgwc_context_parse_config();
     if (rv != OGS_OK) return rv;
 
+
     rv = sgwc_gtp_open();
     if (rv != OGS_OK) return rv;
 
     rv = sgwc_pfcp_open();
     if (rv != OGS_OK) return rv;
+
+    sgwc_cdr_init();
 
     thread = ogs_thread_create(sgwc_main, NULL);
     if (!thread) return OGS_ERROR;
@@ -84,6 +88,8 @@ void sgwc_terminate(void)
 
     sgwc_gtp_close();
     sgwc_pfcp_close();
+
+    sgwc_cdr_final();
 
     sgwc_context_final();
 

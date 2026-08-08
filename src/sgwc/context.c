@@ -20,6 +20,7 @@
 #include <yaml.h>
 
 #include "context.h"
+#include "cdr-context.h"
 
 static sgwc_context_t self;
 
@@ -46,6 +47,15 @@ void sgwc_context_init(void)
     ogs_assert(context_initialized == 0);
 
     memset(&self, 0, sizeof(sgwc_context_t));
+
+    /* Offline CDR defaults (feature off) */
+    self.cdr.enabled = false;
+    self.cdr.directory = "/var/log/open5gs/cdr-sgw";
+    self.cdr.node_id = "sgw";
+    self.cdr.file_rotation_interval = 300;
+    self.cdr.file_max_size = 10 * 1024 * 1024;
+    self.cdr.record_time_limit = 3600;
+    self.cdr.record_volume_limit = 100 * 1024 * 1024;
 
     ogs_log_install_domain(&__sgwc_log_domain, "sgwc", ogs_core()->log.level);
 
@@ -148,6 +158,63 @@ int sgwc_context_parse_config(void)
                     /* handle config in pfcp library */
                 } else if (!strcmp(sgwc_key, "sgwu")) {
                     /* handle config in pfcp library */
+                } else if (!strcmp(sgwc_key, "cdr")) {
+                    ogs_yaml_iter_t cdr_iter;
+                    ogs_yaml_iter_recurse(&sgwc_iter, &cdr_iter);
+                    while (ogs_yaml_iter_next(&cdr_iter)) {
+                        const char *cdr_key = ogs_yaml_iter_key(&cdr_iter);
+                        ogs_assert(cdr_key);
+                        if (!strcmp(cdr_key, "enabled")) {
+                            self.cdr.enabled = ogs_yaml_iter_bool(&cdr_iter);
+                        } else if (!strcmp(cdr_key, "directory")) {
+                            const char *v = ogs_yaml_iter_value(&cdr_iter);
+                            if (v) self.cdr.directory = v;
+                        } else if (!strcmp(cdr_key, "node_id")) {
+                            const char *v = ogs_yaml_iter_value(&cdr_iter);
+                            if (v) self.cdr.node_id = v;
+                        } else if (!strcmp(cdr_key, "file")) {
+                            ogs_yaml_iter_t file_iter;
+                            ogs_yaml_iter_recurse(&cdr_iter, &file_iter);
+                            while (ogs_yaml_iter_next(&file_iter)) {
+                                const char *file_key =
+                                    ogs_yaml_iter_key(&file_iter);
+                                ogs_assert(file_key);
+                                if (!strcmp(file_key, "rotation_interval")) {
+                                    const char *v =
+                                        ogs_yaml_iter_value(&file_iter);
+                                    if (v) self.cdr.file_rotation_interval =
+                                        atoi(v);
+                                } else if (!strcmp(file_key, "max_size")) {
+                                    const char *v =
+                                        ogs_yaml_iter_value(&file_iter);
+                                    if (v) self.cdr.file_max_size =
+                                        (uint64_t)atoll(v);
+                                } else
+                                    ogs_warn("unknown key `%s`", file_key);
+                            }
+                        } else if (!strcmp(cdr_key, "record")) {
+                            ogs_yaml_iter_t rec_iter;
+                            ogs_yaml_iter_recurse(&cdr_iter, &rec_iter);
+                            while (ogs_yaml_iter_next(&rec_iter)) {
+                                const char *rec_key =
+                                    ogs_yaml_iter_key(&rec_iter);
+                                ogs_assert(rec_key);
+                                if (!strcmp(rec_key, "time_limit")) {
+                                    const char *v =
+                                        ogs_yaml_iter_value(&rec_iter);
+                                    if (v) self.cdr.record_time_limit =
+                                        atoi(v);
+                                } else if (!strcmp(rec_key, "volume_limit")) {
+                                    const char *v =
+                                        ogs_yaml_iter_value(&rec_iter);
+                                    if (v) self.cdr.record_volume_limit =
+                                        (uint64_t)atoll(v);
+                                } else
+                                    ogs_warn("unknown key `%s`", rec_key);
+                            }
+                        } else
+                            ogs_warn("unknown key `%s`", cdr_key);
+                    }
                 } else
                     ogs_warn("unknown key `%s`", sgwc_key);
             }
@@ -444,6 +511,9 @@ void sgwc_sess_select_sgwu(sgwc_sess_t *sess)
 
 int sgwc_sess_remove(sgwc_sess_t *sess)
 {
+    /* still-active CDR at removal: abnormalRelease from last snapshot */
+    sgwc_cdr_sess_stop(sess, false);
+
     sgwc_ue_t *sgwc_ue = NULL;
 
     ogs_assert(sess);
@@ -597,6 +667,26 @@ sgwc_bearer_t *sgwc_bearer_add(sgwc_sess_t *sess)
         return NULL;
     }
 
+    /* Offline SGW-CDR accounting URR, associated with both tunnels */
+    if (sgwc_self()->cdr.enabled) {
+        ogs_pfcp_urr_t *urr = ogs_pfcp_urr_add(&sess->pfcp);
+        ogs_assert(urr);
+        bearer->urr = urr;
+
+        urr->meas_method = OGS_PFCP_MEASUREMENT_METHOD_VOLUME;
+        if (sgwc_self()->cdr.record_volume_limit) {
+            urr->rep_triggers.volume_threshold = 1;
+            urr->vol_threshold.tovol = 1;
+            urr->vol_threshold.total_volume =
+                sgwc_self()->cdr.record_volume_limit;
+        }
+
+        ogs_list_for_each(&bearer->tunnel_list, tunnel) {
+            ogs_assert(tunnel->pdr);
+            ogs_pfcp_pdr_associate_urr(tunnel->pdr, urr);
+        }
+    }
+
     return bearer;
 }
 
@@ -607,6 +697,11 @@ int sgwc_bearer_remove(sgwc_bearer_t *bearer)
     ogs_assert(bearer);
     sess = sgwc_sess_find_by_id(bearer->sess_id);
     ogs_assert(sess);
+
+    if (bearer->urr) {
+        ogs_pfcp_urr_remove(bearer->urr);
+        bearer->urr = NULL;
+    }
 
     ogs_list_remove(&sess->bearer_list, bearer);
 

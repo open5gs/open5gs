@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2026 by DNL
  *
  * This file is part of Open5GS.
  *
@@ -17,25 +17,36 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef UPF_N4_BUILD_H
-#define UPF_N4_BUILD_H
+#ifndef SGWC_CDR_CONTEXT_H
+#define SGWC_CDR_CONTEXT_H
 
-#include "ogs-gtp.h"
+#include "context.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-ogs_pkbuf_t *upf_n4_build_session_establishment_response(uint8_t type,
-    upf_sess_t *sess, ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr);
-ogs_pkbuf_t *upf_n4_build_session_modification_response(uint8_t type,
-    upf_sess_t *sess, ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr,
-    ogs_pfcp_user_plane_report_t *report);
-ogs_pkbuf_t *upf_n4_build_session_deletion_response(uint8_t type,
-    upf_sess_t *sess);
+/*
+ * Offline SGW-CDR generation (TS 32.251/32.298/32.297).
+ * Same closure model as the SMF PGW-CDR: normalRelease,
+ * abnormalRelease, volumeLimit, timeLimit.
+ */
+
+void sgwc_cdr_init(void);
+void sgwc_cdr_final(void);
+
+/* session fully established (Create Session Response accepted) */
+void sgwc_cdr_sess_start(sgwc_sess_t *sess);
+
+/* volume delta from any Sxa usage report of this session */
+void sgwc_cdr_sess_usage(sgwc_sess_t *sess,
+        uint64_t ul_octets, uint64_t dl_octets);
+
+/* session ending; normal=false means abnormalRelease */
+void sgwc_cdr_sess_stop(sgwc_sess_t *sess, bool normal);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* UPF_N4_BUILD_H */
+#endif /* SGWC_CDR_CONTEXT_H */

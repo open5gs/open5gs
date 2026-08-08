@@ -257,7 +257,8 @@ int upf_pfcp_send_session_establishment_response(
 
 int upf_pfcp_send_session_modification_response(
         ogs_pfcp_xact_t *xact, upf_sess_t *sess,
-        ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr)
+        ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr,
+        ogs_pfcp_user_plane_report_t *report)
 {
     int rv;
     ogs_pkbuf_t *n4buf = NULL;
@@ -270,7 +271,7 @@ int upf_pfcp_send_session_modification_response(
     h.seid = sess->smf_n4_f_seid.seid;
 
     n4buf = upf_n4_build_session_modification_response(
-            h.type, sess, created_pdr, num_of_created_pdr);
+            h.type, sess, created_pdr, num_of_created_pdr, report);
     if (!n4buf) {
         ogs_error("upf_n4_build_session_modification_response() failed");
         return OGS_ERROR;

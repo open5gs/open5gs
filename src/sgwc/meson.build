@@ -18,7 +18,8 @@
 libsgwc_sources = files('''
     event.h
     timer.h
-    context.h 
+    context.h
+    cdr-context.h
     gtp-path.h
     s11-build.h
     s11-handler.h
@@ -31,7 +32,8 @@ libsgwc_sources = files('''
     init.c
     event.c
     timer.c
-    context.c 
+    context.c
+    cdr-context.c
     gtp-path.c
     s11-build.c
     s11-handler.c
@@ -45,12 +47,12 @@ libsgwc_sources = files('''
 
 libsgwc = static_library('sgwc',
     sources : libsgwc_sources,
-    dependencies : libpfcp_dep,
+    dependencies : [libpfcp_dep, libcdr_dep],
     install : false)
 
 libsgwc_dep = declare_dependency(
     link_with : libsgwc,
-    dependencies : libpfcp_dep)
+    dependencies : [libpfcp_dep, libcdr_dep])
 
 sgwc_sources = files('''
     app.c

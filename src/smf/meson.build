@@ -38,6 +38,7 @@ libsmf_sources = files('''
     event.h
     timer.h
     context.h
+    cdr-context.h
     smf-sm.h
     gtp-path.h
     gn-build.h
@@ -76,6 +77,7 @@ libsmf_sources = files('''
     event.c
     timer.c
     context.c
+    cdr-context.c
     smf-sm.c
     gsm-sm.c
     pfcp-sm.c
@@ -126,7 +128,8 @@ libsmf = static_library('smf',
                     libdiameter_gx_dep,
                     libdiameter_gy_dep,
                     libdiameter_s6b_dep,
-                    libpfcp_dep],
+                    libpfcp_dep,
+                    libcdr_dep],
     install : false)
 
 libsmf_dep = declare_dependency(
@@ -138,7 +141,8 @@ libsmf_dep = declare_dependency(
                     libdiameter_gx_dep,
                     libdiameter_gy_dep,
                     libdiameter_s6b_dep,
-                    libpfcp_dep])
+                    libpfcp_dep,
+                    libcdr_dep])
 
 smf_sources = files('''
     app.c
