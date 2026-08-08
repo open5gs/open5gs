@@ -562,6 +562,24 @@ typedef struct smf_sess_s {
     ogs_pfcp_ue_ip_t *ipv4;
     ogs_pfcp_ue_ip_t *ipv6;
 
+    /* DHCPv6 Prefix Delegation (IA_PD) lease */
+    struct {
+        bool            active;
+        ogs_pfcp_subnet_t *subnet;      /* Pool the prefix came from */
+        uint8_t         prefix[OGS_IPV6_LEN];
+        uint8_t         plen;
+        uint32_t        iaid;
+        uint8_t         *duid;          /* Client Identifier (DUID) */
+        uint16_t        duid_len;
+        uint32_t        valid_lifetime;
+        uint32_t        preferred_lifetime;
+        ogs_timer_t     *timer;         /* valid-lifetime expiry */
+        ogs_pfcp_pdr_id_t dl_pdr_id;    /* Installed route PDRs */
+        ogs_pfcp_pdr_id_t ul_pdr_id;
+        char            route[64];      /* "2001:db8:8001::/56" */
+        char            sdf[128];       /* SDF filter for the route PDRs */
+    } pd_lease;
+
     /* AN Type */
     OpenAPI_access_type_e an_type;
 
@@ -765,6 +783,16 @@ bool smf_sess_have_indirect_data_forwarding(smf_sess_t *sess);
 void smf_sess_delete_indirect_data_forwarding(smf_sess_t *sess);
 
 void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess);
+
+/* DHCPv6 Prefix Delegation (IA_PD) */
+int smf_sess_pd_lease_grant(smf_sess_t *sess,
+        uint32_t iaid, const uint8_t *duid, uint16_t duid_len);
+void smf_sess_pd_lease_refresh(smf_sess_t *sess);
+bool smf_sess_pd_lease_matches(smf_sess_t *sess,
+        uint32_t iaid, const uint8_t *duid, uint16_t duid_len);
+void smf_sess_pd_lease_release(smf_sess_t *sess);
+void smf_sess_pd_lease_expire(smf_sess_t *sess);
+void smf_sess_pd_lease_clear(smf_sess_t *sess);
 void smf_sess_delete_cp_up_data_forwarding(smf_sess_t *sess);
 
 ogs_pcc_rule_t *smf_pcc_rule_find_by_id(smf_sess_t *sess, char *pcc_rule_id);

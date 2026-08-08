@@ -763,6 +763,11 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         const char *dev = self.tun_ifname;
                         const char *low[OGS_MAX_NUM_OF_SUBNET_RANGE];
                         const char *high[OGS_MAX_NUM_OF_SUBNET_RANGE];
+                        const char *dp_ipstr = NULL;
+                        const char *dp_numbits = NULL;
+                        const char *dp_length = NULL;
+                        const char *dp_valid_lifetime = NULL;
+                        const char *dp_preferred_lifetime = NULL;
                         int i, num = 0;
 
                         memset(low, 0, sizeof(low));
@@ -837,6 +842,37 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 } while (
                                     ogs_yaml_iter_type(&range_iter) ==
                                     YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(subnet_key,
+                                        "delegated_prefix")) {
+                                ogs_yaml_iter_t dp_iter;
+                                ogs_yaml_iter_recurse(&subnet_iter, &dp_iter);
+                                while (ogs_yaml_iter_next(&dp_iter)) {
+                                    const char *dp_key =
+                                        ogs_yaml_iter_key(&dp_iter);
+                                    ogs_assert(dp_key);
+                                    if (!strcmp(dp_key, "range")) {
+                                        char *v = (char *)
+                                            ogs_yaml_iter_value(&dp_iter);
+                                        if (v) {
+                                            dp_ipstr =
+                                                (const char *)strsep(&v, "/");
+                                            if (dp_ipstr)
+                                                dp_numbits = (const char *)v;
+                                        }
+                                    } else if (!strcmp(dp_key, "length")) {
+                                        dp_length =
+                                            ogs_yaml_iter_value(&dp_iter);
+                                    } else if (!strcmp(dp_key,
+                                                "valid_lifetime")) {
+                                        dp_valid_lifetime =
+                                            ogs_yaml_iter_value(&dp_iter);
+                                    } else if (!strcmp(dp_key,
+                                                "preferred_lifetime")) {
+                                        dp_preferred_lifetime =
+                                            ogs_yaml_iter_value(&dp_iter);
+                                    } else
+                                        ogs_warn("unknown key `%s`", dp_key);
+                                }
                             } else
                                 ogs_warn("unknown key `%s`", subnet_key);
                         }
@@ -849,6 +885,23 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         for (i = 0; i < subnet->num_of_range; i++) {
                             subnet->range[i].low = low[i];
                             subnet->range[i].high = high[i];
+                        }
+
+                        if (dp_ipstr && dp_numbits && dp_length) {
+                            rv = ogs_pfcp_subnet_delegated_prefix_set(
+                                    subnet, dp_ipstr, dp_numbits,
+                                    atoi(dp_length),
+                                    dp_valid_lifetime ?
+                                        atoi(dp_valid_lifetime) : 0,
+                                    dp_preferred_lifetime ?
+                                        atoi(dp_preferred_lifetime) : 0);
+                            if (rv != OGS_OK)
+                                return rv;
+                        } else if (dp_ipstr || dp_numbits || dp_length ||
+                                dp_valid_lifetime || dp_preferred_lifetime) {
+                            ogs_error("delegated_prefix requires both "
+                                    "'range' and 'length'");
+                            return OGS_ERROR;
                         }
 
                     } while (ogs_yaml_iter_type(&subnet_array) ==
@@ -2538,6 +2591,9 @@ void ogs_pfcp_subnet_remove(ogs_pfcp_subnet_t *subnet)
 
     ogs_list_remove(&self.subnet_list, subnet);
 
+    if (subnet->delegated_prefix.bitmap)
+        ogs_free(subnet->delegated_prefix.bitmap);
+
     ogs_pool_final(&subnet->pool);
 
     ogs_pool_free(&ogs_pfcp_subnet_pool, subnet);
@@ -2583,6 +2639,238 @@ ogs_pfcp_subnet_t *ogs_pfcp_find_subnet_by_dnn(int family, const char *dnn)
     }
 
     return subnet;
+}
+
+/******************************************************************************
+ * DHCPv6 Prefix Delegation (IA_PD) pool
+ *
+ * A delegated-prefix pool carves a configured IPv6 range (e.g. a /48) into
+ * fixed-length prefixes (e.g. /56) handed out to UEs via DHCPv6-PD.
+ * Allocation state is a bitmap, one bit per prefix.
+ */
+
+#define OGS_PFCP_MAX_DELEGATED_PREFIX_BITS 16 /* pool <= 65536 prefixes */
+
+/* Set the bit at absolute position `pos` (counted from the address LSB) */
+static void delegated_prefix_set_bit(uint8_t *addr, int pos)
+{
+    addr[OGS_IPV6_LEN - 1 - pos/8] |= (1 << (pos % 8));
+}
+
+static int delegated_prefix_test_bit(const uint8_t *addr, int pos)
+{
+    return addr[OGS_IPV6_LEN - 1 - pos/8] & (1 << (pos % 8));
+}
+
+/* prefix = range base | (index << (128 - plen)) */
+static void delegated_prefix_from_index(
+        ogs_pfcp_subnet_t *subnet, uint32_t index, uint8_t *prefix)
+{
+    int bitpos = 128 - subnet->delegated_prefix.plen;
+    int b;
+
+    memcpy(prefix, subnet->delegated_prefix.range.sub, OGS_IPV6_LEN);
+    for (b = 0; index; b++, index >>= 1) {
+        if (index & 1)
+            delegated_prefix_set_bit(prefix, bitpos + b);
+    }
+}
+
+/* index = prefix bits [128-plen, 128-range_plen), or -1 if out of range */
+static int delegated_prefix_to_index(
+        ogs_pfcp_subnet_t *subnet, const uint8_t *prefix)
+{
+    uint32_t index = 0;
+    int range_plen = subnet->delegated_prefix.range_plen;
+    int plen = subnet->delegated_prefix.plen;
+    int bitpos = 128 - plen;
+    int b;
+
+    /* The top range_plen bits must match the pool range exactly */
+    for (b = 0; b < range_plen; b++) {
+        int pos = 128 - range_plen + b;
+        int want = delegated_prefix_test_bit(
+                (uint8_t *)subnet->delegated_prefix.range.sub, pos);
+        int have = delegated_prefix_test_bit(prefix, pos);
+        if (want != have)
+            return -1;
+    }
+
+    for (b = 0; b < plen - range_plen; b++) {
+        if (delegated_prefix_test_bit(prefix, bitpos + b))
+            index |= (1 << b);
+    }
+
+    /* Bits below the delegated prefix length must be zero */
+    for (b = 0; b < bitpos; b++) {
+        if (delegated_prefix_test_bit(prefix, b))
+            return -1;
+    }
+
+    return (int)index;
+}
+
+/* True if the top outer_plen bits of base match outer */
+static bool delegated_prefix_contains(
+        const uint32_t *outer, int outer_plen, const uint32_t *base)
+{
+    int b;
+
+    for (b = 0; b < outer_plen; b++) {
+        int pos = 128 - outer_plen + b;
+        int want = delegated_prefix_test_bit((uint8_t *)outer, pos);
+        int have = delegated_prefix_test_bit((uint8_t *)base, pos);
+        if (want != have)
+            return false;
+    }
+
+    return true;
+}
+
+int ogs_pfcp_subnet_delegated_prefix_set(
+        ogs_pfcp_subnet_t *subnet,
+        const char *range_ipstr, const char *range_numbits,
+        int plen, uint32_t valid_lifetime, uint32_t preferred_lifetime)
+{
+    int rv;
+    int range_plen;
+    uint32_t num;
+
+    ogs_assert(subnet);
+    ogs_assert(range_ipstr);
+    ogs_assert(range_numbits);
+
+    if (subnet->family != AF_INET6) {
+        ogs_error("delegated_prefix requires an IPv6 subnet");
+        return OGS_ERROR;
+    }
+
+    if (subnet->delegated_prefix.bitmap) {
+        ogs_error("delegated_prefix already configured on this subnet");
+        return OGS_ERROR;
+    }
+
+    rv = ogs_ipsubnet(
+            &subnet->delegated_prefix.range, range_ipstr, range_numbits);
+    if (rv != OGS_OK) {
+        ogs_error("Invalid delegated_prefix range [%s/%s]",
+                range_ipstr, range_numbits);
+        return OGS_ERROR;
+    }
+
+    /* The range must be a network address (no bits below range_plen) :
+     * ogs_ipsubnet() masks off host bits, so compare against the
+     * unmasked parse to detect them. */
+    {
+        ogs_ipsubnet_t unmasked;
+
+        rv = ogs_ipsubnet(&unmasked, range_ipstr, NULL);
+        if (rv != OGS_OK ||
+            memcmp(unmasked.sub, subnet->delegated_prefix.range.sub,
+                OGS_IPV6_LEN) != 0) {
+            ogs_error("delegated_prefix range [%s/%s] is not "
+                    "a network address", range_ipstr, range_numbits);
+            return OGS_ERROR;
+        }
+    }
+
+    range_plen = atoi(range_numbits);
+
+    if (range_plen < 0 || range_plen > 127 ||
+        plen <= range_plen || plen > OGS_IPV6_DEFAULT_PREFIX_LEN) {
+        ogs_error("Invalid delegated_prefix length "
+                "[range:/%d length:/%d] (range < length <= 64 required)",
+                range_plen, plen);
+        return OGS_ERROR;
+    }
+
+    if (plen - range_plen > OGS_PFCP_MAX_DELEGATED_PREFIX_BITS) {
+        ogs_error("delegated_prefix pool too large "
+                "[range:/%d length:/%d] (max %d bits)",
+                range_plen, plen, OGS_PFCP_MAX_DELEGATED_PREFIX_BITS);
+        return OGS_ERROR;
+    }
+
+    /* The delegated range must not overlap the session subnet */
+    if (delegated_prefix_contains(
+                subnet->sub.sub, subnet->prefixlen,
+                subnet->delegated_prefix.range.sub) ||
+        delegated_prefix_contains(
+                subnet->delegated_prefix.range.sub, range_plen,
+                subnet->sub.sub)) {
+        ogs_error("delegated_prefix range [%s/%s] overlaps "
+                "the session subnet", range_ipstr, range_numbits);
+        return OGS_ERROR;
+    }
+
+    /* The range must be a network address (validated above) */
+
+    if (valid_lifetime == 0)
+        valid_lifetime = OGS_PFCP_DEFAULT_PD_VALID_LIFETIME;
+    if (preferred_lifetime == 0)
+        preferred_lifetime = OGS_PFCP_DEFAULT_PD_PREFERRED_LIFETIME;
+    if (preferred_lifetime > valid_lifetime) {
+        ogs_error("delegated_prefix preferred_lifetime [%u] > "
+                "valid_lifetime [%u]", preferred_lifetime, valid_lifetime);
+        return OGS_ERROR;
+    }
+
+    num = 1UL << (plen - range_plen);
+
+    subnet->delegated_prefix.bitmap = ogs_calloc(1, (num + 7) / 8);
+    ogs_assert(subnet->delegated_prefix.bitmap);
+
+    subnet->delegated_prefix.range_plen = range_plen;
+    subnet->delegated_prefix.plen = plen;
+    subnet->delegated_prefix.valid_lifetime = valid_lifetime;
+    subnet->delegated_prefix.preferred_lifetime = preferred_lifetime;
+    subnet->delegated_prefix.num = num;
+
+    ogs_info("Delegated prefix pool : %u x /%d from [%s/%s]",
+            num, plen, range_ipstr, range_numbits);
+
+    return OGS_OK;
+}
+
+int ogs_pfcp_delegated_prefix_alloc(ogs_pfcp_subnet_t *subnet, uint8_t *prefix)
+{
+    uint32_t i;
+
+    ogs_assert(subnet);
+    ogs_assert(prefix);
+
+    if (!subnet->delegated_prefix.bitmap)
+        return OGS_ERROR;
+
+    for (i = 0; i < subnet->delegated_prefix.num; i++) {
+        if (!(subnet->delegated_prefix.bitmap[i/8] & (1 << (i%8)))) {
+            subnet->delegated_prefix.bitmap[i/8] |= (1 << (i%8));
+            delegated_prefix_from_index(subnet, i, prefix);
+            return OGS_OK;
+        }
+    }
+
+    return OGS_ERROR;
+}
+
+void ogs_pfcp_delegated_prefix_free(
+        ogs_pfcp_subnet_t *subnet, const uint8_t *prefix)
+{
+    int i;
+
+    ogs_assert(subnet);
+    ogs_assert(prefix);
+
+    if (!subnet->delegated_prefix.bitmap)
+        return;
+
+    i = delegated_prefix_to_index(subnet, prefix);
+    if (i < 0 || (uint32_t)i >= subnet->delegated_prefix.num) {
+        ogs_error("Cannot free delegated prefix : out of pool range");
+        return;
+    }
+
+    subnet->delegated_prefix.bitmap[i/8] &= ~(1 << (i%8));
 }
 
 void ogs_pfcp_pool_init(ogs_pfcp_sess_t *sess)
