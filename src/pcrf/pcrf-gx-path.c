@@ -450,6 +450,15 @@ static int pcrf_gx_ccr_cb(struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_hdr(avp, &hdr);
         if (ret == 0 && hdr &&
             hdr->avp_value->os.len == sizeof(sess_data->addr)) {
+            /*
+             * This runs for every CC-Request, so retire the previous
+             * binding before the address is overwritten. Otherwise the
+             * old address keeps an entry that nothing ever removes.
+             */
+            if (sess_data->ipv4) {
+                pcrf_sess_set_ipv4(&sess_data->addr, NULL);
+                sess_data->ipv4 = 0;
+            }
             memcpy(&sess_data->addr,
                     hdr->avp_value->os.data, hdr->avp_value->os.len);
             pcrf_sess_set_ipv4(&sess_data->addr, sess_data->sid);
@@ -468,6 +477,10 @@ static int pcrf_gx_ccr_cb(struct msg **msg, struct avp *avp,
         if (ret == 0 && hdr) {
             paa = (ogs_paa_t *)hdr->avp_value->os.data;
             if (paa && paa->len == OGS_IPV6_DEFAULT_PREFIX_LEN) {
+                if (sess_data->ipv6) {
+                    pcrf_sess_set_ipv6(sess_data->addr6, NULL);
+                    sess_data->ipv6 = 0;
+                }
                 memcpy(sess_data->addr6, paa->addr6, paa->len >> 3);
                 pcrf_sess_set_ipv6(sess_data->addr6, sess_data->sid);
                 sess_data->ipv6 = 1;
