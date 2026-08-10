@@ -2100,6 +2100,13 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->data_change_subscription.client)
         ogs_sbi_client_remove(sess->data_change_subscription.client);
 
+    if (sess->gx_sid)
+        ogs_free(sess->gx_sid);
+    if (sess->gy_sid)
+        ogs_free(sess->gy_sid);
+    if (sess->s6b_sid)
+        ogs_free(sess->s6b_sid);
+
     if (sess->session.name)
         ogs_free(sess->session.name);
     if (sess->full_dnn)

@@ -59,6 +59,7 @@ int pcrf_db_qos_data(char *imsi_bcd, char *apn,
 
 void pcrf_sess_set_ipv4(const void *key, uint8_t *sid);
 void pcrf_sess_set_ipv6(const void *key, uint8_t *sid);
+/* Both return a copy of the Session-Id; the caller must free it */
 uint8_t *pcrf_sess_find_by_ipv4(const void *key);
 uint8_t *pcrf_sess_find_by_ipv6(const void *key);
 

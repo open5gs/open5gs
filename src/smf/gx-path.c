@@ -198,8 +198,19 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_pool_id_t xact_id,
 
         ogs_debug("    Allocate new session: [%s]", sess_data->gx_sid);
 
-        /* Save Session-Id to SMF Session Context */
-        sess->gx_sid = (char *)sess_data->gx_sid;
+        /*
+         * Save Session-Id to SMF Session Context
+         *
+         * Keep an independent copy. sess_data->gx_sid is owned by the
+         * Diameter session state and can be released by state_cleanup()
+         * before the SMF session context is removed. Sharing the pointer
+         * would leave sess->gx_sid dangling and could cause a later
+         * request to read freed memory while constructing its
+         * Session-Id AVP.
+         */
+        ogs_assert(!sess->gx_sid);
+        sess->gx_sid = ogs_strdup((char *)sess_data->gx_sid);
+        ogs_assert(sess->gx_sid);
     } else
         ogs_debug("    Retrieve session: [%s]", sess_data->gx_sid);
 
@@ -766,7 +777,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
 
     struct sess_state *sess_data = NULL;
     struct timespec ts;
-    struct session *session;
+    struct session *session = NULL;
     struct avp *avp, *avpch1, *avpch2;
     struct avp_hdr *hdr;
     unsigned long dur;
@@ -790,7 +801,11 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed with error: %d", ret);
+        error++;
+        goto cleanup;
+    }
     if (new != 0) {
         ogs_error("Session should already exist, but new session flag is set");
         error++;

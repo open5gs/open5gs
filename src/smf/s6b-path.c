@@ -188,8 +188,19 @@ void smf_s6b_send_aar(smf_sess_t *sess, ogs_gtp_xact_t *xact)
 
         ogs_debug("    Allocate new session: [%s]", sess_data->s6b_sid);
 
-        /* Save Session-Id to SMF Session Context */
-        sess->s6b_sid = (char *)sess_data->s6b_sid;
+        /*
+         * Save Session-Id to SMF Session Context
+         *
+         * Keep an independent copy. sess_data->s6b_sid is owned by the
+         * Diameter session state and can be released by state_cleanup()
+         * before the SMF session context is removed. Sharing the pointer
+         * would leave sess->s6b_sid dangling and could cause a later
+         * request to read freed memory while constructing its
+         * Session-Id AVP.
+         */
+        ogs_assert(!sess->s6b_sid);
+        sess->s6b_sid = ogs_strdup((char *)sess_data->s6b_sid);
+        ogs_assert(sess->s6b_sid);
     } else
         ogs_debug("    Retrieve session: [%s]", sess_data->s6b_sid);
 
@@ -387,7 +398,7 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
     int ret;
     struct sess_state *sess_data = NULL;
     struct timespec ts;
-    struct session *session;
+    struct session *session = NULL;
     struct avp *avp, *avpch1;
     struct avp_hdr *hdr;
     unsigned long dur;
@@ -404,7 +415,11 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed with error: %d", ret);
+        error++;
+        goto cleanup;
+    }
     if (new != 0) {
         ogs_error("Session should already exist, but new session flag is set");
         error++;
@@ -765,7 +780,7 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     int rv;
     struct sess_state *sess_data = NULL;
     struct timespec ts;
-    struct session *session;
+    struct session *session = NULL;
     struct avp *avp, *avpch1;
     struct avp_hdr *hdr;
     unsigned long dur;
@@ -782,7 +797,11 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed with error: %d", ret);
+        error++;
+        goto cleanup;
+    }
     if (new != 0) {
         ogs_error("Session should already exist, but new session flag is set");
         error++;
