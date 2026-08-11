@@ -264,6 +264,72 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
 
         mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
+
+        /*
+         * ATTACH REQUEST on an S1 context that already belongs to
+         * someone else.
+         *
+         *   InitialUEMessage(S-TMSI of IMSI-A) -> enb_ue bound to A
+         *   NAS MAC failed -> Service Reject #9 -> binding kept
+         *   Attach Request(IMSI-B) on the same connection
+         *     -> dispatched to A's context, not to B's
+         *
+         * The identity in the message is never looked at, so
+         * mme_ue_set_imsi() re-labels A's context as B and moves B's
+         * sessions into it. If A still owns sessions, Phase-2 hits
+         *
+         *     ogs_assert(ogs_list_empty(&mme_ue->sess_list));
+         *
+         * and the MME aborts. If B is unknown to the MME there is no
+         * abort - A's sessions silently become B's instead.
+         *
+         * Any UE can get here; a stale GUTI is enough.
+         *
+         * So re-resolve the identity, and if it names someone else:
+         *
+         *   registered, or owns a session -> release, drop the Attach
+         *   otherwise                     -> leave it, nothing to lose
+         *
+         * Release means Release Access Bearers followed by S1 release,
+         * so A's user plane is gone before the UE retries on a fresh S1
+         * context. Handing the S1 context over instead would leave A's
+         * bearers pointing at a connection that now serves B.
+         */
+        if (mme_ue && MME_UE_HAVE_IMSI(mme_ue) &&
+            nas_message.emm.h.message_type == OGS_NAS_EPS_ATTACH_REQUEST) {
+            mme_ue_t *attaching_ue = mme_ue_find_by_message(&nas_message);
+
+            if (attaching_ue != mme_ue &&
+                (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered) ||
+                 ogs_list_count(&mme_ue->sess_list))) {
+                ogs_warn("Attach Request identity does not match "
+                        "the associated S1 context");
+                ogs_warn("    Associated IMSI[%s] ue_id[%d] sessions[%d] "
+                        "bitmap[0x%04x]",
+                        mme_ue->imsi_bcd, mme_ue->id,
+                        ogs_list_count(&mme_ue->sess_list),
+                        mme_ue->ebi_bitmap);
+                if (attaching_ue)
+                    ogs_warn("    Requested IMSI[%s] ue_id[%d] "
+                            "sessions[%d] bitmap[0x%04x]",
+                            attaching_ue->imsi_bcd, attaching_ue->id,
+                            ogs_list_count(&attaching_ue->sess_list),
+                            attaching_ue->ebi_bitmap);
+                else
+                    ogs_warn("    Requested identity has no MME-UE "
+                            "context yet");
+                ogs_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
+                enb_ue->relcause.group = S1AP_Cause_PR_nas;
+                enb_ue->relcause.cause = S1AP_CauseNas_normal_release;
+                mme_send_release_access_bearer_or_ue_context_release(enb_ue);
+
+                ogs_pkbuf_free(pkbuf);
+                return;
+            }
+        }
+
         if (!mme_ue) {
             mme_ue = mme_ue_find_by_message(&nas_message);
             if (!mme_ue) {
