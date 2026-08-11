@@ -365,7 +365,8 @@ int mme_gn_handle_sgsn_context_response(
 
     ogs_buffer_to_bcd(resp->imsi.data, resp->imsi.len, imsi_bcd);
     ogs_info("    IMSI[%s]", imsi_bcd);
-    mme_ue_set_imsi(mme_ue, imsi_bcd);
+    mme_ue_set_imsi(mme_ue, imsi_bcd,
+            MME_UE_IMSI_FROM_SGSN_CONTEXT_RESPONSE);
 
     if (!resp->tunnel_endpoint_identifier_control_plane.presence) {
         ogs_error("[Gn] Rx SGSN Context Response with no Tunnel Endpoint Identifier Control Plane!");
