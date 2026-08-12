@@ -1180,6 +1180,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
     int r;
     ogs_slice_data_t *selected_slice = NULL;
     amf_sess_t *sess = NULL;
+    bool new_session = false;
 
     ogs_nas_payload_container_type_t *payload_container_type = NULL;
     ogs_nas_payload_container_t *payload_container = NULL;
@@ -1259,6 +1260,7 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
             if (!sess) {
                 sess = amf_sess_add(amf_ue, *pdu_session_id);
                 ogs_assert(sess);
+                new_session = true;
             } else {
             /*
              * These are variables that should be initialized
@@ -1420,6 +1422,16 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
                         OGS_5GMM_CAUSE_DNN_NOT_SUPPORTED_OR_NOT_SUBSCRIBED_IN_THE_SLICE);
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
+
+                /*
+                 * If this function created the session context,
+                 * it should be removed before returning. Otherwise,
+                 * the session context remains in amf_ue->sess_list
+                 * until the UE context is released.
+                 */
+                if (new_session)
+                    amf_sess_remove(sess);
+
                 return OGS_ERROR;
             }
 
