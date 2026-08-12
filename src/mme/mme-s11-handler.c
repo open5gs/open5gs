@@ -1103,6 +1103,15 @@ void mme_s11_handle_create_bearer_request(
                 &bearer_qos, &req->bearer_contexts.bearer_level_qos) !=
             req->bearer_contexts.bearer_level_qos.len) {
         ogs_error("ogs_gtp2_parse_bearer_qos() failed");
+        ogs_gtp2_send_error_message(xact, sgw_ue->sgw_s11_teid,
+                OGS_GTP2_CREATE_BEARER_RESPONSE_TYPE,
+                OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT);
+        /*
+         * The bearer context has just been created for this request.
+         * Remove it here; otherwise its EPS bearer identity is held
+         * until the UE context is released.
+         */
+        mme_bearer_remove(bearer);
         return;
     }
     bearer->qos.index = bearer_qos.qci;
