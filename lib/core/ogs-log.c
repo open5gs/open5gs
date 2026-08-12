@@ -499,6 +499,13 @@ void ogs_log_hexdump_func(ogs_log_level_e level, int id,
     char dumpstr[OGS_HUGE_LEN];
     char *p, *last;
 
+    /*
+     * Nothing is written to dumpstr when len is zero, so printing it
+     * would output an uninitialized stack buffer.
+     */
+    if (!len)
+        return;
+
     last = dumpstr + OGS_HUGE_LEN;
     p = dumpstr;
 
