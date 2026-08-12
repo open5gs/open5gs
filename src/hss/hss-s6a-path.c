@@ -204,6 +204,16 @@ static int hss_ogs_diam_s6a_air_cb(struct msg **msg, struct avp *avp,
         if (ret == 0 && avpch) {
             ret = fd_msg_avp_hdr(avpch, &hdr);
             if (ret == 0 && hdr) {
+                if (!hdr->avp_value || !hdr->avp_value->os.data ||
+                        hdr->avp_value->os.len !=
+                        OGS_RAND_LEN + OGS_AUTS_LEN) {
+                    ogs_error("Invalid Re-Synchronization-Info length [%d]",
+                            hdr->avp_value ?
+                            (int)hdr->avp_value->os.len : -1);
+                    result_code = OGS_DIAM_INVALID_AVP_VALUE;
+                    error_occurred = 1;
+                    goto out;
+                }
                 ogs_auc_sqn(opc, auth_info.k,
                         hdr->avp_value->os.data,
                         hdr->avp_value->os.data + OGS_RAND_LEN,
