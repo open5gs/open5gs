@@ -976,43 +976,11 @@ int amf_context_parse_config(void)
                         ogs_yaml_iter_key(&network_name_iter);
                         ogs_assert(network_name_key);
                         if (!strcmp(network_name_key, "full")) {
-                            ogs_nas_network_name_t *network_full_name =
-                                &self.full_name;
-                            const char *c_network_name =
-                                ogs_yaml_iter_value(&network_name_iter);
-                            uint8_t size = strlen(c_network_name);
-                            uint8_t i;
-                            for (i = 0; i < size &&
-                                 (((i * 2) + 1) <
-                                  (OGS_NAS_MAX_NETWORK_NAME_LEN - 1));
-                                 i++) {
-                                /* Workaround to convert the ASCII to USC-2 */
-                                network_full_name->name[i * 2] = 0;
-                                network_full_name->name[i * 2 + 1] =
-                                    c_network_name[i];
-                            }
-                            network_full_name->length = size*2+1;
-                            network_full_name->coding_scheme = 1;
-                            network_full_name->ext = 1;
+                            ogs_nas_build_network_name(&self.full_name,
+                                ogs_yaml_iter_value(&network_name_iter));
                         } else if (!strcmp(network_name_key, "short")) {
-                            ogs_nas_network_name_t *network_short_name =
-                                &self.short_name;
-                            const char *c_network_name =
-                                ogs_yaml_iter_value(&network_name_iter);
-                            uint8_t size = strlen(c_network_name);
-                            uint8_t i;
-                            for (i = 0; i < size &&
-                                 (((i * 2) + 1) <
-                                  (OGS_NAS_MAX_NETWORK_NAME_LEN - 1));
-                                 i++) {
-                                /* Workaround to convert the ASCII to USC-2 */
-                                network_short_name->name[i * 2] = 0;
-                                network_short_name->name[i * 2 + 1] =
-                                    c_network_name[i];
-                            }
-                            network_short_name->length = size*2+1;
-                            network_short_name->coding_scheme = 1;
-                            network_short_name->ext = 1;
+                            ogs_nas_build_network_name(&self.short_name,
+                                ogs_yaml_iter_value(&network_name_iter));
                         } else
                             ogs_warn("unknown key `%s`", network_name_key);
                     }

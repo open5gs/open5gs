@@ -389,6 +389,9 @@ ED4(uint8_t ext:1;,
     uint8_t name[OGS_NAS_MAX_NETWORK_NAME_LEN];
 } __attribute__ ((packed)) ogs_nas_network_name_t;
 
+void ogs_nas_build_network_name(
+        ogs_nas_network_name_t *network_name, const char *str);
+
 /* 9.9.3.29 Time zone
  * See subclause 10.5.3.8 in 3GPP TS 24.008 [13].
  * O TV 2 */
