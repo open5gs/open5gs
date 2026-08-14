@@ -2352,7 +2352,25 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                 if (trigger == OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED) {
 
-                    ogs_error("OLD Session Released");
+                    /*
+                     * There is no peer waiting for a response, so the
+                     * remaining PCF and UDM resources have to be released
+                     * here.
+                     *
+                     * SMF_UECM_STATE_DEREG_BY_N1N2 ends with
+                     * smf_sbi_send_sm_context_status_notify() rather than a
+                     * response on a stream we do not have, and it is the SMF
+                     * that decided to release the session.
+                     */
+                    ogs_error("Session Released locally");
+
+                    r = smf_sbi_cleanup_session(
+                            sess, NULL,
+                            SMF_UECM_STATE_DEREG_BY_N1N2,
+                            SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+
                     OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
 
                 } else if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
