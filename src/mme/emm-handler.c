@@ -439,12 +439,15 @@ int emm_handle_authentication_response(
     CLEAR_MME_UE_TIMER(mme_ue->t3460);
 
     if (authentication_response_parameter->length == 0 ||
+        authentication_response_parameter->length != mme_ue->xres_len ||
         memcmp(authentication_response_parameter->res, mme_ue->xres,
-        authentication_response_parameter->length) != 0) {
-        ogs_log_hexdump(OGS_LOG_WARN,
+        mme_ue->xres_len) != 0) {
+        ogs_error("Authentication failed [RES length:%d, XRES length:%d]",
+                authentication_response_parameter->length, mme_ue->xres_len);
+        ogs_log_hexdump(OGS_LOG_ERROR,
                 authentication_response_parameter->res,
                 authentication_response_parameter->length);
-        ogs_log_hexdump(OGS_LOG_WARN,
+        ogs_log_hexdump(OGS_LOG_ERROR,
                 mme_ue->xres, OGS_MAX_RES_LEN);
         return OGS_ERROR;
     } else {
