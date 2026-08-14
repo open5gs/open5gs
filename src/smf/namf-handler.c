@@ -20,6 +20,7 @@
 #include "sbi-path.h"
 #include "ngap-path.h"
 #include "binding.h"
+#include "local-path.h"
 #include "namf-handler.h"
 
 bool smf_namf_comm_handle_n1_n2_message_transfer(
@@ -48,9 +49,44 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
  * to apply QoS updates without waiting for V-SMF or RAN setup.
  */
             smf_qos_flow_binding(sess);
+        } else if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_ACCEPTED) {
+/*
+ * TS29.518 Namf_Communication_N1N2MessageTransfer
+ *
+ * The AMF has accepted the transfer and is still trying to deliver it -
+ * it may be paging the UE. This is not a failure, so keep the session.
+ *
+ * The AMF in Open5GS cannot answer an Establishment Accept this way: its
+ * 202 Accepted paths require either no N1 message or a different NGAP IE
+ * type. A peer AMF may still do so.
+ */
+            ogs_warn("[%s:%d] N1 N2 transfer is still in progress [%d]",
+                smf_ue->supi, sess->psi, recvmsg->res_status);
         } else {
             ogs_error("[%s:%d] HTTP response error [%d]",
                 smf_ue->supi, sess->psi, recvmsg->res_status);
+
+/*
+ * TS23.502 4.3.2.2.1 UE Requested PDU Session Establishment
+ *
+ * The SM context is created and returned to the AMF at step 5, long before
+ * this N1N2 transfer at step 11. If the AMF cannot accept the PDU Session
+ * Establishment Accept - the RAN-UE context was released while the session
+ * was being established, so the AMF has already dropped its own session
+ * context - nothing else will ever release the SM context.
+ *
+ * Release it locally. Otherwise the session, its UE IP address, its PFCP
+ * session and its PCF/UDM associations are orphaned in the SMF until the
+ * same UE happens to request the same PDU Session ID again.
+ */
+            if (HOME_ROUTED_ROAMING_IN_VSMF(sess) ||
+                HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
+                ogs_error("[%s:%d] Home-routed roaming session is not "
+                        "released locally", smf_ue->supi, sess->psi);
+            } else {
+                smf_trigger_session_release(
+                        sess, NULL, OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED);
+            }
         }
         break;
 
