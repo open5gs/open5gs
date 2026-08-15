@@ -2884,6 +2884,64 @@ int ogs_nas_5gs_decode_5gs_mobile_identity(ogs_nas_5gs_mobile_identity_t *mobile
 
     mobile_identity->buffer = pkbuf->data - size + sizeof(mobile_identity->length);
 
+    /*
+     * Enforce a per-identity-type minimum length before consumers alias
+     * mobile_identity->buffer to a fixed-size typed struct (GHSA-f4mx-3x6p-cfwp).
+     *
+     * The decoder previously trusted the attacker-declared LV-E length without
+     * checking it is large enough for the identity type the attacker claimed.
+     * Every consumer then cast the aliased pointer to a fixed-size struct and
+     * read a fixed-offset field, allowing a pre-auth heap out-of-bounds read
+     * (e.g. amf_ue_find_by_message in the AMF). Bounding the identity here
+     * protects all current and future consumers from one point.
+     */
+    if (mobile_identity->length < 1) {
+        ogs_error("Too short 5GS Mobile Identity [%d]", mobile_identity->length);
+        return -1;
+    }
+    switch (((uint8_t *)mobile_identity->buffer)[0] & 0x07) {
+    case OGS_NAS_5GS_MOBILE_IDENTITY_SUCI:
+        if (mobile_identity->length <
+                OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1) {
+            ogs_error("Too short 5GS SUCI Mobile Identity [%d:%d]",
+                    mobile_identity->length,
+                    OGS_NAS_5GS_MOBILE_IDENTITY_SUCI_MIN_SIZE + 1);
+            return -1;
+        }
+        break;
+    case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
+        if (mobile_identity->length <
+                sizeof(ogs_nas_5gs_mobile_identity_guti_t)) {
+            ogs_error("Too short 5GS GUTI Mobile Identity [%d:%zu]",
+                    mobile_identity->length,
+                    sizeof(ogs_nas_5gs_mobile_identity_guti_t));
+            return -1;
+        }
+        break;
+    case OGS_NAS_5GS_MOBILE_IDENTITY_S_TMSI:
+        if (mobile_identity->length <
+                sizeof(ogs_nas_5gs_mobile_identity_s_tmsi_t)) {
+            ogs_error("Too short 5GS S-TMSI Mobile Identity [%d:%zu]",
+                    mobile_identity->length,
+                    sizeof(ogs_nas_5gs_mobile_identity_s_tmsi_t));
+            return -1;
+        }
+        break;
+    case OGS_NAS_5GS_MOBILE_IDENTITY_IMEI:
+    case OGS_NAS_5GS_MOBILE_IDENTITY_IMEISV:
+        if (mobile_identity->length <
+                sizeof(ogs_nas_mobile_identity_imeisv_t)) {
+            ogs_error("Too short 5GS IMEI(SV) Mobile Identity [%d:%zu]",
+                    mobile_identity->length,
+                    sizeof(ogs_nas_mobile_identity_imeisv_t));
+            return -1;
+        }
+        break;
+    default:
+        /* Unknown identity type: keep at least 1 octet (type field) */
+        break;
+    }
+
     ogs_trace("  5GS_MOBILE_IDENTITY - ");
     ogs_log_hexdump(OGS_LOG_TRACE, (void*)mobile_identity->buffer, mobile_identity->length);
 
