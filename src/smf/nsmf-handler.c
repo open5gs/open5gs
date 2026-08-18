@@ -87,6 +87,15 @@ bool smf_nsmf_handle_create_sm_context(
         return false;
     }
 
+    if (n1smbuf->len < sizeof(ogs_nas_5gsm_header_t)) {
+        ogs_error("[%s:%d] N1 SM Content too short [%d]",
+                smf_ue->supi, sess->psi, n1smbuf->len);
+        smf_sbi_send_sm_context_create_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                "N1 SM Content too short", smf_ue->supi, NULL);
+        return false;
+    }
+
     gsm_header = (ogs_nas_5gsm_header_t *)n1smbuf->data;
     ogs_assert(gsm_header);
 
@@ -673,6 +682,15 @@ bool smf_nsmf_handle_update_sm_context(
             smf_sbi_send_sm_context_update_error_log(
                     stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     "No N1 SM Content", smf_ue->supi);
+            return false;
+        }
+
+        if (n1smbuf->len < sizeof(ogs_nas_5gsm_header_t)) {
+            ogs_error("[%s:%d] N1 SM Content too short [%d]",
+                    smf_ue->supi, sess->psi, n1smbuf->len);
+            smf_sbi_send_sm_context_update_error_log(
+                    stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    "N1 SM Content too short", smf_ue->supi);
             return false;
         }
 

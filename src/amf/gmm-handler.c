@@ -1251,6 +1251,16 @@ int gmm_handle_ul_nas_transport(ran_ue_t *ran_ue, amf_ue_t *amf_ue,
 
     switch (payload_container_type->value) {
     case OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION:
+        if (payload_container->length < sizeof(ogs_nas_5gsm_header_t)) {
+            ogs_error("[%s] Payload container too short [%d]",
+                    amf_ue->supi, payload_container->length);
+            r = nas_5gs_send_gmm_status(
+                    amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION);
+            ogs_expect(r == OGS_OK);
+            ogs_assert(r != OGS_ERROR);
+            return OGS_ERROR;
+        }
+
         gsm_header = (ogs_nas_5gsm_header_t *)payload_container->buffer;
         ogs_assert(gsm_header);
 
