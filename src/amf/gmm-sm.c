@@ -2136,6 +2136,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
     switch (e->h.id) {
     case OGS_FSM_ENTRY_SIG:
         amf_ue->auth_synch_fail_count = 0;
+        amf_ue->auth_ngksi_fail_count = 0;
         break;
     case OGS_FSM_EXIT_SIG:
         break;
@@ -2197,7 +2198,18 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
                 break;
 
             case OGS_5GMM_CAUSE_NGKSI_ALREADY_IN_USE:
-                ogs_warn("Authentication failure(ngKSI already in use)");
+                ogs_warn("[%s] Authentication failure"
+                        "(ngKSI already in use[count=%d])",
+                        amf_ue->suci, amf_ue->auth_ngksi_fail_count);
+
+                amf_ue->auth_ngksi_fail_count++;
+
+                if (amf_ue->auth_ngksi_fail_count >= 2) {
+                    ogs_warn("[%s] Too many ngKSI authentication failures, "
+                            "sending AUTHENTICATION REJECT", amf_ue->suci);
+                    break;
+                }
+
                 r = amf_ue_sbi_discover_and_send(
                         OpenAPI_service_name_nausf_auth, NULL,
                         amf_nausf_auth_build_authenticate,

@@ -442,6 +442,9 @@ struct amf_ue_s {
     /* Authentication synch failure counter */
     uint8_t auth_synch_fail_count;
 
+    /* Authentication ngKSI-already-in-use failure counter */
+    uint8_t auth_ngksi_fail_count;
+
     /* flag: 1 = allow restoration of context, 0 = disallow */
     bool            can_restore_context;
 
