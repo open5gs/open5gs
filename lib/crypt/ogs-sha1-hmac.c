@@ -66,25 +66,21 @@ void ogs_hmac_sha1_init(ogs_hmac_sha1_ctx *ctx, const uint8_t *key,
     uint32_t fill;
     uint32_t num;
 
-    uint8_t key_temp[OGS_SHA1_DIGEST_SIZE];
+    uint8_t key_temp[OGS_SHA1_BLOCK_SIZE];
     int i;
 
-    if (key_size == OGS_SHA1_BLOCK_SIZE) {
-        memcpy(key_temp, key, sizeof(key_temp));
-        num = OGS_SHA1_BLOCK_SIZE;
+    if (key_size > OGS_SHA1_BLOCK_SIZE) {
+        num = OGS_SHA1_DIGEST_SIZE;
+        ogs_sha1(key, key_size, key_temp);
     } else {
-        if (key_size > OGS_SHA1_BLOCK_SIZE){
-            num = OGS_SHA1_DIGEST_SIZE;
-            ogs_sha1(key, key_size, key_temp);
-        } else { /* key_size > SHA1_BLOCK_SIZE */
-            memcpy(key_temp, key, sizeof(key_temp));
-            num = key_size;
-        }
-        fill = OGS_SHA1_BLOCK_SIZE - num;
-
-        memset(ctx->block_ipad + num, 0x36, fill);
-        memset(ctx->block_opad + num, 0x5c, fill);
+        if (key_size)
+            memcpy(key_temp, key, key_size);
+        num = key_size;
     }
+    fill = OGS_SHA1_BLOCK_SIZE - num;
+
+    memset(ctx->block_ipad + num, 0x36, fill);
+    memset(ctx->block_opad + num, 0x5c, fill);
 
     for (i = 0; i < num; i++) {
         ctx->block_ipad[i] = key_temp[i] ^ 0x36;
@@ -128,7 +124,9 @@ void ogs_hmac_sha1_final(ogs_hmac_sha1_ctx *ctx, uint8_t *mac,
     ogs_sha1_final(&ctx->ctx_inside, digest_inside);
     ogs_sha1_update(&ctx->ctx_outside, digest_inside, OGS_SHA1_DIGEST_SIZE);
     ogs_sha1_final(&ctx->ctx_outside, mac_temp);
-    memcpy(mac, mac_temp, mac_size);
+    ogs_assert(mac_size <= OGS_SHA1_DIGEST_SIZE);
+    if (mac_size)
+        memcpy(mac, mac_temp, mac_size);
 }
 
 void ogs_hmac_sha1(const uint8_t *key, uint32_t key_size,
