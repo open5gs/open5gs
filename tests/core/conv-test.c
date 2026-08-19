@@ -20,6 +20,40 @@
 #include "ogs-core.h"
 #include "core/abts.h"
 
+static void conv_test1(abts_case *tc, void *data)
+{
+    uint8_t expected[4] = { 0x01, 0xab, 0xCD, 0xef };
+    uint8_t output[4] = { 0xff, 0xff, 0xff, 0xff };
+    char non_ascii[8] = {
+        '0', '1', 'a', 'b', 'C', 'D', (char)0x80, 'f' };
+
+    ABTS_INT_EQUAL(tc, OGS_OK,
+            ogs_hex_from_string_checked(
+                "01abCDef", output, sizeof(output)));
+    ABTS_TRUE(tc, memcmp(expected, output, sizeof(output)) == 0);
+
+    ABTS_INT_EQUAL(tc, OGS_ERROR,
+            ogs_ascii_to_hex_checked("01abCD", 6, output, sizeof(output)));
+    ABTS_INT_EQUAL(tc, OGS_ERROR,
+            ogs_ascii_to_hex_checked(
+                "01abCDef00", 10, output, sizeof(output)));
+    ABTS_INT_EQUAL(tc, OGS_ERROR,
+            ogs_ascii_to_hex_checked("01abCDe", 7, output, sizeof(output)));
+    ABTS_INT_EQUAL(tc, OGS_ERROR,
+            ogs_ascii_to_hex_checked("01abCDZf", 8, output, sizeof(output)));
+    ABTS_INT_EQUAL(tc, OGS_ERROR,
+            ogs_ascii_to_hex_checked("01abCD f", 8, output, sizeof(output)));
+    ABTS_INT_EQUAL(tc, OGS_ERROR,
+            ogs_ascii_to_hex_checked(
+                non_ascii, sizeof(non_ascii), output, sizeof(output)));
+    ABTS_INT_EQUAL(tc, OGS_ERROR,
+            ogs_ascii_to_hex_checked(NULL, 0, output, sizeof(output)));
+    ABTS_INT_EQUAL(tc, OGS_ERROR,
+            ogs_ascii_to_hex_checked("01abCDef", 8, NULL, sizeof(output)));
+
+    ABTS_TRUE(tc, memcmp(expected, output, sizeof(output)) == 0);
+}
+
 static void conv_test2(abts_case *tc, void *data)
 {
 #define K "4   6  5B5    CE8   B199B49FAA5F0A2EE238A6BC   "
@@ -285,6 +319,7 @@ abts_suite *test_conv(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
+    abts_run_test(suite, conv_test1, NULL);
     abts_run_test(suite, conv_test2, NULL);
     abts_run_test(suite, conv_test3, NULL);
     abts_run_test(suite, conv_test4, NULL);

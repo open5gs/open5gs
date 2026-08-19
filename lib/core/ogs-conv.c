@@ -52,6 +52,29 @@ int ogs_ascii_to_hex(char *in, int in_len, void *out, int out_len)
     return j;
 }
 
+int ogs_ascii_to_hex_checked(
+        const char *in, int in_len, void *out, int out_len)
+{
+    int i;
+
+    if (!in || !out)
+        return OGS_ERROR;
+
+    if (in_len < 0 || out_len < 0 || out_len > INT_MAX / 2 ||
+        in_len != out_len * 2)
+        return OGS_ERROR;
+
+    for (i = 0; i < in_len; i++) {
+        if (!((in[i] >= '0' && in[i] <= '9') ||
+              (in[i] >= 'a' && in[i] <= 'f') ||
+              (in[i] >= 'A' && in[i] <= 'F')))
+            return OGS_ERROR;
+    }
+
+    ogs_ascii_to_hex((char *)in, in_len, out, out_len);
+    return OGS_OK;
+}
+
 void *ogs_hex_to_ascii(const void *in, int in_len, void *out, int out_len)
 {
     char *p, *last;

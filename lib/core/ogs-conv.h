@@ -29,11 +29,24 @@ extern "C" {
 #endif
 
 int ogs_ascii_to_hex(char *in, int in_len, void *out, int out_len);
+/*
+ * Convert exactly out_len * 2 hexadecimal characters.
+ * Return OGS_OK on success. On error, leave out unchanged.
+ */
+int ogs_ascii_to_hex_checked(
+        const char *in, int in_len, void *out, int out_len);
 static ogs_inline void *ogs_hex_from_string(
         const char *str, void *out, int out_len)
 {
     ogs_ascii_to_hex((char*)str, strlen(str), out, out_len);
     return out;
+}
+static ogs_inline int ogs_hex_from_string_checked(
+        const char *str, void *out, int out_len)
+{
+    if (!str)
+        return OGS_ERROR;
+    return ogs_ascii_to_hex_checked(str, strlen(str), out, out_len);
 }
 
 void *ogs_hex_to_ascii(const void *in, int in_len, void *out, int out_len);
