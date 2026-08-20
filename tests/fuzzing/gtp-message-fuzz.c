@@ -25,6 +25,7 @@
 
 #define kMinInputLength 5
 #define kMaxInputLength 1024
+#define GTP_VERSION(byte) (((byte) >> 5) & 0x07)
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) 
 { /* open5gs/tests/non3gpp/gtp-path.c */
@@ -47,8 +48,17 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
     }
     ogs_pkbuf_put_data(pkbuf, Data, Size);
 
-    ogs_gtp2_message_t gtp_message;
-    ogs_gtp2_parse_msg(&gtp_message, pkbuf);
+    if (GTP_VERSION(Data[0]) == OGS_GTP1_VERSION_1) {
+        /* GTPv1 */
+        if (Size >= 8) {
+            ogs_gtp1_message_t gtp1_message;
+            ogs_gtp1_parse_msg(&gtp1_message, pkbuf);
+        }
+    } else {
+        /* GTPv2 */
+        ogs_gtp2_message_t gtp_message;
+        ogs_gtp2_parse_msg(&gtp_message, pkbuf);
+    }
 
     ogs_pkbuf_free(pkbuf);
 
