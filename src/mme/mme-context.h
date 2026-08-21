@@ -354,6 +354,22 @@ struct enb_ue_s {
 #define S1AP_UE_CTX_REL_S1_PAGING                           7
     uint8_t         ue_ctx_rel_action;
 
+/*
+ * An S1 context may outlive the procedure that created it. During
+ * handover the target enb_ue is linked to the mme_ue before the UE has
+ * moved, and it is only unlinked and removed when the eNB answers
+ * UEContextReleaseCommand with UEContextReleaseComplete.
+ *
+ * An eNB that owns such a context - for example a handover target after
+ * HandoverCancel - must not be able to drive UE/bearer procedures with
+ * it, since that would let it act on a UE that is still served by
+ * another eNB. Use this to require that the context is both the serving
+ * one and not already being released.
+ */
+#define ENB_UE_IS_SERVING(__mME, __eNB) \
+    ((__eNB)->id == (__mME)->enb_ue_id && \
+     (__eNB)->ue_ctx_rel_action == S1AP_UE_CTX_REL_INVALID_ACTION)
+
     bool            part_of_s1_reset_requested;
 
     /* Related Context */
