@@ -229,6 +229,22 @@ struct ran_ue_s {
 #define NGAP_UE_CTX_REL_NG_HANDOVER_FAILURE                 6
     uint8_t         ue_ctx_rel_action;
 
+/*
+ * A RAN-NG context may outlive the procedure that created it. During
+ * handover the target ran_ue is linked to the amf_ue before the UE has
+ * moved, and it is only unlinked and removed when the gNB answers
+ * UEContextReleaseCommand with UEContextReleaseComplete.
+ *
+ * A gNB that owns such a context - for example a handover target after
+ * HandoverCancel - must not be able to drive UE/session procedures with
+ * it, since that would let it act on a UE that is still served by
+ * another gNB. Use this to require that the context is both the serving
+ * one and not already being released.
+ */
+#define RAN_UE_IS_SERVING(__aMF, __rAN) \
+    ((__rAN)->id == (__aMF)->ran_ue_id && \
+     (__rAN)->ue_ctx_rel_action == NGAP_UE_CTX_REL_INVALID_ACTION)
+
     bool            part_of_ng_reset_requested;
 
     struct {

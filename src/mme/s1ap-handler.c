@@ -1278,6 +1278,19 @@ void s1ap_handle_initial_context_setup_response(
         return;
     }
 
+    if (!ENB_UE_IS_SERVING(mme_ue, enb_ue)) {
+        ogs_error("InitialContextSetupResponse on non-serving S1 context "
+                "[MME_UE_S1AP_ID:%d] [enb_ue:%d serving:%d rel_action:%d]",
+                enb_ue->mme_ue_s1ap_id,
+                enb_ue->id, mme_ue->enb_ue_id, enb_ue->ue_ctx_rel_action);
+        r = s1ap_send_error_indication1(enb_ue,
+                S1AP_Cause_PR_protocol,
+                S1AP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     if (E_RABSetupListCtxtSURes) {
         int uli_presence = 0;
 
@@ -1745,6 +1758,19 @@ void s1ap_handle_e_rab_setup_response(
                 enb_ue, S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unspecified,
                 S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (!ENB_UE_IS_SERVING(mme_ue, enb_ue)) {
+        ogs_error("E-RABSetupResponse on non-serving S1 context "
+                "[MME_UE_S1AP_ID:%d] [enb_ue:%d serving:%d rel_action:%d]",
+                enb_ue->mme_ue_s1ap_id,
+                enb_ue->id, mme_ue->enb_ue_id, enb_ue->ue_ctx_rel_action);
+        r = s1ap_send_error_indication1(enb_ue,
+                S1AP_Cause_PR_protocol,
+                S1AP_CauseProtocol_message_not_compatible_with_receiver_state);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;

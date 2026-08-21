@@ -1206,8 +1206,6 @@ void ngap_handle_initial_context_setup_response(
             (long long)ran_ue->ran_ue_ngap_id,
             (long long)ran_ue->amf_ue_ngap_id);
 
-    ran_ue->initial_context_setup_response_received = true;
-
     amf_ue = amf_ue_find_by_id(ran_ue->amf_ue_id);
     if (!amf_ue) {
         /*
@@ -1226,6 +1224,22 @@ void ngap_handle_initial_context_setup_response(
         ogs_assert(r != OGS_ERROR);
         return;
     }
+
+    if (!RAN_UE_IS_SERVING(amf_ue, ran_ue)) {
+        ogs_error("InitialContextSetupResponse on non-serving NG context "
+                "[AMF_UE_NGAP_ID:%lld] "
+                "[ran_ue:%d serving:%d rel_action:%d]",
+                (long long)ran_ue->amf_ue_ngap_id,
+                ran_ue->id, amf_ue->ran_ue_id, ran_ue->ue_ctx_rel_action);
+        r = ngap_send_error_indication2(ran_ue,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    ran_ue->initial_context_setup_response_received = true;
 
     for (i = 0; PDUSessionList && i < OGS_ASN_LIST_COUNT(PDUSessionList); i++) {
         PDUSessionItem = (NGAP_PDUSessionResourceSetupItemCxtRes_t *)
@@ -2250,6 +2264,20 @@ void ngap_handle_pdu_session_resource_setup_response(
                 NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_unspecified,
                 NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (!RAN_UE_IS_SERVING(amf_ue, ran_ue)) {
+        ogs_error("PDUSessionResourceSetupResponse on non-serving NG context "
+                "[AMF_UE_NGAP_ID:%lld] "
+                "[ran_ue:%d serving:%d rel_action:%d]",
+                (long long)ran_ue->amf_ue_ngap_id,
+                ran_ue->id, amf_ue->ran_ue_id, ran_ue->ue_ctx_rel_action);
+        r = ngap_send_error_indication2(ran_ue,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
