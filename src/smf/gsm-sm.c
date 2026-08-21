@@ -131,10 +131,15 @@ static bool send_ccr_termination_req_gx_gy_s6b(
         ogs_error("No Gy Diameter Peer");
         /* TODO: drop Gx connection here,
          * possibly move to another "releasing" state! */
-        uint8_t gtp_cause = (gtp_xact->gtp_version == 1) ?
+        if (gtp_xact) {
+            uint8_t gtp_cause = (gtp_xact->gtp_version == 1) ?
                 OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE :
                 OGS_GTP2_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER;
-        send_gtp_delete_err_msg(sess, gtp_xact, gtp_cause);
+            send_gtp_delete_err_msg(sess, gtp_xact, gtp_cause);
+        } else {
+            ogs_error("No GTP transaction : "
+                    "Cannot report 'No Gy Diameter Peer' to the peer");
+        }
         return false;
     }
 
@@ -2315,15 +2320,30 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                             &pfcp_message->pfcp_session_deletion_response);
                 if (pfcp_cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
                     /* FIXME: tear down Gy and Gx */
-                    ogs_assert(gtp_xact);
-                    gtp_cause = gtp_cause_from_pfcp(
-                            pfcp_cause, gtp_xact->gtp_version);
-                    send_gtp_delete_err_msg(sess, gtp_xact, gtp_cause);
+                    if (gtp_xact) {
+                        gtp_cause = gtp_cause_from_pfcp(
+                                pfcp_cause, gtp_xact->gtp_version);
+                        send_gtp_delete_err_msg(sess, gtp_xact, gtp_cause);
+                    } else {
+        /*
+         * No peer is waiting for a response, so the session has to be
+         * dropped here.
+         */
+                        ogs_error("No GTP transaction : "
+                                "PFCP Cause [%d] cannot be reported, "
+                                "releasing the session locally", pfcp_cause);
+                        OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+                    }
                     break;
                 }
                 if (send_ccr_termination_req_gx_gy_s6b(
-                            sess, gtp_xact) == true)
+                            sess, gtp_xact) == true) {
                     OGS_FSM_TRAN(s, smf_gsm_state_wait_epc_auth_release);
+                } else if (!gtp_xact) {
+                    ogs_error("No GTP transaction : "
+                            "Releasing the session locally");
+                    OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+                }
                 /* else: free session? */
             } else {
                 int r, trigger;
