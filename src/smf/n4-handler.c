@@ -1229,6 +1229,26 @@ uint8_t smf_epc_n4_handle_session_establishment_response(
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 
+/*
+ * The Error Indication procedure cannot go on : either no Delete Bearer
+ * Request was sent at all, or the bearer could not be removed.  Drop the
+ * mark so that a later Error Indication can start it again.
+ */
+static void clear_ei_deactivation(
+        smf_sess_t *sess, smf_bearer_t *bearer, uint64_t flags)
+{
+    ogs_assert(sess);
+
+    if (flags &
+            (OGS_PFCP_MODIFY_ERROR_INDICATION|OGS_PFCP_MODIFY_REMOVE)) {
+        if (flags & OGS_PFCP_MODIFY_SESSION)
+            bearer = smf_default_bearer_in_sess(sess);
+
+        if (bearer)
+            bearer->ei_deactivation = false;
+    }
+}
+
 void smf_epc_n4_handle_session_modification_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_gtp2_message_t *recv_message,
@@ -1255,14 +1275,15 @@ void smf_epc_n4_handle_session_modification_response(
 
     ogs_debug("Session Modification Response [epc]");
 
+    flags = xact->modify_flags;
+    ogs_assert(flags);
+
     if (flags & OGS_PFCP_MODIFY_SESSION) {
         /* If smf_epc_pfcp_send_pdr_modification_request() is called */
     } else {
         /* If smf_epc_pfcp_send_bearer_modification_request() is called */
         bearer = smf_bearer_find_by_id(OGS_POINTER_TO_UINT(xact->data));
     }
-    flags = xact->modify_flags;
-    ogs_assert(flags);
 
     /* OGS_PFCP_MODIFY_URR: Modification Response was originally triggered by
        PFCP Session Report Request, xact->assoc_xact is not a gtp_xact. No
@@ -1285,10 +1306,12 @@ void smf_epc_n4_handle_session_modification_response(
     if (rsp->cause.presence) {
         if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
             ogs_error("PFCP Cause [%d] : Not Accepted", rsp->cause.u8);
+            clear_ei_deactivation(sess, bearer, flags);
             return;
         }
     } else {
         ogs_error("No Cause");
+        clear_ei_deactivation(sess, bearer, flags);
         return;
     }
 
@@ -1339,6 +1362,7 @@ void smf_epc_n4_handle_session_modification_response(
 
     if (pfcp_cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
         ogs_error("PFCP Cause [%d] : Not Accepted", pfcp_cause_value);
+        clear_ei_deactivation(sess, bearer, flags);
         return;
     }
 
@@ -1574,6 +1598,7 @@ uint8_t smf_n4_handle_session_report_request(
     smf_ue_t *smf_ue = NULL;
     smf_bearer_t *qos_flow = NULL;
     smf_bearer_t *bearer = NULL;
+    smf_bearer_t *linked_bearer = NULL;
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
 
@@ -1814,6 +1839,7 @@ uint8_t smf_n4_handle_session_report_request(
              * still worked, but the UE could not originate a new VoLTE call
              * until it re-attached (airplane-mode toggle).
              */
+            linked_bearer = smf_default_bearer_in_sess(sess);
             ogs_list_for_each(&sess->bearer_list, bearer) {
                 if (bearer->dl_far == far)
                     break;
@@ -1822,13 +1848,27 @@ uint8_t smf_n4_handle_session_report_request(
                 ogs_error("[%s:%s] Error Indication from SGW-U: "
                         "no bearer found for FAR",
                     smf_ue->imsi_bcd, sess->session.name);
-            } else if (bearer == smf_default_bearer_in_sess(sess)) {
+            } else if (linked_bearer && linked_bearer->ei_deactivation) {
+        /*
+         * The default bearer represents the PDN connection, so releasing it
+         * deactivates every bearer of this session.  Whichever bearer this
+         * Error Indication refers to, the procedure is already running.
+         */
+                ogs_warn("[%s:%s] Ignore Error Indication from SGW-U "
+                        "[EBI:%d] : PDN deactivation already in progress",
+                    smf_ue->imsi_bcd, sess->session.name, bearer->ebi);
+            } else if (bearer->ei_deactivation) {
+                ogs_warn("[%s:%s] Ignore Error Indication from SGW-U "
+                        "[EBI:%d] : bearer deactivation already in progress",
+                    smf_ue->imsi_bcd, sess->session.name, bearer->ebi);
+            } else if (bearer == linked_bearer) {
                 ogs_error("[%s:%s] Error Indication from SGW-U "
                         "[EBI:%d] (default bearer)",
                     smf_ue->imsi_bcd, sess->session.name, bearer->ebi);
                 ogs_assert(OGS_OK ==
                     smf_epc_pfcp_send_deactivation(
                         sess, OGS_GTP2_CAUSE_REACTIVATION_REQUESTED));
+                bearer->ei_deactivation = true;
             } else {
                 ogs_error("[%s:%s] Error Indication from SGW-U "
                         "[EBI:%d] (dedicated bearer)",
@@ -1836,9 +1876,11 @@ uint8_t smf_n4_handle_session_report_request(
                 ogs_assert(OGS_OK ==
                     smf_epc_pfcp_send_one_bearer_modification_request(
                         bearer, OGS_INVALID_POOL_ID,
-                        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
+                        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE|
+                        OGS_PFCP_MODIFY_ERROR_INDICATION,
                         OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                         OGS_GTP2_CAUSE_UNDEFINED_VALUE));
+                bearer->ei_deactivation = true;
             }
         } else {
             ogs_warn("[%s:%s] Error Indication from gNB",
