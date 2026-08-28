@@ -37,6 +37,8 @@ struct dict_object *ogs_diam_gx_feature_list_id = NULL;
 struct dict_object *ogs_diam_gx_feature_list = NULL;
 struct dict_object *ogs_diam_gx_framed_ip_address = NULL;
 struct dict_object *ogs_diam_gx_framed_ipv6_prefix = NULL;
+struct dict_object *ogs_diam_gx_framed_route = NULL;
+struct dict_object *ogs_diam_gx_framed_ipv6_route = NULL;
 struct dict_object *ogs_diam_gx_ip_can_type = NULL;
 struct dict_object *ogs_diam_gx_qos_information = NULL;
 struct dict_object *ogs_diam_gx_qos_class_identifier = NULL;
@@ -111,6 +113,8 @@ int ogs_diam_gx_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Feature-List", &ogs_diam_gx_feature_list);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Framed-IP-Address", &ogs_diam_gx_framed_ip_address);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Framed-IPv6-Prefix", &ogs_diam_gx_framed_ipv6_prefix);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Framed-Route", &ogs_diam_gx_framed_route);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Framed-IPv6-Route", &ogs_diam_gx_framed_ipv6_route);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "IP-CAN-Type", &ogs_diam_gx_ip_can_type);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "QoS-Information", &ogs_diam_gx_qos_information);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "QoS-Class-Identifier" , &ogs_diam_gx_qos_class_identifier);

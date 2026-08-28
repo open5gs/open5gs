@@ -452,6 +452,25 @@ int pcrf_db_qos_data(
                     imsi_bcd, apn);
     }
 
+    if (rv == OGS_OK) {
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            if (!session_data->session.ipv4_framed_routes ||
+                !session_data->session.ipv4_framed_routes[i])
+                break;
+            ogs_debug("DB IPv4 framed route IMSI[%s] APN[%s]: %s",
+                    imsi_bcd, apn,
+                    session_data->session.ipv4_framed_routes[i]);
+        }
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            if (!session_data->session.ipv6_framed_routes ||
+                !session_data->session.ipv6_framed_routes[i])
+                break;
+            ogs_debug("DB IPv6 framed route IMSI[%s] APN[%s]: %s",
+                    imsi_bcd, apn,
+                    session_data->session.ipv6_framed_routes[i]);
+        }
+    }
+
     /* For EPC, we need to inialize Flow-Status in Pcc-Rule */
     for (i = 0; i < session_data->num_of_pcc_rule; i++) {
         ogs_pcc_rule_t *pcc_rule = &session_data->pcc_rule[i];

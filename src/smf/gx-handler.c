@@ -61,6 +61,50 @@ uint32_t smf_gx_handle_cca_initial_request(
         OGS_STORE_PCC_RULE(&sess->policy.pcc_rule[i],
                 &gx_message->session_data.pcc_rule[i]);
 
+    if (sess->session.ipv4_framed_routes) {
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI &&
+                sess->session.ipv4_framed_routes[i]; i++)
+            ogs_free(sess->session.ipv4_framed_routes[i]);
+        ogs_free(sess->session.ipv4_framed_routes);
+        sess->session.ipv4_framed_routes = NULL;
+    }
+    if (gx_message->session_data.session.ipv4_framed_routes) {
+        sess->session.ipv4_framed_routes = ogs_calloc(
+                OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                sizeof(sess->session.ipv4_framed_routes[0]));
+        ogs_assert(sess->session.ipv4_framed_routes);
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI &&
+                gx_message->session_data.session.ipv4_framed_routes[i]; i++) {
+            sess->session.ipv4_framed_routes[i] = ogs_strdup(
+                    gx_message->session_data.session.ipv4_framed_routes[i]);
+            ogs_assert(sess->session.ipv4_framed_routes[i]);
+            ogs_debug("SMF session IPv4 framed route: %s",
+                    sess->session.ipv4_framed_routes[i]);
+        }
+    }
+
+    if (sess->session.ipv6_framed_routes) {
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI &&
+                sess->session.ipv6_framed_routes[i]; i++)
+            ogs_free(sess->session.ipv6_framed_routes[i]);
+        ogs_free(sess->session.ipv6_framed_routes);
+        sess->session.ipv6_framed_routes = NULL;
+    }
+    if (gx_message->session_data.session.ipv6_framed_routes) {
+        sess->session.ipv6_framed_routes = ogs_calloc(
+                OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                sizeof(sess->session.ipv6_framed_routes[0]));
+        ogs_assert(sess->session.ipv6_framed_routes);
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI &&
+                gx_message->session_data.session.ipv6_framed_routes[i]; i++) {
+            sess->session.ipv6_framed_routes[i] = ogs_strdup(
+                    gx_message->session_data.session.ipv6_framed_routes[i]);
+            ogs_assert(sess->session.ipv6_framed_routes[i]);
+            ogs_debug("SMF session IPv6 framed route: %s",
+                    sess->session.ipv6_framed_routes[i]);
+        }
+    }
+
     /* APN-AMBR
      * if PCRF changes APN-AMBR, this should be included. */
     sess->gtp.create_session_response_apn_ambr = false;
@@ -160,6 +204,54 @@ uint32_t smf_gx_handle_cca_initial_request(
     ogs_assert(OGS_OK ==
         ogs_pfcp_paa_to_ue_ip_addr(&sess->paa,
             &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
+
+    if ((sess->session.ipv4_framed_routes ||
+         sess->session.ipv6_framed_routes) &&
+        !sess->pfcp_node->up_function_features.frrt) {
+        ogs_warn("UPF does not advertise PFCP Framed Routing support");
+    }
+
+    if (sess->session.ipv4_framed_routes &&
+        sess->pfcp_node->up_function_features.frrt) {
+        dl_pdr->ipv4_framed_routes = ogs_calloc(
+                OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                sizeof(dl_pdr->ipv4_framed_routes[0]));
+        ul_pdr->ipv4_framed_routes = ogs_calloc(
+                OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                sizeof(ul_pdr->ipv4_framed_routes[0]));
+        ogs_assert(dl_pdr->ipv4_framed_routes);
+        ogs_assert(ul_pdr->ipv4_framed_routes);
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI &&
+                sess->session.ipv4_framed_routes[i]; i++) {
+            dl_pdr->ipv4_framed_routes[i] =
+                ogs_strdup(sess->session.ipv4_framed_routes[i]);
+            ul_pdr->ipv4_framed_routes[i] =
+                ogs_strdup(sess->session.ipv4_framed_routes[i]);
+            ogs_debug("PFCP DL/UL PDR IPv4 framed route: %s",
+                    sess->session.ipv4_framed_routes[i]);
+        }
+    }
+
+    if (sess->session.ipv6_framed_routes &&
+        sess->pfcp_node->up_function_features.frrt) {
+        dl_pdr->ipv6_framed_routes = ogs_calloc(
+                OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                sizeof(dl_pdr->ipv6_framed_routes[0]));
+        ul_pdr->ipv6_framed_routes = ogs_calloc(
+                OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                sizeof(ul_pdr->ipv6_framed_routes[0]));
+        ogs_assert(dl_pdr->ipv6_framed_routes);
+        ogs_assert(ul_pdr->ipv6_framed_routes);
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI &&
+                sess->session.ipv6_framed_routes[i]; i++) {
+            dl_pdr->ipv6_framed_routes[i] =
+                ogs_strdup(sess->session.ipv6_framed_routes[i]);
+            ul_pdr->ipv6_framed_routes[i] =
+                ogs_strdup(sess->session.ipv6_framed_routes[i]);
+            ogs_debug("PFCP DL/UL PDR IPv6 framed route: %s",
+                    sess->session.ipv6_framed_routes[i]);
+        }
+    }
 
     /* Set UE-to-CP Flow-Description and Outer-Header-Creation */
     up2cp_pdr->flow[up2cp_pdr->num_of_flow].fd = 1;

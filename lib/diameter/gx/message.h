@@ -44,6 +44,8 @@ extern "C" {
 #define OGS_DIAM_GX_AVP_CODE_QOS_INFORMATION                (1016)
 #define OGS_DIAM_GX_AVP_CODE_PRECEDENCE                     (1010)
 #define OGS_DIAM_GX_AVP_CODE_RATING_GROUP                   (432)
+#define OGS_DIAM_GX_AVP_CODE_FRAMED_ROUTE                   (22)
+#define OGS_DIAM_GX_AVP_CODE_FRAMED_IPV6_ROUTE              (99)
 
 extern struct dict_object *ogs_diam_gx_application;
 
@@ -60,6 +62,8 @@ extern struct dict_object *ogs_diam_gx_feature_list_id;
 extern struct dict_object *ogs_diam_gx_feature_list;
 extern struct dict_object *ogs_diam_gx_framed_ip_address;
 extern struct dict_object *ogs_diam_gx_framed_ipv6_prefix;
+extern struct dict_object *ogs_diam_gx_framed_route;
+extern struct dict_object *ogs_diam_gx_framed_ipv6_route;
 #define OGS_DIAM_GX_IP_CAN_TYPE_3GPP_GPRS                   0
 #define OGS_DIAM_GX_IP_CAN_TYPE_DOCSIS                      1
 #define OGS_DIAM_GX_IP_CAN_TYPE_xDSL                        2
