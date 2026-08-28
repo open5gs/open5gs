@@ -630,6 +630,8 @@ uint8_t upf_sess_set_ue_ipv4_framed_routes(upf_sess_t *sess,
             continue;
         }
         add_framed_route_to_trie(&sess->ipv4_framed_routes[j], sess);
+        ogs_debug("UPF registered IPv4 framed route[%s] for SEID[0x%lx]",
+                framed_routes[i], (long)sess->upf_n4_seid);
         j++;
     }
     if (j == 0 && sess->ipv4_framed_routes) {
@@ -673,6 +675,8 @@ uint8_t upf_sess_set_ue_ipv6_framed_routes(upf_sess_t *sess,
             continue;
         }
         add_framed_route_to_trie(&sess->ipv6_framed_routes[j], sess);
+        ogs_debug("UPF registered IPv6 framed route[%s] for SEID[0x%lx]",
+                framed_routes[i], (long)sess->upf_n4_seid);
         j++;
     }
     if (j == 0 && sess->ipv6_framed_routes) {

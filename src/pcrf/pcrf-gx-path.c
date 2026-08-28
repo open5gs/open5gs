@@ -638,6 +638,58 @@ static int pcrf_gx_ccr_cb(struct msg **msg, struct avp *avp,
     if (cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST ||
         cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_UPDATE_REQUEST) {
 
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            const char *route;
+
+            if (!gx_message.session_data.session.ipv4_framed_routes ||
+                !gx_message.session_data.session.ipv4_framed_routes[i])
+                break;
+            route = gx_message.session_data.session.ipv4_framed_routes[i];
+
+            ret = fd_msg_avp_new(ogs_diam_gx_framed_route, 0, &avp);
+            if (ret != 0) {
+                ogs_error("Failed to create Framed-Route AVP");
+                error_occurred = 1;
+                goto out;
+            }
+            val.os.data = (uint8_t *)route;
+            val.os.len = strlen(route);
+            ret = fd_msg_avp_setvalue(avp, &val);
+            if (ret != 0 ||
+                fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) != 0) {
+                ogs_error("Failed to add Framed-Route AVP");
+                error_occurred = 1;
+                goto out;
+            }
+            ogs_debug("Gx CCA add Framed-Route: %s", route);
+        }
+
+        for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
+            const char *route;
+
+            if (!gx_message.session_data.session.ipv6_framed_routes ||
+                !gx_message.session_data.session.ipv6_framed_routes[i])
+                break;
+            route = gx_message.session_data.session.ipv6_framed_routes[i];
+
+            ret = fd_msg_avp_new(ogs_diam_gx_framed_ipv6_route, 0, &avp);
+            if (ret != 0) {
+                ogs_error("Failed to create Framed-IPv6-Route AVP");
+                error_occurred = 1;
+                goto out;
+            }
+            val.os.data = (uint8_t *)route;
+            val.os.len = strlen(route);
+            ret = fd_msg_avp_setvalue(avp, &val);
+            if (ret != 0 ||
+                fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) != 0) {
+                ogs_error("Failed to add Framed-IPv6-Route AVP");
+                error_occurred = 1;
+                goto out;
+            }
+            ogs_debug("Gx CCA add Framed-IPv6-Route: %s", route);
+        }
+
         for (i = 0; i < gx_message.session_data.num_of_pcc_rule; i++) {
             ogs_pcc_rule_t *pcc_rule = &gx_message.session_data.pcc_rule[i];
             if (pcc_rule->num_of_flow) {

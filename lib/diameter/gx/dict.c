@@ -270,6 +270,8 @@ int ogs_dict_gx_entry(char *conffile)
       {  { .avp_vendor = 10415, .avp_name = "Usage-Monitoring-Information" }, RULE_OPTIONAL, -1, -1 },
       {  { .avp_vendor = 10415, .avp_name = "CSG-Information-Reporting" }, RULE_OPTIONAL, -1, -1 },
       {  { .avp_vendor = 10415, .avp_name = "User-CSG-Information" }, RULE_OPTIONAL, -1, 1 },
+      {  {                      .avp_name = "Framed-Route" }, RULE_OPTIONAL, -1, -1 },
+      {  {                      .avp_name = "Framed-IPv6-Route" }, RULE_OPTIONAL, -1, -1 },
       {  {                      .avp_name = "Error-Message" }, RULE_OPTIONAL, -1, 1 },
       {  {                      .avp_name = "Error-Reporting-Host" }, RULE_OPTIONAL, -1, 1 }
     };

@@ -916,6 +916,26 @@ typedef struct ogs_session_data_s {
                 sizeof((__dST)->session.ambr)); \
         memcpy(&(__dST)->session.qos, &(__sRC)->session.qos, \
                 sizeof((__dST)->session.qos)); \
+        if ((__sRC)->session.ipv4_framed_routes) { \
+            (__dST)->session.ipv4_framed_routes = ogs_calloc( \
+                    OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI, \
+                    sizeof((__dST)->session.ipv4_framed_routes[0])); \
+            ogs_assert((__dST)->session.ipv4_framed_routes); \
+            for (j = 0; j < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI && \
+                    (__sRC)->session.ipv4_framed_routes[j]; j++) \
+                (__dST)->session.ipv4_framed_routes[j] = ogs_strdup( \
+                        (__sRC)->session.ipv4_framed_routes[j]); \
+        } \
+        if ((__sRC)->session.ipv6_framed_routes) { \
+            (__dST)->session.ipv6_framed_routes = ogs_calloc( \
+                    OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI, \
+                    sizeof((__dST)->session.ipv6_framed_routes[0])); \
+            ogs_assert((__dST)->session.ipv6_framed_routes); \
+            for (j = 0; j < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI && \
+                    (__sRC)->session.ipv6_framed_routes[j]; j++) \
+                (__dST)->session.ipv6_framed_routes[j] = ogs_strdup( \
+                        (__sRC)->session.ipv6_framed_routes[j]); \
+        } \
         (__dST)->num_of_pcc_rule = (__sRC)->num_of_pcc_rule; \
         for (j = 0; j < (__dST)->num_of_pcc_rule; j++) { \
             rv = ogs_check_qos_conf(&(__sRC)->pcc_rule[j].qos); \
@@ -930,6 +950,18 @@ typedef struct ogs_session_data_s {
         ogs_assert((__sESSdATA) != NULL); \
         if ((__sESSdATA)->session.name) \
             ogs_free((__sESSdATA)->session.name); \
+        if ((__sESSdATA)->session.ipv4_framed_routes) { \
+            for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI && \
+                    (__sESSdATA)->session.ipv4_framed_routes[i]; i++) \
+                ogs_free((__sESSdATA)->session.ipv4_framed_routes[i]); \
+            ogs_free((__sESSdATA)->session.ipv4_framed_routes); \
+        } \
+        if ((__sESSdATA)->session.ipv6_framed_routes) { \
+            for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI && \
+                    (__sESSdATA)->session.ipv6_framed_routes[i]; i++) \
+                ogs_free((__sESSdATA)->session.ipv6_framed_routes[i]); \
+            ogs_free((__sESSdATA)->session.ipv6_framed_routes); \
+        } \
         for (i = 0; i < (__sESSdATA)->num_of_pcc_rule; i++) \
             OGS_PCC_RULE_FREE(&(__sESSdATA)->pcc_rule[i]); \
         memset((__sESSdATA), 0, sizeof(ogs_session_data_t)); \
