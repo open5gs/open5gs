@@ -65,6 +65,9 @@ If you have tested radio hardware from a vendor not listed with Open5GS, please 
  * Nokia FWHG Flexi Zone Indoor Pico BTS, 2x250 mW Band 7
  * Nokia FW2HHD Flexi Zone Multiband Indoor Pico BTS, Band 38/41(S/W TLS18SP_ENB)
  * Nokia Airscale - ASIA + ABIA + AHIB Band 66 (SW: SBTS325R2)
+ * Nokia FW2HHWD Flexi Zone Indoor Pico BTS, Band 41 (S/W TL24)
+ * Nokia FW2IRA Flexi Zone Indoor Pico BTS, Band 66 + LAA (S/W FL23)
+ * Nokia FW2QQG Flexi Zone Indoor Pico BTS, 2x Band 48 (S/W TL24)
  * Mikrotik Intercell B1+B3 IC322GC-b1D+b3D
  * Ruckus Q710 and Q910
  * Sercomm SCE4255W "Englewood" (band 48/CBRS, SW version DG3934v3@2308041842)
