@@ -241,6 +241,32 @@ int amf_nsmf_pdusession_handle_create_sm_context(
     return OGS_OK;
 }
 
+/*
+ * [Issue #4741]
+ *
+ * Does a successful Update SM Context of this kind decide where the user
+ * plane is? Only the procedures that carry it do: an activation
+ * (amf_sbi_send_activating_session() and the states that report its N2
+ * outcome), a deactivation, and a handover actually completing. MODIFIED
+ * and the N1-only exchanges say nothing about the DL endpoint.
+ */
+static bool update_sm_context_supersedes_stale_user_plane(int state)
+{
+    switch (state) {
+    case AMF_UPDATE_SM_CONTEXT_ACTIVATED:
+    case AMF_UPDATE_SM_CONTEXT_SETUP_FAIL:
+    case AMF_UPDATE_SM_CONTEXT_DEACTIVATED:
+    case AMF_UPDATE_SM_CONTEXT_REGISTRATION_REQUEST:
+    case AMF_UPDATE_SM_CONTEXT_SERVICE_REQUEST:
+    case AMF_UPDATE_SM_CONTEXT_PATH_SWITCH_REQUEST:
+    case AMF_UPDATE_SM_CONTEXT_HANDOVER_NOTIFY:
+    case AMF_UPDATE_SM_CONTEXT_STALE_USER_PLANE:
+        return true;
+    default:
+        return false;
+    }
+}
+
 int amf_nsmf_pdusession_handle_update_sm_context(
         amf_ue_t *amf_ue, ran_ue_t *ran_ue, amf_sess_t *sess,
         int state, ogs_pool_id_t target_ue_id, ogs_sbi_message_t *recvmsg)
@@ -256,6 +282,26 @@ int amf_nsmf_pdusession_handle_update_sm_context(
 
     if (!amf_ue) {
         ogs_error("UE(amf_ue) Context has already been removed");
+        return OGS_ERROR;
+    }
+
+    if (state == AMF_UPDATE_SM_CONTEXT_STALE_USER_PLANE) {
+        /*
+         * Cleanup for an NG context that is already gone. No NAS procedure
+         * is waiting on it, and the generic handling below would answer an
+         * unexpected or malformed response with an Error Indication
+         * towards ran_ue, which here is the NG context the UE is using
+         * now, so it must not run.
+         */
+        if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT ||
+            recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
+            ogs_info("[%s:%d] Stale user plane deactivated",
+                    amf_ue->supi, sess->psi);
+            return OGS_OK;
+        }
+
+        ogs_error("[%s:%d] Stale user plane deactivation failed [%d]",
+                amf_ue->supi, sess->psi, recvmsg->res_status);
         return OGS_ERROR;
     }
 
@@ -999,6 +1045,35 @@ int amf_nsmf_pdusession_handle_update_sm_context(
                 amf_nsmf_pdusession_handle_release_sm_context(
                         amf_ue, ran_ue, sess, AMF_RELEASE_SM_CONTEXT_NO_STATE);
             }
+        }
+
+        /*
+         * [Issue #4741]
+         *
+         * The SMF has accepted a procedure that itself moves the user
+         * plane, issued on a DIFFERENT NG context, so its view has moved
+         * past the one a held context left behind and the note is spent.
+         *
+         * Every condition carries weight, including where this sits. It
+         * comes after all of the processing above so that the returns on
+         * missing or malformed N1/N2 content keep the note: an HTTP
+         * success alone is not the procedure succeeding. An answer for
+         * the noted context itself proves nothing - it is the user plane
+         * that is going stale, and a late ACTIVATED for it must not
+         * silently cancel the cleanup. An answer to a procedure that
+         * does not carry the user plane - MODIFIED, an N1-only exchange -
+         * proves nothing either way. And dispatching is deliberately not
+         * enough: OGS_OK from amf_sess_sbi_discover_and_send() means the
+         * transaction started, not that the SMF took it, so a request
+         * that never arrives leaves the note for the removal of the held
+         * context to act on.
+         */
+        if (sess->stale_ran_ue_id != OGS_INVALID_POOL_ID &&
+            (!ran_ue || sess->stale_ran_ue_id != ran_ue->id) &&
+            update_sm_context_supersedes_stale_user_plane(state)) {
+            ogs_debug("[%s:%d] Stale user plane superseded by the SMF "
+                    "[state:%d]", amf_ue->supi, sess->psi, state);
+            sess->stale_ran_ue_id = OGS_INVALID_POOL_ID;
         }
     } else {
         OpenAPI_sm_context_update_error_t *SmContextUpdateError = NULL;

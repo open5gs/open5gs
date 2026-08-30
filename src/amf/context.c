@@ -1752,8 +1752,19 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
 void amf_ue_remove(amf_ue_t *amf_ue)
 {
     int i;
+    ran_ue_t *ran_ue_holding = NULL;
 
     ogs_assert(amf_ue);
+
+    /*
+     * A held NG context keeps a reference back to this context. Sever it
+     * before the pool id can be reused, or the holding timer would
+     * resolve it to an unrelated UE.
+     */
+    ran_ue_holding = ran_ue_find_by_id(amf_ue->ran_ue_holding_id);
+    if (ran_ue_holding &&
+        ran_ue_holding->holding_amf_ue_id == amf_ue->id)
+        ran_ue_holding->holding_amf_ue_id = OGS_INVALID_POOL_ID;
 
     ogs_list_remove(&self.amf_ue_list, amf_ue);
 
@@ -2247,65 +2258,23 @@ static void amf_ue_release_old_context(
 
     ogs_warn("[%s] OLD UE Context Release", display);
     if (CM_CONNECTED(old_amf_ue)) {
-        ran_ue_t *ran_ue = ran_ue_find_by_id(old_amf_ue->ran_ue_id);
-        ran_ue_t *ran_ue_holding = NULL;
-
         /*
          * Keep the old NG context until the new registration is
          * authenticated. CLEAR_NG_CONTEXT(amf_ue) will then send
          * UEContextReleaseCommand to the old NG-RAN context.
          *
-         * Do not use HOLDING_NG_CONTEXT(old_amf_ue) here: that macro
-         * stores the holding id in old_amf_ue, but this function
-         * removes old_amf_ue below after moving the session context
-         * to the new amf_ue.
+         * The hold is recorded in amf_ue rather than old_amf_ue, which is
+         * removed below once its sessions have been moved across.
          */
         ogs_warn("[%s] Holding old NG context", display);
-        if (ran_ue) {
-            int r;
+        HOLDING_NG_CONTEXT_FOR(amf_ue, old_amf_ue);
 
-            ran_ue_holding =
-                ran_ue_find_by_id(amf_ue->ran_ue_holding_id);
-            if (ran_ue_holding) {
-                ogs_error("[%s] Holding NG context already exists",
-                        display);
-                ogs_error("[%s]    RAN_UE_NGAP_ID[%lld] "
-                        "AMF_UE_NGAP_ID[%lld]",
-                        display,
-                        (long long)ran_ue_holding->ran_ue_ngap_id,
-                        (long long)ran_ue_holding->amf_ue_ngap_id);
-                r = ngap_send_ran_ue_context_release_command(
-                        ran_ue_holding,
-                        NGAP_Cause_PR_nas,
-                        NGAP_CauseNas_normal_release,
-                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-                ogs_expect(r == OGS_OK);
-            } else if (amf_ue->ran_ue_holding_id !=
-                    OGS_INVALID_POOL_ID) {
-                ogs_error("[%s] Holding NG context has already "
-                        "been removed", display);
-            }
-            amf_ue->ran_ue_holding_id = OGS_INVALID_POOL_ID;
-
-            ran_ue->amf_ue_id = OGS_INVALID_POOL_ID;
-
-            ogs_warn("[%s]    RAN_UE_NGAP_ID[%lld] "
-                    "AMF_UE_NGAP_ID[%lld]",
-                    old_amf_ue->suci,
-                    (long long)ran_ue->ran_ue_ngap_id,
-                    (long long)ran_ue->amf_ue_ngap_id);
-
-            ran_ue->ue_ctx_rel_action =
-                NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE;
-            ogs_timer_start(ran_ue->t_ng_holding,
-                    amf_timer_cfg(AMF_TIMER_NG_HOLDING)->duration);
-
-            amf_ue->ran_ue_holding_id = old_amf_ue->ran_ue_id;
-            old_amf_ue->ran_ue_id = OGS_INVALID_POOL_ID;
-        } else {
-            ogs_error("[%s] RAN-NG Context has already been removed",
-                        old_amf_ue->suci);
-        }
+        /*
+         * Unlike the ordinary callers, nothing associates a new NG context
+         * with old_amf_ue after this, so clear it here rather than in the
+         * macro. CM_IDLE(old_amf_ue) has to see the context as released.
+         */
+        old_amf_ue->ran_ue_id = OGS_INVALID_POOL_ID;
     }
 
     /*
@@ -2437,6 +2406,33 @@ void amf_ue_associate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
 
     amf_ue->ran_ue_id = ran_ue->id;
     ran_ue->amf_ue_id = amf_ue->id;
+}
+
+void amf_ue_note_stale_user_plane(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(amf_ue);
+    ogs_assert(ran_ue);
+
+    /*
+     * Only the sessions whose AN resources were established on this NG
+     * context can be left pointing at a GTP-U endpoint that is about to
+     * disappear. psimask.activated is exactly that set.
+     */
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if ((ran_ue->psimask.activated & (1 << sess->psi)) == 0)
+            continue;
+        if (!SESSION_CONTEXT_IN_SMF(sess))
+            continue;
+
+        sess->stale_ran_ue_id = ran_ue->id;
+
+        ogs_debug("[%s:%d] Stale user plane noted "
+                "[RAN_UE_NGAP_ID:%lld]",
+                amf_ue->supi ? amf_ue->supi : "Unknown", sess->psi,
+                (long long)ran_ue->ran_ue_ngap_id);
+    }
 }
 
 void amf_ue_deassociate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue)

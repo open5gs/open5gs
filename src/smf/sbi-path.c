@@ -258,6 +258,30 @@ ogs_sbi_xact_t *smf_namf_comm_create_n1_n2_message_xact(
     ogs_sbi_discovery_option_set_target_nf_instance_id(
             discovery_option, sess->amf_nf_id);
 
+    /*
+     * [Issue #4741]
+     *
+     * In the H-SMF the AMF this is addressed to lives in the serving
+     * PLMN, so the discovery has to say which PLMN to look in, the same
+     * way the AMF names the home PLMN when it discovers the AUSF or the
+     * UDM of a roaming UE. Without it the discovery stays in the home
+     * PLMN, finds no AMF and the transfer fails with 504, which is why a
+     * network triggered Service Request never left the H-SMF.
+     */
+    if (HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
+        int i;
+
+        ogs_sbi_discovery_option_add_target_plmn_list(
+                discovery_option, &sess->serving_plmn_id);
+
+        ogs_assert(ogs_local_conf()->num_of_serving_plmn_id);
+        for (i = 0; i < ogs_local_conf()->num_of_serving_plmn_id; i++) {
+            ogs_sbi_discovery_option_add_requester_plmn_list(
+                    discovery_option,
+                    &ogs_local_conf()->serving_plmn_id[i]);
+        }
+    }
+
     xact = ogs_sbi_xact_add(
             sess->id, &sess->sbi, OpenAPI_service_name_namf_comm,
             discovery_option,
