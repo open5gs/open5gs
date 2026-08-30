@@ -648,6 +648,152 @@ void amf_sbi_send_deactivate_all_sessions(
     }
 }
 
+/*
+ * Is another user-plane procedure for this session already running on some
+ * other NG context?
+ *
+ * amf_sess_sbi_discover_and_send() records the RAN-UE each transaction was
+ * issued on, which is what tells a procedure belonging to the context being
+ * removed from one belonging to the connection the UE uses now.
+ *
+ * This deliberately counts every kind of Update SM Context, unlike
+ * update_sm_context_supersedes_stale_user_plane(), because the two answer
+ * different questions. A completed procedure must have moved the user
+ * plane for its answer to spend the note, but a procedure still in flight
+ * only has to be ABLE to - racing a handover preparation or an activation
+ * with DEACTIVATED could tear down the user plane it is setting up, and
+ * when in doubt the sweep steps aside. A release never reaches this test:
+ * amf_sbi_send_release_session() consumes the note as it dispatches.
+ */
+static bool newer_procedure_in_progress(amf_sess_t *sess, ran_ue_t *ran_ue)
+{
+    ogs_sbi_xact_t *xact = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(ran_ue);
+
+    ogs_list_for_each(&sess->sbi.xact_list, xact) {
+        amf_sbi_xact_ctx_t *ctx = xact->user_data;
+
+        if (xact->service_name != OpenAPI_service_name_nsmf_pdusession)
+            continue;
+        if (!ctx)
+            continue;
+        if (ctx->ran_ue_id == ran_ue->id)
+            continue;
+
+        return true;
+    }
+
+    return false;
+}
+
+/*
+ * Deactivate the user plane a held NG context left behind.
+ *
+ * Call this immediately before removing a held NG context. It is a no-op
+ * for a context that was never held.
+ *
+ * The deactivation is sent on behalf of the NG context the UE is using
+ * now, because amf_sess_sbi_discover_and_send() records the RAN-UE in
+ * sess->ran_ue_id and the Namf callbacks reach the UE through it.
+ */
+void amf_sbi_send_deactivate_stale_user_plane(ran_ue_t *ran_ue)
+{
+    amf_ue_t *amf_ue = NULL;
+    ran_ue_t *current_ue = NULL;
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(ran_ue);
+
+    if (ran_ue->holding_amf_ue_id == OGS_INVALID_POOL_ID)
+        return;
+
+    amf_ue = amf_ue_find_by_id(ran_ue->holding_amf_ue_id);
+    ran_ue->holding_amf_ue_id = OGS_INVALID_POOL_ID;
+    if (!amf_ue) {
+        ogs_warn("UE(amf_ue) Context has already been removed "
+                "[RAN_UE_NGAP_ID:%lld]",
+                (long long)ran_ue->ran_ue_ngap_id);
+        return;
+    }
+
+    /*
+     * Normally the UE has the newer NG context that caused this one to be
+     * held. If even that is gone, current_ue is NULL, sess->ran_ue_id ends
+     * up invalid, and the cleanup stays best-effort: the SBI path is not
+     * guaranteed to carry a transaction without a RAN-UE to completion.
+     */
+    current_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+    if (!current_ue)
+        ogs_warn("[%s] No serving NG context for the stale user plane",
+                amf_ue->supi ? amf_ue->supi : "Unknown");
+
+    /*
+     * Drop the holder's reference before the context is freed. Pool ids are
+     * reused, so a reference left behind can later resolve to an unrelated
+     * NG context and have a UEContextReleaseCommand sent to it.
+     */
+    if (amf_ue->ran_ue_holding_id == ran_ue->id)
+        amf_ue->ran_ue_holding_id = OGS_INVALID_POOL_ID;
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (sess->stale_ran_ue_id != ran_ue->id)
+            continue;
+
+        /*
+         * The context the note is about is going away, and with it the
+         * last chance to act on the note, so it is consumed no matter
+         * which way the decision below goes. What must not stay behind
+         * is the pool id of a freed context, which a later holding
+         * could be assigned.
+         */
+        sess->stale_ran_ue_id = OGS_INVALID_POOL_ID;
+
+        if (!SESSION_CONTEXT_IN_SMF(sess)) {
+            ogs_warn("[%s:%d] SM context has already been released "
+                    "[RAN_UE_NGAP_ID:%lld]",
+                    amf_ue->supi ? amf_ue->supi : "Unknown", sess->psi,
+                    (long long)ran_ue->ran_ue_ngap_id);
+            continue;
+        }
+
+        /*
+         * An Update SM Context issued on a DIFFERENT NG context is a newer
+         * procedure, and it owns where this user plane ends up. Sending
+         * DEACTIVATED now would race it, and if that procedure is the UE
+         * re-activating the session, the loser would be the user plane
+         * that was just set up.
+         *
+         * A transaction issued on the context being removed is the
+         * opposite: it belongs to the user plane that is going stale, and
+         * must not stop the cleanup. An ACTIVATED still in flight for it
+         * would otherwise leave the SMF pointing at a GTP-U endpoint that
+         * is gone, which is the very thing being fixed here.
+         *
+         * Stepping aside moves the responsibility to that procedure.
+         * Should it then fail, the cleanup is not retried: that is the
+         * limit the commit message states.
+         */
+        if (newer_procedure_in_progress(sess, ran_ue)) {
+            ogs_debug("[%s:%d] Stale user plane left to the procedure "
+                    "in progress [RAN_UE_NGAP_ID:%lld]",
+                    amf_ue->supi ? amf_ue->supi : "Unknown", sess->psi,
+                    (long long)ran_ue->ran_ue_ngap_id);
+            continue;
+        }
+
+        ogs_warn("[%s:%d] Deactivating the stale user plane "
+                "[RAN_UE_NGAP_ID:%lld]",
+                amf_ue->supi ? amf_ue->supi : "Unknown", sess->psi,
+                (long long)ran_ue->ran_ue_ngap_id);
+
+        amf_sbi_send_deactivate_session(
+                current_ue, sess, AMF_UPDATE_SM_CONTEXT_STALE_USER_PLANE,
+                NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
+    }
+}
+
 static void amf_sbi_release_ran_ue_on_gnb_remove(
         amf_ue_t *amf_ue, ran_ue_t *ran_ue)
 {
@@ -703,6 +849,7 @@ void amf_sbi_send_deactivate_all_ue_in_gnb(amf_gnb_t *gnb, int state)
 
             if (state == AMF_REMOVE_S1_CONTEXT_BY_LO_CONNREFUSED ||
                 state == AMF_REMOVE_S1_CONTEXT_BY_RESET_ALL) {
+                amf_sbi_send_deactivate_stale_user_plane(ran_ue);
                 ran_ue_remove(ran_ue);
             } else {
                 /* At this point, it does not support other action */
@@ -729,6 +876,13 @@ void amf_sbi_send_release_session(
 
     /* Prevent to invoke SMF for this session */
     CLEAR_SESSION_CONTEXT(sess);
+
+    /* With no SM Context left there is nothing to reconcile either */
+    if (sess->stale_ran_ue_id != OGS_INVALID_POOL_ID) {
+        ogs_debug("[%d] Stale user plane dropped with the SM context",
+                sess->psi);
+        sess->stale_ran_ue_id = OGS_INVALID_POOL_ID;
+    }
 }
 
 void amf_sbi_send_release_all_sessions(

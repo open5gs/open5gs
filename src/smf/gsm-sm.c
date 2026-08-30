@@ -172,6 +172,35 @@ static bool hsmf_update_has_up_cnx_state(smf_sess_t *sess)
     return sess->nsmf_param.up_cnx_state != OpenAPI_up_cnx_state_NULL;
 }
 
+/*
+ * [Issue #4741]
+ *
+ * Record the user-plane state the V-SMF has delegated, as
+ * smf_nsmf_handle_update_sm_context() records it in the V-SMF.
+ *
+ * The buffering and the downlink data report happen on the home side,
+ * and smf_5gc_n4_handle_session_report_request() decides on this field
+ * whether to start a network triggered Service Request. Without it the
+ * H-SMF still believes the user plane is up and drops the report.
+ *
+ * This is called from the accepted upCnxState branches below rather
+ * than where HsmfUpdateData is parsed, so that a combination rejected
+ * as Bad Request leaves the session untouched.
+ */
+static void hsmf_update_record_up_cnx_state(smf_sess_t *sess)
+{
+    smf_ue_t *smf_ue = NULL;
+
+    ogs_assert(sess);
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
+    ogs_info("[%s:%d] upCnxState[%d->%d] recorded in the H-SMF",
+            smf_ue->supi, sess->psi,
+            sess->up_cnx_state, sess->nsmf_param.up_cnx_state);
+    sess->up_cnx_state = sess->nsmf_param.up_cnx_state;
+}
+
 static bool hsmf_update_has_qos_modification(smf_sess_t *sess)
 {
     ogs_assert(sess);
@@ -1195,6 +1224,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
                                 switch (sess->nsmf_param.up_cnx_state) {
                                 case OpenAPI_up_cnx_state_DEACTIVATED:
+                                    hsmf_update_record_up_cnx_state(sess);
     /*
      * UE-requested PDU Session Modification(DEACTIVATED)
      *
@@ -1222,6 +1252,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     break;
 
                                 case OpenAPI_up_cnx_state_ACTIVATING:
+                                    hsmf_update_record_up_cnx_state(sess);
     /*
      * UE-requested PDU Session Modification(ACTIVATING)
      *
@@ -1242,6 +1273,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     break;
 
                                 case OpenAPI_up_cnx_state_ACTIVATED:
+                                    hsmf_update_record_up_cnx_state(sess);
 
     /*
      * UE-requested PDU Session Modification(ACTIVATED)

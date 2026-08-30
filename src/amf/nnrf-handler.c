@@ -267,6 +267,7 @@ void amf_nnrf_handle_failed_amf_discovery(
     ogs_sbi_object_t *sbi_object = NULL;
     ogs_pool_id_t sbi_object_id = OGS_INVALID_POOL_ID;
     ogs_pool_id_t ran_ue_id = OGS_INVALID_POOL_ID;
+    int state = 0;
 
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
@@ -278,6 +279,7 @@ void amf_nnrf_handle_failed_amf_discovery(
     ogs_assert(service_name);
     requester_nf_type = sbi_xact->requester_nf_type;
     ogs_assert(requester_nf_type);
+    state = sbi_xact->state;
 
     sbi_object_id = sbi_xact->sbi_object_id;
     ogs_assert(sbi_object_id >= OGS_MIN_POOL_ID &&
@@ -348,6 +350,21 @@ void amf_nnrf_handle_failed_amf_discovery(
 
         ogs_error("[%s:%s:%d:%d] Cannot receive SBI message",
                 amf_ue->supi, amf_ue->suci, sess->psi, sess->pti);
+
+        if (state == AMF_UPDATE_SM_CONTEXT_STALE_USER_PLANE) {
+            /*
+             * [Issue #4741]
+             *
+             * The UE is not waiting on this one. ran_ue_id names the NG
+             * context it is using now, and telling that connection about a
+             * failed cleanup of an NG context that is already gone would
+             * disturb a session that is working. The cleanup is
+             * best-effort and is not retried.
+             */
+            ogs_error("[%s:%d] Stale user plane deactivation timed out",
+                    amf_ue->supi, sess->psi);
+            break;
+        }
 
         amf_nnrf_send_session_failure_to_ran(amf_ue, sess, ran_ue_id);
         break;
