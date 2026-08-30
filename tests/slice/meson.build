@@ -21,6 +21,7 @@ test5gc_slice_sources = files('''
     different-dnn-test.c
     paging-test.c
     identity-test.c
+    holding-test.c
 '''.split())
 
 test5gc_slice_exe = executable('slice',

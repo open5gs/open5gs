@@ -2080,6 +2080,7 @@ void ngap_handle_ue_context_release_action(ran_ue_t *ran_ue)
     switch (ran_ue->ue_ctx_rel_action) {
     case NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE:
         ogs_debug("    Action: NG context remove");
+        amf_sbi_send_deactivate_stale_user_plane(ran_ue);
         ran_ue_remove(ran_ue);
         break;
     case NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK:
@@ -5401,7 +5402,10 @@ void ngap_handle_ng_reset(
                             (long long)ran_ue->ran_ue_ngap_id);
             }
 
-            if (old_xact_count == new_xact_count) ran_ue_remove(ran_ue);
+            if (old_xact_count == new_xact_count) {
+                amf_sbi_send_deactivate_stale_user_plane(ran_ue);
+                ran_ue_remove(ran_ue);
+            }
         }
 
         ogs_list_for_each(&gnb->ran_ue_list, iter) {
@@ -5573,6 +5577,8 @@ void ngap_handle_error_indication(amf_gnb_t *gnb, ogs_ngap_message_t *message)
                             amf_self()->time.t3512.value + 240));
             }
         } else {
+            /* A held NG context: no AMF-UE is associated with it */
+            amf_sbi_send_deactivate_stale_user_plane(ran_ue);
             ran_ue_remove(ran_ue);
         }
     }

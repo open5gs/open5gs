@@ -4439,64 +4439,25 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,
                     old_mme_ue->ebi_bitmap,
                     ECM_CONNECTED(old_mme_ue) ? 1 : 0);
             if (ECM_CONNECTED(old_mme_ue)) {
-                enb_ue_t *enb_ue = enb_ue_find_by_id(old_mme_ue->enb_ue_id);
-                enb_ue_t *enb_ue_holding = NULL;
-
                 /*
                  * Keep the old S1 context until the new attach/TAU procedure
                  * is authenticated. CLEAR_S1_CONTEXT(mme_ue) will then send
                  * UEContextReleaseCommand to the old E-UTRAN context.
                  *
-                 * Do not use HOLDING_S1_CONTEXT(old_mme_ue) here: that macro
-                 * stores the holding id in old_mme_ue, but this function
-                 * removes old_mme_ue below after moving the session context
-                 * to the new mme_ue.
+                 * The hold is recorded in mme_ue rather than old_mme_ue,
+                 * which is removed below once its sessions have been moved
+                 * across.
                  */
                 ogs_warn("[%s] Holding old S1 context", mme_ue->imsi_bcd);
-                if (enb_ue) {
-                    int r;
+                HOLDING_S1_CONTEXT_FOR(mme_ue, old_mme_ue);
 
-                    enb_ue_holding =
-                        enb_ue_find_by_id(mme_ue->enb_ue_holding_id);
-                    if (enb_ue_holding) {
-                        ogs_error("[%s] Holding S1 context already exists",
-                                mme_ue->imsi_bcd);
-                        ogs_error("[%s]    ENB_UE_S1AP_ID[%d] "
-                                "MME_UE_S1AP_ID[%d]",
-                                mme_ue->imsi_bcd,
-                                enb_ue_holding->enb_ue_s1ap_id,
-                                enb_ue_holding->mme_ue_s1ap_id);
-                        r = s1ap_send_ue_context_release_command(
-                                enb_ue_holding,
-                                S1AP_Cause_PR_nas,
-                                S1AP_CauseNas_normal_release,
-                                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
-                        ogs_expect(r == OGS_OK);
-                    } else if (mme_ue->enb_ue_holding_id !=
-                            OGS_INVALID_POOL_ID) {
-                        ogs_error("[%s] Holding S1 context has already "
-                                "been removed", mme_ue->imsi_bcd);
-                    }
-                    mme_ue->enb_ue_holding_id = OGS_INVALID_POOL_ID;
-
-                    enb_ue->mme_ue_id = OGS_INVALID_POOL_ID;
-
-                    ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                            old_mme_ue->imsi_bcd,
-                            enb_ue->enb_ue_s1ap_id,
-                            enb_ue->mme_ue_s1ap_id);
-
-                    enb_ue->ue_ctx_rel_action =
-                        S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE;
-                    ogs_timer_start(enb_ue->t_s1_holding,
-                            mme_timer_cfg(MME_TIMER_S1_HOLDING)->duration);
-
-                    mme_ue->enb_ue_holding_id = old_mme_ue->enb_ue_id;
-                    old_mme_ue->enb_ue_id = OGS_INVALID_POOL_ID;
-                } else {
-                    ogs_error("[%s] S1 Context has already been removed",
-                                old_mme_ue->imsi_bcd);
-                }
+                /*
+                 * Unlike the ordinary callers, nothing associates a new S1
+                 * context with old_mme_ue after this, so clear it here
+                 * rather than in the macro. ECM_IDLE(old_mme_ue) has to
+                 * see the context as released.
+                 */
+                old_mme_ue->enb_ue_id = OGS_INVALID_POOL_ID;
             }
 
     /*
