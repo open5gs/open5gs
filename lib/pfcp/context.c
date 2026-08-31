@@ -1190,6 +1190,25 @@ ogs_gtpu_resource_t *ogs_pfcp_find_gtpu_resource(ogs_list_t *list,
     return NULL;
 }
 
+/*
+ * GTP-U peer nodes in gtpu_peer_list are created on demand by
+ * ogs_pfcp_setup_far_gtpu_node()/ogs_pfcp_setup_pdr_gtpu_node() and
+ * shared by all FARs/PDRs carrying the same IP. gnode->gtpu_ref_count
+ * counts those FARs/PDRs; when the last one is removed, the peer is
+ * removed from gtpu_peer_list and returned to the pool. Without this,
+ * a peer whose eNB/gNB was renumbered would occupy a pool entry until
+ * the process exits and repeated IP changes would eventually exhaust
+ * `global.max.gtp_peer`.
+ */
+static void gtpu_peer_release(ogs_gtp_node_t *gnode)
+{
+    ogs_assert(gnode);
+    ogs_assert(gnode->gtpu_ref_count > 0);
+
+    if (--gnode->gtpu_ref_count == 0)
+        ogs_gtp_node_remove(&ogs_gtp_self()->gtpu_peer_list, gnode);
+}
+
 int ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far)
 {
     int rv;
@@ -1234,7 +1253,13 @@ int ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far)
         }
     }
 
-    OGS_SETUP_GTP_NODE(far, gnode);
+    /* Update FAR can move to another peer; keep the count per pointer */
+    if (far->gnode != gnode) {
+        gnode->gtpu_ref_count++;
+        if (far->gnode)
+            gtpu_peer_release(far->gnode);
+        OGS_SETUP_GTP_NODE(far, gnode);
+    }
 
     return OGS_OK;
 }
@@ -1275,7 +1300,13 @@ int ogs_pfcp_setup_pdr_gtpu_node(ogs_pfcp_pdr_t *pdr)
         }
     }
 
-    OGS_SETUP_GTP_NODE(pdr, gnode);
+    /* Update PDR can move to another peer; keep the count per pointer */
+    if (pdr->gnode != gnode) {
+        gnode->gtpu_ref_count++;
+        if (pdr->gnode)
+            gtpu_peer_release(pdr->gnode);
+        OGS_SETUP_GTP_NODE(pdr, gnode);
+    }
 
     return OGS_OK;
 }
@@ -1647,6 +1678,11 @@ void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
                     &pdr->hash.teid.key, pdr->hash.teid.len, NULL);
     }
 
+    if (pdr->gnode) {
+        gtpu_peer_release(pdr->gnode);
+        pdr->gnode = NULL;
+    }
+
     if (pdr->dnn)
         ogs_free(pdr->dnn);
 
@@ -1944,6 +1980,11 @@ void ogs_pfcp_far_remove(ogs_pfcp_far_t *far)
     if (far->hash.f_teid.len)
         ogs_hash_set(self.far_f_teid_hash,
                 &far->hash.f_teid.key, far->hash.f_teid.len, NULL);
+
+    if (far->gnode) {
+        gtpu_peer_release(far->gnode);
+        far->gnode = NULL;
+    }
 
     if (far->dnn)
         ogs_free(far->dnn);
