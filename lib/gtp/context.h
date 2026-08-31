@@ -74,6 +74,9 @@ typedef struct ogs_gtp_node_s {
 
     ogs_ip_t        ip;             /* F-TEID IP Address Duplicate Check */
 
+    uint32_t        gtpu_ref_count; /* Number of PFCP FARs/PDRs referencing
+                                     * this GTP-U peer (used by lib/pfcp) */
+
     ogs_list_t      local_list;
     ogs_list_t      remote_list;
 } ogs_gtp_node_t;
