@@ -224,6 +224,22 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
              * locally stored in xact when sending the original request: */
             sess = smf_sess_find_by_seid(xact->local_seid);
         }
+        /*
+         * A session belongs to the PFCP node it was established with.
+         * A request for that SEID from any other node is treated
+         * as if the session did not exist, so the handlers reply
+         * with Session context not found (Cause 65).
+         */
+        if (sess && sess->pfcp_node != node) {
+            ogs_error("PFCP-Node mismatch: SMF-SEID[0x%lx] type [%d] from %s",
+                    (long)message->h.seid, message->h.type,
+                    ogs_sockaddr_to_string_static(node->addr_list));
+            if (sess->pfcp_node)
+                ogs_error("    owner %s",
+                        ogs_sockaddr_to_string_static(
+                            sess->pfcp_node->addr_list));
+            sess = NULL;
+        }
         if (sess)
             e->sess_id = sess->id;
 
