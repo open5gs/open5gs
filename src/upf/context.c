@@ -107,6 +107,25 @@ upf_context_t *upf_self(void)
     return &self;
 }
 
+static void upf_sess_clear_ue_ip(upf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    if (sess->ipv4) {
+        ogs_hash_unset_if_owner(self.ipv4_hash,
+                sess->ipv4->addr, OGS_IPV4_LEN, sess);
+        ogs_pfcp_ue_ip_free(sess->ipv4);
+        sess->ipv4 = NULL;
+    }
+    if (sess->ipv6) {
+        ogs_hash_unset_if_owner(self.ipv6_hash,
+                sess->ipv6->addr,
+                OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, sess);
+        ogs_pfcp_ue_ip_free(sess->ipv6);
+        sess->ipv6 = NULL;
+    }
+}
+
 static int upf_context_prepare(void)
 {
     return OGS_OK;
@@ -232,15 +251,7 @@ int upf_sess_remove(upf_sess_t *sess)
     ogs_hash_set(self.smf_n4_f_seid_hash, &sess->smf_n4_f_seid,
             sizeof(sess->smf_n4_f_seid), NULL);
 
-    if (sess->ipv4) {
-        ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, NULL);
-        ogs_pfcp_ue_ip_free(sess->ipv4);
-    }
-    if (sess->ipv6) {
-        ogs_hash_set(self.ipv6_hash,
-                sess->ipv6->addr, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, NULL);
-        ogs_pfcp_ue_ip_free(sess->ipv6);
-    }
+    upf_sess_clear_ue_ip(sess);
 
     upf_sess_set_ue_ipv4_framed_routes(sess, NULL);
     upf_sess_set_ue_ipv6_framed_routes(sess, NULL);
@@ -393,10 +404,42 @@ upf_sess_t *upf_sess_add_by_message(ogs_pfcp_message_t *message)
     return sess;
 }
 
+/*
+ * Returns the session that already holds ue_ip under a different PFCP node,
+ * or NULL if sess may use it. A session of the same node may take over the
+ * address, e.g. when the SMF reassigns an address left by an orphaned session.
+ */
+static upf_sess_t *upf_sess_ue_ip_conflict(
+        upf_sess_t *sess, int family, ogs_pfcp_ue_ip_t *ue_ip)
+{
+    upf_sess_t *owner = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(sess->pfcp_node);
+    ogs_assert(ue_ip);
+
+    if (family == AF_INET) {
+        owner = ogs_hash_get(
+                self.ipv4_hash, ue_ip->addr, OGS_IPV4_LEN);
+    } else if (family == AF_INET6) {
+        owner = ogs_hash_get(self.ipv6_hash, ue_ip->addr,
+                OGS_IPV6_DEFAULT_PREFIX_LEN >> 3);
+    } else {
+        ogs_assert_if_reached();
+        return NULL;
+    }
+
+    if (!owner || owner->pfcp_node == sess->pfcp_node)
+        return NULL;
+
+    return owner;
+}
+
 uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
         uint8_t session_type, ogs_pfcp_pdr_t *pdr)
 {
     ogs_pfcp_ue_ip_addr_t *ue_ip = NULL;
+    upf_sess_t *owner = NULL;
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
 
@@ -408,16 +451,7 @@ uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
     ue_ip = &pdr->ue_ip_addr;
     ogs_assert(ue_ip);
 
-    if (sess->ipv4) {
-        ogs_hash_set(self.ipv4_hash,
-                sess->ipv4->addr, OGS_IPV4_LEN, NULL);
-        ogs_pfcp_ue_ip_free(sess->ipv4);
-    }
-    if (sess->ipv6) {
-        ogs_hash_set(self.ipv6_hash,
-                sess->ipv6->addr, OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, NULL);
-        ogs_pfcp_ue_ip_free(sess->ipv6);
-    }
+    upf_sess_clear_ue_ip(sess);
 
     /* Set PDN-Type and UE IP Address */
     if (session_type == OGS_PDU_SESSION_TYPE_IPV4) {
@@ -429,7 +463,19 @@ uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
                 ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
                 return cause_value;
             }
-            ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, sess);
+            owner = upf_sess_ue_ip_conflict(sess, AF_INET, sess->ipv4);
+            if (owner) {
+                ogs_error("UE IPv4[%s] is owned by another PFCP node "
+                        "F-SEID[UP:0x%lx CP:0x%lx]",
+                        OGS_INET_NTOP(&sess->ipv4->addr, buf1),
+                        (long)owner->upf_n4_seid,
+                        (long)owner->smf_n4_f_seid.seid);
+                ogs_pfcp_ue_ip_free(sess->ipv4);
+                sess->ipv4 = NULL;
+                return OGS_PFCP_CAUSE_REQUEST_REJECTED;
+            }
+            ogs_hash_set(self.ipv4_hash,
+                    sess->ipv4->addr, OGS_IPV4_LEN, sess);
         } else {
             ogs_warn("Cannot support PDN-Type[%d], [IPv4:%d IPv6:%d DNN:%s]",
                 session_type, ue_ip->ipv4, ue_ip->ipv6,
@@ -443,6 +489,17 @@ uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
                 ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
                 ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
                 return cause_value;
+            }
+            owner = upf_sess_ue_ip_conflict(sess, AF_INET6, sess->ipv6);
+            if (owner) {
+                ogs_error("UE IPv6[%s] is owned by another PFCP node "
+                        "F-SEID[UP:0x%lx CP:0x%lx]",
+                        OGS_INET6_NTOP(&sess->ipv6->addr, buf2),
+                        (long)owner->upf_n4_seid,
+                        (long)owner->smf_n4_f_seid.seid);
+                ogs_pfcp_ue_ip_free(sess->ipv6);
+                sess->ipv6 = NULL;
+                return OGS_PFCP_CAUSE_REQUEST_REJECTED;
             }
             ogs_hash_set(self.ipv6_hash, sess->ipv6->addr,
                     OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, sess);
@@ -460,7 +517,19 @@ uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
                 ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
                 return cause_value;
             }
-            ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, sess);
+            owner = upf_sess_ue_ip_conflict(sess, AF_INET, sess->ipv4);
+            if (owner) {
+                ogs_error("UE IPv4[%s] is owned by another PFCP node "
+                        "F-SEID[UP:0x%lx CP:0x%lx]",
+                        OGS_INET_NTOP(&sess->ipv4->addr, buf1),
+                        (long)owner->upf_n4_seid,
+                        (long)owner->smf_n4_f_seid.seid);
+                ogs_pfcp_ue_ip_free(sess->ipv4);
+                sess->ipv4 = NULL;
+                return OGS_PFCP_CAUSE_REQUEST_REJECTED;
+            }
+            ogs_hash_set(self.ipv4_hash,
+                    sess->ipv4->addr, OGS_IPV4_LEN, sess);
         } else {
             ogs_warn("Cannot support PDN-Type[%d], [IPv4:%d IPv6:%d DNN:%s]",
                 session_type, ue_ip->ipv4, ue_ip->ipv6,
@@ -473,13 +542,21 @@ uint8_t upf_sess_set_ue_ip(upf_sess_t *sess,
             if (!sess->ipv6) {
                 ogs_error("ogs_pfcp_ue_ip_alloc() failed[%d]", cause_value);
                 ogs_assert(cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED);
-                if (sess->ipv4) {
-                    ogs_hash_set(self.ipv4_hash,
-                            sess->ipv4->addr, OGS_IPV4_LEN, NULL);
-                    ogs_pfcp_ue_ip_free(sess->ipv4);
-                    sess->ipv4 = NULL;
-                }
+                upf_sess_clear_ue_ip(sess);
                 return cause_value;
+            }
+            owner = upf_sess_ue_ip_conflict(sess, AF_INET6, sess->ipv6);
+            if (owner) {
+                ogs_error("UE IPv6[%s] is owned by another PFCP node "
+                        "F-SEID[UP:0x%lx CP:0x%lx]",
+                        OGS_INET6_NTOP(&sess->ipv6->addr, buf2),
+                        (long)owner->upf_n4_seid,
+                        (long)owner->smf_n4_f_seid.seid);
+                ogs_pfcp_ue_ip_free(sess->ipv6);
+                sess->ipv6 = NULL;
+                /* Release the IPv4 address installed above */
+                upf_sess_clear_ue_ip(sess);
+                return OGS_PFCP_CAUSE_REQUEST_REJECTED;
             }
             ogs_hash_set(self.ipv6_hash, sess->ipv6->addr,
                     OGS_IPV6_DEFAULT_PREFIX_LEN >> 3, sess);
