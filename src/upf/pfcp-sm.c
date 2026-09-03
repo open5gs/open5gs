@@ -282,8 +282,26 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
             sess = upf_sess_add_by_message(message);
-            if (sess)
-                OGS_SETUP_PFCP_NODE(sess, node);
+            if (sess) {
+                /*
+                 * A peer can choose the CP F-SEID in an Establishment
+                 * Request.  Do not let another PFCP node reuse an existing
+                 * CP F-SEID and take ownership of its session context.
+                 */
+                if (sess->pfcp_node && sess->pfcp_node != node) {
+                    ogs_error("PFCP-Node mismatch: CP-SEID[0x%lx] "
+                            "type [%d] from %s",
+                            (long)sess->smf_n4_f_seid.seid,
+                            message->h.type,
+                            ogs_sockaddr_to_string_static(node->addr_list));
+                    ogs_error("    owner %s",
+                            ogs_sockaddr_to_string_static(
+                                sess->pfcp_node->addr_list));
+                    sess = NULL;
+                } else {
+                    OGS_SETUP_PFCP_NODE(sess, node);
+                }
+            }
             upf_n4_handle_session_establishment_request(
                 sess, xact, &message->pfcp_session_establishment_request);
             break;
