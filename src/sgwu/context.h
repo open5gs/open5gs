@@ -44,6 +44,29 @@ typedef struct sgwu_context_s {
     ogs_list_t sess_list;
 } sgwu_context_t;
 
+/* Accounting (offline SGW-CDR usage reporting): */
+typedef struct sgwu_sess_urr_acc_s {
+    ogs_pfcp_urr_ur_seqn_t report_seqn; /* Next seqn to use when reporting */
+    uint32_t time_start;                /* ntp32, when accounting started */
+    uint64_t total_octets;
+    uint64_t ul_octets;
+    uint64_t dl_octets;
+    uint64_t total_pkts;
+    uint64_t ul_pkts;
+    uint64_t dl_pkts;
+    ogs_time_t time_of_first_packet;
+    ogs_time_t time_of_last_packet;
+    struct {
+        ogs_time_t timestamp;
+        uint64_t total_octets;
+        uint64_t ul_octets;
+        uint64_t dl_octets;
+        uint64_t total_pkts;
+        uint64_t ul_pkts;
+        uint64_t dl_pkts;
+    } last_report;
+} sgwu_sess_urr_acc_t;
+
 #define SGWU_SESS(pfcp_sess) ogs_container_of(pfcp_sess, sgwu_sess_t, pfcp)
 typedef struct sgwu_sess_s {
     ogs_lnode_t     lnode;
@@ -59,6 +82,8 @@ typedef struct sgwu_sess_s {
     } sgwc_sxa_f_seid;                  /* SGW-C SEID is received from Peer */
 
     ogs_pfcp_node_t *pfcp_node;
+
+    sgwu_sess_urr_acc_t urr_acc[OGS_MAX_NUM_OF_URR];
 } sgwu_sess_t;
 
 void sgwu_context_init(void);
@@ -75,6 +100,13 @@ void sgwu_sess_remove_all(void);
 sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_seid(uint64_t seid);
 sgwu_sess_t *sgwu_sess_find_by_sgwc_sxa_f_seid(ogs_pfcp_f_seid_t *f_seid);
 sgwu_sess_t *sgwu_sess_find_by_sgwu_sxa_seid(uint64_t seid);
+
+void sgwu_sess_urr_acc_add(sgwu_sess_t *sess,
+        ogs_pfcp_urr_t *urr, size_t size, bool is_uplink);
+void sgwu_sess_urr_acc_fill_usage_report(sgwu_sess_t *sess,
+        const ogs_pfcp_urr_t *urr,
+        ogs_pfcp_user_plane_report_t *report, unsigned int idx);
+void sgwu_sess_urr_acc_snapshot(sgwu_sess_t *sess, ogs_pfcp_urr_t *urr);
 sgwu_sess_t *sgwu_sess_find_by_id(ogs_pool_id_t id);
 
 #ifdef __cplusplus
