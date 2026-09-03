@@ -29,8 +29,6 @@
 #include "mme-gtp-path.h"
 #include "mme-dns.h"
 
-#define MAX_CELL_PER_ENB            8
-
 static mme_context_t self;
 static ogs_diam_config_t g_diam_conf;
 
