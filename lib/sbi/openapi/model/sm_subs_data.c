@@ -49,9 +49,16 @@ cJSON *OpenAPI_sm_subs_data_convertToJSON(OpenAPI_sm_subs_data_t *sm_subs_data)
         return NULL;
     }
 
-    item = cJSON_CreateObject();
+    /*
+     * TS 29.503 defines SmSubsData as a oneOf: EITHER a bare array of
+     * SessionManagementSubscriptionData, OR an ExtendedSmSubsData object.
+     * The generator flattens the oneOf into a struct with one member per
+     * branch and wraps both in an object, so emit the array directly.
+     */
+    item = sm_subs_data->session_management_subscription_data_list ?
+        cJSON_CreateArray() : cJSON_CreateObject();
     if (sm_subs_data->session_management_subscription_data_list) {
-    cJSON *session_management_subscription_data_listList = cJSON_AddArrayToObject(item, "SessionManagementSubscriptionDataList");
+    cJSON *session_management_subscription_data_listList = item;
     if (session_management_subscription_data_listList == NULL) {
         ogs_error("OpenAPI_sm_subs_data_convertToJSON() failed [session_management_subscription_data_list]");
         goto end;
@@ -91,7 +98,14 @@ OpenAPI_sm_subs_data_t *OpenAPI_sm_subs_data_parseFromJSON(cJSON *sm_subs_dataJS
     OpenAPI_list_t *session_management_subscription_data_listList = NULL;
     cJSON *extended_sm_subs_data = NULL;
     OpenAPI_extended_sm_subs_data_t *extended_sm_subs_data_local_nonprim = NULL;
-    session_management_subscription_data_list = cJSON_GetObjectItemCaseSensitive(sm_subs_dataJSON, "SessionManagementSubscriptionDataList");
+    /*
+     * An array selects the SessionManagementSubscriptionData branch. The
+     * wrapper object that Open5GS emitted before this was fixed is still
+     * accepted so a patched NF understands an unpatched peer.
+     */
+    session_management_subscription_data_list = cJSON_IsArray(sm_subs_dataJSON) ?
+        sm_subs_dataJSON :
+        cJSON_GetObjectItemCaseSensitive(sm_subs_dataJSON, "SessionManagementSubscriptionDataList");
     if (session_management_subscription_data_list) {
         cJSON *session_management_subscription_data_list_local = NULL;
         if (!cJSON_IsArray(session_management_subscription_data_list)) {
