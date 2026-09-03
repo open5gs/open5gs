@@ -645,6 +645,15 @@ typedef struct smf_sess_s {
         bool data_forwarding_not_possible;
         bool indirect_data_forwarding;
 
+        /*
+         * Delayed PFCP REMOVE of the indirect tunnel after handover
+         * completion. The next handover reuses it as the first step of
+         * replacing the tunnel (ngap_handle_handover_request_ack).
+         * Cleared when that transaction is claimed, answered or timed out,
+         * so it never refers to a transaction that no longer exists.
+         */
+        ogs_pool_id_t indirect_remove_xact_id;
+
         /* NG-U UP Transport Information Saved Temporally */
         uint32_t gnb_n3_teid;
         ogs_ip_t gnb_n3_ip;
