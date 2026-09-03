@@ -1812,15 +1812,11 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     sess, stream, OpenAPI_ho_state_COMPLETED);
                             break;
                         case SMF_UPDATE_STATE_UE_REQ_MOD:
-                            if (sess->amf_to_vsmf_modify_stream_id >=
-                                    OGS_MIN_POOL_ID &&
-                                sess->amf_to_vsmf_modify_stream_id <=
-                                    OGS_MAX_POOL_ID)
-                                ogs_error("UE requested modification stream ID "
-                                        "[%d] has not been used yet",
-                                        sess->amf_to_vsmf_modify_stream_id);
-                            sess->amf_to_vsmf_modify_stream_id =
-                                ogs_sbi_id_from_stream(stream);
+                            /*
+                             * AMF stream was stored when HsmfUpdateData
+                             * was sent. VsmfUpdateData may already have
+                             * consumed it before this response arrives.
+                             */
                             break;
                         default:
                             ogs_fatal("Unknown state [0x%x]", e->h.sbi.state);
@@ -1959,10 +1955,26 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 sess->nsmf_param.request_indication =
                     OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
 
+                /*
+                 * VsmfUpdateData from the H-SMF can overtake the 204
+                 * response to HsmfUpdateData on the way through SCP/SEPP,
+                 * so the AMF stream is stored here rather than when
+                 * the 204 response arrives.
+                 */
+                if (sess->amf_to_vsmf_modify_stream_id >= OGS_MIN_POOL_ID &&
+                    sess->amf_to_vsmf_modify_stream_id <= OGS_MAX_POOL_ID)
+                    ogs_error("UE requested modification stream ID "
+                            "[%d] has not been used yet",
+                            sess->amf_to_vsmf_modify_stream_id);
+                sess->amf_to_vsmf_modify_stream_id =
+                    ogs_sbi_id_from_stream(stream);
+
                 r = smf_sbi_discover_and_send(
                         OpenAPI_service_name_nsmf_pdusession, NULL,
                         smf_nsmf_pdusession_build_hsmf_update_data,
                         sess, stream, SMF_UPDATE_STATE_UE_REQ_MOD, NULL);
+                if (r != OGS_OK)
+                    sess->amf_to_vsmf_modify_stream_id = OGS_INVALID_POOL_ID;
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             } else {
@@ -2576,6 +2588,24 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
          *
          * Related Issue #2396
          */
+
+                        /*
+                         * N1/N2 released updates from the AMF can arrive
+                         * before the N1N2MessageTransfer response,
+                         * so the H-SMF stream is stored here rather than
+                         * when that response arrives.
+                         */
+                        if (stream) {
+                            if (sess->vsmf_to_hsmf_release_stream_id >=
+                                    OGS_MIN_POOL_ID &&
+                                sess->vsmf_to_hsmf_release_stream_id <=
+                                    OGS_MAX_POOL_ID)
+                                ogs_error("N1 N2 released stream ID [%d]"
+                                        "has not been used yet",
+                                        sess->vsmf_to_hsmf_release_stream_id);
+                            sess->vsmf_to_hsmf_release_stream_id =
+                                ogs_sbi_id_from_stream(stream);
+                        }
 
                         smf_namf_comm_send_n1_n2_message_transfer(
                                 sess, stream, &param);
