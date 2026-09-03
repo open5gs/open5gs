@@ -274,6 +274,10 @@ void smf_5gc_n4_handle_session_modification_response(
     ogs_assert(flags);
     trigger = xact->delete_trigger;
 
+    /* The delayed indirect tunnel REMOVE, if this is it, is done */
+    if (sess && sess->handover.indirect_remove_xact_id == xact->id)
+        sess->handover.indirect_remove_xact_id = OGS_INVALID_POOL_ID;
+
     /* 'stream' could be NULL in smf_qos_flow_binding() */
     if (xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
             xact->assoc_stream_id <= OGS_MAX_POOL_ID)
@@ -799,6 +803,13 @@ void smf_5gc_n4_handle_session_modification_response(
                 OpenAPI_n2_sm_info_type_PATH_SWITCH_REQ_ACK, n2smbuf);
         } else if (flags & OGS_PFCP_MODIFY_N2_HANDOVER) {
 
+            /*
+             * The indirect tunnel is kept for handover.duration after
+             * completion so that packets already forwarded to it are
+             * not dropped. If the next handover starts before this
+             * delayed REMOVE is answered, it is reused as the first step
+             * of replacing the tunnel (ngap_handle_handover_request_ack).
+             */
             if (smf_sess_have_indirect_data_forwarding(sess) == true) {
                 ogs_assert(OGS_OK ==
                     smf_5gc_pfcp_send_all_pdr_modification_request(
@@ -853,13 +864,26 @@ void smf_5gc_n4_handle_session_modification_response(
      */
     } else if (flags & OGS_PFCP_MODIFY_REMOVE) {
         if (flags & OGS_PFCP_MODIFY_INDIRECT) {
-
+            /*
+             * Indirect tunnel PDR/FARs are only identified by
+             * ACCESS -> ACCESS, so a session holds one tunnel at a time
+             * and replacing it takes two PFCP round trips:
+             *
+             *   1. REMOVE the old tunnel (the request just answered)
+             *   2. CREATE the new tunnel (sent below)
+             *
+             * OGS_PFCP_MODIFY_CREATE in 'flags' marks that step 2 is still
+             * to do; smf_n4_build_pdr_to_modify_list() emitted only the
+             * Remove IEs for step 1. It is set by the caller sending
+             * REMOVE|CREATE, or added to the delayed REMOVE after handover
+             * completion when the next handover reuses it.
+             *
+             * REMOVE without CREATE is the delayed removal after handover
+             * completion or a handover cancel.
+             */
             smf_sess_delete_indirect_data_forwarding(sess);
 
-            /*
-             * OGS_PFCP_MODIFY_CREATE remains.
-             * So now we do some extra work to create an indirect tunnel.
-             */
+            /* Step 2 of the replacement */
             if (flags & OGS_PFCP_MODIFY_CREATE) {
                 smf_sess_create_indirect_data_forwarding(sess);
 

@@ -1016,27 +1016,61 @@ int ngap_handle_handover_request_ack(
 
     if (sess->handover.indirect_data_forwarding == true) {
         if (smf_sess_have_indirect_data_forwarding(sess) == true) {
+            ogs_pfcp_xact_t *xact = NULL;
+            ogs_pool_id_t xact_id = sess->handover.indirect_remove_xact_id;
+
+            /*
+             * The tunnel of the previous handover is still here because
+             * its REMOVE is delayed by handover.duration after completion.
+             * Indirect tunnel PDR/FARs are only identified by
+             * ACCESS -> ACCESS, so it has to go before the new one is
+             * created: REMOVE now, then CREATE after the PFCP response
+             * (smf_5gc_n4_handle_session_modification_response).
+             */
             ogs_error("We found redundant INDIRECT Tunnel");
             ogs_error("It will be automatically removed");
 
-            ogs_assert(OGS_OK ==
-                smf_5gc_pfcp_send_all_pdr_modification_request(
-                    sess, stream,
-                    OGS_PFCP_MODIFY_INDIRECT|
-                    /*
-                     * Firstly, OGS_PFCP_MODIFY_REMOVE is only appled.
-                     * And then, after receiving PFCP response message,
-                     * we can apply OGS_PFCP_MODIFY_CREATE.
-                     *
-                     * PFCP build is implemented as below.
-                     *
-                     * if OGS_PFCP_MODIFY_REMOVE
-                     * else if OGS_PFCP_MODIFY_CREATE
-                     * else if ..
-                     * ...
-                     */
-                    OGS_PFCP_MODIFY_REMOVE|OGS_PFCP_MODIFY_CREATE,
-                    0, 0));
+            /* Claimed once, whether or not it is still there */
+            sess->handover.indirect_remove_xact_id = OGS_INVALID_POOL_ID;
+            if (xact_id >= OGS_MIN_POOL_ID && xact_id <= OGS_MAX_POOL_ID)
+                xact = ogs_pfcp_xact_find_by_id(xact_id);
+
+            if (xact) {
+                /*
+                 * The delayed REMOVE is still outstanding. Reuse it as
+                 * the first step rather than sending a second REMOVE:
+                 * the response of a second one would arrive after the
+                 * new tunnel was created and delete it from the session,
+                 * and its request could remove a reused PDR ID in the UPF.
+                 * Send it now if it is still waiting for the timer.
+                 */
+                xact->modify_flags |= OGS_PFCP_MODIFY_CREATE;
+                xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
+
+                if (xact->tm_delayed_commit->running) {
+                    ogs_timer_stop(xact->tm_delayed_commit);
+                    ogs_assert(OGS_OK == ogs_pfcp_xact_commit(xact));
+                }
+            } else {
+                ogs_assert(OGS_OK ==
+                    smf_5gc_pfcp_send_all_pdr_modification_request(
+                        sess, stream,
+                        OGS_PFCP_MODIFY_INDIRECT|
+                        /*
+                         * Firstly, OGS_PFCP_MODIFY_REMOVE is only appled.
+                         * And then, after receiving PFCP response message,
+                         * we can apply OGS_PFCP_MODIFY_CREATE.
+                         *
+                         * PFCP build is implemented as below.
+                         *
+                         * if OGS_PFCP_MODIFY_REMOVE
+                         * else if OGS_PFCP_MODIFY_CREATE
+                         * else if ..
+                         * ...
+                         */
+                        OGS_PFCP_MODIFY_REMOVE|OGS_PFCP_MODIFY_CREATE,
+                        0, 0));
+            }
         } else {
 
             smf_sess_create_indirect_data_forwarding(sess);

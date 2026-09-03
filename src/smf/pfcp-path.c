@@ -291,6 +291,10 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
     smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
+    /* The delayed indirect tunnel REMOVE, if this is it, is gone */
+    if (sess->handover.indirect_remove_xact_id == xact->id)
+        sess->handover.indirect_remove_xact_id = OGS_INVALID_POOL_ID;
+
     switch (type) {
     case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
         ogs_warn("No PFCP session establishment response");
@@ -646,6 +650,15 @@ int smf_5gc_pfcp_send_all_pdr_modification_request(
     xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
     xact->delete_trigger = trigger;
+
+    /*
+     * The delayed REMOVE of the indirect tunnel after handover completion.
+     * ngap_handle_handover_request_ack() reuses it if the next handover
+     * starts before it is answered.
+     */
+    if (duration &&
+        (flags & OGS_PFCP_MODIFY_INDIRECT) && (flags & OGS_PFCP_MODIFY_REMOVE))
+        sess->handover.indirect_remove_xact_id = xact->id;
 
     ogs_list_init(&sess->pdr_to_modify_list);
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr)
