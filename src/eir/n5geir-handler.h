@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2026 by Erol Yağız Aydın <ygzaydns@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,33 +17,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OGS_DBI_H
-#define OGS_DBI_H
+#ifndef EIR_N5GEIR_HANDLER_H
+#define EIR_N5GEIR_HANDLER_H
 
-#include "crypt/ogs-crypt.h"
-#include "app/ogs-app.h"
-
-#define OGS_DBI_INSIDE
-
-#include "dbi/ogs-mongoc.h"
-#include "dbi/subscription.h"
-#include "dbi/session.h"
-#include "dbi/ims.h"
-#include "dbi/eir.h"
-
-#undef OGS_DBI_INSIDE
+#include "context.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern int __ogs_dbi_domain;
-
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __ogs_dbi_domain
+bool eir_n5geir_eic_handle_equipment_status(
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_DBI_H */
+#endif /* EIR_N5GEIR_HANDLER_H */

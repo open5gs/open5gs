@@ -156,6 +156,100 @@ ogs_mongoc_t *ogs_mongoc(void)
     return &self;
 }
 
+/*
+ * Guarantees uniqueness of `eir` records at the database level, since the
+ * collection allows both a generic (PEI-only) record and a more specific
+ * (PEI+SUPI) record for the same PEI, and ogs_dbi_eir_check_equipment()
+ * only detects duplicates it happens to encounter during a lookup.
+ */
+static void eir_create_indexes(mongoc_collection_t *collection)
+{
+    bson_t *keys1, *partial1;
+    bson_t *keys2, *partial2;
+    mongoc_index_opt_t opt1, opt2;
+    bson_t reply;
+    bson_error_t error;
+
+    ogs_assert(collection);
+
+    keys1 = BCON_NEW("pei", BCON_INT32(1), "supi", BCON_INT32(1));
+    partial1 = BCON_NEW("supi", "{", "$type", BCON_UTF8("string"), "}");
+    mongoc_index_opt_init(&opt1);
+    opt1.unique = true;
+    opt1.name = "eir_specific_unique";
+    opt1.partial_filter_expression = partial1;
+
+    keys2 = BCON_NEW("pei", BCON_INT32(1));
+    partial2 = BCON_NEW("supi", "{", "$eq", BCON_NULL, "}");
+    mongoc_index_opt_init(&opt2);
+    opt2.unique = true;
+    opt2.name = "eir_generic_unique";
+    opt2.partial_filter_expression = partial2;
+
+    if (!mongoc_collection_create_index_with_opts(
+            collection, keys1, &opt1, NULL, &reply, &error))
+        ogs_error("eir_create_indexes(specific) failed: %s", error.message);
+    bson_destroy(&reply);
+
+    if (!mongoc_collection_create_index_with_opts(
+            collection, keys2, &opt2, NULL, &reply, &error))
+        ogs_error("eir_create_indexes(generic) failed: %s", error.message);
+    bson_destroy(&reply);
+
+    bson_destroy(keys1);
+    bson_destroy(partial1);
+    bson_destroy(keys2);
+    bson_destroy(partial2);
+}
+
+/*
+ * Rejects malformed `eir` documents (missing `pei`/`status`, wrong types,
+ * unrecognized `status` values) at write time, on top of the application
+ * level checks in lib/dbi/eir.c and src/eir/n5geir-handler.c.
+ */
+static void eir_apply_schema_validation(mongoc_database_t *database)
+{
+    static const char *validator_json =
+        "{"
+        "  \"collMod\": \"eir\","
+        "  \"validator\": {"
+        "    \"$jsonSchema\": {"
+        "      \"bsonType\": \"object\","
+        "      \"required\": [\"pei\", \"status\"],"
+        "      \"properties\": {"
+        "        \"pei\": { \"bsonType\": \"string\" },"
+        "        \"supi\": { \"bsonType\": [\"string\", \"null\"] },"
+        "        \"status\": {"
+        "          \"enum\": "
+        "            [\"WHITELISTED\", \"BLACKLISTED\", \"GREYLISTED\"]"
+        "        }"
+        "      }"
+        "    }"
+        "  },"
+        "  \"validationLevel\": \"strict\","
+        "  \"validationAction\": \"error\""
+        "}";
+    bson_t *cmd;
+    bson_t reply;
+    bson_error_t error;
+
+    ogs_assert(database);
+
+    cmd = bson_new_from_json((const uint8_t *)validator_json, -1, &error);
+    if (!cmd) {
+        ogs_error("eir_apply_schema_validation() parse failed: %s",
+                error.message);
+        return;
+    }
+
+    if (!mongoc_database_write_command_with_opts(
+            database, cmd, NULL, &reply, &error))
+        ogs_error("eir_apply_schema_validation() failed: %s", error.message);
+
+    bson_destroy(&reply);
+    bson_destroy(cmd);
+}
+
 int ogs_dbi_init(const char *db_uri)
 {
     int rv;
@@ -169,6 +263,14 @@ int ogs_dbi_init(const char *db_uri)
         self.collection.subscriber = mongoc_client_get_collection(
             ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
         ogs_assert(self.collection.subscriber);
+
+        self.collection.eir = mongoc_client_get_collection(
+            ogs_mongoc()->client, ogs_mongoc()->name, "eir");
+        ogs_assert(self.collection.eir);
+
+        eir_create_indexes(self.collection.eir);
+        eir_apply_schema_validation(
+                (mongoc_database_t *)ogs_mongoc()->database);
     }
 
     return OGS_OK;
@@ -178,6 +280,9 @@ void ogs_dbi_final(void)
 {
     if (self.collection.subscriber) {
         mongoc_collection_destroy(self.collection.subscriber);
+    }
+    if (self.collection.eir) {
+        mongoc_collection_destroy(self.collection.eir);
     }
 
 #if MONGOC_CHECK_VERSION(1, 9, 0)

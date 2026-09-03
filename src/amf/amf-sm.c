@@ -490,6 +490,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         case OpenAPI_service_name_nudm_sdm:
         case OpenAPI_service_name_npcf_am_policy_control:
         case OpenAPI_service_name_namf_comm:
+        case OpenAPI_service_name_n5g_eir_eic:
             sbi_xact_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
             ogs_assert(sbi_xact_id >= OGS_MIN_POOL_ID &&
                     sbi_xact_id <= OGS_MAX_POOL_ID);

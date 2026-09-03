@@ -37,6 +37,9 @@ libamf_sources = files('''
     nnssf-build.c
     nnssf-handler.c
 
+    n5geir-build.c
+    n5geir-handler.c
+
     nnrf-build.c
     nnrf-handler.c
 

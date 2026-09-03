@@ -21,6 +21,7 @@
 #include "nas-path.h"
 #include "ngap-path.h"
 #include "nnrf-handler.h"
+#include "n5geir-handler.h"
 
 
 static bool amf_nnrf_try_old_amf_discovery_fallback(
@@ -218,6 +219,11 @@ void amf_nnrf_handle_nf_discover(
             ogs_warn("[%s] (NF discover) No [%s]", amf_ue->suci,
                     OpenAPI_service_name_ToString(service_name));
 
+            if (service_name == OpenAPI_service_name_n5g_eir_eic) {
+                amf_n5geir_eic_handle_discovery_failure(amf_ue);
+                break;
+            }
+
             if (amf_nnrf_try_old_amf_discovery_fallback(
                     amf_ue, requester_nf_type, guami_presence))
                 break;
@@ -317,6 +323,11 @@ void amf_nnrf_handle_failed_amf_discovery(
                 "[type:%d,value:%d]", amf_ue->supi, amf_ue->suci,
                 amf_ue->nas.message_type,
                 amf_ue->nas.registration.value);
+
+        if (service_name == OpenAPI_service_name_n5g_eir_eic) {
+            amf_n5geir_eic_handle_discovery_failure(amf_ue);
+            break;
+        }
 
         if (amf_nnrf_try_old_amf_discovery_fallback(
                 amf_ue, requester_nf_type, guami_presence))

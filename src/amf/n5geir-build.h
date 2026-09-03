@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,33 +17,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OGS_DBI_H
-#define OGS_DBI_H
+#ifndef AMF_N5GEIR_BUILD_H
+#define AMF_N5GEIR_BUILD_H
 
-#include "crypt/ogs-crypt.h"
-#include "app/ogs-app.h"
-
-#define OGS_DBI_INSIDE
-
-#include "dbi/ogs-mongoc.h"
-#include "dbi/subscription.h"
-#include "dbi/session.h"
-#include "dbi/ims.h"
-#include "dbi/eir.h"
-
-#undef OGS_DBI_INSIDE
+#include "context.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern int __ogs_dbi_domain;
-
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __ogs_dbi_domain
+ogs_sbi_request_t *amf_n5geir_eic_build_equipment_status(
+        amf_ue_t *amf_ue, void *data);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_DBI_H */
+#endif /* AMF_N5GEIR_BUILD_H */

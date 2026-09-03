@@ -157,6 +157,8 @@ int ogs_app_count_nf_conf_sections(const char *conf_section)
         global_conf.parameter.bsf_count++;
     else if (!strcmp(conf_section, "udr"))
         global_conf.parameter.udr_count++;
+    else if (!strcmp(conf_section, "eir"))
+        global_conf.parameter.eir_count++;
 
     return OGS_OK;
 }
@@ -234,6 +236,9 @@ int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent)
                         ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "no_udr")) {
                     global_conf.parameter.no_udr =
+                        ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_eir")) {
+                    global_conf.parameter.no_eir =
                         ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "no_ipv4")) {
                     global_conf.parameter.no_ipv4 =
