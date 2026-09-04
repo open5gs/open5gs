@@ -144,6 +144,13 @@ const schema = {
       ],
       "default": 0,
     },
+    "network_access_mode": {
+      "type": "number",
+      "title": "Network Access",
+      "enum": [0, 1, 2],
+      "enumNames": ["Packet and Circuit (0)", "Packet Only (1)", "Circuit Only (2)"],
+      "default": 0
+    },
     "slice": {
       "type": "array",
       "title": "Slice Configurations",
@@ -535,6 +542,9 @@ const uiSchema = {
     classNames: "col-xs-7",
   },
   "operator_determined_barring" : {
+    classNames: "col-xs-7",
+  },
+  "network_access_mode" : {
     classNames: "col-xs-7",
   },
   "slice": {
