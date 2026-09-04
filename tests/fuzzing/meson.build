@@ -28,6 +28,7 @@ pfcp_message_source = files('pfcp-message-fuzz.c')
 nas_5gs_message_source = files('nas-5gs-message-fuzz.c')
 sbi_nf_profile_source = files('sbi-nf-profile-fuzz.c')
 sbi_sm_context_source = files('sbi-sm-context-fuzz.c')
+ipfw_rule_source = files('ipfw-rule-fuzz.c')
 
 # Build all executable
 executable(
@@ -91,5 +92,13 @@ executable(
     sources : sbi_sm_context_source,
     c_args : [testunit_core_cc_flags, sbi_cc_flags],
     dependencies : [libsbi_dep, libcore_dep],
+    link_args: lib_fuzzing_engine
+)
+
+executable(
+    'ipfw_rule_fuzz',
+    sources : ipfw_rule_source,
+    c_args : [testunit_core_cc_flags, sbi_cc_flags],
+    dependencies : [libipfw_dep, libproto_dep, libcore_dep],
     link_args: lib_fuzzing_engine
 )
