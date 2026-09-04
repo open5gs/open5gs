@@ -579,6 +579,7 @@ ogs_pkbuf_t *ngap_build_downlink_nas_transport(
 
             NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
                     CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
+            ogs_assert(NGAP_AllowedNSSAI_Item);
             s_NSSAI = CALLOC(1, sizeof(*s_NSSAI));
             ogs_assert(s_NSSAI);
             NGAP_AllowedNSSAI_Item->s_NSSAI = s_NSSAI;
@@ -746,6 +747,7 @@ ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
 
         PDUSessionItem = CALLOC(1,
                 sizeof(struct NGAP_PDUSessionResourceSetupItemCxtReq));
+        ogs_assert(PDUSessionItem);
         ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
 
         PDUSessionItem->pDUSessionID = sess->psi;
@@ -833,6 +835,7 @@ ogs_pkbuf_t *ngap_ue_build_initial_context_setup_request(
 
         NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
                 CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
+        ogs_assert(NGAP_AllowedNSSAI_Item);
         s_NSSAI = CALLOC(1, sizeof(*s_NSSAI));
         ogs_assert(s_NSSAI);
         NGAP_AllowedNSSAI_Item->s_NSSAI = s_NSSAI;
@@ -1271,6 +1274,7 @@ ogs_pkbuf_t *ngap_sess_build_initial_context_setup_request(
 
         PDUSessionItem = CALLOC(1,
                 sizeof(struct NGAP_PDUSessionResourceSetupItemCxtReq));
+        ogs_assert(PDUSessionItem);
         ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
 
         if (gmmbuf) {
@@ -1367,6 +1371,7 @@ ogs_pkbuf_t *ngap_sess_build_initial_context_setup_request(
 
         NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
                 CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
+        ogs_assert(NGAP_AllowedNSSAI_Item);
         s_NSSAI = CALLOC(1, sizeof(*s_NSSAI));
         ogs_assert(s_NSSAI);
         NGAP_AllowedNSSAI_Item->s_NSSAI = s_NSSAI;
@@ -1665,6 +1670,7 @@ ogs_pkbuf_t *ngap_ue_build_pdu_session_resource_setup_request(
 
         PDUSessionItem =
             CALLOC(1, sizeof(struct NGAP_PDUSessionResourceSetupItemSUReq));
+        ogs_assert(PDUSessionItem);
         ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
 
         PDUSessionItem->pDUSessionID = sess->psi;
@@ -1825,6 +1831,7 @@ ogs_pkbuf_t *ngap_sess_build_pdu_session_resource_setup_request(
 
     PDUSessionItem =
         CALLOC(1, sizeof(struct NGAP_PDUSessionResourceSetupItemSUReq));
+    ogs_assert(PDUSessionItem);
     ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
 
     PDUSessionItem->pDUSessionID = sess->psi;
@@ -1987,6 +1994,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_modify_request(
 
     PDUSessionItem =
         CALLOC(1, sizeof(struct NGAP_PDUSessionResourceModifyItemModReq));
+    ogs_assert(PDUSessionItem);
     ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
 
     PDUSessionItem->pDUSessionID = sess->psi;
@@ -2121,6 +2129,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command(
 
     PDUSessionItem =
         CALLOC(1, sizeof(struct NGAP_PDUSessionResourceToReleaseItemRelCmd));
+    ogs_assert(PDUSessionItem);
     ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
 
     PDUSessionItem->pDUSessionID = sess->psi;
@@ -2313,6 +2322,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
     memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
     pdu.present = NGAP_NGAP_PDU_PR_successfulOutcome;
     pdu.choice.successfulOutcome = CALLOC(1, sizeof(NGAP_SuccessfulOutcome_t));
+    ogs_assert(pdu.choice.successfulOutcome);
 
     successfulOutcome = pdu.choice.successfulOutcome;
     successfulOutcome->procedureCode = NGAP_ProcedureCode_id_PathSwitchRequest;
@@ -2356,6 +2366,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 
     if (send_ue_security_capability) {
         ie = CALLOC(1, sizeof(NGAP_PathSwitchRequestAcknowledgeIEs_t));
+        ogs_assert(ie);
         ASN_SEQUENCE_ADD(PathSwitchRequestAcknowledge->protocolIEs, ie);
 
         ie->id = NGAP_ProtocolIE_ID_id_UESecurityCapabilities;
@@ -2371,6 +2382,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
         UESecurityCapabilities->nRencryptionAlgorithms.buf =
             CALLOC(UESecurityCapabilities->
                         nRencryptionAlgorithms.size, sizeof(uint8_t));
+        ogs_assert(UESecurityCapabilities->nRencryptionAlgorithms.buf);
         UESecurityCapabilities->nRencryptionAlgorithms.bits_unused = 0;
         UESecurityCapabilities->nRencryptionAlgorithms.buf[0] =
             (amf_ue->ue_security_capability.nr_ea << 1);
@@ -2379,6 +2391,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
         UESecurityCapabilities->nRintegrityProtectionAlgorithms.buf =
             CALLOC(UESecurityCapabilities->
                         nRintegrityProtectionAlgorithms.size, sizeof(uint8_t));
+        ogs_assert(UESecurityCapabilities->nRintegrityProtectionAlgorithms.buf);
         UESecurityCapabilities->nRintegrityProtectionAlgorithms.bits_unused = 0;
         UESecurityCapabilities->nRintegrityProtectionAlgorithms.buf[0] =
             (amf_ue->ue_security_capability.nr_ia << 1);
@@ -2387,6 +2400,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
         UESecurityCapabilities->eUTRAencryptionAlgorithms.buf =
             CALLOC(UESecurityCapabilities->
                         eUTRAencryptionAlgorithms.size, sizeof(uint8_t));
+        ogs_assert(UESecurityCapabilities->eUTRAencryptionAlgorithms.buf);
         UESecurityCapabilities->eUTRAencryptionAlgorithms.bits_unused = 0;
         UESecurityCapabilities->eUTRAencryptionAlgorithms.buf[0] =
             (amf_ue->ue_security_capability.eutra_ea << 1);
@@ -2395,6 +2409,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
         UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf =
             CALLOC(UESecurityCapabilities->
                     eUTRAintegrityProtectionAlgorithms.size, sizeof(uint8_t));
+        ogs_assert(UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf);
         UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.bits_unused = 0;
         UESecurityCapabilities->eUTRAintegrityProtectionAlgorithms.buf[0] =
             (amf_ue->ue_security_capability.eutra_ia << 1);
@@ -2432,6 +2447,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
     SecurityContext->nextHopNH.size = OGS_SHA256_DIGEST_SIZE;
     SecurityContext->nextHopNH.buf =
         CALLOC(SecurityContext->nextHopNH.size, sizeof(uint8_t));
+    ogs_assert(SecurityContext->nextHopNH.buf);
     SecurityContext->nextHopNH.bits_unused = 0;
     memcpy(SecurityContext->nextHopNH.buf,
             amf_ue->nh, SecurityContext->nextHopNH.size);
@@ -2462,6 +2478,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 
         PDUSessionItem =
             CALLOC(1, sizeof(NGAP_PDUSessionResourceSwitchedItem_t));
+        ogs_assert(PDUSessionItem);
         ASN_SEQUENCE_ADD(&PDUSessionResourceSwitchedList->list, PDUSessionItem);
 
         PDUSessionItem->pDUSessionID = sess->psi;
@@ -2469,6 +2486,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
         transfer = &PDUSessionItem->pathSwitchRequestAcknowledgeTransfer;
         transfer->size = sess->transfer.path_switch_request_ack->len;
         transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
+        ogs_assert(transfer->buf);
         memcpy(transfer->buf, sess->transfer.path_switch_request_ack->data,
                 transfer->size);
     }
@@ -2494,6 +2512,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
 
         NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
                 CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
+        ogs_assert(NGAP_AllowedNSSAI_Item);
         s_NSSAI = CALLOC(1, sizeof(*s_NSSAI));
         ogs_assert(s_NSSAI);
         NGAP_AllowedNSSAI_Item->s_NSSAI = s_NSSAI;
@@ -2504,6 +2523,7 @@ ogs_pkbuf_t *ngap_build_path_switch_ack(amf_ue_t *amf_ue)
         if (amf_ue->allowed_nssai.s_nssai[i].sd.v !=
                 OGS_S_NSSAI_NO_SD_VALUE) {
             s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
+            ogs_assert(s_NSSAI->sD);
             ogs_asn_uint24_to_OCTET_STRING(
                 amf_ue->allowed_nssai.s_nssai[i].sd, s_NSSAI->sD);
         }
@@ -2773,6 +2793,7 @@ ogs_pkbuf_t *ngap_build_handover_request(ran_ue_t *target_ue)
 
         NGAP_AllowedNSSAI_Item = (NGAP_AllowedNSSAI_Item_t *)
                 CALLOC(1, sizeof(NGAP_AllowedNSSAI_Item_t));
+        ogs_assert(NGAP_AllowedNSSAI_Item);
         s_NSSAI = CALLOC(1, sizeof(*s_NSSAI));
         ogs_assert(s_NSSAI);
         NGAP_AllowedNSSAI_Item->s_NSSAI = s_NSSAI;
