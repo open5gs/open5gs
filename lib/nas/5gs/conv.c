@@ -63,6 +63,42 @@ void ogs_nas_5gs_imsi_to_bcd(
     ogs_free(scheme_output_bcd);
 }
 
+char *ogs_nas_5gs_rid_from_suci(char *suci)
+{
+    if (suci == NULL) {
+        return NULL;
+    }
+
+    // We assume the Routing Indicator is between the first '-' after "suci-{format}" and the next '-'
+    // We need to locate the position of the Routing Indicator in SUCI format
+
+    // Find the first '-' after "suci-{format}" (skip "suci-{format}-" part)
+    const char *start = strstr(suci, "suci-");
+    if (start == NULL) {
+        return NULL;  // Invalid SUCI format
+    }
+    start = strchr(start + 5, '-'); // Skip "suci-" part
+
+    // Now we find the second '-'
+    const char *end = strchr(start + 1, '-');
+    if (end == NULL) {
+        return NULL;  // Invalid format, no second '-'
+    }
+
+    // The RID should be between these two positions
+    int rid_len = end - start - 1;
+    char *rid = (char *)malloc(rid_len + 1); // +1 for null terminator
+    if (rid == NULL) {
+        return NULL; // Memory allocation failed
+    }
+
+    // Copy the Routing Indicator part to `rid`
+    strncpy(rid, start + 1, rid_len);
+    rid[rid_len] = '\0'; // Null-terminate the string
+
+    return rid;
+}
+
 char *ogs_nas_5gs_suci_from_mobile_identity(
         ogs_nas_5gs_mobile_identity_t *mobile_identity)
 {
