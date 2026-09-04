@@ -783,6 +783,14 @@ void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bo
     if (urr_acc->time_of_first_packet == 0)
         urr_acc->time_of_first_packet = urr_acc->time_of_last_packet;
 
+    /* If ISTM was not set, the reporting interval was never started
+     * (upf_sess_urr_acc_timers_setup() only runs for ISTM URRs); start it
+     * now so Duration Measurement has a valid baseline. */
+    if (urr_acc->time_start == 0) {
+        urr_acc->time_start = ogs_time_ntp32_now();
+        urr_acc->mono_time_start = ogs_get_monotonic_time();
+    }
+
     /* generate report if volume threshold/quota is reached */
     vol = urr_acc->total_octets - urr_acc->last_report.total_octets;
     if ((urr->rep_triggers.volume_quota && urr->vol_quota.tovol && vol >= urr->vol_quota.total_volume) ||
@@ -806,18 +814,19 @@ void upf_sess_urr_acc_fill_usage_report(upf_sess_t *sess, const ogs_pfcp_urr_t *
                                   ogs_pfcp_user_plane_report_t *report, unsigned int idx)
 {
     upf_sess_urr_acc_t *urr_acc = NULL;
-    ogs_time_t last_report_timestamp;
-    ogs_time_t now;
+    ogs_time_t last_report_mono_timestamp;
+    ogs_time_t now, mono_now;
 
     ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
     urr_acc = &sess->urr_acc[urr->id-1];
 
     now = ogs_time_now(); /* we need UTC for start_time and end_time */
+    mono_now = ogs_get_monotonic_time(); /* elapsed time for Duration Measurement */
 
-    if (urr_acc->last_report.timestamp)
-        last_report_timestamp = urr_acc->last_report.timestamp;
+    if (urr_acc->last_report.mono_timestamp)
+        last_report_mono_timestamp = urr_acc->last_report.mono_timestamp;
     else
-        last_report_timestamp = ogs_time_from_ntp32(urr_acc->time_start);
+        last_report_mono_timestamp = urr_acc->mono_time_start;
 
     report->type.usage_report = 1;
     report->usage_report[idx].id = urr->id;
@@ -838,8 +847,8 @@ void upf_sess_urr_acc_fill_usage_report(upf_sess_t *sess, const ogs_pfcp_urr_t *
         .uplink_n_packets = urr_acc->ul_pkts - urr_acc->last_report.ul_pkts,
         .downlink_n_packets = urr_acc->dl_pkts - urr_acc->last_report.dl_pkts,
     };
-    if (now >= last_report_timestamp)
-        report->usage_report[idx].dur_measurement = ((now - last_report_timestamp) + (OGS_USEC_PER_SEC/2)) / OGS_USEC_PER_SEC; /* FIXME: should use MONOTONIC here */
+    if (mono_now >= last_report_mono_timestamp)
+        report->usage_report[idx].dur_measurement = ((mono_now - last_report_mono_timestamp) + (OGS_USEC_PER_SEC/2)) / OGS_USEC_PER_SEC;
     /* else memset sets it to 0 */
     report->usage_report[idx].time_of_first_packet = ogs_time_to_ntp32(urr_acc->time_of_first_packet); /* TODO: First since last report? */
     report->usage_report[idx].time_of_last_packet = ogs_time_to_ntp32(urr_acc->time_of_last_packet);
@@ -878,6 +887,7 @@ void upf_sess_urr_acc_snapshot(upf_sess_t *sess, ogs_pfcp_urr_t *urr)
     urr_acc->last_report.dl_pkts = urr_acc->dl_pkts;
     urr_acc->last_report.ul_pkts = urr_acc->ul_pkts;
     urr_acc->last_report.timestamp = ogs_time_now();
+    urr_acc->last_report.mono_timestamp = ogs_get_monotonic_time();
 }
 
 static void upf_sess_urr_acc_timers_cb(void *data)
@@ -959,6 +969,7 @@ void upf_sess_urr_acc_timers_setup(upf_sess_t *sess, ogs_pfcp_urr_t *urr)
     urr_acc = &sess->urr_acc[urr->id-1];
 
     urr_acc->time_start = ogs_time_ntp32_now();
+    urr_acc->mono_time_start = ogs_get_monotonic_time();
     if (urr->rep_triggers.quota_validity_time && urr->quota_validity_time > 0)
         upf_sess_urr_acc_validity_time_setup(sess, urr);
     if (urr->rep_triggers.time_quota && urr->time_quota > 0)
