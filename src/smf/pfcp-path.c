@@ -19,6 +19,7 @@
 
 #include "sbi-path.h"
 #include "pfcp-path.h"
+#include "n4-build.h"
 
 /* Converts PFCP "Usage Report" "Report Trigger" bitmask to Gy "Reporting-Reason" AVP enum value.
  * PFCP: 3GPP TS 29.244 sec 8.2.41
@@ -941,6 +942,50 @@ int smf_epc_pfcp_send_one_bearer_modification_request(
 
     rv = smf_pfcp_send_modify_list(
             sess, smf_n4_build_qos_flow_to_modify_list, xact, 0);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
+int smf_pfcp_send_pd_lease_modification(smf_sess_t *sess, bool add)
+{
+    int rv;
+    ogs_pkbuf_t *n4buf = NULL;
+    ogs_pfcp_header_t h;
+    ogs_pfcp_xact_t *xact = NULL;
+
+    ogs_assert(sess);
+
+    xact = ogs_pfcp_xact_local_create(
+            sess->pfcp_node, sess_epc_timeout, OGS_UINT_TO_POINTER(sess->id));
+    if (!xact) {
+        ogs_error("ogs_pfcp_xact_local_create() failed");
+        return OGS_ERROR;
+    }
+
+    xact->epc = sess->epc;
+    xact->local_seid = sess->smf_n4_seid;
+    xact->modify_flags = OGS_PFCP_MODIFY_PD_LEASE;
+
+    memset(&h, 0, sizeof(ogs_pfcp_header_t));
+    h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;
+    h.seid = sess->upf_n4_seid;
+
+    n4buf = smf_n4_build_pd_lease_modification_request(h.type, sess, add);
+    if (!n4buf) {
+        ogs_error("smf_n4_build_pd_lease_modification_request() failed");
+        ogs_pfcp_xact_delete(xact);
+        return OGS_ERROR;
+    }
+
+    rv = ogs_pfcp_xact_update_tx(xact, &h, n4buf);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_pfcp_xact_update_tx() failed");
+        ogs_pfcp_xact_delete(xact);
+        return OGS_ERROR;
+    }
+
+    rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
 
     return rv;

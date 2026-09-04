@@ -123,6 +123,14 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
             }
             SMF_SESS_CLEAR(sess);
             break;
+        case SMF_TIMER_PD_LEASE_EXPIRY:
+            sess = smf_sess_find_by_id(e->sess_id);
+            if (!sess) {
+                ogs_warn("Session has already been removed");
+                break;
+            }
+            smf_sess_pd_lease_expire(sess);
+            break;
         default:
             ogs_error("Unknown timer[%s:%d]",
                     smf_timer_get_name(e->h.timer_id), e->h.timer_id);
@@ -415,6 +423,14 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                 break;
             }
             SMF_SESS_CLEAR(sess);
+            break;
+        case SMF_TIMER_PD_LEASE_EXPIRY:
+            sess = smf_sess_find_by_id(e->sess_id);
+            if (!sess) {
+                ogs_warn("Session has already been removed");
+                break;
+            }
+            smf_sess_pd_lease_expire(sess);
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",

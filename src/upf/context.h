@@ -151,6 +151,16 @@ uint8_t upf_sess_set_ue_ipv4_framed_routes(upf_sess_t *sess,
 uint8_t upf_sess_set_ue_ipv6_framed_routes(upf_sess_t *sess,
         char *framed_routes[]);
 
+/* Add/remove a single framed route (Session Modification path) */
+uint8_t upf_sess_add_ue_ipv4_framed_route(upf_sess_t *sess,
+        const char *framed_route);
+uint8_t upf_sess_add_ue_ipv6_framed_route(upf_sess_t *sess,
+        const char *framed_route);
+uint8_t upf_sess_remove_ue_ipv4_framed_route(upf_sess_t *sess,
+        const char *framed_route);
+uint8_t upf_sess_remove_ue_ipv6_framed_route(upf_sess_t *sess,
+        const char *framed_route);
+
 void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bool is_uplink);
 void upf_sess_urr_acc_fill_usage_report(upf_sess_t *sess, const ogs_pfcp_urr_t *urr,
                                         ogs_pfcp_user_plane_report_t *report, unsigned int idx);

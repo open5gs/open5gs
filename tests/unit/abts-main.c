@@ -25,6 +25,7 @@ extern int __ogs_ngap_domain;
 extern int __ogs_nas_domain;
 extern int __ogs_gtp_domain;
 extern int __ogs_sbi_domain;
+extern int __ogs_pfcp_domain;
 
 void ogs_sbi_message_init(int num_of_request_pool, int num_of_response_pool);
 void ogs_sbi_message_final(void);
@@ -40,6 +41,7 @@ abts_suite *test_nrf_discovery(abts_suite *suite);
 abts_suite *test_crash(abts_suite *suite);
 abts_suite *test_mme_dns_select(abts_suite *suite);
 abts_suite *test_ipfw(abts_suite *suite);
+abts_suite *test_dhcpv6(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
@@ -55,6 +57,7 @@ const struct testlist {
     {test_crash},
     {test_mme_dns_select},
     {test_ipfw},
+    {test_dhcpv6},
     {NULL},
 };
 
@@ -113,6 +116,7 @@ int main(int argc, const char *const argv[])
     ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_gtp_domain, "gtp", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_sbi_domain, "sbi", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_pfcp_domain, "pfcp", OGS_LOG_ERROR);
 
     atexit(terminate);
 

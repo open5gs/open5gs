@@ -20,6 +20,7 @@
 #include "context.h"
 #include "gtp-path.h"
 #include "pfcp-path.h"
+#include "event.h"
 
 static smf_context_t self;
 static ogs_diam_config_t g_diam_conf;
@@ -2021,6 +2022,8 @@ void smf_sess_set_paging_n1n2message_location(
             sess);
 }
 
+static void pd_lease_remove_pdrs(smf_sess_t *sess);
+
 void smf_sess_remove(smf_sess_t *sess)
 {
     int i;
@@ -2062,6 +2065,9 @@ void smf_sess_remove(smf_sess_t *sess)
 
     ogs_hash_set(self.smf_n4_seid_hash, &sess->smf_n4_seid,
             sizeof(sess->smf_n4_seid), NULL);
+
+    pd_lease_remove_pdrs(sess);
+    smf_sess_pd_lease_clear(sess);
 
     if (sess->ipv4) {
         ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, NULL);
@@ -2826,6 +2832,346 @@ void smf_sess_delete_cp_up_data_forwarding(smf_sess_t *sess)
      * Should not remove CP2UP-FAR here */
     if (sess->up2cp_far)
         ogs_pfcp_far_remove(sess->up2cp_far);
+}
+
+/******************************************************************************
+ * DHCPv6 Prefix Delegation (IA_PD) lease
+ */
+
+static void pd_lease_timeout(void *data)
+{
+    int rv;
+    smf_event_t *e = NULL;
+    smf_sess_t *sess = NULL;
+    ogs_pool_id_t sess_id = OGS_INVALID_POOL_ID;
+
+    ogs_assert(data);
+    sess_id = OGS_POINTER_TO_UINT(data);
+    ogs_assert(sess_id >= OGS_MIN_POOL_ID && sess_id <= OGS_MAX_POOL_ID);
+
+    sess = smf_sess_find_by_id(sess_id);
+    if (!sess) {
+        ogs_error("Session has already been removed");
+        return;
+    }
+
+    /*
+     * We mustn't release the lease here. Releasing a lease deletes
+     * the lease timer and we must not delete any timers from within
+     * a timer callback. Instead, we shall emit a new event to expire
+     * the lease from the pfcp-sm state machine.
+     */
+    e = smf_event_new(SMF_EVT_N4_TIMER);
+    ogs_assert(e);
+    e->sess_id = sess->id;
+    e->h.timer_id = SMF_TIMER_PD_LEASE_EXPIRY;
+    e->pfcp_node = sess->pfcp_node;
+
+    rv = ogs_queue_push(ogs_app()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_event_free(e);
+    }
+}
+
+/*
+ * Create the DL+UL PDRs that carry the delegated prefix as a
+ * Framed-IPv6-Route towards the default bearer's tunnel.
+ * The SDF filter and route strings are borrowed from the lease.
+ */
+static int pd_lease_create_pdrs(smf_sess_t *sess)
+{
+    smf_bearer_t *qos_flow = NULL;
+    ogs_pfcp_pdr_t *dl_pdr = NULL, *ul_pdr = NULL;
+    ogs_pfcp_pdr_t *pd_dl_pdr = NULL, *pd_ul_pdr = NULL;
+    char prefix[OGS_ADDRSTRLEN];
+    int i;
+
+    ogs_assert(sess);
+    ogs_assert(sess->pd_lease.active);
+
+    ogs_assert(sess->pfcp_node);
+    if (!sess->pfcp_node->up_function_features.frrt) {
+        ogs_error("UPF does not support Framed Routing (FRRT)");
+        return OGS_ERROR;
+    }
+
+    qos_flow = smf_default_bearer_in_sess(sess);
+    ogs_assert(qos_flow);
+    dl_pdr = qos_flow->dl_pdr;
+    ul_pdr = qos_flow->ul_pdr;
+    ogs_assert(dl_pdr);
+    ogs_assert(ul_pdr);
+    ogs_assert(qos_flow->dl_far);
+    ogs_assert(qos_flow->ul_far);
+
+    OGS_INET6_NTOP(sess->pd_lease.prefix, prefix);
+
+    ogs_snprintf(sess->pd_lease.route, sizeof(sess->pd_lease.route),
+            "%s/%d", prefix, sess->pd_lease.plen);
+    ogs_snprintf(sess->pd_lease.sdf, sizeof(sess->pd_lease.sdf),
+            "permit out ip from any to %s", sess->pd_lease.route);
+
+    /* Downlink : CORE -> ACCESS */
+    pd_dl_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
+    ogs_assert(pd_dl_pdr);
+
+    pd_dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
+    pd_dl_pdr->src_if_type_presence = dl_pdr->src_if_type_presence;
+    pd_dl_pdr->src_if_type = dl_pdr->src_if_type;
+    if (dl_pdr->dnn) {
+        pd_dl_pdr->dnn = ogs_strdup(dl_pdr->dnn);
+        ogs_assert(pd_dl_pdr->dnn);
+    }
+
+    pd_dl_pdr->ipv6_framed_routes = ogs_calloc(
+            OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+            sizeof(pd_dl_pdr->ipv6_framed_routes[0]));
+    ogs_assert(pd_dl_pdr->ipv6_framed_routes);
+    pd_dl_pdr->ipv6_framed_routes[0] = ogs_strdup(sess->pd_lease.route);
+    ogs_assert(pd_dl_pdr->ipv6_framed_routes[0]);
+
+    pd_dl_pdr->flow[0].fd = 1;
+    pd_dl_pdr->flow[0].description = sess->pd_lease.sdf;
+    pd_dl_pdr->num_of_flow = 1;
+
+    ogs_pfcp_pdr_associate_far(pd_dl_pdr, qos_flow->dl_far);
+    for (i = 0; i < dl_pdr->num_of_urr; i++)
+        ogs_pfcp_pdr_associate_urr(pd_dl_pdr, dl_pdr->urr[i]);
+    if (dl_pdr->qer)
+        ogs_pfcp_pdr_associate_qer(pd_dl_pdr, dl_pdr->qer);
+    pd_dl_pdr->qfi = dl_pdr->qfi;
+
+    ogs_pfcp_pdr_reorder_by_precedence(
+            pd_dl_pdr, OGS_PFCP_PD_PDR_PRECEDENCE);
+
+    sess->pd_lease.dl_pdr_id = pd_dl_pdr->id;
+
+    /* Uplink : ACCESS -> CORE (shares the default bearer's F-TEID) */
+    pd_ul_pdr = ogs_pfcp_pdr_add(&sess->pfcp);
+    ogs_assert(pd_ul_pdr);
+
+    pd_ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
+    pd_ul_pdr->src_if_type_presence = ul_pdr->src_if_type_presence;
+    pd_ul_pdr->src_if_type = ul_pdr->src_if_type;
+    if (ul_pdr->dnn) {
+        pd_ul_pdr->dnn = ogs_strdup(ul_pdr->dnn);
+        ogs_assert(pd_ul_pdr->dnn);
+    }
+
+    pd_ul_pdr->outer_header_removal = ul_pdr->outer_header_removal;
+    pd_ul_pdr->outer_header_removal_len = ul_pdr->outer_header_removal_len;
+
+    memcpy(&pd_ul_pdr->f_teid, &ul_pdr->f_teid, sizeof(pd_ul_pdr->f_teid));
+    pd_ul_pdr->f_teid_len = ul_pdr->f_teid_len;
+
+    pd_ul_pdr->ipv6_framed_routes = ogs_calloc(
+            OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+            sizeof(pd_ul_pdr->ipv6_framed_routes[0]));
+    ogs_assert(pd_ul_pdr->ipv6_framed_routes);
+    pd_ul_pdr->ipv6_framed_routes[0] = ogs_strdup(sess->pd_lease.route);
+    ogs_assert(pd_ul_pdr->ipv6_framed_routes[0]);
+
+    pd_ul_pdr->flow[0].fd = 1;
+    pd_ul_pdr->flow[0].description = sess->pd_lease.sdf;
+    pd_ul_pdr->num_of_flow = 1;
+
+    ogs_pfcp_pdr_associate_far(pd_ul_pdr, qos_flow->ul_far);
+    for (i = 0; i < ul_pdr->num_of_urr; i++)
+        ogs_pfcp_pdr_associate_urr(pd_ul_pdr, ul_pdr->urr[i]);
+    if (ul_pdr->qer)
+        ogs_pfcp_pdr_associate_qer(pd_ul_pdr, ul_pdr->qer);
+    pd_ul_pdr->qfi = ul_pdr->qfi;
+
+    ogs_pfcp_pdr_reorder_by_precedence(
+            pd_ul_pdr, OGS_PFCP_PD_PDR_PRECEDENCE);
+
+    sess->pd_lease.ul_pdr_id = pd_ul_pdr->id;
+
+    return OGS_OK;
+}
+
+static void pd_lease_remove_pdrs(smf_sess_t *sess)
+{
+    ogs_pfcp_pdr_t *pdr = NULL;
+
+    ogs_assert(sess);
+
+    pdr = ogs_pfcp_pdr_find(&sess->pfcp, sess->pd_lease.dl_pdr_id);
+    if (pdr)
+        ogs_pfcp_pdr_remove(pdr);
+
+    pdr = ogs_pfcp_pdr_find(&sess->pfcp, sess->pd_lease.ul_pdr_id);
+    if (pdr)
+        ogs_pfcp_pdr_remove(pdr);
+}
+
+int smf_sess_pd_lease_grant(smf_sess_t *sess,
+        uint32_t iaid, const uint8_t *duid, uint16_t duid_len)
+{
+    smf_ue_t *smf_ue = NULL;
+    ogs_pfcp_subnet_t *subnet = NULL;
+    uint8_t prefix[OGS_IPV6_LEN];
+    char buf[OGS_ADDRSTRLEN];
+
+    ogs_assert(sess);
+    ogs_assert(sess->ipv6);
+
+    if (sess->pd_lease.active) {
+        if (smf_sess_pd_lease_matches(sess, iaid, duid, duid_len)) {
+            smf_sess_pd_lease_refresh(sess);
+            return OGS_OK;
+        }
+
+        /* Different IAID/DUID : drop the old lease first */
+        smf_sess_pd_lease_release(sess);
+    }
+
+    subnet = sess->ipv6->subnet;
+    ogs_assert(subnet);
+    if (!subnet->delegated_prefix.bitmap) {
+        ogs_error("No delegated_prefix pool on this subnet");
+        return OGS_ERROR;
+    }
+
+    if (ogs_pfcp_delegated_prefix_alloc(subnet, prefix) != OGS_OK) {
+        ogs_error("Delegated prefix pool exhausted");
+        return OGS_ERROR;
+    }
+
+    sess->pd_lease.subnet = subnet;
+    memcpy(sess->pd_lease.prefix, prefix, OGS_IPV6_LEN);
+    sess->pd_lease.plen = subnet->delegated_prefix.plen;
+    sess->pd_lease.iaid = iaid;
+    sess->pd_lease.valid_lifetime = subnet->delegated_prefix.valid_lifetime;
+    sess->pd_lease.preferred_lifetime =
+        subnet->delegated_prefix.preferred_lifetime;
+
+    if (duid && duid_len) {
+        sess->pd_lease.duid = ogs_malloc(duid_len);
+        ogs_assert(sess->pd_lease.duid);
+        memcpy(sess->pd_lease.duid, duid, duid_len);
+        sess->pd_lease.duid_len = duid_len;
+    }
+
+    sess->pd_lease.active = true;
+
+    if (pd_lease_create_pdrs(sess) != OGS_OK) {
+        smf_sess_pd_lease_clear(sess);
+        return OGS_ERROR;
+    }
+
+    sess->pd_lease.timer = ogs_timer_add(ogs_app()->timer_mgr,
+            pd_lease_timeout, OGS_UINT_TO_POINTER(sess->id));
+    ogs_assert(sess->pd_lease.timer);
+    ogs_timer_start(sess->pd_lease.timer,
+            ogs_time_from_sec(sess->pd_lease.valid_lifetime));
+
+    if (smf_pfcp_send_pd_lease_modification(sess, true) != OGS_OK) {
+        ogs_error("Failed to install delegated prefix route");
+        pd_lease_remove_pdrs(sess);
+        smf_sess_pd_lease_clear(sess);
+        return OGS_ERROR;
+    }
+
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
+    ogs_info("PD lease granted : UE[%s] Prefix[%s/%d]",
+            smf_ue->supi ? smf_ue->supi : smf_ue->imsi_bcd,
+            OGS_INET6_NTOP(sess->pd_lease.prefix, buf), sess->pd_lease.plen);
+
+    return OGS_OK;
+}
+
+void smf_sess_pd_lease_refresh(smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    if (!sess->pd_lease.active || !sess->pd_lease.timer)
+        return;
+
+    ogs_timer_start(sess->pd_lease.timer,
+            ogs_time_from_sec(sess->pd_lease.valid_lifetime));
+}
+
+bool smf_sess_pd_lease_matches(smf_sess_t *sess,
+        uint32_t iaid, const uint8_t *duid, uint16_t duid_len)
+{
+    ogs_assert(sess);
+
+    if (!sess->pd_lease.active)
+        return false;
+    if (sess->pd_lease.iaid != iaid)
+        return false;
+    if (duid && duid_len && sess->pd_lease.duid) {
+        if (sess->pd_lease.duid_len != duid_len)
+            return false;
+        if (memcmp(sess->pd_lease.duid, duid, duid_len) != 0)
+            return false;
+    }
+
+    return true;
+}
+
+void smf_sess_pd_lease_release(smf_sess_t *sess)
+{
+    smf_ue_t *smf_ue = NULL;
+    char buf[OGS_ADDRSTRLEN];
+
+    ogs_assert(sess);
+
+    if (!sess->pd_lease.active)
+        return;
+
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
+    ogs_info("PD lease released : UE[%s] Prefix[%s/%d]",
+            smf_ue->supi ? smf_ue->supi : smf_ue->imsi_bcd,
+            OGS_INET6_NTOP(sess->pd_lease.prefix, buf), sess->pd_lease.plen);
+
+    /* Remove the delegated route from the UPF (best effort :
+     * the lease is cleared regardless) */
+    smf_pfcp_send_pd_lease_modification(sess, false);
+
+    pd_lease_remove_pdrs(sess);
+
+    smf_sess_pd_lease_clear(sess);
+}
+
+void smf_sess_pd_lease_expire(smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    if (!sess->pd_lease.active)
+        return;
+
+    ogs_info("PD lease expired");
+
+    smf_sess_pd_lease_release(sess);
+}
+
+void smf_sess_pd_lease_clear(smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    if (sess->pd_lease.timer) {
+        ogs_timer_stop(sess->pd_lease.timer);
+        ogs_timer_delete(sess->pd_lease.timer);
+        sess->pd_lease.timer = NULL;
+    }
+
+    if (sess->pd_lease.active && sess->pd_lease.subnet)
+        ogs_pfcp_delegated_prefix_free(
+                sess->pd_lease.subnet, sess->pd_lease.prefix);
+
+    if (sess->pd_lease.duid) {
+        ogs_free(sess->pd_lease.duid);
+        sess->pd_lease.duid = NULL;
+    }
+
+    memset(&sess->pd_lease, 0, sizeof(sess->pd_lease));
 }
 
 smf_bearer_t *smf_qos_flow_find_by_qfi(smf_sess_t *sess, uint8_t qfi)

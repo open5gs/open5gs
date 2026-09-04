@@ -31,6 +31,10 @@ extern "C" {
 #define OGS_PFCP_DEFAULT_PDR_PRECEDENCE 65535
 #define OGS_PFCP_INDIRECT_PDR_PRECEDENCE 4096
 #define OGS_PFCP_UP2CP_PDR_PRECEDENCE 255
+#define OGS_PFCP_PD_PDR_PRECEDENCE 65000 /* DHCPv6-PD route PDRs */
+
+#define OGS_PFCP_DEFAULT_PD_VALID_LIFETIME 86400
+#define OGS_PFCP_DEFAULT_PD_PREFERRED_LIFETIME 43200
 #define OGS_PFCP_CP2UP_PDR_PRECEDENCE 255
 
 #define OGS_PFCP_DEFAULT_CHOOSE_ID 5
@@ -373,6 +377,17 @@ typedef struct ogs_pfcp_subnet_s {
     } range[OGS_MAX_NUM_OF_SUBNET_RANGE];
     int num_of_range;
 
+    /* DHCPv6 Prefix Delegation (IA_PD) pool : NULL bitmap = disabled */
+    struct {
+        ogs_ipsubnet_t  range;              /* 2001:db8:8000::/48 */
+        uint8_t         range_plen;         /* 48 */
+        uint8_t         plen;               /* Delegated length : 56 */
+        uint32_t        valid_lifetime;     /* seconds */
+        uint32_t        preferred_lifetime; /* seconds */
+        uint32_t        num;                /* Number of prefixes */
+        uint8_t         *bitmap;            /* 1 bit per prefix, 1 = in use */
+    } delegated_prefix;
+
     int             family;         /* AF_INET or AF_INET6 */
     uint8_t         prefixlen;      /* prefixlen */
     OGS_POOL(pool, ogs_pfcp_ue_ip_t);
@@ -515,6 +530,16 @@ void ogs_pfcp_subnet_remove(ogs_pfcp_subnet_t *subnet);
 void ogs_pfcp_subnet_remove_all(void);
 ogs_pfcp_subnet_t *ogs_pfcp_find_subnet(int family);
 ogs_pfcp_subnet_t *ogs_pfcp_find_subnet_by_dnn(int family, const char *dnn);
+
+/* DHCPv6 Prefix Delegation (IA_PD) */
+int ogs_pfcp_subnet_delegated_prefix_set(
+        ogs_pfcp_subnet_t *subnet,
+        const char *range_ipstr, const char *range_numbits,
+        int plen, uint32_t valid_lifetime, uint32_t preferred_lifetime);
+int ogs_pfcp_delegated_prefix_alloc(
+        ogs_pfcp_subnet_t *subnet, uint8_t *prefix /* OGS_IPV6_LEN */);
+void ogs_pfcp_delegated_prefix_free(
+        ogs_pfcp_subnet_t *subnet, const uint8_t *prefix /* OGS_IPV6_LEN */);
 
 void ogs_pfcp_pool_init(ogs_pfcp_sess_t *sess);
 void ogs_pfcp_pool_final(ogs_pfcp_sess_t *sess);
