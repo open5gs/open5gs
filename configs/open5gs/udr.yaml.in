@@ -10,6 +10,7 @@ global:
 #    peer: 64
 
 udr:
+#  use_mongodb_change_stream: true
   sbi:
     server:
       - address: 127.0.0.20

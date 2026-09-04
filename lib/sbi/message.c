@@ -83,6 +83,11 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
 
     if (message->SubscriptionData)
         OpenAPI_subscription_data_free(message->SubscriptionData);
+    if (message->SubscriptionDataSubscriptions)
+        OpenAPI_subscription_data_subscriptions_free(
+                message->SubscriptionDataSubscriptions);
+    if (message->DataChangeNotify)
+        OpenAPI_data_change_notify_free(message->DataChangeNotify);
     if (message->NotificationData)
         OpenAPI_notification_data_free(message->NotificationData);
     if (message->SearchResult)
@@ -1649,6 +1654,14 @@ static char *build_json(ogs_sbi_message_t *message)
             ogs_assert(smSubDataItem);
             cJSON_AddItemToArray(item, smSubDataItem);
         }
+    } else if (message->SubscriptionDataSubscriptions) {
+        item = OpenAPI_subscription_data_subscriptions_convertToJSON(
+                message->SubscriptionDataSubscriptions);
+        ogs_assert(item);
+    } else if (message->DataChangeNotify) {
+        item = OpenAPI_data_change_notify_convertToJSON(
+                message->DataChangeNotify);
+        ogs_assert(item);
     } else if (message->N1N2MessageTransferReqData) {
         item = OpenAPI_n1_n2_message_transfer_req_data_convertToJSON(
                 message->N1N2MessageTransferReqData);
@@ -2203,6 +2216,25 @@ static int parse_json(ogs_sbi_message_t *message,
         case OpenAPI_service_name_nudr_dr:
             SWITCH(message->h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA)
+                if (message->h.resource.component[1] &&
+                        !strcmp(message->h.resource.component[1],
+                            OGS_SBI_RESOURCE_NAME_SUBS_TO_NOTIFY)) {
+                    if (message->res_status == 0 ||
+                            message->res_status ==
+                                OGS_SBI_HTTP_STATUS_CREATED) {
+                        message->SubscriptionDataSubscriptions =
+                            OpenAPI_subscription_data_subscriptions_parseFromJSON(item);
+                        if (!message->SubscriptionDataSubscriptions) {
+                            rv = OGS_ERROR;
+                            ogs_error("JSON parse error");
+                        }
+                    } else {
+                        ogs_error("HTTP ERROR Status : %d",
+                                message->res_status);
+                    }
+                    break;
+                }
+
                 SWITCH(message->h.resource.component[2])
                 CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_DATA)
                     SWITCH(message->h.resource.component[3])
