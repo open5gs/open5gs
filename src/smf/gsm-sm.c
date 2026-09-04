@@ -127,6 +127,22 @@ static bool send_ccr_termination_req_gx_gy_s6b(
        session created, not whether one was supposedly created as per policy */
     int use_gy = smf_use_gy_iface();
 
+    /*
+     * gtp_xact may be NULL when the release is driven by a non-GTP source
+     * (e.g. SMF-local inactivity or OAM-triggered force release). The
+     * downstream Gx/Gy/S6b senders already accept OGS_INVALID_POOL_ID for
+     * the xact link, but the error-fallback below unconditionally
+     * dereferences gtp_xact->gtp_version and also needs a live peer to
+     * reply to via send_gtp_delete_err_msg(). Guard against the NULL
+     * dereference and return false so the caller takes the no-transition
+     * branch (the TODO below already acknowledges that path is unclean).
+     */
+    if (use_gy == -1 && !gtp_xact) {
+        ogs_error("No Gy Diameter Peer and no GTP transaction "
+                "to reply on — skipping CCR-Termination");
+        return false;
+    }
+
     if (use_gy == -1) {
         ogs_error("No Gy Diameter Peer");
         /* TODO: drop Gx connection here,
