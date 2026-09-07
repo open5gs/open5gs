@@ -28,6 +28,7 @@ testunit_unit_sources = files('''
     crash-test.c
     mme-dns-select-test.c
     ipfw-test.c
+    pfcp-rule-test.c
 '''.split())
 
 testunit_unit_exe = executable('unit',
@@ -40,6 +41,7 @@ testunit_unit_exe = executable('unit',
                     libnas_eps_dep,
                     libsbi_dep,
                     libipfw_dep,
+                    libpfcp_dep,
                     libmme_dep])
 
 test('unit', testunit_unit_exe, is_parallel : false, suite: 'unit')

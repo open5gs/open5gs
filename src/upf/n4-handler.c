@@ -22,24 +22,61 @@
 #include "gtp-path.h"
 #include "n4-handler.h"
 
-static void upf_n4_handle_create_urr(upf_sess_t *sess, ogs_pfcp_tlv_create_urr_t *create_urr_arr,
-                              uint8_t *cause_value, uint8_t *offending_ie_value)
+static void upf_n4_handle_create_urr(upf_sess_t *sess,
+        ogs_pfcp_tlv_create_urr_t *create_urr,
+        uint8_t *cause_value, uint8_t *offending_ie_value)
 {
     int i;
-    ogs_pfcp_urr_t *urr;
 
     *cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
     for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
-        urr = ogs_pfcp_handle_create_urr(&sess->pfcp, &create_urr_arr[i],
-                    cause_value, offending_ie_value);
-        if (!urr)
+        if (!ogs_pfcp_handle_create_urr(&sess->pfcp, &create_urr[i],
+                    cause_value, offending_ie_value))
             return;
+    }
+}
 
-        /* TODO: enable counters somewhere else if ISTM not set, upon first pkt received */
+/*
+ * Start new URR timers only after every rejectable step has succeeded.
+ * Cleanup can then free new URRs without leaving timer callbacks behind.
+ * This does not change timer ownership for previously installed URRs.
+ */
+static void upf_n4_setup_urr_timers(upf_sess_t *sess,
+        ogs_pfcp_tlv_create_urr_t *create_urr)
+{
+    ogs_pfcp_urr_t *urr = NULL;
+    int i;
+
+    for (i = 0; i < OGS_MAX_NUM_OF_URR; i++) {
+        if (!create_urr[i].presence)
+            break;
+
+        /* A Create followed by Remove leaves no URR to start. */
+        urr = ogs_pfcp_urr_find(&sess->pfcp, create_urr[i].urr_id.u32);
+        if (!urr) {
+            ogs_debug("Skip timers for removed URR-ID[%u]",
+                    create_urr[i].urr_id.u32);
+            continue;
+        }
         if (urr->meas_info.istm) {
+            ogs_debug("Start timers for accepted URR-ID[%u]", urr->id);
             upf_sess_urr_acc_timers_setup(sess, urr);
         }
+    }
+}
+
+/* Accepted and rejected modifications both account for surviving QERs. */
+static void upf_n4_update_qer_metrics(upf_sess_t *sess, int old_count)
+{
+    int count = ogs_list_count(&sess->pfcp.qer_list);
+    int delta = count - old_count;
+
+    if (delta) {
+        ogs_debug("Update QoS-flow gauge [QER:%d -> %d delta:%+d]",
+                old_count, count, delta);
+        upf_metrics_inst_by_dnn_add(sess->apn_dnn,
+                UPF_METR_GAUGE_UPF_QOSFLOWS, delta);
     }
 }
 
@@ -100,7 +137,8 @@ void upf_n4_handle_session_establishment_request(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
-    upf_n4_handle_create_urr(sess, &req->create_urr[0], &cause_value, &offending_ie_value);
+    upf_n4_handle_create_urr(
+            sess, &req->create_urr[0], &cause_value, &offending_ie_value);
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
@@ -206,11 +244,13 @@ void upf_n4_handle_session_establishment_request(
         /* Setup UPF-N3-TEID & QFI Hash */
         if (pdr->f_teid_len) {
             cause_value = ogs_pfcp_object_teid_hash_set(
-                    OGS_PFCP_OBJ_SESS_TYPE, pdr, restoration_indication);
+                    OGS_PFCP_OBJ_SESS_TYPE, pdr);
             if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
                 goto cleanup;
         }
     }
+
+    upf_n4_setup_urr_timers(sess, &req->create_urr[0]);
 
     /* Send Buffered Packet to gNB/SGW */
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
@@ -248,24 +288,51 @@ void upf_n4_handle_session_modification_request(
     ogs_pfcp_far_t *far = NULL;
     ogs_pfcp_pdr_t *created_pdr[OGS_MAX_NUM_OF_PDR];
     int num_of_created_pdr = 0;
+    ogs_pfcp_sess_mark_t mark;
+    uint8_t failed_rule_type = 0;
+    uint32_t failed_rule_id = 0;
     uint8_t cause_value = 0;
     uint8_t offending_ie_value = 0;
-    int i;
+    int i, j;
 
     ogs_assert(xact);
     ogs_assert(req);
 
-    ogs_debug("Session Modification Request");
-
     cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
     if (!sess) {
-        ogs_error("No Context");
+        ogs_error("Session Modification has no context [xid:%u]", xact->xid);
         ogs_pfcp_send_error_message(xact, 0,
                 OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
         return;
     }
+
+    ogs_info("Session Modification Request [xid:%u] "
+            "[UP-SEID:0x%llx CP-SEID:0x%llx]",
+            xact->xid,
+            (unsigned long long)sess->upf_n4_seid,
+            (unsigned long long)sess->smf_n4_f_seid.seid);
+
+    /*
+     * Validate all Create IDs before mutation. A preflight rejection needs
+     * no cleanup because no rule has been created, changed or removed yet.
+     */
+    if (!ogs_pfcp_validate_create_rules(&sess->pfcp, req,
+                &failed_rule_type, &failed_rule_id)) {
+        ogs_error("Reject modification before changes [xid:%u] "
+                "[UP-SEID:0x%llx CP-SEID:0x%llx] "
+                "[rule-type:%u rule-id:%u]",
+                xact->xid,
+                (unsigned long long)sess->upf_n4_seid,
+                (unsigned long long)sess->smf_n4_f_seid.seid,
+                failed_rule_type, failed_rule_id);
+        ogs_pfcp_send_session_modification_rule_error(xact,
+                sess->smf_n4_f_seid.seid, failed_rule_type, failed_rule_id);
+        return;
+    }
+
+    ogs_pfcp_sess_mark(&sess->pfcp, &mark);
 
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
         created_pdr[i] = ogs_pfcp_handle_create_pdr(&sess->pfcp,
@@ -278,7 +345,9 @@ void upf_n4_handle_session_modification_request(
         goto cleanup;
 
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
-        if (ogs_pfcp_handle_update_pdr(&sess->pfcp, &req->update_pdr[i],
+        if (ogs_pfcp_handle_update_pdr(
+                    OGS_PFCP_OBJ_SESS_TYPE,
+                    &sess->pfcp, &req->update_pdr[i],
                     &cause_value, &offending_ie_value) == NULL)
             break;
     }
@@ -292,6 +361,19 @@ void upf_n4_handle_session_modification_request(
     }
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
+
+    /*
+     * Removed PDR pointers are compared only, never dereferenced. Exclude
+     * them from subsequent hash setup and the Created PDR response list.
+     */
+    for (i = 0, j = 0; i < num_of_created_pdr; i++) {
+        if (ogs_list_exists(&sess->pfcp.pdr_list, created_pdr[i]))
+            created_pdr[j++] = created_pdr[i];
+    }
+    if (j != num_of_created_pdr)
+        ogs_error("[xid:%u] Omit %d removed PDRs from Created PDRs",
+                xact->xid, num_of_created_pdr - j);
+    num_of_created_pdr = j;
 
     for (i = 0; i < OGS_MAX_NUM_OF_FAR; i++) {
         if (ogs_pfcp_handle_create_far(&sess->pfcp, &req->create_far[i],
@@ -337,7 +419,8 @@ void upf_n4_handle_session_modification_request(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
-    upf_n4_handle_create_urr(sess, &req->create_urr[0], &cause_value, &offending_ie_value);
+    upf_n4_handle_create_urr(
+            sess, &req->create_urr[0], &cause_value, &offending_ie_value);
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
@@ -361,8 +444,6 @@ void upf_n4_handle_session_modification_request(
         if (ogs_pfcp_handle_create_qer(&sess->pfcp, &req->create_qer[i],
                     &cause_value, &offending_ie_value) == NULL)
             break;
-        upf_metrics_inst_by_dnn_add(sess->apn_dnn,
-                UPF_METR_GAUGE_UPF_QOSFLOWS, 1);
     }
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
@@ -379,8 +460,6 @@ void upf_n4_handle_session_modification_request(
         if (ogs_pfcp_handle_remove_qer(&sess->pfcp, &req->remove_qer[i],
                 &cause_value, &offending_ie_value) == false)
             break;
-        upf_metrics_inst_by_dnn_add(sess->apn_dnn,
-                UPF_METR_GAUGE_UPF_QOSFLOWS, -1);
     }
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
@@ -395,7 +474,7 @@ void upf_n4_handle_session_modification_request(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
-    /* Setup GTP Node */
+    /* Unchanged FARs are visited too; shared F-TEIDs are normal here. */
     ogs_list_for_each(&sess->pfcp.far_list, far) {
         if (OGS_ERROR == ogs_pfcp_setup_far_gtpu_node(far)) {
             ogs_fatal("CHECK CONFIGURATION: upf.gtpu");
@@ -414,11 +493,14 @@ void upf_n4_handle_session_modification_request(
         /* Setup UPF-N3-TEID & QFI Hash */
         if (pdr->f_teid_len) {
             cause_value = ogs_pfcp_object_teid_hash_set(
-                    OGS_PFCP_OBJ_SESS_TYPE, pdr, false);
+                    OGS_PFCP_OBJ_SESS_TYPE, pdr);
             if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
                 goto cleanup;
         }
     }
+
+    upf_n4_setup_urr_timers(sess, &req->create_urr[0]);
+    upf_n4_update_qer_metrics(sess, mark.num_of_qer);
 
     /* Send Buffered Packet to gNB/SGW */
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
@@ -438,7 +520,31 @@ void upf_n4_handle_session_modification_request(
     return;
 
 cleanup:
-    ogs_pfcp_sess_clear(&sess->pfcp);
+    ogs_error("Reject modification [xid:%u] "
+            "[UP-SEID:0x%llx CP-SEID:0x%llx] "
+            "[Cause:%u Offending-IE:%u]",
+            xact->xid,
+            (unsigned long long)sess->upf_n4_seid,
+            (unsigned long long)sess->smf_n4_f_seid.seid,
+            cause_value, offending_ie_value);
+    /*
+     * Keep applied Updates and Removes; reclaim only newly created rules.
+     * Common cleanup logs each removed ID. Count survivors only here,
+     * on rejection, so normal requests avoid diagnostic list walks.
+     * Offending-IE == 0 means no Offending IE is included in the response.
+     */
+    ogs_pfcp_sess_clear_since_mark(&sess->pfcp, &mark);
+    upf_n4_update_qer_metrics(sess, mark.num_of_qer);
+    ogs_info("Rejected modification cleanup complete [xid:%u] "
+            "[UP-SEID:0x%llx CP-SEID:0x%llx] "
+            "[PDR:%d FAR:%d URR:%d QER:%d BAR:%d]",
+            xact->xid,
+            (unsigned long long)sess->upf_n4_seid,
+            (unsigned long long)sess->smf_n4_f_seid.seid,
+            ogs_list_count(&sess->pfcp.pdr_list),
+            ogs_list_count(&sess->pfcp.far_list),
+            ogs_list_count(&sess->pfcp.urr_list),
+            ogs_list_count(&sess->pfcp.qer_list), sess->pfcp.bar != NULL);
     ogs_pfcp_send_error_message(xact, sess ? sess->smf_n4_f_seid.seid : 0,
             OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
             cause_value, offending_ie_value);

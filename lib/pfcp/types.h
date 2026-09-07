@@ -1601,6 +1601,12 @@ int16_t ogs_pfcp_build_user_id(
         ogs_tlv_octet_t *octet, ogs_pfcp_user_id_t *user_id,
         void *data, int data_len);
 
+/* 8.2.80 Failed Rule ID */
+#define OGS_PFCP_RULE_TYPE_PDR 0
+#define OGS_PFCP_RULE_TYPE_FAR 1
+#define OGS_PFCP_RULE_TYPE_QER 2
+#define OGS_PFCP_RULE_TYPE_URR 3
+
 /*
  * 8.2.118 3GPP Interface Type
  *
