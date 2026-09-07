@@ -133,7 +133,7 @@ void sgwu_sxa_handle_session_establishment_request(
         /* Setup TEID Hash */
         if (pdr->f_teid_len) {
             cause_value = ogs_pfcp_object_teid_hash_set(
-                    OGS_PFCP_OBJ_PDR_TYPE, pdr, restoration_indication);
+                    OGS_PFCP_OBJ_PDR_TYPE, pdr);
             if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
                 goto cleanup;
         }
@@ -172,24 +172,51 @@ void sgwu_sxa_handle_session_modification_request(
     ogs_pfcp_far_t *far = NULL;
     ogs_pfcp_pdr_t *created_pdr[OGS_MAX_NUM_OF_PDR];
     int num_of_created_pdr = 0;
+    ogs_pfcp_sess_mark_t mark;
+    uint8_t failed_rule_type = 0;
+    uint32_t failed_rule_id = 0;
     uint8_t cause_value = 0;
     uint8_t offending_ie_value = 0;
-    int i;
+    int i, j;
 
     ogs_assert(xact);
     ogs_assert(req);
 
-    ogs_debug("Session Modification Request");
-
     cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
     if (!sess) {
-        ogs_error("No Context");
+        ogs_error("Session Modification has no context [xid:%u]", xact->xid);
         ogs_pfcp_send_error_message(xact, 0,
                 OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
         return;
     }
+
+    ogs_info("Session Modification Request [xid:%u] "
+            "[UP-SEID:0x%llx CP-SEID:0x%llx]",
+            xact->xid,
+            (unsigned long long)sess->sgwu_sxa_seid,
+            (unsigned long long)sess->sgwc_sxa_f_seid.seid);
+
+    /*
+     * Validate all Create IDs before mutation. A preflight rejection needs
+     * no cleanup because no rule has been created, changed or removed yet.
+     */
+    if (!ogs_pfcp_validate_create_rules(&sess->pfcp, req,
+                &failed_rule_type, &failed_rule_id)) {
+        ogs_error("Reject modification before changes [xid:%u] "
+                "[UP-SEID:0x%llx CP-SEID:0x%llx] "
+                "[rule-type:%u rule-id:%u]",
+                xact->xid,
+                (unsigned long long)sess->sgwu_sxa_seid,
+                (unsigned long long)sess->sgwc_sxa_f_seid.seid,
+                failed_rule_type, failed_rule_id);
+        ogs_pfcp_send_session_modification_rule_error(xact,
+                sess->sgwc_sxa_f_seid.seid, failed_rule_type, failed_rule_id);
+        return;
+    }
+
+    ogs_pfcp_sess_mark(&sess->pfcp, &mark);
 
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
         created_pdr[i] = ogs_pfcp_handle_create_pdr(&sess->pfcp,
@@ -202,7 +229,9 @@ void sgwu_sxa_handle_session_modification_request(
         goto cleanup;
 
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
-        if (ogs_pfcp_handle_update_pdr(&sess->pfcp, &req->update_pdr[i],
+        if (ogs_pfcp_handle_update_pdr(
+                    OGS_PFCP_OBJ_PDR_TYPE,
+                    &sess->pfcp, &req->update_pdr[i],
                     &cause_value, &offending_ie_value) == NULL)
             break;
     }
@@ -216,6 +245,19 @@ void sgwu_sxa_handle_session_modification_request(
     }
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
+
+    /*
+     * Removed PDR pointers are compared only, never dereferenced. Exclude
+     * them from subsequent hash setup and the Created PDR response list.
+     */
+    for (i = 0, j = 0; i < num_of_created_pdr; i++) {
+        if (ogs_list_exists(&sess->pfcp.pdr_list, created_pdr[i]))
+            created_pdr[j++] = created_pdr[i];
+    }
+    if (j != num_of_created_pdr)
+        ogs_error("[xid:%u] Omit %d removed PDRs from Created PDRs",
+                xact->xid, num_of_created_pdr - j);
+    num_of_created_pdr = j;
 
     for (i = 0; i < OGS_MAX_NUM_OF_FAR; i++) {
         if (ogs_pfcp_handle_create_far(&sess->pfcp, &req->create_far[i],
@@ -295,7 +337,7 @@ void sgwu_sxa_handle_session_modification_request(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
-    /* Setup GTP Node */
+    /* Unchanged FARs are visited too; shared F-TEIDs are normal here. */
     ogs_list_for_each(&sess->pfcp.far_list, far) {
         if (OGS_ERROR == ogs_pfcp_setup_far_gtpu_node(far)) {
             ogs_fatal("CHECK CONFIGURATION: sgwu.gtpu");
@@ -314,7 +356,7 @@ void sgwu_sxa_handle_session_modification_request(
         /* Setup TEID Hash */
         if (pdr->f_teid_len) {
             cause_value = ogs_pfcp_object_teid_hash_set(
-                    OGS_PFCP_OBJ_PDR_TYPE, pdr, false);
+                    OGS_PFCP_OBJ_PDR_TYPE, pdr);
             if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
                 goto cleanup;
         }
@@ -338,7 +380,30 @@ void sgwu_sxa_handle_session_modification_request(
     return;
 
 cleanup:
-    ogs_pfcp_sess_clear(&sess->pfcp);
+    ogs_error("Reject modification [xid:%u] "
+            "[UP-SEID:0x%llx CP-SEID:0x%llx] "
+            "[Cause:%u Offending-IE:%u]",
+            xact->xid,
+            (unsigned long long)sess->sgwu_sxa_seid,
+            (unsigned long long)sess->sgwc_sxa_f_seid.seid,
+            cause_value, offending_ie_value);
+    /*
+     * Keep applied Updates and Removes; reclaim only newly created rules.
+     * Common cleanup logs each removed ID. Count survivors only here,
+     * on rejection, so normal requests avoid diagnostic list walks.
+     * Offending-IE == 0 means no Offending IE is included in the response.
+     */
+    ogs_pfcp_sess_clear_since_mark(&sess->pfcp, &mark);
+    ogs_info("Rejected modification cleanup complete [xid:%u] "
+            "[UP-SEID:0x%llx CP-SEID:0x%llx] "
+            "[PDR:%d FAR:%d URR:%d QER:%d BAR:%d]",
+            xact->xid,
+            (unsigned long long)sess->sgwu_sxa_seid,
+            (unsigned long long)sess->sgwc_sxa_f_seid.seid,
+            ogs_list_count(&sess->pfcp.pdr_list),
+            ogs_list_count(&sess->pfcp.far_list),
+            ogs_list_count(&sess->pfcp.urr_list),
+            ogs_list_count(&sess->pfcp.qer_list), sess->pfcp.bar != NULL);
     ogs_pfcp_send_error_message(xact, sess ? sess->sgwc_sxa_f_seid.seid : 0,
             OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE,
             cause_value, offending_ie_value);

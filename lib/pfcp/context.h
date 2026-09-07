@@ -154,8 +154,9 @@ typedef struct ogs_pfcp_pdr_s {
 
     struct {
         struct {
-            int len;
+            bool registered; /* This PDR owns the hash entry */
             uint32_t key;
+            ogs_pfcp_object_type_e type;
         } teid;
     } hash;
 
@@ -230,7 +231,7 @@ typedef struct ogs_pfcp_far_s {
 
     struct {
         struct {
-            int len;
+            int len; /* Non-zero when this FAR owns the hash entry */
             ogs_pfcp_far_hash_f_teid_t key;
         } f_teid;
 
@@ -339,6 +340,23 @@ typedef struct ogs_pfcp_sess_s {
     OGS_POOL(bar_id_pool, uint8_t);
 } ogs_pfcp_sess_t;
 
+/*
+ * Rule IDs held by a session before processing a modification.
+ * Fields and hash entries are not snapshotted; cleanup removes new IDs only.
+ * has_bar records presence because a session has at most one BAR.
+ */
+typedef struct ogs_pfcp_sess_mark_s {
+    uint32_t            pdr_id[OGS_MAX_NUM_OF_PDR];
+    uint32_t            far_id[OGS_MAX_NUM_OF_FAR];
+    uint32_t            urr_id[OGS_MAX_NUM_OF_URR];
+    uint32_t            qer_id[OGS_MAX_NUM_OF_QER];
+    int                 num_of_pdr;
+    int                 num_of_far;
+    int                 num_of_urr;
+    int                 num_of_qer;
+    bool                has_bar;
+} ogs_pfcp_sess_mark_t;
+
 typedef struct ogs_pfcp_subnet_s ogs_pfcp_subnet_t;
 typedef struct ogs_pfcp_ue_ip_s {
     uint32_t        addr[4];
@@ -427,6 +445,9 @@ int ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far);
 int ogs_pfcp_setup_pdr_gtpu_node(ogs_pfcp_pdr_t *pdr);
 
 void ogs_pfcp_sess_clear(ogs_pfcp_sess_t *sess);
+void ogs_pfcp_sess_mark(ogs_pfcp_sess_t *sess, ogs_pfcp_sess_mark_t *mark);
+void ogs_pfcp_sess_clear_since_mark(
+        ogs_pfcp_sess_t *sess, const ogs_pfcp_sess_mark_t *mark);
 
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess);
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find(
@@ -437,10 +458,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
 int ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr);
 
 uint8_t ogs_pfcp_object_teid_hash_set(
-        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr,
-        bool restoration_indication);
+        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr);
 ogs_pfcp_object_t *ogs_pfcp_object_find_by_teid(uint32_t teid);
-int ogs_pfcp_object_count_by_teid(ogs_pfcp_sess_t *sess, uint32_t teid);
 
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_choose_id(
         ogs_pfcp_sess_t *sess, uint8_t choose_id);
