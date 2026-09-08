@@ -39,6 +39,11 @@ void OpenAPI_immediate_report_1_free(OpenAPI_immediate_report_1_t *immediate_rep
     ogs_free(immediate_report_1);
 }
 
+/*
+ * oneOf union (x-open5gs-union): the members are the alternatives of the
+ * original oneOf. Exactly one is set, and it is the JSON value itself
+ * rather than a property of a wrapper object.
+ */
 cJSON *OpenAPI_immediate_report_1_convertToJSON(OpenAPI_immediate_report_1_t *immediate_report_1)
 {
     cJSON *item = NULL;
@@ -49,68 +54,55 @@ cJSON *OpenAPI_immediate_report_1_convertToJSON(OpenAPI_immediate_report_1_t *im
         return NULL;
     }
 
-    item = cJSON_CreateObject();
+    if ((immediate_report_1->provisioned_data_sets != NULL) +
+            (immediate_report_1->shared_data_list != NULL) != 1) {
+        ogs_error("OpenAPI_immediate_report_1_convertToJSON() failed [ImmediateReport_1]: exactly one alternative must be set");
+        return NULL;
+    }
+
     if (immediate_report_1->provisioned_data_sets) {
-    cJSON *provisioned_data_sets_local_JSON = OpenAPI_provisioned_data_sets_convertToJSON(immediate_report_1->provisioned_data_sets);
-    if (provisioned_data_sets_local_JSON == NULL) {
-        ogs_error("OpenAPI_immediate_report_1_convertToJSON() failed [provisioned_data_sets]");
-        goto end;
+        return OpenAPI_provisioned_data_sets_convertToJSON(immediate_report_1->provisioned_data_sets);
     }
-    cJSON_AddItemToObject(item, "ProvisionedDataSets", provisioned_data_sets_local_JSON);
-    if (item->child == NULL) {
-        ogs_error("OpenAPI_immediate_report_1_convertToJSON() failed [provisioned_data_sets]");
-        goto end;
-    }
-    }
-
     if (immediate_report_1->shared_data_list) {
-    cJSON *shared_data_listList = cJSON_AddArrayToObject(item, "SharedDataList");
-    if (shared_data_listList == NULL) {
-        ogs_error("OpenAPI_immediate_report_1_convertToJSON() failed [shared_data_list]");
-        goto end;
-    }
-    OpenAPI_list_for_each(immediate_report_1->shared_data_list, node) {
-        cJSON *itemLocal = OpenAPI_shared_data_1_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        item = cJSON_CreateArray();
+        if (item == NULL) {
             ogs_error("OpenAPI_immediate_report_1_convertToJSON() failed [shared_data_list]");
-            goto end;
+            return NULL;
         }
-        cJSON_AddItemToArray(shared_data_listList, itemLocal);
-    }
+        OpenAPI_list_for_each(immediate_report_1->shared_data_list, node) {
+            cJSON *itemLocal = OpenAPI_shared_data_1_convertToJSON(node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_immediate_report_1_convertToJSON() failed [shared_data_list]");
+                cJSON_Delete(item);
+                return NULL;
+            }
+            cJSON_AddItemToArray(item, itemLocal);
+        }
+        return item;
     }
 
-end:
-    return item;
+    ogs_error("OpenAPI_immediate_report_1_convertToJSON() failed [ImmediateReport_1]");
+    return NULL;
 }
 
 OpenAPI_immediate_report_1_t *OpenAPI_immediate_report_1_parseFromJSON(cJSON *immediate_report_1JSON)
 {
-    OpenAPI_immediate_report_1_t *immediate_report_1_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
-    cJSON *provisioned_data_sets = NULL;
-    OpenAPI_provisioned_data_sets_t *provisioned_data_sets_local_nonprim = NULL;
-    cJSON *shared_data_list = NULL;
-    OpenAPI_list_t *shared_data_listList = NULL;
-    provisioned_data_sets = cJSON_GetObjectItemCaseSensitive(immediate_report_1JSON, "ProvisionedDataSets");
-    if (provisioned_data_sets) {
-    provisioned_data_sets_local_nonprim = OpenAPI_provisioned_data_sets_parseFromJSON(provisioned_data_sets);
-    if (!provisioned_data_sets_local_nonprim) {
-        ogs_error("OpenAPI_provisioned_data_sets_parseFromJSON failed [provisioned_data_sets]");
-        goto end;
-    }
-    }
+    OpenAPI_provisioned_data_sets_t *provisioned_data_sets = NULL;
+    OpenAPI_list_t *shared_data_list = NULL;
 
-    shared_data_list = cJSON_GetObjectItemCaseSensitive(immediate_report_1JSON, "SharedDataList");
-    if (shared_data_list) {
-        cJSON *shared_data_list_local = NULL;
-        if (!cJSON_IsArray(shared_data_list)) {
-            ogs_error("OpenAPI_immediate_report_1_parseFromJSON() failed [shared_data_list]");
+    if (cJSON_IsObject(immediate_report_1JSON)) {
+        provisioned_data_sets = OpenAPI_provisioned_data_sets_parseFromJSON(immediate_report_1JSON);
+        if (!provisioned_data_sets) {
+            ogs_error("OpenAPI_provisioned_data_sets_parseFromJSON failed [provisioned_data_sets]");
             goto end;
         }
+    } else if (cJSON_IsArray(immediate_report_1JSON)) {
+        cJSON *shared_data_list_local = NULL;
 
-        shared_data_listList = OpenAPI_list_create();
+        shared_data_list = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(shared_data_list_local, shared_data_list) {
+        cJSON_ArrayForEach(shared_data_list_local, immediate_report_1JSON) {
             if (!cJSON_IsObject(shared_data_list_local)) {
                 ogs_error("OpenAPI_immediate_report_1_parseFromJSON() failed [shared_data_list]");
                 goto end;
@@ -120,27 +112,25 @@ OpenAPI_immediate_report_1_t *OpenAPI_immediate_report_1_parseFromJSON(cJSON *im
                 ogs_error("No shared_data_listItem");
                 goto end;
             }
-            OpenAPI_list_add(shared_data_listList, shared_data_listItem);
+            OpenAPI_list_add(shared_data_list, shared_data_listItem);
         }
+    } else {
+        ogs_error("OpenAPI_immediate_report_1_parseFromJSON() failed [ImmediateReport_1]");
+        goto end;
     }
 
-    immediate_report_1_local_var = OpenAPI_immediate_report_1_create (
-        provisioned_data_sets ? provisioned_data_sets_local_nonprim : NULL,
-        shared_data_list ? shared_data_listList : NULL
-    );
-
-    return immediate_report_1_local_var;
+    return OpenAPI_immediate_report_1_create(provisioned_data_sets, shared_data_list);
 end:
-    if (provisioned_data_sets_local_nonprim) {
-        OpenAPI_provisioned_data_sets_free(provisioned_data_sets_local_nonprim);
-        provisioned_data_sets_local_nonprim = NULL;
+    if (provisioned_data_sets) {
+        OpenAPI_provisioned_data_sets_free(provisioned_data_sets);
+        provisioned_data_sets = NULL;
     }
-    if (shared_data_listList) {
-        OpenAPI_list_for_each(shared_data_listList, node) {
+    if (shared_data_list) {
+        OpenAPI_list_for_each(shared_data_list, node) {
             OpenAPI_shared_data_1_free(node->data);
         }
-        OpenAPI_list_free(shared_data_listList);
-        shared_data_listList = NULL;
+        OpenAPI_list_free(shared_data_list);
+        shared_data_list = NULL;
     }
     return NULL;
 }

@@ -13,7 +13,7 @@ $ sudo apt install nodejs
 $ sudo npm install @openapitools/openapi-generator-cli -g
 
 $ Run generator
-$ sudo openapi-generator-cli version-manager set 6.4.0
+$ sudo openapi-generator-cli version-manager set 7.20.0
 $ python3 transform.py ./standard ./modified
 $ ./generator.sh
 
@@ -30,7 +30,7 @@ $ brew install node
 $ npm install @openapitools/openapi-generator-cli -g
 
 $ Run generator
-$ openapi-generator-cli version-manager set 6.4.0
+$ openapi-generator-cli version-manager set 7.20.0
 $ python3 transform.py ./standard ./modified
 $ ./generator.sh
 
