@@ -3126,6 +3126,30 @@ void ngap_handle_path_switch_request(
         return;
     }
 
+    /*
+     * When the NG association of the source gNB is lost,
+     * amf_gnb_remove() frees the gNB at once, but ran_ue stays
+     * until the SMF confirms the user-plane deactivation started by
+     * amf_sbi_send_deactivate_all_ue_in_gnb(). A PathSwitchRequest
+     * arriving in this window refers to an NG context that is being
+     * released, so it is not switched to the target gNB.
+     * ran_ue_switch_to_gnb() also requires the source gNB.
+     */
+    if (!amf_gnb_find_by_id(ran_ue->gnb_id)) {
+        ogs_error("[%d] gNB has already been removed : "
+                "RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]",
+                ran_ue->gnb_id,
+                (long long)ran_ue->ran_ue_ngap_id,
+                (long long)ran_ue->amf_ue_ngap_id);
+        r = ngap_send_error_indication(
+                gnb, (uint64_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
+                NGAP_Cause_PR_protocol,
+                NGAP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     amf_ue->send_ue_security_capability_in_path_switch_ack = false;
 
     ogs_info("    [OLD] RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld] ",
