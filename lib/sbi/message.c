@@ -3314,12 +3314,27 @@ static int on_header_value(
 
     if (data->num_of_part < OGS_SBI_MAX_NUM_OF_PART && at && length) {
         if (!ogs_strcasecmp(data->header_field, OGS_SBI_CONTENT_TYPE)) {
-            ogs_assert(data->part[data->num_of_part].content_type == NULL);
+            /*
+             * A part carries at most one Content-Type. A repeated header
+             * comes from the peer, so treat it as a parse error rather than
+             * an assertion. See Issues #4775
+             */
+            if (data->part[data->num_of_part].content_type) {
+                ogs_error("Duplicate Content-Type in multipart part [%d]",
+                        data->num_of_part);
+                data->parse_error = true;
+                return 0;
+            }
             data->part[data->num_of_part].content_type =
                 ogs_strndup(at, length);
             ogs_assert(data->part[data->num_of_part].content_type);
         } else if (!ogs_strcasecmp(data->header_field, OGS_SBI_CONTENT_ID)) {
-            ogs_assert(data->part[data->num_of_part].content_id == NULL);
+            if (data->part[data->num_of_part].content_id) {
+                ogs_error("Duplicate Content-Id in multipart part [%d]",
+                        data->num_of_part);
+                data->parse_error = true;
+                return 0;
+            }
             data->part[data->num_of_part].content_id =
                 ogs_strndup(at, length);
             ogs_assert(data->part[data->num_of_part].content_id);
