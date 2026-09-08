@@ -215,7 +215,7 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                         no_heartbeat_margin));
         }
 
-        ogs_assert(true ==
+        ogs_expect(true ==
             nrf_nnrf_nfm_send_nf_status_notify_all(
                 OpenAPI_notification_event_type_NF_REGISTERED, nf_instance));
         break;
@@ -226,7 +226,7 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
             ogs_timer_stop(nf_instance->t_no_heartbeat);
         }
 
-        ogs_assert(true ==
+        ogs_expect(true ==
             nrf_nnrf_nfm_send_nf_status_notify_all(
                 OpenAPI_notification_event_type_NF_DEREGISTERED, nf_instance));
         break;

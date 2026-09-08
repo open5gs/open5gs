@@ -70,13 +70,16 @@ static void recalculate_pool_size(void)
 
 #define POOL_NUM_PER_UE 16
     ogs_app()->pool.timer = global_conf.max.ue * POOL_NUM_PER_UE;
-    ogs_app()->pool.message = global_conf.max.ue * POOL_NUM_PER_UE;
     ogs_app()->pool.event = global_conf.max.ue * POOL_NUM_PER_UE;
     ogs_app()->pool.socket = global_conf.max.ue * POOL_NUM_PER_UE;
     ogs_app()->pool.xact = global_conf.max.ue * POOL_NUM_PER_UE;
     ogs_app()->pool.stream = global_conf.max.ue * POOL_NUM_PER_UE;
 
     ogs_app()->pool.nf = global_conf.max.peer;
+
+    /* Size both SBI message pools for incoming requests and transactions. */
+    ogs_app()->pool.message = ogs_app()->pool.event + ogs_app()->pool.xact;
+
 #define NF_SERVICE_PER_NF_INSTANCE 16
     ogs_app()->pool.nf_service =
         ogs_app()->pool.nf * NF_SERVICE_PER_NF_INSTANCE;

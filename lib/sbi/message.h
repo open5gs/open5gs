@@ -658,6 +658,7 @@ void ogs_sbi_message_final(void);
 void ogs_sbi_message_free(ogs_sbi_message_t *message);
 
 ogs_sbi_request_t *ogs_sbi_request_new(void);
+ogs_sbi_request_t *ogs_sbi_request_new_incoming(void);
 void ogs_sbi_request_free(ogs_sbi_request_t *request);
 ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message);
 int ogs_sbi_parse_request(

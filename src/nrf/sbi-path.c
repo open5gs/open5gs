@@ -99,6 +99,7 @@ bool nrf_nnrf_nfm_send_nf_status_notify_all(
         ogs_sbi_nf_instance_t *nf_instance)
 {
     bool rc;
+    bool result = true;
     ogs_sbi_subscription_data_t *subscription_data = NULL;
 
     ogs_assert(nf_instance);
@@ -141,11 +142,11 @@ bool nrf_nnrf_nfm_send_nf_status_notify_all(
                 subscription_data, event, nf_instance);
         if (rc == false) {
             ogs_error("nrf_nnrf_nfm_send_nf_status_notify() failed");
-            return rc;
+            result = false;
         }
     }
 
-    return true;
+    return result;
 }
 
 static int client_notify_cb(

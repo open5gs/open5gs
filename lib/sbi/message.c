@@ -275,6 +275,23 @@ ogs_sbi_request_t *ogs_sbi_request_new(void)
     return request;
 }
 
+ogs_sbi_request_t *ogs_sbi_request_new_incoming(void)
+{
+    int avail = ogs_pool_avail(&request_pool);
+    int reserve = ogs_app()->pool.xact;
+
+    /* Transactions retain their requests until removal. Reserve their
+     * capacity against incoming requests. */
+    if (avail <= reserve) {
+        ogs_error("SBI request capacity reserved for outbound traffic "
+                "[available:%d,reserved:%d,total:%d]",
+                avail, reserve, ogs_pool_size(&request_pool));
+        return NULL;
+    }
+
+    return ogs_sbi_request_new();
+}
+
 ogs_sbi_response_t *ogs_sbi_response_new(void)
 {
     ogs_sbi_response_t *response = NULL;
