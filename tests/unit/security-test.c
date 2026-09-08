@@ -407,6 +407,91 @@ static void security_test9(abts_case *tc, void *data)
     ogs_pkbuf_free(pkbuf);
 }
 
+static void security_test10(abts_case *tc, void *data)
+{
+    typedef void (*hmac_func_t)(const uint8_t *key, uint32_t key_size,
+            const uint8_t *message, uint32_t message_len,
+            uint8_t *mac, uint32_t mac_size);
+    struct hmac_test_vector {
+        hmac_func_t hmac;
+        uint32_t digest_size;
+        uint32_t block_size;
+        const char *empty_key_mac;
+        const char *digest_plus_one_key_mac;
+        const char *block_size_key_mac;
+    } test_vector[] = {
+        {
+            ogs_hmac_sha1, OGS_SHA1_DIGEST_SIZE, OGS_SHA1_BLOCK_SIZE,
+            "56a8d203b357db47b98ca74a5b21466832467c72",
+            "123505d2066bc7c33c3b329b9659fa614ba06a47",
+            "3fc920f32d2f747af7f9c0ad886cdd01aebc53e7",
+        },
+        {
+            ogs_hmac_sha224, OGS_SHA224_DIGEST_SIZE, OGS_SHA224_BLOCK_SIZE,
+            "c4c4d3cfadfee804dba5ef6839f22ae7779d9f99f81e73fdb3272d56",
+            "c1d53c767acc64f8dd96a5fb4512c2973d675dfc8dc9461871919373",
+            "928065aec02388cf28bd336fecd26a8c81a042553bcf4f00bbbeeacf",
+        },
+        {
+            ogs_hmac_sha256, OGS_SHA256_DIGEST_SIZE, OGS_SHA256_BLOCK_SIZE,
+            "e8d1b47fcaaf6553f3f2c662f0ce0f3d178f8f1d050337b174060e5900bc8bc0",
+            "1aee398a590adb7f7feb757de9e340c4406a68dddeb537361350b9695263058c",
+            "070f665404b179c4eb5c8f67d43d72ab7a4aea4b9f98a275c9d8c6215d6bed3c",
+        },
+        {
+            ogs_hmac_sha384, OGS_SHA384_DIGEST_SIZE, OGS_SHA384_BLOCK_SIZE,
+            "ba252d647d257da0c4877ba608b9ac8ee5dd5f7ce4453415ef6de2b452f54c32"
+            "4982365861dcd4a58dd415b498ec36f9",
+            "492b30320e6420f3c3d5f32d315d428d999c01afd53eb1b3d31f785945edf54a"
+            "7862d4dc474c2fc359d890c10a6f3391",
+            "b76fe3e48157856a9bae416508f305a24de87f5d790d70ae0bb8b3c0cf2432a0"
+            "f8b06d954435257845db7aaf7e3a6770",
+        },
+        {
+            ogs_hmac_sha512, OGS_SHA512_DIGEST_SIZE, OGS_SHA512_BLOCK_SIZE,
+            "146ea76e8638ac4810323d94a08a8d4d04e6c4a5eeb193eaf20b8f17c1c43803"
+            "d1b481774bd0aa353616175e85b438248c8ef762d23a73e351cac777b4696559",
+            "b6389389f70bc7ee58e8a60d477d912d145435140f100d5c7ae9084d54a04fc0"
+            "e7f8e158a9647d917164de011f6a340d0401805392ee75ca207cd7e7d7dd8241",
+            "d091afeea09a476620b932bbb7ae463a606cabf48a7718366d16f99bb648fc577"
+            "0a0f28ec3b9896bd3b7b610975f945c4d682bea5aee8a365069e42bd03b26a6",
+        },
+    };
+    const uint8_t message[] = "Open5GS HMAC boundary test";
+    uint8_t key[OGS_SHA512_BLOCK_SIZE];
+    uint8_t mac[OGS_SHA512_DIGEST_SIZE];
+    uint8_t expected[OGS_SHA512_DIGEST_SIZE];
+    int i, j;
+
+    for (i = 0; i < sizeof(key); i++)
+        key[i] = i;
+
+    for (i = 0; i < OGS_ARRAY_SIZE(test_vector); i++) {
+        test_vector[i].hmac(NULL, 0, message, sizeof(message)-1,
+                mac, test_vector[i].digest_size);
+        ABTS_TRUE(tc, memcmp(mac, ogs_hex_from_string(
+                        test_vector[i].empty_key_mac,
+                        expected, sizeof(expected)),
+                    test_vector[i].digest_size) == 0);
+
+        j = test_vector[i].digest_size + 1;
+        test_vector[i].hmac(key, j, message, sizeof(message)-1,
+                mac, test_vector[i].digest_size);
+        ABTS_TRUE(tc, memcmp(mac, ogs_hex_from_string(
+                        test_vector[i].digest_plus_one_key_mac,
+                        expected, sizeof(expected)),
+                    test_vector[i].digest_size) == 0);
+
+        j = test_vector[i].block_size;
+        test_vector[i].hmac(key, j, message, sizeof(message)-1,
+                mac, test_vector[i].digest_size);
+        ABTS_TRUE(tc, memcmp(mac, ogs_hex_from_string(
+                        test_vector[i].block_size_key_mac,
+                        expected, sizeof(expected)),
+                    test_vector[i].digest_size) == 0);
+    }
+}
+
 abts_suite *test_security(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -420,6 +505,7 @@ abts_suite *test_security(abts_suite *suite)
     abts_run_test(suite, security_test7, NULL);
     abts_run_test(suite, security_test8, NULL);
     abts_run_test(suite, security_test9, NULL);
+    abts_run_test(suite, security_test10, NULL);
 
     return suite;
 }

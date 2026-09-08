@@ -68,25 +68,21 @@ void ogs_hmac_sha224_init(ogs_hmac_sha224_ctx *ctx, const uint8_t *key,
     uint32_t fill;
     uint32_t num;
 
-    uint8_t key_temp[OGS_SHA224_DIGEST_SIZE];
+    uint8_t key_temp[OGS_SHA224_BLOCK_SIZE];
     int i;
 
-    if (key_size == OGS_SHA224_BLOCK_SIZE) {
-        memcpy(key_temp, key, sizeof(key_temp));
-        num = OGS_SHA224_BLOCK_SIZE;
+    if (key_size > OGS_SHA224_BLOCK_SIZE) {
+        num = OGS_SHA224_DIGEST_SIZE;
+        ogs_sha224(key, key_size, key_temp);
     } else {
-        if (key_size > OGS_SHA224_BLOCK_SIZE){
-            num = OGS_SHA224_DIGEST_SIZE;
-            ogs_sha224(key, key_size, key_temp);
-        } else { /* key_size > OGS_SHA224_BLOCK_SIZE */
-            memcpy(key_temp, key, sizeof(key_temp));
-            num = key_size;
-        }
-        fill = OGS_SHA224_BLOCK_SIZE - num;
-
-        memset(ctx->block_ipad + num, 0x36, fill);
-        memset(ctx->block_opad + num, 0x5c, fill);
+        if (key_size)
+            memcpy(key_temp, key, key_size);
+        num = key_size;
     }
+    fill = OGS_SHA224_BLOCK_SIZE - num;
+
+    memset(ctx->block_ipad + num, 0x36, fill);
+    memset(ctx->block_opad + num, 0x5c, fill);
 
     for (i = 0; i < num; i++) {
         ctx->block_ipad[i] = key_temp[i] ^ 0x36;
@@ -130,7 +126,9 @@ void ogs_hmac_sha224_final(ogs_hmac_sha224_ctx *ctx, uint8_t *mac,
     ogs_sha224_final(&ctx->ctx_inside, digest_inside);
     ogs_sha224_update(&ctx->ctx_outside, digest_inside, OGS_SHA224_DIGEST_SIZE);
     ogs_sha224_final(&ctx->ctx_outside, mac_temp);
-    memcpy(mac, mac_temp, mac_size);
+    ogs_assert(mac_size <= OGS_SHA224_DIGEST_SIZE);
+    if (mac_size)
+        memcpy(mac, mac_temp, mac_size);
 }
 
 void ogs_hmac_sha224(const uint8_t *key, uint32_t key_size,
@@ -152,25 +150,21 @@ void ogs_hmac_sha256_init(ogs_hmac_sha256_ctx *ctx, const uint8_t *key,
     uint32_t fill;
     uint32_t num;
 
-    uint8_t key_temp[OGS_SHA256_DIGEST_SIZE];
+    uint8_t key_temp[OGS_SHA256_BLOCK_SIZE];
     int i;
 
-    if (key_size == OGS_SHA256_BLOCK_SIZE) {
-        memcpy(key_temp, key, sizeof(key_temp));
-        num = OGS_SHA256_BLOCK_SIZE;
+    if (key_size > OGS_SHA256_BLOCK_SIZE) {
+        num = OGS_SHA256_DIGEST_SIZE;
+        ogs_sha256(key, key_size, key_temp);
     } else {
-        if (key_size > OGS_SHA256_BLOCK_SIZE){
-            num = OGS_SHA256_DIGEST_SIZE;
-            ogs_sha256(key, key_size, key_temp);
-        } else { /* key_size > OGS_SHA256_BLOCK_SIZE */
-            memcpy(key_temp, key, sizeof(key_temp));
-            num = key_size;
-        }
-        fill = OGS_SHA256_BLOCK_SIZE - num;
-
-        memset(ctx->block_ipad + num, 0x36, fill);
-        memset(ctx->block_opad + num, 0x5c, fill);
+        if (key_size)
+            memcpy(key_temp, key, key_size);
+        num = key_size;
     }
+    fill = OGS_SHA256_BLOCK_SIZE - num;
+
+    memset(ctx->block_ipad + num, 0x36, fill);
+    memset(ctx->block_opad + num, 0x5c, fill);
 
     for (i = 0; i < num; i++) {
         ctx->block_ipad[i] = key_temp[i] ^ 0x36;
@@ -214,7 +208,9 @@ void ogs_hmac_sha256_final(ogs_hmac_sha256_ctx *ctx, uint8_t *mac,
     ogs_sha256_final(&ctx->ctx_inside, digest_inside);
     ogs_sha256_update(&ctx->ctx_outside, digest_inside, OGS_SHA256_DIGEST_SIZE);
     ogs_sha256_final(&ctx->ctx_outside, mac_temp);
-    memcpy(mac, mac_temp, mac_size);
+    ogs_assert(mac_size <= OGS_SHA256_DIGEST_SIZE);
+    if (mac_size)
+        memcpy(mac, mac_temp, mac_size);
 }
 
 void ogs_hmac_sha256(const uint8_t *key, uint32_t key_size,
@@ -236,25 +232,21 @@ void ogs_hmac_sha384_init(ogs_hmac_sha384_ctx *ctx, const uint8_t *key,
     uint32_t fill;
     uint32_t num;
 
-    uint8_t key_temp[OGS_SHA384_DIGEST_SIZE];
+    uint8_t key_temp[OGS_SHA384_BLOCK_SIZE];
     int i;
 
-    if (key_size == OGS_SHA384_BLOCK_SIZE) {
-        memcpy(key_temp, key, sizeof(key_temp));
-        num = OGS_SHA384_BLOCK_SIZE;
+    if (key_size > OGS_SHA384_BLOCK_SIZE) {
+        num = OGS_SHA384_DIGEST_SIZE;
+        ogs_sha384(key, key_size, key_temp);
     } else {
-        if (key_size > OGS_SHA384_BLOCK_SIZE){
-            num = OGS_SHA384_DIGEST_SIZE;
-            ogs_sha384(key, key_size, key_temp);
-        } else { /* key_size > OGS_SHA384_BLOCK_SIZE */
-            memcpy(key_temp, key, sizeof(key_temp));
-            num = key_size;
-        }
-        fill = OGS_SHA384_BLOCK_SIZE - num;
-
-        memset(ctx->block_ipad + num, 0x36, fill);
-        memset(ctx->block_opad + num, 0x5c, fill);
+        if (key_size)
+            memcpy(key_temp, key, key_size);
+        num = key_size;
     }
+    fill = OGS_SHA384_BLOCK_SIZE - num;
+
+    memset(ctx->block_ipad + num, 0x36, fill);
+    memset(ctx->block_opad + num, 0x5c, fill);
 
     for (i = 0; i < num; i++) {
         ctx->block_ipad[i] = key_temp[i] ^ 0x36;
@@ -298,7 +290,9 @@ void ogs_hmac_sha384_final(ogs_hmac_sha384_ctx *ctx, uint8_t *mac,
     ogs_sha384_final(&ctx->ctx_inside, digest_inside);
     ogs_sha384_update(&ctx->ctx_outside, digest_inside, OGS_SHA384_DIGEST_SIZE);
     ogs_sha384_final(&ctx->ctx_outside, mac_temp);
-    memcpy(mac, mac_temp, mac_size);
+    ogs_assert(mac_size <= OGS_SHA384_DIGEST_SIZE);
+    if (mac_size)
+        memcpy(mac, mac_temp, mac_size);
 }
 
 void ogs_hmac_sha384(const uint8_t *key, uint32_t key_size,
@@ -320,25 +314,21 @@ void ogs_hmac_sha512_init(ogs_hmac_sha512_ctx *ctx, const uint8_t *key,
     uint32_t fill;
     uint32_t num;
 
-    uint8_t key_temp[OGS_SHA512_DIGEST_SIZE];
+    uint8_t key_temp[OGS_SHA512_BLOCK_SIZE];
     int i;
 
-    if (key_size == OGS_SHA512_BLOCK_SIZE) {
-        memcpy(key_temp, key, sizeof(key_temp));
-        num = OGS_SHA512_BLOCK_SIZE;
+    if (key_size > OGS_SHA512_BLOCK_SIZE) {
+        num = OGS_SHA512_DIGEST_SIZE;
+        ogs_sha512(key, key_size, key_temp);
     } else {
-        if (key_size > OGS_SHA512_BLOCK_SIZE){
-            num = OGS_SHA512_DIGEST_SIZE;
-            ogs_sha512(key, key_size, key_temp);
-        } else { /* key_size > OGS_SHA512_BLOCK_SIZE */
-            memcpy(key_temp, key, sizeof(key_temp));
-            num = key_size;
-        }
-        fill = OGS_SHA512_BLOCK_SIZE - num;
-
-        memset(ctx->block_ipad + num, 0x36, fill);
-        memset(ctx->block_opad + num, 0x5c, fill);
+        if (key_size)
+            memcpy(key_temp, key, key_size);
+        num = key_size;
     }
+    fill = OGS_SHA512_BLOCK_SIZE - num;
+
+    memset(ctx->block_ipad + num, 0x36, fill);
+    memset(ctx->block_opad + num, 0x5c, fill);
 
     for (i = 0; i < num; i++) {
         ctx->block_ipad[i] = key_temp[i] ^ 0x36;
@@ -382,7 +372,9 @@ void ogs_hmac_sha512_final(ogs_hmac_sha512_ctx *ctx, uint8_t *mac,
     ogs_sha512_final(&ctx->ctx_inside, digest_inside);
     ogs_sha512_update(&ctx->ctx_outside, digest_inside, OGS_SHA512_DIGEST_SIZE);
     ogs_sha512_final(&ctx->ctx_outside, mac_temp);
-    memcpy(mac, mac_temp, mac_size);
+    ogs_assert(mac_size <= OGS_SHA512_DIGEST_SIZE);
+    if (mac_size)
+        memcpy(mac, mac_temp, mac_size);
 }
 
 void ogs_hmac_sha512(const uint8_t *key, uint32_t key_size,
