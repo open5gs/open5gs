@@ -17,6 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
+
 #include "ngap-path.h"
 
 static amf_context_t self;
@@ -198,6 +200,51 @@ static int amf_context_validation(void)
         return OGS_ERROR;
     }
 
+    return OGS_OK;
+}
+
+static struct {
+    const char *name;
+    amf_timer_e id;
+} amf_gmm_timer_cfg_map[] = {
+    { "t3513", AMF_TIMER_T3513 },
+    { "t3522", AMF_TIMER_T3522 },
+    { "t3550", AMF_TIMER_T3550 },
+    { "t3555", AMF_TIMER_T3555 },
+    { "t3560", AMF_TIMER_T3560 },
+    { "t3570", AMF_TIMER_T3570 },
+};
+
+/* Largest number of seconds that ogs_time_from_sec() can convert
+ * without overflowing ogs_time_t. */
+#define AMF_GMM_TIMER_MAX_SEC (INT64_MAX / OGS_USEC_PER_SEC)
+
+static int amf_gmm_timer_value_from_string(const char *v, const char *key,
+        long long *value)
+{
+    long long parsed;
+    char *endptr = NULL;
+
+    if (!v || *v == '\0') {
+        ogs_error("No amf.time.%s.value in '%s'", key, ogs_app()->file);
+        return OGS_ERROR;
+    }
+
+    errno = 0;
+    parsed = strtoll(v, &endptr, 10);
+    if (errno != 0 || endptr == v || *endptr != '\0') {
+        ogs_error("Invalid amf.time.%s.value `%s` in '%s'",
+                key, v, ogs_app()->file);
+        return OGS_ERROR;
+    }
+
+    if (parsed <= 0 || parsed > AMF_GMM_TIMER_MAX_SEC) {
+        ogs_error("Invalid amf.time.%s.value `%s` in '%s'",
+                key, v, ogs_app()->file);
+        return OGS_ERROR;
+    }
+
+    *value = parsed;
     return OGS_OK;
 }
 
@@ -1062,8 +1109,51 @@ int amf_context_parse_config(void)
                             /* handle config in app library */
                         } else if (!strcmp(time_key, "handover")) {
                             /* handle config in app library */
-                        } else
-                            ogs_warn("unknown key `%s`", time_key);
+                        } else {
+                            size_t i;
+                            bool matched = false;
+
+                            for (i = 0; i < OGS_ARRAY_SIZE(
+                                    amf_gmm_timer_cfg_map); i++) {
+                                ogs_yaml_iter_t gmm_timer_iter;
+
+                                if (strcmp(time_key,
+                                    amf_gmm_timer_cfg_map[i].name))
+                                    continue;
+
+                                matched = true;
+                                ogs_yaml_iter_recurse(
+                                        &time_iter, &gmm_timer_iter);
+
+                                while (ogs_yaml_iter_next(&gmm_timer_iter)) {
+                                    const char *gmm_timer_key =
+                                        ogs_yaml_iter_key(&gmm_timer_iter);
+                                    ogs_assert(gmm_timer_key);
+
+                                    if (!strcmp(gmm_timer_key, "value")) {
+                                        const char *v = ogs_yaml_iter_value(
+                                                &gmm_timer_iter);
+                                        long long value;
+
+                                        rv = amf_gmm_timer_value_from_string(
+                                                v, time_key, &value);
+                                        if (rv != OGS_OK)
+                                            return rv;
+
+                                        amf_timer_cfg(
+                                            amf_gmm_timer_cfg_map[i].id)->
+                                                duration =
+                                                    ogs_time_from_sec(value);
+                                    } else
+                                        ogs_warn("unknown key `%s`",
+                                                gmm_timer_key);
+                                }
+                                break;
+                            }
+
+                            if (!matched)
+                                ogs_warn("unknown key `%s`", time_key);
+                        }
                     }
                 } else if (!strcmp(amf_key, "default")) {
                     /* handle config in sbi library */
