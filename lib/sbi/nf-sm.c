@@ -463,7 +463,7 @@ void ogs_sbi_nf_state_registered(ogs_fsm_t *s, ogs_event_t *e)
                 ogs_timer_start(nf_instance->t_heartbeat_interval,
                     ogs_time_from_sec(nf_instance->time.heartbeat_interval));
 
-            ogs_assert(true == ogs_nnrf_nfm_send_nf_update(nf_instance));
+            ogs_expect(true == ogs_nnrf_nfm_send_nf_update(nf_instance));
             break;
 
         case OGS_TIMER_NF_INSTANCE_NO_HEARTBEAT:
