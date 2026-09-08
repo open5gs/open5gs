@@ -3518,6 +3518,7 @@ void enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb)
     ogs_assert(new_enb);
 
     enb = mme_enb_find_by_id(enb_ue->enb_id);
+    ogs_assert(enb);
 
     /* Remove from the old enb */
     ogs_list_remove(&enb->enb_ue_list, enb_ue);
