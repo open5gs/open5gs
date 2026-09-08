@@ -324,6 +324,172 @@ void OpenAPI_{{classname}}_free(OpenAPI_{{classname}}_t *{{classname}})
     ogs_free({{classname}});
 }
 
+{{#vendorExtensions.x-open5gs-union}}
+/*
+ * oneOf union (x-open5gs-union): the members are the alternatives of the
+ * original oneOf. Exactly one is set, and it is the JSON value itself
+ * rather than a property of a wrapper object.
+ */
+cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}})
+{
+    cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
+
+    if ({{classname}} == NULL) {
+        ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+        return NULL;
+    }
+
+    if ({{#vars}}({{{classname}}}->{{{name}}} != NULL){{^-last}} +
+            {{/-last}}{{/vars}} != 1) {
+        ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]: exactly one alternative must be set");
+        return NULL;
+    }
+
+{{#vars}}
+    {{#isArray}}
+    if ({{{classname}}}->{{{name}}}) {
+        item = cJSON_CreateArray();
+        if (item == NULL) {
+            ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+            return NULL;
+        }
+        OpenAPI_list_for_each({{{classname}}}->{{{name}}}, node) {
+        {{#items}}
+            cJSON *itemLocal = OpenAPI_{{complexType}}_convertToJSON(node->data);
+        {{/items}}
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+                cJSON_Delete(item);
+                return NULL;
+            }
+            cJSON_AddItemToArray(item, itemLocal);
+        }
+        return item;
+    }
+    {{/isArray}}
+    {{#isModel}}
+    if ({{{classname}}}->{{{name}}}) {
+        return OpenAPI_{{complexType}}_convertToJSON({{{classname}}}->{{{name}}});
+    }
+    {{/isModel}}
+    {{#isString}}
+    if ({{{classname}}}->{{{name}}}) {
+        return cJSON_CreateString({{{classname}}}->{{{name}}});
+    }
+    {{/isString}}
+    {{#isByteArray}}
+    if ({{{classname}}}->{{{name}}}) {
+        return cJSON_CreateString({{{classname}}}->{{{name}}});
+    }
+    {{/isByteArray}}
+{{/vars}}
+
+    ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]");
+    return NULL;
+}
+
+OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}}JSON)
+{
+    OpenAPI_lnode_t *node = NULL;
+{{#vars}}
+    {{#isArray}}
+    OpenAPI_list_t *{{{name}}} = NULL;
+    {{/isArray}}
+    {{#isModel}}
+    OpenAPI_{{complexType}}_t *{{{name}}} = NULL;
+    {{/isModel}}
+    {{#isString}}
+    char *{{{name}}} = NULL;
+    {{/isString}}
+    {{#isByteArray}}
+    char *{{{name}}} = NULL;
+    {{/isByteArray}}
+{{/vars}}
+
+{{#vars}}
+    {{#isArray}}
+    {{^-first}}} else {{/-first}}if (cJSON_IsArray({{classname}}JSON)) {
+        cJSON *{{{name}}}_local = NULL;
+
+        {{{name}}} = OpenAPI_list_create();
+
+        cJSON_ArrayForEach({{{name}}}_local, {{classname}}JSON) {
+            if (!cJSON_IsObject({{{name}}}_local)) {
+                ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
+                goto end;
+            }
+        {{#items}}
+            OpenAPI_{{complexType}}_t *{{{name}}}Item = OpenAPI_{{complexType}}_parseFromJSON({{{name}}}_local);
+        {{/items}}
+            if (!{{{name}}}Item) {
+                ogs_error("No {{{name}}}Item");
+                goto end;
+            }
+            OpenAPI_list_add({{{name}}}, {{{name}}}Item);
+        }
+    {{/isArray}}
+    {{#isModel}}
+    {{^-first}}} else {{/-first}}if (cJSON_IsObject({{classname}}JSON)) {
+        {{{name}}} = OpenAPI_{{complexType}}_parseFromJSON({{classname}}JSON);
+        if (!{{{name}}}) {
+            ogs_error("OpenAPI_{{complexType}}_parseFromJSON failed [{{{name}}}]");
+            goto end;
+        }
+    {{/isModel}}
+    {{#isString}}
+    {{^-first}}} else {{/-first}}if (cJSON_IsString({{classname}}JSON)) {
+        {{{name}}} = ogs_strdup({{classname}}JSON->valuestring);
+        ogs_assert({{{name}}});
+    {{/isString}}
+    {{#isByteArray}}
+    {{^-first}}} else {{/-first}}if (cJSON_IsString({{classname}}JSON)) {
+        {{{name}}} = ogs_strdup({{classname}}JSON->valuestring);
+        ogs_assert({{{name}}});
+    {{/isByteArray}}
+{{/vars}}
+    } else {
+        ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
+        goto end;
+    }
+
+    return OpenAPI_{{classname}}_create({{#vars}}{{{name}}}{{^-last}}, {{/-last}}{{/vars}});
+end:
+{{#vars}}
+    {{#isArray}}
+    if ({{{name}}}) {
+        OpenAPI_list_for_each({{{name}}}, node) {
+        {{#items}}
+            OpenAPI_{{complexType}}_free(node->data);
+        {{/items}}
+        }
+        OpenAPI_list_free({{{name}}});
+        {{{name}}} = NULL;
+    }
+    {{/isArray}}
+    {{#isModel}}
+    if ({{{name}}}) {
+        OpenAPI_{{complexType}}_free({{{name}}});
+        {{{name}}} = NULL;
+    }
+    {{/isModel}}
+    {{#isString}}
+    if ({{{name}}}) {
+        ogs_free({{{name}}});
+        {{{name}}} = NULL;
+    }
+    {{/isString}}
+    {{#isByteArray}}
+    if ({{{name}}}) {
+        ogs_free({{{name}}});
+        {{{name}}} = NULL;
+    }
+    {{/isByteArray}}
+{{/vars}}
+    return NULL;
+}
+{{/vendorExtensions.x-open5gs-union}}
+{{^vendorExtensions.x-open5gs-union}}
 cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}})
 {
     cJSON *item = NULL;
@@ -1246,6 +1412,7 @@ end:
 {{/vars}}
     return NULL;
 }
+{{/vendorExtensions.x-open5gs-union}}
 
 OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_copy(OpenAPI_{{classname}}_t *dst, OpenAPI_{{classname}}_t *src)
 {
