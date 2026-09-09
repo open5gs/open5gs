@@ -75,6 +75,10 @@ int s1ap_send_e_rab_modification_confirm(mme_ue_t *mme_ue);
 
 int s1ap_send_path_switch_ack(
         mme_ue_t *mme_ue, bool e_rab_to_switched_in_uplink_list);
+int s1ap_send_path_switch_failure(
+        mme_enb_t *enb,
+        uint32_t enb_ue_s1ap_id, uint32_t mme_ue_s1ap_id,
+        S1AP_Cause_PR group, long cause);
 
 int s1ap_send_handover_command(enb_ue_t *source_ue);
 int s1ap_send_handover_preparation_failure(

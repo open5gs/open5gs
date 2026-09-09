@@ -2858,7 +2858,6 @@ void s1ap_handle_path_switch_request(
 
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
-    ogs_pkbuf_t *s1apbuf = NULL;
 
     ogs_eps_tai_t tai;
     int served_tai_index = 0;
@@ -2937,16 +2936,10 @@ void s1ap_handle_path_switch_request(
                 (int)*MME_UE_S1AP_ID,
                 OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
-        s1apbuf = s1ap_build_path_switch_failure(
-                *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
+        r = s1ap_send_path_switch_failure(
+                enb, *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
-        if (!s1apbuf) {
-            ogs_error("s1ap_build_path_switch_failure() failed");
-            return;
-        }
-
-        r = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
@@ -2965,16 +2958,10 @@ void s1ap_handle_path_switch_request(
                 enb_ue->enb_id,
                 enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-        s1apbuf = s1ap_build_path_switch_failure(
-                *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
+        r = s1ap_send_path_switch_failure(
+                enb, *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
                 S1AP_Cause_PR_protocol,
                 S1AP_CauseProtocol_message_not_compatible_with_receiver_state);
-        if (!s1apbuf) {
-            ogs_error("s1ap_build_path_switch_failure() failed");
-            return;
-        }
-
-        r = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
@@ -3059,15 +3046,9 @@ void s1ap_handle_path_switch_request(
 
     if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         ogs_error("No Security Context");
-        s1apbuf = s1ap_build_path_switch_failure(
-                *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
+        r = s1ap_send_path_switch_failure(
+                enb, *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
-        if (!s1apbuf) {
-            ogs_error("s1ap_build_path_switch_failure() failed");
-            return;
-        }
-
-        r = s1ap_send_to_enb_ue(enb_ue, s1apbuf);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;

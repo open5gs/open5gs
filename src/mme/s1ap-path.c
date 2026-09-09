@@ -680,6 +680,43 @@ int s1ap_send_path_switch_ack(
     return rv;
 }
 
+int s1ap_send_path_switch_failure(
+        mme_enb_t *enb,
+        uint32_t enb_ue_s1ap_id, uint32_t mme_ue_s1ap_id,
+        S1AP_Cause_PR group, long cause)
+{
+    int rv;
+    uint16_t stream_no;
+    ogs_pkbuf_t *s1apbuf = NULL;
+
+    ogs_assert(enb);
+
+    ogs_debug("PathSwitchFailure");
+
+    if (enb->max_num_of_ostreams < 2) {
+        ogs_error("eNB has no UE-associated SCTP stream [%d]",
+                enb->max_num_of_ostreams);
+        return OGS_NOTFOUND;
+    }
+
+    s1apbuf = s1ap_build_path_switch_failure(
+            enb_ue_s1ap_id, mme_ue_s1ap_id, group, cause);
+    if (!s1apbuf) {
+        ogs_error("s1ap_build_path_switch_failure() failed");
+        return OGS_ERROR;
+    }
+
+    /* The UE context still belongs to the source eNB, if it exists. */
+    if (enb->ostream_id >= enb->max_num_of_ostreams)
+        enb->ostream_id = 0;
+    stream_no = OGS_NEXT_ID(enb->ostream_id, 1,
+            enb->max_num_of_ostreams-1);
+    rv = s1ap_send_to_enb(enb, s1apbuf, stream_no);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
 int s1ap_send_handover_command(enb_ue_t *source_ue)
 {
     int rv;

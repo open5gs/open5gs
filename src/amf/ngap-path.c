@@ -620,6 +620,45 @@ int ngap_send_path_switch_ack(amf_sess_t *sess)
     return rv;
 }
 
+int ngap_send_path_switch_failure(
+        amf_gnb_t *gnb,
+        uint64_t ran_ue_ngap_id, uint64_t amf_ue_ngap_id,
+        NGAP_PDUSessionResourceToBeSwitchedDLList_t
+            *PDUSessionResourceToBeSwitchedDLList,
+        NGAP_Cause_PR group, long cause)
+{
+    int rv;
+    uint16_t stream_no;
+    ogs_pkbuf_t *ngapbuf = NULL;
+
+    ogs_assert(gnb);
+
+    if (gnb->max_num_of_ostreams < 2) {
+        ogs_error("Cannot send PathSwitchRequestFailure: "
+                "gNB has no UE-associated SCTP stream [MAX:%d]",
+                gnb->max_num_of_ostreams);
+        return OGS_NOTFOUND;
+    }
+
+    ngapbuf = ngap_build_path_switch_failure(
+            ran_ue_ngap_id, amf_ue_ngap_id,
+            PDUSessionResourceToBeSwitchedDLList, group, cause);
+    if (!ngapbuf) {
+        ogs_error("ngap_build_path_switch_failure() failed");
+        return OGS_ERROR;
+    }
+
+    /* Select a UE-associated stream on the requesting gNB. */
+    if (gnb->ostream_id >= gnb->max_num_of_ostreams)
+        gnb->ostream_id = 0;
+    stream_no = OGS_NEXT_ID(gnb->ostream_id, 1,
+            gnb->max_num_of_ostreams - 1);
+    rv = ngap_send_to_gnb(gnb, ngapbuf, stream_no);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
 int ngap_send_handover_request(amf_ue_t *amf_ue)
 {
     int rv;
