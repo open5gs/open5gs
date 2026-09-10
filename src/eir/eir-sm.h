@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2026 by Erol Yağız Aydın <ygzaydns@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,33 +17,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OGS_DBI_H
-#define OGS_DBI_H
+#ifndef EIR_SM_H
+#define EIR_SM_H
 
-#include "crypt/ogs-crypt.h"
-#include "app/ogs-app.h"
-
-#define OGS_DBI_INSIDE
-
-#include "dbi/ogs-mongoc.h"
-#include "dbi/subscription.h"
-#include "dbi/session.h"
-#include "dbi/ims.h"
-#include "dbi/eir.h"
-
-#undef OGS_DBI_INSIDE
+#include "event.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern int __ogs_dbi_domain;
+void eir_state_initial(ogs_fsm_t *s, eir_event_t *e);
+void eir_state_final(ogs_fsm_t *s, eir_event_t *e);
+void eir_state_operational(ogs_fsm_t *s, eir_event_t *e);
 
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __ogs_dbi_domain
+#define eir_sm_debug(__pe) \
+    ogs_debug("%s(): %s", __func__, eir_event_get_name(__pe))
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_DBI_H */
+#endif /* EIR_SM_H */

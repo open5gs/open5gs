@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2026 by Erol Yağız Aydın <ygzaydns@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,33 +17,35 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OGS_DBI_H
-#define OGS_DBI_H
+#ifndef EIR_CONTEXT_H
+#define EIR_CONTEXT_H
 
-#include "crypt/ogs-crypt.h"
-#include "app/ogs-app.h"
+#include "ogs-app.h"
+#include "ogs-dbi.h"
+#include "ogs-sbi.h"
 
-#define OGS_DBI_INSIDE
-
-#include "dbi/ogs-mongoc.h"
-#include "dbi/subscription.h"
-#include "dbi/session.h"
-#include "dbi/ims.h"
-#include "dbi/eir.h"
-
-#undef OGS_DBI_INSIDE
+#include "eir-sm.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern int __ogs_dbi_domain;
+extern int __eir_log_domain;
 
 #undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __ogs_dbi_domain
+#define OGS_LOG_DOMAIN __eir_log_domain
+
+typedef struct eir_context_s {
+} eir_context_t;
+
+void eir_context_init(void);
+void eir_context_final(void);
+eir_context_t *eir_self(void);
+
+int eir_context_parse_config(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_DBI_H */
+#endif /* EIR_CONTEXT_H */

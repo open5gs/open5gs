@@ -1580,6 +1580,83 @@ int test_db_remove_ue(test_ue_t *test_ue)
     return OGS_OK;
 }
 
+int test_db_insert_eir(const char *pei, const char *supi, const char *status)
+{
+    mongoc_collection_t *collection = NULL;
+    bson_t *doc = NULL;
+    bson_error_t error;
+
+    ogs_assert(pei);
+    ogs_assert(status);
+
+    collection = mongoc_client_get_collection(
+        ogs_mongoc()->client, ogs_mongoc()->name, "eir");
+    if (!collection) {
+        ogs_error("mongoc_client_get_collection() failed");
+        return OGS_ERROR;
+    }
+
+    if (supi)
+        doc = BCON_NEW(
+                "pei", BCON_UTF8(pei),
+                "supi", BCON_UTF8(supi),
+                "status", BCON_UTF8(status));
+    else
+        doc = BCON_NEW(
+                "pei", BCON_UTF8(pei),
+                "status", BCON_UTF8(status));
+    ogs_assert(doc);
+
+    if (mongoc_collection_insert(collection,
+                MONGOC_INSERT_NONE, doc, NULL, &error) != true) {
+        ogs_error("mongoc_collection_insert() failed");
+        bson_destroy(doc);
+        mongoc_collection_destroy(collection);
+        return OGS_ERROR;
+    }
+    bson_destroy(doc);
+
+    mongoc_collection_destroy(collection);
+
+    return OGS_OK;
+}
+
+int test_db_remove_eir(const char *pei, const char *supi)
+{
+    mongoc_collection_t *collection = NULL;
+    bson_t *key = NULL;
+    bson_error_t error;
+
+    ogs_assert(pei);
+
+    collection = mongoc_client_get_collection(
+        ogs_mongoc()->client, ogs_mongoc()->name, "eir");
+    if (!collection) {
+        ogs_error("mongoc_client_get_collection() failed");
+        return OGS_ERROR;
+    }
+
+    if (supi)
+        key = BCON_NEW("pei", BCON_UTF8(pei), "supi", BCON_UTF8(supi));
+    else
+        key = BCON_NEW("pei", BCON_UTF8(pei),
+                "supi", "{", "$exists", BCON_BOOL(false), "}");
+    ogs_assert(key);
+
+    if (mongoc_collection_remove(collection,
+            MONGOC_REMOVE_NONE, key, NULL, &error) != true) {
+        ogs_error("mongoc_collection_remove() failed");
+        bson_destroy(key);
+        mongoc_collection_destroy(collection);
+        return OGS_ERROR;
+    }
+    bson_destroy(key);
+
+    mongoc_collection_destroy(collection);
+
+    return OGS_OK;
+}
+
 bson_t *test_db_new_simple(test_ue_t *test_ue)
 {
     bson_t *doc = NULL;

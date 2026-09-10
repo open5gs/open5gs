@@ -22,6 +22,7 @@ global:
 #    no_nssf: true
 #    no_bsf: true
 #    no_udr: true
+#    no_eir: true
 #    no_mme: true
 #    no_sgwc: true
 #    no_sgwu: true
@@ -329,6 +330,15 @@ udr:
   sbi:
     server:
       - address: 127.0.0.20
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
+
+eir:
+  sbi:
+    server:
+      - address: 127.0.0.21
         port: 7777
     client:
       scp:

@@ -150,6 +150,8 @@ extern "C" {
 
 #define OGS_SBI_RESOURCE_NAME_PCF_BINDINGS          "pcfBindings"
 
+#define OGS_SBI_RESOURCE_NAME_EQUIPMENT_STATUS      "equipment-status"
+
 #define OGS_SBI_RESOURCE_NAME_EXCHANGE_CAPABILITY   "exchange-capability"
 
 #define OGS_SBI_PATCH_PATH_NF_STATUS                "/nfStatus"
@@ -359,6 +361,8 @@ extern "C" {
 #define OGS_SBI_PARAM_IPV6PREFIX                    "ipv6Prefix"
 #define OGS_SBI_PARAM_HOME_PLMN_ID                  "home-plmn-id"
 #define OGS_SBI_PARAM_HNRF_URI                      "hnrf-uri"
+#define OGS_SBI_PARAM_PEI                           "pei"
+#define OGS_SBI_PARAM_SUPI                          "supi"
 
 #define OGS_SBI_PARAM_FIELDS_GPSIS                       "gpsis"
 #define OGS_SBI_PARAM_FIELDS_SUBSCRIBED_UE_AMBR          "subscribedUeAmbr"
@@ -529,6 +533,9 @@ typedef struct ogs_sbi_message_s {
         char *ipv4addr;
         char *ipv6prefix;
 
+        char *pei;
+        char *supi;
+
         bool home_plmn_id_presence;
         ogs_plmn_id_t home_plmn_id;
         bool tai_presence;
@@ -613,6 +620,7 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_ue_context_transfer_rsp_data_t *UeContextTransferRspData;
     OpenAPI_ue_reg_status_update_req_data_t *UeRegStatusUpdateReqData;
     OpenAPI_ue_reg_status_update_rsp_data_t *UeRegStatusUpdateRspData;
+    OpenAPI_eir_response_data_t *EirResponseData;
 
     ogs_sbi_links_t *links;
 

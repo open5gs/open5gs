@@ -85,6 +85,9 @@ void nssf_terminate(void);
 int bsf_initialize(void);
 void bsf_terminate(void);
 
+int eir_initialize(void);
+void eir_terminate(void);
+
 int upf_initialize(void);
 void upf_terminate(void);
 

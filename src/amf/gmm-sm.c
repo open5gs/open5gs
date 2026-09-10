@@ -28,6 +28,8 @@
 #include "nudm-handler.h"
 #include "npcf-handler.h"
 #include "namf-handler.h"
+#include "n5geir-build.h"
+#include "n5geir-handler.h"
 #include "sbi-path.h"
 #include "amf-sm.h"
 #include "namf-build.h"
@@ -60,6 +62,8 @@ typedef enum {
 
 static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
         gmm_common_state_e state);
+
+static void gmm_continue_registration(ogs_fsm_t *s, amf_ue_t *amf_ue);
 
 void gmm_state_initial(ogs_fsm_t *s, amf_event_t *e)
 {
@@ -2608,6 +2612,130 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
     }
 }
 
+static void gmm_continue_registration(ogs_fsm_t *s, amf_ue_t *amf_ue)
+{
+    int r;
+
+    ogs_assert(s);
+    ogs_assert(amf_ue);
+
+    r = amf_ue_sbi_discover_and_send(
+            OpenAPI_service_name_nudm_uecm, NULL,
+            amf_nudm_uecm_build_registration, amf_ue, 0, NULL);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+
+    if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST) {
+        OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
+    } else if (amf_ue->nas.message_type == OGS_NAS_5GS_SERVICE_REQUEST) {
+        OGS_FSM_TRAN(s, &gmm_state_registered);
+    } else {
+        ogs_fatal("Invalid OGS_NAS_5GS[%d]", amf_ue->nas.message_type);
+        ogs_assert_if_reached();
+    }
+}
+
+void gmm_ue_equipment_check_complete(
+        amf_ue_t *amf_ue, amf_eir_result_e result)
+{
+    int r;
+    ran_ue_t *ran_ue = NULL;
+
+    ogs_assert(amf_ue);
+
+    switch (result) {
+    case AMF_EIR_RESULT_ALLOW:
+        gmm_continue_registration(&amf_ue->sm, amf_ue);
+        return;
+
+    case AMF_EIR_RESULT_BLACKLISTED:
+        ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+        if (!ran_ue) {
+            ogs_error("[%s] NG context has already been removed",
+                    amf_ue->supi);
+            return;
+        }
+        ogs_warn("[%s] Equipment blacklisted by 5G-EIR", amf_ue->supi);
+        r = nas_5gs_send_registration_reject(
+                ran_ue, amf_ue, OGS_5GMM_CAUSE_ILLEGAL_ME);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+        return;
+
+    case AMF_EIR_RESULT_REJECT:
+        ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+        if (!ran_ue) {
+            ogs_error("[%s] NG context has already been removed",
+                    amf_ue->supi);
+            return;
+        }
+        r = nas_5gs_send_registration_reject(
+                ran_ue, amf_ue, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_exception);
+        return;
+
+    default:
+        ogs_error("Unknown EIR result[%d]", result);
+        ogs_assert_if_reached();
+    }
+}
+
+void gmm_state_equipment_identity_check(ogs_fsm_t *s, amf_event_t *e)
+{
+    amf_ue_t *amf_ue = NULL;
+    ogs_sbi_message_t *sbi_message = NULL;
+    int service_name_id = OpenAPI_service_name_NULL;
+
+    ogs_assert(s);
+    ogs_assert(e);
+
+    amf_sm_debug(e);
+
+    amf_ue = amf_ue_find_by_id(e->amf_ue_id);
+    ogs_assert(amf_ue);
+
+    switch (e->h.id) {
+    case OGS_FSM_ENTRY_SIG:
+        break;
+
+    case OGS_FSM_EXIT_SIG:
+        break;
+
+    case OGS_EVENT_SBI_CLIENT:
+        sbi_message = e->h.sbi.message;
+        ogs_assert(sbi_message);
+
+        service_name_id = ogs_sbi_service_name_id_from_string(
+                sbi_message->h.service.name);
+        switch (service_name_id) {
+        case OpenAPI_service_name_n5g_eir_eic:
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_EQUIPMENT_STATUS)
+                amf_n5geir_eic_handle_equipment_status(amf_ue, sbi_message);
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        default:
+            ogs_error("Invalid API name [%s]", sbi_message->h.service.name);
+            ogs_assert_if_reached();
+        }
+        break;
+
+    default:
+        ogs_error("No handler for event %s", amf_event_get_name(e));
+        break;
+    }
+}
+
 void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
 {
     int r;
@@ -2746,21 +2874,34 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
             amf_ue->nhcc = 1;
 
-            r = amf_ue_sbi_discover_and_send(
-                    OpenAPI_service_name_nudm_uecm, NULL,
-                    amf_nudm_uecm_build_registration, amf_ue, 0, NULL);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
+            if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST &&
+                amf_self()->eir.enabled && amf_ue->pei) {
+                r = amf_ue_sbi_discover_and_send(
+                        OpenAPI_service_name_n5g_eir_eic, NULL,
+                        amf_n5geir_eic_build_equipment_status,
+                        amf_ue, 0, NULL);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
 
-            if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST) {
-                OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
-            } else if (amf_ue->nas.message_type ==
-                        OGS_NAS_5GS_SERVICE_REQUEST) {
-                OGS_FSM_TRAN(s, &gmm_state_registered);
-            } else {
-                ogs_fatal("Invalid OGS_NAS_5GS[%d]", amf_ue->nas.message_type);
-                ogs_assert_if_reached();
+                OGS_FSM_TRAN(s, &gmm_state_equipment_identity_check);
+                break;
             }
+
+            if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST &&
+                amf_self()->eir.enabled && !amf_ue->pei) {
+                if (amf_self()->eir.missing_pei_action ==
+                        AMF_EIR_ACTION_REJECT) {
+                    ogs_warn("[%s] No PEI available, rejecting per "
+                            "missing_pei_action policy", amf_ue->supi);
+                    gmm_ue_equipment_check_complete(
+                            amf_ue, AMF_EIR_RESULT_REJECT);
+                    break;
+                }
+                ogs_warn("[%s] No PEI available, allowing per "
+                        "missing_pei_action policy", amf_ue->supi);
+            }
+
+            gmm_continue_registration(s, amf_ue);
             break;
         case OGS_NAS_5GS_SECURITY_MODE_REJECT:
             ogs_warn("[%s] Security mode reject : Cause[%d]",

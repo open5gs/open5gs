@@ -19,11 +19,13 @@ libdbi_sources = files('''
     ogs-dbi.h
 
     ogs-mongoc.h
+    eir.h
 
     ogs-mongoc.c
     subscription.c
     session.c
     ims.c
+    eir.c
 '''.split())
 
 libmongoc_dep = dependency('libmongoc-1.0', required : false)

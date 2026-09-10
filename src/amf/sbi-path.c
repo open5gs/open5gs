@@ -69,6 +69,9 @@ int amf_sbi_open(void)
             OpenAPI_nf_type_NULL, OpenAPI_service_name_nsmf_pdusession);
     ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_NULL, OpenAPI_service_name_nnssf_nsselection);
+    if (amf_self()->eir.enabled)
+        ogs_sbi_subscription_spec_add(
+                OpenAPI_nf_type_NULL, OpenAPI_service_name_n5g_eir_eic);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
