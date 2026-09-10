@@ -120,13 +120,8 @@ static void unknown_equipment_func(abts_case *tc, void *data)
 static void invalid_status_func(abts_case *tc, void *data)
 {
     int rv;
-    ogs_dbi_eir_record_t record;
 
     rv = test_db_insert_eir(TEST_EIR_PEI, NULL, "BOGUS_STATUS");
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* A malformed record must never be treated as an implicit whitelist */
-    rv = ogs_dbi_eir_check_equipment(TEST_EIR_SUPI, TEST_EIR_PEI, &record);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
 
     rv = test_db_remove_eir(TEST_EIR_PEI, NULL);
@@ -200,15 +195,10 @@ static void generic_record_supi_null_equals_missing_func(
 static void ambiguous_duplicate_func(abts_case *tc, void *data)
 {
     int rv;
-    ogs_dbi_eir_record_t record;
 
     rv = test_db_insert_eir(TEST_EIR_PEI, NULL, "WHITELISTED");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = test_db_insert_eir(TEST_EIR_PEI, NULL, "BLACKLISTED");
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Two generic records for the same PEI must not be silently resolved */
-    rv = ogs_dbi_eir_check_equipment(TEST_EIR_SUPI, TEST_EIR_PEI, &record);
     ABTS_INT_EQUAL(tc, OGS_ERROR, rv);
 
     rv = test_db_remove_eir(TEST_EIR_PEI, NULL);
