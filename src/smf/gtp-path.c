@@ -37,6 +37,7 @@
 
 #include "event.h"
 #include "gtp-path.h"
+#include "local-path.h"
 #include "pfcp-path.h"
 #include "s5c-build.h"
 #include "gn-build.h"
@@ -759,11 +760,23 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
     switch (type) {
     case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
         ogs_error("[%s] No Delete Bearer Response", smf_ue->imsi_bcd);
-        ogs_assert(OGS_OK ==
-            smf_epc_pfcp_send_one_bearer_modification_request(
-                bearer, OGS_INVALID_POOL_ID, OGS_PFCP_MODIFY_REMOVE,
-                OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
-                OGS_GTP2_CAUSE_UNDEFINED_VALUE));
+        if (bearer == smf_default_bearer_in_sess(sess)) {
+        /*
+         * The default bearer represents the PDN connection.  Removing only
+         * that bearer would leave a session whose bearer_list is empty,
+         * while smf_default_bearer_in_sess() is expected to return a bearer
+         * everywhere else.  A Delete Bearer Response carrying the Linked EBI
+         * releases the whole session as well, so do the same on timeout.
+         */
+            smf_trigger_session_release(
+                    sess, NULL, OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED);
+        } else {
+            ogs_assert(OGS_OK ==
+                smf_epc_pfcp_send_one_bearer_modification_request(
+                    bearer, OGS_INVALID_POOL_ID, OGS_PFCP_MODIFY_REMOVE,
+                    OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                    OGS_GTP2_CAUSE_UNDEFINED_VALUE));
+        }
         break;
     default:
         ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",

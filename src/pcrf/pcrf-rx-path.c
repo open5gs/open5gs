@@ -255,6 +255,10 @@ static int pcrf_rx_aar_cb(struct msg **msg, struct avp *avp,
 
             paa = (ogs_paa_t *)hdr->avp_value->os.data;
             if (paa->len == OGS_IPV6_128_PREFIX_LEN) {
+                if (gx_sid) {
+                    ogs_free(gx_sid);
+                    gx_sid = NULL;
+                }
                 gx_sid = (os0_t)pcrf_sess_find_by_ipv6(paa->addr6);
                 if (!gx_sid) {
                     ogs_warn("Cannot find Gx Session for IPv6:%s",
@@ -548,6 +552,8 @@ static int pcrf_rx_aar_cb(struct msg **msg, struct avp *avp,
         )
 
         ogs_ims_data_free(&rx_message.ims_data);
+        if (gx_sid)
+            ogs_free(gx_sid);
         return 0;
     }
 
@@ -590,6 +596,9 @@ out:
 
     /* Always free IMS data */
     ogs_ims_data_free(&rx_message.ims_data);
+
+    if (gx_sid)
+        ogs_free(gx_sid);
 
     return 0;
 }

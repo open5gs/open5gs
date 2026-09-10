@@ -131,10 +131,15 @@ static bool send_ccr_termination_req_gx_gy_s6b(
         ogs_error("No Gy Diameter Peer");
         /* TODO: drop Gx connection here,
          * possibly move to another "releasing" state! */
-        uint8_t gtp_cause = (gtp_xact->gtp_version == 1) ?
+        if (gtp_xact) {
+            uint8_t gtp_cause = (gtp_xact->gtp_version == 1) ?
                 OGS_GTP1_CAUSE_NO_RESOURCES_AVAILABLE :
                 OGS_GTP2_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER;
-        send_gtp_delete_err_msg(sess, gtp_xact, gtp_cause);
+            send_gtp_delete_err_msg(sess, gtp_xact, gtp_cause);
+        } else {
+            ogs_error("No GTP transaction : "
+                    "Cannot report 'No Gy Diameter Peer' to the peer");
+        }
         return false;
     }
 
@@ -165,6 +170,35 @@ static bool hsmf_update_has_up_cnx_state(smf_sess_t *sess)
     ogs_assert(sess);
 
     return sess->nsmf_param.up_cnx_state != OpenAPI_up_cnx_state_NULL;
+}
+
+/*
+ * [Issue #4741]
+ *
+ * Record the user-plane state the V-SMF has delegated, as
+ * smf_nsmf_handle_update_sm_context() records it in the V-SMF.
+ *
+ * The buffering and the downlink data report happen on the home side,
+ * and smf_5gc_n4_handle_session_report_request() decides on this field
+ * whether to start a network triggered Service Request. Without it the
+ * H-SMF still believes the user plane is up and drops the report.
+ *
+ * This is called from the accepted upCnxState branches below rather
+ * than where HsmfUpdateData is parsed, so that a combination rejected
+ * as Bad Request leaves the session untouched.
+ */
+static void hsmf_update_record_up_cnx_state(smf_sess_t *sess)
+{
+    smf_ue_t *smf_ue = NULL;
+
+    ogs_assert(sess);
+    smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+    ogs_assert(smf_ue);
+
+    ogs_info("[%s:%d] upCnxState[%d->%d] recorded in the H-SMF",
+            smf_ue->supi, sess->psi,
+            sess->up_cnx_state, sess->nsmf_param.up_cnx_state);
+    sess->up_cnx_state = sess->nsmf_param.up_cnx_state;
 }
 
 static bool hsmf_update_has_qos_modification(smf_sess_t *sess)
@@ -935,7 +969,6 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     ogs_pfcp_xact_t *pfcp_xact = NULL;
     ogs_pfcp_message_t *pfcp_message = NULL;
-    uint8_t pfcp_cause;
 
     ogs_diam_gy_message_t *gy_message = NULL;
     uint32_t diam_err;
@@ -1049,9 +1082,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OGS_PFCP_SESSION_REPORT_REQUEST_TYPE:
-            pfcp_cause = smf_n4_handle_session_report_request(sess, pfcp_xact,
+            release = smf_n4_handle_session_report_request(sess, pfcp_xact,
                             &pfcp_message->pfcp_session_report_request);
-            if (pfcp_cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+            if (release) {
+                e->h.sbi.state = OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED;
                 OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_deletion);
             }
             break;
@@ -1190,6 +1224,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
                                 switch (sess->nsmf_param.up_cnx_state) {
                                 case OpenAPI_up_cnx_state_DEACTIVATED:
+                                    hsmf_update_record_up_cnx_state(sess);
     /*
      * UE-requested PDU Session Modification(DEACTIVATED)
      *
@@ -1217,6 +1252,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     break;
 
                                 case OpenAPI_up_cnx_state_ACTIVATING:
+                                    hsmf_update_record_up_cnx_state(sess);
     /*
      * UE-requested PDU Session Modification(ACTIVATING)
      *
@@ -1237,6 +1273,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     break;
 
                                 case OpenAPI_up_cnx_state_ACTIVATED:
+                                    hsmf_update_record_up_cnx_state(sess);
 
     /*
      * UE-requested PDU Session Modification(ACTIVATED)
@@ -1775,15 +1812,11 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                     sess, stream, OpenAPI_ho_state_COMPLETED);
                             break;
                         case SMF_UPDATE_STATE_UE_REQ_MOD:
-                            if (sess->amf_to_vsmf_modify_stream_id >=
-                                    OGS_MIN_POOL_ID &&
-                                sess->amf_to_vsmf_modify_stream_id <=
-                                    OGS_MAX_POOL_ID)
-                                ogs_error("UE requested modification stream ID "
-                                        "[%d] has not been used yet",
-                                        sess->amf_to_vsmf_modify_stream_id);
-                            sess->amf_to_vsmf_modify_stream_id =
-                                ogs_sbi_id_from_stream(stream);
+                            /*
+                             * AMF stream was stored when HsmfUpdateData
+                             * was sent. VsmfUpdateData may already have
+                             * consumed it before this response arrives.
+                             */
                             break;
                         default:
                             ogs_fatal("Unknown state [0x%x]", e->h.sbi.state);
@@ -1922,10 +1955,26 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 sess->nsmf_param.request_indication =
                     OpenAPI_request_indication_UE_REQ_PDU_SES_MOD;
 
+                /*
+                 * VsmfUpdateData from the H-SMF can overtake the 204
+                 * response to HsmfUpdateData on the way through SCP/SEPP,
+                 * so the AMF stream is stored here rather than when
+                 * the 204 response arrives.
+                 */
+                if (sess->amf_to_vsmf_modify_stream_id >= OGS_MIN_POOL_ID &&
+                    sess->amf_to_vsmf_modify_stream_id <= OGS_MAX_POOL_ID)
+                    ogs_error("UE requested modification stream ID "
+                            "[%d] has not been used yet",
+                            sess->amf_to_vsmf_modify_stream_id);
+                sess->amf_to_vsmf_modify_stream_id =
+                    ogs_sbi_id_from_stream(stream);
+
                 r = smf_sbi_discover_and_send(
                         OpenAPI_service_name_nsmf_pdusession, NULL,
                         smf_nsmf_pdusession_build_hsmf_update_data,
                         sess, stream, SMF_UPDATE_STATE_UE_REQ_MOD, NULL);
+                if (r != OGS_OK)
+                    sess->amf_to_vsmf_modify_stream_id = OGS_INVALID_POOL_ID;
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
             } else {
@@ -2315,15 +2364,30 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                             &pfcp_message->pfcp_session_deletion_response);
                 if (pfcp_cause != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
                     /* FIXME: tear down Gy and Gx */
-                    ogs_assert(gtp_xact);
-                    gtp_cause = gtp_cause_from_pfcp(
-                            pfcp_cause, gtp_xact->gtp_version);
-                    send_gtp_delete_err_msg(sess, gtp_xact, gtp_cause);
+                    if (gtp_xact) {
+                        gtp_cause = gtp_cause_from_pfcp(
+                                pfcp_cause, gtp_xact->gtp_version);
+                        send_gtp_delete_err_msg(sess, gtp_xact, gtp_cause);
+                    } else {
+        /*
+         * No peer is waiting for a response, so the session has to be
+         * dropped here.
+         */
+                        ogs_error("No GTP transaction : "
+                                "PFCP Cause [%d] cannot be reported, "
+                                "releasing the session locally", pfcp_cause);
+                        OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+                    }
                     break;
                 }
                 if (send_ccr_termination_req_gx_gy_s6b(
-                            sess, gtp_xact) == true)
+                            sess, gtp_xact) == true) {
                     OGS_FSM_TRAN(s, smf_gsm_state_wait_epc_auth_release);
+                } else if (!gtp_xact) {
+                    ogs_error("No GTP transaction : "
+                            "Releasing the session locally");
+                    OGS_FSM_TRAN(s, smf_gsm_state_session_will_release);
+                }
                 /* else: free session? */
             } else {
                 int r, trigger;
@@ -2352,7 +2416,25 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
 
                 if (trigger == OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED) {
 
-                    ogs_error("OLD Session Released");
+                    /*
+                     * There is no peer waiting for a response, so the
+                     * remaining PCF and UDM resources have to be released
+                     * here.
+                     *
+                     * SMF_UECM_STATE_DEREG_BY_N1N2 ends with
+                     * smf_sbi_send_sm_context_status_notify() rather than a
+                     * response on a stream we do not have, and it is the SMF
+                     * that decided to release the session.
+                     */
+                    ogs_error("Session Released locally");
+
+                    r = smf_sbi_cleanup_session(
+                            sess, NULL,
+                            SMF_UECM_STATE_DEREG_BY_N1N2,
+                            SMF_SBI_CLEANUP_MODE_POLICY_FIRST);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+
                     OGS_FSM_TRAN(s, smf_gsm_state_5gc_session_will_deregister);
 
                 } else if (trigger == OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED) {
@@ -2506,6 +2588,24 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
          *
          * Related Issue #2396
          */
+
+                        /*
+                         * N1/N2 released updates from the AMF can arrive
+                         * before the N1N2MessageTransfer response,
+                         * so the H-SMF stream is stored here rather than
+                         * when that response arrives.
+                         */
+                        if (stream) {
+                            if (sess->vsmf_to_hsmf_release_stream_id >=
+                                    OGS_MIN_POOL_ID &&
+                                sess->vsmf_to_hsmf_release_stream_id <=
+                                    OGS_MAX_POOL_ID)
+                                ogs_error("N1 N2 released stream ID [%d]"
+                                        "has not been used yet",
+                                        sess->vsmf_to_hsmf_release_stream_id);
+                            sess->vsmf_to_hsmf_release_stream_id =
+                                ogs_sbi_id_from_stream(stream);
+                        }
 
                         smf_namf_comm_send_n1_n2_message_transfer(
                                 sess, stream, &param);

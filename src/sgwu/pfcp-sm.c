@@ -184,8 +184,24 @@ void sgwu_pfcp_state_associated(ogs_fsm_t *s, sgwu_event_t *e)
         xact = ogs_pfcp_xact_find_by_id(e->pfcp_xact_id);
         ogs_assert(xact);
 
-        if (message->h.seid_presence && message->h.seid != 0)
+        if (message->h.seid_presence && message->h.seid != 0) {
             sess = sgwu_sess_find_by_sgwu_sxa_seid(message->h.seid);
+            /*
+             * A session belongs to the PFCP node that established it.
+             * A request for that SEID from any other node is treated
+             * as if the session did not exist, so the handlers reply
+             * with Session context not found (Cause 65).
+             */
+            if (sess && sess->pfcp_node != node) {
+                ogs_error("PFCP-Node mismatch: SGWU-SEID[0x%lx] type [%d] "
+                        "from %s", (long)message->h.seid, message->h.type,
+                        ogs_sockaddr_to_string_static(node->addr_list));
+                ogs_error("    owner %s",
+                        ogs_sockaddr_to_string_static(
+                            sess->pfcp_node->addr_list));
+                sess = NULL;
+            }
+        }
 
         switch (message->h.type) {
         case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:

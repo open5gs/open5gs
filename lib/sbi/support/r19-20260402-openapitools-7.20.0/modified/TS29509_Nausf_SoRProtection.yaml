@@ -136,6 +136,7 @@ components:
 #        - $ref: '#/components/schemas/SecuredPacket'
 #
       type: object
+      x-open5gs-union: true
       properties:
         SteeringInfoList:
           type: array

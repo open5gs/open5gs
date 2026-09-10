@@ -484,6 +484,72 @@ int ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
     return OGS_OK;
 }
 
+/*
+ * Cause 73 requires Failed Rule ID in a Session Modification Response.
+ * The first octet selects the rule type. The ID is two octets for a PDR
+ * and four for FAR/QER/URR, in network byte order. The stack buffer stays
+ * valid until ogs_pfcp_build_msg() copies the IE into the outgoing packet.
+ */
+void ogs_pfcp_send_session_modification_rule_error(
+        ogs_pfcp_xact_t *xact, uint64_t seid,
+        uint8_t rule_type, uint32_t rule_id)
+{
+    ogs_pfcp_message_t errmsg;
+    ogs_pfcp_session_modification_response_t *rsp;
+    ogs_pkbuf_t *pkbuf = NULL;
+    uint8_t failed_rule_id[5];
+    uint16_t pdr_id;
+    uint32_t other_id;
+    int rv;
+
+    ogs_assert(xact);
+    ogs_assert(rule_type <= OGS_PFCP_RULE_TYPE_URR);
+
+    ogs_info("Sending Session Modification rule rejection: "
+            "xid[%u] CP-SEID[0x%llx] Rule-Type[%u] Rule-ID[%u] Cause[%u]",
+            xact->xid, (unsigned long long)seid, rule_type, rule_id,
+            OGS_PFCP_CAUSE_RULE_CREATION_MODIFICATION_FAILURE);
+
+    memset(&errmsg, 0, sizeof(errmsg));
+    errmsg.h.seid = seid;
+    errmsg.h.type = OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE;
+    rsp = &errmsg.pfcp_session_modification_response;
+    rsp->cause.presence = 1;
+    rsp->cause.u8 = OGS_PFCP_CAUSE_RULE_CREATION_MODIFICATION_FAILURE;
+
+    failed_rule_id[0] = rule_type;
+    if (rule_type == OGS_PFCP_RULE_TYPE_PDR) {
+        pdr_id = htobe16(rule_id);
+        memcpy(&failed_rule_id[1], &pdr_id, sizeof(pdr_id));
+        rsp->failed_rule_id.len = 1 + sizeof(pdr_id);
+    } else {
+        other_id = htobe32(rule_id);
+        memcpy(&failed_rule_id[1], &other_id, sizeof(other_id));
+        rsp->failed_rule_id.len = 1 + sizeof(other_id);
+    }
+    rsp->failed_rule_id.presence = 1;
+    rsp->failed_rule_id.data = failed_rule_id;
+
+    pkbuf = ogs_pfcp_build_msg(&errmsg);
+    if (!pkbuf) {
+        ogs_error("Cannot build Session Modification rule rejection: "
+                "CP-SEID[0x%llx] Rule-Type[%u] Rule-ID[%u]",
+                (unsigned long long)seid, rule_type, rule_id);
+        return;
+    }
+
+    rv = ogs_pfcp_xact_update_tx(xact, &errmsg.h, pkbuf);
+    if (rv != OGS_OK) {
+        ogs_error("Cannot prepare Session Modification rule rejection: "
+                "CP-SEID[0x%llx] Rule-Type[%u] Rule-ID[%u] rv[%d]",
+                (unsigned long long)seid, rule_type, rule_id, rv);
+        return;
+    }
+
+    rv = ogs_pfcp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+}
+
 void ogs_pfcp_send_error_message(
     ogs_pfcp_xact_t *xact, uint64_t seid, uint8_t type,
     uint8_t cause_value, uint16_t offending_ie_value)

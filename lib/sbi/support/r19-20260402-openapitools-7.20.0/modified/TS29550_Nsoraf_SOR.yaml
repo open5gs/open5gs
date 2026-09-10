@@ -200,6 +200,7 @@ components:
 #        - $ref: 'TS29509_Nausf_SoRProtection.yaml#/components/schemas/SecuredPacket'
 #
       type: object
+      x-open5gs-union: true
       properties:
         SteeringInfoList:
           type: array

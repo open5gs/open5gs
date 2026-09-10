@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2026 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -396,6 +396,108 @@ bool ogs_pfcp_up_handle_error_indication(
     return true;
 }
 
+static bool duplicate_rule_id(const char *name, uint8_t type, uint32_t id,
+        uint8_t *failed_rule_type, uint32_t *failed_rule_id)
+{
+    ogs_error("Reject duplicate Create %s: %s-ID[%u] Cause[%u]",
+            name, name, id,
+            OGS_PFCP_CAUSE_RULE_CREATION_MODIFICATION_FAILURE);
+    *failed_rule_type = type;
+    *failed_rule_id = id;
+    return false;
+}
+
+/*
+ * A Create PDR/FAR/URR/QER IE must create a new rule. Validate all of these
+ * IDs first, so cleanup never has to undo changes to an existing rule.
+ * Check both existing session IDs and earlier Create IEs in this request.
+ * This runs before Create PDR can allocate its referenced FAR/URR/QER,
+ * which would otherwise look like a duplicate in the later Create loop.
+ */
+bool ogs_pfcp_validate_create_rules(ogs_pfcp_sess_t *sess,
+        const ogs_pfcp_session_modification_request_t *req,
+        uint8_t *failed_rule_type, uint32_t *failed_rule_id)
+{
+    uint32_t id;
+    bool duplicate;
+    int i, j;
+
+    ogs_assert(sess);
+    ogs_assert(req);
+    ogs_assert(failed_rule_type);
+    ogs_assert(failed_rule_id);
+
+    for (i = 0; i < OGS_ARRAY_SIZE(req->create_pdr); i++) {
+        if (!req->create_pdr[i].presence)
+            break;
+        if (!req->create_pdr[i].pdr_id.presence)
+            continue;
+
+        id = req->create_pdr[i].pdr_id.u16;
+        duplicate = (ogs_pfcp_pdr_find(sess, id) != NULL);
+        for (j = 0; !duplicate && j < i; j++) {
+            duplicate = req->create_pdr[j].pdr_id.presence &&
+                req->create_pdr[j].pdr_id.u16 == id;
+        }
+        if (duplicate)
+            return duplicate_rule_id("PDR", OGS_PFCP_RULE_TYPE_PDR, id,
+                    failed_rule_type, failed_rule_id);
+    }
+
+    for (i = 0; i < OGS_ARRAY_SIZE(req->create_far); i++) {
+        if (!req->create_far[i].presence)
+            break;
+        if (!req->create_far[i].far_id.presence)
+            continue;
+
+        id = req->create_far[i].far_id.u32;
+        duplicate = (ogs_pfcp_far_find(sess, id) != NULL);
+        for (j = 0; !duplicate && j < i; j++) {
+            duplicate = req->create_far[j].far_id.presence &&
+                req->create_far[j].far_id.u32 == id;
+        }
+        if (duplicate)
+            return duplicate_rule_id("FAR", OGS_PFCP_RULE_TYPE_FAR, id,
+                    failed_rule_type, failed_rule_id);
+    }
+
+    for (i = 0; i < OGS_ARRAY_SIZE(req->create_urr); i++) {
+        if (!req->create_urr[i].presence)
+            break;
+        if (!req->create_urr[i].urr_id.presence)
+            continue;
+
+        id = req->create_urr[i].urr_id.u32;
+        duplicate = (ogs_pfcp_urr_find(sess, id) != NULL);
+        for (j = 0; !duplicate && j < i; j++) {
+            duplicate = req->create_urr[j].urr_id.presence &&
+                req->create_urr[j].urr_id.u32 == id;
+        }
+        if (duplicate)
+            return duplicate_rule_id("URR", OGS_PFCP_RULE_TYPE_URR, id,
+                    failed_rule_type, failed_rule_id);
+    }
+
+    for (i = 0; i < OGS_ARRAY_SIZE(req->create_qer); i++) {
+        if (!req->create_qer[i].presence)
+            break;
+        if (!req->create_qer[i].qer_id.presence)
+            continue;
+
+        id = req->create_qer[i].qer_id.u32;
+        duplicate = (ogs_pfcp_qer_find(sess, id) != NULL);
+        for (j = 0; !duplicate && j < i; j++) {
+            duplicate = req->create_qer[j].qer_id.presence &&
+                req->create_qer[j].qer_id.u32 == id;
+        }
+        if (duplicate)
+            return duplicate_rule_id("QER", OGS_PFCP_RULE_TYPE_QER, id,
+                    failed_rule_type, failed_rule_id);
+    }
+
+    return true;
+}
+
 ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_create_pdr_t *message,
         ogs_pfcp_sereq_flags_t *sereq_flags,
@@ -780,6 +882,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_pdr_associate_qer(pdr, qer);
     }
 
+    /* "Apply" logs mark completed IEs; the request may still fail. */
+    ogs_info("Apply Create PDR: PDR-ID[%u]", pdr->id);
     return pdr;
 }
 
@@ -813,6 +917,14 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_created_pdr(ogs_pfcp_sess_t *sess,
     if (message->local_f_teid.presence) {
         ogs_pfcp_f_teid_t f_teid;
 
+        if (!message->local_f_teid.data || !message->local_f_teid.len) {
+            ogs_error("Invalid F-TEID");
+            *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
+            *offending_ie_value = OGS_PFCP_F_TEID_TYPE;
+            return NULL;
+        }
+
+        memset(&f_teid, 0, sizeof(f_teid));
         memcpy(&f_teid, message->local_f_teid.data,
                 ogs_min(sizeof(f_teid), message->local_f_teid.len));
         if (f_teid.ipv4 == 0 && f_teid.ipv6 == 0) {
@@ -824,9 +936,11 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_created_pdr(ogs_pfcp_sess_t *sess,
             return NULL;
         }
 
-        pdr->f_teid_len = message->local_f_teid.len;
+        memset(&pdr->f_teid, 0, sizeof(pdr->f_teid));
+        pdr->f_teid_len =
+            ogs_min(message->local_f_teid.len, sizeof(pdr->f_teid));
         memcpy(&pdr->f_teid, message->local_f_teid.data,
-                ogs_min(sizeof(pdr->f_teid), pdr->f_teid_len));
+                pdr->f_teid_len);
         ogs_assert(pdr->f_teid.ipv4 || pdr->f_teid.ipv6);
         pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
     }
@@ -834,7 +948,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_created_pdr(ogs_pfcp_sess_t *sess,
     return pdr;
 }
 
-ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
+ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(
+        ogs_pfcp_object_type_e type, ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_update_pdr_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value)
 {
@@ -1021,10 +1136,55 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
         }
 
         if (message->pdi.local_f_teid.presence) {
-            pdr->f_teid_len = message->pdi.local_f_teid.len;
+            ogs_pfcp_f_teid_t old_f_teid = pdr->f_teid;
+            int old_f_teid_len = pdr->f_teid_len;
+            bool old_chid = pdr->chid;
+            uint8_t old_choose_id = pdr->choose_id;
+
+            if (!message->pdi.local_f_teid.data ||
+                !message->pdi.local_f_teid.len) {
+                ogs_error("Invalid F-TEID");
+                *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
+                *offending_ie_value = OGS_PFCP_F_TEID_TYPE;
+                return NULL;
+            }
+
+            /* Do not let CHOOSE-ID find this PDR's previous registration. */
+            pdr->chid = false;
+            pdr->choose_id = 0;
+
+            memset(&pdr->f_teid, 0, sizeof(pdr->f_teid));
+            pdr->f_teid_len =
+                ogs_min(message->pdi.local_f_teid.len,
+                        sizeof(pdr->f_teid));
             memcpy(&pdr->f_teid, message->pdi.local_f_teid.data,
-                    ogs_min(sizeof(pdr->f_teid), pdr->f_teid_len));
+                    pdr->f_teid_len);
             pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
+
+            /*
+             * A later rejection keeps applied Updates. Register the new
+             * tunnel now, so the surviving PDR and its lookup agree.
+             */
+            *cause_value = ogs_pfcp_object_teid_hash_set(type, pdr);
+            if (*cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+                ogs_error("Update PDR local F-TEID failed: "
+                        "PDR-ID[%u] TEID[0x%x->0x%x] Cause[%u]; "
+                        "restoring previous local F-TEID",
+                        pdr->id, old_f_teid.teid,
+                        pdr->f_teid.teid, *cause_value);
+                /*
+                 * Registration failure retains the old hash entry.
+                 * Restore only the fields that describe that tunnel;
+                 * other changes already applied are not rolled back.
+                 */
+                pdr->f_teid = old_f_teid;
+                pdr->f_teid_len = old_f_teid_len;
+                pdr->chid = old_chid;
+                pdr->choose_id = old_choose_id;
+                return NULL;
+            }
+            ogs_info("Updated PDR local F-TEID: PDR-ID[%u] TEID[0x%x->0x%x]",
+                    pdr->id, old_f_teid.teid, pdr->f_teid.teid);
         }
 
         if (message->pdi.qfi.presence) {
@@ -1040,6 +1200,7 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
                 pdr->outer_header_removal_len);
     }
 
+    ogs_info("Apply Update PDR: PDR-ID[%u]", pdr->id);
     return pdr;
 }
 
@@ -1069,7 +1230,84 @@ bool ogs_pfcp_handle_remove_pdr(ogs_pfcp_sess_t *sess,
         return true;
     }
 
+    ogs_info("Apply Remove PDR: PDR-ID[%u]", pdr->id);
     ogs_pfcp_pdr_remove(pdr);
+
+    return true;
+}
+
+static bool parse_outer_header_creation(
+        ogs_pfcp_outer_header_creation_t *target,
+        ogs_pfcp_tlv_outer_header_creation_t *source,
+        uint8_t *cause_value, uint8_t *offending_ie_value)
+{
+    ogs_pfcp_outer_header_creation_t parsed;
+    uint32_t description_len, required_len;
+
+    ogs_assert(target);
+    ogs_assert(source);
+    ogs_assert(cause_value);
+    ogs_assert(offending_ie_value);
+
+    /* The Outer Header Creation Description occupies the first 2 octets */
+    description_len = offsetof(ogs_pfcp_outer_header_creation_t, teid);
+
+    if (!source->data || source->len < description_len) {
+        ogs_error("Invalid Outer Header Creation [data:%p,len:%d]",
+                source->data, source->len);
+        *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
+        *offending_ie_value = OGS_PFCP_OUTER_HEADER_CREATION_TYPE;
+        return false;
+    }
+
+    memset(&parsed, 0, sizeof(parsed));
+    memcpy(&parsed, source->data, ogs_min(sizeof(parsed), source->len));
+
+    /*
+     * TS 29.244 8.2.56
+     *
+     * The TEID is present only when the description selects GTP-U/UDP/IPv4
+     * or GTP-U/UDP/IPv6. For UDP/IPvX or IPvX the address follows the
+     * description directly, and a port number or a C-TAG/S-TAG may follow.
+     *
+     * ogs_pfcp_outer_header_creation_t has a fixed layout that always
+     * places the TEID right after the description, so it can only
+     * represent GTP-U/UDP/IPv4, GTP-U/UDP/IPv6, or both together.
+     * Reject every other combination rather than decoding it at the
+     * wrong offsets.
+     *
+     * Mixing a GTP-U bit with a non-GTP-U one has to be rejected as
+     * well: ogs_pfcp_outer_header_creation_to_ip() treats udp6 and ip6
+     * as IPv6 selectors, so gtpu4|udp6 would be read as an IPv4v6
+     * address while only the IPv4 part was validated and present.
+     */
+    if ((!parsed.gtpu4 && !parsed.gtpu6) ||
+        parsed.udp4 || parsed.udp6 || parsed.ip4 || parsed.ip6 ||
+        parsed.ctag || parsed.stag || parsed.ssm_c_teid) {
+        ogs_error("Unsupported Outer Header Creation Description");
+        ogs_log_hexdump(OGS_LOG_ERROR, source->data, source->len);
+        *cause_value = OGS_PFCP_CAUSE_SERVICE_NOT_SUPPORTED;
+        *offending_ie_value = OGS_PFCP_OUTER_HEADER_CREATION_TYPE;
+        return false;
+    }
+
+    required_len = description_len + sizeof(parsed.teid);
+    if (parsed.gtpu4)
+        required_len += OGS_IPV4_LEN;
+    if (parsed.gtpu6)
+        required_len += OGS_IPV6_LEN;
+
+    if (source->len < required_len) {
+        ogs_error("Truncated Outer Header Creation [len:%d,required:%d]",
+                source->len, required_len);
+        ogs_log_hexdump(OGS_LOG_ERROR, source->data, source->len);
+        *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
+        *offending_ie_value = OGS_PFCP_OUTER_HEADER_CREATION_TYPE;
+        return false;
+    }
+
+    parsed.teid = be32toh(parsed.teid);
+    memcpy(target, &parsed, sizeof(*target));
 
     return true;
 }
@@ -1151,24 +1389,14 @@ ogs_pfcp_far_t *ogs_pfcp_handle_create_far(ogs_pfcp_sess_t *sess,
             ogs_pfcp_tlv_outer_header_creation_t *outer_header_creation =
                 &message->forwarding_parameters.outer_header_creation;
 
-            if (!outer_header_creation->data ||
-                    outer_header_creation->len == 0) {
-                ogs_error("Invalid Outer Header Creation [data:%p,len:%d]",
-                        outer_header_creation->data,
-                        outer_header_creation->len);
-                *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
-                *offending_ie_value = OGS_PFCP_OUTER_HEADER_CREATION_TYPE;
+            if (parse_outer_header_creation(
+                        &far->outer_header_creation, outer_header_creation,
+                        cause_value, offending_ie_value) == false)
                 return NULL;
-            }
-
-            memcpy(&far->outer_header_creation, outer_header_creation->data,
-                    ogs_min(sizeof(far->outer_header_creation),
-                            outer_header_creation->len));
-            far->outer_header_creation.teid =
-                    be32toh(far->outer_header_creation.teid);
         }
     }
 
+    ogs_info("Apply Create FAR: FAR-ID[%u]", far->id);
     return far;
 }
 
@@ -1275,25 +1503,52 @@ ogs_pfcp_far_t *ogs_pfcp_handle_update_far(ogs_pfcp_sess_t *sess,
                 outer_header_creation.presence) {
             ogs_pfcp_tlv_outer_header_creation_t *outer_header_creation =
                 &message->update_forwarding_parameters.outer_header_creation;
+            ogs_pfcp_outer_header_creation_t old_outer_header_creation =
+                far->outer_header_creation;
 
-            if (!outer_header_creation->data ||
-                    outer_header_creation->len == 0) {
-                ogs_error("Invalid Outer Header Creation [data:%p,len:%d]",
-                        outer_header_creation->data,
-                        outer_header_creation->len);
-                *cause_value = OGS_PFCP_CAUSE_INVALID_LENGTH;
-                *offending_ie_value = OGS_PFCP_OUTER_HEADER_CREATION_TYPE;
+            if (parse_outer_header_creation(
+                        &far->outer_header_creation, outer_header_creation,
+                        cause_value, offending_ie_value) == false) {
+                ogs_error("Update FAR Outer Header Creation rejected: "
+                        "FAR-ID[%u] Cause[%u] Offending-IE[%u]",
+                        far->id,
+                        *cause_value, *offending_ie_value);
                 return NULL;
             }
 
-            memcpy(&far->outer_header_creation, outer_header_creation->data,
-                    ogs_min(sizeof(far->outer_header_creation),
-                            outer_header_creation->len));
-            far->outer_header_creation.teid =
-                    be32toh(far->outer_header_creation.teid);
+            /*
+             * A later rejection keeps this Update. Move the GTP-U peer
+             * and refresh the Error Indication lookup now, so the new
+             * TEID is not sent to the previous peer after that rejection.
+             */
+            if (OGS_ERROR == ogs_pfcp_setup_far_gtpu_node(far)) {
+                ogs_error("Update FAR GTP-U setup failed: "
+                        "FAR-ID[%u] TEID[0x%x->0x%x] Cause[%u]; "
+                        "restoring previous Outer Header Creation",
+                        far->id,
+                        old_outer_header_creation.teid,
+                        far->outer_header_creation.teid,
+                        OGS_PFCP_CAUSE_SYSTEM_FAILURE);
+                /*
+                 * Setup failure leaves the previous peer in place.
+                 * Restore its tunnel description, not the whole Update.
+                 */
+                far->outer_header_creation = old_outer_header_creation;
+                *cause_value = OGS_PFCP_CAUSE_SYSTEM_FAILURE;
+                *offending_ie_value = 0;
+                return NULL;
+            }
+
+            if (far->gnode)
+                ogs_pfcp_far_f_teid_hash_set(far);
+            ogs_info("Updated FAR GTP-U tunnel: "
+                    "FAR-ID[%u] TEID[0x%x->0x%x]",
+                    far->id, old_outer_header_creation.teid,
+                    far->outer_header_creation.teid);
         }
     }
 
+    ogs_info("Apply Update FAR: FAR-ID[%u]", far->id);
     return far;
 }
 
@@ -1301,6 +1556,7 @@ bool ogs_pfcp_handle_remove_far(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_remove_far_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value)
 {
+    ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_far_t *far = NULL;
 
     ogs_assert(sess);
@@ -1323,6 +1579,23 @@ bool ogs_pfcp_handle_remove_far(ogs_pfcp_sess_t *sess,
         return true;
     }
 
+    /*
+     * Remove PDR is processed first. Refuse this Remove while any PDR still
+     * references the FAR, so a surviving PDR cannot point to freed storage.
+     */
+    ogs_list_for_each(&sess->pdr_list, pdr) {
+        if (pdr->far == far) {
+            ogs_error("Reject Remove FAR: FAR-ID[%u] "
+                    "still referenced by PDR-ID[%u] Cause[%u]",
+                    far->id, pdr->id,
+                    OGS_PFCP_CAUSE_REQUEST_REJECTED);
+            *cause_value = OGS_PFCP_CAUSE_REQUEST_REJECTED;
+            *offending_ie_value = 0;
+            return false;
+        }
+    }
+
+    ogs_info("Apply Remove FAR: FAR-ID[%u]", far->id);
     ogs_pfcp_far_remove(far);
 
     return true;
@@ -1393,6 +1666,7 @@ ogs_pfcp_qer_t *ogs_pfcp_handle_create_qer(ogs_pfcp_sess_t *sess,
     if (message->qos_flow_identifier.presence)
         qer->qfi = message->qos_flow_identifier.u8;
 
+    ogs_info("Apply Create QER: QER-ID[%u]", qer->id);
     return qer;
 }
 
@@ -1443,6 +1717,7 @@ ogs_pfcp_qer_t *ogs_pfcp_handle_update_qer(ogs_pfcp_sess_t *sess,
         }
     }
 
+    ogs_info("Apply Update QER: QER-ID[%u]", qer->id);
     return qer;
 }
 
@@ -1450,6 +1725,7 @@ bool ogs_pfcp_handle_remove_qer(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_remove_qer_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value)
 {
+    ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_qer_t *qer = NULL;
 
     ogs_assert(sess);
@@ -1472,6 +1748,20 @@ bool ogs_pfcp_handle_remove_qer(ogs_pfcp_sess_t *sess,
         return true;
     }
 
+    /* A surviving PDR must not outlive its referenced QER. */
+    ogs_list_for_each(&sess->pdr_list, pdr) {
+        if (pdr->qer == qer) {
+            ogs_error("Reject Remove QER: QER-ID[%u] "
+                    "still referenced by PDR-ID[%u] Cause[%u]",
+                    qer->id, pdr->id,
+                    OGS_PFCP_CAUSE_REQUEST_REJECTED);
+            *cause_value = OGS_PFCP_CAUSE_REQUEST_REJECTED;
+            *offending_ie_value = 0;
+            return false;
+        }
+    }
+
+    ogs_info("Apply Remove QER: QER-ID[%u]", qer->id);
     ogs_pfcp_qer_remove(qer);
 
     return true;
@@ -1494,14 +1784,19 @@ ogs_pfcp_bar_t *ogs_pfcp_handle_create_bar(ogs_pfcp_sess_t *sess,
         return NULL;
     }
 
-    if (sess->bar)
+    if (sess->bar) {
+        /* An existing BAR's replacement is retained on later rejection. */
+        ogs_error("Replace BAR: BAR-ID[%u->%u]",
+                sess->bar->id, message->bar_id.u8);
         ogs_pfcp_bar_delete(sess->bar);
+    }
 
     ogs_pfcp_bar_new(sess);
     ogs_assert(sess->bar);
 
     sess->bar->id = message->bar_id.u8;
 
+    ogs_info("Apply Create BAR: BAR-ID[%u]", sess->bar->id);
     return sess->bar;
 }
 
@@ -1523,6 +1818,7 @@ bool ogs_pfcp_handle_remove_bar(ogs_pfcp_sess_t *sess,
     }
 
     if (sess->bar && sess->bar->id == message->bar_id.u8) {
+        ogs_info("Apply Remove BAR: BAR-ID[%u]", sess->bar->id);
         ogs_pfcp_bar_delete(sess->bar);
         return true;
     }
@@ -1667,6 +1963,7 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_create_urr(ogs_pfcp_sess_t *sess,
         urr->meas_info.octet5 = *((unsigned char *)message->measurement_information.data);
     }
 
+    ogs_info("Apply Create URR: URR-ID[%u]", urr->id);
     return urr;
 }
 
@@ -1780,6 +2077,7 @@ ogs_pfcp_urr_t *ogs_pfcp_handle_update_urr(ogs_pfcp_sess_t *sess,
         urr->meas_info.octet5 = *((unsigned char *)message->measurement_information.data);
     }
 
+    ogs_info("Apply Update URR: URR-ID[%u]", urr->id);
     return urr;
 }
 
@@ -1787,7 +2085,9 @@ bool ogs_pfcp_handle_remove_urr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_remove_urr_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value)
 {
+    ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_urr_t *urr = NULL;
+    int i;
 
     ogs_assert(sess);
     ogs_assert(message);
@@ -1809,6 +2109,22 @@ bool ogs_pfcp_handle_remove_urr(ogs_pfcp_sess_t *sess,
         return true;
     }
 
+    /* Check every association before freeing a URR used by a live PDR. */
+    ogs_list_for_each(&sess->pdr_list, pdr) {
+        for (i = 0; i < pdr->num_of_urr; i++) {
+            if (pdr->urr[i] == urr) {
+                ogs_error("Reject Remove URR: URR-ID[%u] "
+                        "still referenced by PDR-ID[%u] Cause[%u]",
+                        urr->id, pdr->id,
+                        OGS_PFCP_CAUSE_REQUEST_REJECTED);
+                *cause_value = OGS_PFCP_CAUSE_REQUEST_REJECTED;
+                *offending_ie_value = 0;
+                return false;
+            }
+        }
+    }
+
+    ogs_info("Apply Remove URR: URR-ID[%u]", urr->id);
     ogs_pfcp_urr_remove(urr);
 
     return true;

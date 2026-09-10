@@ -291,6 +291,10 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
     smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
 
+    /* The delayed indirect tunnel REMOVE, if this is it, is gone */
+    if (sess->handover.indirect_remove_xact_id == xact->id)
+        sess->handover.indirect_remove_xact_id = OGS_INVALID_POOL_ID;
+
     switch (type) {
     case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
         ogs_warn("No PFCP session establishment response");
@@ -427,6 +431,7 @@ static void qos_flow_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
 static void sess_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
 {
     smf_sess_t *sess = NULL;
+    smf_bearer_t *bearer = NULL;
     ogs_pool_id_t sess_id = OGS_INVALID_POOL_ID;
     uint8_t type;
 
@@ -448,6 +453,11 @@ static void sess_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
         ogs_warn("No PFCP session establishment response");
         break;
     case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
+        if (xact->modify_flags & OGS_PFCP_MODIFY_ERROR_INDICATION) {
+            bearer = smf_default_bearer_in_sess(sess);
+            if (bearer)
+                bearer->ei_deactivation = false;
+        }
         ogs_error("No PFCP session modification response");
         break;
     case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
@@ -480,6 +490,9 @@ static void bearer_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
 
     switch (type) {
     case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
+        if (xact->modify_flags &
+                (OGS_PFCP_MODIFY_ERROR_INDICATION|OGS_PFCP_MODIFY_REMOVE))
+            bearer->ei_deactivation = false;
         ogs_error("No PFCP session modification response");
         break;
     default:
@@ -637,6 +650,15 @@ int smf_5gc_pfcp_send_all_pdr_modification_request(
     xact->local_seid = sess->smf_n4_seid;
     xact->modify_flags = flags | OGS_PFCP_MODIFY_SESSION;
     xact->delete_trigger = trigger;
+
+    /*
+     * The delayed REMOVE of the indirect tunnel after handover completion.
+     * ngap_handle_handover_request_ack() reuses it if the next handover
+     * starts before it is answered.
+     */
+    if (duration &&
+        (flags & OGS_PFCP_MODIFY_INDIRECT) && (flags & OGS_PFCP_MODIFY_REMOVE))
+        sess->handover.indirect_remove_xact_id = xact->id;
 
     ogs_list_init(&sess->pdr_to_modify_list);
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr)
@@ -1071,7 +1093,8 @@ int smf_epc_pfcp_send_deactivation(smf_sess_t *sess, uint8_t gtp_cause)
         /* Deactivate this PDN connection */
         rv = smf_epc_pfcp_send_all_pdr_modification_request(
                 sess, OGS_INVALID_POOL_ID, NULL,
-                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE,
+                OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_DEACTIVATE|
+                OGS_PFCP_MODIFY_ERROR_INDICATION,
                 OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
                 OGS_GTP2_CAUSE_REACTIVATION_REQUESTED);
         if (rv != OGS_OK) {

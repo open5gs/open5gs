@@ -241,6 +241,22 @@ struct ran_ue_s {
 #define NGAP_UE_CTX_REL_NG_HANDOVER_FAILURE                 6
     uint8_t         ue_ctx_rel_action;
 
+/*
+ * A RAN-NG context may outlive the procedure that created it. During
+ * handover the target ran_ue is linked to the amf_ue before the UE has
+ * moved, and it is only unlinked and removed when the gNB answers
+ * UEContextReleaseCommand with UEContextReleaseComplete.
+ *
+ * A gNB that owns such a context - for example a handover target after
+ * HandoverCancel - must not be able to drive UE/session procedures with
+ * it, since that would let it act on a UE that is still served by
+ * another gNB. Use this to require that the context is both the serving
+ * one and not already being released.
+ */
+#define RAN_UE_IS_SERVING(__aMF, __rAN) \
+    ((__rAN)->id == (__aMF)->ran_ue_id && \
+     (__rAN)->ue_ctx_rel_action == NGAP_UE_CTX_REL_INVALID_ACTION)
+
     bool            part_of_ng_reset_requested;
 
     struct {
@@ -256,6 +272,16 @@ struct ran_ue_s {
     /* Related Context */
     ogs_pool_id_t   gnb_id;
     ogs_pool_id_t   amf_ue_id;
+
+    /*
+     * The AMF-UE context holding this NG context.
+     *
+     * HOLDING_NG_CONTEXT() invalidates amf_ue_id, so this is the only way
+     * back to the UE when the context is finally removed. A valid value
+     * is also what tells NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE that this
+     * context was held.
+     */
+    ogs_pool_id_t   holding_amf_ue_id;
 }; 
 
 typedef struct amf_ue_memento_s {
@@ -287,6 +313,7 @@ typedef struct amf_ue_memento_s {
     uint32_t dl_count;
     /* Uplink counter (24-bit stored in uint32_t) */
     uint32_t ul_count;
+    bool ul_count_accepted;
     /* gNB key derived from kasme */
     uint8_t kgnb[OGS_SHA256_DIGEST_SIZE];
 
@@ -453,6 +480,9 @@ struct amf_ue_s {
     /* Authentication synch failure counter */
     uint8_t auth_synch_fail_count;
 
+    /* Authentication ngKSI-already-in-use failure counter */
+    uint8_t auth_ngksi_fail_count;
+
     /* flag: 1 = allow restoration of context, 0 = disallow */
     bool            can_restore_context;
 
@@ -517,6 +547,15 @@ struct amf_ue_s {
         } __attribute__ ((packed));
         uint32_t i32;
     } ul_count;
+    /*
+     * Set once an uplink NAS message has been accepted in the current
+     * 5G NAS security context. While it is false, 'ul_count' does not yet
+     * hold a "last accepted" value and the replay check is not applied.
+     *
+     * Both are cleared by the AMF when it takes a new security context
+     * into use, never by the security header type of a received message.
+     */
+    bool            ul_count_accepted;
     /* gNB key derived from kasme */
     uint8_t         kgnb[OGS_SHA256_DIGEST_SIZE];
 
@@ -562,17 +601,33 @@ struct amf_ue_s {
     /* NG UE context */
     ogs_pool_id_t   ran_ue_id;
 
-#define HOLDING_NG_CONTEXT(__aMF) \
+/*
+ * Put the NG context __sERVING is using on hold, and record the hold in
+ * __hOLDER.
+ *
+ * __hOLDER and __sERVING are the same AMF-UE context in the ordinary
+ * case, which HOLDING_NG_CONTEXT() below spells out. They differ only in
+ * amf_ue_release_old_context(), where the NG context and the sessions
+ * still belong to the old AMF-UE while the hold has to be recorded in the
+ * new one, because the old context is removed as soon as its sessions
+ * have been moved across.
+ *
+ * Each half of this names the UE after the context it is about: the NG
+ * context released on the way in is __hOLDER's, the one put on hold is
+ * __sERVING's. They are the same suci unless the two differ.
+ */
+#define HOLDING_NG_CONTEXT_FOR(__hOLDER, __sERVING) \
     do { \
         ran_ue_t *ran_ue_holding = NULL; \
         \
-        ran_ue_holding = ran_ue_find_by_id((__aMF)->ran_ue_holding_id); \
+        /* Whatever __hOLDER is already holding, named after __hOLDER */ \
+        ran_ue_holding = ran_ue_find_by_id((__hOLDER)->ran_ue_holding_id); \
         if (ran_ue_holding) { \
             int r; \
             ogs_warn("[%s] Holding NG context already exists", \
-                    (__aMF)->suci); \
+                    (__hOLDER)->suci); \
             ogs_warn("[%s]    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]", \
-                    (__aMF)->suci, \
+                    (__hOLDER)->suci, \
                     (long long)ran_ue_holding->ran_ue_ngap_id, \
                     (long long)ran_ue_holding->amf_ue_ngap_id); \
             r = ngap_send_ran_ue_context_release_command( \
@@ -580,19 +635,24 @@ struct amf_ue_s {
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release, \
                     NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0); \
             ogs_expect(r == OGS_OK); \
-        } else if ((__aMF)->ran_ue_holding_id != OGS_INVALID_POOL_ID) { \
+        } else if ((__hOLDER)->ran_ue_holding_id != OGS_INVALID_POOL_ID) { \
             ogs_warn("[%s] Holding NG context has already been removed", \
-                    (__aMF)->suci); \
+                    (__hOLDER)->suci); \
         } \
-        (__aMF)->ran_ue_holding_id = OGS_INVALID_POOL_ID; \
+        (__hOLDER)->ran_ue_holding_id = OGS_INVALID_POOL_ID; \
         \
-        ran_ue_holding = ran_ue_find_by_id((__aMF)->ran_ue_id); \
+        /* The context being held is __sERVING's, and is named after it */ \
+        ran_ue_holding = ran_ue_find_by_id((__sERVING)->ran_ue_id); \
         if (ran_ue_holding) { \
+            /* The sessions are __sERVING's, the hold is __hOLDER's */ \
+            amf_ue_note_stale_user_plane((__sERVING), ran_ue_holding); \
+            ran_ue_holding->holding_amf_ue_id = (__hOLDER)->id; \
+            \
             ran_ue_holding->amf_ue_id = OGS_INVALID_POOL_ID; \
             \
-            ogs_warn("[%s] Holding NG Context", (__aMF)->suci); \
+            ogs_warn("[%s] Holding NG Context", (__sERVING)->suci); \
             ogs_warn("[%s]    RAN_UE_NGAP_ID[%lld] AMF_UE_NGAP_ID[%lld]", \
-                    (__aMF)->suci, \
+                    (__sERVING)->suci, \
                     (long long)ran_ue_holding->ran_ue_ngap_id, \
                     (long long)ran_ue_holding->amf_ue_ngap_id); \
             \
@@ -601,11 +661,13 @@ struct amf_ue_s {
             ogs_timer_start(ran_ue_holding->t_ng_holding, \
                     amf_timer_cfg(AMF_TIMER_NG_HOLDING)->duration); \
             \
-            (__aMF)->ran_ue_holding_id = (__aMF)->ran_ue_id; \
+            (__hOLDER)->ran_ue_holding_id = (__sERVING)->ran_ue_id; \
         } else \
             ogs_error("[%s] NG Context has already been removed", \
-                    (__aMF)->suci); \
+                    (__sERVING)->suci); \
     } while(0)
+#define HOLDING_NG_CONTEXT(__aMF) \
+    HOLDING_NG_CONTEXT_FOR((__aMF), (__aMF))
 #define CLEAR_NG_CONTEXT(__aMF) \
     do { \
         ran_ue_t *ran_ue_holding = NULL; \
@@ -986,6 +1048,23 @@ typedef struct amf_sess_s {
      */
     ogs_pool_id_t   ran_ue_id;
 
+    /*
+     * A held NG context that the SMF may still believe this session's user
+     * plane is established on.
+     *
+     * Set when that NG context is put on hold, and cleared only where the
+     * SMF has said otherwise: on a successful Update SM Context response,
+     * when the SM Context is released, or when the context it names is
+     * removed and the note can no longer mean anything. It is deliberately
+     * NOT cleared when a request is dispatched - OGS_OK from
+     * amf_sess_sbi_discover_and_send() means the transaction started, not
+     * that the SMF took it - so a request that never arrives leaves this
+     * standing.
+     *
+     * Unlike ran_ue_id above it is therefore not a "latest known" value.
+     */
+    ogs_pool_id_t   stale_ran_ue_id;
+
     ogs_s_nssai_t s_nssai;
     ogs_s_nssai_t mapped_hplmn;
     bool mapped_hplmn_presence;
@@ -1091,6 +1170,9 @@ OpenAPI_rat_type_e amf_ue_rat_type(amf_ue_t *amf_ue);
  */
 void amf_ue_associate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue);
 void amf_ue_deassociate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue);
+
+/* Note the sessions of amf_ue whose user plane stays behind on ran_ue */
+void amf_ue_note_stale_user_plane(amf_ue_t *amf_ue, ran_ue_t *ran_ue);
 void source_ue_associate_target_ue(ran_ue_t *source_ue, ran_ue_t *target_ue);
 void source_ue_deassociate_target_ue(ran_ue_t *ran_ue);
 

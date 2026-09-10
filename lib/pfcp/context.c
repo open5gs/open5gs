@@ -1190,6 +1190,25 @@ ogs_gtpu_resource_t *ogs_pfcp_find_gtpu_resource(ogs_list_t *list,
     return NULL;
 }
 
+/*
+ * GTP-U peer nodes in gtpu_peer_list are created on demand by
+ * ogs_pfcp_setup_far_gtpu_node()/ogs_pfcp_setup_pdr_gtpu_node() and
+ * shared by all FARs/PDRs carrying the same IP. gnode->gtpu_ref_count
+ * counts those FARs/PDRs; when the last one is removed, the peer is
+ * removed from gtpu_peer_list and returned to the pool. Without this,
+ * a peer whose eNB/gNB was renumbered would occupy a pool entry until
+ * the process exits and repeated IP changes would eventually exhaust
+ * `global.max.gtp_peer`.
+ */
+static void gtpu_peer_release(ogs_gtp_node_t *gnode)
+{
+    ogs_assert(gnode);
+    ogs_assert(gnode->gtpu_ref_count > 0);
+
+    if (--gnode->gtpu_ref_count == 0)
+        ogs_gtp_node_remove(&ogs_gtp_self()->gtpu_peer_list, gnode);
+}
+
 int ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far)
 {
     int rv;
@@ -1208,19 +1227,45 @@ int ogs_pfcp_setup_far_gtpu_node(ogs_pfcp_far_t *far)
         gnode = ogs_gtp_node_add_by_ip(
             &ogs_gtp_self()->gtpu_peer_list, &ip, ogs_gtp_self()->gtpu_port);
         if (!gnode) {
-            ogs_error("ogs_gtp_node_add_by_ip() failed");
+            ogs_error("Cannot allocate GTP-U peer "
+                    "[FAR-ID:%u TEID:0x%x]",
+                    far->id, far->outer_header_creation.teid);
             return OGS_ERROR;
         }
 
         rv = ogs_gtp_connect(
                 ogs_gtp_self()->gtpu_sock, ogs_gtp_self()->gtpu_sock6, gnode);
         if (rv != OGS_OK) {
-            ogs_error("ogs_gtp_connect() failed");
+            ogs_error("Cannot connect GTP-U peer "
+                    "[FAR-ID:%u TEID:0x%x rv:%d]",
+                    far->id, far->outer_header_creation.teid, rv);
+            /*
+             * ogs_gtp_node_new() zeroes gnode->addr, and only a successful
+             * ogs_gtp_connect() fills it in. On failure the node stays in
+             * gtpu_peer_list with ogs_sa_family == 0, so the next request
+             * carrying the same IP address finds it through
+             * ogs_gtp_node_find_by_ip(), skips ogs_gtp_connect() entirely
+             * and reaches ogs_pfcp_far_f_teid_hash_set(), which aborts:
+             *
+             *   [pfcp] FATAL: Unknown family(0) (../lib/pfcp/context.c)
+             *
+             * OGS_SETUP_GTP_NODE() has not run yet, so no FAR references
+             * this node and removing it here is safe.
+             */
+            ogs_gtp_node_remove(&ogs_gtp_self()->gtpu_peer_list, gnode);
             return rv;
         }
     }
 
-    OGS_SETUP_GTP_NODE(far, gnode);
+    /* Update FAR can move to another peer; keep the count per pointer */
+    if (far->gnode != gnode) {
+        ogs_warn("Set FAR-ID[%u] GTP-U peer [TEID:0x%x]",
+                far->id, far->outer_header_creation.teid);
+        gnode->gtpu_ref_count++;
+        if (far->gnode)
+            gtpu_peer_release(far->gnode);
+        OGS_SETUP_GTP_NODE(far, gnode);
+    }
 
     return OGS_OK;
 }
@@ -1255,11 +1300,19 @@ int ogs_pfcp_setup_pdr_gtpu_node(ogs_pfcp_pdr_t *pdr)
                 ogs_gtp_self()->gtpu_sock, ogs_gtp_self()->gtpu_sock6, gnode);
         if (rv != OGS_OK) {
             ogs_error("ogs_gtp_connect() failed");
+            /* Same rollback as ogs_pfcp_setup_far_gtpu_node() */
+            ogs_gtp_node_remove(&ogs_gtp_self()->gtpu_peer_list, gnode);
             return rv;
         }
     }
 
-    OGS_SETUP_GTP_NODE(pdr, gnode);
+    /* Update PDR can move to another peer; keep the count per pointer */
+    if (pdr->gnode != gnode) {
+        gnode->gtpu_ref_count++;
+        if (pdr->gnode)
+            gtpu_peer_release(pdr->gnode);
+        OGS_SETUP_GTP_NODE(pdr, gnode);
+    }
 
     return OGS_OK;
 }
@@ -1271,6 +1324,129 @@ void ogs_pfcp_sess_clear(ogs_pfcp_sess_t *sess)
     ogs_pfcp_urr_remove_all(sess);
     ogs_pfcp_qer_remove_all(sess);
     if (sess->bar) ogs_pfcp_bar_delete(sess->bar);
+}
+
+static bool mark_has_id(
+        const uint32_t *marked_id, int num_of_marked, uint32_t id)
+{
+    int i;
+
+    for (i = 0; i < num_of_marked; i++) {
+        if (marked_id[i] == id)
+            return true;
+    }
+
+    return false;
+}
+
+/*
+ * Record IDs, not object addresses: a freed pool slot may later be reused.
+ * This is an inventory for cleanup, not a copy of the rules' contents.
+ */
+void ogs_pfcp_sess_mark(ogs_pfcp_sess_t *sess, ogs_pfcp_sess_mark_t *mark)
+{
+    ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_far_t *far = NULL;
+    ogs_pfcp_urr_t *urr = NULL;
+    ogs_pfcp_qer_t *qer = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(mark);
+
+    memset(mark, 0, sizeof(*mark));
+
+    ogs_list_for_each(&sess->pdr_list, pdr) {
+        ogs_assert(mark->num_of_pdr < OGS_ARRAY_SIZE(mark->pdr_id));
+        mark->pdr_id[mark->num_of_pdr++] = pdr->id;
+    }
+    ogs_list_for_each(&sess->far_list, far) {
+        ogs_assert(mark->num_of_far < OGS_ARRAY_SIZE(mark->far_id));
+        mark->far_id[mark->num_of_far++] = far->id;
+    }
+    ogs_list_for_each(&sess->urr_list, urr) {
+        ogs_assert(mark->num_of_urr < OGS_ARRAY_SIZE(mark->urr_id));
+        mark->urr_id[mark->num_of_urr++] = urr->id;
+    }
+    ogs_list_for_each(&sess->qer_list, qer) {
+        ogs_assert(mark->num_of_qer < OGS_ARRAY_SIZE(mark->qer_id));
+        mark->qer_id[mark->num_of_qer++] = qer->id;
+    }
+
+    mark->has_bar = (sess->bar != NULL);
+
+    ogs_info("Mark rules [PDR:%d FAR:%d URR:%d QER:%d BAR:%d]",
+            mark->num_of_pdr, mark->num_of_far,
+            mark->num_of_urr, mark->num_of_qer, mark->has_bar);
+}
+
+/*
+ * Remove rules whose IDs were not present at ogs_pfcp_sess_mark().
+ * Modification handlers reject duplicate PDR/FAR/URR/QER Create IDs first,
+ * so a marked ID cannot be replaced by a Create in the same request.
+ *
+ * Delete PDRs before the rules they reference. Existing PDRs cannot acquire
+ * new references through Update PDR, and referenced-rule Removes are rejected.
+ * Applied Updates and Removes are not restored; retained counts can therefore
+ * be smaller than the mark without indicating a cleanup failure.
+ * PFCPSMReq-Flags are request-local and must be cleared on surviving FARs.
+ * Callers log the SEIDs and the final rule counts around this cleanup.
+ */
+void ogs_pfcp_sess_clear_since_mark(
+        ogs_pfcp_sess_t *sess, const ogs_pfcp_sess_mark_t *mark)
+{
+    ogs_pfcp_pdr_t *pdr = NULL, *next_pdr = NULL;
+    ogs_pfcp_far_t *far = NULL, *next_far = NULL;
+    ogs_pfcp_urr_t *urr = NULL, *next_urr = NULL;
+    ogs_pfcp_qer_t *qer = NULL, *next_qer = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(mark);
+
+    ogs_list_for_each_safe(&sess->pdr_list, next_pdr, pdr) {
+        if (!mark_has_id(mark->pdr_id, mark->num_of_pdr, pdr->id)) {
+            ogs_error("Rejected modification: remove new PDR-ID[%u]",
+                    pdr->id);
+            ogs_pfcp_pdr_remove(pdr);
+        }
+    }
+    ogs_list_for_each_safe(&sess->far_list, next_far, far) {
+        if (!mark_has_id(mark->far_id, mark->num_of_far, far->id)) {
+            ogs_error("Rejected modification: remove new FAR-ID[%u]",
+                    far->id);
+            ogs_pfcp_far_remove(far);
+        } else {
+            /*
+             * A failed flags pass skips normal End Marker processing.
+             * Do not carry that request's flags into the next request.
+             */
+            if (far->smreq_flags.value)
+                ogs_info("Rejected modification: clear FAR-ID[%u] "
+                        "request flags[0x%x]",
+                        far->id, far->smreq_flags.value);
+            far->smreq_flags.value = 0;
+        }
+    }
+    ogs_list_for_each_safe(&sess->urr_list, next_urr, urr) {
+        if (!mark_has_id(mark->urr_id, mark->num_of_urr, urr->id)) {
+            ogs_error("Rejected modification: remove new URR-ID[%u]",
+                    urr->id);
+            ogs_pfcp_urr_remove(urr);
+        }
+    }
+    ogs_list_for_each_safe(&sess->qer_list, next_qer, qer) {
+        if (!mark_has_id(mark->qer_id, mark->num_of_qer, qer->id)) {
+            ogs_error("Rejected modification: remove new QER-ID[%u]",
+                    qer->id);
+            ogs_pfcp_qer_remove(qer);
+        }
+    }
+
+    /* An existing BAR may have been replaced; that change is retained. */
+    if (!mark->has_bar && sess->bar) {
+        ogs_error("Rejected modification: remove new BAR-ID[%u]",
+                sess->bar->id);
+        ogs_pfcp_bar_delete(sess->bar);
+    }
 }
 
 static void pdr_log_state(ogs_pfcp_sess_t *sess, const char *reason)
@@ -1424,12 +1600,80 @@ int ogs_pfcp_pdr_swap_teid(ogs_pfcp_pdr_t *pdr)
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
 
-uint8_t ogs_pfcp_object_teid_hash_set(
-        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr,
-        bool restoration_indication)
+static void pdr_teid_hash_register(
+        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr)
 {
-    ogs_assert(type);
+    void *object = NULL;
+
+    ogs_assert(type == OGS_PFCP_OBJ_PDR_TYPE ||
+            type == OGS_PFCP_OBJ_SESS_TYPE);
     ogs_assert(pdr);
+    ogs_assert(pdr->sess);
+    ogs_assert(!pdr->hash.teid.registered);
+
+    /* ogs_hash keeps this key's address; only the registered PDR owns it. */
+    pdr->hash.teid.key = pdr->f_teid.teid;
+    pdr->hash.teid.type = type;
+    pdr->hash.teid.registered = true;
+
+    object = type == OGS_PFCP_OBJ_PDR_TYPE ?
+        (void *)pdr : (void *)pdr->sess;
+    ogs_hash_set(self.object_teid_hash,
+            &pdr->hash.teid.key, sizeof(pdr->hash.teid.key), object);
+    ogs_info("Register local F-TEID[0x%x] [PDR-ID:%u type:%d]",
+            pdr->hash.teid.key, pdr->id, type);
+}
+
+/*
+ * ogs_hash retains the address of the key instead of copying it.
+ * When removing or changing the registered PDR, move a shared TEID
+ * to a live PDR so other QFIs can still use the tunnel (#2003).
+ */
+static void pdr_teid_hash_remove(ogs_pfcp_pdr_t *pdr)
+{
+    ogs_pfcp_pdr_t *other = NULL;
+    ogs_pfcp_object_type_e type;
+    uint32_t teid;
+
+    ogs_assert(pdr);
+    ogs_assert(pdr->sess);
+
+    if (!pdr->hash.teid.registered)
+        /* New PDRs and non-owners of a shared TEID have nothing to remove. */
+        return;
+
+    type = pdr->hash.teid.type;
+    teid = pdr->hash.teid.key;
+
+    ogs_info("Remove local F-TEID[0x%x] registration [PDR-ID:%u]",
+            teid, pdr->id);
+    /* NULL removes the entry; it does not leave a NULL-valued lookup. */
+    ogs_hash_set(self.object_teid_hash,
+            &pdr->hash.teid.key, sizeof(pdr->hash.teid.key), NULL);
+    pdr->hash.teid.registered = false;
+
+    ogs_list_for_each(&pdr->sess->pdr_list, other) {
+        if (other != pdr && !other->hash.teid.registered &&
+                other->f_teid_len &&
+                other->f_teid.teid == teid) {
+            ogs_warn("Transfer local F-TEID[0x%x] [PDR-ID:%u -> %u]",
+                    teid, pdr->id, other->id);
+            pdr_teid_hash_register(type, other);
+            break;
+        }
+    }
+}
+
+uint8_t ogs_pfcp_object_teid_hash_set(
+        ogs_pfcp_object_type_e type, ogs_pfcp_pdr_t *pdr)
+{
+    ogs_pfcp_object_t *object = NULL;
+    ogs_pfcp_sess_t *owner_sess = NULL;
+
+    ogs_assert(type == OGS_PFCP_OBJ_PDR_TYPE ||
+            type == OGS_PFCP_OBJ_SESS_TYPE);
+    ogs_assert(pdr);
+    ogs_assert(pdr->sess);
 
     if (ogs_pfcp_self()->up_function_features.ftup && pdr->f_teid.ch) {
 
@@ -1500,27 +1744,44 @@ uint8_t ogs_pfcp_object_teid_hash_set(
         }
     }
 
-    if (pdr->hash.teid.len)
-        ogs_hash_set(self.object_teid_hash,
-                &pdr->hash.teid.key, pdr->hash.teid.len, NULL);
+    /*
+     * Validate the new TEID before removing the old registration. A rejected
+     * Update can then restore its fields while its old lookup remains valid.
+     * Same-session sharing is allowed; another session's entry is untouched.
+     */
+    object = ogs_pfcp_object_find_by_teid(pdr->f_teid.teid);
+    if (object) {
+        switch (object->type) {
+        case OGS_PFCP_OBJ_PDR_TYPE:
+            owner_sess = ((ogs_pfcp_pdr_t *)object)->sess;
+            break;
+        case OGS_PFCP_OBJ_SESS_TYPE:
+            owner_sess = (ogs_pfcp_sess_t *)object;
+            break;
+        default:
+            ogs_fatal("Unknown type [%d]", object->type);
+            ogs_assert_if_reached();
+        }
 
-    pdr->hash.teid.key = pdr->f_teid.teid;
-    pdr->hash.teid.len = sizeof(pdr->hash.teid.key);
+        if (owner_sess != pdr->sess) {
+            ogs_error("Reject PDR-ID[%u] F-TEID[0x%x]: "
+                    "registered by another session",
+                    pdr->id, pdr->f_teid.teid);
+            return OGS_PFCP_CAUSE_REQUEST_REJECTED;
+        }
 
-    switch(type) {
-    case OGS_PFCP_OBJ_PDR_TYPE:
-        ogs_hash_set(self.object_teid_hash,
-                &pdr->hash.teid.key, pdr->hash.teid.len, pdr);
-        break;
-    case OGS_PFCP_OBJ_SESS_TYPE:
-        ogs_assert(pdr->sess);
-        ogs_hash_set(self.object_teid_hash,
-                &pdr->hash.teid.key, pdr->hash.teid.len, pdr->sess);
-        break;
-    default:
-        ogs_fatal("Unknown type [%d]", type);
-        ogs_assert_if_reached();
+        ogs_assert(object->type == type);
     }
+
+    if (pdr->hash.teid.registered &&
+            pdr->hash.teid.key == pdr->f_teid.teid)
+        return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+
+    pdr_teid_hash_remove(pdr);
+
+    /* A same-session PDR already owns this shared TEID. */
+    if (!object)
+        pdr_teid_hash_register(type, pdr);
 
     return OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 }
@@ -1529,20 +1790,6 @@ ogs_pfcp_object_t *ogs_pfcp_object_find_by_teid(uint32_t teid)
 {
     return (ogs_pfcp_object_t *)ogs_hash_get(
             self.object_teid_hash, &teid, sizeof(teid));
-}
-
-int ogs_pfcp_object_count_by_teid(ogs_pfcp_sess_t *sess, uint32_t teid)
-{
-    ogs_pfcp_pdr_t *pdr = NULL;
-    int count = 0;
-
-    ogs_assert(sess);
-
-    ogs_list_for_each(&sess->pdr_list, pdr) {
-        if (pdr->f_teid.teid == teid) count++;
-    }
-
-    return count;
 }
 
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_choose_id(
@@ -1611,24 +1858,15 @@ void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
     ogs_assert(pdr);
     ogs_assert(pdr->sess);
 
+    pdr_teid_hash_remove(pdr);
+
     ogs_list_remove(&pdr->sess->pdr_list, pdr);
 
     ogs_pfcp_rule_remove_all(pdr);
 
-    if (pdr->hash.teid.len) {
-        /*
-         * Issues #2003
-         *
-         * In 5G Core, two PDRs can use different QFIDs for the same TEID.
-         * So, before deleting a TEID, we should check if there is a PDR
-         * using the same TEID.
-         *
-         * Since this PDR has already been deleted with ogs_list_remove() above,
-         * if the current list has a TEID count of 0, there are no other PDRs.
-         */
-        if (ogs_pfcp_object_count_by_teid(pdr->sess, pdr->f_teid.teid) == 0)
-            ogs_hash_set(self.object_teid_hash,
-                    &pdr->hash.teid.key, pdr->hash.teid.len, NULL);
+    if (pdr->gnode) {
+        gtpu_peer_release(pdr->gnode);
+        pdr->gnode = NULL;
     }
 
     if (pdr->dnn)
@@ -1732,44 +1970,82 @@ ogs_pfcp_far_t *ogs_pfcp_far_find_or_add(
     return far;
 }
 
-void ogs_pfcp_far_f_teid_hash_set(ogs_pfcp_far_t *far)
+static int far_f_teid_hash_key(
+        ogs_pfcp_far_t *far, ogs_pfcp_far_hash_f_teid_t *key)
 {
+    int len;
     int family;
-
     ogs_gtp_node_t *gnode = NULL;
     ogs_sockaddr_t *addr = NULL;
 
     ogs_assert(far);
+    ogs_assert(key);
+
     gnode = far->gnode;
     ogs_assert(gnode);
     addr = &gnode->addr;
-    ogs_assert(addr);
 
-    if (far->hash.f_teid.len)
-        ogs_hash_set(self.far_f_teid_hash,
-                &far->hash.f_teid.key, far->hash.f_teid.len, NULL);
-
-    far->hash.f_teid.key.teid = far->outer_header_creation.teid;
-    far->hash.f_teid.len = sizeof(far->hash.f_teid.key.teid);
+    memset(key, 0, sizeof(*key));
+    key->teid = far->outer_header_creation.teid;
+    len = sizeof(key->teid);
 
     family = addr->ogs_sa_family;
     switch (family) {
     case AF_INET:
-        memcpy(far->hash.f_teid.key.addr, &addr->sin.sin_addr, OGS_IPV4_LEN);
-        far->hash.f_teid.len += OGS_IPV4_LEN;
+        memcpy(key->addr, &addr->sin.sin_addr, OGS_IPV4_LEN);
+        len += OGS_IPV4_LEN;
         break;
     case AF_INET6:
-        memcpy(far->hash.f_teid.key.addr, &addr->sin6.sin6_addr, OGS_IPV6_LEN);
-        far->hash.f_teid.len += OGS_IPV6_LEN;
+        memcpy(key->addr, &addr->sin6.sin6_addr, OGS_IPV6_LEN);
+        len += OGS_IPV6_LEN;
         break;
     default:
-        ogs_fatal("Unknown family(%d)", family);
+        ogs_fatal("Unknown family(%d) [FAR-ID:%u TEID:0x%x]",
+                family, far->id, far->outer_header_creation.teid);
         ogs_abort();
-        return;
     }
 
+    return len;
+}
+
+void ogs_pfcp_far_f_teid_hash_set(ogs_pfcp_far_t *far)
+{
+    ogs_pfcp_far_hash_f_teid_t key;
+    int len;
+
+    ogs_assert(far);
+
+    len = far_f_teid_hash_key(far, &key);
+    if (far->hash.f_teid.len == len &&
+            memcmp(&far->hash.f_teid.key, &key, len) == 0)
+        return;
+
+    /*
+     * len is nonzero only for the FAR that registered the entry. Remove its
+     * old key before testing the new one: a collision must not leave Error
+     * Indications for the old tunnel pointing to an already updated FAR.
+     */
+    if (far->hash.f_teid.len) {
+        ogs_hash_set(self.far_f_teid_hash,
+                &far->hash.f_teid.key, far->hash.f_teid.len, NULL);
+        far->hash.f_teid.len = 0;
+    }
+
+    /*
+     * QoS flows may share a remote tunnel. This lookup is only for Error
+     * Indications, so keep the first FAR without rejecting the request.
+     * The final GTP node pass repeats this check on every accepted
+     * modification, so this is expected for each additional QoS flow.
+     */
+    if (ogs_hash_get(self.far_f_teid_hash, &key, len))
+        return;
+
+    memcpy(&far->hash.f_teid.key, &key, len);
+    far->hash.f_teid.len = len;
     ogs_hash_set(self.far_f_teid_hash,
-            &far->hash.f_teid.key, far->hash.f_teid.len, far);
+            &far->hash.f_teid.key, len, far);
+    ogs_info("Register Error Indication F-TEID[0x%x] [FAR-ID:%u]",
+            key.teid, far->id);
 }
 
 ogs_pfcp_far_t *ogs_pfcp_far_find_by_gtpu_error_indication(ogs_pkbuf_t *pkbuf)
@@ -1925,9 +2201,22 @@ void ogs_pfcp_far_remove(ogs_pfcp_far_t *far)
         ogs_hash_set(self.far_teid_hash,
                 &far->hash.teid.key, far->hash.teid.len, NULL);
 
-    if (far->hash.f_teid.len)
+    /*
+     * Unlike the PDR data-path lookup, this Error Indication mapping ends
+     * with its registered FAR. Unregistered sharers have len == 0, so their
+     * removal cannot erase another FAR's entry. There is no FAR handoff.
+     */
+    if (far->hash.f_teid.len) {
+        ogs_info("Remove Error Indication F-TEID[0x%x] "
+                "[FAR-ID:%u]", far->hash.f_teid.key.teid, far->id);
         ogs_hash_set(self.far_f_teid_hash,
                 &far->hash.f_teid.key, far->hash.f_teid.len, NULL);
+    }
+
+    if (far->gnode) {
+        gtpu_peer_release(far->gnode);
+        far->gnode = NULL;
+    }
 
     if (far->dnn)
         ogs_free(far->dnn);

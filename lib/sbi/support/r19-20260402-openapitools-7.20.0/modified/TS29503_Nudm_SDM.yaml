@@ -4688,6 +4688,7 @@ components:
 #        - $ref: '#/components/schemas/SecuredPacket'
 #
       type: object
+      x-open5gs-union: true
       properties:
         SteeringInfoList:
           type: array
@@ -5206,6 +5207,7 @@ components:
 #        - $ref: '#/components/schemas/ExtendedSmSubsData'
 #
       type: object
+      x-open5gs-union: true
       properties:
         SessionManagementSubscriptionDataList:
           type: array
@@ -5242,6 +5244,7 @@ components:
 #          minItems: 0
 #
       type: object
+      x-open5gs-union: true
       properties:
         SubscriptionDataSets:
           $ref: '#/components/schemas/SubscriptionDataSets'

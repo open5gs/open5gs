@@ -52,6 +52,10 @@ bool ogs_pfcp_up_handle_pdr(
 bool ogs_pfcp_up_handle_error_indication(
         ogs_pfcp_far_t *far, ogs_pfcp_user_plane_report_t *report);
 
+bool ogs_pfcp_validate_create_rules(ogs_pfcp_sess_t *sess,
+        const ogs_pfcp_session_modification_request_t *req,
+        uint8_t *failed_rule_type, uint32_t *failed_rule_id);
+
 ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_create_pdr_t *message,
         ogs_pfcp_sereq_flags_t *sereq_flags,
@@ -59,7 +63,8 @@ ogs_pfcp_pdr_t *ogs_pfcp_handle_create_pdr(ogs_pfcp_sess_t *sess,
 ogs_pfcp_pdr_t *ogs_pfcp_handle_created_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_created_pdr_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value);
-ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(ogs_pfcp_sess_t *sess,
+ogs_pfcp_pdr_t *ogs_pfcp_handle_update_pdr(
+        ogs_pfcp_object_type_e type, ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_update_pdr_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value);
 bool ogs_pfcp_handle_remove_pdr(ogs_pfcp_sess_t *sess,

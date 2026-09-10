@@ -642,12 +642,12 @@ int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
         memcpy(buffer + length, &target.flags, sizeof(target.flags));
         length += sizeof(target.flags);
 
-        if (rule->code == OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE ||
-            rule->code == OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
+        if (target.code == OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE ||
+            target.code == OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
             if (target.num_of_packet_filter != 0) {
                 ogs_fatal("Invalue QoS rule code[%d] "
                         "and number of packet filter[%d]",
-                        rule->code, target.num_of_packet_filter);
+                        target.code, target.num_of_packet_filter);
                 ogs_assert_if_reached();
             }
         }
@@ -660,7 +660,7 @@ int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
                     sizeof(target.pf[j].flags));
             length += sizeof(target.pf[j].flags);
 
-            if (rule->code ==
+            if (target.code ==
                 OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS)
                 continue;
 
@@ -797,9 +797,9 @@ int ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
             }
         }
 
-        if (rule->code != OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE &&
-            rule->code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS &&
-            rule->code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
+        if (target.code != OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE &&
+            target.code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_AND_DELETE_PACKET_FILTERS &&
+            target.code != OGS_NAS_QOS_CODE_MODIFY_EXISTING_QOS_RULE_WITHOUT_MODIFYING_PACKET_FILTERS) {
             ogs_assert(length + sizeof(target.precedence) <=
                     OGS_NAS_MAX_QOS_RULES_LEN);
             memcpy(buffer + length, &target.precedence,
@@ -1066,6 +1066,21 @@ int ogs_nas_parse_qos_rules(
 
         if (rule->length == 0) {
             ogs_error("RuleId[%u] Wrong 'Length of QoS rule' (0)", rule->identifier);
+            goto cleanup;
+        }
+
+        /* 'Length of QoS rule' is attacker-controlled and is used below as the
+         * parsing bound for the packet filter list. Without this check a rule
+         * declaring a length larger than the remaining buffer makes
+         * parse_qos_rules_packet_filter_list() read past the received message.
+         *
+         * The length counts every octet after the length field itself, i.e.
+         * the flags octet, the packet filter list, and the optional
+         * precedence / QFI octets. */
+        if (size + rule->length > length) {
+            ogs_error("RuleId[%u] 'Length of QoS rule' (%u) exceeds buffer: "
+                    "size[%d] length[%d]",
+                    rule->identifier, rule->length, size, length);
             goto cleanup;
         }
 

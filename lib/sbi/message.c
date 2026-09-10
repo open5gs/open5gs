@@ -277,6 +277,23 @@ ogs_sbi_request_t *ogs_sbi_request_new(void)
     return request;
 }
 
+ogs_sbi_request_t *ogs_sbi_request_new_incoming(void)
+{
+    int avail = ogs_pool_avail(&request_pool);
+    int reserve = ogs_app()->pool.xact;
+
+    /* Transactions retain their requests until removal. Reserve their
+     * capacity against incoming requests. */
+    if (avail <= reserve) {
+        ogs_error("SBI request capacity reserved for outbound traffic "
+                "[available:%d,reserved:%d,total:%d]",
+                avail, reserve, ogs_pool_size(&request_pool));
+        return NULL;
+    }
+
+    return ogs_sbi_request_new();
+}
+
 ogs_sbi_response_t *ogs_sbi_response_new(void)
 {
     ogs_sbi_response_t *response = NULL;
@@ -3314,12 +3331,27 @@ static int on_header_value(
 
     if (data->num_of_part < OGS_SBI_MAX_NUM_OF_PART && at && length) {
         if (!ogs_strcasecmp(data->header_field, OGS_SBI_CONTENT_TYPE)) {
-            ogs_assert(data->part[data->num_of_part].content_type == NULL);
+            /*
+             * A part carries at most one Content-Type. A repeated header
+             * comes from the peer, so treat it as a parse error rather than
+             * an assertion. See Issues #4775
+             */
+            if (data->part[data->num_of_part].content_type) {
+                ogs_error("Duplicate Content-Type in multipart part [%d]",
+                        data->num_of_part);
+                data->parse_error = true;
+                return 0;
+            }
             data->part[data->num_of_part].content_type =
                 ogs_strndup(at, length);
             ogs_assert(data->part[data->num_of_part].content_type);
         } else if (!ogs_strcasecmp(data->header_field, OGS_SBI_CONTENT_ID)) {
-            ogs_assert(data->part[data->num_of_part].content_id == NULL);
+            if (data->part[data->num_of_part].content_id) {
+                ogs_error("Duplicate Content-Id in multipart part [%d]",
+                        data->num_of_part);
+                data->parse_error = true;
+                return 0;
+            }
             data->part[data->num_of_part].content_id =
                 ogs_strndup(at, length);
             ogs_assert(data->part[data->num_of_part].content_id);

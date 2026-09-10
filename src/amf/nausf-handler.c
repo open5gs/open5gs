@@ -24,6 +24,9 @@ int amf_nausf_auth_handle_authenticate(
         amf_ue_t *amf_ue, ogs_sbi_message_t *message)
 {
     int r;
+    uint8_t rand[OGS_RAND_LEN];
+    uint8_t hxres_star[OGS_MAX_RES_LEN];
+    uint8_t autn[OGS_AUTN_LEN];
     OpenAPI_ue_authentication_ctx_t *UeAuthenticationCtx = NULL;
     OpenAPI_ue_authentication_ctx_5g_auth_data_t *AV5G_AKA = NULL;
     OpenAPI_links_value_schema_t *LinksValueSchemeValue = NULL;
@@ -75,6 +78,25 @@ int amf_nausf_auth_handle_authenticate(
 
     if (!AV5G_AKA->autn) {
         ogs_error("[%s] No Av5gAka.autn", amf_ue->suci);
+        return OGS_ERROR;
+    }
+
+    if (ogs_hex_from_string_checked(
+                AV5G_AKA->rand, rand, sizeof(rand)) != OGS_OK) {
+        ogs_error("[%s] Invalid Av5gAka.rand", amf_ue->suci);
+        return OGS_ERROR;
+    }
+
+    if (ogs_hex_from_string_checked(
+                AV5G_AKA->hxres_star,
+                hxres_star, sizeof(hxres_star)) != OGS_OK) {
+        ogs_error("[%s] Invalid Av5gAka.hxresStar", amf_ue->suci);
+        return OGS_ERROR;
+    }
+
+    if (ogs_hex_from_string_checked(
+                AV5G_AKA->autn, autn, sizeof(autn)) != OGS_OK) {
+        ogs_error("[%s] Invalid Av5gAka.autn", amf_ue->suci);
         return OGS_ERROR;
     }
 
@@ -135,12 +157,9 @@ int amf_nausf_auth_handle_authenticate(
 
     STORE_5G_AKA_CONFIRMATION(amf_ue, LinksValueSchemeValue->href);
 
-    ogs_ascii_to_hex(AV5G_AKA->rand, strlen(AV5G_AKA->rand),
-        amf_ue->rand, sizeof(amf_ue->rand));
-    ogs_ascii_to_hex(AV5G_AKA->hxres_star, strlen(AV5G_AKA->hxres_star),
-        amf_ue->hxres_star, sizeof(amf_ue->hxres_star));
-    ogs_ascii_to_hex(AV5G_AKA->autn, strlen(AV5G_AKA->autn),
-        amf_ue->autn, sizeof(amf_ue->autn));
+    memcpy(amf_ue->rand, rand, sizeof(amf_ue->rand));
+    memcpy(amf_ue->hxres_star, hxres_star, sizeof(amf_ue->hxres_star));
+    memcpy(amf_ue->autn, autn, sizeof(amf_ue->autn));
 
     /* Clear Security Context */
     CLEAR_SECURITY_CONTEXT(amf_ue);
@@ -185,12 +204,19 @@ int amf_nausf_auth_handle_authenticate_confirmation(
         return OGS_ERROR;
     }
 
+    if (ConfirmationDataResponse->auth_result ==
+            OpenAPI_auth_result_AUTHENTICATION_SUCCESS) {
+        if (ogs_hex_from_string_checked(ConfirmationDataResponse->kseaf,
+                    kseaf, sizeof(kseaf)) != OGS_OK) {
+            ogs_error("[%s] Invalid Kseaf", amf_ue->suci);
+            return OGS_ERROR;
+        }
+    }
+
     amf_ue->auth_result = ConfirmationDataResponse->auth_result;
     if (amf_ue->auth_result == OpenAPI_auth_result_AUTHENTICATION_SUCCESS) {
 
         amf_ue_set_supi(amf_ue, ConfirmationDataResponse->supi);
-        ogs_ascii_to_hex(ConfirmationDataResponse->kseaf,
-                strlen(ConfirmationDataResponse->kseaf), kseaf, sizeof(kseaf));
 
         ogs_kdf_kamf(amf_ue->supi, amf_ue->abba, amf_ue->abba_len,
                 kseaf, amf_ue->kamf);

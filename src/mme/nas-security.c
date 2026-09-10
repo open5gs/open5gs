@@ -62,6 +62,7 @@ ogs_pkbuf_t *nas_eps_security_encode(
     if (new_security_context) {
         mme_ue->dl_count = 0;
         mme_ue->ul_count.i32 = 0;
+        mme_ue->ul_count_accepted = false;
     }
 
     if (mme_ue->selected_enc_algorithm == 0)
@@ -128,6 +129,7 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
         uint8_t estimated_sequence_number;
         uint8_t sequence_number_high_3bit;
         uint8_t mac[NAS_SECURITY_MAC_SIZE];
+        uint32_t estimated_ul_count = 0;
 
         if (mme_ue->selected_int_algorithm == 0) {
             ogs_warn("integrity algorithm is not defined");
@@ -144,15 +146,23 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
         }
         estimated_sequence_number += sequence_number_high_3bit;
 
+        /*
+         * TS24.301 4.4.3.1
+         *
+         * The estimate is kept local. mme_ue->ul_count is the NAS COUNT of
+         * the last *accepted* uplink NAS message and must never be advanced
+         * by a sequence number that has not been authenticated yet.
+         */
+        estimated_ul_count = mme_ue->ul_count.i32 & 0x00ffff00;
         if (mme_ue->ul_count.sqn > estimated_sequence_number)
-            mme_ue->ul_count.overflow++;
-        mme_ue->ul_count.sqn = estimated_sequence_number;
+            estimated_ul_count = (estimated_ul_count + 0x100) & 0x00ffff00;
+        estimated_ul_count |= estimated_sequence_number;
 
         memcpy(original_mac, pkbuf->data + 2, SHORT_MAC_SIZE);
 
         ogs_pkbuf_trim(pkbuf, 2);
         ogs_nas_mac_calculate(mme_ue->selected_int_algorithm,
-            mme_ue->knas_int, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
+            mme_ue->knas_int, estimated_ul_count, NAS_SECURITY_BEARER,
             OGS_NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
 
         ogs_pkbuf_put_data(pkbuf, original_mac, SHORT_MAC_SIZE);
@@ -163,6 +173,19 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
                     ((unsigned char *)pkbuf->data)[3]);
 
             mme_ue->mac_failed = 1;
+        } else {
+            /* TS33.401 8.1.1 : replay protection for uplink NAS */
+            if (mme_ue->ul_count_accepted == true &&
+                estimated_ul_count <= mme_ue->ul_count.i32) {
+                ogs_error("NAS COUNT REPLAY DETECTED - service request "
+                    "rejected "
+                    "[UL NAS COUNT:0x%06x, LAST ACCEPTED:0x%06x]",
+                    estimated_ul_count, mme_ue->ul_count.i32);
+                return OGS_ERROR;
+            }
+
+            mme_ue->ul_count.i32 = estimated_ul_count;
+            mme_ue->ul_count_accepted = true;
         }
 
         return OGS_OK;
@@ -174,10 +197,6 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
         security_header_type.ciphered = 0;
     }
 
-    if (security_header_type.new_security_context) {
-        mme_ue->ul_count.i32 = 0;
-    }
-
     if (mme_ue->selected_enc_algorithm == 0)
         security_header_type.ciphered = 0;
     if (mme_ue->selected_int_algorithm == 0)
@@ -186,6 +205,7 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
     if (security_header_type.ciphered || 
         security_header_type.integrity_protected) {
         ogs_nas_eps_security_header_t *h = NULL;
+        uint32_t estimated_ul_count = 0;
 
         /* NAS Security Header */
         ogs_assert(ogs_pkbuf_push(pkbuf, 6));
@@ -194,10 +214,20 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
         /* NAS Security Header.Sequence_Number */
         ogs_assert(ogs_pkbuf_pull(pkbuf, 5));
 
-        /* calculate ul_count */
+        /*
+         * TS24.301 4.4.3.1
+         *
+         * Estimate the uplink NAS COUNT of the received message from the
+         * locally stored overflow counter and the received sequence number.
+         *
+         * The estimate is kept local. mme_ue->ul_count is the NAS COUNT of
+         * the last *accepted* uplink NAS message and must never be advanced
+         * by a sequence number that has not been authenticated yet.
+         */
+        estimated_ul_count = mme_ue->ul_count.i32 & 0x00ffff00;
         if (mme_ue->ul_count.sqn > h->sequence_number)
-            mme_ue->ul_count.overflow++;
-        mme_ue->ul_count.sqn = h->sequence_number;
+            estimated_ul_count = (estimated_ul_count + 0x100) & 0x00ffff00;
+        estimated_ul_count |= h->sequence_number;
 
         if (security_header_type.integrity_protected) {
             uint8_t mac[NAS_SECURITY_MAC_SIZE];
@@ -206,7 +236,7 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
 
             /* calculate NAS MAC(message authentication code) */
             ogs_nas_mac_calculate(mme_ue->selected_int_algorithm,
-                mme_ue->knas_int, mme_ue->ul_count.i32, NAS_SECURITY_BEARER, 
+                mme_ue->knas_int, estimated_ul_count, NAS_SECURITY_BEARER,
                 OGS_NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
             h->message_authentication_code = original_mac;
 
@@ -215,7 +245,34 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
                 ogs_warn("NAS MAC verification failed(0x%x != 0x%x)",
                     be32toh(h->message_authentication_code), be32toh(mac32));
                 mme_ue->mac_failed = 1;
+            } else {
+                /*
+                 * TS33.401 8.1.1 (NAS integrity and replay protection)
+                 *
+                 * A valid MAC only proves that the message was produced by a
+                 * holder of KNASint at that NAS COUNT. A replayed message
+                 * carries a valid MAC as well, so the NAS COUNT must also be
+                 * greater than the NAS COUNT of the last accepted uplink NAS
+                 * message in this security context.
+                 */
+                if (mme_ue->ul_count_accepted == true &&
+                    estimated_ul_count <= mme_ue->ul_count.i32) {
+                    ogs_error("NAS COUNT REPLAY DETECTED - uplink NAS "
+                        "message rejected "
+                        "[UL NAS COUNT:0x%06x, LAST ACCEPTED:0x%06x]",
+                        estimated_ul_count, mme_ue->ul_count.i32);
+                    return OGS_ERROR;
+                }
+
+                mme_ue->ul_count.i32 = estimated_ul_count;
+                mme_ue->ul_count_accepted = true;
             }
+        } else {
+            /*
+             * No integrity protection (EIA0). The sequence number cannot be
+             * authenticated, so replay protection is not possible here.
+             */
+            mme_ue->ul_count.i32 = estimated_ul_count;
         }
 
         /* NAS EMM Header or ESM Header */
@@ -228,7 +285,7 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
                 return OGS_ERROR;
             }
             ogs_nas_encrypt(mme_ue->selected_enc_algorithm,
-                mme_ue->knas_enc, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
+                mme_ue->knas_enc, estimated_ul_count, NAS_SECURITY_BEARER,
                 OGS_NAS_SECURITY_UPLINK_DIRECTION, pkbuf);
         }
     }

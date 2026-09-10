@@ -613,6 +613,18 @@ void sgwc_sxa_handle_session_modification_response(
                             &tunnel->local_addr, &tunnel->local_addr6));
                     tunnel->local_teid = pdr->f_teid.teid;
                 }
+
+                /*
+                 * pfcp_cause_value is final at this point, so the tunnel
+                 * is marked as installed only if the UP function has
+                 * accepted every Created PDR.
+                 */
+                if (pfcp_cause_value == OGS_PFCP_CAUSE_REQUEST_ACCEPTED &&
+                    (tunnel->interface_type ==
+                        OGS_GTP2_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING ||
+                     tunnel->interface_type ==
+                        OGS_GTP2_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING))
+                    tunnel->indirect_data_forwarding_created = true;
             }
         }
 
@@ -1622,6 +1634,12 @@ void sgwc_sxa_handle_session_report_request(
             if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
                 ogs_warn("[%s] Error Indication from eNB", sgwc_ue->imsi_bcd);
                 ogs_list_for_each(&sgwc_ue->sess_list, sess) {
+                    if (ogs_list_count(&sess->bearer_list) == 0)
+                        ogs_fatal("No Bearer [imsi:%s sess_id:%d apn:%s "
+                                "sgw_s5c_teid:0x%x pgw_s5c_teid:0x%x]",
+                                sgwc_ue->imsi_bcd, sess->id,
+                                sess->session.name,
+                                sess->sgw_s5c_teid, sess->pgw_s5c_teid);
                     ogs_assert(ogs_list_count(&sess->bearer_list));
                     ogs_info("    sess_id=%d", sess->id);
                     ogs_assert(OGS_OK ==

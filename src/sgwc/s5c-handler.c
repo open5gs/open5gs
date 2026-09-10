@@ -55,9 +55,31 @@ static void bearer_timeout(ogs_gtp_xact_t *xact, void *data)
     case OGS_GTP2_DELETE_BEARER_REQUEST_TYPE:
         ogs_error("[%s] No Delete Bearer Response", sgwc_ue->imsi_bcd);
         ogs_info("    bearer[EBI=%d]", bearer->ebi);
-        ogs_assert(OGS_OK ==
-            sgwc_pfcp_send_bearer_modification_request(
-                bearer, OGS_INVALID_POOL_ID, NULL, OGS_PFCP_MODIFY_REMOVE));
+        /*
+         * The MME did not answer the relayed (PGW-initiated) Delete Bearer
+         * Request. The local state still has to be cleaned up, but the
+         * cleanup must match what the PGW asked for, exactly as in
+         * sgwc_s11_handle_delete_bearer_response():
+         *
+         * - Linked EPS Bearer ID (DEFAULT BEARER) : the whole PDN
+         *   connection is deleted, so delete the PFCP session.
+         * - EPS Bearer ID (DEDICATED BEARER) : remove that bearer only.
+         *
+         * Removing only the default bearer left an sgwc_sess_t with an
+         * empty bearer_list in sgwc_ue->sess_list. The next procedure
+         * walking that list - e.g. Release Access Bearers Request - then
+         * hit ogs_assert(ogs_list_count(&sess->bearer_list)) and aborted
+         * the SGW-C.
+         */
+        if (bearer == sgwc_default_bearer_in_sess(sess))
+            ogs_assert(OGS_OK ==
+                sgwc_pfcp_send_session_deletion_request(
+                    sess, OGS_INVALID_POOL_ID, NULL));
+        else
+            ogs_assert(OGS_OK ==
+                sgwc_pfcp_send_bearer_modification_request(
+                    bearer, OGS_INVALID_POOL_ID, NULL,
+                    OGS_PFCP_MODIFY_REMOVE));
         break;
     default:
         ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",

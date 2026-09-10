@@ -1278,6 +1278,19 @@ void s1ap_handle_initial_context_setup_response(
         return;
     }
 
+    if (!ENB_UE_IS_SERVING(mme_ue, enb_ue)) {
+        ogs_error("InitialContextSetupResponse on non-serving S1 context "
+                "[MME_UE_S1AP_ID:%d] [enb_ue:%d serving:%d rel_action:%d]",
+                enb_ue->mme_ue_s1ap_id,
+                enb_ue->id, mme_ue->enb_ue_id, enb_ue->ue_ctx_rel_action);
+        r = s1ap_send_error_indication1(enb_ue,
+                S1AP_Cause_PR_protocol,
+                S1AP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     if (E_RABSetupListCtxtSURes) {
         int uli_presence = 0;
 
@@ -1750,6 +1763,19 @@ void s1ap_handle_e_rab_setup_response(
         return;
     }
 
+    if (!ENB_UE_IS_SERVING(mme_ue, enb_ue)) {
+        ogs_error("E-RABSetupResponse on non-serving S1 context "
+                "[MME_UE_S1AP_ID:%d] [enb_ue:%d serving:%d rel_action:%d]",
+                enb_ue->mme_ue_s1ap_id,
+                enb_ue->id, mme_ue->enb_ue_id, enb_ue->ue_ctx_rel_action);
+        r = s1ap_send_error_indication1(enb_ue,
+                S1AP_Cause_PR_protocol,
+                S1AP_CauseProtocol_message_not_compatible_with_receiver_state);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     if (E_RABSetupListBearerSURes) {
         for (i = 0; i < OGS_ASN_LIST_COUNT(E_RABSetupListBearerSURes); i++) {
             S1AP_E_RABSetupItemBearerSUResIEs_t *item = NULL;
@@ -1917,7 +1943,33 @@ void s1ap_handle_e_rab_setup_response(
                         OGS_GTP_DELETE_NO_ACTION));
                 ogs_warn("Delete Session Request");
             } else {
-                ogs_error("Not implemented : remove dedicated bearer");
+                /*
+                 * Radio failure cleanup for a dedicated bearer.
+                 *
+                 * The bearer context was created by
+                 * mme_s11_handle_create_bearer_request(), which allocated
+                 * an EPS Bearer Identity from the UE bitmap(EBI 5-15).
+                 *
+                 * If we leave it behind, both the bearer context and its
+                 * EBI are leaked -- the SGW never learns that the bearer
+                 * was not established, and every subsequent dedicated
+                 * bearer activation that fails on the radio side consumes
+                 * one more EBI. Once the bitmap is full, mme_bearer_add()
+                 * returns NULL in mme_s11_handle_create_bearer_request().
+                 *
+                 * So reject the pending Create Bearer Request and remove
+                 * the bearer context.
+                 */
+                ogs_warn("Remove dedicated bearer [EBI:%d]", bearer->ebi);
+
+                if (bearer->create.xact_id >= OGS_MIN_POOL_ID &&
+                    bearer->create.xact_id <= OGS_MAX_POOL_ID) {
+                    r = mme_gtp_send_create_bearer_response(
+                            bearer, OGS_GTP2_CAUSE_NO_RESOURCES_AVAILABLE);
+                    ogs_expect(r == OGS_OK);
+                }
+
+                mme_bearer_remove(bearer);
             }
         }
     }
@@ -2806,7 +2858,6 @@ void s1ap_handle_path_switch_request(
 
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
-    ogs_pkbuf_t *s1apbuf = NULL;
 
     ogs_eps_tai_t tai;
     int served_tai_index = 0;
@@ -2885,16 +2936,32 @@ void s1ap_handle_path_switch_request(
                 (int)*MME_UE_S1AP_ID,
                 OGS_ADDR(enb->sctp.addr, buf), enb->enb_id);
 
-        s1apbuf = s1ap_build_path_switch_failure(
-                *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
+        r = s1ap_send_path_switch_failure(
+                enb, *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
-        if (!s1apbuf) {
-            ogs_error("s1ap_build_path_switch_failure() failed");
-            return;
-        }
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
 
-        r = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
+    /*
+     * enb_ue_switch_to_enb() requires the source eNB. The MME removes
+     * enb_ue together with its eNB when the S1 association is lost
+     * (mme_gtp_send_release_all_ue_in_enb()), so this is not expected
+     * today; keep the same check as ngap_handle_path_switch_request()
+     * rather than dereference a removed eNB.
+     */
+    if (!mme_enb_find_by_id(enb_ue->enb_id)) {
+        ogs_error("[%d] eNB has already been removed : "
+                "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                enb_ue->enb_id,
+                enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
+        r = s1ap_send_path_switch_failure(
+                enb, *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
+                S1AP_Cause_PR_protocol,
+                S1AP_CauseProtocol_message_not_compatible_with_receiver_state);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
@@ -2979,15 +3046,9 @@ void s1ap_handle_path_switch_request(
 
     if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         ogs_error("No Security Context");
-        s1apbuf = s1ap_build_path_switch_failure(
-                *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
+        r = s1ap_send_path_switch_failure(
+                enb, *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
-        if (!s1apbuf) {
-            ogs_error("s1ap_build_path_switch_failure() failed");
-            return;
-        }
-
-        r = s1ap_send_to_enb_ue(enb_ue, s1apbuf);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
         return;
@@ -3597,6 +3658,21 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
+    if (source_ue->enb_id != enb->id) {
+        ogs_error("MME_UE_S1AP_ID[%lld] does not belong to this eNB "
+                "[UE:eNB-ID:%llu, Message:eNB-ID:%llu]",
+                (long long)*MME_UE_S1AP_ID,
+                (unsigned long long)source_ue->enb_id,
+                (unsigned long long)enb->id);
+        r = s1ap_send_error_indication(
+                enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     ogs_debug("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
 
@@ -3772,6 +3848,21 @@ void s1ap_handle_handover_request_ack(
         ogs_error("No eNB UE Context : MME_UE_S1AP_ID[%lld]",
                 (long long)*MME_UE_S1AP_ID);
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, NULL,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (target_ue->enb_id != enb->id) {
+        ogs_error("MME_UE_S1AP_ID[%lld] does not belong to this eNB "
+                "[UE:eNB-ID:%llu, Message:eNB-ID:%llu]",
+                (long long)*MME_UE_S1AP_ID,
+                (unsigned long long)target_ue->enb_id,
+                (unsigned long long)enb->id);
+        r = s1ap_send_error_indication(
+                enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
         ogs_expect(r == OGS_OK);
@@ -4055,6 +4146,20 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
         return;
     }
 
+    if (target_ue->enb_id != enb->id) {
+        ogs_error("MME_UE_S1AP_ID[%lld] does not belong to this eNB "
+                "[UE:eNB-ID:%llu, Message:eNB-ID:%llu]",
+                (long long)*MME_UE_S1AP_ID,
+                (unsigned long long)target_ue->enb_id,
+                (unsigned long long)enb->id);
+        r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, NULL,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     if (!Cause) {
         ogs_error("No Cause");
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, NULL,
@@ -4170,6 +4275,21 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
         ogs_error("No eNB UE Context : MME_UE_S1AP_ID[%lld]",
                 (long long)*MME_UE_S1AP_ID);
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, NULL,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (source_ue->enb_id != enb->id) {
+        ogs_error("MME_UE_S1AP_ID[%lld] does not belong to this eNB "
+                "[UE:eNB-ID:%llu, Message:eNB-ID:%llu]",
+                (long long)*MME_UE_S1AP_ID,
+                (unsigned long long)source_ue->enb_id,
+                (unsigned long long)enb->id);
+        r = s1ap_send_error_indication(
+                enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
         ogs_expect(r == OGS_OK);
@@ -4305,6 +4425,21 @@ void s1ap_handle_enb_status_transfer(
         return;
     }
 
+    if (source_ue->enb_id != enb->id) {
+        ogs_error("MME_UE_S1AP_ID[%lld] does not belong to this eNB "
+                "[UE:eNB-ID:%llu, Message:eNB-ID:%llu]",
+                (long long)*MME_UE_S1AP_ID,
+                (unsigned long long)source_ue->enb_id,
+                (unsigned long long)enb->id);
+        r = s1ap_send_error_indication(
+                enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
     if (!ENB_StatusTransfer_TransparentContainer) {
         ogs_error("No ENB_StatusTransfer_TransparentContainer");
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
@@ -4425,6 +4560,21 @@ void s1ap_handle_handover_notification(
         ogs_error("No eNB UE Context : MME_UE_S1AP_ID[%lld]",
                 (long long)*MME_UE_S1AP_ID);
         r = s1ap_send_error_indication(enb, MME_UE_S1AP_ID, NULL,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+        return;
+    }
+
+    if (target_ue->enb_id != enb->id) {
+        ogs_error("MME_UE_S1AP_ID[%lld] does not belong to this eNB "
+                "[UE:eNB-ID:%llu, Message:eNB-ID:%llu]",
+                (long long)*MME_UE_S1AP_ID,
+                (unsigned long long)target_ue->enb_id,
+                (unsigned long long)enb->id);
+        r = s1ap_send_error_indication(
+                enb, MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
         ogs_expect(r == OGS_OK);

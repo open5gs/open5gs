@@ -39,6 +39,11 @@ void OpenAPI_steering_container_free(OpenAPI_steering_container_t *steering_cont
     ogs_free(steering_container);
 }
 
+/*
+ * oneOf union (x-open5gs-union): the members are the alternatives of the
+ * original oneOf. Exactly one is set, and it is the JSON value itself
+ * rather than a property of a wrapper object.
+ */
 cJSON *OpenAPI_steering_container_convertToJSON(OpenAPI_steering_container_t *steering_container)
 {
     cJSON *item = NULL;
@@ -49,52 +54,49 @@ cJSON *OpenAPI_steering_container_convertToJSON(OpenAPI_steering_container_t *st
         return NULL;
     }
 
-    item = cJSON_CreateObject();
+    if ((steering_container->steering_info_list != NULL) +
+            (steering_container->secured_packet != NULL) != 1) {
+        ogs_error("OpenAPI_steering_container_convertToJSON() failed [SteeringContainer]: exactly one alternative must be set");
+        return NULL;
+    }
+
     if (steering_container->steering_info_list) {
-    cJSON *steering_info_listList = cJSON_AddArrayToObject(item, "SteeringInfoList");
-    if (steering_info_listList == NULL) {
-        ogs_error("OpenAPI_steering_container_convertToJSON() failed [steering_info_list]");
-        goto end;
-    }
-    OpenAPI_list_for_each(steering_container->steering_info_list, node) {
-        cJSON *itemLocal = OpenAPI_steering_info_convertToJSON(node->data);
-        if (itemLocal == NULL) {
+        item = cJSON_CreateArray();
+        if (item == NULL) {
             ogs_error("OpenAPI_steering_container_convertToJSON() failed [steering_info_list]");
-            goto end;
+            return NULL;
         }
-        cJSON_AddItemToArray(steering_info_listList, itemLocal);
+        OpenAPI_list_for_each(steering_container->steering_info_list, node) {
+            cJSON *itemLocal = OpenAPI_steering_info_convertToJSON(node->data);
+            if (itemLocal == NULL) {
+                ogs_error("OpenAPI_steering_container_convertToJSON() failed [steering_info_list]");
+                cJSON_Delete(item);
+                return NULL;
+            }
+            cJSON_AddItemToArray(item, itemLocal);
+        }
+        return item;
     }
-    }
-
     if (steering_container->secured_packet) {
-    if (cJSON_AddStringToObject(item, "SecuredPacket", steering_container->secured_packet) == NULL) {
-        ogs_error("OpenAPI_steering_container_convertToJSON() failed [secured_packet]");
-        goto end;
-    }
+        return cJSON_CreateString(steering_container->secured_packet);
     }
 
-end:
-    return item;
+    ogs_error("OpenAPI_steering_container_convertToJSON() failed [SteeringContainer]");
+    return NULL;
 }
 
 OpenAPI_steering_container_t *OpenAPI_steering_container_parseFromJSON(cJSON *steering_containerJSON)
 {
-    OpenAPI_steering_container_t *steering_container_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
-    cJSON *steering_info_list = NULL;
-    OpenAPI_list_t *steering_info_listList = NULL;
-    cJSON *secured_packet = NULL;
-    steering_info_list = cJSON_GetObjectItemCaseSensitive(steering_containerJSON, "SteeringInfoList");
-    if (steering_info_list) {
+    OpenAPI_list_t *steering_info_list = NULL;
+    char *secured_packet = NULL;
+
+    if (cJSON_IsArray(steering_containerJSON)) {
         cJSON *steering_info_list_local = NULL;
-        if (!cJSON_IsArray(steering_info_list)) {
-            ogs_error("OpenAPI_steering_container_parseFromJSON() failed [steering_info_list]");
-            goto end;
-        }
 
-        steering_info_listList = OpenAPI_list_create();
+        steering_info_list = OpenAPI_list_create();
 
-        cJSON_ArrayForEach(steering_info_list_local, steering_info_list) {
+        cJSON_ArrayForEach(steering_info_list_local, steering_containerJSON) {
             if (!cJSON_IsObject(steering_info_list_local)) {
                 ogs_error("OpenAPI_steering_container_parseFromJSON() failed [steering_info_list]");
                 goto end;
@@ -104,31 +106,28 @@ OpenAPI_steering_container_t *OpenAPI_steering_container_parseFromJSON(cJSON *st
                 ogs_error("No steering_info_listItem");
                 goto end;
             }
-            OpenAPI_list_add(steering_info_listList, steering_info_listItem);
+            OpenAPI_list_add(steering_info_list, steering_info_listItem);
         }
-    }
-
-    secured_packet = cJSON_GetObjectItemCaseSensitive(steering_containerJSON, "SecuredPacket");
-    if (secured_packet) {
-    if (!cJSON_IsString(secured_packet) && !cJSON_IsNull(secured_packet)) {
-        ogs_error("OpenAPI_steering_container_parseFromJSON() failed [secured_packet]");
+    } else if (cJSON_IsString(steering_containerJSON)) {
+        secured_packet = ogs_strdup(steering_containerJSON->valuestring);
+        ogs_assert(secured_packet);
+    } else {
+        ogs_error("OpenAPI_steering_container_parseFromJSON() failed [SteeringContainer]");
         goto end;
     }
-    }
 
-    steering_container_local_var = OpenAPI_steering_container_create (
-        steering_info_list ? steering_info_listList : NULL,
-        secured_packet && !cJSON_IsNull(secured_packet) ? ogs_strdup(secured_packet->valuestring) : NULL
-    );
-
-    return steering_container_local_var;
+    return OpenAPI_steering_container_create(steering_info_list, secured_packet);
 end:
-    if (steering_info_listList) {
-        OpenAPI_list_for_each(steering_info_listList, node) {
+    if (steering_info_list) {
+        OpenAPI_list_for_each(steering_info_list, node) {
             OpenAPI_steering_info_free(node->data);
         }
-        OpenAPI_list_free(steering_info_listList);
-        steering_info_listList = NULL;
+        OpenAPI_list_free(steering_info_list);
+        steering_info_list = NULL;
+    }
+    if (secured_packet) {
+        ogs_free(secured_packet);
+        secured_packet = NULL;
     }
     return NULL;
 }

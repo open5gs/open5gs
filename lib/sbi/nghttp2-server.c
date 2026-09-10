@@ -774,9 +774,9 @@ static ogs_sbi_stream_t *stream_add(
         return NULL;
     }
 
-    stream->request = ogs_sbi_request_new();
+    stream->request = ogs_sbi_request_new_incoming();
     if (!stream->request) {
-        ogs_error("ogs_sbi_request_new() failed");
+        ogs_error("ogs_sbi_request_new_incoming() failed");
         ogs_pool_id_free(&stream_pool, stream);
         return NULL;
     }

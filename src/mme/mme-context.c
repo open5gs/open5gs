@@ -3518,6 +3518,7 @@ void enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb)
     ogs_assert(new_enb);
 
     enb = mme_enb_find_by_id(enb_ue->enb_id);
+    ogs_assert(enb);
 
     /* Remove from the old enb */
     ogs_list_remove(&enb->enb_ue_list, enb_ue);
@@ -4322,14 +4323,59 @@ mme_ue_t *mme_ue_find_by_message(const ogs_nas_eps_message_t *message)
     return mme_ue;
 }
 
-int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
+static const char *mme_ue_imsi_source_name(mme_ue_imsi_source_e source)
+{
+    switch (source) {
+    case MME_UE_IMSI_FROM_ATTACH_REQUEST:
+        return "ATTACH_REQUEST";
+    case MME_UE_IMSI_FROM_IDENTITY_RESPONSE:
+        return "IDENTITY_RESPONSE";
+    case MME_UE_IMSI_FROM_SGSN_CONTEXT_RESPONSE:
+        return "SGSN_CONTEXT_RESPONSE";
+    }
+    return "UNKNOWN";
+}
+
+static const char *mme_ue_emm_state_name(mme_ue_t *mme_ue)
+{
+    ogs_assert(mme_ue);
+
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered))
+        return "DE_REGISTERED";
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication))
+        return "AUTHENTICATION";
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_security_mode))
+        return "SECURITY_MODE";
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup))
+        return "INITIAL_CONTEXT_SETUP";
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
+        return "REGISTERED";
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_ue_context_will_remove))
+        return "UE_CONTEXT_WILL_REMOVE";
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception))
+        return "EXCEPTION";
+
+    return "OTHER";
+}
+
+int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,
+        mme_ue_imsi_source_e source)
 {
     mme_ue_t *old_mme_ue = NULL;
     mme_sess_t *old_sess = NULL;
     mme_bearer_t *old_bearer = NULL;
     sgw_ue_t *sgw_ue = NULL, *old_sgw_ue = NULL;
     uint16_t target_bitmap_before = 0;
+    bool target_had_imsi = false;
+    char target_imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
     ogs_assert(mme_ue && imsi_bcd);
+
+    /*
+     * Remember who this context was before the overwrite below - by the
+     * time the migration logs, mme_ue->imsi_bcd is already the new IMSI.
+     */
+    target_had_imsi = MME_UE_HAVE_IMSI(mme_ue) ? true : false;
+    ogs_cpystrn(target_imsi_bcd, mme_ue->imsi_bcd, OGS_MAX_IMSI_BCD_LEN+1);
 
     /*
      * Issues: #4357
@@ -4360,65 +4406,59 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
         if (ogs_pool_index(&mme_ue_pool, mme_ue) !=
             ogs_pool_index(&mme_ue_pool, old_mme_ue)) {
             ogs_warn("[%s] OLD UE Context Release", mme_ue->imsi_bcd);
-            if (ECM_CONNECTED(old_mme_ue)) {
-                enb_ue_t *enb_ue = enb_ue_find_by_id(old_mme_ue->enb_ue_id);
-                enb_ue_t *enb_ue_holding = NULL;
 
+            /*
+             * Who reached the OLD UE context migration?
+             *
+             *   ATTACH_REQUEST         identity is in the message
+             *   IDENTITY_RESPONSE      identity arrives mid-procedure
+             *   SGSN_CONTEXT_RESPONSE  identity arrives mid-procedure
+             *
+             * The migration hands session, bearer, EBI and SGW-S11-TEID
+             * ownership from one context to another. Replacing it means
+             * keeping the context that owns the identity and moving the
+             * S1 association instead, so first we need to know which
+             * callers actually get here, and in what state.
+             */
+            ogs_warn("[MIGRATION-TRACK] source[%s] "
+                    "target_ue_id[%d] target_imsi[%s] target_state[%s] "
+                    "target_sessions[%d] target_bitmap[0x%04x]",
+                    mme_ue_imsi_source_name(source),
+                    mme_ue->id,
+                    target_had_imsi ? target_imsi_bcd : "Unknown",
+                    mme_ue_emm_state_name(mme_ue),
+                    ogs_list_count(&mme_ue->sess_list),
+                    mme_ue->ebi_bitmap);
+            ogs_warn("[MIGRATION-TRACK]     "
+                    "old_ue_id[%d] old_imsi[%s] old_state[%s] "
+                    "old_sessions[%d] old_bitmap[0x%04x] "
+                    "old_ecm_connected[%d]",
+                    old_mme_ue->id,
+                    old_mme_ue->imsi_bcd,
+                    mme_ue_emm_state_name(old_mme_ue),
+                    ogs_list_count(&old_mme_ue->sess_list),
+                    old_mme_ue->ebi_bitmap,
+                    ECM_CONNECTED(old_mme_ue) ? 1 : 0);
+            if (ECM_CONNECTED(old_mme_ue)) {
                 /*
                  * Keep the old S1 context until the new attach/TAU procedure
                  * is authenticated. CLEAR_S1_CONTEXT(mme_ue) will then send
                  * UEContextReleaseCommand to the old E-UTRAN context.
                  *
-                 * Do not use HOLDING_S1_CONTEXT(old_mme_ue) here: that macro
-                 * stores the holding id in old_mme_ue, but this function
-                 * removes old_mme_ue below after moving the session context
-                 * to the new mme_ue.
+                 * The hold is recorded in mme_ue rather than old_mme_ue,
+                 * which is removed below once its sessions have been moved
+                 * across.
                  */
                 ogs_warn("[%s] Holding old S1 context", mme_ue->imsi_bcd);
-                if (enb_ue) {
-                    int r;
+                HOLDING_S1_CONTEXT_FOR(mme_ue, old_mme_ue);
 
-                    enb_ue_holding =
-                        enb_ue_find_by_id(mme_ue->enb_ue_holding_id);
-                    if (enb_ue_holding) {
-                        ogs_error("[%s] Holding S1 context already exists",
-                                mme_ue->imsi_bcd);
-                        ogs_error("[%s]    ENB_UE_S1AP_ID[%d] "
-                                "MME_UE_S1AP_ID[%d]",
-                                mme_ue->imsi_bcd,
-                                enb_ue_holding->enb_ue_s1ap_id,
-                                enb_ue_holding->mme_ue_s1ap_id);
-                        r = s1ap_send_ue_context_release_command(
-                                enb_ue_holding,
-                                S1AP_Cause_PR_nas,
-                                S1AP_CauseNas_normal_release,
-                                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
-                        ogs_expect(r == OGS_OK);
-                    } else if (mme_ue->enb_ue_holding_id !=
-                            OGS_INVALID_POOL_ID) {
-                        ogs_error("[%s] Holding S1 context has already "
-                                "been removed", mme_ue->imsi_bcd);
-                    }
-                    mme_ue->enb_ue_holding_id = OGS_INVALID_POOL_ID;
-
-                    enb_ue->mme_ue_id = OGS_INVALID_POOL_ID;
-
-                    ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                            old_mme_ue->imsi_bcd,
-                            enb_ue->enb_ue_s1ap_id,
-                            enb_ue->mme_ue_s1ap_id);
-
-                    enb_ue->ue_ctx_rel_action =
-                        S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE;
-                    ogs_timer_start(enb_ue->t_s1_holding,
-                            mme_timer_cfg(MME_TIMER_S1_HOLDING)->duration);
-
-                    mme_ue->enb_ue_holding_id = old_mme_ue->enb_ue_id;
-                    old_mme_ue->enb_ue_id = OGS_INVALID_POOL_ID;
-                } else {
-                    ogs_error("[%s] S1 Context has already been removed",
-                                old_mme_ue->imsi_bcd);
-                }
+                /*
+                 * Unlike the ordinary callers, nothing associates a new S1
+                 * context with old_mme_ue after this, so clear it here
+                 * rather than in the macro. ECM_IDLE(old_mme_ue) has to
+                 * see the context as released.
+                 */
+                old_mme_ue->enb_ue_id = OGS_INVALID_POOL_ID;
             }
 
     /*
@@ -5767,6 +5807,7 @@ void mme_ue_save_memento(mme_ue_t *mme_ue, mme_ue_memento_t *memento)
            OGS_SHA256_DIGEST_SIZE / 2);
     memento->dl_count = mme_ue->dl_count;
     memento->ul_count = mme_ue->ul_count.i32;
+    memento->ul_count_accepted = mme_ue->ul_count_accepted;
     memcpy(memento->kenb, mme_ue->kenb, OGS_SHA256_DIGEST_SIZE);
     memcpy(memento->hash_mme, mme_ue->hash_mme, OGS_HASH_MME_LEN);
     memento->nonceue = mme_ue->nonceue;
@@ -5804,6 +5845,7 @@ void mme_ue_restore_memento(mme_ue_t *mme_ue, const mme_ue_memento_t *memento)
            OGS_SHA256_DIGEST_SIZE / 2);
     mme_ue->dl_count = memento->dl_count;
     mme_ue->ul_count.i32 = memento->ul_count;
+    mme_ue->ul_count_accepted = memento->ul_count_accepted;
     memcpy(mme_ue->kenb, memento->kenb, OGS_SHA256_DIGEST_SIZE);
     memcpy(mme_ue->hash_mme, memento->hash_mme, OGS_HASH_MME_LEN);
     mme_ue->nonceue = memento->nonceue;

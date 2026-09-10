@@ -252,6 +252,16 @@ typedef struct smf_bearer_s {
     uint8_t         qfi;            /* 5G Core QFI */
     uint8_t         ebi;            /* EPC EBI */
 
+    /*
+     * Set while a GTP-U Error Indication is being handled for this bearer,
+     * so that repeated Error Indications do not start a second deactivation.
+     * Cleared when the procedure cannot go on - the PFCP deactivation or the
+     * final removal is rejected or times out.  Otherwise the procedure ends
+     * by removing the bearer or the whole PDN connection, which drops the
+     * mark with the context.
+     */
+    bool            ei_deactivation;
+
     uint32_t        pgw_s5u_teid;   /* PGW-S5U TEID */
     ogs_sockaddr_t  *pgw_s5u_addr;  /* PGW-S5U IPv4 */
     ogs_sockaddr_t  *pgw_s5u_addr6; /* PGW-S5U IPv6 */
@@ -634,6 +644,15 @@ typedef struct smf_sess_s {
         bool prepared;
         bool data_forwarding_not_possible;
         bool indirect_data_forwarding;
+
+        /*
+         * Delayed PFCP REMOVE of the indirect tunnel after handover
+         * completion. The next handover reuses it as the first step of
+         * replacing the tunnel (ngap_handle_handover_request_ack).
+         * Cleared when that transaction is claimed, answered or timed out,
+         * so it never refers to a transaction that no longer exists.
+         */
+        ogs_pool_id_t indirect_remove_xact_id;
 
         /* NG-U UP Transport Information Saved Temporally */
         uint32_t gnb_n3_teid;

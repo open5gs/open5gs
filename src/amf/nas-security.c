@@ -61,6 +61,7 @@ ogs_pkbuf_t *nas_5gs_security_encode(
     if (new_security_context) {
         amf_ue->dl_count = 0;
         amf_ue->ul_count.i32 = 0;
+        amf_ue->ul_count_accepted = false;
     }
 
     if (amf_ue->selected_enc_algorithm == 0)
@@ -128,10 +129,6 @@ int nas_5gs_security_decode(amf_ue_t *amf_ue,
         security_header_type.ciphered = 0;
     }
 
-    if (security_header_type.new_security_context) {
-        amf_ue->ul_count.i32 = 0;
-    }
-
     if (amf_ue->selected_enc_algorithm == 0)
         security_header_type.ciphered = 0;
     if (amf_ue->selected_int_algorithm == 0)
@@ -140,6 +137,7 @@ int nas_5gs_security_decode(amf_ue_t *amf_ue,
     if (security_header_type.ciphered ||
         security_header_type.integrity_protected) {
         ogs_nas_5gs_security_header_t *h = NULL;
+        uint32_t estimated_ul_count = 0;
 
         /* NAS Security Header */
         ogs_assert(ogs_pkbuf_push(pkbuf, 7));
@@ -148,10 +146,20 @@ int nas_5gs_security_decode(amf_ue_t *amf_ue,
         /* NAS Security Header.Sequence_Number */
         ogs_assert(ogs_pkbuf_pull(pkbuf, 6));
 
-        /* calculate ul_count */
+        /*
+         * TS24.501 4.4.3.1
+         *
+         * Estimate the uplink NAS COUNT of the received message from the
+         * locally stored overflow counter and the received sequence number.
+         *
+         * The estimate is kept local. amf_ue->ul_count is the NAS COUNT of
+         * the last *accepted* uplink NAS message and must never be advanced
+         * by a sequence number that has not been authenticated yet.
+         */
+        estimated_ul_count = amf_ue->ul_count.i32 & 0x00ffff00;
         if (amf_ue->ul_count.sqn > h->sequence_number)
-            amf_ue->ul_count.overflow++;
-        amf_ue->ul_count.sqn = h->sequence_number;
+            estimated_ul_count = (estimated_ul_count + 0x100) & 0x00ffff00;
+        estimated_ul_count |= h->sequence_number;
 
         if (security_header_type.integrity_protected) {
             uint8_t mac[NAS_SECURITY_MAC_SIZE];
@@ -160,7 +168,7 @@ int nas_5gs_security_decode(amf_ue_t *amf_ue,
 
             /* calculate NAS MAC(message authentication code) */
             ogs_nas_mac_calculate(amf_ue->selected_int_algorithm,
-                amf_ue->knas_int, amf_ue->ul_count.i32,
+                amf_ue->knas_int, estimated_ul_count,
                 amf_ue->nas.access_type,
                 OGS_NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
             h->message_authentication_code = original_mac;
@@ -170,7 +178,34 @@ int nas_5gs_security_decode(amf_ue_t *amf_ue,
                 ogs_warn("NAS MAC verification failed(0x%x != 0x%x)",
                     be32toh(h->message_authentication_code), be32toh(mac32));
                 amf_ue->mac_failed = 1;
+            } else {
+                /*
+                 * TS33.501 6.4.3.1 (NAS integrity and replay protection)
+                 *
+                 * A valid MAC only proves that the message was produced by a
+                 * holder of KNASint at that NAS COUNT. A replayed message
+                 * carries a valid MAC as well, so the NAS COUNT must also be
+                 * greater than the NAS COUNT of the last accepted uplink NAS
+                 * message in this security context.
+                 */
+                if (amf_ue->ul_count_accepted == true &&
+                    estimated_ul_count <= amf_ue->ul_count.i32) {
+                    ogs_error("NAS COUNT REPLAY DETECTED - uplink NAS "
+                        "message rejected "
+                        "[UL NAS COUNT:0x%06x, LAST ACCEPTED:0x%06x]",
+                        estimated_ul_count, amf_ue->ul_count.i32);
+                    return OGS_ERROR;
+                }
+
+                amf_ue->ul_count.i32 = estimated_ul_count;
+                amf_ue->ul_count_accepted = true;
             }
+        } else {
+            /*
+             * No integrity protection (NIA0). The sequence number cannot be
+             * authenticated, so replay protection is not possible here.
+             */
+            amf_ue->ul_count.i32 = estimated_ul_count;
         }
 
         /* NAS EMM Header or ESM Header */
@@ -183,7 +218,7 @@ int nas_5gs_security_decode(amf_ue_t *amf_ue,
                 return OGS_ERROR;
             }
             ogs_nas_encrypt(amf_ue->selected_enc_algorithm,
-                amf_ue->knas_enc, amf_ue->ul_count.i32,
+                amf_ue->knas_enc, estimated_ul_count,
                 amf_ue->nas.access_type,
                 OGS_NAS_SECURITY_UPLINK_DIRECTION, pkbuf);
         }

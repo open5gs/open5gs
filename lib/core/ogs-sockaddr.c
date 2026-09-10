@@ -454,10 +454,10 @@ int ogs_filter_ip_version(ogs_sockaddr_t **addr,
 }
 
 
-const char *ogs_inet_ntop(void *sa, char *buf, int buflen)
+const char *ogs_inet_ntop(const void *sa, char *buf, int buflen)
 {
     int family;
-    ogs_sockaddr_t *sockaddr = NULL;
+    const ogs_sockaddr_t *sockaddr = NULL;
 
     sockaddr = sa;
     ogs_assert(sockaddr);

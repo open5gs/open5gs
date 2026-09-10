@@ -354,6 +354,22 @@ struct enb_ue_s {
 #define S1AP_UE_CTX_REL_S1_PAGING                           7
     uint8_t         ue_ctx_rel_action;
 
+/*
+ * An S1 context may outlive the procedure that created it. During
+ * handover the target enb_ue is linked to the mme_ue before the UE has
+ * moved, and it is only unlinked and removed when the eNB answers
+ * UEContextReleaseCommand with UEContextReleaseComplete.
+ *
+ * An eNB that owns such a context - for example a handover target after
+ * HandoverCancel - must not be able to drive UE/bearer procedures with
+ * it, since that would let it act on a UE that is still served by
+ * another eNB. Use this to require that the context is both the serving
+ * one and not already being released.
+ */
+#define ENB_UE_IS_SERVING(__mME, __eNB) \
+    ((__eNB)->id == (__mME)->enb_ue_id && \
+     (__eNB)->ue_ctx_rel_action == S1AP_UE_CTX_REL_INVALID_ACTION)
+
     bool            part_of_s1_reset_requested;
 
     /* Related Context */
@@ -407,6 +423,7 @@ typedef struct mme_ue_memento_s {
     uint32_t dl_count;
     /* Uplink counter (24-bit stored in uint32_t) */
     uint32_t ul_count;
+    bool ul_count_accepted;
     /* eNB key derived from kasme */
     uint8_t kenb[OGS_SHA256_DIGEST_SIZE];
     /* Hash used for NAS message integrity */
@@ -628,6 +645,15 @@ struct mme_ue_s {
         } __attribute__ ((packed));
         uint32_t i32;
     } ul_count;
+    /*
+     * Set once an uplink NAS message has been accepted in the current
+     * EPS NAS security context. While it is false, 'ul_count' does not yet
+     * hold a "last accepted" value and the replay check is not applied.
+     *
+     * Both are cleared by the MME when it takes a new security context
+     * into use, never by the security header type of a received message.
+     */
+    bool            ul_count_accepted;
     /* eNB key derived from kasme */
     uint8_t         kenb[OGS_SHA256_DIGEST_SIZE];
     /* Hash used for NAS message integrity */
@@ -700,17 +726,33 @@ struct mme_ue_s {
       (enb_ue_find_by_id((__mME)->enb_ue_id) == NULL)))
     ogs_pool_id_t   enb_ue_id;
 
-#define HOLDING_S1_CONTEXT(__mME) \
+/*
+ * Put the S1 context __sERVING is using on hold, and record the hold in
+ * __hOLDER.
+ *
+ * __hOLDER and __sERVING are the same MME-UE context in the ordinary
+ * case, which HOLDING_S1_CONTEXT() below spells out. They differ only in
+ * mme_ue_set_imsi(), where the S1 context and the sessions still belong
+ * to the old MME-UE while the hold has to be recorded in the new one,
+ * because the old context is removed as soon as its sessions have been
+ * moved across.
+ *
+ * Each half of this names the UE after the context it is about: the S1
+ * context released on the way in is __hOLDER's, the one put on hold is
+ * __sERVING's. They are the same imsi_bcd unless the two differ.
+ */
+#define HOLDING_S1_CONTEXT_FOR(__hOLDER, __sERVING) \
     do { \
         enb_ue_t *enb_ue_holding = NULL; \
         \
-        enb_ue_holding = enb_ue_find_by_id((__mME)->enb_ue_holding_id); \
+        /* Whatever __hOLDER is already holding, named after __hOLDER */ \
+        enb_ue_holding = enb_ue_find_by_id((__hOLDER)->enb_ue_holding_id); \
         if (enb_ue_holding) { \
             int r; \
             ogs_warn("[%s] Holding S1 context already exists", \
-                    (__mME)->imsi_bcd); \
+                    (__hOLDER)->imsi_bcd); \
             ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]", \
-                    (__mME)->imsi_bcd, \
+                    (__hOLDER)->imsi_bcd, \
                     enb_ue_holding->enb_ue_s1ap_id, \
                     enb_ue_holding->mme_ue_s1ap_id); \
             r = s1ap_send_ue_context_release_command( \
@@ -718,19 +760,20 @@ struct mme_ue_s {
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release, \
                     S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0); \
             ogs_expect(r == OGS_OK); \
-        } else if ((__mME)->enb_ue_holding_id != OGS_INVALID_POOL_ID) { \
+        } else if ((__hOLDER)->enb_ue_holding_id != OGS_INVALID_POOL_ID) { \
             ogs_warn("[%s] Holding S1 context has already been removed", \
-                    (__mME)->imsi_bcd); \
+                    (__hOLDER)->imsi_bcd); \
         } \
-        (__mME)->enb_ue_holding_id = OGS_INVALID_POOL_ID; \
+        (__hOLDER)->enb_ue_holding_id = OGS_INVALID_POOL_ID; \
         \
-        enb_ue_holding = enb_ue_find_by_id((__mME)->enb_ue_id); \
+        /* The context being held is __sERVING's, and is named after it */ \
+        enb_ue_holding = enb_ue_find_by_id((__sERVING)->enb_ue_id); \
         if (enb_ue_holding) { \
             enb_ue_holding->mme_ue_id = OGS_INVALID_POOL_ID; \
             \
-            ogs_warn("[%s] Holding S1 Context", (__mME)->imsi_bcd); \
+            ogs_warn("[%s] Holding S1 Context", (__sERVING)->imsi_bcd); \
             ogs_warn("[%s]    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]", \
-                    (__mME)->imsi_bcd, \
+                    (__sERVING)->imsi_bcd, \
                     enb_ue_holding->enb_ue_s1ap_id, \
                     enb_ue_holding->mme_ue_s1ap_id); \
             \
@@ -739,11 +782,13 @@ struct mme_ue_s {
             ogs_timer_start(enb_ue_holding->t_s1_holding, \
                     mme_timer_cfg(MME_TIMER_S1_HOLDING)->duration); \
             \
-            (__mME)->enb_ue_holding_id = (__mME)->enb_ue_id; \
+            (__hOLDER)->enb_ue_holding_id = (__sERVING)->enb_ue_id; \
         } else \
             ogs_error("[%s] S1 Context has already been removed", \
-                    (__mME)->imsi_bcd); \
+                    (__sERVING)->imsi_bcd); \
     } while(0)
+#define HOLDING_S1_CONTEXT(__mME) \
+    HOLDING_S1_CONTEXT_FOR((__mME), (__mME))
 #define CLEAR_S1_CONTEXT(__mME) \
     do { \
         enb_ue_t *enb_ue_holding = NULL; \
@@ -1224,7 +1269,17 @@ mme_ue_t *mme_ue_find_by_s11_local_teid(uint32_t teid);
 mme_ue_t *mme_ue_find_by_gn_local_teid(uint32_t teid);
 
 mme_ue_t *mme_ue_find_by_message(const ogs_nas_eps_message_t *message);
-int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd);
+
+/* Which procedure supplied the IMSI - logged at the OLD UE context
+ * migration, so we can tell which callers actually reach it. */
+typedef enum {
+    MME_UE_IMSI_FROM_ATTACH_REQUEST = 0,
+    MME_UE_IMSI_FROM_IDENTITY_RESPONSE,
+    MME_UE_IMSI_FROM_SGSN_CONTEXT_RESPONSE,
+} mme_ue_imsi_source_e;
+
+int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd,
+        mme_ue_imsi_source_e source);
 
 bool mme_ue_have_indirect_tunnel(mme_ue_t *mme_ue);
 void mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue);

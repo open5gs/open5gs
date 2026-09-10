@@ -106,6 +106,7 @@ void mme_gn_handle_sgsn_context_request(
     ogs_nas_eps_guti_t nas_guti;
     ogs_plmn_id_t plmn_id;
     ogs_nas_rai_t rai;
+    ogs_ip_t sgsn_gn_ip, sgsn_gn_ip_alt;
     mme_ue_t *mme_ue = NULL;
     int rv;
 
@@ -133,6 +134,30 @@ void mme_gn_handle_sgsn_context_request(
         mme_gtp1_send_sgsn_context_response(NULL, OGS_GTP1_CAUSE_MANDATORY_IE_MISSING, xact);
         return;
     }
+
+    rv = ogs_gtp1_gsn_addr_to_ip(
+            req->sgsn_address_for_control_plane.data,
+            req->sgsn_address_for_control_plane.len, &sgsn_gn_ip);
+    if (rv != OGS_OK) {
+        ogs_warn("[Gn] Rx SGSN Context Request with invalid SGSN Address for Control Plane!");
+        mme_gtp1_send_sgsn_context_response(
+                NULL, OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT, xact);
+        return;
+    }
+
+    if (req->alternative_sgsn_address_for_control_plane.presence) {
+        rv = ogs_gtp1_gsn_addr_to_ip(
+                req->alternative_sgsn_address_for_control_plane.data,
+                req->alternative_sgsn_address_for_control_plane.len,
+                &sgsn_gn_ip_alt);
+        if (rv != OGS_OK) {
+            ogs_warn("[Gn] Rx SGSN Context Request with invalid Alternative SGSN Address for Control Plane!");
+            mme_gtp1_send_sgsn_context_response(
+                    NULL, OGS_GTP1_CAUSE_OPTIONAL_IE_INCORRECT, xact);
+            return;
+        }
+    }
+
     if (!req->imsi.presence &&
         !req->temporary_logical_link_identifier.presence &&
         !req->packet_tmsi.presence) {
@@ -204,18 +229,9 @@ void mme_gn_handle_sgsn_context_request(
     }
 
     mme_ue->gn.sgsn_gn_teid = req->tunnel_endpoint_identifier_control_plane.u32;
-
-    rv = ogs_gtp1_gsn_addr_to_ip(req->sgsn_address_for_control_plane.data,
-                                 req->sgsn_address_for_control_plane.len,
-                                 &mme_ue->gn.sgsn_gn_ip);
-    ogs_assert(rv == OGS_OK);
-
-   if (req->alternative_sgsn_address_for_control_plane.presence) {
-        rv = ogs_gtp1_gsn_addr_to_ip(req->alternative_sgsn_address_for_control_plane.data,
-                                     req->alternative_sgsn_address_for_control_plane.len,
-                                    &mme_ue->gn.sgsn_gn_ip_alt);
-        ogs_assert(rv == OGS_OK);
-   }
+    mme_ue->gn.sgsn_gn_ip = sgsn_gn_ip;
+    if (req->alternative_sgsn_address_for_control_plane.presence)
+        mme_ue->gn.sgsn_gn_ip_alt = sgsn_gn_ip_alt;
 
     /* 3GPP TS 23.401 Annex D.3.5 "Routing Area Update":
      * Step 2. "If the old P-TMSI Signature was valid or if the new SGSN indicates that it has authenticated the MS,
@@ -365,7 +381,8 @@ int mme_gn_handle_sgsn_context_response(
 
     ogs_buffer_to_bcd(resp->imsi.data, resp->imsi.len, imsi_bcd);
     ogs_info("    IMSI[%s]", imsi_bcd);
-    mme_ue_set_imsi(mme_ue, imsi_bcd);
+    mme_ue_set_imsi(mme_ue, imsi_bcd,
+            MME_UE_IMSI_FROM_SGSN_CONTEXT_RESPONSE);
 
     if (!resp->tunnel_endpoint_identifier_control_plane.presence) {
         ogs_error("[Gn] Rx SGSN Context Response with no Tunnel Endpoint Identifier Control Plane!");

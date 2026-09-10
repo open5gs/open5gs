@@ -20,6 +20,7 @@
 #include "sbi-path.h"
 #include "ngap-path.h"
 #include "binding.h"
+#include "local-path.h"
 #include "namf-handler.h"
 
 bool smf_namf_comm_handle_n1_n2_message_transfer(
@@ -48,9 +49,44 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
  * to apply QoS updates without waiting for V-SMF or RAN setup.
  */
             smf_qos_flow_binding(sess);
+        } else if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_ACCEPTED) {
+/*
+ * TS29.518 Namf_Communication_N1N2MessageTransfer
+ *
+ * The AMF has accepted the transfer and is still trying to deliver it -
+ * it may be paging the UE. This is not a failure, so keep the session.
+ *
+ * The AMF in Open5GS cannot answer an Establishment Accept this way: its
+ * 202 Accepted paths require either no N1 message or a different NGAP IE
+ * type. A peer AMF may still do so.
+ */
+            ogs_warn("[%s:%d] N1 N2 transfer is still in progress [%d]",
+                smf_ue->supi, sess->psi, recvmsg->res_status);
         } else {
             ogs_error("[%s:%d] HTTP response error [%d]",
                 smf_ue->supi, sess->psi, recvmsg->res_status);
+
+/*
+ * TS23.502 4.3.2.2.1 UE Requested PDU Session Establishment
+ *
+ * The SM context is created and returned to the AMF at step 5, long before
+ * this N1N2 transfer at step 11. If the AMF cannot accept the PDU Session
+ * Establishment Accept - the RAN-UE context was released while the session
+ * was being established, so the AMF has already dropped its own session
+ * context - nothing else will ever release the SM context.
+ *
+ * Release it locally. Otherwise the session, its UE IP address, its PFCP
+ * session and its PCF/UDM associations are orphaned in the SMF until the
+ * same UE happens to request the same PDU Session ID again.
+ */
+            if (HOME_ROUTED_ROAMING_IN_VSMF(sess) ||
+                HOME_ROUTED_ROAMING_IN_HSMF(sess)) {
+                ogs_error("[%s:%d] Home-routed roaming session is not "
+                        "released locally", smf_ue->supi, sess->psi);
+            } else {
+                smf_trigger_session_release(
+                        sess, NULL, OGS_PFCP_DELETE_TRIGGER_LOCAL_INITIATED);
+            }
         }
         break;
 
@@ -193,16 +229,11 @@ bool smf_namf_comm_handle_n1_n2_message_transfer(
                 smf_namf_comm_send_n1_n2_message_transfer(sess, NULL, &param);
             } else if (N1N2MessageTransferRspData->cause ==
                 OpenAPI_n1_n2_message_transfer_cause_N1_N2_TRANSFER_INITIATED) {
-                if (stream) {
-                    if (sess->vsmf_to_hsmf_release_stream_id >=
-                            OGS_MIN_POOL_ID &&
-                        sess->vsmf_to_hsmf_release_stream_id <= OGS_MAX_POOL_ID)
-                        ogs_error("N1 N2 released stream ID [%d]"
-                                "has not been used yet",
-                                sess->vsmf_to_hsmf_release_stream_id);
-                    sess->vsmf_to_hsmf_release_stream_id =
-                        ogs_sbi_id_from_stream(stream);
-                }
+                /*
+                 * H-SMF stream was stored when the N1N2 message was
+                 * sent. N1/N2 released updates may already have
+                 * consumed it before this response arrives.
+                 */
             } else {
                 ogs_error("Not implemented [cause:%d]",
                         N1N2MessageTransferRspData->cause);

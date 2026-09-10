@@ -32,6 +32,299 @@
 
 void compile_rule(char *av[], uint32_t *rbuf, int *rbufsize, void *tstate);
 
+/* Set by the errx() override in ipfw2.c when a rule fails to parse */
+extern int ogs_ipfw_parse_error;
+
+/* Protocol name table shared with add_proto0() in ipfw2.c */
+extern int ipfw_proto_by_name(const char *name);
+
+/*
+ * 3GPP TS 29.212 limits the IPFilterRule carried in a Flow-Description to
+ *
+ *     permit out <proto> from <src> [<ports>] to <dst> [<ports>]
+ *
+ * compile_rule() below is the full ipfw(8) command line parser.  It also
+ * accepts hostnames, address sets, lookup tables and the entire option
+ * keyword space, and -- because errx() no longer exits -- it keeps parsing
+ * after it has already rejected a token, dereferencing arguments that are
+ * not there.  A Flow-Description from a PCF, PCRF or AF can therefore crash
+ * an SMF, UPF or SGW-U:
+ *
+ *     permit out ip                              -> SEGV in add_src()
+ *     permit out ip from 1.2.3.4                 -> SEGV in add_dst()
+ *     permit out ip from 1.2.3.4 to 1.2.3.4 uid  -> SEGV in compile_rule()
+ *     permit out ip from table(1) to assigned    -> SEGV in pack_table()
+ *     permit out 58 from ff02::2/129 to assigned -> exit() from ipv6.c
+ *
+ * Check the token stream against the grammar we accept before handing it
+ * over.  The structure, the addresses and the ports are settled here; an
+ * unrecognised protocol name is the one thing still left to the parser,
+ * which rejects it through ogs_ipfw_parse_error below.
+ */
+static bool ipfw_parse_number(const char *s, int min, int max, int *value)
+{
+    int v = 0;
+
+    if (!s || !*s)
+        return false;
+
+    for (; *s; s++) {
+        if (*s < '0' || *s > '9')
+            return false;
+        v = v * 10 + (*s - '0');
+        if (v > max)
+            return false;
+    }
+
+    if (v < min)
+        return false;
+
+    if (value)
+        *value = v;
+
+    return true;
+}
+
+static bool ipfw_is_number(const char *s, int min, int max)
+{
+    return ipfw_parse_number(s, min, max, NULL);
+}
+
+/*
+ * "ip", a protocol number, or a name that resolves to one.
+ *
+ * The token is rewritten in place as a number so that compile_rule() only
+ * ever sees "ip" or a decimal, because every other spelling it understands
+ * ends up meaning "no protocol restriction" once the rule reaches
+ * ogs_ipfw_rule_t:
+ *
+ *   - add_proto0() stores the number in a u_char without a range check, so
+ *     "256" is truncated to 0 and a UDP filter turns into "ip"; "999"
+ *     becomes protocol 231.
+ *   - add_proto() matches "all" with _substrcmp(), which succeeds on a
+ *     prefix, so "a" and "al" are accepted as "all" -> protocol 0.
+ *   - "ip4", "ipv4", "ip6" and "ipv6" are family selectors emitted as O_IP4
+ *     or O_IP6, opcodes the loop below does not read, so the restriction is
+ *     dropped and protocol 0 is what remains.
+ *   - a name whose number is 0 -- "hopopt" -- passes add_proto0() unchanged
+ *     and lands as protocol 0 as well.
+ *
+ * Resolve the name through ipfw_proto_by_name(), the table add_proto0()
+ * itself uses, rather than keeping a second one here.
+ */
+static int ipfw_check_proto(char **token, char *buf, int size, int *protop)
+{
+    const char *s = *token;
+    const char *p;
+    int proto;
+
+    if (!s || !*s)
+        return OGS_ERROR;
+
+    /* the only name carried through: no protocol restriction */
+    if (strcmp(s, "ip") == 0) {
+        *protop = IPPROTO_IP;
+        return OGS_OK;
+    }
+
+    if (*s >= '0' && *s <= '9') {
+        if (!ipfw_parse_number(s, 1, 255, &proto))
+            return OGS_ERROR;
+    } else {
+        for (p = s; *p; p++) {
+            if ((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') ||
+                (*p >= '0' && *p <= '9') || *p == '-')
+                continue;
+            return OGS_ERROR;
+        }
+
+        /*
+         * "all" and the family selectors would resolve to something, or to
+         * nothing, that no longer means what was written.  Refuse them by
+         * name so that the operator is told to use "ip" instead.
+         */
+        if (strcmp(s, "all") == 0 || strcmp(s, "ip4") == 0 ||
+            strcmp(s, "ipv4") == 0 || strcmp(s, "ip6") == 0 ||
+            strcmp(s, "ipv6") == 0)
+            return OGS_ERROR;
+
+        proto = ipfw_proto_by_name(s);
+        if (proto < 1 || proto > 255)
+            return OGS_ERROR;
+    }
+
+    ogs_snprintf(buf, size, "%d", proto);
+    *token = buf;
+    *protop = proto;
+
+    return OGS_OK;
+}
+
+/*
+ * "any", "assigned", or a literal IPv4/IPv6 address with optional prefix.
+ *
+ * Returns the address family, AF_UNSPEC for the two keywords -- which carry
+ * no family of their own -- or -1 when the token is not an address at all.
+ */
+static int ipfw_addr_family(const char *s)
+{
+    char buf[OGS_ADDRSTRLEN];
+    struct in_addr addr4;
+    struct in6_addr addr6;
+    const char *slash;
+    size_t len;
+
+    if (!s || !*s)
+        return -1;
+
+    if (strcmp(s, "any") == 0 || strcmp(s, "assigned") == 0)
+        return AF_UNSPEC;
+
+    slash = strchr(s, '/');
+    len = slash ? (size_t)(slash - s) : strlen(s);
+    if (len == 0 || len >= sizeof(buf))
+        return -1;
+    memcpy(buf, s, len);
+    buf[len] = '\0';
+
+    if (inet_pton(AF_INET, buf, &addr4) == 1)
+        return (!slash || ipfw_is_number(slash + 1, 0, 32)) ? AF_INET : -1;
+    if (inet_pton(AF_INET6, buf, &addr6) == 1)
+        return (!slash || ipfw_is_number(slash + 1, 0, 128)) ? AF_INET6 : -1;
+
+    return -1;
+}
+
+/*
+ * A single port or a "low-high" range, 1..65535.
+ *
+ * Port 0 must not be accepted: ogs_ipfw_rule_t uses 0 to mean "no port
+ * condition", so "from 1.2.3.4 0" would silently become "from 1.2.3.4" and
+ * widen the filter to every port.  fill_newports() stores the two ends of a
+ * range without comparing them, so a reversed range has to be caught here
+ * as well.
+ */
+static bool ipfw_is_ports(const char *s)
+{
+    char buf[8];
+    const char *dash;
+    size_t len;
+    int low, high;
+
+    if (!s || !*s)
+        return false;
+
+    dash = strchr(s, '-');
+    if (!dash)
+        return ipfw_is_number(s, 1, 65535);
+
+    len = dash - s;
+    if (len == 0 || len >= sizeof(buf))
+        return false;
+    memcpy(buf, s, len);
+    buf[len] = '\0';
+
+    if (!ipfw_parse_number(buf, 1, 65535, &low))
+        return false;
+    if (!ipfw_parse_number(dash + 1, 1, 65535, &high))
+        return false;
+
+    return low <= high;
+}
+
+/*
+ * av[0] is unused and av[1] is "permit", so the tokens to check are
+ * av[2] .. av[last-1].  The direction, which the caller has moved to the
+ * end of the array, is not part of this grammar.
+ */
+static int ipfw_check_tokens(
+        char *av[], int last, char *proto_buf, int proto_buf_size,
+        char *flow_description)
+{
+    int x = 2;
+    int proto = IPPROTO_IP;
+    int src_family, dst_family;
+
+#define REJECT(reason) \
+    do { \
+        ogs_error("Invalid Flow-Description [%s] : %s", \
+                flow_description, reason); \
+        return OGS_ERROR; \
+    } while (0)
+#define REQUIRE(cond, reason) \
+    do { if (!(cond)) REJECT(reason); } while (0)
+
+    REQUIRE(x < last, "no protocol");
+    REQUIRE(ipfw_check_proto(
+                &av[x], proto_buf, proto_buf_size, &proto) == OGS_OK,
+            "bad protocol");
+    x++;
+
+    REQUIRE(x < last && strcmp(av[x], "from") == 0, "missing 'from'");
+    x++;
+
+    REQUIRE(x < last, "no source address");
+/*
+ * Refer to lib/ipfw/ogs-ipfw.h
+ * Issue #338
+ *
+ * A Flow-Description is always written in the downlink orientation, so the
+ * UE address -- "assigned" -- can only appear after "to".  An uplink flow
+ * arrives as RX "permit in from <UE> to <REMOTE>", which flow_rx_to_gx()
+ * has already rewritten into that form before it reaches here.
+ */
+    if (strcmp(av[x], "assigned") == 0)
+        REJECT("'assigned' is the UE address and is only valid after 'to'");
+    src_family = ipfw_addr_family(av[x]);
+    REQUIRE(src_family >= 0, "bad source address");
+    x++;
+
+    if (x < last && strcmp(av[x], "to") != 0) {
+        REQUIRE(ipfw_is_ports(av[x]), "bad source port");
+        x++;
+    }
+
+    REQUIRE(x < last && strcmp(av[x], "to") == 0, "missing 'to'");
+    x++;
+
+    REQUIRE(x < last, "no destination address");
+    dst_family = ipfw_addr_family(av[x]);
+    REQUIRE(dst_family >= 0, "bad destination address");
+    x++;
+
+    if (x < last) {
+        REQUIRE(ipfw_is_ports(av[x]), "bad destination port");
+        x++;
+    }
+
+    REQUIRE(x == last, "trailing token");
+
+    /* one packet cannot carry both families */
+    REQUIRE(src_family == AF_UNSPEC || dst_family == AF_UNSPEC ||
+            src_family == dst_family,
+            "source and destination address family differ");
+
+    /*
+     * Protocol 41 is IPv6 encapsulation, and the outer addresses of a
+     * 6in4 tunnel are legitimately IPv4.  add_src() and add_dst(), however,
+     * treat the number as if it selected the address family: once the
+     * protocol is IPPROTO_IPV6 they send every address through
+     * add_srcip6() and add_dstip6(), whatever it looks like.  ipv6.c calls
+     * the real errx() from err.h -- it never sees the override in
+     * ipfw2.c -- so an IPv4 literal exits the daemon rather than failing
+     * the rule.  Refuse the combination until the parser can carry it.
+     */
+    if (proto == IPPROTO_IPV6)
+        REQUIRE(src_family != AF_INET && dst_family != AF_INET,
+                "IPv4 literal with protocol 41 is unsupported");
+
+#undef REQUIRE
+#undef REJECT
+
+    return OGS_OK;
+}
+
+
 int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
 {
     char *token, *dir;
@@ -39,6 +332,7 @@ int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
     int i;
 
     char *av[MAX_NUM_OF_TOKEN];
+    char proto_buf[4];
 	uint32_t rulebuf[MAX_NUM_OF_RULE_BUFFER];
 	int rbufsize;
 	struct ip_fw_rule *rule = (struct ip_fw_rule *)rulebuf;
@@ -89,6 +383,12 @@ int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
 
     av[i] = NULL;
 
+    if (ipfw_check_tokens(av, i-1, proto_buf, sizeof(proto_buf),
+                flow_description) != OGS_OK) {
+        ogs_free(description);
+        return OGS_ERROR;
+    }
+
     /* "to assigned" --> "to any" */
     for (x = 2; av[x] != NULL; x++) {
         if (strcmp(av[x], "assigned") == 0 && strcmp(av[x-1], "to") == 0) {
@@ -97,9 +397,16 @@ int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description)
         }
     }
 
+    ogs_ipfw_parse_error = 0;
 	compile_rule(av, (uint32_t *)rule, &rbufsize, NULL);
 
     memset(ipfw_rule, 0, sizeof(ogs_ipfw_rule_t));
+
+    if (ogs_ipfw_parse_error) {
+        ogs_error("Cannot compile Flow-Description [%s]", flow_description);
+        ogs_free(description);
+        return OGS_ERROR;
+    }
 	for (l = rule->act_ofs, cmd = rule->cmd;
 			l > 0 ; l -= F_LEN(cmd) , cmd += F_LEN(cmd)) {
         uint32_t *a = NULL;

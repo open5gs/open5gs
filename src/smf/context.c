@@ -2100,6 +2100,13 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->data_change_subscription.client)
         ogs_sbi_client_remove(sess->data_change_subscription.client);
 
+    if (sess->gx_sid)
+        ogs_free(sess->gx_sid);
+    if (sess->gy_sid)
+        ogs_free(sess->gy_sid);
+    if (sess->s6b_sid)
+        ogs_free(sess->s6b_sid);
+
     if (sess->session.name)
         ogs_free(sess->session.name);
     if (sess->full_dnn)
@@ -2697,6 +2704,11 @@ void smf_sess_delete_indirect_data_forwarding(smf_sess_t *sess)
 
     ogs_assert(sess);
 
+    /*
+     * Indirect tunnel PDR/FARs are only identified by ACCESS -> ACCESS,
+     * so this deletes whichever tunnel the session holds now.
+     * A session holds one tunnel at a time.
+     */
     ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
         ogs_pfcp_far_t *far = pdr->far;
 

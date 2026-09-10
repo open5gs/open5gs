@@ -174,6 +174,21 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_pool_id_t xact_id,
         os0_t sid;
         size_t sidlen;
 
+        if (sess->gx_sid) {
+            /*
+             * A Diameter session already exists for this PDU session, so
+             * a new state must not be created here. The state is most
+             * likely held by an answer callback at this moment, but any
+             * other cause is handled the same way: give up on this request
+             * rather than leaving two states for one Diameter Session-Id,
+             * which later shows up as a state pointer mismatch.
+             */
+            ogs_error("Gx session state unavailable [%s]", sess->gx_sid);
+            ret = fd_msg_free(req);
+            ogs_assert(ret == 0);
+            return;
+        }
+
         ret = fd_sess_getsid(session, &sid, &sidlen);
         ogs_assert(ret == 0);
 
@@ -183,8 +198,19 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_pool_id_t xact_id,
 
         ogs_debug("    Allocate new session: [%s]", sess_data->gx_sid);
 
-        /* Save Session-Id to SMF Session Context */
-        sess->gx_sid = (char *)sess_data->gx_sid;
+        /*
+         * Save Session-Id to SMF Session Context
+         *
+         * Keep an independent copy. sess_data->gx_sid is owned by the
+         * Diameter session state and can be released by state_cleanup()
+         * before the SMF session context is removed. Sharing the pointer
+         * would leave sess->gx_sid dangling and could cause a later
+         * request to read freed memory while constructing its
+         * Session-Id AVP.
+         */
+        ogs_assert(!sess->gx_sid);
+        sess->gx_sid = ogs_strdup((char *)sess_data->gx_sid);
+        ogs_assert(sess->gx_sid);
     } else
         ogs_debug("    Retrieve session: [%s]", sess_data->gx_sid);
 
@@ -751,7 +777,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
 
     struct sess_state *sess_data = NULL;
     struct timespec ts;
-    struct session *session;
+    struct session *session = NULL;
     struct avp *avp, *avpch1, *avpch2;
     struct avp_hdr *hdr;
     unsigned long dur;
@@ -775,9 +801,14 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    ogs_assert(ret == 0);
+    if (ret != 0) {
+        ogs_error("fd_msg_sess_get() failed with error: %d", ret);
+        error++;
+        goto cleanup;
+    }
     if (new != 0) {
         ogs_error("Session should already exist, but new session flag is set");
+        error++;
         goto cleanup;
     }
 
@@ -787,9 +818,22 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     ogs_assert(ret == 0);
     if (!sess_data) {
         ogs_error("No Session Data");
+        error++;
         goto cleanup;
     }
-    ogs_assert((void *)sess_data == data);
+    if ((void *)sess_data != data) {
+        /*
+         * This answer refers to a state that is no longer the one stored
+         * in the Diameter session. Put the current state back and discard
+         * the answer instead of aborting the process.
+         */
+        ogs_error("Gx state mismatch: retrieved[%p] != expected[%p] [%s]",
+                (void *)sess_data, data, sess_data->gx_sid);
+        ret = fd_sess_state_store(smf_gx_reg, session, &sess_data);
+        ogs_assert(ret == 0);
+        error++;
+        goto cleanup;
+    }
 
     ogs_debug("    Retrieve its data: [%s]", sess_data->gx_sid);
 
