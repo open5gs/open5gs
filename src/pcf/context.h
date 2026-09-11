@@ -57,6 +57,7 @@ typedef struct pcf_context_s {
 
     pcf_qos_profile_t  qos_profile[OGS_PCF_MAX_NUM_OF_QOS_PROFILE];
     int                num_of_qos_profile;
+    uint8_t arp_priority[OpenAPI_reserv_priority_PRIO_16 + 1];
 } pcf_context_t;
 
 struct pcf_ue_am_s {
@@ -203,6 +204,11 @@ typedef struct pcf_app_s {
     } naf;
 
     ogs_pcc_rule_t pcc_rule[OGS_MAX_NUM_OF_PCC_RULE];
+
+    int med_comp_n[OGS_MAX_NUM_OF_PCC_RULE];
+    OpenAPI_reserv_priority_e res_prio[OGS_MAX_NUM_OF_PCC_RULE];
+    OpenAPI_reserv_priority_e session_res_prio;
+
     int num_of_pcc_rule;
 
     pcf_sess_t *sess;

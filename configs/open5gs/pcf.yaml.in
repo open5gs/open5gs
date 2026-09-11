@@ -45,6 +45,19 @@ pcf:
 #      qos_index: 3
 
 ################################################################################
+# Reservation priority mapping (N5 resPrio -> ARP priority level)
+################################################################################
+# PRIO_1 is lowest and PRIO_16 highest; ARP 1 is highest and 15 lowest
+# Unmapped values preserve the configured/current ARP priority level
+# MediaComponent resPrio takes precedence over AppSession resPrio
+# If neither provides resPrio on creation, PRIO_1 is used
+# preemptCap and preemptVuln override only the requested ARP fields
+#
+#  arp_priority:
+#    PRIO_1: 15
+#    PRIO_16: 2
+
+################################################################################
 # PCF Policy Configuration: UE Home PLMN and SUPI Range Based Policies
 ################################################################################
 #
