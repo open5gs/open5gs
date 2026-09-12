@@ -124,7 +124,9 @@ int app_initialize(const char *const argv[])
     if (ogs_global_conf()->parameter.no_udr == 0)
         run_threads("udr", ogs_global_conf()->parameter.udr_count,
                 argv_out, i, udr_threads);
-    if (ogs_global_conf()->parameter.no_eir == 0)
+
+    if (ogs_global_conf()->parameter.no_eir == 0 &&
+            ogs_global_conf()->parameter.eir_count > 0)
         run_threads("eir", ogs_global_conf()->parameter.eir_count,
                 argv_out, i, eir_threads);
 
@@ -154,6 +156,10 @@ void app_terminate(void)
         if (upf_threads[i]) {
             ogs_thread_destroy(upf_threads[i]);
             upf_threads[i] = NULL;
+        }
+        if (eir_threads[i]) {
+            ogs_thread_destroy(eir_threads[i]);
+            eir_threads[i] = NULL;
         }
         if (udr_threads[i]) {
             ogs_thread_destroy(udr_threads[i]);

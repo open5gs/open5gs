@@ -39,15 +39,30 @@ None of this touches the SIM/subscriber side of registration — it's purely a c
 
 ### Step 1 — Start the 5G-EIR
 
-It uses the same MongoDB database as the rest of Open5GS, so there's nothing extra to install or configure beyond a normal Open5GS setup:
+For Debian/Ubuntu packages, install the optional NF explicitly:
+
+```bash
+$ sudo apt install open5gs-eir
+```
+
+It uses the same MongoDB database as the rest of Open5GS. For a source installation, start it with:
 
 ```bash
 $ open5gs-eird -c /etc/open5gs/eir.yaml
 ```
 
+On startup, the 5G-EIR automatically prepares missing indexes and a basic
+validator in the configured MongoDB database. Existing indexes and validation
+settings are preserved. If preparation fails, a warning identifies the problem
+and EIR continues with runtime record validation; check these warnings before
+provisioning devices. See [Data integrity](#data-integrity) for customization.
+
 ### Step 2 — Add a device to the list
 
-Records live in MongoDB, in a collection called `eir`. You can add them with `mongosh` (or any MongoDB tool/GUI you're comfortable with):
+Records live in MongoDB, in a collection called `eir`. Connect to the database
+configured in `eir.yaml`, for example `mongosh mongodb://localhost/open5gs`.
+With the default constraints prepared at startup, you can add records directly
+with `mongosh` (or another MongoDB tool):
 
 ```javascript
 // Block a specific device (by its IMEISV), for every subscriber
@@ -94,6 +109,11 @@ The safe starting point for most deployments is to leave everything on `allow`: 
 
 A `BLACKLISTED` device is **always** rejected, regardless of these settings — that one is never in doubt.
 
+Blacklist rejection uses 5GMM cause #6 (`Illegal ME`). Rejection under
+`unknown_action` or `missing_pei_action` uses #7 (`5GS services not allowed`).
+Rejection under `failure_action` uses #90 (`Payload was not forwarded`),
+including request transmission failures, timeouts, and invalid EIR responses.
+
 ## 5. Going further: per-subscriber overrides
 ---
 
@@ -126,15 +146,103 @@ The details below are for operators writing tooling around the `eir` collection,
 2. A `pei`-only match (a record with `supi` missing or `null`).
 3. If neither exists, the device is treated as unknown (`404`, cause `ERROR_EQUIPMENT_UNKNOWN`).
 
-A record with an unrecognized `status`, or more than one record matching the same lookup, is treated as a database error — never as an implicit allow.
+A record with an unrecognized `status`, or more than one record matching the same
+lookup, causes an HTTP `500` response. A malformed subscriber-specific match does
+not fall back to a general record. The AMF applies `failure_action` to these errors;
+with `allow`, registration can still proceed.
 
-**Data integrity.** `open5gs-eird` automatically sets up, at startup:
-- A unique index so at most one subscriber-specific record can exist per `(pei, supi)` pair.
-- A unique index so at most one general record can exist per `pei`.
-- A schema validator requiring `pei` (string) and `status` (one of `WHITELISTED`/`BLACKLISTED`/`GREYLISTED`), rejecting malformed writes at the database level.
+### Data integrity
 
-A general (device-only) record's `supi` field must be either omitted or explicitly `null` (not an empty string) — both are treated identically.
+After connecting to the database configured in `eir.yaml`, the 5G-EIR checks and
+prepares its collection before opening its SBI service. Only the EIR NF performs
+this setup; starting other Open5GS NFs does not create EIR constraints.
+
+- If the `eir` collection is absent, EIR creates it with the default validator.
+- If a suitable unique index on `(pei, supi)` is absent, EIR attempts to add it.
+  An equivalent existing index is accepted even when its name differs.
+- If an existing collection has no validator or explicit validation settings,
+  EIR attempts to add the default validator.
+- Existing indexes are never dropped or changed. Existing validators and
+  explicit validation settings are preserved, including an empty validator,
+  `validationLevel: "off"`, or `validationAction: "warn"`.
+
+**Default unique index.** EIR creates the following index when needed. You do not
+need to run this command after successful automatic preparation; it is shown for
+reference and for operators who prepare the database themselves:
+
+```javascript
+db.eir.createIndex(
+  { pei: 1, supi: 1 },
+  { name: "pei_supi_unique", unique: true, collation: { locale: "simple" } }
+)
+```
+
+This supports the lookup queries and prevents concurrent writers from creating
+multiple records for the same `(pei, supi)`. It allows both a general record and
+subscriber-specific overrides for a PEI. A missing `supi` and an explicit `null`
+share the same index key, allowing only one general record per PEI. Do not use an
+empty string for a general record's SUPI.
+
+For an existing collection, review its indexes with `db.eir.getIndexes()` and
+resolve duplicate records if automatic index creation fails. An older
+non-partial unique index on `pei` alone prevents subscriber-specific overrides;
+replacing that index requires an explicit operator migration. An index that
+applies only to some records or uses different comparison rules is not assumed
+to provide the default uniqueness constraint.
+
+**Default validator and customization.** The default validator requires a string
+PEI and a supported status, and permits a string, omitted, or null SUPI. EIR adds
+these rules automatically when validation settings are absent. You can use the
+following command to install or customize the rules yourself:
+
+```javascript
+db.runCommand({
+  collMod: "eir",
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["pei", "status"],
+      properties: {
+        pei: { bsonType: "string" },
+        supi: { bsonType: ["string", "null"] },
+        status: { enum: ["WHITELISTED", "BLACKLISTED", "GREYLISTED"] }
+      }
+    }
+  },
+  validationLevel: "strict",
+  validationAction: "error"
+})
+```
+
+This command replaces the collection's existing validator. Inspect
+`db.getCollectionInfos({ name: "eir" })` first and preserve any additional
+operator rules. Your validator and validation settings remain in place across
+EIR restarts. Complete schema customization before starting EIR: checking for
+missing settings and adding them are separate operations, so concurrent schema
+changes during startup are not coordinated.
+
+Automatic preparation needs metadata-read permissions and, when settings are
+missing, permission to create the collection or indexes and modify validation.
+You can instead prepare the database using an administration account and run EIR
+with record-read and metadata-read permissions. A metadata lookup failure is
+reported as a failure, never interpreted as an absent index or validator.
+
+If checking or creating constraints fails, EIR logs a warning and continues.
+INFO logs identify constraints prepared at startup and existing settings that
+were preserved. Check these messages together with any setup warnings.
+Preparation commands limit server-side work to five seconds. For a large
+existing collection, create the index manually if this limit is exceeded.
+Correct missing permissions, duplicate records, or conflicting settings, then
+restart EIR or complete the setup manually. A database connection failure still
+prevents startup. Successful EIR startup alone does not guarantee that every
+constraint was installed.
+
+Neither startup nor the validator repairs or removes existing invalid records.
+Runtime checks remain necessary for legacy or imported data. Without a suitable
+index, lookups may scan the collection, and runtime duplicate detection cannot
+prevent concurrent conflicting writes. Provisioning tools must also validate
+the supported PEI/SUPI formats described below.
 
 **Registration timing.** The check runs once per initial registration attempt, after NAS security is established and the device's PEI has been obtained, and before Registration Accept is sent. It does not run on Service Request.
 
-**Current limitations.** This implementation covers PEI/SUPI-exact matching and the three standard statuses. It does not (yet) include: EPC/MME S13, Diameter EIR, CEIR federation, TAC-range/wildcard rules, bulk import, or a WebUI — records are managed directly in MongoDB for now.
+**Current limitations.** This implementation supports `imei-` (15 digits), `imeisv-` (16 digits), and IMSI-based SUPIs (`imsi-`, 6–15 digits). Matching uses the supplied PEI string exactly; IMEI and IMEISV are not normalized to the same device identity. GPSI-based lookup, other PEI/SUPI formats, and optional feature negotiation are not implemented. It does not include EPC/MME S13, Diameter EIR, CEIR federation, TAC-range/wildcard rules, bulk import, or a WebUI for managing `eir` records.

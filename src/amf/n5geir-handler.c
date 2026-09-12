@@ -20,73 +20,91 @@
 #include "n5geir-handler.h"
 #include "amf-sm.h"
 
-static amf_eir_result_e failure_result(void)
+/* The 5G-EIR gave no usable answer: reject as for any unreachable NF */
+ogs_nas_5gmm_cause_t amf_n5geir_eic_failure_cause(void)
 {
+    ogs_warn("Applying 5G-EIR failure_action[%s]",
+            amf_self()->eir.failure_action ==
+                AMF_EIR_ACTION_REJECT ? "reject" : "allow");
     return amf_self()->eir.failure_action == AMF_EIR_ACTION_REJECT ?
-        AMF_EIR_RESULT_REJECT : AMF_EIR_RESULT_ALLOW;
+        OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED :
+        OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
 }
 
-void amf_n5geir_eic_handle_equipment_status(
+ogs_nas_5gmm_cause_t amf_n5geir_eic_handle_equipment_status(
         amf_ue_t *amf_ue, ogs_sbi_message_t *recvmsg)
 {
+    OpenAPI_eir_response_data_t *EirResponseData = NULL;
+
     ogs_assert(amf_ue);
     ogs_assert(recvmsg);
 
-    switch (recvmsg->res_status) {
-    case OGS_SBI_HTTP_STATUS_OK:
-        if (!recvmsg->EirResponseData) {
-            ogs_error("[%s] No EirResponseData", amf_ue->supi);
-            gmm_ue_equipment_check_complete(amf_ue, failure_result());
-            return;
-        }
+    if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NOT_FOUND &&
+        recvmsg->ProblemDetails && recvmsg->ProblemDetails->cause &&
+        !strcmp(recvmsg->ProblemDetails->cause, "ERROR_EQUIPMENT_UNKNOWN")) {
+        ogs_info("[%s] Unknown equipment [%s] [unknown_action:%s]",
+                amf_ue->supi, amf_ue->pei,
+                amf_self()->eir.unknown_action ==
+                    AMF_EIR_ACTION_REJECT ? "reject" : "allow");
+        return amf_self()->eir.unknown_action == AMF_EIR_ACTION_REJECT ?
+            OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED :
+            OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
+    }
 
-        switch (recvmsg->EirResponseData->status) {
-        case OpenAPI_equipment_status_WHITELISTED:
-            gmm_ue_equipment_check_complete(amf_ue, AMF_EIR_RESULT_ALLOW);
-            break;
+    if (recvmsg->res_status != OGS_SBI_HTTP_STATUS_OK) {
+        ogs_warn("[%s] 5G-EIR HTTP response error [%d]",
+                amf_ue->supi, recvmsg->res_status);
+        return amf_n5geir_eic_failure_cause();
+    }
 
-        case OpenAPI_equipment_status_GREYLISTED:
-            ogs_warn("[%s] Equipment greylisted by 5G-EIR", amf_ue->supi);
-            gmm_ue_equipment_check_complete(amf_ue, AMF_EIR_RESULT_ALLOW);
-            break;
+    EirResponseData = recvmsg->EirResponseData;
+    if (!EirResponseData) {
+        ogs_error("[%s] No EirResponseData", amf_ue->supi);
+        return amf_n5geir_eic_failure_cause();
+    }
 
-        case OpenAPI_equipment_status_BLACKLISTED:
-            gmm_ue_equipment_check_complete(
-                    amf_ue, AMF_EIR_RESULT_BLACKLISTED);
-            break;
+    switch (EirResponseData->status) {
+    case OpenAPI_equipment_status_WHITELISTED:
+        ogs_info("[%s] Whitelisted equipment [%s]",
+                amf_ue->supi, amf_ue->pei);
+        return OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
 
-        default:
-            ogs_error("[%s] Malformed EirResponseData", amf_ue->supi);
-            gmm_ue_equipment_check_complete(amf_ue, failure_result());
-        }
-        break;
+    case OpenAPI_equipment_status_GREYLISTED:
+        ogs_warn("[%s] Greylisted equipment [%s]", amf_ue->supi, amf_ue->pei);
+        return OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
 
-    case OGS_SBI_HTTP_STATUS_NOT_FOUND:
-        if (recvmsg->ProblemDetails && recvmsg->ProblemDetails->cause &&
-                !strcmp(recvmsg->ProblemDetails->cause,
-                    "ERROR_EQUIPMENT_UNKNOWN")) {
-            ogs_info("[%s] Unknown equipment (5G-EIR)", amf_ue->supi);
-            gmm_ue_equipment_check_complete(amf_ue,
-                    amf_self()->eir.unknown_action == AMF_EIR_ACTION_REJECT ?
-                        AMF_EIR_RESULT_REJECT : AMF_EIR_RESULT_ALLOW);
-        } else {
-            ogs_error("[%s] 5G-EIR 404 without "
-                    "ERROR_EQUIPMENT_UNKNOWN cause", amf_ue->supi);
-            gmm_ue_equipment_check_complete(amf_ue, failure_result());
-        }
-        break;
+    case OpenAPI_equipment_status_BLACKLISTED:
+        ogs_warn("[%s] Blacklisted equipment [%s]",
+                amf_ue->supi, amf_ue->pei);
+        return OGS_5GMM_CAUSE_ILLEGAL_ME;
 
     default:
-        ogs_error("[%s] 5G-EIR HTTP response error [%d]",
-                amf_ue->supi, recvmsg->res_status);
-        gmm_ue_equipment_check_complete(amf_ue, failure_result());
+        ogs_error("[%s] Unknown EquipmentStatus [%d]",
+                amf_ue->supi, EirResponseData->status);
+        return amf_n5geir_eic_failure_cause();
     }
 }
 
 void amf_n5geir_eic_handle_discovery_failure(amf_ue_t *amf_ue)
 {
+    amf_event_t e;
+
     ogs_assert(amf_ue);
 
+    if (!OGS_FSM_CHECK(&amf_ue->sm, gmm_state_security_mode) ||
+            !amf_ue->eir_check_pending) {
+        ogs_info("[%s] Ignore stale 5G-EIR discovery/communication failure",
+                amf_ue->supi);
+        return;
+    }
+
     ogs_error("[%s] 5G-EIR discovery/communication failure", amf_ue->supi);
-    gmm_ue_equipment_check_complete(amf_ue, failure_result());
+
+    /* Discovery failures and timeouts arrive outside UE FSM dispatch.
+     * Dispatch locally so leaving security mode cancels its EIR transactions
+     * and runs the next state's entry actions. */
+    memset(&e, 0, sizeof(e));
+    e.h.id = AMF_EVENT_5GMM_EIR_FAILURE;
+    e.amf_ue_id = amf_ue->id;
+    ogs_fsm_dispatch(&amf_ue->sm, &e);
 }

@@ -387,6 +387,7 @@ struct amf_ue_s {
     ogs_plmn_id_t   home_plmn_id;
 
     char            *pei;
+    bool            eir_check_pending;
     uint8_t         masked_imeisv[OGS_MAX_IMEISV_LEN];
     int             masked_imeisv_len;
     char            imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];

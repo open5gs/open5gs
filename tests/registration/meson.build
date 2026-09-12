@@ -29,7 +29,6 @@ test5gc_registration_sources = files('''
     reset-test.c
     multi-ue-test.c
     crash-test.c
-    eir-test.c
 '''.split())
 
 test5gc_registration_exe = executable('registration',

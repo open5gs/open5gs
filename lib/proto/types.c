@@ -374,12 +374,16 @@ bool ogs_id_get_type_value(const char *str, char **type, char **value)
     *type = ogs_id_get_type(str);
     *value = ogs_id_get_value(str);
 
-    if (!*type || !*value || !strlen(*type) || !strlen(*value))
+    if (!*type || !*value || !strlen(*type) || !strlen(*value)) {
+        ogs_error("Identity type or value is missing");
         goto cleanup;
+    }
 
     /* Reject extra '-' components that ogs_id_get_value() ignores. */
-    if (strlen(str) != strlen(*type) + 1 + strlen(*value))
+    if (strlen(str) != strlen(*type) + 1 + strlen(*value)) {
+        ogs_error("Identity contains extra components");
         goto cleanup;
+    }
 
     return true;
 
@@ -396,27 +400,57 @@ cleanup:
     return false;
 }
 
-bool ogs_bcd_string_is_valid(const char *bcd, int max_len)
+static bool bcd_string_is_valid(
+        const char *bcd, int min_len, int max_len)
 {
-    int i, len;
+    size_t i, len = strlen(bcd);
 
-    ogs_assert(bcd);
-    ogs_assert(max_len > 0);
-
-    len = strlen(bcd);
-    if (len == 0 || len > max_len) {
-        ogs_error("Invalid BCD length [%d:%s]", len, bcd);
+    if (len < (size_t)min_len || len > (size_t)max_len) {
+        ogs_warn("Invalid BCD string length [%zu], expected [%d..%d]",
+                len, min_len, max_len);
         return false;
     }
 
     for (i = 0; i < len; i++) {
         if (bcd[i] < '0' || bcd[i] > '9') {
-            ogs_error("Invalid BCD digit [%d:%c:%s]", i, bcd[i], bcd);
+            ogs_warn("Invalid BCD character [0x%02x] at offset [%zu]",
+                    (unsigned char)bcd[i], i);
             return false;
         }
     }
 
     return true;
+}
+
+bool ogs_bcd_string_is_valid(const char *bcd, int max_len)
+{
+    ogs_assert(bcd);
+    ogs_assert(max_len > 0);
+
+    return bcd_string_is_valid(bcd, 1, max_len);
+}
+
+bool ogs_id_bcd_is_valid(
+        const char *str, const char *type, int min_len, int max_len)
+{
+    size_t type_len;
+
+    ogs_assert(type && type[0]);
+    ogs_assert(min_len > 0);
+    ogs_assert(max_len >= min_len);
+
+    if (!str) {
+        ogs_warn("Missing identity, expected type [%s]", type);
+        return false;
+    }
+
+    type_len = strlen(type);
+    if (strncmp(str, type, type_len) || str[type_len] != '-') {
+        ogs_warn("Invalid identity prefix, expected [%s-]", type);
+        return false;
+    }
+
+    return bcd_string_is_valid(str + type_len + 1, min_len, max_len);
 }
 
 bool ogs_pdu_session_id_is_valid(int psi)

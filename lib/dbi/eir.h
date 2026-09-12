@@ -50,12 +50,11 @@ typedef struct ogs_dbi_eir_record_s {
     ogs_dbi_eir_status_t status;
 } ogs_dbi_eir_record_t;
 
+/* EIR-only, best-effort setup; the caller may continue on OGS_ERROR. */
+int ogs_dbi_eir_init(void);
 int ogs_dbi_eir_check_equipment(
         const char *supi, const char *pei, ogs_dbi_eir_record_t *record);
 void ogs_dbi_eir_record_free(ogs_dbi_eir_record_t *record);
-
-bool ogs_dbi_eir_pei_is_valid(const char *pei);
-bool ogs_dbi_eir_supi_is_valid(const char *supi);
 
 #ifdef __cplusplus
 }

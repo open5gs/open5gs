@@ -405,6 +405,7 @@ typedef struct test_ue_s {
     /* 5GC: Last received message */
     S1AP_ProcedureCode_t ngap_procedure_code;
     uint8_t gmm_message_type;
+    ogs_nas_5gmm_cause_t registration_reject_cause;
     uint8_t gsm_message_type;
 
     /* EPC: Last received message */
@@ -531,9 +532,6 @@ test_bearer_t *test_qos_flow_find_by_qfi(test_sess_t *sess, uint8_t qfi);
 
 int test_db_insert_ue(test_ue_t *test_ue, bson_t *doc);
 int test_db_remove_ue(test_ue_t *test_ue);
-
-int test_db_insert_eir(const char *pei, const char *supi, const char *status);
-int test_db_remove_eir(const char *pei, const char *supi);
 
 bson_t *test_db_new_simple(test_ue_t *test_ue);
 bson_t *test_db_new_qos_flow(test_ue_t *test_ue);

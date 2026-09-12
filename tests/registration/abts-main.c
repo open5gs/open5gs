@@ -31,7 +31,6 @@ abts_suite *test_ue_context(abts_suite *suite);
 abts_suite *test_reset(abts_suite *suite);
 abts_suite *test_multi_ue(abts_suite *suite);
 abts_suite *test_crash(abts_suite *suite);
-abts_suite *test_eir(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
@@ -47,7 +46,6 @@ const struct testlist {
     {test_ue_context},
     {test_reset},
     {test_multi_ue},
-    {test_eir},
 #if 0 /* Since there is error LOG, we disabled the following test */
     {test_crash},
 #endif

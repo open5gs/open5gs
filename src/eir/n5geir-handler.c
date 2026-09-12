@@ -20,6 +20,37 @@
 #include "sbi-path.h"
 #include "n5geir-handler.h"
 
+/* This EIR supports IMEI/IMEISV and IMSI-based SUPIs only. */
+#define EIR_IMSI_MIN_DIGITS 6
+
+static bool pei_is_supported(const char *pei)
+{
+    if (!pei) {
+        ogs_warn("Missing equipment identity");
+        return false;
+    }
+
+    /* Select the type before validation to avoid warnings for valid PEIs. */
+    if (!strncmp(pei, OGS_ID_PEI_TYPE_IMEI "-",
+                sizeof(OGS_ID_PEI_TYPE_IMEI "-") - 1))
+        return ogs_id_bcd_is_valid(pei, OGS_ID_PEI_TYPE_IMEI,
+                OGS_MAX_IMEI_BCD_LEN, OGS_MAX_IMEI_BCD_LEN);
+
+    if (!strncmp(pei, OGS_ID_SUPI_TYPE_IMEISV "-",
+                sizeof(OGS_ID_SUPI_TYPE_IMEISV "-") - 1))
+        return ogs_id_bcd_is_valid(pei, OGS_ID_SUPI_TYPE_IMEISV,
+                OGS_MAX_IMEISV_BCD_LEN, OGS_MAX_IMEISV_BCD_LEN);
+
+    ogs_warn("Unsupported PEI type; expected imei- or imeisv-");
+    return false;
+}
+
+static bool supi_is_supported(const char *supi)
+{
+    return ogs_id_bcd_is_valid(supi, OGS_ID_SUPI_TYPE_IMSI,
+            EIR_IMSI_MIN_DIGITS, OGS_MAX_IMSI_BCD_LEN);
+}
+
 static OpenAPI_equipment_status_e equipment_status_from_dbi(
         ogs_dbi_eir_status_t status)
 {
@@ -31,6 +62,7 @@ static OpenAPI_equipment_status_e equipment_status_from_dbi(
     case OGS_DBI_EIR_STATUS_GREYLISTED:
         return OpenAPI_equipment_status_GREYLISTED;
     default:
+        ogs_warn("Unsupported EIR database status [%d]", status);
         return OpenAPI_equipment_status_NULL;
     }
 }
@@ -48,7 +80,7 @@ bool eir_n5geir_eic_handle_equipment_status(
     ogs_assert(recvmsg);
 
     if (!recvmsg->param.pei) {
-        ogs_error("No PEI in equipment-status request");
+        ogs_warn("No PEI in equipment-status request");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
@@ -56,8 +88,8 @@ bool eir_n5geir_eic_handle_equipment_status(
         return false;
     }
 
-    if (!ogs_dbi_eir_pei_is_valid(recvmsg->param.pei)) {
-        ogs_error("Invalid PEI in equipment-status request");
+    if (!pei_is_supported(recvmsg->param.pei)) {
+        ogs_warn("Invalid PEI in equipment-status request");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
@@ -66,8 +98,8 @@ bool eir_n5geir_eic_handle_equipment_status(
     }
 
     if (recvmsg->param.supi &&
-            !ogs_dbi_eir_supi_is_valid(recvmsg->param.supi)) {
-        ogs_error("Invalid SUPI in equipment-status request");
+            !supi_is_supported(recvmsg->param.supi)) {
+        ogs_warn("Invalid SUPI in equipment-status request");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST, recvmsg,
@@ -92,7 +124,8 @@ bool eir_n5geir_eic_handle_equipment_status(
         return true;
 
     case OGS_NOTFOUND:
-        ogs_info("Unknown equipment [supi_presence:%s]",
+        ogs_info("Unknown equipment [pei:%s,supi_presence:%s]",
+                recvmsg->param.pei,
                 recvmsg->param.supi ? "true" : "false");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
@@ -101,7 +134,8 @@ bool eir_n5geir_eic_handle_equipment_status(
         return false;
 
     default:
-        ogs_error("EIR database error");
+        ogs_warn("EIR database lookup failed [pei:%s,rv:%d]",
+                recvmsg->param.pei, rv);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR, recvmsg,

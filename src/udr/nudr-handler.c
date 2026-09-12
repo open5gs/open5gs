@@ -51,6 +51,7 @@ static bool nudr_validate_imsi_supi(
     }
 
     if (ogs_imsi_bcd_is_valid(value) == false) {
+        ogs_error("Invalid IMSI SUPI [%s]", supi);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 recvmsg, "Invalid SUPI", supi, NULL));

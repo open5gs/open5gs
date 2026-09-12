@@ -29,29 +29,55 @@ int eir_initialize(void)
 
 #define APP_NAME "eir"
     rv = ogs_app_parse_local_conf(APP_NAME);
-    if (rv != OGS_OK) return rv;
+    if (rv != OGS_OK) {
+        ogs_error("Failed to parse EIR application configuration [%d]", rv);
+        return rv;
+    }
 
     ogs_sbi_context_init(OpenAPI_nf_type_5G_EIR);
     eir_context_init();
 
     rv = ogs_log_config_domain(
             ogs_app()->logger.domain, ogs_app()->logger.level);
-    if (rv != OGS_OK) return rv;
+    if (rv != OGS_OK) {
+        ogs_error("Failed to configure EIR logging [%d]", rv);
+        return rv;
+    }
 
     rv = ogs_sbi_context_parse_config(APP_NAME, "nrf", "scp");
-    if (rv != OGS_OK) return rv;
+    if (rv != OGS_OK) {
+        ogs_error("Failed to parse EIR SBI configuration [%d]", rv);
+        return rv;
+    }
 
     rv = eir_context_parse_config();
-    if (rv != OGS_OK) return rv;
+    if (rv != OGS_OK) {
+        ogs_error("Failed to parse EIR configuration [%d]", rv);
+        return rv;
+    }
 
     rv = ogs_dbi_init(ogs_app()->db_uri);
-    if (rv != OGS_OK) return rv;
+    if (rv != OGS_OK) {
+        ogs_error("Failed to initialize EIR database connection [%d]", rv);
+        return rv;
+    }
+
+    rv = ogs_dbi_eir_init();
+    if (rv != OGS_OK)
+        ogs_warn("EIR database constraints could not be prepared; "
+                "continuing with runtime validation");
 
     rv = eir_sbi_open();
-    if (rv != OGS_OK) return rv;
+    if (rv != OGS_OK) {
+        ogs_error("Failed to open EIR SBI [%d]", rv);
+        return rv;
+    }
 
     thread = ogs_thread_create(eir_main, NULL);
-    if (!thread) return OGS_ERROR;
+    if (!thread) {
+        ogs_error("Failed to create EIR event thread");
+        return OGS_ERROR;
+    }
 
     initialized = 1;
 

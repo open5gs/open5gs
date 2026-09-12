@@ -87,7 +87,7 @@ void eir_state_operational(ogs_fsm_t *s, eir_event_t *e)
         }
 
         if (strcmp(message.h.api.version, OGS_SBI_API_V1) != 0) {
-            ogs_error("Not supported version [%s]", message.h.api.version);
+            ogs_warn("Not supported version [%s]", message.h.api.version);
             ogs_assert(true ==
                 ogs_sbi_server_send_error(
                     stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
@@ -137,7 +137,7 @@ void eir_state_operational(ogs_fsm_t *s, eir_event_t *e)
                     break;
 
                 DEFAULT
-                    ogs_error("Invalid HTTP method [%s]", message.h.method);
+                    ogs_warn("Invalid HTTP method [%s]", message.h.method);
                     ogs_assert(true ==
                         ogs_sbi_server_send_error(stream,
                             OGS_SBI_HTTP_STATUS_FORBIDDEN, &message,
@@ -146,7 +146,7 @@ void eir_state_operational(ogs_fsm_t *s, eir_event_t *e)
                 break;
 
             DEFAULT
-                ogs_error("Invalid resource name [%s]",
+                ogs_warn("Invalid resource name [%s]",
                         message.h.resource.component[0]);
                 ogs_assert(true ==
                     ogs_sbi_server_send_error(stream,

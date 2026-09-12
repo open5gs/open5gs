@@ -66,6 +66,8 @@ const char *amf_event_get_name(amf_event_t *e)
         return "AMF_EVENT_5GMM_MESSAGE";
     case AMF_EVENT_5GMM_TIMER:
         return "AMF_EVENT_5GMM_TIMER";
+    case AMF_EVENT_5GMM_EIR_FAILURE:
+        return "AMF_EVENT_5GMM_EIR_FAILURE";
     case AMF_EVENT_5GSM_MESSAGE:
         return "AMF_EVENT_5GSM_MESSAGE";
     case AMF_EVENT_5GSM_TIMER:

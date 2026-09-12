@@ -26,7 +26,9 @@
 extern "C" {
 #endif
 
-void amf_n5geir_eic_handle_equipment_status(
+ogs_nas_5gmm_cause_t amf_n5geir_eic_failure_cause(void);
+
+ogs_nas_5gmm_cause_t amf_n5geir_eic_handle_equipment_status(
         amf_ue_t *amf_ue, ogs_sbi_message_t *recvmsg);
 void amf_n5geir_eic_handle_discovery_failure(amf_ue_t *amf_ue);
 
