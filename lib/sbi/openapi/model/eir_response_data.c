@@ -18,6 +18,8 @@ OpenAPI_eir_response_data_t *OpenAPI_eir_response_data_create(
 
 void OpenAPI_eir_response_data_free(OpenAPI_eir_response_data_t *eir_response_data)
 {
+    OpenAPI_lnode_t *node = NULL;
+
     if (NULL == eir_response_data) {
         return;
     }
@@ -27,6 +29,7 @@ void OpenAPI_eir_response_data_free(OpenAPI_eir_response_data_t *eir_response_da
 cJSON *OpenAPI_eir_response_data_convertToJSON(OpenAPI_eir_response_data_t *eir_response_data)
 {
     cJSON *item = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     if (eir_response_data == NULL) {
         ogs_error("OpenAPI_eir_response_data_convertToJSON() failed [EirResponseData]");
@@ -36,7 +39,7 @@ cJSON *OpenAPI_eir_response_data_convertToJSON(OpenAPI_eir_response_data_t *eir_
     item = cJSON_CreateObject();
     if (eir_response_data->status == OpenAPI_equipment_status_NULL) {
         ogs_error("OpenAPI_eir_response_data_convertToJSON() failed [status]");
-        goto end;
+        return NULL;
     }
     if (cJSON_AddStringToObject(item, "status", OpenAPI_equipment_status_ToString(eir_response_data->status)) == NULL) {
         ogs_error("OpenAPI_eir_response_data_convertToJSON() failed [status]");
@@ -50,6 +53,7 @@ end:
 OpenAPI_eir_response_data_t *OpenAPI_eir_response_data_parseFromJSON(cJSON *eir_response_dataJSON)
 {
     OpenAPI_eir_response_data_t *eir_response_data_local_var = NULL;
+    OpenAPI_lnode_t *node = NULL;
     cJSON *status = NULL;
     OpenAPI_equipment_status_e statusVariable = 0;
     status = cJSON_GetObjectItemCaseSensitive(eir_response_dataJSON, "status");
