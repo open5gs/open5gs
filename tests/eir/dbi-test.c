@@ -163,8 +163,15 @@ static bool fixture_begin(abts_case *tc)
     bson_error_t error;
     bson_t *query = BCON_NEW("pei", "{", "$in", "[",
             BCON_UTF8(TEST_EIR_PEI), BCON_UTF8(TEST_EIR_IMEI), "]", "}");
-    int64_t count = mongoc_collection_count_documents(
+    int64_t count;
+
+#if MONGOC_CHECK_VERSION(1, 11, 0)
+    count = mongoc_collection_count_documents(
             ogs_mongoc()->collection.eir, query, NULL, NULL, NULL, &error);
+#else
+    count = mongoc_collection_count(ogs_mongoc()->collection.eir,
+            MONGOC_QUERY_NONE, query, 0, 0, NULL, &error);
+#endif
 
     bson_destroy(query);
     if (count != 0)

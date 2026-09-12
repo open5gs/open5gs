@@ -264,7 +264,7 @@ ogs_sbi_request_t *smf_nsmf_pdusession_build_create_data(
                 PduSessionCreateData.max_integrity_protected_data_rate_dl =
                     OpenAPI_max_integrity_protected_data_rate_MAX_UE_RATE;
                 break;
-            defadlt:
+            default:
                 ogs_error("Unknown Integrity Protection "
                         "Maximum Data Rate [DL:%d]",
                         integrity_protection_maximum_data_rate->dl);

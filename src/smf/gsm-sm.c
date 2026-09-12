@@ -2017,17 +2017,24 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
      *        OGS_PFCP_MODIFY_DL_ONLY|OGS_PFCP_MODIFY_ACTIVATE
      */
                 ogs_sbi_stream_t *vsmf_to_hsmf_modify_stream = NULL;
-                if (sess->vsmf_to_hsmf_modify_stream_id >= OGS_MIN_POOL_ID &&
-                    sess->vsmf_to_hsmf_modify_stream_id <= OGS_MAX_POOL_ID)
+                ogs_pool_id_t stream_id = sess->vsmf_to_hsmf_modify_stream_id;
+
+                /* Consume the ID even if the H-SMF stream has expired. */
+                sess->vsmf_to_hsmf_modify_stream_id = OGS_INVALID_POOL_ID;
+                if (stream_id >= OGS_MIN_POOL_ID &&
+                    stream_id <= OGS_MAX_POOL_ID) {
                     vsmf_to_hsmf_modify_stream =
-                        ogs_sbi_stream_find_by_id(
-                                sess->vsmf_to_hsmf_modify_stream_id);
+                        ogs_sbi_stream_find_by_id(stream_id);
+                    if (!vsmf_to_hsmf_modify_stream)
+                        ogs_warn("[%s:%d] H-SMF modification stream "
+                                "has already been removed [%d]",
+                                smf_ue->supi, sess->psi, stream_id);
+                }
 
                 if (vsmf_to_hsmf_modify_stream) {
                     ogs_assert(true ==
                             ogs_sbi_send_http_status_no_content(
                                 vsmf_to_hsmf_modify_stream));
-                    sess->vsmf_to_hsmf_modify_stream_id = OGS_INVALID_POOL_ID;
                 }
             }
             break;

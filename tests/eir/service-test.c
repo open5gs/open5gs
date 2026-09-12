@@ -244,8 +244,13 @@ static void service_request(abts_case *tc, void *data)
     ogs_debug("EIR HTTP/2: %s", test->name);
     bson_init(&query);
     BSON_APPEND_UTF8(&query, "pei", SERVICE_PEI);
+#if MONGOC_CHECK_VERSION(1, 11, 0)
     count = mongoc_collection_count_documents(
             collection, &query, NULL, NULL, NULL, &error);
+#else
+    count = mongoc_collection_count(
+            collection, MONGOC_QUERY_NONE, &query, 0, 0, NULL, &error);
+#endif
     bson_destroy(&query);
     if (count != 0) {
         ABTS_FAIL(tc, count < 0 ? error.message :
