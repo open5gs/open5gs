@@ -39,6 +39,7 @@ if [ "$SYSTEM" = "Linux" ]; then
     ip addr del fd69:f21d:873c:fa::18 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fa::19 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fa::20 dev lo 2> /dev/null
+    ip addr del fd69:f21d:873c:fa::21 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fa::200 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fa::201 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fa::202 dev lo 2> /dev/null
@@ -65,6 +66,7 @@ if [ "$SYSTEM" = "Linux" ]; then
     ip addr del fd69:f21d:873c:fb::18 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fb::19 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fb::20 dev lo 2> /dev/null
+    ip addr del fd69:f21d:873c:fb::21 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fb::200 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fb::201 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fb::202 dev lo 2> /dev/null
@@ -91,6 +93,7 @@ if [ "$SYSTEM" = "Linux" ]; then
     ip addr del fd69:f21d:873c:fc::18 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fc::19 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fc::20 dev lo 2> /dev/null
+    ip addr del fd69:f21d:873c:fc::21 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fc::200 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fc::201 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fc::202 dev lo 2> /dev/null
@@ -117,6 +120,7 @@ if [ "$SYSTEM" = "Linux" ]; then
     ip addr del fd69:f21d:873c:fd::18 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fd::19 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fd::20 dev lo 2> /dev/null
+    ip addr del fd69:f21d:873c:fd::21 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fd::200 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fd::201 dev lo 2> /dev/null
     ip addr del fd69:f21d:873c:fd::202 dev lo 2> /dev/null
@@ -145,6 +149,7 @@ else
     ifconfig lo0 alias 127.0.0.18 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.0.19 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.0.20 netmask 255.255.255.255
+    ifconfig lo0 alias 127.0.0.21 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.0.200 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.0.201 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.0.202 netmask 255.255.255.255
@@ -170,6 +175,7 @@ else
     ifconfig lo0 alias 127.0.1.18 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.1.19 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.1.20 netmask 255.255.255.255
+    ifconfig lo0 alias 127.0.1.21 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.1.200 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.1.201 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.1.202 netmask 255.255.255.255
@@ -195,6 +201,7 @@ else
     ifconfig lo0 alias 127.0.2.18 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.2.19 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.2.20 netmask 255.255.255.255
+    ifconfig lo0 alias 127.0.2.21 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.2.200 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.2.201 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.2.202 netmask 255.255.255.255
@@ -220,6 +227,7 @@ else
     ifconfig lo0 alias 127.0.3.18 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.3.19 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.3.20 netmask 255.255.255.255
+    ifconfig lo0 alias 127.0.3.21 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.3.200 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.3.201 netmask 255.255.255.255
     ifconfig lo0 alias 127.0.3.202 netmask 255.255.255.255
@@ -246,6 +254,7 @@ else
     ifconfig lo0 inet6 delete fd69:f21d:873c:fa::18 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fa::19 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fa::20 prefixlen 128 2> /dev/null
+    ifconfig lo0 inet6 delete fd69:f21d:873c:fa::21 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fa::200 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fa::201 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fa::202 prefixlen 128 2> /dev/null
@@ -272,6 +281,7 @@ else
     ifconfig lo0 inet6 delete fd69:f21d:873c:fb::18 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fb::19 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fb::20 prefixlen 128 2> /dev/null
+    ifconfig lo0 inet6 delete fd69:f21d:873c:fb::21 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fb::200 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fb::201 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fb::202 prefixlen 128 2> /dev/null
@@ -298,6 +308,7 @@ else
     ifconfig lo0 inet6 delete fd69:f21d:873c:fc::18 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fc::19 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fc::20 prefixlen 128 2> /dev/null
+    ifconfig lo0 inet6 delete fd69:f21d:873c:fc::21 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fc::200 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fc::201 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fc::202 prefixlen 128 2> /dev/null
@@ -324,6 +335,7 @@ else
     ifconfig lo0 inet6 delete fd69:f21d:873c:fd::18 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fd::19 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fd::20 prefixlen 128 2> /dev/null
+    ifconfig lo0 inet6 delete fd69:f21d:873c:fd::21 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fd::200 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fd::201 prefixlen 128 2> /dev/null
     ifconfig lo0 inet6 delete fd69:f21d:873c:fd::202 prefixlen 128 2> /dev/null
@@ -350,6 +362,7 @@ else
     ifconfig lo0 inet6 add fd69:f21d:873c:fa::18 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fa::19 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fa::20 prefixlen 128
+    ifconfig lo0 inet6 add fd69:f21d:873c:fa::21 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fa::200 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fa::201 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fa::202 prefixlen 128
@@ -376,6 +389,7 @@ else
     ifconfig lo0 inet6 add fd69:f21d:873c:fb::18 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fb::19 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fb::20 prefixlen 128
+    ifconfig lo0 inet6 add fd69:f21d:873c:fb::21 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fb::200 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fb::201 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fb::202 prefixlen 128
@@ -402,6 +416,7 @@ else
     ifconfig lo0 inet6 add fd69:f21d:873c:fc::18 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fc::19 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fc::20 prefixlen 128
+    ifconfig lo0 inet6 add fd69:f21d:873c:fc::21 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fc::200 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fc::201 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fc::202 prefixlen 128
@@ -428,6 +443,7 @@ else
     ifconfig lo0 inet6 add fd69:f21d:873c:fd::18 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fd::19 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fd::20 prefixlen 128
+    ifconfig lo0 inet6 add fd69:f21d:873c:fd::21 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fd::200 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fd::201 prefixlen 128
     ifconfig lo0 inet6 add fd69:f21d:873c:fd::202 prefixlen 128

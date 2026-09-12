@@ -15,3 +15,4 @@
 @localstatedir@/log/open5gs/smf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-smfd/pid`
 @localstatedir@/log/open5gs/mme.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-mmed/pid`
 @localstatedir@/log/open5gs/amf.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-amfd/pid`
+@localstatedir@/log/open5gs/eir.log               644  14    *     $D0   GZ    @localstatedir@/run/open5gs-eird/pid`
