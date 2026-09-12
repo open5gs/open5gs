@@ -75,12 +75,108 @@ static void proto_message_test2(abts_case *tc, void *data)
     ogs_free(full_dnn);
 }
 
+typedef struct identity_case_s {
+    const char *value;
+    const char *type;
+    int min_len;
+    int max_len;
+    bool valid;
+} identity_case_t;
+
+#define IMEI_CASE(value, valid) \
+    {value, OGS_ID_PEI_TYPE_IMEI, \
+        OGS_MAX_IMEI_BCD_LEN, OGS_MAX_IMEI_BCD_LEN, valid}
+#define IMEISV_CASE(value, valid) \
+    {value, OGS_ID_SUPI_TYPE_IMEISV, \
+        OGS_MAX_IMEISV_BCD_LEN, OGS_MAX_IMEISV_BCD_LEN, valid}
+#define IMSI_CASE(value, minimum, valid) \
+    {value, OGS_ID_SUPI_TYPE_IMSI, minimum, OGS_MAX_IMSI_BCD_LEN, valid}
+
+static const identity_case_t identity_cases[] = {
+    IMEI_CASE("imei-490154203237518", true),
+    IMEISV_CASE("imeisv-4901542032375186", true),
+    IMEI_CASE(NULL, false),
+    IMEI_CASE("", false),
+    IMEI_CASE("imei", false),
+    IMEI_CASE("imei-", false),
+    IMEI_CASE("imei-49015420323751", false),
+    IMEI_CASE("imei-4901542032375186", false),
+    IMEISV_CASE("imeisv-490154203237518", false),
+    IMEISV_CASE("imeisv-49015420323751860", false),
+    IMEI_CASE("imei-49015420323751x", false),
+    IMEISV_CASE("imeisv-490154203237518x", false),
+    IMEI_CASE("imsi-490154203237518", false),
+    IMEI_CASE("IMEI-490154203237518", false),
+    IMEI_CASE("imei-490154203237518-1", false),
+    IMEI_CASE(" imei-490154203237518", false),
+    IMEI_CASE("imei-490154203237518 ", false),
+    IMEI_CASE("imei-+90154203237518", false),
+    IMSI_CASE("imsi-00101", 6, false),
+    IMSI_CASE("imsi-001010", 6, true),
+    IMSI_CASE("imsi-001010123456789", 6, true),
+    IMSI_CASE(NULL, 6, false),
+    IMSI_CASE("", 6, false),
+    IMSI_CASE("imsi", 6, false),
+    IMSI_CASE("imsi-", 6, false),
+    IMSI_CASE("imsi-0010", 6, false),
+    IMSI_CASE("imsi-0010101234567890", 6, false),
+    IMSI_CASE("imsi-00101012345678x", 6, false),
+    IMSI_CASE("nsi-001010123456789", 6, false),
+    IMSI_CASE("IMSI-001010123456789", 6, false),
+    IMSI_CASE("imsi-001010123456789-1", 6, false),
+    IMSI_CASE(" imsi-001010123456789", 6, false),
+    IMSI_CASE("imsi-001010123456789 ", 6, false),
+    /* Bounds belong to the caller, not a universal SUPI validation rule. */
+    IMSI_CASE("imsi-00101", 5, true),
+    IMSI_CASE("imsi-1", 1, true),
+    IMSI_CASE("imsi-\xff", 1, false),
+    {"custom-001", "custom", 1, 3, true},
+    {"custom-0001", "custom", 1, 3, false},
+};
+
+static void identity_format(abts_case *tc, void *data)
+{
+    const identity_case_t *test = data;
+
+    ABTS_ASSERT(tc, test->value ? test->value : "NULL identity",
+            ogs_id_bcd_is_valid(test->value, test->type,
+                test->min_len, test->max_len) == test->valid);
+}
+
+static void legacy_identity_bounds(abts_case *tc, void *data)
+{
+    /* Keep the existing BCD APIs' nonempty, maximum-length-only contract. */
+    ABTS_TRUE(tc, ogs_imsi_bcd_is_valid("1"));
+    ABTS_TRUE(tc, ogs_imsi_bcd_is_valid("001010123456789"));
+    ABTS_TRUE(tc, ogs_imeisv_bcd_is_valid("1"));
+    ABTS_TRUE(tc, ogs_imeisv_bcd_is_valid("4901542032375186"));
+
+    /* All numeric APIs reject invalid input and log a warning. */
+    ABTS_TRUE(tc, ogs_bcd_string_is_valid("001", 3));
+    ABTS_TRUE(tc, !ogs_bcd_string_is_valid("", 3));
+    ABTS_TRUE(tc, !ogs_bcd_string_is_valid("0001", 3));
+    ABTS_TRUE(tc, !ogs_bcd_string_is_valid("+01", 3));
+    ABTS_TRUE(tc, !ogs_bcd_string_is_valid("1 ", 3));
+    ABTS_TRUE(tc, !ogs_bcd_string_is_valid("\xff", 3));
+    ABTS_TRUE(tc, !ogs_imsi_bcd_is_valid(""));
+    ABTS_TRUE(tc, !ogs_imsi_bcd_is_valid("0010101234567890"));
+    ABTS_TRUE(tc, !ogs_imsi_bcd_is_valid("00101012345678x"));
+    ABTS_TRUE(tc, !ogs_imeisv_bcd_is_valid(""));
+    ABTS_TRUE(tc, !ogs_imeisv_bcd_is_valid("49015420323751860"));
+    ABTS_TRUE(tc, !ogs_imeisv_bcd_is_valid("490154203237518x"));
+}
+
 abts_suite *test_proto_message(abts_suite *suite)
 {
+    size_t i;
+
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, proto_message_test1, NULL);
     abts_run_test(suite, proto_message_test2, NULL);
+    for (i = 0; i < OGS_ARRAY_SIZE(identity_cases); i++)
+        abts_run_test(suite, identity_format, (void *)&identity_cases[i]);
+    abts_run_test(suite, legacy_identity_bounds, NULL);
 
     return suite;
 }

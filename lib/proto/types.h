@@ -89,6 +89,7 @@ extern "C" {
 #define OGS_MAX_IMSI_LEN                \
     OGS_BCD_TO_BUFFER_LEN(OGS_MAX_IMSI_BCD_LEN)
 
+#define OGS_MAX_IMEI_BCD_LEN            15
 #define OGS_MAX_IMEISV_BCD_LEN          16
 #define OGS_MAX_IMEISV_LEN              \
     OGS_BCD_TO_BUFFER_LEN(OGS_MAX_IMEISV_BCD_LEN)
@@ -308,11 +309,21 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
 #define OGS_ID_SUPI_TYPE_IMSI "imsi"
 #define OGS_ID_GPSI_TYPE_MSISDN "msisdn"
 #define OGS_ID_SUPI_TYPE_IMEISV "imeisv"
+#define OGS_ID_PEI_TYPE_IMEI "imei"
 #define OGS_ID_5G_GUTI_TYPE "5g-guti"
 char *ogs_id_get_type(const char *str);
 char *ogs_id_get_value(const char *str);
 bool ogs_id_get_type_value(const char *str, char **type, char **value);
+/* Numeric validation logs the reason for invalid input at WARNING level. */
 bool ogs_bcd_string_is_valid(const char *bcd, int max_len);
+/*
+ * Check "<type>-<decimal digits>" without allocation.
+ * NULL or malformed input logs a warning and returns false.
+ * Bounds apply to the digit count;
+ * the caller chooses the supported type and positive minimum/maximum lengths.
+ */
+bool ogs_id_bcd_is_valid(
+        const char *str, const char *type, int min_len, int max_len);
 bool ogs_imsi_bcd_is_valid(const char *imsi_bcd);
 bool ogs_imeisv_bcd_is_valid(const char *imeisv_bcd);
 int ogs_supi_to_imsi_bcd(

@@ -129,6 +129,23 @@ static int amf_context_prepare(void)
     return OGS_OK;
 }
 
+static int amf_context_parse_eir_action(
+        ogs_yaml_iter_t *iter, const char *key, amf_eir_action_e *action)
+{
+    const char *value = ogs_yaml_iter_value(iter);
+
+    if (!value || !strcmp(value, "allow"))
+        *action = AMF_EIR_ACTION_ALLOW;
+    else if (!strcmp(value, "reject"))
+        *action = AMF_EIR_ACTION_REJECT;
+    else {
+        ogs_error("invalid %s `%s` (expected `allow` or `reject`)", key, value);
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
 static int amf_context_validation(void)
 {
     ogs_nas_gprs_timer_t gprs_timer;
@@ -1064,6 +1081,42 @@ int amf_context_parse_config(void)
                             /* handle config in app library */
                         } else
                             ogs_warn("unknown key `%s`", time_key);
+                    }
+                } else if (!strcmp(amf_key, "eir")) {
+                    ogs_yaml_iter_t eir_iter;
+                    ogs_yaml_iter_recurse(&amf_iter, &eir_iter);
+                    while (ogs_yaml_iter_next(&eir_iter)) {
+                        const char *eir_key = ogs_yaml_iter_key(&eir_iter);
+                        ogs_assert(eir_key);
+                        if (!strcmp(eir_key, "enabled")) {
+                            self.eir.enabled =
+                                ogs_yaml_iter_bool(&eir_iter);
+                        } else if (!strcmp(eir_key, "unknown_action")) {
+                            rv = amf_context_parse_eir_action(&eir_iter,
+                                    eir_key, &self.eir.unknown_action);
+                            if (rv != OGS_OK) {
+                                ogs_error("amf_context_parse_eir_action"
+                                        "(unknown_action) failed");
+                                return rv;
+                            }
+                        } else if (!strcmp(eir_key, "failure_action")) {
+                            rv = amf_context_parse_eir_action(&eir_iter,
+                                    eir_key, &self.eir.failure_action);
+                            if (rv != OGS_OK) {
+                                ogs_error("amf_context_parse_eir_action"
+                                        "(failure_action) failed");
+                                return rv;
+                            }
+                        } else if (!strcmp(eir_key, "missing_pei_action")) {
+                            rv = amf_context_parse_eir_action(&eir_iter,
+                                    eir_key, &self.eir.missing_pei_action);
+                            if (rv != OGS_OK) {
+                                ogs_error("amf_context_parse_eir_action"
+                                        "(missing_pei_action) failed");
+                                return rv;
+                            }
+                        } else
+                            ogs_warn("unknown key `%s`", eir_key);
                     }
                 } else if (!strcmp(amf_key, "default")) {
                     /* handle config in sbi library */

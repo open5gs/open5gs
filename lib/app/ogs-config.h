@@ -48,6 +48,7 @@ typedef struct ogs_global_conf_s {
         int no_nssf;
         int no_bsf;
         int no_udr;
+        int no_eir;
         int no_sepp;
         int no_scp;
         int no_nrf;
@@ -61,6 +62,7 @@ typedef struct ogs_global_conf_s {
         int nssf_count;
         int bsf_count;
         int udr_count;
+        int eir_count;
 
         /* Network */
         int no_ipv4;

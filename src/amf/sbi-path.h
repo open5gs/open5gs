@@ -99,6 +99,7 @@ int amf_ue_sbi_discover_and_send(
         ogs_sbi_discovery_option_t *discovery_option,
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data),
         amf_ue_t *amf_ue, int state, void *data);
+int amf_ue_sbi_discover_and_send_eir(amf_ue_t *amf_ue);
 int amf_sess_sbi_discover_and_send(
         OpenAPI_service_name_e service_name,
         ogs_sbi_discovery_option_t *discovery_option,
