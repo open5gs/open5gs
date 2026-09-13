@@ -789,6 +789,8 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     ogs_diam_gx_message_t *gx_message = NULL;
     uint32_t req_slot, cc_request_number = 0;
     int cleanup_needed = 0;
+    int num_of_ipv4_framed_routes = 0;
+    int num_of_ipv6_framed_routes = 0;
 
     ogs_debug("[Credit-Control-Answer]");
 
@@ -1096,6 +1098,56 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
         case OGS_DIAM_GX_AVP_CODE_QOS_INFORMATION:
         case OGS_DIAM_GX_AVP_CODE_DEFAULT_EPS_BEARER_QOS:
             /* Already processed above */
+            break;
+        case OGS_DIAM_GX_AVP_CODE_FRAMED_ROUTE:
+            if (num_of_ipv4_framed_routes >=
+                    OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI) {
+                ogs_warn("Ignoring excess Framed-Route AVP");
+                break;
+            }
+            if (!gx_message->session_data.session.ipv4_framed_routes) {
+                gx_message->session_data.session.ipv4_framed_routes =
+                    ogs_calloc(OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                        sizeof(gx_message->session_data.session.
+                            ipv4_framed_routes[0]));
+                ogs_assert(gx_message->session_data.session.
+                        ipv4_framed_routes);
+            }
+            gx_message->session_data.session.ipv4_framed_routes
+                [num_of_ipv4_framed_routes] = ogs_strndup(
+                    (char *)hdr->avp_value->os.data,
+                    hdr->avp_value->os.len);
+            ogs_assert(gx_message->session_data.session.ipv4_framed_routes
+                    [num_of_ipv4_framed_routes]);
+            ogs_debug("Gx CCA received Framed-Route: %s",
+                    gx_message->session_data.session.ipv4_framed_routes
+                        [num_of_ipv4_framed_routes]);
+            num_of_ipv4_framed_routes++;
+            break;
+        case OGS_DIAM_GX_AVP_CODE_FRAMED_IPV6_ROUTE:
+            if (num_of_ipv6_framed_routes >=
+                    OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI) {
+                ogs_warn("Ignoring excess Framed-IPv6-Route AVP");
+                break;
+            }
+            if (!gx_message->session_data.session.ipv6_framed_routes) {
+                gx_message->session_data.session.ipv6_framed_routes =
+                    ogs_calloc(OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
+                        sizeof(gx_message->session_data.session.
+                            ipv6_framed_routes[0]));
+                ogs_assert(gx_message->session_data.session.
+                        ipv6_framed_routes);
+            }
+            gx_message->session_data.session.ipv6_framed_routes
+                [num_of_ipv6_framed_routes] = ogs_strndup(
+                    (char *)hdr->avp_value->os.data,
+                    hdr->avp_value->os.len);
+            ogs_assert(gx_message->session_data.session.ipv6_framed_routes
+                    [num_of_ipv6_framed_routes]);
+            ogs_debug("Gx CCA received Framed-IPv6-Route: %s",
+                    gx_message->session_data.session.ipv6_framed_routes
+                        [num_of_ipv6_framed_routes]);
+            num_of_ipv6_framed_routes++;
             break;
         case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_INSTALL:
             ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
