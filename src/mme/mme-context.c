@@ -309,17 +309,21 @@ static int mme_context_validation(void)
                 ogs_app()->file);
         return OGS_ERROR;
     }
+    /* Zero omits optional NAS timer IEs; T3412 must be non-zero. */
     if (self.time.t3402.value && /* Optional */
         ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3402.value) !=
         OGS_OK) {
-        ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3402.value);
+        ogs_error("Invalid mme.time.t3402.value `%lld` in '%s': "
+                "cannot encode as a NAS timer",
+                (long long)self.time.t3402.value, ogs_app()->file);
         return OGS_ERROR;
     }
     if (self.time.t3396.value && /* Optional */
         ogs_nas_gprs_timer_3_from_sec(&gprs_timer, self.time.t3396.value) !=
         OGS_OK) {
-        ogs_error("Not support GPRS Timer 3 [%d]",
-                (int)self.time.t3396.value);
+        ogs_error("Invalid mme.time.t3396.value `%lld` in '%s': "
+                "cannot encode as a NAS timer",
+                (long long)self.time.t3396.value, ogs_app()->file);
         return OGS_ERROR;
     }
     if (!self.time.t3412.value) { /* Mandatory */
@@ -329,13 +333,17 @@ static int mme_context_validation(void)
     }
     if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3412.value) !=
         OGS_OK) {
-        ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3412.value);
+        ogs_error("Invalid mme.time.t3412.value `%lld` in '%s': "
+                "cannot encode as a NAS timer",
+                (long long)self.time.t3412.value, ogs_app()->file);
         return OGS_ERROR;
     }
     if (self.time.t3423.value && /* Optional */
         ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3423.value) !=
         OGS_OK) {
-        ogs_error("Not support GPRS Timer [%d]", (int)self.time.t3423.value);
+        ogs_error("Invalid mme.time.t3423.value `%lld` in '%s': "
+                "cannot encode as a NAS timer",
+                (long long)self.time.t3423.value, ogs_app()->file);
         return OGS_ERROR;
     }
 
@@ -2494,69 +2502,25 @@ int mme_context_parse_config(void)
                         const char *time_key = ogs_yaml_iter_key(&time_iter);
                         ogs_assert(time_key);
                         if (!strcmp(time_key, "t3402")) {
-                            ogs_yaml_iter_t t3402_iter;
-                            ogs_yaml_iter_recurse(&time_iter, &t3402_iter);
-
-                            while (ogs_yaml_iter_next(&t3402_iter)) {
-                                const char *t3402_key =
-                                    ogs_yaml_iter_key(&t3402_iter);
-                                ogs_assert(t3402_key);
-
-                                if (!strcmp(t3402_key, "value")) {
-                                    const char *v = ogs_yaml_iter_value(&t3402_iter);
-                                    if (v)
-                                        self.time.t3402.value = atoll(v);
-                                } else
-                                    ogs_warn("unknown key `%s`", t3402_key);
-                            }
+                            rv = ogs_app_parse_timer_seconds("mme",
+                                    &time_iter, &self.time.t3402.value);
+                            if (rv != OGS_OK)
+                                return rv;
                         } else if (!strcmp(time_key, "t3396")) {
-                            ogs_yaml_iter_t t3396_iter;
-                            ogs_yaml_iter_recurse(&time_iter, &t3396_iter);
-
-                            while (ogs_yaml_iter_next(&t3396_iter)) {
-                                const char *t3396_key =
-                                    ogs_yaml_iter_key(&t3396_iter);
-                                ogs_assert(t3396_key);
-
-                                if (!strcmp(t3396_key, "value")) {
-                                    const char *v = ogs_yaml_iter_value(&t3396_iter);
-                                    if (v)
-                                        self.time.t3396.value = atoll(v);
-                                } else
-                                    ogs_warn("unknown key `%s`", t3396_key);
-                            }
+                            rv = ogs_app_parse_timer_seconds("mme",
+                                    &time_iter, &self.time.t3396.value);
+                            if (rv != OGS_OK)
+                                return rv;
                         } else if (!strcmp(time_key, "t3412")) {
-                            ogs_yaml_iter_t t3412_iter;
-                            ogs_yaml_iter_recurse(&time_iter, &t3412_iter);
-
-                            while (ogs_yaml_iter_next(&t3412_iter)) {
-                                const char *t3412_key =
-                                    ogs_yaml_iter_key(&t3412_iter);
-                                ogs_assert(t3412_key);
-
-                                if (!strcmp(t3412_key, "value")) {
-                                    const char *v = ogs_yaml_iter_value(&t3412_iter);
-                                    if (v)
-                                        self.time.t3412.value = atoll(v);
-                                } else
-                                    ogs_warn("unknown key `%s`", t3412_key);
-                            }
+                            rv = ogs_app_parse_timer_seconds("mme",
+                                    &time_iter, &self.time.t3412.value);
+                            if (rv != OGS_OK)
+                                return rv;
                         } else if (!strcmp(time_key, "t3423")) {
-                            ogs_yaml_iter_t t3423_iter;
-                            ogs_yaml_iter_recurse(&time_iter, &t3423_iter);
-
-                            while (ogs_yaml_iter_next(&t3423_iter)) {
-                                const char *t3423_key =
-                                    ogs_yaml_iter_key(&t3423_iter);
-                                ogs_assert(t3423_key);
-
-                                if (!strcmp(t3423_key, "value")) {
-                                    const char *v = ogs_yaml_iter_value(&t3423_iter);
-                                    if (v)
-                                        self.time.t3423.value = atoll(v);
-                                } else
-                                    ogs_warn("unknown key `%s`", t3423_key);
-                            }
+                            rv = ogs_app_parse_timer_seconds("mme",
+                                    &time_iter, &self.time.t3423.value);
+                            if (rv != OGS_OK)
+                                return rv;
                         } else if (!strcmp(time_key, "t3512")) {
                             /* handle config in amf */
                         } else if (!strcmp(time_key, "nf_instance")) {
