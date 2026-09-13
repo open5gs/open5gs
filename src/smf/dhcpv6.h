@@ -20,6 +20,8 @@
 #ifndef SMF_DHCPV6_H
 #define SMF_DHCPV6_H
 
+#include <stddef.h>
+
 #include "context.h"
 
 #ifdef __cplusplus
@@ -99,6 +101,12 @@ void smf_dhcpv6_handle(smf_sess_t *sess, ogs_pkbuf_t *pkbuf);
 /* Exposed for unit tests */
 int smf_dhcpv6_parse(
         smf_dhcpv6_message_t *msg, const uint8_t *data, uint32_t len);
+
+/* Encode ADVERTISE/REPLY payload (no IP/UDP wrapper). Exposed for unit tests.
+ * Returns the encoded length. */
+int smf_dhcpv6_encode_response(uint8_t *buf, size_t buflen,
+        smf_sess_t *sess, smf_dhcpv6_message_t *req,
+        uint8_t type, uint16_t status);
 
 #ifdef __cplusplus
 }
