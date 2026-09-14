@@ -72,10 +72,13 @@ struct upf_route_trie_node {
 /* Accounting: */
 typedef struct upf_sess_urr_acc_s {
     bool reporting_enabled;
+    bool measurement_started;
     ogs_timer_t *t_validity_time; /* Quota Validity Time expiration handler */
     ogs_timer_t *t_time_quota; /* Time Quota expiration handler */
     ogs_timer_t *t_time_threshold; /* Time Threshold expiration handler */
-    uint32_t time_start; /* When t_time_* started */
+    uint32_t time_start; /* When t_time_* started (realtime, for NTP) */
+    /* When t_time_* started (monotonic, for Duration Measurement). */
+    ogs_time_t mono_time_start;
     ogs_pfcp_urr_ur_seqn_t report_seqn; /* Next seqn to use when reporting */
     uint64_t total_octets;
     uint64_t ul_octets;
@@ -93,7 +96,7 @@ typedef struct upf_sess_urr_acc_s {
         uint64_t total_pkts;
         uint64_t ul_pkts;
         uint64_t dl_pkts;
-        ogs_time_t timestamp;
+        ogs_time_t mono_timestamp; /* monotonic, for Duration Measurement */
     } last_report;
 } upf_sess_urr_acc_t;
 
@@ -156,6 +159,7 @@ void upf_sess_urr_acc_fill_usage_report(upf_sess_t *sess, const ogs_pfcp_urr_t *
                                         ogs_pfcp_user_plane_report_t *report, unsigned int idx);
 void upf_sess_urr_acc_snapshot(upf_sess_t *sess, ogs_pfcp_urr_t *urr);
 void upf_sess_urr_acc_timers_setup(upf_sess_t *sess, ogs_pfcp_urr_t *urr);
+void upf_sess_urr_acc_remove(upf_sess_t *sess, ogs_pfcp_urr_id_t urr_id);
 
 #ifdef __cplusplus
 }

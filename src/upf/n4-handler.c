@@ -59,6 +59,7 @@ static void upf_n4_setup_urr_timers(upf_sess_t *sess,
                     create_urr[i].urr_id.u32);
             continue;
         }
+        /* Without ISTM, the first packet starts measurement and timers. */
         if (urr->meas_info.istm) {
             ogs_debug("Start timers for accepted URR-ID[%u]", urr->id);
             upf_sess_urr_acc_timers_setup(sess, urr);
@@ -436,6 +437,10 @@ void upf_n4_handle_session_modification_request(
         if (ogs_pfcp_handle_remove_urr(&sess->pfcp, &req->remove_urr[i],
                 &cause_value, &offending_ie_value) == false)
             break;
+
+        /* Applied Removes survive a later rejection of this request.
+         * Stop callbacks immediately, before the freed URR can be reused. */
+        upf_sess_urr_acc_remove(sess, req->remove_urr[i].urr_id.u32);
     }
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;

@@ -129,6 +129,23 @@ static int amf_context_prepare(void)
     return OGS_OK;
 }
 
+static int amf_context_parse_eir_action(
+        ogs_yaml_iter_t *iter, const char *key, amf_eir_action_e *action)
+{
+    const char *value = ogs_yaml_iter_value(iter);
+
+    if (!value || !strcmp(value, "allow"))
+        *action = AMF_EIR_ACTION_ALLOW;
+    else if (!strcmp(value, "reject"))
+        *action = AMF_EIR_ACTION_REJECT;
+    else {
+        ogs_error("invalid %s `%s` (expected `allow` or `reject`)", key, value);
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
 static int amf_context_validation(void)
 {
     ogs_nas_gprs_timer_t gprs_timer;
@@ -182,9 +199,12 @@ static int amf_context_validation(void)
                 ogs_app()->file);
         return OGS_ERROR;
     }
+    /* Zero omits T3502; T3512 must be non-zero. */
     if (ogs_nas_gprs_timer_from_sec(&gprs_timer, self.time.t3502.value) !=
         OGS_OK) {
-        ogs_error("Not support GPRS Timer 2 [%d]", (int)self.time.t3502.value);
+        ogs_error("Invalid amf.time.t3502.value `%lld` in '%s': "
+                "cannot encode as a NAS timer",
+                (long long)self.time.t3502.value, ogs_app()->file);
         return OGS_ERROR;
     }
     if (!self.time.t3512.value) {
@@ -194,7 +214,9 @@ static int amf_context_validation(void)
     }
     if (ogs_nas_gprs_timer_3_from_sec(&gprs_timer, self.time.t3512.value) !=
         OGS_OK) {
-        ogs_error("Not support GPRS Timer 3 [%d]", (int)self.time.t3512.value);
+        ogs_error("Invalid amf.time.t3512.value `%lld` in '%s': "
+                "cannot encode as a NAS timer",
+                (long long)self.time.t3512.value, ogs_app()->file);
         return OGS_ERROR;
     }
 
@@ -1021,37 +1043,51 @@ int amf_context_parse_config(void)
                         const char *time_key = ogs_yaml_iter_key(&time_iter);
                         ogs_assert(time_key);
                         if (!strcmp(time_key, "t3502")) {
-                            ogs_yaml_iter_t t3502_iter;
-                            ogs_yaml_iter_recurse(&time_iter, &t3502_iter);
-
-                            while (ogs_yaml_iter_next(&t3502_iter)) {
-                                const char *t3502_key =
-                                    ogs_yaml_iter_key(&t3502_iter);
-                                ogs_assert(t3502_key);
-
-                                if (!strcmp(t3502_key, "value")) {
-                                    const char *v = ogs_yaml_iter_value(&t3502_iter);
-                                    if (v)
-                                        self.time.t3502.value = atoll(v);
-                                } else
-                                    ogs_warn("unknown key `%s`", t3502_key);
-                            }
+                            rv = ogs_app_parse_timer_seconds("amf",
+                                    &time_iter, &self.time.t3502.value);
+                            if (rv != OGS_OK)
+                                return rv;
                         } else if (!strcmp(time_key, "t3512")) {
-                            ogs_yaml_iter_t t3512_iter;
-                            ogs_yaml_iter_recurse(&time_iter, &t3512_iter);
-
-                            while (ogs_yaml_iter_next(&t3512_iter)) {
-                                const char *t3512_key =
-                                    ogs_yaml_iter_key(&t3512_iter);
-                                ogs_assert(t3512_key);
-
-                                if (!strcmp(t3512_key, "value")) {
-                                    const char *v = ogs_yaml_iter_value(&t3512_iter);
-                                    if (v)
-                                        self.time.t3512.value = atoll(v);
-                                } else
-                                    ogs_warn("unknown key `%s`", t3512_key);
-                            }
+                            rv = ogs_app_parse_timer_seconds("amf",
+                                    &time_iter, &self.time.t3512.value);
+                            if (rv != OGS_OK)
+                                return rv;
+                        } else if (!strcmp(time_key, "t3513")) {
+                            rv = ogs_app_parse_timer_duration("amf",
+                                    &time_iter,
+                                    &amf_timer_cfg(AMF_TIMER_T3513)->duration);
+                            if (rv != OGS_OK)
+                                return rv;
+                        } else if (!strcmp(time_key, "t3522")) {
+                            rv = ogs_app_parse_timer_duration("amf",
+                                    &time_iter,
+                                    &amf_timer_cfg(AMF_TIMER_T3522)->duration);
+                            if (rv != OGS_OK)
+                                return rv;
+                        } else if (!strcmp(time_key, "t3550")) {
+                            rv = ogs_app_parse_timer_duration("amf",
+                                    &time_iter,
+                                    &amf_timer_cfg(AMF_TIMER_T3550)->duration);
+                            if (rv != OGS_OK)
+                                return rv;
+                        } else if (!strcmp(time_key, "t3555")) {
+                            rv = ogs_app_parse_timer_duration("amf",
+                                    &time_iter,
+                                    &amf_timer_cfg(AMF_TIMER_T3555)->duration);
+                            if (rv != OGS_OK)
+                                return rv;
+                        } else if (!strcmp(time_key, "t3560")) {
+                            rv = ogs_app_parse_timer_duration("amf",
+                                    &time_iter,
+                                    &amf_timer_cfg(AMF_TIMER_T3560)->duration);
+                            if (rv != OGS_OK)
+                                return rv;
+                        } else if (!strcmp(time_key, "t3570")) {
+                            rv = ogs_app_parse_timer_duration("amf",
+                                    &time_iter,
+                                    &amf_timer_cfg(AMF_TIMER_T3570)->duration);
+                            if (rv != OGS_OK)
+                                return rv;
                         } else if (!strcmp(time_key, "t3412")) {
                             /* handle config in mme */
                         } else if (!strcmp(time_key, "nf_instance")) {
@@ -1064,6 +1100,42 @@ int amf_context_parse_config(void)
                             /* handle config in app library */
                         } else
                             ogs_warn("unknown key `%s`", time_key);
+                    }
+                } else if (!strcmp(amf_key, "eir")) {
+                    ogs_yaml_iter_t eir_iter;
+                    ogs_yaml_iter_recurse(&amf_iter, &eir_iter);
+                    while (ogs_yaml_iter_next(&eir_iter)) {
+                        const char *eir_key = ogs_yaml_iter_key(&eir_iter);
+                        ogs_assert(eir_key);
+                        if (!strcmp(eir_key, "enabled")) {
+                            self.eir.enabled =
+                                ogs_yaml_iter_bool(&eir_iter);
+                        } else if (!strcmp(eir_key, "unknown_action")) {
+                            rv = amf_context_parse_eir_action(&eir_iter,
+                                    eir_key, &self.eir.unknown_action);
+                            if (rv != OGS_OK) {
+                                ogs_error("amf_context_parse_eir_action"
+                                        "(unknown_action) failed");
+                                return rv;
+                            }
+                        } else if (!strcmp(eir_key, "failure_action")) {
+                            rv = amf_context_parse_eir_action(&eir_iter,
+                                    eir_key, &self.eir.failure_action);
+                            if (rv != OGS_OK) {
+                                ogs_error("amf_context_parse_eir_action"
+                                        "(failure_action) failed");
+                                return rv;
+                            }
+                        } else if (!strcmp(eir_key, "missing_pei_action")) {
+                            rv = amf_context_parse_eir_action(&eir_iter,
+                                    eir_key, &self.eir.missing_pei_action);
+                            if (rv != OGS_OK) {
+                                ogs_error("amf_context_parse_eir_action"
+                                        "(missing_pei_action) failed");
+                                return rv;
+                            }
+                        } else
+                            ogs_warn("unknown key `%s`", eir_key);
                     }
                 } else if (!strcmp(amf_key, "default")) {
                     /* handle config in sbi library */

@@ -298,6 +298,18 @@ ogs_sbi_xact_t *smf_namf_comm_create_n1_n2_message_xact(
         xact->assoc_stream_id = ogs_sbi_id_from_stream(stream);
         ogs_assert(xact->assoc_stream_id >= OGS_MIN_POOL_ID &&
                 xact->assoc_stream_id <= OGS_MAX_POOL_ID);
+
+        if (HOME_ROUTED_ROAMING_IN_VSMF(sess) &&
+                param->state == SMF_NETWORK_REQUESTED_QOS_FLOW_MODIFICATION) {
+            /* Save before sending or queuing N1N2. The UE may complete the
+             * modification before the AMF's transfer response arrives. */
+            if (sess->vsmf_to_hsmf_modify_stream_id >= OGS_MIN_POOL_ID &&
+                sess->vsmf_to_hsmf_modify_stream_id <= OGS_MAX_POOL_ID)
+                ogs_error("N1 N2 modified stream ID [%d] "
+                        "has not been used yet",
+                        sess->vsmf_to_hsmf_modify_stream_id);
+            sess->vsmf_to_hsmf_modify_stream_id = xact->assoc_stream_id;
+        }
     }
 
     return xact;

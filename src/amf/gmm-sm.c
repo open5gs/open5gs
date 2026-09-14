@@ -28,6 +28,7 @@
 #include "nudm-handler.h"
 #include "npcf-handler.h"
 #include "namf-handler.h"
+#include "n5geir-handler.h"
 #include "sbi-path.h"
 #include "amf-sm.h"
 #include "namf-build.h"
@@ -60,6 +61,8 @@ typedef enum {
 
 static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
         gmm_common_state_e state);
+
+static void gmm_continue_registration(ogs_fsm_t *s, amf_ue_t *amf_ue);
 
 void gmm_state_initial(ogs_fsm_t *s, amf_event_t *e)
 {
@@ -2038,7 +2041,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             break;
 
         case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE:
-            ogs_debug("[%s] Configuration update complete", amf_ue->supi);
+            ogs_info("[%s] Configuration update complete", amf_ue->supi);
 
             amf_metrics_inst_global_inc(AMF_METR_GLOB_CTR_MM_CONF_UPDATE_SUCC);
 
@@ -2608,6 +2611,104 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
     }
 }
 
+static void gmm_continue_registration(ogs_fsm_t *s, amf_ue_t *amf_ue)
+{
+    int r;
+
+    ogs_assert(s);
+    ogs_assert(amf_ue);
+
+    r = amf_ue_sbi_discover_and_send(
+            OpenAPI_service_name_nudm_uecm, NULL,
+            amf_nudm_uecm_build_registration, amf_ue, 0, NULL);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+
+    if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST) {
+        OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
+    } else if (amf_ue->nas.message_type == OGS_NAS_5GS_SERVICE_REQUEST) {
+        OGS_FSM_TRAN(s, &gmm_state_registered);
+    } else {
+        ogs_fatal("Invalid OGS_NAS_5GS[%d]", amf_ue->nas.message_type);
+        ogs_assert_if_reached();
+    }
+}
+
+static void gmm_complete_equipment_identity_check(
+        ogs_fsm_t *s, amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t cause)
+{
+    int r;
+    ran_ue_t *ran_ue = NULL;
+
+    ogs_assert(s);
+    ogs_assert(amf_ue);
+
+    ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+    if (!ran_ue) {
+        ogs_error("[%s] NG context has already been removed", amf_ue->supi);
+        OGS_FSM_TRAN(s, &gmm_state_exception);
+        return;
+    }
+
+    if (cause == OGS_5GMM_CAUSE_REQUEST_ACCEPTED) {
+        ogs_info("[%s] Continue registration after 5G-EIR check",
+                amf_ue->supi);
+        gmm_continue_registration(s, amf_ue);
+        return;
+    }
+
+    ogs_warn("[%s] Registration rejected after 5G-EIR check [cause:%d]",
+            amf_ue->supi, cause);
+    r = nas_5gs_send_registration_reject(ran_ue, amf_ue, cause);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+    OGS_FSM_TRAN(s, &gmm_state_exception);
+}
+
+static void gmm_security_mode_completed(ogs_fsm_t *s, amf_ue_t *amf_ue)
+{
+    int r;
+    ogs_nas_5gmm_cause_t cause;
+
+    ogs_assert(s);
+    ogs_assert(amf_ue);
+
+    if (amf_ue->eir_check_pending) {
+        ogs_error("[%s] 5G-EIR check is already pending", amf_ue->supi);
+        return;
+    }
+
+    if (amf_ue->nas.message_type != OGS_NAS_5GS_REGISTRATION_REQUEST ||
+            !amf_self()->eir.enabled) {
+        ogs_info("[%s] Skip 5G-EIR check [message:%d,enabled:%d]",
+                amf_ue->supi, amf_ue->nas.message_type,
+                amf_self()->eir.enabled);
+        gmm_continue_registration(s, amf_ue);
+        return;
+    }
+
+    if (amf_ue->pei) {
+        r = amf_ue_sbi_discover_and_send_eir(amf_ue);
+        if (r == OGS_OK) {
+            amf_ue->eir_check_pending = true;
+            ogs_info("[%s] Waiting for 5G-EIR equipment status", amf_ue->supi);
+            return;
+        }
+
+        cause = amf_n5geir_eic_failure_cause();
+    } else {
+        ogs_error("[%s] No PEI available for 5G-EIR "
+                "[missing_pei_action:%s]", amf_ue->supi,
+                amf_self()->eir.missing_pei_action ==
+                    AMF_EIR_ACTION_REJECT ? "reject" : "allow");
+        cause = amf_self()->eir.missing_pei_action == AMF_EIR_ACTION_REJECT ?
+            OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED :
+            OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
+    }
+
+    gmm_complete_equipment_identity_check(s, amf_ue, cause);
+}
+
 void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
 {
     int r;
@@ -2617,6 +2718,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
     ogs_sbi_message_t *sbi_message = NULL;
+    ogs_sbi_xact_t *xact = NULL, *next_xact = NULL;
     int service_name_id = OpenAPI_service_name_NULL;
 
     ogs_assert(s);
@@ -2635,6 +2737,24 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(r != OGS_ERROR);
         break;
     case OGS_FSM_EXIT_SIG:
+        /* A result belongs only to this registration procedure. */
+        amf_ue->eir_check_pending = false;
+        ogs_list_for_each_safe(&amf_ue->sbi.xact_list, next_xact, xact) {
+            if (xact->service_name == OpenAPI_service_name_n5g_eir_eic) {
+                ogs_error("[%s] Cancel pending 5G-EIR transaction",
+                        amf_ue->supi);
+                ogs_sbi_xact_remove(xact);
+            }
+        }
+        break;
+    case AMF_EVENT_5GMM_EIR_FAILURE:
+        if (!amf_ue->eir_check_pending) {
+            ogs_error("[%s] Ignore stale 5G-EIR failure", amf_ue->supi);
+            break;
+        }
+
+        gmm_cause = amf_n5geir_eic_failure_cause();
+        gmm_complete_equipment_identity_check(s, amf_ue, gmm_cause);
         break;
     case AMF_EVENT_5GMM_MESSAGE:
         nas_message = e->nas.message;
@@ -2655,7 +2775,13 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
 
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_SECURITY_MODE_COMPLETE:
-            ogs_debug("[%s] Security mode complete", amf_ue->supi);
+            if (amf_ue->eir_check_pending) {
+                ogs_error("[%s] Ignore repeated Security mode complete",
+                        amf_ue->supi);
+                break;
+            }
+
+            ogs_info("[%s] Security mode complete", amf_ue->supi);
 
         /*
          * TS24.501
@@ -2746,21 +2872,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
             amf_ue->nhcc = 1;
 
-            r = amf_ue_sbi_discover_and_send(
-                    OpenAPI_service_name_nudm_uecm, NULL,
-                    amf_nudm_uecm_build_registration, amf_ue, 0, NULL);
-            ogs_expect(r == OGS_OK);
-            ogs_assert(r != OGS_ERROR);
-
-            if (amf_ue->nas.message_type == OGS_NAS_5GS_REGISTRATION_REQUEST) {
-                OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
-            } else if (amf_ue->nas.message_type ==
-                        OGS_NAS_5GS_SERVICE_REQUEST) {
-                OGS_FSM_TRAN(s, &gmm_state_registered);
-            } else {
-                ogs_fatal("Invalid OGS_NAS_5GS[%d]", amf_ue->nas.message_type);
-                ogs_assert_if_reached();
-            }
+            gmm_security_mode_completed(s, amf_ue);
             break;
         case OGS_NAS_5GS_SECURITY_MODE_REJECT:
             ogs_warn("[%s] Security mode reject : Cause[%d]",
@@ -2904,23 +3016,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                     ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
                     amf_ue->nhcc = 1;
 
-                    r = amf_ue_sbi_discover_and_send(
-                            OpenAPI_service_name_nudm_uecm, NULL,
-                            amf_nudm_uecm_build_registration, amf_ue, 0, NULL);
-                    ogs_expect(r == OGS_OK);
-                    ogs_assert(r != OGS_ERROR);
-
-                    if (amf_ue->nas.message_type ==
-                            OGS_NAS_5GS_REGISTRATION_REQUEST) {
-                        OGS_FSM_TRAN(s, &gmm_state_initial_context_setup);
-                    } else if (amf_ue->nas.message_type ==
-                                OGS_NAS_5GS_SERVICE_REQUEST) {
-                        OGS_FSM_TRAN(s, &gmm_state_registered);
-                    } else {
-                        ogs_fatal("Invalid OGS_NAS_5GS[%d]",
-                                amf_ue->nas.message_type);
-                        ogs_assert_if_reached();
-                    }
+                    gmm_security_mode_completed(s, amf_ue);
                     break;
 
                 DEFAULT
@@ -2928,6 +3024,27 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
                             sbi_message->h.resource.component[2]);
                     ogs_assert_if_reached();
                 END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message->h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+
+        case OpenAPI_service_name_n5g_eir_eic:
+            if (!amf_ue->eir_check_pending) {
+                ogs_error("[%s] Ignore unexpected 5G-EIR response",
+                        amf_ue->supi);
+                break;
+            }
+
+            SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_EQUIPMENT_STATUS)
+                gmm_cause = amf_n5geir_eic_handle_equipment_status(
+                        amf_ue, sbi_message);
+                gmm_complete_equipment_identity_check(s, amf_ue, gmm_cause);
                 break;
 
             DEFAULT
@@ -2946,6 +3063,14 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
     case AMF_EVENT_5GMM_TIMER:
         switch (e->h.timer_id) {
         case AMF_TIMER_T3560:
+            /* Security Mode Complete clears the saved command. Ignore a
+             * queued expiry while waiting for UE context transfer or EIR. */
+            if (!amf_ue->t3560.pkbuf) {
+                ogs_error("[%s] Ignore T3560 expiry after command cleared",
+                        amf_ue->supi);
+                break;
+            }
+
             if (amf_ue->t3560.retry_count >=
                     amf_timer_cfg(AMF_TIMER_T3560)->max_count) {
                 ogs_warn("[%s] Retransmission failed. Stop", amf_ue->supi);

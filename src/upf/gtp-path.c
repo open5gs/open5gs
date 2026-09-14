@@ -259,7 +259,8 @@ cleanup:
 
 static void _gtpv1_tun_recv_common_cb(short when, ogs_socket_t fd, bool has_eth, void *data)
 {
-    for (unsigned int i = 0; i < UPF_SK_DRAIN_BUDGET; i++) {
+    unsigned int i;
+    for (i = 0; i < UPF_SK_DRAIN_BUDGET; i++) {
         ogs_pkbuf_t *recvbuf = ogs_tun_read(fd, packet_pool);
         if (!recvbuf) /* EAGAIN, no more packets to process for now */
             return;
@@ -935,12 +936,13 @@ cleanup:
 static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     ogs_sock_t *sock = NULL;
+    unsigned int i;
 
     ogs_assert(fd != INVALID_SOCKET);
     sock = data;
     ogs_assert(sock);
 
-    for (unsigned int i = 0; i < UPF_SK_DRAIN_BUDGET; i++) {
+    for (i = 0; i < UPF_SK_DRAIN_BUDGET; i++) {
         ssize_t size;
         ogs_sockaddr_t from;
         ogs_pkbuf_t *pkbuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_PKT_LEN);

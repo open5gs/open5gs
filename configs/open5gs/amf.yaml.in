@@ -55,6 +55,27 @@ amf:
 #      value: 720   # 12 minutes * 60 = 720 seconds
     t3512:
       value: 540    # 9 minutes * 60 = 540 seconds
+# Optional 5GMM retransmission timers (seconds, 1..2147483).
+# Each configured timer requires value; omitted timers keep existing defaults.
+# Only intervals are configurable; retransmission counts are unchanged.
+#    t3513:
+#      value: 2    # Network dependent; Open5GS default
+#    t3522:
+#      value: 3
+#    t3550:
+#      value: 6
+#    t3555:
+#      value: 6
+#    t3560:
+#      value: 6
+#    t3570:
+#      value: 3
+
+#  eir:
+#    enabled: true
+#    unknown_action: allow      # allow(default)|reject
+#    failure_action: allow      # allow(default)|reject
+#    missing_pei_action: allow  # allow(default)|reject
 
 ################################################################################
 # SBI Server

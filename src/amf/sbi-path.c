@@ -21,6 +21,7 @@
 #include "nas-path.h"
 #include "ngap-path.h"
 #include "nnrf-handler.h"
+#include "n5geir-build.h"
 
 int amf_sbi_open(void)
 {
@@ -69,6 +70,9 @@ int amf_sbi_open(void)
             OpenAPI_nf_type_NULL, OpenAPI_service_name_nsmf_pdusession);
     ogs_sbi_subscription_spec_add(
             OpenAPI_nf_type_NULL, OpenAPI_service_name_nnssf_nsselection);
+    if (amf_self()->eir.enabled)
+        ogs_sbi_subscription_spec_add(
+                OpenAPI_nf_type_NULL, OpenAPI_service_name_n5g_eir_eic);
 
     if (ogs_sbi_server_start_all(ogs_sbi_server_handler) != OGS_OK)
         return OGS_ERROR;
@@ -153,6 +157,33 @@ int amf_ue_sbi_discover_and_send(
     }
 
     return OGS_OK;
+}
+
+/* The UE FSM applies failure_action instead of the generic SBI reject. */
+int amf_ue_sbi_discover_and_send_eir(amf_ue_t *amf_ue)
+{
+    int rv;
+    ogs_sbi_xact_t *xact = NULL;
+
+    ogs_assert(amf_ue);
+
+    xact = ogs_sbi_xact_add(
+            amf_ue->id, &amf_ue->sbi,
+            OpenAPI_service_name_n5g_eir_eic, NULL,
+            (ogs_sbi_build_f)amf_n5geir_eic_build_equipment_status,
+            amf_ue, NULL);
+    if (!xact) {
+        ogs_error("[%s] Cannot create 5G-EIR transaction", amf_ue->supi);
+        return OGS_ERROR;
+    }
+
+    rv = ogs_sbi_discover_and_send(xact);
+    if (rv != OGS_OK) {
+        ogs_error("[%s] Cannot send 5G-EIR request [error:%d]",
+                amf_ue->supi, rv);
+        ogs_sbi_xact_remove(xact);
+    }
+    return rv;
 }
 
 static void amf_sbi_xact_ctx_free(void *data)

@@ -1602,7 +1602,6 @@ ogs_pkbuf_t *gsmue_build_pdu_session_establishment_accept(smf_sess_t *sess)
     pkbuf = gsmue_encode_n1_sm_info(&message);
     ogs_assert(pkbuf);
 
-cleanup:
     if (epco_buf)
         ogs_free(epco_buf);
 

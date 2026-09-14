@@ -48,6 +48,7 @@ typedef struct ogs_global_conf_s {
         int no_nssf;
         int no_bsf;
         int no_udr;
+        int no_eir;
         int no_sepp;
         int no_scp;
         int no_nrf;
@@ -61,6 +62,7 @@ typedef struct ogs_global_conf_s {
         int nssf_count;
         int bsf_count;
         int udr_count;
+        int eir_count;
 
         /* Network */
         int no_ipv4;
@@ -196,6 +198,19 @@ int ogs_app_count_nf_conf_sections(const char *conf_section);
 int ogs_app_global_conf_prepare(void);
 int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent);
 int ogs_app_parse_local_conf(const char *local);
+
+/* Parse <local>.time.<timer>: { value: <non-negative whole seconds> }.
+ * Reject duplicate timer keys within the same time mapping.
+ * Store seconds in *seconds; leave the output unchanged on error.
+ * Zero is accepted here. Timer-specific zero rules and NAS encoding limits
+ * are outside the scope of this parser. */
+int ogs_app_parse_timer_seconds(
+        const char *local, ogs_yaml_iter_t *parent, ogs_time_t *seconds);
+
+/* Parse the same seconds-based configuration for a local timer.
+ * Store a positive, poll-safe duration in microseconds; unchanged on error. */
+int ogs_app_parse_timer_duration(
+        const char *local, ogs_yaml_iter_t *parent, ogs_time_t *duration);
 
 int ogs_app_parse_sockopt_config(
         ogs_yaml_iter_t *parent, ogs_sockopt_t *option);

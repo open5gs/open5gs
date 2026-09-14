@@ -768,6 +768,13 @@ void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bo
     ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
     urr_acc = &sess->urr_acc[urr->id-1];
 
+    /* Without ISTM, start measurement and timers on the first packet. */
+    if (!urr_acc->measurement_started) {
+        ogs_debug("Start measurement on first packet for URR-ID[%u]",
+                urr->id);
+        upf_sess_urr_acc_timers_setup(sess, urr);
+    }
+
     /* Increment total & ul octets + pkts */
     urr_acc->total_octets += size;
     urr_acc->total_pkts++;
@@ -806,24 +813,29 @@ void upf_sess_urr_acc_fill_usage_report(upf_sess_t *sess, const ogs_pfcp_urr_t *
                                   ogs_pfcp_user_plane_report_t *report, unsigned int idx)
 {
     upf_sess_urr_acc_t *urr_acc = NULL;
-    ogs_time_t last_report_timestamp;
-    ogs_time_t now;
+    ogs_time_t last_report_mono_timestamp;
+    ogs_time_t now, mono_now;
 
     ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
     urr_acc = &sess->urr_acc[urr->id-1];
 
     now = ogs_time_now(); /* we need UTC for start_time and end_time */
+    /* Elapsed time for Duration Measurement. */
+    mono_now = ogs_get_monotonic_time();
 
-    if (urr_acc->last_report.timestamp)
-        last_report_timestamp = urr_acc->last_report.timestamp;
+    if (urr_acc->last_report.mono_timestamp)
+        last_report_mono_timestamp = urr_acc->last_report.mono_timestamp;
     else
-        last_report_timestamp = ogs_time_from_ntp32(urr_acc->time_start);
+        last_report_mono_timestamp = urr_acc->mono_time_start;
 
     report->type.usage_report = 1;
     report->usage_report[idx].id = urr->id;
     report->usage_report[idx].seqn = urr_acc->report_seqn++;
-    report->usage_report[idx].start_time = urr_acc->time_start;
     report->usage_report[idx].end_time = ogs_time_to_ntp32(now);
+    /* Keep Start/End Time in an empty termination report. Without a
+     * measurement baseline, represent a zero-length interval at report time. */
+    report->usage_report[idx].start_time = urr_acc->measurement_started ?
+        urr_acc->time_start : report->usage_report[idx].end_time;
     report->usage_report[idx].vol_measurement = (ogs_pfcp_volume_measurement_t){
         .dlnop = 1,
         .ulnop = 1,
@@ -838,11 +850,19 @@ void upf_sess_urr_acc_fill_usage_report(upf_sess_t *sess, const ogs_pfcp_urr_t *
         .uplink_n_packets = urr_acc->ul_pkts - urr_acc->last_report.ul_pkts,
         .downlink_n_packets = urr_acc->dl_pkts - urr_acc->last_report.dl_pkts,
     };
-    if (now >= last_report_timestamp)
-        report->usage_report[idx].dur_measurement = ((now - last_report_timestamp) + (OGS_USEC_PER_SEC/2)) / OGS_USEC_PER_SEC; /* FIXME: should use MONOTONIC here */
+    /* Unsupported platforms use gettimeofday(); clamp clock rollback. */
+    if (urr_acc->measurement_started &&
+            mono_now >= last_report_mono_timestamp)
+        report->usage_report[idx].dur_measurement =
+            ((mono_now - last_report_mono_timestamp) +
+             (OGS_USEC_PER_SEC / 2)) / OGS_USEC_PER_SEC;
     /* else memset sets it to 0 */
-    report->usage_report[idx].time_of_first_packet = ogs_time_to_ntp32(urr_acc->time_of_first_packet); /* TODO: First since last report? */
-    report->usage_report[idx].time_of_last_packet = ogs_time_to_ntp32(urr_acc->time_of_last_packet);
+    if (urr_acc->time_of_first_packet)
+        report->usage_report[idx].time_of_first_packet =
+            ogs_time_to_ntp32(urr_acc->time_of_first_packet); /* TODO: First since last report? */
+    if (urr_acc->time_of_last_packet)
+        report->usage_report[idx].time_of_last_packet =
+            ogs_time_to_ntp32(urr_acc->time_of_last_packet);
 
     /* Time triggers: */
     if (urr->quota_validity_time > 0 &&
@@ -877,7 +897,8 @@ void upf_sess_urr_acc_snapshot(upf_sess_t *sess, ogs_pfcp_urr_t *urr)
     urr_acc->last_report.total_pkts = urr_acc->total_pkts;
     urr_acc->last_report.dl_pkts = urr_acc->dl_pkts;
     urr_acc->last_report.ul_pkts = urr_acc->ul_pkts;
-    urr_acc->last_report.timestamp = ogs_time_now();
+    if (urr_acc->measurement_started)
+        urr_acc->last_report.mono_timestamp = ogs_get_monotonic_time();
 }
 
 static void upf_sess_urr_acc_timers_cb(void *data)
@@ -887,7 +908,7 @@ static void upf_sess_urr_acc_timers_cb(void *data)
     ogs_pfcp_sess_t *pfcp_sess = urr->sess;
     upf_sess_t *sess = UPF_SESS(pfcp_sess);
 
-    ogs_info("upf_time_threshold_cb() triggered! urr=%p", urr);
+    ogs_debug("URR accounting timer expired: URR-ID[%u]", urr->id);
 
     if (urr->rep_triggers.quota_validity_time ||
         urr->rep_triggers.time_quota ||
@@ -911,7 +932,8 @@ static void upf_sess_urr_acc_validity_time_setup(upf_sess_t *sess, ogs_pfcp_urr_
     ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
     urr_acc = &sess->urr_acc[urr->id-1];
 
-    ogs_debug("Installing URR Quota Validity Time timer");
+    ogs_debug("Start URR Quota Validity Time timer [URR-ID:%u Seconds:%u]",
+            urr->id, urr->quota_validity_time);
     urr_acc->reporting_enabled = true;
     if (!urr_acc->t_validity_time)
         urr_acc->t_validity_time = ogs_timer_add(ogs_app()->timer_mgr,
@@ -927,7 +949,8 @@ static void upf_sess_urr_acc_time_quota_setup(upf_sess_t *sess, ogs_pfcp_urr_t *
     ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
     urr_acc = &sess->urr_acc[urr->id-1];
 
-    ogs_debug("Installing URR Time Quota timer");
+    ogs_debug("Start URR Time Quota timer [URR-ID:%u Seconds:%u]",
+            urr->id, urr->time_quota);
     urr_acc->reporting_enabled = true;
     if (!urr_acc->t_time_quota)
         urr_acc->t_time_quota = ogs_timer_add(ogs_app()->timer_mgr,
@@ -942,7 +965,8 @@ static void upf_sess_urr_acc_time_threshold_setup(upf_sess_t *sess, ogs_pfcp_urr
     ogs_assert(urr->id > 0 && urr->id <= OGS_MAX_NUM_OF_URR);
     urr_acc = &sess->urr_acc[urr->id-1];
 
-    ogs_debug("Installing URR Time Threshold timer");
+    ogs_debug("Start URR Time Threshold timer [URR-ID:%u Seconds:%u]",
+            urr->id, urr->time_threshold);
     urr_acc->reporting_enabled = true;
     if (!urr_acc->t_time_threshold)
         urr_acc->t_time_threshold = ogs_timer_add(ogs_app()->timer_mgr,
@@ -959,6 +983,8 @@ void upf_sess_urr_acc_timers_setup(upf_sess_t *sess, ogs_pfcp_urr_t *urr)
     urr_acc = &sess->urr_acc[urr->id-1];
 
     urr_acc->time_start = ogs_time_ntp32_now();
+    urr_acc->mono_time_start = ogs_get_monotonic_time();
+    urr_acc->measurement_started = true;
     if (urr->rep_triggers.quota_validity_time && urr->quota_validity_time > 0)
         upf_sess_urr_acc_validity_time_setup(sess, urr);
     if (urr->rep_triggers.time_quota && urr->time_quota > 0)
@@ -967,21 +993,31 @@ void upf_sess_urr_acc_timers_setup(upf_sess_t *sess, ogs_pfcp_urr_t *urr)
         upf_sess_urr_acc_time_threshold_setup(sess, urr);
 }
 
+void upf_sess_urr_acc_remove(upf_sess_t *sess, ogs_pfcp_urr_id_t urr_id)
+{
+    upf_sess_urr_acc_t *urr_acc = NULL;
+
+    ogs_assert(sess);
+    if (urr_id == 0 || urr_id > OGS_ARRAY_SIZE(sess->urr_acc)) {
+        ogs_warn("No accounting slot for URR-ID[%u]", urr_id);
+        return;
+    }
+    urr_acc = &sess->urr_acc[urr_id-1];
+
+    ogs_debug("Clear accounting and timers for URR-ID[%u]", urr_id);
+    if (urr_acc->t_time_threshold)
+        ogs_timer_delete(urr_acc->t_time_threshold);
+    if (urr_acc->t_validity_time)
+        ogs_timer_delete(urr_acc->t_validity_time);
+    if (urr_acc->t_time_quota)
+        ogs_timer_delete(urr_acc->t_time_quota);
+
+    memset(urr_acc, 0, sizeof(*urr_acc));
+}
+
 static void upf_sess_urr_acc_remove_all(upf_sess_t *sess)
 {
     unsigned int i;
-    for (i = 0; i < OGS_ARRAY_SIZE(sess->urr_acc); i++) {
-        if (sess->urr_acc[i].t_time_threshold) {
-            ogs_timer_delete(sess->urr_acc[i].t_time_threshold);
-            sess->urr_acc[i].t_time_threshold = NULL;
-        }
-        if (sess->urr_acc[i].t_validity_time) {
-            ogs_timer_delete(sess->urr_acc[i].t_validity_time);
-            sess->urr_acc[i].t_validity_time = NULL;
-        }
-        if (sess->urr_acc[i].t_time_quota) {
-            ogs_timer_delete(sess->urr_acc[i].t_time_quota);
-            sess->urr_acc[i].t_time_quota = NULL;
-        }
-    }
+    for (i = 0; i < OGS_ARRAY_SIZE(sess->urr_acc); i++)
+        upf_sess_urr_acc_remove(sess, i + 1);
 }

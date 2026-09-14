@@ -29,6 +29,7 @@
 #include "dbi/subscription.h"
 #include "dbi/session.h"
 #include "dbi/ims.h"
+#include "dbi/eir.h"
 
 #undef OGS_DBI_INSIDE
 

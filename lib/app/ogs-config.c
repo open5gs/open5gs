@@ -160,6 +160,8 @@ int ogs_app_count_nf_conf_sections(const char *conf_section)
         global_conf.parameter.bsf_count++;
     else if (!strcmp(conf_section, "udr"))
         global_conf.parameter.udr_count++;
+    else if (!strcmp(conf_section, "eir"))
+        global_conf.parameter.eir_count++;
 
     return OGS_OK;
 }
@@ -237,6 +239,9 @@ int ogs_app_parse_global_conf(ogs_yaml_iter_t *parent)
                         ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "no_udr")) {
                     global_conf.parameter.no_udr =
+                        ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_eir")) {
+                    global_conf.parameter.no_eir =
                         ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "no_ipv4")) {
                     global_conf.parameter.no_ipv4 =
@@ -655,7 +660,21 @@ int ogs_app_parse_local_conf(const char *local)
                             /* handle config in amf */
                         } else if (!strcmp(time_key, "t3512")) {
                             /* handle config in amf */
+                        } else if (!strcmp(time_key, "t3513")) {
+                            /* handle config in amf */
+                        } else if (!strcmp(time_key, "t3522")) {
+                            /* handle config in amf */
+                        } else if (!strcmp(time_key, "t3550")) {
+                            /* handle config in amf */
+                        } else if (!strcmp(time_key, "t3555")) {
+                            /* handle config in amf */
+                        } else if (!strcmp(time_key, "t3560")) {
+                            /* handle config in amf */
+                        } else if (!strcmp(time_key, "t3570")) {
+                            /* handle config in amf */
                         } else if (!strcmp(time_key, "t3402")) {
+                            /* handle config in mme */
+                        } else if (!strcmp(time_key, "t3396")) {
                             /* handle config in mme */
                         } else if (!strcmp(time_key, "t3412")) {
                             /* handle config in mme */
@@ -672,6 +691,126 @@ int ogs_app_parse_local_conf(const char *local)
     rv = local_conf_validation();
     if (rv != OGS_OK) return rv;
 
+    return OGS_OK;
+}
+
+int ogs_app_parse_timer_seconds(
+        const char *local, ogs_yaml_iter_t *parent, ogs_time_t *seconds)
+{
+    ogs_yaml_iter_t iter;
+    const char *name;
+    ogs_time_t parsed_seconds = 0;
+    bool have_value = false;
+
+    ogs_assert(local);
+    ogs_assert(parent);
+    ogs_assert(seconds);
+
+    name = ogs_yaml_iter_key(parent);
+    ogs_assert(name);
+
+    /* Reject duplicate timer keys in the same time mapping. */
+    memcpy(&iter, parent, sizeof(ogs_yaml_iter_t));
+    while (ogs_yaml_iter_next(&iter)) {
+        const char *key = ogs_yaml_iter_key(&iter);
+        ogs_assert(key);
+
+        if (!strcmp(key, name)) {
+            ogs_error("Duplicate %s.time.%s in '%s'",
+                    local, name, ogs_app()->file);
+            return OGS_ERROR;
+        }
+    }
+
+    ogs_yaml_iter_recurse(parent, &iter);
+    if (ogs_yaml_iter_type(&iter) != YAML_MAPPING_NODE) {
+        ogs_error("Invalid %s.time.%s in '%s': "
+                "expected a mapping with value", local, name, ogs_app()->file);
+        return OGS_ERROR;
+    }
+
+    while (ogs_yaml_iter_next(&iter)) {
+        const char *key = ogs_yaml_iter_key(&iter);
+        ogs_assert(key);
+
+        if (!strcmp(key, "value")) {
+            const char *v;
+            char *endptr = NULL;
+            long long parsed;
+
+            if (have_value) {
+                ogs_error("Duplicate %s.time.%s.value in '%s'",
+                        local, name, ogs_app()->file);
+                return OGS_ERROR;
+            }
+            if (!ogs_yaml_iter_has_value(&iter)) {
+                ogs_error("Invalid %s.time.%s.value in '%s': expected a scalar",
+                        local, name, ogs_app()->file);
+                return OGS_ERROR;
+            }
+            v = ogs_yaml_iter_value(&iter);
+            if (!v || *v == '\0') {
+                ogs_error("No %s.time.%s.value in '%s'",
+                        local, name, ogs_app()->file);
+                return OGS_ERROR;
+            }
+
+            errno = 0;
+            parsed = strtoll(v, &endptr, 10);
+            if (errno == ERANGE) {
+                ogs_error("Invalid %s.time.%s.value `%s` in '%s': "
+                        "integer is out of range",
+                        local, name, v, ogs_app()->file);
+                return OGS_ERROR;
+            }
+            if (errno != 0 || endptr == v || *endptr != '\0' || parsed < 0) {
+                ogs_error("Invalid %s.time.%s.value `%s` in '%s': "
+                        "expected a non-negative integer in seconds",
+                        local, name, v, ogs_app()->file);
+                return OGS_ERROR;
+            }
+            parsed_seconds = parsed;
+            have_value = true;
+        } else {
+            ogs_warn("Unknown %s.time.%s key `%s` in '%s'",
+                    local, name, key, ogs_app()->file);
+        }
+    }
+
+    if (!have_value) {
+        ogs_error("No %s.time.%s.value in '%s'",
+                local, name, ogs_app()->file);
+        return OGS_ERROR;
+    }
+
+    *seconds = parsed_seconds;
+    return OGS_OK;
+}
+
+int ogs_app_parse_timer_duration(
+        const char *local, ogs_yaml_iter_t *parent, ogs_time_t *duration)
+{
+    int rv;
+    ogs_time_t seconds;
+
+    /* poll/epoll use signed 32-bit millisecond timeouts. */
+    const ogs_time_t max_duration = ogs_time_from_msec(INT32_MAX);
+
+    ogs_assert(duration);
+
+    rv = ogs_app_parse_timer_seconds(local, parent, &seconds);
+    if (rv != OGS_OK)
+        return rv;
+
+    if (seconds <= 0 || seconds > ogs_time_sec(max_duration)) {
+        ogs_error("Invalid %s.time.%s.value `%lld` in '%s': "
+                "expected an integer from 1 to %lld seconds",
+                local, ogs_yaml_iter_key(parent), (long long)seconds,
+                ogs_app()->file, (long long)ogs_time_sec(max_duration));
+        return OGS_ERROR;
+    }
+
+    *duration = ogs_time_from_sec(seconds);
     return OGS_OK;
 }
 

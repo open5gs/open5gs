@@ -1,0 +1,3 @@
+usr/bin/open5gs-eird
+configs/open5gs/eir.yaml etc/open5gs
+configs/systemd/open5gs-eird.service lib/systemd/system

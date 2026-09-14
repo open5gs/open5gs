@@ -919,9 +919,172 @@ static void sbi_message_test10(abts_case *tc, void *param)
     }
 }
 
+typedef struct eir_status_case_s {
+    OpenAPI_equipment_status_e value;
+    const char *name;
+} eir_status_case_t;
+
+static const eir_status_case_t eir_status_cases[] = {
+    {OpenAPI_equipment_status_WHITELISTED, "WHITELISTED"},
+    {OpenAPI_equipment_status_BLACKLISTED, "BLACKLISTED"},
+    {OpenAPI_equipment_status_GREYLISTED, "GREYLISTED"},
+};
+
+static void eir_query_roundtrip(abts_case *tc, void *data)
+{
+    const char *supi = data;
+    ogs_sbi_request_t *request;
+    ogs_sbi_message_t message;
+    ogs_time_t duration;
+    int rv;
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
+    message.h.uri = (char *)"/n5g-eir-eic/v1/equipment-status";
+    message.param.pei = (char *)"imeisv-4901542032375186";
+    message.param.supi = (char *)supi;
+
+    /* The request builder requires a timeout, without starting an NF. */
+    duration = ogs_local_conf()->time.message.duration;
+    ogs_local_conf()->time.message.duration = ogs_time_from_sec(10);
+    request = ogs_sbi_build_request(&message);
+    ogs_local_conf()->time.message.duration = duration;
+    ABTS_PTR_NOTNULL(tc, request);
+    if (!request) return;
+
+    rv = ogs_sbi_parse_request(&message, request);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_STR_EQUAL(tc, OGS_SBI_HTTP_METHOD_GET, message.h.method);
+    ABTS_STR_EQUAL(tc, "n5g-eir-eic", message.h.service.name);
+    ABTS_STR_EQUAL(tc, OGS_SBI_API_V1, message.h.api.version);
+    ABTS_STR_EQUAL(tc, OGS_SBI_RESOURCE_NAME_EQUIPMENT_STATUS,
+            message.h.resource.component[0]);
+    ABTS_STR_EQUAL(tc, "imeisv-4901542032375186", message.param.pei);
+    ABTS_STR_EQUAL(tc, supi, message.param.supi);
+
+    ogs_sbi_message_free(&message);
+    ogs_sbi_request_free(request);
+}
+
+static void eir_response_roundtrip(abts_case *tc, void *data)
+{
+    const eir_status_case_t *test = data;
+    OpenAPI_eir_response_data_t body;
+    ogs_sbi_message_t message, parsed;
+    ogs_sbi_response_t *response;
+    int rv;
+
+    ABTS_STR_EQUAL(tc, test->name,
+            OpenAPI_equipment_status_ToString(test->value));
+    ABTS_INT_EQUAL(tc, test->value,
+            OpenAPI_equipment_status_FromString((char *)test->name));
+
+    memset(&body, 0, sizeof(body));
+    body.status = test->value;
+    memset(&message, 0, sizeof(message));
+    message.EirResponseData = &body;
+
+    response = ogs_sbi_build_response(&message, OGS_SBI_HTTP_STATUS_OK);
+    ABTS_PTR_NOTNULL(tc, response);
+    if (!response) return;
+
+    /* The client transport normally copies the originating request header. */
+    response->h.method = ogs_strdup(OGS_SBI_HTTP_METHOD_GET);
+    response->h.uri = ogs_strdup("/n5g-eir-eic/v1/equipment-status");
+    rv = ogs_sbi_parse_response(&parsed, response);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_SBI_HTTP_STATUS_OK, parsed.res_status);
+    ABTS_STR_EQUAL(tc, OGS_SBI_CONTENT_JSON_TYPE, parsed.http.content_type);
+    ABTS_PTR_NOTNULL(tc, parsed.EirResponseData);
+    if (parsed.EirResponseData)
+        ABTS_INT_EQUAL(tc, test->value, parsed.EirResponseData->status);
+
+    ogs_sbi_message_free(&parsed);
+    ogs_sbi_response_free(response);
+}
+
+static void eir_malformed_response(abts_case *tc, void *data)
+{
+    cJSON *item = cJSON_Parse(data);
+    OpenAPI_eir_response_data_t *body;
+    int id = ogs_log_get_domain_id("core");
+    ogs_log_level_e level = ogs_log_get_domain_level(id);
+
+    ABTS_PTR_NOTNULL(tc, item);
+    if (!item) return;
+
+    if (level >= OGS_LOG_ERROR && level < OGS_LOG_DEBUG)
+        ogs_log_set_domain_level(id, OGS_LOG_FATAL);
+    body = OpenAPI_eir_response_data_parseFromJSON(item);
+    ogs_log_set_domain_level(id, level);
+    ABTS_PTR_EQUAL(tc, NULL, body);
+
+    OpenAPI_eir_response_data_free(body);
+    cJSON_Delete(item);
+}
+
+static void eir_unknown_status(abts_case *tc, void *data)
+{
+    cJSON *item = cJSON_Parse("{\"status\":\"BOGUS\"}");
+    OpenAPI_eir_response_data_t *body;
+
+    ABTS_PTR_NOTNULL(tc, item);
+    if (!item) return;
+
+    ABTS_INT_EQUAL(tc, OpenAPI_equipment_status_NULL,
+            OpenAPI_equipment_status_FromString("BOGUS"));
+    /* The generated model accepts unknown enum strings as status_NULL. */
+    body = OpenAPI_eir_response_data_parseFromJSON(item);
+    ABTS_PTR_NOTNULL(tc, body);
+    if (body)
+        ABTS_INT_EQUAL(tc, OpenAPI_equipment_status_NULL, body->status);
+
+    OpenAPI_eir_response_data_free(body);
+    cJSON_Delete(item);
+}
+
+static void eir_problem_roundtrip(abts_case *tc, void *data)
+{
+    OpenAPI_problem_details_t problem;
+    ogs_sbi_message_t message, parsed;
+    ogs_sbi_response_t *response;
+    int rv;
+
+    memset(&problem, 0, sizeof(problem));
+    problem.is_status = true;
+    problem.status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
+    problem.cause = (char *)"ERROR_EQUIPMENT_UNKNOWN";
+    memset(&message, 0, sizeof(message));
+    message.http.content_type = (char *)OGS_SBI_CONTENT_PROBLEM_TYPE;
+    message.ProblemDetails = &problem;
+
+    response = ogs_sbi_build_response(&message, problem.status);
+    ABTS_PTR_NOTNULL(tc, response);
+    if (!response) return;
+
+    /* The client transport normally copies the originating request header. */
+    response->h.method = ogs_strdup(OGS_SBI_HTTP_METHOD_GET);
+    response->h.uri = ogs_strdup("/n5g-eir-eic/v1/equipment-status");
+    rv = ogs_sbi_parse_response(&parsed, response);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, OGS_SBI_HTTP_STATUS_NOT_FOUND, parsed.res_status);
+    ABTS_STR_EQUAL(tc, OGS_SBI_CONTENT_PROBLEM_TYPE, parsed.http.content_type);
+    ABTS_PTR_NOTNULL(tc, parsed.ProblemDetails);
+    if (parsed.ProblemDetails) {
+        ABTS_TRUE(tc, parsed.ProblemDetails->is_status);
+        ABTS_INT_EQUAL(tc, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                parsed.ProblemDetails->status);
+        ABTS_STR_EQUAL(tc, "ERROR_EQUIPMENT_UNKNOWN",
+                parsed.ProblemDetails->cause);
+    }
+
+    ogs_sbi_message_free(&parsed);
+    ogs_sbi_response_free(response);
+}
+
 /* oneOf union (x-open5gs-union): SmSubsData is a bare array or an
  * ExtendedSmSubsData object on the wire, never a wrapper object */
-static void sbi_message_test11(abts_case *tc, void *data)
+static void sbi_message_test12(abts_case *tc, void *data)
 {
     const char *sm_array =
         "{\"smData\":[{\"singleNssai\":{\"sst\":1},"
@@ -1036,6 +1199,8 @@ static void sbi_message_test11(abts_case *tc, void *data)
 
 abts_suite *test_sbi_message(abts_suite *suite)
 {
+    size_t i;
+
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, sbi_message_test1, NULL);
@@ -1048,7 +1213,18 @@ abts_suite *test_sbi_message(abts_suite *suite)
     abts_run_test(suite, sbi_message_test8, NULL);
     abts_run_test(suite, sbi_message_test9, NULL);
     abts_run_test(suite, sbi_message_test10, NULL);
-    abts_run_test(suite, sbi_message_test11, NULL);
+    abts_run_test(suite, eir_query_roundtrip,
+            (void *)"imsi-001010123456789");
+    abts_run_test(suite, eir_query_roundtrip, NULL);
+    for (i = 0; i < OGS_ARRAY_SIZE(eir_status_cases); i++)
+        abts_run_test(suite, eir_response_roundtrip,
+                (void *)&eir_status_cases[i]);
+    abts_run_test(suite, eir_malformed_response, (void *)"{}");
+    abts_run_test(suite, eir_malformed_response, (void *)"{\"status\":1}");
+    abts_run_test(suite, eir_malformed_response, (void *)"{\"status\":null}");
+    abts_run_test(suite, eir_unknown_status, NULL);
+    abts_run_test(suite, eir_problem_roundtrip, NULL);
+    abts_run_test(suite, sbi_message_test12, NULL);
 
     return suite;
 }
