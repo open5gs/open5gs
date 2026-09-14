@@ -2593,6 +2593,11 @@ void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object)
         ogs_error("SBI running [%d]", ogs_list_count(&sbi_object->xact_list));
         ogs_list_for_each(&sbi_object->xact_list, xact)
             OGS_SBI_XACT_LOG(xact);
+
+        /* The object is being freed, so a late response can no longer be
+         * matched to these transactions. Drop them here, otherwise the
+         * transaction, its request and its timer are leaked. */
+        ogs_sbi_xact_remove_all(sbi_object);
     }
 
     for (i = 0; i < OGS_SBI_MAX_NUM_OF_SERVICE_NAME; i++) {
