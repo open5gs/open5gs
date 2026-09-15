@@ -513,6 +513,12 @@ void smf_gsm_state_wait_epc_auth_initial(ogs_fsm_t *s, smf_event_t *e)
             sess->sm_data.s6b_aar_in_flight = false;
             sess->sm_data.s6b_aaa_err = s6b_message->result_code;
             if (s6b_message->result_code == ER_DIAMETER_SUCCESS) {
+                if (!gtp_xact) {
+                    ogs_warn("[%s] S6B AAA: GTP transaction [%d] "
+                            "already removed",
+                            sess->gx_sid, e->gtp_xact_id);
+                    return;
+                }
                 send_ccr_init_req_gx_gy(sess, gtp_xact);
                 return;
             }
@@ -529,7 +535,13 @@ void smf_gsm_state_wait_epc_auth_initial(ogs_fsm_t *s, smf_event_t *e)
         case OGS_DIAM_GX_CMD_CODE_CREDIT_CONTROL:
             switch(gx_message->cc_request_type) {
             case OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
-                ogs_assert(gtp_xact);
+                if (!gtp_xact) {
+                    ogs_warn("[%s] Gx CCA-Initial: GTP transaction [%d] "
+                            "already removed",
+                            sess->gx_sid, e->gtp_xact_id);
+                    sess->sm_data.gx_ccr_init_in_flight = false;
+                    return;
+                }
                 diam_err = smf_gx_handle_cca_initial_request(sess,
                                 gx_message, gtp_xact);
                 sess->sm_data.gx_ccr_init_in_flight = false;
@@ -549,7 +561,13 @@ void smf_gsm_state_wait_epc_auth_initial(ogs_fsm_t *s, smf_event_t *e)
         case OGS_DIAM_GY_CMD_CODE_CREDIT_CONTROL:
             switch(gy_message->cc_request_type) {
             case OGS_DIAM_GY_CC_REQUEST_TYPE_INITIAL_REQUEST:
-                ogs_assert(gtp_xact);
+                if (!gtp_xact) {
+                    ogs_warn("[%s] Gy CCA-Initial: GTP transaction [%d] "
+                            "already removed",
+                            sess->gy_sid, e->gtp_xact_id);
+                    sess->sm_data.gy_ccr_init_in_flight = false;
+                    return;
+                }
                 diam_err = smf_gy_handle_cca_initial_request(sess,
                                 gy_message, gtp_xact, &need_gy_terminate);
                 sess->sm_data.gy_ccr_init_in_flight = false;
@@ -577,12 +595,21 @@ test_can_proceed:
 
         if (diam_err == ER_DIAMETER_SUCCESS) {
             OGS_FSM_TRAN(s, smf_gsm_state_wait_pfcp_establishment);
-            ogs_assert(gtp_xact);
+            if (!gtp_xact) {
+                ogs_error("GTP transaction already removed but "
+                        "EPC auth succeeded");
+                return;
+            }
             ogs_assert(OGS_OK ==
                 smf_epc_pfcp_send_session_establishment_request(
                     sess,
                     gtp_xact ? gtp_xact->id : OGS_INVALID_POOL_ID, 0));
         } else {
+            if (!gtp_xact) {
+                ogs_warn("GTP transaction already removed, "
+                        "cannot send error response");
+                return;
+            }
             /* Tear down Gx/Gy session if its sm_data.*init_err == ER_DIAMETER_SUCCESS */
             if (sess->sm_data.gx_cca_init_err == ER_DIAMETER_SUCCESS) {
                 sess->sm_data.gx_ccr_term_in_flight = true;
