@@ -101,7 +101,7 @@ uint32_t ogs_tlv_value_32(ogs_tlv_t *tlv)
     uint32_t u_32;
     uint8_t *v = tlv->value;
 
-    u_32 = ((v[0] << 24) & 0xff000000) |
+    u_32 = (((uint32_t)v[0] << 24) & 0xff000000) |
            ((v[1] << 16) & 0x00ff0000) |
            ((v[2] <<  8) & 0x0000ff00) |
            ((v[3]      ) & 0x000000ff);

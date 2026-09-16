@@ -50,14 +50,12 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 
     if (GTP_VERSION(Data[0]) == OGS_GTP1_VERSION_1) {
         /* GTPv1 */
-        if (Size >= 8) {
-            ogs_gtp1_message_t gtp1_message;
-            ogs_gtp1_parse_msg(&gtp1_message, pkbuf);
-        }
+        ogs_gtp1_message_t gtp1_message;
+        ogs_gtp1_parse_msg(&gtp1_message, pkbuf);
     } else {
         /* GTPv2 */
-        ogs_gtp2_message_t gtp_message;
-        ogs_gtp2_parse_msg(&gtp_message, pkbuf);
+        ogs_gtp2_message_t gtp2_message;
+        ogs_gtp2_parse_msg(&gtp2_message, pkbuf);
     }
 
     ogs_pkbuf_free(pkbuf);

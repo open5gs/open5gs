@@ -547,7 +547,7 @@ static int tlv_parse_leaf(void *msg, ogs_tlv_desc_t *desc, ogs_tlv_t *tlv)
             ogs_error("Invalid TLV length %d. It should be 4", tlv->length);
             return OGS_ERROR;
         }
-        v->u32 = ((((uint8_t*)tlv->value)[0]<<24)&0xff000000) |
+        v->u32 = (((uint32_t)((uint8_t*)tlv->value)[0]<<24)&0xff000000) |
                ((((uint8_t*)tlv->value)[1]<<16)&0x00ff0000) |
                ((((uint8_t*)tlv->value)[2]<< 8)&0x0000ff00) |
                ((((uint8_t*)tlv->value)[3]    )&0x000000ff);

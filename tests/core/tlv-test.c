@@ -541,7 +541,7 @@ static void test5_func(abts_case *tc, void *data)
     uint8_t parent_block[4000];
     uint8_t *pos = NULL;
     uint16_t c_16 = 0x1122;
-    uint32_t c_32 = 0x11223344;
+    uint32_t c_32 = 0x81223344U;
     uint8_t mode = (uintptr_t)data;
 
     /* tlv encoding for test */
@@ -571,7 +571,7 @@ static void test5_func(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, *(pos++), 20);
         ABTS_INT_EQUAL(tc, *(pos++), 0);
         ABTS_INT_EQUAL(tc, *(pos++), 4);
-        ABTS_INT_EQUAL(tc, *(pos++), 0x11);
+        ABTS_INT_EQUAL(tc, *(pos++), 0x81);
         ABTS_INT_EQUAL(tc, *(pos++), 0x22);
         ABTS_INT_EQUAL(tc, *(pos++), 0x33);
         ABTS_INT_EQUAL(tc, *(pos++), 0x44);
@@ -585,7 +585,7 @@ static void test5_func(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, *(pos++), 20);
         ABTS_INT_EQUAL(tc, *(pos++), 0);
         ABTS_INT_EQUAL(tc, *(pos++), 4);
-        ABTS_INT_EQUAL(tc, *(pos++), 0x11);
+        ABTS_INT_EQUAL(tc, *(pos++), 0x81);
         ABTS_INT_EQUAL(tc, *(pos++), 0x22);
         ABTS_INT_EQUAL(tc, *(pos++), 0x33);
         ABTS_INT_EQUAL(tc, *(pos++), 0x44);
@@ -601,7 +601,7 @@ static void test5_func(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, *(pos++), 0);
         ABTS_INT_EQUAL(tc, *(pos++), 4);
         ABTS_INT_EQUAL(tc, *(pos++), 0);
-        ABTS_INT_EQUAL(tc, *(pos++), 0x11);
+        ABTS_INT_EQUAL(tc, *(pos++), 0x81);
         ABTS_INT_EQUAL(tc, *(pos++), 0x22);
         ABTS_INT_EQUAL(tc, *(pos++), 0x33);
         ABTS_INT_EQUAL(tc, *(pos++), 0x44);
@@ -613,7 +613,7 @@ static void test5_func(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, *(pos++), 0x22);
         ABTS_INT_EQUAL(tc, *(pos++), 20);
         ABTS_INT_EQUAL(tc, *(pos++), 4);
-        ABTS_INT_EQUAL(tc, *(pos++), 0x11);
+        ABTS_INT_EQUAL(tc, *(pos++), 0x81);
         ABTS_INT_EQUAL(tc, *(pos++), 0x22);
         ABTS_INT_EQUAL(tc, *(pos++), 0x33);
         ABTS_INT_EQUAL(tc, *(pos++), 0x44);
@@ -627,12 +627,48 @@ static void test5_func(abts_case *tc, void *data)
         mode);
     ABTS_INT_EQUAL(tc, ogs_tlv_value_16(p_tlv), 0x1122);
     p_tlv = parsed_tlv->next;
-    ABTS_INT_EQUAL(tc, ogs_tlv_value_32(p_tlv), 0x11223344);
+    ABTS_SIZE_EQUAL(tc, 0x81223344U, ogs_tlv_value_32(p_tlv));
 
     ogs_tlv_free_all(parsed_tlv);
     ABTS_INT_EQUAL(tc, ogs_tlv_pool_avail(), ogs_core()->tlv.pool);
 
     return;
+}
+
+typedef struct _tlv_uint32_message_t {
+    ogs_tlv_uint32_t value;
+} tlv_uint32_message_t;
+
+static ogs_tlv_desc_t tlv_desc_uint32_value = {
+    OGS_TLV_UINT32, "UInt32 Value", 1, 4, 0,
+    sizeof(ogs_tlv_uint32_t), { NULL }
+};
+
+static ogs_tlv_desc_t tlv_desc_uint32_message = {
+    OGS_TLV_MESSAGE, "UInt32 Message", 0, 0, 0, 0,
+    { &tlv_desc_uint32_value, NULL }
+};
+
+static void test_uint32_func(abts_case *tc, void *data)
+{
+    static const uint8_t encoded[] =
+        { 1, 0, 4, 0, 0x81, 0x22, 0x33, 0x44 };
+    tlv_uint32_message_t message;
+    ogs_pkbuf_t *pkbuf = NULL;
+    int rv;
+
+    pkbuf = ogs_pkbuf_alloc(NULL, sizeof(encoded));
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    ogs_pkbuf_put_data(pkbuf, encoded, sizeof(encoded));
+
+    memset(&message, 0, sizeof(message));
+    rv = ogs_tlv_parse_msg(&message, &tlv_desc_uint32_message, pkbuf,
+            OGS_TLV_MODE_T1_L2_I1);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ABTS_INT_EQUAL(tc, 1, message.value.presence);
+    ABTS_SIZE_EQUAL(tc, 0x81223344U, message.value.u32);
+
+    ogs_pkbuf_free(pkbuf);
 }
 
 /* Sample header for tlv_msg */
@@ -1146,6 +1182,7 @@ abts_suite *test_tlv(abts_suite *suite)
     abts_run_test(suite, test5_func, (void*)OGS_TLV_MODE_T1_L2_I1);
 
     abts_run_test(suite, test6_func, NULL);
+    abts_run_test(suite, test_uint32_func, NULL);
 
     /*
      * The cases below feed truncated and over-long blocks to the parser
