@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2026-06-27 11:33:22.424250 by acetcom
+ * Created on: 2026-09-17 08:36:59.869497 by acetcom
  * from r19.6.2/24501-j62-ch8-ch9.docx
  ******************************************************************************/
 
@@ -5591,8 +5591,14 @@ int ogs_nas_5gs_decode_session_ambr(ogs_nas_session_ambr_t *session_ambr, ogs_pk
     if (sizeof(*session_ambr) < size) return -1;
     memcpy(session_ambr, pkbuf->data - size, size);
 
-    session_ambr->downlink.value = be16toh(source->downlink.value);
-    session_ambr->uplink.value = be16toh(source->uplink.value);
+    if (size != (int)sizeof(*session_ambr)) {
+        ogs_error("Invalid Session-AMBR length [%d]",
+                session_ambr->length);
+        return -1;
+    }
+
+    session_ambr->downlink.value = be16toh(session_ambr->downlink.value);
+    session_ambr->uplink.value = be16toh(session_ambr->uplink.value);
 
     ogs_trace("  SESSION_AMBR - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);

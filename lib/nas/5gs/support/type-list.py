@@ -43,8 +43,13 @@ type_list["DNN"]["encode"] = \
 "    size = target.length + sizeof(target.length);\n\n"
 
 type_list["Session-AMBR"]["decode"] = \
-"    session_ambr->downlink.value = be16toh(source->downlink.value);\n" \
-"    session_ambr->uplink.value = be16toh(source->uplink.value);\n\n"
+"    if (size != (int)sizeof(*session_ambr)) {\n" \
+"        ogs_error(\"Invalid Session-AMBR length [%d]\",\n" \
+"                session_ambr->length);\n" \
+"        return -1;\n" \
+"    }\n\n" \
+"    session_ambr->downlink.value = be16toh(session_ambr->downlink.value);\n" \
+"    session_ambr->uplink.value = be16toh(session_ambr->uplink.value);\n\n"
 
 type_list["Session-AMBR"]["encode"] = \
 "    target.downlink.value = htobe16(session_ambr->downlink.value);\n" \
