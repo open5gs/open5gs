@@ -635,60 +635,82 @@ static int pcrf_gx_ccr_cb(struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    if (cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST ||
-        cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_UPDATE_REQUEST) {
-
+    /*
+     * Framed-Route / Framed-IPv6-Route (Open5GS extension)
+     *
+     * In EPC the PCRF is the only NF that can hand the subscriber's
+     * framed routes to the PGW-C, so they are sent here in the CCA.
+     * TS 29.212 does not define these AVPs for Gx. The value is the
+     * RFC 2865/3162 "<prefix> <gateway> <metric>" string, built from the
+     * CIDR stored in the database. Sent with the CCA-Initial only: the
+     * PGW-C stores them when the session is created (src/smf/gx-handler.c)
+     * and does not apply changes afterwards.
+     * See the comment on ogs_session_t in lib/proto/types.h.
+     */
+    if (cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST) {
         for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
-            const char *route;
+            char *value = NULL;
 
             if (!gx_message.session_data.session.ipv4_framed_routes ||
                 !gx_message.session_data.session.ipv4_framed_routes[i])
                 break;
-            route = gx_message.session_data.session.ipv4_framed_routes[i];
+            value = ogs_framed_route_build(
+                    gx_message.session_data.session.ipv4_framed_routes[i]);
 
             ret = fd_msg_avp_new(ogs_diam_gx_framed_route, 0, &avp);
             if (ret != 0) {
                 ogs_error("Failed to create Framed-Route AVP");
+                ogs_free(value);
                 error_occurred = 1;
                 goto out;
             }
-            val.os.data = (uint8_t *)route;
-            val.os.len = strlen(route);
+            val.os.data = (uint8_t *)value;
+            val.os.len = strlen(value);
             ret = fd_msg_avp_setvalue(avp, &val);
             if (ret != 0 ||
                 fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) != 0) {
                 ogs_error("Failed to add Framed-Route AVP");
+                ogs_free(value);
                 error_occurred = 1;
                 goto out;
             }
-            ogs_debug("Gx CCA add Framed-Route: %s", route);
+            ogs_info("Gx CCA add Framed-Route: %s", value);
+            ogs_free(value);
         }
 
         for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
-            const char *route;
+            char *value = NULL;
 
             if (!gx_message.session_data.session.ipv6_framed_routes ||
                 !gx_message.session_data.session.ipv6_framed_routes[i])
                 break;
-            route = gx_message.session_data.session.ipv6_framed_routes[i];
+            value = ogs_framed_route_build(
+                    gx_message.session_data.session.ipv6_framed_routes[i]);
 
             ret = fd_msg_avp_new(ogs_diam_gx_framed_ipv6_route, 0, &avp);
             if (ret != 0) {
                 ogs_error("Failed to create Framed-IPv6-Route AVP");
+                ogs_free(value);
                 error_occurred = 1;
                 goto out;
             }
-            val.os.data = (uint8_t *)route;
-            val.os.len = strlen(route);
+            val.os.data = (uint8_t *)value;
+            val.os.len = strlen(value);
             ret = fd_msg_avp_setvalue(avp, &val);
             if (ret != 0 ||
                 fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) != 0) {
                 ogs_error("Failed to add Framed-IPv6-Route AVP");
+                ogs_free(value);
                 error_occurred = 1;
                 goto out;
             }
-            ogs_debug("Gx CCA add Framed-IPv6-Route: %s", route);
+            ogs_info("Gx CCA add Framed-IPv6-Route: %s", value);
+            ogs_free(value);
         }
+    }
+
+    if (cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST ||
+        cc_request_type == OGS_DIAM_GX_CC_REQUEST_TYPE_UPDATE_REQUEST) {
 
         for (i = 0; i < gx_message.session_data.num_of_pcc_rule; i++) {
             ogs_pcc_rule_t *pcc_rule = &gx_message.session_data.pcc_rule[i];

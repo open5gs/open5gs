@@ -61,6 +61,18 @@ uint32_t smf_gx_handle_cca_initial_request(
         OGS_STORE_PCC_RULE(&sess->policy.pcc_rule[i],
                 &gx_message->session_data.pcc_rule[i]);
 
+    /*
+     * Framed routes from the PCRF (Gx CCA, Open5GS extension)
+     *
+     * This is the EPC counterpart of smf_nudm_sdm_handle_get() in
+     * src/smf/nudm-handler.c, where the 5GC SMF gets the same data from
+     * the UDM. Both end up in sess->session.*_framed_routes as prefixes
+     * so the PDR code below and smf_sess_remove() are shared. See the
+     * comment on ogs_session_t in lib/proto/types.h.
+     *
+     * Any previous value is released first so a repeated CCA-Initial
+     * cannot leak.
+     */
     if (sess->session.ipv4_framed_routes) {
         for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI &&
                 sess->session.ipv4_framed_routes[i]; i++)
@@ -78,7 +90,7 @@ uint32_t smf_gx_handle_cca_initial_request(
             sess->session.ipv4_framed_routes[i] = ogs_strdup(
                     gx_message->session_data.session.ipv4_framed_routes[i]);
             ogs_assert(sess->session.ipv4_framed_routes[i]);
-            ogs_debug("SMF session IPv4 framed route: %s",
+            ogs_info("SMF session IPv4 framed route: %s",
                     sess->session.ipv4_framed_routes[i]);
         }
     }
@@ -100,7 +112,7 @@ uint32_t smf_gx_handle_cca_initial_request(
             sess->session.ipv6_framed_routes[i] = ogs_strdup(
                     gx_message->session_data.session.ipv6_framed_routes[i]);
             ogs_assert(sess->session.ipv6_framed_routes[i]);
-            ogs_debug("SMF session IPv6 framed route: %s",
+            ogs_info("SMF session IPv6 framed route: %s",
                     sess->session.ipv6_framed_routes[i]);
         }
     }
@@ -205,6 +217,20 @@ uint32_t smf_gx_handle_cca_initial_request(
         ogs_pfcp_paa_to_ue_ip_addr(&sess->paa,
             &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
 
+    /*
+     * Framed routes in the PDI (TS 29.244 Framed-Route / Framed-IPv6-Route)
+     *
+     * Same as the 5GC path in src/smf/npcf-handler.c: the routes go into
+     * both the DL PDR (so the UPF can find this session for packets
+     * destined to the routed subnet) and the UL PDR (so the UPF accepts
+     * packets whose source is in the subnet). Only the default bearer's
+     * PDRs carry them; dedicated bearers created later do not.
+     *
+     * The PDR holds the RFC 2865/3162 wire string, which lib/pfcp/build.c
+     * copies into the IE as is. The UPF must have advertised FRRT in its
+     * UP Function Features, otherwise the IEs are skipped and traffic
+     * to/from the subnet will not flow.
+     */
     if ((sess->session.ipv4_framed_routes ||
          sess->session.ipv6_framed_routes) &&
         !sess->pfcp_node->up_function_features.frrt) {
@@ -223,12 +249,12 @@ uint32_t smf_gx_handle_cca_initial_request(
         ogs_assert(ul_pdr->ipv4_framed_routes);
         for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI &&
                 sess->session.ipv4_framed_routes[i]; i++) {
-            dl_pdr->ipv4_framed_routes[i] =
-                ogs_strdup(sess->session.ipv4_framed_routes[i]);
-            ul_pdr->ipv4_framed_routes[i] =
-                ogs_strdup(sess->session.ipv4_framed_routes[i]);
-            ogs_debug("PFCP DL/UL PDR IPv4 framed route: %s",
+            dl_pdr->ipv4_framed_routes[i] = ogs_framed_route_build(
                     sess->session.ipv4_framed_routes[i]);
+            ul_pdr->ipv4_framed_routes[i] = ogs_framed_route_build(
+                    sess->session.ipv4_framed_routes[i]);
+            ogs_info("PFCP DL/UL PDR IPv4 framed route: %s",
+                    dl_pdr->ipv4_framed_routes[i]);
         }
     }
 
@@ -244,12 +270,12 @@ uint32_t smf_gx_handle_cca_initial_request(
         ogs_assert(ul_pdr->ipv6_framed_routes);
         for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI &&
                 sess->session.ipv6_framed_routes[i]; i++) {
-            dl_pdr->ipv6_framed_routes[i] =
-                ogs_strdup(sess->session.ipv6_framed_routes[i]);
-            ul_pdr->ipv6_framed_routes[i] =
-                ogs_strdup(sess->session.ipv6_framed_routes[i]);
-            ogs_debug("PFCP DL/UL PDR IPv6 framed route: %s",
+            dl_pdr->ipv6_framed_routes[i] = ogs_framed_route_build(
                     sess->session.ipv6_framed_routes[i]);
+            ul_pdr->ipv6_framed_routes[i] = ogs_framed_route_build(
+                    sess->session.ipv6_framed_routes[i]);
+            ogs_info("PFCP DL/UL PDR IPv6 framed route: %s",
+                    dl_pdr->ipv6_framed_routes[i]);
         }
     }
 

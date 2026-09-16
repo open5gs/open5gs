@@ -270,6 +270,15 @@ int ogs_dict_gx_entry(char *conffile)
       {  { .avp_vendor = 10415, .avp_name = "Usage-Monitoring-Information" }, RULE_OPTIONAL, -1, -1 },
       {  { .avp_vendor = 10415, .avp_name = "CSG-Information-Reporting" }, RULE_OPTIONAL, -1, -1 },
       {  { .avp_vendor = 10415, .avp_name = "User-CSG-Information" }, RULE_OPTIONAL, -1, 1 },
+      /*
+       * Open5GS extension: TS 29.212 does not define Framed-Route or
+       * Framed-IPv6-Route in the CCA. The Open5GS PCRF uses them to deliver
+       * the subscriber's framed routes to the PGW-C, since EPC has no
+       * standard path (S6a/GTPv2) for them. Both AVPs come from the NASREQ
+       * dictionary (RFC 7155), loaded via dict_nasreq.fdx, and carry the
+       * RFC 2865/3162 "<prefix> <gateway> <metric>" string.
+       * See the comment on ogs_session_t in lib/proto/types.h.
+       */
       {  {                      .avp_name = "Framed-Route" }, RULE_OPTIONAL, -1, -1 },
       {  {                      .avp_name = "Framed-IPv6-Route" }, RULE_OPTIONAL, -1, -1 },
       {  {                      .avp_name = "Error-Message" }, RULE_OPTIONAL, -1, 1 },

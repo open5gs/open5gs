@@ -792,6 +792,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     int cleanup_needed = 0;
     int num_of_ipv4_framed_routes = 0;
     int num_of_ipv6_framed_routes = 0;
+    char *framed_route = NULL;
 
     ogs_debug("[Credit-Control-Answer]");
 
@@ -1100,6 +1101,15 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
         case OGS_DIAM_GX_AVP_CODE_DEFAULT_EPS_BEARER_QOS:
             /* Already processed above */
             break;
+        /*
+         * Framed-Route / Framed-IPv6-Route (Open5GS extension)
+         *
+         * Sent by the Open5GS PCRF because EPC has no standard way to
+         * deliver framed routes to the PGW-C (see the comment on
+         * ogs_session_t in lib/proto/types.h). A third-party PCRF may
+         * send them too. The RFC 2865/3162 value is reduced to a prefix
+         * here; only the CCA-Initial values are used (src/smf/gx-handler.c).
+         */
         case OGS_DIAM_GX_AVP_CODE_FRAMED_ROUTE:
             if (num_of_ipv4_framed_routes >=
                     OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI) {
@@ -1114,15 +1124,16 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
                 ogs_assert(gx_message->session_data.session.
                         ipv4_framed_routes);
             }
-            gx_message->session_data.session.ipv4_framed_routes
-                [num_of_ipv4_framed_routes] = ogs_strndup(
+            framed_route = ogs_framed_route_parse(
                     (char *)hdr->avp_value->os.data,
                     hdr->avp_value->os.len);
-            ogs_assert(gx_message->session_data.session.ipv4_framed_routes
-                    [num_of_ipv4_framed_routes]);
-            ogs_debug("Gx CCA received Framed-Route: %s",
-                    gx_message->session_data.session.ipv4_framed_routes
-                        [num_of_ipv4_framed_routes]);
+            if (!framed_route) {
+                ogs_error("Ignoring empty or invalid Framed-Route AVP");
+                break;
+            }
+            gx_message->session_data.session.ipv4_framed_routes
+                [num_of_ipv4_framed_routes] = framed_route;
+            ogs_info("Gx CCA received Framed-Route: %s", framed_route);
             num_of_ipv4_framed_routes++;
             break;
         case OGS_DIAM_GX_AVP_CODE_FRAMED_IPV6_ROUTE:
@@ -1139,15 +1150,16 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
                 ogs_assert(gx_message->session_data.session.
                         ipv6_framed_routes);
             }
-            gx_message->session_data.session.ipv6_framed_routes
-                [num_of_ipv6_framed_routes] = ogs_strndup(
+            framed_route = ogs_framed_route_parse(
                     (char *)hdr->avp_value->os.data,
                     hdr->avp_value->os.len);
-            ogs_assert(gx_message->session_data.session.ipv6_framed_routes
-                    [num_of_ipv6_framed_routes]);
-            ogs_debug("Gx CCA received Framed-IPv6-Route: %s",
-                    gx_message->session_data.session.ipv6_framed_routes
-                        [num_of_ipv6_framed_routes]);
+            if (!framed_route) {
+                ogs_error("Ignoring empty or invalid Framed-IPv6-Route AVP");
+                break;
+            }
+            gx_message->session_data.session.ipv6_framed_routes
+                [num_of_ipv6_framed_routes] = framed_route;
+            ogs_info("Gx CCA received Framed-IPv6-Route: %s", framed_route);
             num_of_ipv6_framed_routes++;
             break;
         case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_INSTALL:

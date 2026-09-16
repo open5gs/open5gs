@@ -255,6 +255,21 @@ done:
             BSON_ITER_HOLDS_ARRAY(&child4_iter)) {
             int i = 0;
 
+            /*
+             * Framed routes are subscriber data and the same field is also
+             * parsed by ogs_dbi_subscription_data() (lib/dbi/subscription.c).
+             * They are read here as well because in EPC only the PCRF can
+             * deliver them to the PGW-C: S6a and GTPv2 have no room for them,
+             * so the PCRF sends them in the Gx CCA (Framed-Route /
+             * Framed-IPv6-Route). See the comment on ogs_session_t in
+             * lib/proto/types.h.
+             *
+             * The PCF also goes through this function but does not use the
+             * result: in 5GC the SMF gets framed routes from the UDM.
+             *
+             * session_data is memset() by the caller, so there is nothing to
+             * free before allocating.
+             */
             session->ipv4_framed_routes = ogs_calloc(
                     OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
                     sizeof(session->ipv4_framed_routes[0]));
@@ -276,6 +291,7 @@ done:
             BSON_ITER_HOLDS_ARRAY(&child4_iter)) {
             int i = 0;
 
+            /* Same as ipv4_framed_routes above */
             session->ipv6_framed_routes = ogs_calloc(
                     OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
                     sizeof(session->ipv6_framed_routes[0]));

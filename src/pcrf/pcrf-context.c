@@ -452,12 +452,18 @@ int pcrf_db_qos_data(
                     imsi_bcd, apn);
     }
 
+    /*
+     * Framed routes are only available from MongoDB. policy.yaml
+     * (ogs_app_config_session_data() above) is matched by supi_range and
+     * cannot hold per-subscriber routes, so nothing is logged here in the
+     * DB-less case. See OGS_STORE_SESSION_DATA in lib/proto/types.h.
+     */
     if (rv == OGS_OK) {
         for (i = 0; i < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; i++) {
             if (!session_data->session.ipv4_framed_routes ||
                 !session_data->session.ipv4_framed_routes[i])
                 break;
-            ogs_debug("DB IPv4 framed route IMSI[%s] APN[%s]: %s",
+            ogs_info("DB IPv4 framed route IMSI[%s] APN[%s]: %s",
                     imsi_bcd, apn,
                     session_data->session.ipv4_framed_routes[i]);
         }
@@ -465,7 +471,7 @@ int pcrf_db_qos_data(
             if (!session_data->session.ipv6_framed_routes ||
                 !session_data->session.ipv6_framed_routes[i])
                 break;
-            ogs_debug("DB IPv6 framed route IMSI[%s] APN[%s]: %s",
+            ogs_info("DB IPv6 framed route IMSI[%s] APN[%s]: %s",
                     imsi_bcd, apn,
                     session_data->session.ipv6_framed_routes[i]);
         }

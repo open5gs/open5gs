@@ -668,10 +668,83 @@ typedef struct ogs_session_s {
     ogs_bitrate_t ambr; /* APN-AMBR */
 
     ogs_ip_t ue_ip;
+
+    /*
+     * Framed Routes
+     *
+     * Subnets routed behind the UE. This is subscriber data: each UE has
+     * its own subnets, so it is stored per session in the subscriber
+     * document (subscribers.slice[].session[].ipv4_framed_routes and
+     * .ipv6_framed_routes) - there is only one place to provision it.
+     *
+     * What differs between 5GC and EPC is which NF delivers it to the
+     * SMF/PGW-C, because the specifications only give us a carrier in 5GC:
+     *
+     * - 5GC : UDR reads it (lib/dbi/subscription.c) and UDM sends it to
+     *         the SMF in SessionManagementSubscriptionData
+     *         (dnnConfigurations[].ipv4FrameRouteList/ipv6FrameRouteList,
+     *         TS 29.503). See src/smf/nudm-handler.c.
+     * - EPC : Neither S6a APN-Configuration (TS 29.272) nor GTPv2
+     *         Create Session Request (TS 29.274) can carry it, so the HSS
+     *         and MME cannot deliver it. Instead the PCRF reads the same
+     *         document (lib/dbi/session.c) and sends it in the Gx CCA
+     *         with Framed-Route/Framed-IPv6-Route AVPs. This is an
+     *         Open5GS extension, not part of TS 29.212.
+     *         See src/pcrf/pcrf-gx-path.c and src/smf/gx-path.c.
+     *
+     * Once stored here, both cores use the same code to put the routes
+     * into the DL/UL PDRs of the default bearer/QoS flow, and the UPF
+     * uses them for DL session lookup and UL source address validation.
+     *
+     * Format: these session arrays store route prefixes without a gateway
+     * or metric, normally in CIDR notation ("a.b.c.d/n" or "x::/n"). An
+     * IPv4 address received without a length gets its classful default;
+     * an omitted IPv6 length is left for the UPF to interpret. MongoDB
+     * and the UDM supply the prefixes. PDR arrays instead hold the wire
+     * string used by the Gx AVPs and PFCP Framed-Route/Framed-IPv6-Route
+     * IEs (TS 29.244 8.2.109/8.2.111): the RFC 2865/3162 value
+     * "<prefix> <gateway> <metric>".
+     * Use ogs_framed_route_build() when sending and
+     * ogs_framed_route_parse() when receiving. The parser also accepts
+     * plain CIDR, which is what Open5GS sent before the wire format was
+     * fixed, so upgrade the UPF first, then the SMF and PCRF: an old UPF
+     * rejects the new string, and an old SMF forwards a new PCRF's string
+     * to the UPF unchanged.
+     *
+     * Arrays of OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI entries; used entries
+     * come first and are ogs_strdup()ed, the rest are NULL (there is no
+     * NULL sentinel when the array is full, so loops must check the index
+     * as well).
+     */
     char **ipv4_framed_routes;
     char **ipv6_framed_routes;
+
     ogs_ip_t smf_ip;
 } ogs_session_t;
+
+/*
+ * Route prefix <-> RFC 2865 5.22 / RFC 3162 2.5 Framed-Route value
+ *
+ * ogs_framed_route_build("192.168.100.0/24") -> "192.168.100.0/24 0.0.0.0 1"
+ * ogs_framed_route_build("2001:db8::/64")    -> "2001:db8::/64 :: 1"
+ *
+ * The parser takes a non-NULL value and its byte length, excluding any
+ * terminating NUL. No NUL terminator is required. It extracts the prefix
+ * before the first space; gateway and metrics are ignored. Bare prefixes
+ * are accepted for compatibility with older Open5GS peers.
+ *
+ * An IPv4 address without a length must be a valid dotted quad in class
+ * A/B/C; its default length is 8/16/24 bits. Empty prefixes, embedded NULs
+ * and IPv4 addresses for which no classful default can be derived return
+ * NULL. An IPv6 prefix without a length is left unchanged, not assigned
+ * an RFC-defined default. Subnet validation remains the caller's job.
+ *
+ * The builder expects a prefix, not an already formatted wire value.
+ * Both return an ogs_malloc()ed string on success; release with ogs_free().
+ * The parser's caller decides whether to skip an invalid route or fail.
+ */
+char *ogs_framed_route_build(const char *cidr);
+char *ogs_framed_route_parse(const char *value, int length);
 
 int ogs_fqdn_build(char *dst, const char *src, int len);
 int ogs_fqdn_parse(char *dst, const char *src, int len);
@@ -912,6 +985,17 @@ typedef struct ogs_session_data_s {
     int num_of_pcc_rule;
 } ogs_session_data_t;
 
+/*
+ * Deep copy of ogs_session_data_t. Used by the DB-less policy
+ * configuration (lib/app/ogs-config.c) to hand a policy.yaml entry to
+ * the PCF/PCRF.
+ *
+ * Framed routes are copied here for completeness, but policy.yaml does
+ * not carry them: policy entries are matched by supi_range and framed
+ * routes are per-subscriber, so there is no sensible place for them in a
+ * range profile. As a result framed routes in EPC currently require
+ * MongoDB (the PCRF reads them via ogs_dbi_session_data()).
+ */
 #define OGS_STORE_SESSION_DATA(__dST, __sRC) \
     do { \
         int rv, j; \

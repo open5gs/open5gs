@@ -44,6 +44,8 @@ extern "C" {
 #define OGS_DIAM_GX_AVP_CODE_QOS_INFORMATION                (1016)
 #define OGS_DIAM_GX_AVP_CODE_PRECEDENCE                     (1010)
 #define OGS_DIAM_GX_AVP_CODE_RATING_GROUP                   (432)
+/* NASREQ (RFC 7155) AVPs carried in the CCA as an Open5GS extension
+ * to deliver framed routes in EPC. See lib/diameter/gx/dict.c */
 #define OGS_DIAM_GX_AVP_CODE_FRAMED_ROUTE                   (22)
 #define OGS_DIAM_GX_AVP_CODE_FRAMED_IPV6_ROUTE              (99)
 

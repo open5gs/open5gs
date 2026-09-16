@@ -256,6 +256,13 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_stream_t *stream,
                 }
             }
 
+            /*
+             * Framed routes from the UDM (TS 29.503 ipv4FrameRouteList /
+             * ipv6FrameRouteList, plain CIDR). This is the 5GC way; the EPC
+             * PGW-C gets the same data from the PCRF over Gx instead - see
+             * src/smf/gx-handler.c and the comment on ogs_session_t in
+             * lib/proto/types.h.
+             */
             ipv4FrameRouteList = dnnConfiguration->ipv4_frame_route_list;
             if (ipv4FrameRouteList) {
                 int i;

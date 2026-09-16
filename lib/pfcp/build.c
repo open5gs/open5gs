@@ -362,7 +362,7 @@ void ogs_pfcp_build_create_pdr(
         message->pdi.framed_route[j].presence = 1;
         message->pdi.framed_route[j].data = pdr->ipv4_framed_routes[j];
         message->pdi.framed_route[j].len = strlen(pdr->ipv4_framed_routes[j]);
-        ogs_debug("PFCP encode Framed-Route in PDR[%u]: %s",
+        ogs_info("PFCP encode Framed-Route in PDR[%u]: %s",
                 pdr->id, pdr->ipv4_framed_routes[j]);
     }
 
@@ -372,7 +372,7 @@ void ogs_pfcp_build_create_pdr(
         message->pdi.framed_ipv6_route[j].presence = 1;
         message->pdi.framed_ipv6_route[j].data = pdr->ipv6_framed_routes[j];
         message->pdi.framed_ipv6_route[j].len = strlen(pdr->ipv6_framed_routes[j]);
-        ogs_debug("PFCP encode Framed-IPv6-Route in PDR[%u]: %s",
+        ogs_info("PFCP encode Framed-IPv6-Route in PDR[%u]: %s",
                 pdr->id, pdr->ipv6_framed_routes[j]);
     }
 

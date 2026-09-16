@@ -661,12 +661,26 @@ static void add_framed_route_to_trie(ogs_ipsubnet_t *route, upf_sess_t *sess)
     }
 }
 
+/*
+ * The PFCP Framed-Route / Framed-IPv6-Route IE carries the RFC 2865/3162
+ * "<prefix> <gateway> <metric>" string (TS 29.244 8.2.109/8.2.111).
+ * ogs_framed_route_parse() drops gateway and metric and also accepts the
+ * plain CIDR that older Open5GS SMFs send. Only the prefix is used: the
+ * next hop for the subnet is always the UE itself. An empty or invalid
+ * prefix is an error like any other unparsable route; the caller logs
+ * and skips it. An IPv6 address without a length is left unchanged by
+ * the parser and interpreted as a host route by ogs_ipsubnet().
+ */
 static int parse_framed_route(ogs_ipsubnet_t *subnet, const char *framed_route)
 {
-    char *mask = ogs_strdup(framed_route);
-    char *addr = strsep(&mask, "/");
+    char *mask = ogs_framed_route_parse(framed_route, strlen(framed_route));
+    char *addr = NULL;
     int rv;
 
+    if (!mask)
+        return OGS_ERROR;
+
+    addr = strsep(&mask, "/");
     rv = ogs_ipsubnet(subnet, addr, mask);
     ogs_free(addr);
     return rv;
@@ -701,13 +715,13 @@ uint8_t upf_sess_set_ue_ipv4_framed_routes(upf_sess_t *sess,
         rv = parse_framed_route(&sess->ipv4_framed_routes[j], framed_routes[i]);
 
         if (rv != OGS_OK) {
-            ogs_warn("Ignoring invalid framed route %s", framed_routes[i]);
+            ogs_error("Ignoring invalid framed route %s", framed_routes[i]);
             memset(&sess->ipv4_framed_routes[j], 0,
                    sizeof(sess->ipv4_framed_routes[j]));
             continue;
         }
         add_framed_route_to_trie(&sess->ipv4_framed_routes[j], sess);
-        ogs_debug("UPF registered IPv4 framed route[%s] for SEID[0x%lx]",
+        ogs_info("UPF registered IPv4 framed route[%s] for SEID[0x%lx]",
                 framed_routes[i], (long)sess->upf_n4_seid);
         j++;
     }
@@ -746,13 +760,13 @@ uint8_t upf_sess_set_ue_ipv6_framed_routes(upf_sess_t *sess,
         rv = parse_framed_route(&sess->ipv6_framed_routes[j], framed_routes[i]);
 
         if (rv != OGS_OK) {
-            ogs_warn("Ignoring invalid framed route %s", framed_routes[i]);
+            ogs_error("Ignoring invalid framed route %s", framed_routes[i]);
             memset(&sess->ipv6_framed_routes[j], 0,
                    sizeof(sess->ipv6_framed_routes[j]));
             continue;
         }
         add_framed_route_to_trie(&sess->ipv6_framed_routes[j], sess);
-        ogs_debug("UPF registered IPv6 framed route[%s] for SEID[0x%lx]",
+        ogs_info("UPF registered IPv6 framed route[%s] for SEID[0x%lx]",
                 framed_routes[i], (long)sess->upf_n4_seid);
         j++;
     }

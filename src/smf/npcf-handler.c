@@ -594,6 +594,16 @@ bool smf_npcf_smpolicycontrol_handle_create(
                 &ul_pdr->ue_ip_addr, &ul_pdr->ue_ip_addr_len));
     }
 
+    /*
+     * Framed routes in the PDI (TS 29.244 Framed-Route / Framed-IPv6-Route)
+     *
+     * DL PDR: lets the UPF find this session for packets destined to the
+     * routed subnet. UL PDR: lets the UPF accept packets sourced from it.
+     * Only the default QoS flow's PDRs carry them. Requires FRRT in the
+     * UPF's UP Function Features. The PDR holds the RFC 2865/3162 wire
+     * string built from the CIDR in sess->session. The EPC path does the
+     * same in src/smf/gx-handler.c.
+     */
     if (sess->session.ipv4_framed_routes &&
         sess->pfcp_node->up_function_features.frrt) {
         int i = 0;
@@ -607,7 +617,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
                                sizeof(dl_pdr->ipv4_framed_routes[0]));
                 ogs_assert(dl_pdr->ipv4_framed_routes);
             }
-            dl_pdr->ipv4_framed_routes[i] = ogs_strdup(route);
+            dl_pdr->ipv4_framed_routes[i] = ogs_framed_route_build(route);
 
             if (!ul_pdr->ipv4_framed_routes) {
                 ul_pdr->ipv4_framed_routes =
@@ -615,7 +625,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
                                sizeof(ul_pdr->ipv4_framed_routes[0]));
                 ogs_assert(ul_pdr->ipv4_framed_routes);
             }
-            ul_pdr->ipv4_framed_routes[i] = ogs_strdup(route);
+            ul_pdr->ipv4_framed_routes[i] = ogs_framed_route_build(route);
         }
     }
 
@@ -632,7 +642,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
                                sizeof(dl_pdr->ipv6_framed_routes[0]));
                 ogs_assert(dl_pdr->ipv6_framed_routes);
             }
-            dl_pdr->ipv6_framed_routes[i] = ogs_strdup(route);
+            dl_pdr->ipv6_framed_routes[i] = ogs_framed_route_build(route);
 
             if (!ul_pdr->ipv6_framed_routes) {
                 ul_pdr->ipv6_framed_routes =
@@ -640,7 +650,7 @@ bool smf_npcf_smpolicycontrol_handle_create(
                                sizeof(ul_pdr->ipv6_framed_routes[0]));
                 ogs_assert(ul_pdr->ipv6_framed_routes);
             }
-            ul_pdr->ipv6_framed_routes[i] = ogs_strdup(route);
+            ul_pdr->ipv6_framed_routes[i] = ogs_framed_route_build(route);
         }
     }
 

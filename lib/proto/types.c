@@ -546,6 +546,94 @@ ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex)
     return ogs_uint24_from_string_hexadecimal((char *)hex);
 }
 
+char *ogs_framed_route_build(const char *cidr)
+{
+    char *value = NULL;
+
+    ogs_assert(cidr);
+
+    /*
+     * RFC 2865 5.22 / RFC 3162 2.5: a gateway of 0.0.0.0 (or ::) means
+     * "use the user's own address"; Open5GS uses metric 1.
+     */
+    if (strchr(cidr, ':'))
+        value = ogs_msprintf("%s :: 1", cidr);
+    else
+        value = ogs_msprintf("%s 0.0.0.0 1", cidr);
+    ogs_assert(value);
+
+    return value;
+}
+
+char *ogs_framed_route_parse(const char *value, int length)
+{
+    const char *end = NULL;
+    char *cidr = NULL;
+
+    ogs_assert(value);
+
+    /* Prefix ends at the first space; gateway and metric are ignored. */
+    if (length > 0) {
+        end = memchr(value, ' ', length);
+        if (end)
+            length = end - value;
+    }
+
+    if (length <= 0) {
+        ogs_warn("Empty framed route prefix");
+        return NULL;
+    }
+
+    /* AVP/IE values are length-delimited, not NUL-terminated. */
+    if (memchr(value, '\0', length)) {
+        ogs_warn("NUL byte in framed route prefix");
+        return NULL;
+    }
+
+    cidr = ogs_strndup(value, length);
+    ogs_assert(cidr);
+
+    /*
+     * RFC 2865 5.22 defines classful defaults for IPv4 prefixes without
+     * a length. Validate the dotted-quad address before deriving one;
+     * there is no classful default for class D/E addresses.
+     * RFC 3162 2.5 also permits an omitted IPv6 prefix length, but does
+     * not define a default. Leave IPv6 prefixes unchanged; the caller
+     * interprets an omitted length and validates the resulting subnet.
+     */
+    if (!strchr(cidr, '/') && !strchr(cidr, ':')) {
+        ogs_sockaddr_t addr;
+        int first, bits;
+        char *classful = NULL;
+
+        if (ogs_inet_pton(AF_INET, cidr, &addr) != OGS_OK) {
+            ogs_warn("Invalid framed route IPv4 address [%s]", cidr);
+            ogs_free(cidr);
+            return NULL;
+        }
+
+        first = be32toh(addr.sin.sin_addr.s_addr) >> 24;
+        if (first < 128)
+            bits = 8;
+        else if (first < 192)
+            bits = 16;
+        else if (first < 224)
+            bits = 24;
+        else {
+            ogs_warn("No classful prefix length for IPv4 route [%s]", cidr);
+            ogs_free(cidr);
+            return NULL;
+        }
+
+        classful = ogs_msprintf("%s/%d", cidr, bits);
+        ogs_assert(classful);
+        ogs_free(cidr);
+        cidr = classful;
+    }
+
+    return cidr;
+}
+
 int ogs_fqdn_build(char *dst, const char *src, int length)
 {
     int i = 0, j = 0;

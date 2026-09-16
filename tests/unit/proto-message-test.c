@@ -166,6 +166,137 @@ static void legacy_identity_bounds(abts_case *tc, void *data)
     ABTS_TRUE(tc, !ogs_imeisv_bcd_is_valid("490154203237518x"));
 }
 
+static void framed_route_format(abts_case *tc, void *data)
+{
+    static const struct {
+        const char *prefix;
+        const char *wire;
+    } cases[] = {
+        { "192.168.100.0/24", "192.168.100.0/24 0.0.0.0 1" },
+        { "2001:db8:100::/64", "2001:db8:100::/64 :: 1" },
+        { "192.0.2.1/32", "192.0.2.1/32 0.0.0.0 1" },
+        { "2001:db8::1/128", "2001:db8::1/128 :: 1" },
+    };
+    size_t i;
+    char *s = NULL;
+
+    for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+        s = ogs_framed_route_build(cases[i].prefix);
+        ABTS_STR_EQUAL(tc, cases[i].wire, s);
+        ogs_free(s);
+
+        s = ogs_framed_route_parse(cases[i].wire, strlen(cases[i].wire));
+        ABTS_STR_EQUAL(tc, cases[i].prefix, s);
+        ogs_free(s);
+
+        /* Bare prefixes from older Open5GS peers remain accepted. */
+        s = ogs_framed_route_parse(cases[i].prefix, strlen(cases[i].prefix));
+        ABTS_STR_EQUAL(tc, cases[i].prefix, s);
+        ogs_free(s);
+    }
+
+    /* Gateway and all metrics are ignored by the prefix parser. */
+    s = ogs_framed_route_parse("192.0.2.0/24 192.0.2.1 1 2 -1 3 400",
+            strlen("192.0.2.0/24 192.0.2.1 1 2 -1 3 400"));
+    ABTS_STR_EQUAL(tc, "192.0.2.0/24", s);
+    ogs_free(s);
+}
+
+static void framed_route_classful(abts_case *tc, void *data)
+{
+    static const struct {
+        const char *value;
+        const char *prefix;
+    } cases[] = {
+        { "10.0.0.0 0.0.0.0 1", "10.0.0.0/8" },
+        { "172.16.0.0 0.0.0.0 1", "172.16.0.0/16" },
+        { "192.0.2.0 0.0.0.0 1", "192.0.2.0/24" },
+        { "0.0.0.0", "0.0.0.0/8" },
+        { "127.255.255.255", "127.255.255.255/8" },
+        { "128.0.0.0", "128.0.0.0/16" },
+        { "191.255.255.255", "191.255.255.255/16" },
+        { "192.0.0.0", "192.0.0.0/24" },
+        { "223.255.255.255", "223.255.255.255/24" },
+        /* An omitted IPv6 length is left for the caller to interpret. */
+        { "2001:db8::", "2001:db8::" },
+        { "2001:db8:: :: 1", "2001:db8::" },
+        /* Explicit lengths are preserved, not replaced by a default.
+         * These check string conversion, not UPF subnet installation. */
+        { "0.0.0.0/0 0.0.0.0 1", "0.0.0.0/0" },
+        { "::/0 :: 1", "::/0" },
+    };
+    size_t i;
+    char *s = NULL;
+
+    for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+        s = ogs_framed_route_parse(cases[i].value, strlen(cases[i].value));
+        ABTS_STR_EQUAL(tc, cases[i].prefix, s);
+        ogs_free(s);
+    }
+}
+
+static void framed_route_invalid(abts_case *tc, void *data)
+{
+    static const char *values[] = {
+        "", " 0.0.0.0 1", "   ", "not-an-ip", "10", "10.0.0",
+        "256.0.0.0", "-1.0.0.0", "+1.0.0.0", "1.2.3.4junk",
+        "999999999999999999999999.0.0.0",
+        "224.0.0.1", "239.255.255.255", "240.0.0.0", "255.255.255.255",
+        "224.0.0.1 0.0.0.0 1",
+    };
+    const char embedded_nul[] = "192.0.2.0\0junk 0.0.0.0 1";
+    size_t i;
+
+    for (i = 0; i < OGS_ARRAY_SIZE(values); i++)
+        ABTS_PTR_EQUAL(tc, NULL,
+                ogs_framed_route_parse(values[i], strlen(values[i])));
+
+    ABTS_PTR_EQUAL(tc, NULL, ogs_framed_route_parse("", -1));
+    ABTS_PTR_EQUAL(tc, NULL, ogs_framed_route_parse("192.0.2.0", 0));
+    ABTS_PTR_EQUAL(tc, NULL,
+            ogs_framed_route_parse(embedded_nul, sizeof(embedded_nul) - 1));
+}
+
+static void framed_route_bounds(abts_case *tc, void *data)
+{
+    static const struct {
+        const char *value;
+        const char *prefix;
+    } cases[] = {
+        { "192.0.2.0/24", "192.0.2.0/24" },
+        { "2001:db8::/64", "2001:db8::/64" },
+        { "192.0.2.0/24 0.0.0.0 1", "192.0.2.0/24" },
+        { "2001:db8::/64 :: 1", "2001:db8::/64" },
+        { "10.0.0.0", "10.0.0.0/8" },
+        { "2001:db8::", "2001:db8::" },
+    };
+    size_t i, length;
+    char *value = NULL;
+    char *s = NULL;
+
+    for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+        length = strlen(cases[i].value);
+        /* Allocate exactly length bytes: there is no trailing NUL. */
+        value = ogs_malloc(length);
+        ogs_assert(value);
+        memcpy(value, cases[i].value, length);
+
+        s = ogs_framed_route_parse(value, length);
+        ABTS_STR_EQUAL(tc, cases[i].prefix, s);
+        ogs_free(s);
+        ogs_free(value);
+    }
+
+    /* Bytes beyond the supplied length must not become part of a prefix. */
+    s = ogs_framed_route_parse("192.0.2.0/24junk", strlen("192.0.2.0/24"));
+    ABTS_STR_EQUAL(tc, "192.0.2.0/24", s);
+    ogs_free(s);
+
+    s = ogs_framed_route_parse("10.0.0.0junk", strlen("10.0.0.0"));
+    ABTS_STR_EQUAL(tc, "10.0.0.0/8", s);
+    ogs_free(s);
+}
+
 abts_suite *test_proto_message(abts_suite *suite)
 {
     size_t i;
@@ -177,6 +308,10 @@ abts_suite *test_proto_message(abts_suite *suite)
     for (i = 0; i < OGS_ARRAY_SIZE(identity_cases); i++)
         abts_run_test(suite, identity_format, (void *)&identity_cases[i]);
     abts_run_test(suite, legacy_identity_bounds, NULL);
+    abts_run_test(suite, framed_route_format, NULL);
+    abts_run_test(suite, framed_route_classful, NULL);
+    abts_run_test(suite, framed_route_invalid, NULL);
+    abts_run_test(suite, framed_route_bounds, NULL);
 
     return suite;
 }
