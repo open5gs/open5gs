@@ -21,7 +21,7 @@
  * IPFilterRule flow-description parser fuzz target.
  *
  * A PCC rule carries its packet filter as an IPFilterRule text string, which
- * reaches the SMF from the PCF over N7 and from the PGW over Gx.
+ * reaches the SMF/PGW-C from the PCF over N7 or the PCRF over Gx.
  * ogs_ipfw_compile_rule() tokenises that string and hands it to compile_rule()
  * in the bundled FreeBSD ipfw parser, so the whole of lib/ipfw parses remote
  * input. No existing fuzz target links lib/ipfw, so none of it is instrumented.
@@ -34,11 +34,12 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "fuzzing.h"
 #include "ipfw/ogs-ipfw.h"
 
-/* "permit out" is the shortest prefix the parser accepts. */
+/* Skip inputs too short to exercise meaningful parser states. */
 #define kMinInputLength 4
 #define kMaxInputLength 512
 
@@ -53,6 +54,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)
 
     if (!initialized) {
         initialize();
+        ogs_log_set_mask_level("core", OGS_LOG_NONE);
     }
 
     /* The parser uses ogs_strtok_r() and strcmp(), so the input has to be a
