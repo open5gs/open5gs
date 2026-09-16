@@ -401,7 +401,8 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
     struct session *session = NULL;
     struct avp *avp, *avpch1;
     struct avp_hdr *hdr;
-    unsigned long dur;
+    unsigned long dur = 0;
+    bool have_duration = false;
     int error = 0;
     int new;
     smf_sess_t *sess = NULL;
@@ -533,7 +534,7 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
         error++;
     }
 
-    /* Create and queue the event */
+    /* Prepare the event */
     e = smf_event_new(SMF_EVT_S6B_MESSAGE);
     if (!e) {
         ogs_error("Failed to create SMF event");
@@ -549,29 +550,46 @@ static void smf_s6b_aaa_cb(void *data, struct msg **msg)
     e->gtp_xact_id = sess_data->xact_id;
     e->s6b_message = s6b_message;
 
-    ret = ogs_queue_push(ogs_app()->queue, e);
-    if (ret != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)ret);
-        ogs_event_free(e);
-        goto cleanup;
-    }
-
-    /* Notify the event loop */
-    ogs_pollset_notify(ogs_app()->pollset);
-
-    /* Event successfully queued, clear pointer to avoid double-free */
-    s6b_message = NULL;
-    e = NULL;
-
 cleanup:
-    /* Update statistics and cleanup */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
-
-    /* Calculate response time */
+    /* Display response time */
     if (sess_data) {
         dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
             ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+        have_duration = true;
 
+        if (ts.tv_nsec > sess_data->ts.tv_nsec)
+            ogs_debug("in %d.%06ld sec",
+                    (int)(ts.tv_sec - sess_data->ts.tv_sec),
+                    (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+        else
+            ogs_debug("in %d.%06ld sec",
+                    (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
+                    (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec)
+                    / 1000);
+
+        /* Store session state */
+        ret = fd_sess_state_store(smf_s6b_reg, session, &sess_data);
+        ogs_assert(ret == 0);
+        ogs_assert(sess_data == NULL);
+    }
+
+    /* Publish only after the Diameter state is available to the FSM. */
+    if (e) {
+        ret = ogs_queue_push(ogs_app()->queue, e);
+        if (ret != OGS_OK) {
+            ogs_error("ogs_queue_push() failed:%d", (int)ret);
+            ogs_event_free(e);
+        } else {
+            s6b_message = NULL; /* Transfer ownership to event */
+            ogs_pollset_notify(ogs_app()->pollset);
+        }
+    }
+
+    /* Update statistics */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+
+    /* Aggregate response times */
+    if (have_duration) {
         if (ogs_diam_stats_self()->stats.nb_recv) {
             /* Update average response time */
             ogs_diam_stats_self()->stats.avg =
@@ -596,26 +614,7 @@ cleanup:
         ogs_diam_stats_self()->stats.nb_errs++;
     else
         ogs_diam_stats_self()->stats.nb_recv++;
-
     ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
-
-    /* Display response time */
-    if (sess_data) {
-        if (ts.tv_nsec > sess_data->ts.tv_nsec)
-            ogs_debug("in %d.%06ld sec",
-                    (int)(ts.tv_sec - sess_data->ts.tv_sec),
-                    (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-        else
-            ogs_debug("in %d.%06ld sec",
-                    (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
-                    (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec)
-                    / 1000);
-
-        /* Store session state */
-        ret = fd_sess_state_store(smf_s6b_reg, session, &sess_data);
-        ogs_assert(ret == 0);
-        ogs_assert(sess_data == NULL);
-    }
 
     /* Free allocated memory if not successfully queued */
     if (s6b_message) {
@@ -783,7 +782,8 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
     struct session *session = NULL;
     struct avp *avp, *avpch1;
     struct avp_hdr *hdr;
-    unsigned long dur;
+    unsigned long dur = 0;
+    bool have_duration = false;
     int error = 0;
     int new;
     smf_event_t *e = NULL;
@@ -917,41 +917,55 @@ static void smf_s6b_sta_cb(void *data, struct msg **msg)
         error++;
     }
 
-    /* Create and queue the event only if no critical errors */
-    if (!error) {
-        e = smf_event_new(SMF_EVT_S6B_MESSAGE);
-        if (!e) {
-            ogs_error("Failed to create SMF event");
-            goto cleanup;
-        }
+    /* Complete the release even when the peer rejects the STR. */
+    e = smf_event_new(SMF_EVT_S6B_MESSAGE);
+    if (!e) {
+        ogs_error("Failed to create SMF event");
+        goto cleanup;
+    }
 
-        e->sess_id = sess->id;
-        e->s6b_message = s6b_message;
+    e->sess_id = sess->id;
+    e->s6b_message = s6b_message;
 
+cleanup:
+    /* Display response time */
+    if (sess_data) {
+        dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
+            ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+        have_duration = true;
+
+        if (ts.tv_nsec > sess_data->ts.tv_nsec)
+            ogs_debug("in %d.%06ld sec",
+                    (int)(ts.tv_sec - sess_data->ts.tv_sec),
+                    (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+        else
+            ogs_debug("in %d.%06ld sec",
+                    (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
+                    (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec)
+                    / 1000);
+
+        /* This matched STA completes the Diameter session. */
+        state_cleanup(sess_data, NULL, NULL);
+        sess_data = NULL;
+    }
+
+    /* Publish only after the completed Diameter state is released. */
+    if (e) {
         rv = ogs_queue_push(ogs_app()->queue, e);
         if (rv != OGS_OK) {
             ogs_error("ogs_queue_push() failed:%d", (int)rv);
             ogs_event_free(e);
-            goto cleanup;
+        } else {
+            s6b_message = NULL; /* Transfer ownership to event */
+            ogs_pollset_notify(ogs_app()->pollset);
         }
-
-        /* Notify the event loop */
-        ogs_pollset_notify(ogs_app()->pollset);
-
-        /* Event successfully queued, clear pointer to avoid double-free */
-        s6b_message = NULL;
-        e = NULL;
     }
 
-cleanup:
     /* Update statistics */
     ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
 
-    /* Calculate response time */
-    if (sess_data) {
-        dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
-            ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-
+    /* Aggregate response times */
+    if (have_duration) {
         if (ogs_diam_stats_self()->stats.nb_recv) {
             /* Update average response time */
             ogs_diam_stats_self()->stats.avg =
@@ -976,26 +990,7 @@ cleanup:
         ogs_diam_stats_self()->stats.nb_errs++;
     else
         ogs_diam_stats_self()->stats.nb_recv++;
-
     ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
-
-    /* Display response time */
-    if (sess_data) {
-        if (ts.tv_nsec > sess_data->ts.tv_nsec)
-            ogs_debug("in %d.%06ld sec",
-                    (int)(ts.tv_sec - sess_data->ts.tv_sec),
-                    (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-        else
-            ogs_debug("in %d.%06ld sec",
-                    (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
-                    (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec)
-                    / 1000);
-
-        /* Store session state */
-        ret = fd_sess_state_store(smf_s6b_reg, session, &sess_data);
-        ogs_assert(ret == 0);
-        ogs_assert(sess_data == NULL);
-    }
 
     /* Free allocated memory if not successfully queued */
     if (s6b_message) {

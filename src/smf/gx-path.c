@@ -780,7 +780,8 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     struct session *session = NULL;
     struct avp *avp, *avpch1, *avpch2;
     struct avp_hdr *hdr;
-    unsigned long dur;
+    unsigned long dur = 0;
+    bool have_duration = false;
     int error = 0;
     int new;
     struct msg *req = NULL;
@@ -1159,7 +1160,7 @@ static void smf_gx_cca_cb(void *data, struct msg **msg)
     }
 
 process_message:
-    /* Send message to application if no critical errors occurred */
+    /* Prepare the event if no critical errors occurred */
     if (!error && gx_message) {
         e = smf_event_new(SMF_EVT_GX_MESSAGE);
         if (!e) {
@@ -1171,57 +1172,15 @@ process_message:
         e->sess_id = sess->id;
         e->gx_message = gx_message;
         e->gtp_xact_id = sess_data->xact_data[req_slot].id;
-        rv = ogs_queue_push(ogs_app()->queue, e);
-        if (rv != OGS_OK) {
-            ogs_error("ogs_queue_push() failed:%d", (int)rv);
-            ogs_event_free(e);
-            error++;
-            goto cleanup;
-        } else {
-            ogs_pollset_notify(ogs_app()->pollset);
-            gx_message = NULL; /* Transfer ownership to event */
-        }
     }
 
 cleanup:
-    /* Clean up allocated resources */
-    if (gx_message) {
-        OGS_SESSION_DATA_FREE(&gx_message->session_data);
-        ogs_free(gx_message);
-    }
-
-    /* Update statistics */
-    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    /* Display timing information */
     if (sess_data) {
         dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) +
             ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-        if (ogs_diam_stats_self()->stats.nb_recv) {
-            /* Ponderate in the avg */
-            ogs_diam_stats_self()->stats.avg =
-                (ogs_diam_stats_self()->stats.avg *
-                 ogs_diam_stats_self()->stats.nb_recv + dur) /
-                (ogs_diam_stats_self()->stats.nb_recv + 1);
-            /* Min, max */
-            if (dur < ogs_diam_stats_self()->stats.shortest)
-                ogs_diam_stats_self()->stats.shortest = dur;
-            if (dur > ogs_diam_stats_self()->stats.longest)
-                ogs_diam_stats_self()->stats.longest = dur;
-        } else {
-            ogs_diam_stats_self()->stats.shortest = dur;
-            ogs_diam_stats_self()->stats.longest = dur;
-            ogs_diam_stats_self()->stats.avg = dur;
-        }
-    }
+        have_duration = true;
 
-    if (error)
-        ogs_diam_stats_self()->stats.nb_errs++;
-    else
-        ogs_diam_stats_self()->stats.nb_recv++;
-
-    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
-
-    /* Display timing information */
-    if (sess_data) {
         if (ts.tv_nsec > sess_data->ts.tv_nsec)
             ogs_trace("in %d.%06ld sec",
                     (int)(ts.tv_sec - sess_data->ts.tv_sec),
@@ -1255,6 +1214,52 @@ cleanup:
             ogs_assert(ret == 0);
             ogs_assert(sess_data == NULL);
         }
+    }
+
+    /* Publish only after the Diameter state is available to the FSM. */
+    if (e) {
+        rv = ogs_queue_push(ogs_app()->queue, e);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
+            ogs_event_free(e);
+            error++;
+        } else {
+            gx_message = NULL; /* Transfer ownership to event */
+            ogs_pollset_notify(ogs_app()->pollset);
+        }
+    }
+
+    /* Update statistics */
+    ogs_assert(pthread_mutex_lock(&ogs_diam_stats_self()->stats_lock) == 0);
+    if (have_duration) {
+        if (ogs_diam_stats_self()->stats.nb_recv) {
+            /* Ponderate in the avg */
+            ogs_diam_stats_self()->stats.avg =
+                (ogs_diam_stats_self()->stats.avg *
+                 ogs_diam_stats_self()->stats.nb_recv + dur) /
+                (ogs_diam_stats_self()->stats.nb_recv + 1);
+            /* Min, max */
+            if (dur < ogs_diam_stats_self()->stats.shortest)
+                ogs_diam_stats_self()->stats.shortest = dur;
+            if (dur > ogs_diam_stats_self()->stats.longest)
+                ogs_diam_stats_self()->stats.longest = dur;
+        } else {
+            ogs_diam_stats_self()->stats.shortest = dur;
+            ogs_diam_stats_self()->stats.longest = dur;
+            ogs_diam_stats_self()->stats.avg = dur;
+        }
+    }
+
+    if (error)
+        ogs_diam_stats_self()->stats.nb_errs++;
+    else
+        ogs_diam_stats_self()->stats.nb_recv++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_stats_self()->stats_lock) == 0);
+
+    /* Clean up allocated resources */
+    if (gx_message) {
+        OGS_SESSION_DATA_FREE(&gx_message->session_data);
+        ogs_free(gx_message);
     }
 
     /* Free the message */

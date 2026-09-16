@@ -297,6 +297,10 @@ typedef struct smf_sess_s {
 
     ogs_fsm_t       sm;             /* A state machine */
     struct {
+        bool epc_auth_aborted; /* GTP transaction lost; drain pending answers */
+        bool gx_session_created; /* Successful Gx Initial answer */
+        bool gy_session_created; /* Outer Gy success, including MSCC failure */
+        bool s6b_session_created; /* Successful S6b AAA */
         bool gx_ccr_init_in_flight; /* Waiting for Gx CCA */
         uint32_t gx_cca_init_err; /* Gx CCA RXed error code */
         bool gy_ccr_init_in_flight; /* Waiting for Gy CCA */

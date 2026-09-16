@@ -140,7 +140,7 @@ static bool eir_index_is_unique(const bson_t *document)
         return false;
     }
     if (bson_has_field(document, "partialFilterExpression")) {
-        ogs_error("EIR partial index does not cover all equipment records");
+        ogs_warn("EIR partial index does not cover all equipment records");
         return false;
     }
     if (!bson_iter_init_find(&iter, document, "key") ||

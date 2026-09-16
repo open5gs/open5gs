@@ -118,26 +118,23 @@ static void urr_update_time(smf_sess_t *sess, ogs_pfcp_urr_t *urr, ogs_diam_gy_m
     }
 }
 
-/* Returns ER_DIAMETER_SUCCESS on success, Diameter error code on failue.
- * Upon failure, CCR-Terminate is needed based on "need_termination" value (this
- * may happen eg. if messaged RC is successful but MSCC RC is rejected). */
+/* Returns ER_DIAMETER_SUCCESS on success, Diameter error code on failure.
+ * The caller tracks outer success in sm_data.gy_session_created so that an
+ * MSCC rejection still triggers termination regardless of answer order. */
 uint32_t smf_gy_handle_cca_initial_request(
         smf_sess_t *sess, ogs_diam_gy_message_t *gy_message,
-        ogs_gtp_xact_t *gtp_xact,
-        bool *need_termination)
+        ogs_gtp_xact_t *gtp_xact)
 {
     smf_bearer_t *bearer;
 
     ogs_assert(sess);
     ogs_assert(gy_message);
     ogs_assert(gtp_xact);
-    ogs_assert(need_termination);
 
     ogs_debug("[Gy CCA Initial]");
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
-    *need_termination = false;
     if (gy_message->result_code != ER_DIAMETER_SUCCESS) {
         ogs_warn("Gy CCA Initial Diameter failure: res=%u",
             gy_message->result_code);
@@ -147,9 +144,7 @@ uint32_t smf_gy_handle_cca_initial_request(
     if (gy_message->cca.result_code != ER_DIAMETER_SUCCESS) {
         ogs_warn("Gy CCA Initial Diameter Multiple-Services-Credit-Control Result-Code=%u",
             gy_message->cca.result_code);
-        /* Message RC was successful but MSCC was rejected. The session needs to
-         * be tear down through CCR-T: */
-        *need_termination = true;
+        /* The caller will terminate the session created by outer success. */
         return gy_message->cca.err ? *gy_message->cca.err :
                                      ER_DIAMETER_AUTHENTICATION_REJECTED;
     }
