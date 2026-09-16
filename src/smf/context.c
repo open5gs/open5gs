@@ -2929,7 +2929,9 @@ static int pd_lease_create_pdrs(smf_sess_t *sess)
             OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
             sizeof(pd_dl_pdr->ipv6_framed_routes[0]));
     ogs_assert(pd_dl_pdr->ipv6_framed_routes);
-    pd_dl_pdr->ipv6_framed_routes[0] = ogs_strdup(sess->pd_lease.route);
+    /* PDR holds the RFC 2865/3162 wire string; SDF keeps the CIDR prefix. */
+    pd_dl_pdr->ipv6_framed_routes[0] =
+            ogs_framed_route_build(sess->pd_lease.route);
     ogs_assert(pd_dl_pdr->ipv6_framed_routes[0]);
 
     pd_dl_pdr->flow[0].fd = 1;
@@ -2970,7 +2972,8 @@ static int pd_lease_create_pdrs(smf_sess_t *sess)
             OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI,
             sizeof(pd_ul_pdr->ipv6_framed_routes[0]));
     ogs_assert(pd_ul_pdr->ipv6_framed_routes);
-    pd_ul_pdr->ipv6_framed_routes[0] = ogs_strdup(sess->pd_lease.route);
+    pd_ul_pdr->ipv6_framed_routes[0] =
+            ogs_framed_route_build(sess->pd_lease.route);
     ogs_assert(pd_ul_pdr->ipv6_framed_routes[0]);
 
     pd_ul_pdr->flow[0].fd = 1;
