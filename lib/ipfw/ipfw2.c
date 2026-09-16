@@ -2887,7 +2887,7 @@ fill_ip(ipfw_insn_ip *cmd, char *av, int cblen, struct tidx *tstate)
 		else if (masklen > 32)
 			errx(EX_DATAERR, "bad width ``%s''", p);
 		else
-			d[1] = htonl(~0 << (32 - masklen));
+			d[1] = htonl((uint32_t)(~0) << (32 - masklen));
 		break;
 	case '{':	/* no mask, assume /24 and put back the '{' */
 		/* Clang scan-build SA: Result of operation is garbage: The SA is whining that the result of the << is

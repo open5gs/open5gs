@@ -167,6 +167,13 @@ static void ipfw_test_port(abts_case *tc, void *data)
     REJECT(tc, "permit out udp from 1.2.3.4 to assigned 0");
 
     REJECT(tc, "permit out udp from 1.2.3.4 65536 to assigned");
+
+    /* fill_newports() reads a leading zero as octal */
+    REJECT(tc, "permit out udp from 1.2.3.4 010 to assigned");
+    REJECT(tc, "permit out udp from 1.2.3.4 08 to assigned");
+    REJECT(tc, "permit out udp from 1.2.3.4 1-010 to assigned");
+    REJECT(tc, "permit out udp from 1.2.3.4 to assigned 0443");
+
     /* fill_newports() never compares the two ends of a range */
     REJECT(tc, "permit out udp from 1.2.3.4 50000-40000 to assigned");
     REJECT(tc, "permit out udp from 1.2.3.4 1-0 to assigned");

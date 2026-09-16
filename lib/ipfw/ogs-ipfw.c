@@ -196,6 +196,23 @@ static int ipfw_addr_family(const char *s)
 }
 
 /*
+ * A port number, written in decimal.
+ *
+ * fill_newports() reads it with strtol(..., 0), where a leading zero means
+ * octal, so the two readings have to be kept from diverging: "010" would be
+ * accepted here as 10 and compiled as 8, and "08" is not a number at all to
+ * the parser, which then leaves the rule's remaining tokens shifted by one
+ * and sends "to" through lookup_host() as if it were an address.
+ */
+static bool ipfw_parse_port(const char *s, int *value)
+{
+    if (s && s[0] == '0' && s[1] != '\0')
+        return false;
+
+    return ipfw_parse_number(s, 1, 65535, value);
+}
+
+/*
  * A single port or a "low-high" range, 1..65535.
  *
  * Port 0 must not be accepted: ogs_ipfw_rule_t uses 0 to mean "no port
@@ -216,7 +233,7 @@ static bool ipfw_is_ports(const char *s)
 
     dash = strchr(s, '-');
     if (!dash)
-        return ipfw_is_number(s, 1, 65535);
+        return ipfw_parse_port(s, NULL);
 
     len = dash - s;
     if (len == 0 || len >= sizeof(buf))
@@ -224,9 +241,9 @@ static bool ipfw_is_ports(const char *s)
     memcpy(buf, s, len);
     buf[len] = '\0';
 
-    if (!ipfw_parse_number(buf, 1, 65535, &low))
+    if (!ipfw_parse_port(buf, &low))
         return false;
-    if (!ipfw_parse_number(dash + 1, 1, 65535, &high))
+    if (!ipfw_parse_port(dash + 1, &high))
         return false;
 
     return low <= high;
