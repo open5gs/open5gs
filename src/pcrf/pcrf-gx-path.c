@@ -474,7 +474,17 @@ static int pcrf_gx_ccr_cb(struct msg **msg, struct avp *avp,
         ogs_paa_t *paa = NULL;
 
         ret = fd_msg_avp_hdr(avp, &hdr);
-        if (ret == 0 && hdr) {
+        if (ret == 0 && hdr && hdr->avp_value) {
+            if (!hdr->avp_value->os.data ||
+                    hdr->avp_value->os.len <
+                        (OGS_IPV6_DEFAULT_PREFIX_LEN >> 3) + 2) {
+                ogs_error("Invalid Framed-IPv6-Prefix length [%zu]",
+                        hdr->avp_value->os.len);
+                result_code = OGS_DIAM_INVALID_AVP_VALUE;
+                error_occurred = 1;
+                goto out;
+            }
+
             paa = (ogs_paa_t *)hdr->avp_value->os.data;
             if (paa && paa->len == OGS_IPV6_DEFAULT_PREFIX_LEN) {
                 if (sess_data->ipv6) {
@@ -1072,6 +1082,9 @@ out:
         } else if (result_code == OGS_DIAM_UNKNOWN_SESSION_ID) {
             ret = fd_msg_rescode_set(ans,
                         (char *)"DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
+        } else if (result_code == OGS_DIAM_INVALID_AVP_VALUE) {
+            ret = fd_msg_rescode_set(ans,
+                        (char *)"DIAMETER_INVALID_AVP_VALUE", NULL, NULL, 1);
         } else if (result_code == OGS_DIAM_MISSING_AVP) {
             ret = fd_msg_rescode_set(ans,
                         (char *)"DIAMETER_MISSING_AVP", NULL, NULL, 1);
