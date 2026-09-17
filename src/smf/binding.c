@@ -585,6 +585,16 @@ void smf_qos_flow_binding(smf_sess_t *sess)
             } else {
                 ogs_assert(strcmp(qos_flow->pcc_rule.id, pcc_rule->id) == 0);
 
+                if (qos_flow->qos.arp.priority_level !=
+                        pcc_rule->qos.arp.priority_level ||
+                    qos_flow->qos.arp.pre_emption_capability !=
+                        pcc_rule->qos.arp.pre_emption_capability ||
+                    qos_flow->qos.arp.pre_emption_vulnerability !=
+                        pcc_rule->qos.arp.pre_emption_vulnerability) {
+                    qos_flow->qos.arp = pcc_rule->qos.arp;
+                    qos_presence = true;
+                }
+
                 /*
                  * Check if any MBR/GBR value is non-zero. This indicates that
                  * the flow might require GBR/MBR-specific handling.

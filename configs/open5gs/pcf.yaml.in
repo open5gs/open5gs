@@ -45,6 +45,17 @@ pcf:
 #      qos_index: 3
 
 ################################################################################
+# Optional operator policy for media-level N5 reservation priorities
+################################################################################
+# There is no default or standards-mandated resPrio-to-ARP mapping
+# Omitted/unmapped values retain the current or configured priority
+# preemptCap and preemptVuln are independent of this table
+#
+#  arp_priority:
+#    PRIO_1: 15
+#    PRIO_16: 2
+
+################################################################################
 # PCF Policy Configuration: UE Home PLMN and SUPI Range Based Policies
 ################################################################################
 #

@@ -109,6 +109,7 @@ static void pcf_qos_profile_clear(void)
 static int pcf_context_prepare(void)
 {
     pcf_qos_profile_clear();
+    memset(self.arp_priority, 0, sizeof(self.arp_priority));
     return OGS_OK;
 }
 
@@ -386,6 +387,54 @@ next:
     return OGS_OK;
 }
 
+static int parse_arp_priority_conf(ogs_yaml_iter_t *parent)
+{
+    ogs_yaml_iter_t iter, value_iter;
+
+    ogs_yaml_iter_recurse(parent, &iter);
+    if (ogs_yaml_iter_type(&iter) != YAML_MAPPING_NODE) {
+        ogs_error("arp_priority must be a mapping");
+        return OGS_ERROR;
+    }
+
+    while (ogs_yaml_iter_next(&iter)) {
+        yaml_node_t *key_node = yaml_document_get_node(
+                iter.document, iter.pair->key);
+        const char *key;
+        const char *value;
+        OpenAPI_reserv_priority_e res_prio;
+        char *end = NULL;
+        long priority;
+
+        if (!key_node || key_node->type != YAML_SCALAR_NODE) {
+            ogs_error("arp_priority keys must be reservation priority names");
+            return OGS_ERROR;
+        }
+        key = (const char *)key_node->data.scalar.value;
+        res_prio = OpenAPI_reserv_priority_FromString((char *)key);
+        ogs_yaml_iter_recurse(&iter, &value_iter);
+        if (ogs_yaml_iter_type(&value_iter) != YAML_SCALAR_NODE) {
+            ogs_error("arp_priority[%s] must be an integer", key);
+            return OGS_ERROR;
+        }
+        value = ogs_yaml_iter_value(&value_iter);
+        if (res_prio <= OpenAPI_reserv_priority_NULL ||
+            res_prio > OpenAPI_reserv_priority_PRIO_16 || !value || !*value) {
+            ogs_error("Invalid arp_priority entry [%s]", key);
+            return OGS_ERROR;
+        }
+        priority = strtol(value, &end, 10);
+        if (*end || priority < 1 || priority > 15 ||
+            self.arp_priority[res_prio]) {
+            ogs_error("Invalid or duplicate arp_priority [%s:%s]", key, value);
+            return OGS_ERROR;
+        }
+        self.arp_priority[res_prio] = (uint8_t)priority;
+    }
+
+    return OGS_OK;
+}
+
 int pcf_context_parse_config(void)
 {
     int rv;
@@ -430,6 +479,9 @@ int pcf_context_parse_config(void)
                         ogs_error("parse_qos_profiles_conf() failed");
                         return rv;
                     }
+                } else if (!strcmp(pcf_key, "arp_priority")) {
+                    rv = parse_arp_priority_conf(&pcf_iter);
+                    if (rv != OGS_OK) return rv;
                 } else if (!strcmp(pcf_key, OGS_POLICY_STRING)) {
                     rv = parse_policy_conf(&pcf_iter);
                     if (rv != OGS_OK) {
