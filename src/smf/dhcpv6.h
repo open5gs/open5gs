@@ -98,9 +98,19 @@ bool smf_dhcpv6_check(ogs_pkbuf_t *pkbuf);
 /* Handle a DHCPv6 client message for the session (does not free pkbuf) */
 void smf_dhcpv6_handle(smf_sess_t *sess, ogs_pkbuf_t *pkbuf);
 
+/* Called when the PD PFCP Session Modification completes or times out. */
+void smf_dhcpv6_pd_pfcp_complete(smf_sess_t *sess, bool accepted);
+
 /* Exposed for unit tests */
 int smf_dhcpv6_parse(
         smf_dhcpv6_message_t *msg, const uint8_t *data, uint32_t len);
+
+/* RFC 8415 §16 / §18.3 : Server Identifier presence by message type.
+ * Returns OGS_OK to process the message, OGS_ERROR to silently discard. */
+int smf_dhcpv6_check_serverid(const smf_dhcpv6_message_t *msg);
+
+/* RFC 8415 : Confirm and Decline are not used for Prefix Delegation. */
+bool smf_dhcpv6_ia_pd_permitted(uint8_t type);
 
 /* Encode ADVERTISE/REPLY payload (no IP/UDP wrapper). Exposed for unit tests.
  * Returns the encoded length. */

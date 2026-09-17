@@ -20,6 +20,7 @@
 #include "sbi-path.h"
 #include "pfcp-path.h"
 #include "n4-build.h"
+#include "dhcpv6.h"
 
 /* Converts PFCP "Usage Report" "Report Trigger" bitmask to Gy "Reporting-Reason" AVP enum value.
  * PFCP: 3GPP TS 29.244 sec 8.2.41
@@ -318,6 +319,8 @@ static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
         ogs_assert(strerror);
 
         ogs_error("%s", strerror);
+        if (xact->modify_flags & OGS_PFCP_MODIFY_PD_LEASE)
+            smf_dhcpv6_pd_pfcp_complete(sess, false);
         if (stream) {
             smf_sbi_send_sm_context_update_error_log(
                 stream, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, strerror, NULL);
@@ -460,6 +463,8 @@ static void sess_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
                 bearer->ei_deactivation = false;
         }
         ogs_error("No PFCP session modification response");
+        if (xact->modify_flags & OGS_PFCP_MODIFY_PD_LEASE)
+            smf_dhcpv6_pd_pfcp_complete(sess, false);
         break;
     case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
         ogs_error("No PFCP session deletion response");
@@ -956,8 +961,15 @@ int smf_pfcp_send_pd_lease_modification(smf_sess_t *sess, bool add)
 
     ogs_assert(sess);
 
+    if (smf_sess_pd_lease_pfcp_pending(sess)) {
+        ogs_error("PD PFCP modification already outstanding");
+        return OGS_ERROR;
+    }
+
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, sess_epc_timeout, OGS_UINT_TO_POINTER(sess->id));
+            sess->pfcp_node,
+            sess->epc ? sess_epc_timeout : sess_5gc_timeout,
+            OGS_UINT_TO_POINTER(sess->id));
     if (!xact) {
         ogs_error("ogs_pfcp_xact_local_create() failed");
         return OGS_ERROR;
@@ -965,7 +977,8 @@ int smf_pfcp_send_pd_lease_modification(smf_sess_t *sess, bool add)
 
     xact->epc = sess->epc;
     xact->local_seid = sess->smf_n4_seid;
-    xact->modify_flags = OGS_PFCP_MODIFY_PD_LEASE;
+    xact->modify_flags = OGS_PFCP_MODIFY_PD_LEASE |
+            (add ? OGS_PFCP_MODIFY_CREATE : OGS_PFCP_MODIFY_REMOVE);
 
     memset(&h, 0, sizeof(ogs_pfcp_header_t));
     h.type = OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE;

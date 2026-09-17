@@ -26,6 +26,7 @@
 #include "sbi-path.h"
 #include "ngap-path.h"
 #include "fd-path.h"
+#include "dhcpv6.h"
 
 uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause, uint8_t gtp_version)
 {
@@ -296,18 +297,18 @@ void smf_5gc_n4_handle_session_modification_response(
     ogs_pfcp_xact_commit(xact);
 
     if (flags & OGS_PFCP_MODIFY_PD_LEASE) {
-        /* PD lease route install/remove : roll back the lease
-         * if the UPF did not accept the modification */
+        bool accepted;
+
         if (!sess) {
             ogs_error("No Context");
             return;
         }
-        if (!rsp->cause.presence ||
-                rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+        accepted = rsp->cause.presence &&
+                rsp->cause.u8 == OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+        if (!accepted)
             ogs_error("PD lease modification rejected [cause:%d]",
                     rsp->cause.presence ? rsp->cause.u8 : 0);
-            smf_sess_pd_lease_release(sess);
-        }
+        smf_dhcpv6_pd_pfcp_complete(sess, accepted);
         return;
     }
 
@@ -1345,14 +1346,14 @@ void smf_epc_n4_handle_session_modification_response(
     }
 
     if (flags & OGS_PFCP_MODIFY_PD_LEASE) {
-        /* PD lease route install/remove : roll back the lease
-         * if the UPF did not accept the modification */
-        if (!rsp->cause.presence ||
-                rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+        bool accepted;
+
+        accepted = rsp->cause.presence &&
+                rsp->cause.u8 == OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+        if (!accepted)
             ogs_error("PD lease modification rejected [cause:%d]",
                     rsp->cause.presence ? rsp->cause.u8 : 0);
-            smf_sess_pd_lease_release(sess);
-        }
+        smf_dhcpv6_pd_pfcp_complete(sess, accepted);
         return;
     }
 

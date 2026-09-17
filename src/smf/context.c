@@ -2889,7 +2889,7 @@ static int pd_lease_create_pdrs(smf_sess_t *sess)
     int i;
 
     ogs_assert(sess);
-    ogs_assert(sess->pd_lease.active);
+    ogs_assert(sess->pd_lease.state != SMF_PD_LEASE_NONE);
 
     ogs_assert(sess->pfcp_node);
     if (!sess->pfcp_node->up_function_features.frrt) {
@@ -3010,31 +3010,56 @@ static void pd_lease_remove_pdrs(smf_sess_t *sess)
         ogs_pfcp_pdr_remove(pdr);
 }
 
+/*
+ * Reserve a prefix from the pool and mark the lease OFFERED.
+ * Does not install UPF routes; call smf_sess_pd_lease_commit() to do that.
+ *
+ * Returns OGS_OK if the same identity is already held, or a new offer was
+ * reserved. Returns OGS_ERROR if a PFCP modification is already outstanding
+ * for a different identity, or the pool is exhausted.
+ */
 int smf_sess_pd_lease_grant(smf_sess_t *sess,
         uint32_t iaid, const uint8_t *duid, uint16_t duid_len)
 {
-    smf_ue_t *smf_ue = NULL;
     ogs_pfcp_subnet_t *subnet = NULL;
     uint8_t prefix[OGS_IPV6_LEN];
-    char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(sess);
     ogs_assert(sess->ipv6);
 
-    if (sess->pd_lease.active) {
+    if (sess->pd_lease.state != SMF_PD_LEASE_NONE) {
         if (smf_sess_pd_lease_matches(sess, iaid, duid, duid_len)) {
             smf_sess_pd_lease_refresh(sess);
             return OGS_OK;
         }
 
-        /* Different IAID/DUID : drop the old lease first */
-        smf_sess_pd_lease_release(sess);
+        /*
+         * A competing IAID/DUID must not start another Remove/Create
+         * while a PD PFCP modification is outstanding.
+         */
+        if (smf_sess_pd_lease_pfcp_pending(sess)) {
+            ogs_warn("PD PFCP modification outstanding : "
+                    "refusing competing grant");
+            return OGS_ERROR;
+        }
+
+        /* OFFERED (no PFCP yet) : drop the reservation and offer again */
+        if (sess->pd_lease.state == SMF_PD_LEASE_OFFERED)
+            smf_sess_pd_lease_clear(sess);
+        else
+            return OGS_ERROR;
     }
 
     subnet = sess->ipv6->subnet;
     ogs_assert(subnet);
     if (!subnet->delegated_prefix.bitmap) {
         ogs_error("No delegated_prefix pool on this subnet");
+        return OGS_ERROR;
+    }
+
+    ogs_assert(sess->pfcp_node);
+    if (!sess->pfcp_node->up_function_features.frrt) {
+        ogs_error("UPF does not support Framed Routing (FRRT)");
         return OGS_ERROR;
     }
 
@@ -3058,12 +3083,7 @@ int smf_sess_pd_lease_grant(smf_sess_t *sess,
         sess->pd_lease.duid_len = duid_len;
     }
 
-    sess->pd_lease.active = true;
-
-    if (pd_lease_create_pdrs(sess) != OGS_OK) {
-        smf_sess_pd_lease_clear(sess);
-        return OGS_ERROR;
-    }
+    sess->pd_lease.state = SMF_PD_LEASE_OFFERED;
 
     sess->pd_lease.timer = ogs_timer_add(ogs_app()->timer_mgr,
             pd_lease_timeout, OGS_UINT_TO_POINTER(sess->id));
@@ -3071,12 +3091,58 @@ int smf_sess_pd_lease_grant(smf_sess_t *sess,
     ogs_timer_start(sess->pd_lease.timer,
             ogs_time_from_sec(sess->pd_lease.valid_lifetime));
 
-    if (smf_pfcp_send_pd_lease_modification(sess, true) != OGS_OK) {
-        ogs_error("Failed to install delegated prefix route");
-        pd_lease_remove_pdrs(sess);
+    return OGS_OK;
+}
+
+/*
+ * Install the delegated-prefix route on the UPF.
+ *
+ * OGS_OK    : already ACTIVE (no PFCP needed)
+ * OGS_RETRY : PFCP add sent; wait for the Session Modification Response
+ * OGS_ERROR : could not send; lease left OFFERED (or aborted)
+ */
+int smf_sess_pd_lease_commit(smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    if (sess->pd_lease.state == SMF_PD_LEASE_ACTIVE)
+        return OGS_OK;
+
+    if (sess->pd_lease.state == SMF_PD_LEASE_PENDING)
+        return OGS_RETRY;
+
+    if (sess->pd_lease.state != SMF_PD_LEASE_OFFERED) {
+        ogs_error("PD lease commit in unexpected state [%d]",
+                sess->pd_lease.state);
+        return OGS_ERROR;
+    }
+
+    if (pd_lease_create_pdrs(sess) != OGS_OK) {
         smf_sess_pd_lease_clear(sess);
         return OGS_ERROR;
     }
+
+    if (smf_pfcp_send_pd_lease_modification(sess, true) != OGS_OK) {
+        ogs_error("Failed to install delegated prefix route");
+        pd_lease_remove_pdrs(sess);
+        sess->pd_lease.dl_pdr_id = 0;
+        sess->pd_lease.ul_pdr_id = 0;
+        return OGS_ERROR;
+    }
+
+    sess->pd_lease.state = SMF_PD_LEASE_PENDING;
+    return OGS_RETRY;
+}
+
+void smf_sess_pd_lease_activate(smf_sess_t *sess)
+{
+    smf_ue_t *smf_ue = NULL;
+    char buf[OGS_ADDRSTRLEN];
+
+    ogs_assert(sess);
+    ogs_assert(sess->pd_lease.state == SMF_PD_LEASE_PENDING);
+
+    sess->pd_lease.state = SMF_PD_LEASE_ACTIVE;
 
     smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
@@ -3084,15 +3150,13 @@ int smf_sess_pd_lease_grant(smf_sess_t *sess,
     ogs_info("PD lease granted : UE[%s] Prefix[%s/%d]",
             smf_ue->supi ? smf_ue->supi : smf_ue->imsi_bcd,
             OGS_INET6_NTOP(sess->pd_lease.prefix, buf), sess->pd_lease.plen);
-
-    return OGS_OK;
 }
 
 void smf_sess_pd_lease_refresh(smf_sess_t *sess)
 {
     ogs_assert(sess);
 
-    if (!sess->pd_lease.active || !sess->pd_lease.timer)
+    if (sess->pd_lease.state == SMF_PD_LEASE_NONE || !sess->pd_lease.timer)
         return;
 
     ogs_timer_start(sess->pd_lease.timer,
@@ -3104,7 +3168,7 @@ bool smf_sess_pd_lease_matches(smf_sess_t *sess,
 {
     ogs_assert(sess);
 
-    if (!sess->pd_lease.active)
+    if (sess->pd_lease.state == SMF_PD_LEASE_NONE)
         return false;
     if (sess->pd_lease.iaid != iaid)
         return false;
@@ -3118,15 +3182,43 @@ bool smf_sess_pd_lease_matches(smf_sess_t *sess,
     return true;
 }
 
-void smf_sess_pd_lease_release(smf_sess_t *sess)
+bool smf_sess_pd_lease_pfcp_pending(smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    return sess->pd_lease.state == SMF_PD_LEASE_PENDING ||
+           sess->pd_lease.state == SMF_PD_LEASE_RELEASING;
+}
+
+/*
+ * Tear the lease down.
+ *
+ * OGS_OK    : fully cleared (OFFERED, or nothing to do)
+ * OGS_RETRY : PFCP remove sent (or already outstanding); wait for the response
+ * OGS_ERROR : PFCP remove could not be sent; lease aborted locally
+ */
+int smf_sess_pd_lease_release(smf_sess_t *sess)
 {
     smf_ue_t *smf_ue = NULL;
     char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(sess);
 
-    if (!sess->pd_lease.active)
-        return;
+    if (sess->pd_lease.state == SMF_PD_LEASE_NONE)
+        return OGS_OK;
+
+    if (sess->pd_lease.state == SMF_PD_LEASE_OFFERED) {
+        smf_sess_pd_lease_clear(sess);
+        return OGS_OK;
+    }
+
+    if (sess->pd_lease.state == SMF_PD_LEASE_PENDING) {
+        sess->pd_lease.release_when_done = true;
+        return OGS_RETRY;
+    }
+
+    if (sess->pd_lease.state == SMF_PD_LEASE_RELEASING)
+        return OGS_RETRY;
 
     smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
     ogs_assert(smf_ue);
@@ -3135,12 +3227,31 @@ void smf_sess_pd_lease_release(smf_sess_t *sess)
             smf_ue->supi ? smf_ue->supi : smf_ue->imsi_bcd,
             OGS_INET6_NTOP(sess->pd_lease.prefix, buf), sess->pd_lease.plen);
 
-    /* Remove the delegated route from the UPF (best effort :
-     * the lease is cleared regardless) */
-    smf_pfcp_send_pd_lease_modification(sess, false);
+    if (smf_pfcp_send_pd_lease_modification(sess, false) != OGS_OK) {
+        ogs_error("Failed to remove delegated prefix route");
+        pd_lease_remove_pdrs(sess);
+        smf_sess_pd_lease_clear(sess);
+        return OGS_ERROR;
+    }
 
     pd_lease_remove_pdrs(sess);
 
+    if (sess->pd_lease.timer) {
+        ogs_timer_stop(sess->pd_lease.timer);
+        ogs_timer_delete(sess->pd_lease.timer);
+        sess->pd_lease.timer = NULL;
+    }
+
+    sess->pd_lease.state = SMF_PD_LEASE_RELEASING;
+    return OGS_RETRY;
+}
+
+/* Drop a PENDING/OFFERED lease without sending PFCP Remove (add never landed) */
+void smf_sess_pd_lease_abort(smf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    pd_lease_remove_pdrs(sess);
     smf_sess_pd_lease_clear(sess);
 }
 
@@ -3148,7 +3259,7 @@ void smf_sess_pd_lease_expire(smf_sess_t *sess)
 {
     ogs_assert(sess);
 
-    if (!sess->pd_lease.active)
+    if (sess->pd_lease.state == SMF_PD_LEASE_NONE)
         return;
 
     ogs_info("PD lease expired");
@@ -3166,7 +3277,7 @@ void smf_sess_pd_lease_clear(smf_sess_t *sess)
         sess->pd_lease.timer = NULL;
     }
 
-    if (sess->pd_lease.active && sess->pd_lease.subnet)
+    if (sess->pd_lease.state != SMF_PD_LEASE_NONE && sess->pd_lease.subnet)
         ogs_pfcp_delegated_prefix_free(
                 sess->pd_lease.subnet, sess->pd_lease.prefix);
 
