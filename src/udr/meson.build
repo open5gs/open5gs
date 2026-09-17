@@ -23,6 +23,7 @@ libudr_sources = files('''
 
     sbi-path.c
     udr-sm.c
+    udr-timer.c
 
     init.c
 '''.split())

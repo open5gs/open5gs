@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019-2024 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,41 +17,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef UDR_EVENT_H
-#define UDR_EVENT_H
-
-#include "ogs-proto.h"
-#include "ogs-dbi.h"
+#ifndef UDR_TIMER_H
+#define UDR_TIMER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef enum {
-    UDR_EVT_BASE = OGS_MAX_NUM_OF_PROTO_EVENT,
+    UDR_TIMER_DBI_POLL_CHANGE_STREAM = 1,
+} udr_timer_e;
 
-    UDR_EVENT_DBI_POLL_TIMER,
-    UDR_EVENT_DBI_MESSAGE,
-
-    UDR_EVT_TOP,
-} udr_event_e;
-
-typedef struct udr_event_s {
-    ogs_event_t h;
-
-    struct {
-        bson_t *document;
-    } dbi;
-} udr_event_t;
-
-OGS_STATIC_ASSERT(OGS_EVENT_SIZE >= sizeof(udr_event_t));
-
-udr_event_t *udr_event_new(int id);
-
-const char *udr_event_get_name(udr_event_t *e);
+void udr_timer_dbi_poll_change_stream(void *data);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* UDR_EVENT_H */
+#endif /* UDR_TIMER_H */
