@@ -351,7 +351,7 @@ static void fill_test_lease(smf_sess_t *sess)
     ogs_ipsubnet_t ipsub;
 
     memset(sess, 0, sizeof(*sess));
-    sess->pd_lease.active = true;
+    sess->pd_lease.state = SMF_PD_LEASE_ACTIVE;
     sess->pd_lease.preferred_lifetime = 3600;
     sess->pd_lease.valid_lifetime = 7200;
     sess->pd_lease.plen = 56;
@@ -406,6 +406,178 @@ static void dhcpv6_test_rapid_commit_reply(abts_case *tc, void *data)
     ABTS_TRUE(tc, resplen > 4);
     ABTS_INT_EQUAL(tc, DHCPV6_MSG_REPLY, resp[0]);
     ABTS_TRUE(tc, !find_option(resp, resplen, DHCPV6_OPT_RAPID_COMMIT, NULL));
+
+    /* Advertise SUCCESS is valid while the lease is only OFFERED
+     * (prefix reserved, PFCP not yet committed). */
+    sess.pd_lease.state = SMF_PD_LEASE_OFFERED;
+    reqlen = build_solicit(reqbuf, false);
+    memset(&req, 0, sizeof(req));
+    ABTS_INT_EQUAL(tc, OGS_OK, smf_dhcpv6_parse(&req, reqbuf, reqlen));
+    resplen = smf_dhcpv6_encode_response(resp, sizeof(resp),
+            &sess, &req, DHCPV6_MSG_ADVERTISE, DHCPV6_STATUS_SUCCESS);
+    ABTS_TRUE(tc, resplen > 4);
+    ABTS_INT_EQUAL(tc, DHCPV6_MSG_ADVERTISE, resp[0]);
+}
+
+/* Copy the Server DUID out of an encoded Advertise/Reply. */
+static int extract_serverid(const uint8_t *data, int len,
+        uint8_t *duid, uint16_t *duid_len)
+{
+    const uint8_t *p, *end;
+
+    if (len < 4)
+        return 0;
+
+    p = data + 4;
+    end = data + len;
+    while (p + 4 <= end) {
+        uint16_t code = ((uint16_t)p[0] << 8) | p[1];
+        uint16_t optlen = ((uint16_t)p[2] << 8) | p[3];
+
+        if (p + 4 + optlen > end)
+            return 0;
+        if (code == DHCPV6_OPT_SERVERID) {
+            if (optlen > DHCPV6_MAX_DUID_LEN)
+                return 0;
+            memcpy(duid, p + 4, optlen);
+            *duid_len = optlen;
+            return 1;
+        }
+        p += 4 + optlen;
+    }
+    return 0;
+}
+
+static int build_typed(uint8_t *buf, uint8_t type, bool with_serverid,
+        const uint8_t *duid, uint16_t duid_len)
+{
+    uint8_t *p = buf;
+
+    *p++ = type;
+    *p++ = 0x01; *p++ = 0x02; *p++ = 0x03;
+
+    *p++ = 0x00; *p++ = DHCPV6_OPT_CLIENTID;
+    *p++ = 0x00; *p++ = 14;
+    memset(p, 0xAA, 14); p += 14;
+
+    if (with_serverid) {
+        *p++ = 0x00; *p++ = DHCPV6_OPT_SERVERID;
+        *p++ = (uint8_t)(duid_len >> 8);
+        *p++ = (uint8_t)(duid_len & 0xff);
+        memcpy(p, duid, duid_len); p += duid_len;
+    }
+
+    *p++ = 0x00; *p++ = DHCPV6_OPT_IA_PD;
+    *p++ = 0x00; *p++ = 12;
+    *p++ = 0x11; *p++ = 0x22; *p++ = 0x33; *p++ = 0x44;
+    memset(p, 0, 8); p += 8;
+
+    return p - buf;
+}
+
+static void dhcpv6_test_rfc8415_serverid(abts_case *tc, void *data)
+{
+    uint8_t reqbuf[160], resp[256];
+    uint8_t our_duid[DHCPV6_MAX_DUID_LEN];
+    uint8_t other_duid[14];
+    uint16_t our_duid_len = 0;
+    int reqlen, resplen;
+    smf_dhcpv6_message_t msg;
+    smf_sess_t sess;
+    static const uint8_t must_not[] = {
+        DHCPV6_MSG_SOLICIT, DHCPV6_MSG_CONFIRM, DHCPV6_MSG_REBIND,
+    };
+    static const uint8_t must[] = {
+        DHCPV6_MSG_REQUEST, DHCPV6_MSG_RENEW,
+        DHCPV6_MSG_RELEASE, DHCPV6_MSG_DECLINE,
+    };
+    unsigned i;
+
+    smf_dhcpv6_init();
+    fill_test_lease(&sess);
+
+    reqlen = build_solicit(reqbuf, false);
+    memset(&msg, 0, sizeof(msg));
+    ABTS_INT_EQUAL(tc, OGS_OK, smf_dhcpv6_parse(&msg, reqbuf, reqlen));
+    resplen = smf_dhcpv6_encode_response(resp, sizeof(resp),
+            &sess, &msg, DHCPV6_MSG_ADVERTISE, DHCPV6_STATUS_SUCCESS);
+    ABTS_TRUE(tc, extract_serverid(resp, resplen, our_duid, &our_duid_len));
+    ABTS_TRUE(tc, our_duid_len > 0);
+    memset(other_duid, 0xBB, sizeof(other_duid));
+
+    /* Solicit / Confirm / Rebind : Server Identifier is prohibited */
+    for (i = 0; i < sizeof(must_not); i++) {
+        reqlen = build_typed(reqbuf, must_not[i], false, NULL, 0);
+        memset(&msg, 0, sizeof(msg));
+        ABTS_INT_EQUAL(tc, OGS_OK, smf_dhcpv6_parse(&msg, reqbuf, reqlen));
+        ABTS_INT_EQUAL(tc, OGS_OK, smf_dhcpv6_check_serverid(&msg));
+
+        reqlen = build_typed(reqbuf, must_not[i], true, our_duid, our_duid_len);
+        memset(&msg, 0, sizeof(msg));
+        ABTS_INT_EQUAL(tc, OGS_OK, smf_dhcpv6_parse(&msg, reqbuf, reqlen));
+        ABTS_INT_EQUAL(tc, OGS_ERROR, smf_dhcpv6_check_serverid(&msg));
+    }
+
+    /* Request / Renew / Release / Decline : matching Server Identifier required */
+    for (i = 0; i < sizeof(must); i++) {
+        reqlen = build_typed(reqbuf, must[i], false, NULL, 0);
+        memset(&msg, 0, sizeof(msg));
+        ABTS_INT_EQUAL(tc, OGS_OK, smf_dhcpv6_parse(&msg, reqbuf, reqlen));
+        ABTS_INT_EQUAL(tc, OGS_ERROR, smf_dhcpv6_check_serverid(&msg));
+
+        reqlen = build_typed(reqbuf, must[i], true,
+                other_duid, sizeof(other_duid));
+        memset(&msg, 0, sizeof(msg));
+        ABTS_INT_EQUAL(tc, OGS_OK, smf_dhcpv6_parse(&msg, reqbuf, reqlen));
+        ABTS_INT_EQUAL(tc, OGS_ERROR, smf_dhcpv6_check_serverid(&msg));
+
+        reqlen = build_typed(reqbuf, must[i], true, our_duid, our_duid_len);
+        memset(&msg, 0, sizeof(msg));
+        ABTS_INT_EQUAL(tc, OGS_OK, smf_dhcpv6_parse(&msg, reqbuf, reqlen));
+        ABTS_INT_EQUAL(tc, OGS_OK, smf_dhcpv6_check_serverid(&msg));
+    }
+
+    /* Existing Request builder (foreign SERVERID) is rejected */
+    reqlen = build_request(reqbuf, "2001:db8:8001::", 56);
+    memset(&msg, 0, sizeof(msg));
+    ABTS_INT_EQUAL(tc, OGS_OK, smf_dhcpv6_parse(&msg, reqbuf, reqlen));
+    ABTS_INT_EQUAL(tc, OGS_ERROR, smf_dhcpv6_check_serverid(&msg));
+}
+
+static void dhcpv6_test_rfc8415_ia_pd(abts_case *tc, void *data)
+{
+    ABTS_TRUE(tc, smf_dhcpv6_ia_pd_permitted(DHCPV6_MSG_SOLICIT));
+    ABTS_TRUE(tc, smf_dhcpv6_ia_pd_permitted(DHCPV6_MSG_REQUEST));
+    ABTS_TRUE(tc, smf_dhcpv6_ia_pd_permitted(DHCPV6_MSG_RENEW));
+    ABTS_TRUE(tc, smf_dhcpv6_ia_pd_permitted(DHCPV6_MSG_REBIND));
+    ABTS_TRUE(tc, smf_dhcpv6_ia_pd_permitted(DHCPV6_MSG_RELEASE));
+    ABTS_TRUE(tc, !smf_dhcpv6_ia_pd_permitted(DHCPV6_MSG_CONFIRM));
+    ABTS_TRUE(tc, !smf_dhcpv6_ia_pd_permitted(DHCPV6_MSG_DECLINE));
+}
+
+static void dhcpv6_test_pd_lease_pending(abts_case *tc, void *data)
+{
+    smf_sess_t sess;
+
+    memset(&sess, 0, sizeof(sess));
+    ABTS_TRUE(tc, !smf_sess_pd_lease_pfcp_pending(&sess));
+    ABTS_TRUE(tc, !smf_sess_pd_lease_matches(&sess, 1, NULL, 0));
+
+    sess.pd_lease.state = SMF_PD_LEASE_OFFERED;
+    sess.pd_lease.iaid = 0x11223344;
+    ABTS_TRUE(tc, !smf_sess_pd_lease_pfcp_pending(&sess));
+    ABTS_TRUE(tc, smf_sess_pd_lease_matches(&sess, 0x11223344, NULL, 0));
+    ABTS_TRUE(tc, !smf_sess_pd_lease_matches(&sess, 0xdeadbeef, NULL, 0));
+
+    sess.pd_lease.state = SMF_PD_LEASE_PENDING;
+    ABTS_TRUE(tc, smf_sess_pd_lease_pfcp_pending(&sess));
+
+    sess.pd_lease.state = SMF_PD_LEASE_ACTIVE;
+    ABTS_TRUE(tc, !smf_sess_pd_lease_pfcp_pending(&sess));
+    ABTS_TRUE(tc, smf_sess_pd_lease_matches(&sess, 0x11223344, NULL, 0));
+
+    sess.pd_lease.state = SMF_PD_LEASE_RELEASING;
+    ABTS_TRUE(tc, smf_sess_pd_lease_pfcp_pending(&sess));
 }
 
 abts_suite *test_dhcpv6(abts_suite *suite)
@@ -418,6 +590,9 @@ abts_suite *test_dhcpv6(abts_suite *suite)
     abts_run_test(suite, dhcpv6_test_pool, NULL);
     abts_run_test(suite, dhcpv6_test_pool_validation, NULL);
     abts_run_test(suite, dhcpv6_test_rapid_commit_reply, NULL);
+    abts_run_test(suite, dhcpv6_test_rfc8415_serverid, NULL);
+    abts_run_test(suite, dhcpv6_test_rfc8415_ia_pd, NULL);
+    abts_run_test(suite, dhcpv6_test_pd_lease_pending, NULL);
 
     return suite;
 }
