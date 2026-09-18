@@ -32,11 +32,18 @@ typedef struct af_npcf_policyauthorization_param_s {
     int qos_type;
     const char *qos_reference;
     bool omit_med_type;
+
+    /* Used by af_npcf_policyauthorization_build_update_arp() */
+    OpenAPI_reserv_priority_e res_prio;
+    OpenAPI_preemption_capability_e preempt_cap;
+    OpenAPI_preemption_vulnerability_e preempt_vuln;
 } af_npcf_policyauthorization_param_t;
 
 ogs_sbi_request_t *af_npcf_policyauthorization_build_create(
         af_sess_t *sess, void *data);
 ogs_sbi_request_t *af_npcf_policyauthorization_build_update(
+        af_sess_t *sess, void *data);
+ogs_sbi_request_t *af_npcf_policyauthorization_build_update_arp(
         af_sess_t *sess, void *data);
 ogs_sbi_request_t *af_npcf_policyauthorization_build_delete(
         af_sess_t *sess, void *data);

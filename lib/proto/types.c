@@ -1433,3 +1433,37 @@ int ogs_pcc_rule_update_qos_from_media(
 
     return OGS_OK;
 }
+
+/* Returns true if any ARP field of the PCC rule was changed */
+bool ogs_pcc_rule_update_arp_from_media(
+        ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component)
+{
+    bool changed = false;
+
+    ogs_assert(pcc_rule);
+    ogs_assert(media_component);
+
+    if (media_component->arp.priority_level &&
+        media_component->arp.priority_level !=
+            pcc_rule->qos.arp.priority_level) {
+        pcc_rule->qos.arp.priority_level =
+            media_component->arp.priority_level;
+        changed = true;
+    }
+    if (media_component->arp.pre_emption_capability &&
+        media_component->arp.pre_emption_capability !=
+            pcc_rule->qos.arp.pre_emption_capability) {
+        pcc_rule->qos.arp.pre_emption_capability =
+            media_component->arp.pre_emption_capability;
+        changed = true;
+    }
+    if (media_component->arp.pre_emption_vulnerability &&
+        media_component->arp.pre_emption_vulnerability !=
+            pcc_rule->qos.arp.pre_emption_vulnerability) {
+        pcc_rule->qos.arp.pre_emption_vulnerability =
+            media_component->arp.pre_emption_vulnerability;
+        changed = true;
+    }
+
+    return changed;
+}

@@ -44,6 +44,17 @@ pcf:
 #    - reference: "low-latency"
 #      qos_index: 3
 
+# Maps AF-supplied resPrio (PRIO_1..PRIO_16) in MediaComponent to the ARP
+# priority level (1..15) of the PCC rule. There is no standard mapping;
+# a resPrio not listed here leaves the priority level unchanged.
+# preemptCap and preemptVuln are applied directly and need no mapping.
+#
+#  reservation_priorities:
+#    - res_prio: PRIO_1
+#      priority_level: 15
+#    - res_prio: PRIO_16
+#      priority_level: 1
+
 ################################################################################
 # PCF Policy Configuration: UE Home PLMN and SUPI Range Based Policies
 ################################################################################

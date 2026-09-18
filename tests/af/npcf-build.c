@@ -604,6 +604,82 @@ ogs_sbi_request_t *af_npcf_policyauthorization_build_update(
     return request;
 }
 
+/*
+ * PATCH with a media component that carries only ARP
+ * (resPrio / preemptCap / preemptVuln), nothing else
+ */
+ogs_sbi_request_t *af_npcf_policyauthorization_build_update_arp(
+        af_sess_t *sess, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_app_session_context_update_data_patch_t
+        AppSessionContextUpdateDataPatch;
+    OpenAPI_app_session_context_update_data_t AscUpdateData;
+
+    OpenAPI_list_t *MediaComponentList = NULL;
+    OpenAPI_map_t *MediaComponentMap = NULL;
+    OpenAPI_media_component_rm_t *MediaComponent = NULL;
+
+    af_npcf_policyauthorization_param_t *af_param;
+
+    ogs_assert(sess);
+    ogs_assert(sess->app_session.pcf.resource_uri);
+
+    af_param = data;
+    ogs_assert(af_param);
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_PATCH;
+    message.h.uri = sess->app_session.pcf.resource_uri;
+
+    message.AppSessionContextUpdateDataPatch =
+        &AppSessionContextUpdateDataPatch;
+
+    memset(&AppSessionContextUpdateDataPatch, 0,
+            sizeof(AppSessionContextUpdateDataPatch));
+    AppSessionContextUpdateDataPatch.asc_req_data = &AscUpdateData;
+
+    memset(&AscUpdateData, 0, sizeof(AscUpdateData));
+
+    MediaComponentList = OpenAPI_list_create();
+    ogs_assert(MediaComponentList);
+
+    MediaComponent = ogs_calloc(1, sizeof(*MediaComponent));
+    ogs_assert(MediaComponent);
+
+    MediaComponent->med_comp_n = 0;
+    MediaComponent->med_type = af_param->med_type ?
+        af_param->med_type : OpenAPI_media_type_AUDIO;
+    if (af_param->qos_reference)
+        MediaComponent->qos_reference = ogs_strdup(af_param->qos_reference);
+    MediaComponent->res_prio = af_param->res_prio;
+    MediaComponent->preempt_cap = af_param->preempt_cap;
+    MediaComponent->preempt_vuln = af_param->preempt_vuln;
+
+    MediaComponentMap = OpenAPI_map_create(
+            ogs_msprintf("%d", MediaComponent->med_comp_n), MediaComponent);
+    ogs_assert(MediaComponentMap);
+    ogs_assert(MediaComponentMap->key);
+
+    OpenAPI_list_add(MediaComponentList, MediaComponentMap);
+
+    AscUpdateData.med_components = MediaComponentList;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
+
+    if (MediaComponent->qos_reference)
+        ogs_free(MediaComponent->qos_reference);
+    ogs_free(MediaComponent);
+    ogs_free(MediaComponentMap->key);
+    ogs_free(MediaComponentMap);
+    OpenAPI_list_free(MediaComponentList);
+
+    return request;
+}
+
 ogs_sbi_request_t *af_npcf_policyauthorization_build_delete(
         af_sess_t *sess, void *data)
 {

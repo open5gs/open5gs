@@ -1101,6 +1101,13 @@ typedef struct ogs_media_component_s {
 
     int                 flow_status;
 
+    /* ARP requested by the AF (0 = not requested) */
+    struct {
+        uint8_t         priority_level;
+        uint8_t         pre_emption_capability;
+        uint8_t         pre_emption_vulnerability;
+    } arp;
+
 #define OGS_MAX_NUM_OF_MEDIA_SUB_COMPONENT     8
     ogs_media_sub_component_t sub[OGS_MAX_NUM_OF_MEDIA_SUB_COMPONENT];
     int                 num_of_sub;
@@ -1220,6 +1227,8 @@ int ogs_pcc_rule_num_of_flow_equal_to_media(
 int ogs_pcc_rule_install_flow_from_media(
         ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
 int ogs_pcc_rule_update_qos_from_media(
+        ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
+bool ogs_pcc_rule_update_arp_from_media(
         ogs_pcc_rule_t *pcc_rule, ogs_media_component_t *media_component);
 
 typedef struct ogs_datum_s {

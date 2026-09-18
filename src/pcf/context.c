@@ -109,6 +109,7 @@ static void pcf_qos_profile_clear(void)
 static int pcf_context_prepare(void)
 {
     pcf_qos_profile_clear();
+    memset(self.arp_priority_level, 0, sizeof(self.arp_priority_level));
     return OGS_OK;
 }
 
@@ -386,6 +387,75 @@ next:
     return OGS_OK;
 }
 
+static int parse_reservation_priorities_conf(ogs_yaml_iter_t *parent)
+{
+    ogs_yaml_iter_t array, iter;
+
+    ogs_assert(parent);
+
+    ogs_yaml_iter_recurse(parent, &array);
+    do {
+        const char *res_prio_string = NULL;
+        const char *priority_level_string = NULL;
+        OpenAPI_reserv_priority_e res_prio = OpenAPI_reserv_priority_NULL;
+        char *end = NULL;
+        long priority_level = 0;
+
+        OGS_YAML_ARRAY_NEXT(&array, &iter);
+        while (ogs_yaml_iter_next(&iter)) {
+            const char *key = ogs_yaml_iter_key(&iter);
+            ogs_assert(key);
+
+            if (!strcmp(key, "res_prio")) {
+                res_prio_string = ogs_yaml_iter_value(&iter);
+            } else if (!strcmp(key, "priority_level")) {
+                priority_level_string = ogs_yaml_iter_value(&iter);
+            } else {
+                ogs_warn("unknown reservation_priorities key `%s`", key);
+            }
+        }
+
+        if (!res_prio_string || !res_prio_string[0]) {
+            ogs_warn("Ignore reservation_priorities entry without res_prio");
+            goto next;
+        }
+
+        res_prio = OpenAPI_reserv_priority_FromString((char *)res_prio_string);
+        if (res_prio == OpenAPI_reserv_priority_NULL) {
+            ogs_warn("Ignore reservation_priorities invalid res_prio [%s]",
+                    res_prio_string);
+            goto next;
+        }
+
+        if (!priority_level_string || !priority_level_string[0]) {
+            ogs_warn("Ignore reservation_priorities[%s] "
+                    "without priority_level", res_prio_string);
+            goto next;
+        }
+
+        priority_level = strtol(priority_level_string, &end, 10);
+        if (*end || priority_level < 1 || priority_level > 15) {
+            ogs_warn("Ignore reservation_priorities[%s] "
+                    "invalid priority_level [%s]",
+                    res_prio_string, priority_level_string);
+            goto next;
+        }
+
+        if (self.arp_priority_level[res_prio]) {
+            ogs_warn("Ignore duplicate reservation_priorities res_prio [%s]",
+                    res_prio_string);
+            goto next;
+        }
+
+        self.arp_priority_level[res_prio] = (uint8_t)priority_level;
+
+next:
+        ;
+    } while (ogs_yaml_iter_type(&array) == YAML_SEQUENCE_NODE);
+
+    return OGS_OK;
+}
+
 int pcf_context_parse_config(void)
 {
     int rv;
@@ -428,6 +498,13 @@ int pcf_context_parse_config(void)
                     rv = parse_qos_profiles_conf(&pcf_iter);
                     if (rv != OGS_OK) {
                         ogs_error("parse_qos_profiles_conf() failed");
+                        return rv;
+                    }
+                } else if (!strcmp(pcf_key, "reservation_priorities")) {
+                    rv = parse_reservation_priorities_conf(&pcf_iter);
+                    if (rv != OGS_OK) {
+                        ogs_error(
+                            "parse_reservation_priorities_conf() failed");
                         return rv;
                     }
                 } else if (!strcmp(pcf_key, OGS_POLICY_STRING)) {

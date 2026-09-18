@@ -57,6 +57,9 @@ typedef struct pcf_context_s {
 
     pcf_qos_profile_t  qos_profile[OGS_PCF_MAX_NUM_OF_QOS_PROFILE];
     int                num_of_qos_profile;
+
+    /* AF resPrio(PRIO_1..PRIO_16) to ARP priority level (0 = not mapped) */
+    uint8_t            arp_priority_level[OpenAPI_reserv_priority_PRIO_16 + 1];
 } pcf_context_t;
 
 struct pcf_ue_am_s {
