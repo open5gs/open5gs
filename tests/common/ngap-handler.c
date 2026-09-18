@@ -443,6 +443,50 @@ void testngap_handle_pdu_session_resource_setup_request(
     }
 }
 
+static void testngap_parse_qos_flow_level_qos_parameters(
+        test_bearer_t *qos_flow, NGAP_QosFlowLevelQosParameters_t *params)
+{
+    NGAP_AllocationAndRetentionPriority_t *arp = NULL;
+    NGAP_GBR_QosInformation_t *gbr = NULL;
+
+    ogs_assert(qos_flow);
+    if (!params)
+        return;
+
+    memset(&qos_flow->qos, 0, sizeof(qos_flow->qos));
+
+    if (params->qosCharacteristics &&
+        params->qosCharacteristics->present ==
+            NGAP_QosCharacteristics_PR_nonDynamic5QI)
+        qos_flow->qos.index =
+            params->qosCharacteristics->choice.nonDynamic5QI->fiveQI;
+
+    arp = params->allocationAndRetentionPriority;
+    if (arp) {
+        qos_flow->qos.arp.priority_level = arp->priorityLevelARP;
+        qos_flow->qos.arp.pre_emption_capability =
+            arp->pre_emptionCapability ==
+                NGAP_Pre_emptionCapability_may_trigger_pre_emption ?
+                OGS_5GC_PRE_EMPTION_ENABLED : OGS_5GC_PRE_EMPTION_DISABLED;
+        qos_flow->qos.arp.pre_emption_vulnerability =
+            arp->pre_emptionVulnerability ==
+                NGAP_Pre_emptionVulnerability_pre_emptable ?
+                OGS_5GC_PRE_EMPTION_ENABLED : OGS_5GC_PRE_EMPTION_DISABLED;
+    }
+
+    gbr = params->gBR_QosInformation;
+    if (gbr) {
+        asn_INTEGER2uint64(&gbr->maximumFlowBitRateDL,
+                &qos_flow->qos.mbr.downlink);
+        asn_INTEGER2uint64(&gbr->maximumFlowBitRateUL,
+                &qos_flow->qos.mbr.uplink);
+        asn_INTEGER2uint64(&gbr->guaranteedFlowBitRateDL,
+                &qos_flow->qos.gbr.downlink);
+        asn_INTEGER2uint64(&gbr->guaranteedFlowBitRateUL,
+                &qos_flow->qos.gbr.uplink);
+    }
+}
+
 void testngap_handle_pdu_session_resource_modify_request(
         test_ue_t *test_ue, ogs_ngap_message_t *message)
 {
@@ -530,6 +574,10 @@ void testngap_handle_pdu_session_resource_modify_request(
 
                             qos_flow->qfi = QosFlowAddOrModifyRequestItem->
                                                 qosFlowIdentifier;
+                            testngap_parse_qos_flow_level_qos_parameters(
+                                qos_flow,
+                                QosFlowAddOrModifyRequestItem->
+                                    qosFlowLevelQosParameters);
                         }
                         break;
                     default:

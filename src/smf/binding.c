@@ -586,6 +586,28 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                 ogs_assert(strcmp(qos_flow->pcc_rule.id, pcc_rule->id) == 0);
 
                 /*
+                 * ARP can change on its own (e.g. AF resPrio/preemptCap/
+                 * preemptVuln over N5), regardless of MBR/GBR.
+                 */
+                if (qos_flow->qos.arp.priority_level !=
+                        pcc_rule->qos.arp.priority_level ||
+                    qos_flow->qos.arp.pre_emption_capability !=
+                        pcc_rule->qos.arp.pre_emption_capability ||
+                    qos_flow->qos.arp.pre_emption_vulnerability !=
+                        pcc_rule->qos.arp.pre_emption_vulnerability) {
+                    ogs_info("QoS Flow[QFI:%d] ARP[%d:%d:%d] -> [%d:%d:%d]",
+                            qos_flow->qfi,
+                            qos_flow->qos.arp.priority_level,
+                            qos_flow->qos.arp.pre_emption_capability,
+                            qos_flow->qos.arp.pre_emption_vulnerability,
+                            pcc_rule->qos.arp.priority_level,
+                            pcc_rule->qos.arp.pre_emption_capability,
+                            pcc_rule->qos.arp.pre_emption_vulnerability);
+                    qos_flow->qos.arp = pcc_rule->qos.arp;
+                    qos_presence = true;
+                }
+
+                /*
                  * Check if any MBR/GBR value is non-zero. This indicates that
                  * the flow might require GBR/MBR-specific handling.
                  */

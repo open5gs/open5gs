@@ -57,6 +57,66 @@ static uint8_t pcf_qos_index_from_media(
     }
 }
 
+/* Keep the ARP requested by the AF in the media component */
+static void pcf_media_arp_from_af(ogs_media_component_t *media_component,
+        OpenAPI_reserv_priority_e res_prio,
+        OpenAPI_preemption_capability_e preempt_cap,
+        OpenAPI_preemption_vulnerability_e preempt_vuln)
+{
+    ogs_assert(media_component);
+
+    if (res_prio > OpenAPI_reserv_priority_NULL &&
+        res_prio <= OpenAPI_reserv_priority_PRIO_16) {
+        media_component->arp.priority_level =
+            pcf_self()->arp_priority_level[res_prio];
+        if (!media_component->arp.priority_level)
+            ogs_warn("resPrio[%s] is not mapped - "
+                    "check PCF reservation_priorities config",
+                    OpenAPI_reserv_priority_ToString(res_prio));
+    }
+
+    if (preempt_cap == OpenAPI_preemption_capability_MAY_PREEMPT)
+        media_component->arp.pre_emption_capability =
+            OGS_5GC_PRE_EMPTION_ENABLED;
+    else if (preempt_cap == OpenAPI_preemption_capability_NOT_PREEMPT)
+        media_component->arp.pre_emption_capability =
+            OGS_5GC_PRE_EMPTION_DISABLED;
+
+    if (preempt_vuln == OpenAPI_preemption_vulnerability_PREEMPTABLE)
+        media_component->arp.pre_emption_vulnerability =
+            OGS_5GC_PRE_EMPTION_ENABLED;
+    else if (preempt_vuln == OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE)
+        media_component->arp.pre_emption_vulnerability =
+            OGS_5GC_PRE_EMPTION_DISABLED;
+}
+
+/*
+ * Media component that carries ARP and neither bandwidth, flow status
+ * nor sub components. Field presence is checked on the parsed model,
+ * so an unmapped resPrio or "0 bps" is still recognized correctly.
+ */
+static bool pcf_media_is_arp_only(OpenAPI_media_component_rm_t *media)
+{
+    ogs_assert(media);
+
+    if (media->res_prio == OpenAPI_reserv_priority_NULL &&
+        media->preempt_cap == OpenAPI_preemption_capability_NULL &&
+        media->preempt_vuln == OpenAPI_preemption_vulnerability_NULL)
+        return false;
+
+    if (media->mar_bw_dl || media->is_mar_bw_dl_null ||
+        media->mar_bw_ul || media->is_mar_bw_ul_null ||
+        media->mir_bw_dl || media->is_mir_bw_dl_null ||
+        media->mir_bw_ul || media->is_mir_bw_ul_null ||
+        media->rr_bw || media->is_rr_bw_null ||
+        media->rs_bw || media->is_rs_bw_null ||
+        media->f_status != OpenAPI_flow_status_NULL ||
+        media->med_sub_comps)
+        return false;
+
+    return true;
+}
+
 bool pcf_npcf_am_policy_control_handle_create(pcf_ue_am_t *pcf_ue_am,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *message)
 {
@@ -801,6 +861,10 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
                 media_component->media_component_number =
                     MediaComponent->med_comp_n;
                 media_component->media_type = MediaComponent->med_type;
+                pcf_media_arp_from_af(media_component,
+                        MediaComponent->res_prio,
+                        MediaComponent->preempt_cap,
+                        MediaComponent->preempt_vuln);
                 if (MediaComponent->mar_bw_dl)
                     media_component->max_requested_bandwidth_dl =
                         ogs_sbi_bitrate_from_string(MediaComponent->mar_bw_dl);
@@ -1053,6 +1117,14 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         if (pcc_rule->qos.gbr.uplink == 0)
             pcc_rule->qos.gbr.uplink = db_pcc_rule->qos.gbr.uplink;
 
+        /* Update ARP */
+        if (ogs_pcc_rule_update_arp_from_media(pcc_rule, media_component))
+            ogs_info("[%s:%d] PCC Rule[%s] ARP[%d:%d:%d] updated by AF",
+                    pcf_ue_sm->supi, sess->psi, pcc_rule->id,
+                    pcc_rule->qos.arp.priority_level,
+                    pcc_rule->qos.arp.pre_emption_capability,
+                    pcc_rule->qos.arp.pre_emption_vulnerability);
+
         /**************************************************************
          * Build PCC Rule & QoS Decision
          *************************************************************/
@@ -1200,6 +1272,7 @@ bool pcf_npcf_policyauthorization_handle_update(
     ogs_media_component_t *media_component = NULL;
     ogs_media_sub_component_t *sub = NULL;
     const char *qos_reference[OGS_MAX_NUM_OF_MEDIA_COMPONENT] = {0};
+    bool arp_only[OGS_MAX_NUM_OF_MEDIA_COMPONENT] = {0};
 
     OpenAPI_list_t *MediaComponentList = NULL;
     OpenAPI_map_t *MediaComponentMap = NULL;
@@ -1276,9 +1349,14 @@ bool pcf_npcf_policyauthorization_handle_update(
 
                 media_component = &ims_data.media_component[n];
                 qos_reference[n] = MediaComponent->qos_reference;
+                arp_only[n] = pcf_media_is_arp_only(MediaComponent);
                 media_component->media_component_number =
                     MediaComponent->med_comp_n;
                 media_component->media_type = MediaComponent->med_type;
+                pcf_media_arp_from_af(media_component,
+                        MediaComponent->res_prio,
+                        MediaComponent->preempt_cap,
+                        MediaComponent->preempt_vuln);
                 if (MediaComponent->mar_bw_dl)
                     media_component->max_requested_bandwidth_dl =
                         ogs_sbi_bitrate_from_string(MediaComponent->mar_bw_dl);
@@ -1485,24 +1563,38 @@ bool pcf_npcf_policyauthorization_handle_update(
             }
         }
 
-        /* Update QoS */
-        rv = ogs_pcc_rule_update_qos_from_media(pcc_rule, media_component);
-        if (rv != OGS_OK) {
-            strerror = ogs_msprintf("[%s:%d] update_qos() failed",
-                pcf_ue_sm->supi, sess->psi);
-            status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
-            goto cleanup;
+        /*
+         * An update carrying only ARP keeps the bitrates negotiated so far.
+         * Otherwise the QoS is recomputed from the media component.
+         */
+        if (!arp_only[i]) {
+            /* Update QoS */
+            rv = ogs_pcc_rule_update_qos_from_media(pcc_rule, media_component);
+            if (rv != OGS_OK) {
+                strerror = ogs_msprintf("[%s:%d] update_qos() failed",
+                    pcf_ue_sm->supi, sess->psi);
+                status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+                goto cleanup;
+            }
+
+            /* if we failed to get QoS from IMS, apply WEBUI QoS */
+            if (pcc_rule->qos.mbr.downlink == 0)
+                pcc_rule->qos.mbr.downlink = db_pcc_rule->qos.mbr.downlink;
+            if (pcc_rule->qos.mbr.uplink == 0)
+                pcc_rule->qos.mbr.uplink = db_pcc_rule->qos.mbr.uplink;
+            if (pcc_rule->qos.gbr.downlink == 0)
+                pcc_rule->qos.gbr.downlink = db_pcc_rule->qos.gbr.downlink;
+            if (pcc_rule->qos.gbr.uplink == 0)
+                pcc_rule->qos.gbr.uplink = db_pcc_rule->qos.gbr.uplink;
         }
 
-        /* if we failed to get QoS from IMS, apply WEBUI QoS */
-        if (pcc_rule->qos.mbr.downlink == 0)
-            pcc_rule->qos.mbr.downlink = db_pcc_rule->qos.mbr.downlink;
-        if (pcc_rule->qos.mbr.uplink == 0)
-            pcc_rule->qos.mbr.uplink = db_pcc_rule->qos.mbr.uplink;
-        if (pcc_rule->qos.gbr.downlink == 0)
-            pcc_rule->qos.gbr.downlink = db_pcc_rule->qos.gbr.downlink;
-        if (pcc_rule->qos.gbr.uplink == 0)
-            pcc_rule->qos.gbr.uplink = db_pcc_rule->qos.gbr.uplink;
+        /* Update ARP */
+        if (ogs_pcc_rule_update_arp_from_media(pcc_rule, media_component))
+            ogs_info("[%s:%d] PCC Rule[%s] ARP[%d:%d:%d] updated by AF",
+                    pcf_ue_sm->supi, sess->psi, pcc_rule->id,
+                    pcc_rule->qos.arp.priority_level,
+                    pcc_rule->qos.arp.pre_emption_capability,
+                    pcc_rule->qos.arp.pre_emption_vulnerability);
 
         /**************************************************************
          * Build PCC Rule & QoS Decision
