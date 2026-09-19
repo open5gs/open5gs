@@ -81,10 +81,11 @@ class Document extends Component {
     if (this.props.action === 'create') {
       const data = encode(f);
       const records = this.props.records.data;
-      if (records.some((r) => r.pei === data.pei))
-        e.pei.addError('This equipment identity already exists');
-      if (data.supi && records.some((r) => r.supi === data.supi))
-        e.imsi.addError('This IMSI already exists');
+      if (records.some((r) =>
+        r.pei === data.pei && (r.supi || '') === (data.supi || '')
+      )) {
+        e.pei.addError('This equipment identity rule already exists');
+      }
     }
     return e;
   };

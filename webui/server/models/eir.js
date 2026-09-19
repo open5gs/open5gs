@@ -16,6 +16,4 @@ const Eir = new Schema(
   },
   { typeKey: '$type', collection: 'eir' }
 );
-Eir.index({ pei: 1 }, { unique: true, name: 'pei_unique' });
-Eir.index({ supi: 1 }, { unique: true, sparse: true, name: 'supi_unique' });
 module.exports = mongoose.model('Eir', Eir);
