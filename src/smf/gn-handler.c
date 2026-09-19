@@ -181,8 +181,11 @@ uint8_t smf_gn_handle_create_pdp_context_request(
     if (smf_ue->msisdn_len > 0) {
         memcpy(smf_ue->msisdn,
             (uint8_t*)req->msisdn.data + 1, smf_ue->msisdn_len);
-        ogs_buffer_to_bcd(
-            smf_ue->msisdn, smf_ue->msisdn_len, smf_ue->msisdn_bcd);
+        if (!ogs_buffer_to_bcd(smf_ue->msisdn, smf_ue->msisdn_len,
+                    smf_ue->msisdn_bcd, sizeof(smf_ue->msisdn_bcd))) {
+            ogs_error("Invalid MSISDN [len:%d]", smf_ue->msisdn_len);
+            return OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+        }
     }
 
     /* Common Flags 7.7.48 */
@@ -251,8 +254,11 @@ uint8_t smf_gn_handle_create_pdp_context_request(
         smf_ue->imeisv_len = req->imei.len;
         memcpy(smf_ue->imeisv,
             (uint8_t*)req->imei.data, smf_ue->imeisv_len);
-        ogs_buffer_to_bcd(
-            smf_ue->imeisv, smf_ue->imeisv_len, smf_ue->imeisv_bcd);
+        if (!ogs_buffer_to_bcd(smf_ue->imeisv, smf_ue->imeisv_len,
+                    smf_ue->imeisv_bcd, sizeof(smf_ue->imeisv_bcd))) {
+            ogs_error("Invalid IMEI(SV) [len:%d]", smf_ue->imeisv_len);
+            return OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+        }
     }
 
     /* UE IP Address */

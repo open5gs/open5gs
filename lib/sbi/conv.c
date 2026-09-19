@@ -214,8 +214,8 @@ char *ogs_supi_from_suci(char *suci)
                     plain_bcd = ogs_calloc(1, plain_text.size*2+1);
                     ogs_assert(plain_bcd);
 
-                    ogs_buffer_to_bcd(
-                        plain_text.data, plain_text.size, plain_bcd);
+                    ogs_buffer_to_bcd(plain_text.data, plain_text.size,
+                        plain_bcd, plain_text.size*2+1);
 
                     supi = ogs_msprintf("imsi-%s%s%s",
                             array[2], array[3], plain_bcd);

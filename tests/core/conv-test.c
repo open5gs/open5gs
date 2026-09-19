@@ -183,6 +183,8 @@ static void conv_test6(abts_case *tc, void *data)
 static void conv_test7(abts_case *tc, void *data)
 {
     char out[32];
+    char bounded[17];
+    char untouched[17];
     uint8_t buf1[6] = { 0x94, 0x71, 0x52, 0x76, 0x00, 0x41 };
     int buf1_len = 6;
     uint8_t buf2[8] = { 0x53, 0x61, 0x20, 0x00, 0x91, 0x78, 0x84, 0x00 };
@@ -190,12 +192,32 @@ static void conv_test7(abts_case *tc, void *data)
     uint8_t buf3[8] = { 0x00, 0x01, 0x01, 0x21, 0x43, 0x65, 0x18, 0xf9 };
     int buf3_len = 8;
 
-    ogs_buffer_to_bcd(buf1, buf1_len, out);
+    ABTS_PTR_NOTNULL(tc, ogs_buffer_to_bcd(buf1, buf1_len, out, sizeof(out)));
     ABTS_TRUE(tc, strcmp("491725670014", out) == 0);
-    ogs_buffer_to_bcd(buf2, buf2_len, out);
+    ABTS_PTR_NOTNULL(tc, ogs_buffer_to_bcd(buf2, buf2_len, out, sizeof(out)));
     ABTS_TRUE(tc, strcmp("3516020019874800", out) == 0);
-    ogs_buffer_to_bcd(buf3, buf3_len, out);
+    ABTS_PTR_NOTNULL(tc, ogs_buffer_to_bcd(buf3, buf3_len, out, sizeof(out)));
     ABTS_TRUE(tc, strcmp("001010123456819", out) == 0);
+
+    /* 15 digits and the NUL fit exactly in 16 bytes */
+    memset(bounded, 0xa5, sizeof(bounded));
+    ABTS_PTR_NOTNULL(tc, ogs_buffer_to_bcd(buf3, buf3_len, bounded, 16));
+    ABTS_TRUE(tc, strcmp("001010123456819", bounded) == 0);
+    ABTS_INT_EQUAL(tc, 0xa5, (unsigned char)bounded[16]);
+
+    /* 16 digits need 17 bytes : fail without writing anything */
+    memset(bounded, 0xa5, sizeof(bounded));
+    memset(untouched, 0xa5, sizeof(untouched));
+    ABTS_PTR_EQUAL(tc, NULL, ogs_buffer_to_bcd(buf2, buf2_len, bounded, 16));
+    ABTS_TRUE(tc, memcmp(bounded, untouched, sizeof(bounded)) == 0);
+
+    /* No room for the NUL */
+    ABTS_PTR_EQUAL(tc, NULL, ogs_buffer_to_bcd(buf1, buf1_len, bounded, 0));
+    ABTS_TRUE(tc, memcmp(bounded, untouched, sizeof(bounded)) == 0);
+
+    /* Empty input */
+    ABTS_PTR_NOTNULL(tc, ogs_buffer_to_bcd(buf1, 0, out, sizeof(out)));
+    ABTS_TRUE(tc, strcmp("", out) == 0);
 }
 
 static void conv_test8(abts_case *tc, void *data)

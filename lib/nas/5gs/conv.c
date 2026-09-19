@@ -57,7 +57,8 @@ void ogs_nas_5gs_imsi_to_bcd(
     scheme_output_bcd = ogs_calloc(1, scheme_output_size*2+1);
     ogs_assert(scheme_output_bcd);
 
-    ogs_buffer_to_bcd(scheme_output, scheme_output_size, scheme_output_bcd);
+    ogs_buffer_to_bcd(scheme_output, scheme_output_size,
+            scheme_output_bcd, scheme_output_size*2+1);
     p = ogs_slprintf(p, last, "%s", scheme_output_bcd);
 
     ogs_free(scheme_output_bcd);
@@ -170,7 +171,7 @@ char *ogs_nas_5gs_suci_from_mobile_identity(
                 scheme_output_string_or_bcd, scheme_output_size*2+1);
     } else {
         ogs_buffer_to_bcd(scheme_output, scheme_output_size,
-                scheme_output_string_or_bcd);
+                scheme_output_string_or_bcd, scheme_output_size*2+1);
     }
 
     suci = ogs_mstrcatf(suci, "%s-%d-%d-%s",

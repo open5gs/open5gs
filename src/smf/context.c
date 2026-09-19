@@ -1184,8 +1184,10 @@ static int smf_ue_set_imsi(smf_ue_t *smf_ue, uint8_t *imsi, int imsi_len)
         return OGS_ERROR;
     }
 
-    memset(imsi_bcd, 0, sizeof(imsi_bcd));
-    ogs_buffer_to_bcd(imsi, imsi_len, imsi_bcd);
+    if (!ogs_buffer_to_bcd(imsi, imsi_len, imsi_bcd, sizeof(imsi_bcd))) {
+        ogs_error("Invalid IMSI [len:%d]", imsi_len);
+        return OGS_ERROR;
+    }
 
     if (smf_ue_set_imsi_bcd(smf_ue, imsi_bcd) != OGS_OK) {
         ogs_error("smf_ue_set_imsi_bcd() failed [%s]", imsi_bcd);
@@ -1274,8 +1276,10 @@ smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
         return NULL;
     }
 
-    memset(imsi_bcd, 0, sizeof(imsi_bcd));
-    ogs_buffer_to_bcd(imsi, imsi_len, imsi_bcd);
+    if (!ogs_buffer_to_bcd(imsi, imsi_len, imsi_bcd, sizeof(imsi_bcd))) {
+        ogs_error("Invalid IMSI [len:%d]", imsi_len);
+        return NULL;
+    }
     if (ogs_imsi_bcd_is_valid(imsi_bcd) == false) {
         ogs_error("ogs_imsi_bcd_is_valid() failed [%s]", imsi_bcd);
         return NULL;

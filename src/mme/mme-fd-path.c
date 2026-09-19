@@ -166,12 +166,22 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
         ret = fd_msg_avp_hdr(avpch1, &hdr);
         ogs_assert(ret == 0);
         if (hdr->avp_value->os.data && hdr->avp_value->os.len) {
-            mme_ue->msisdn_len =
+            int msisdn_len =
                 ogs_min(hdr->avp_value->os.len, OGS_MAX_MSISDN_LEN);
-            memcpy(mme_ue->msisdn, hdr->avp_value->os.data, mme_ue->msisdn_len);
-            ogs_buffer_to_bcd(mme_ue->msisdn,
-                    mme_ue->msisdn_len, mme_ue->msisdn_bcd);
-            *subdatamask = (*subdatamask | OGS_DIAM_S6A_SUBDATA_MSISDN);
+            char msisdn_bcd[OGS_MAX_MSISDN_BCD_LEN+1];
+
+            /* Keep the stored MSISDN if this one does not decode */
+            if (!ogs_buffer_to_bcd(hdr->avp_value->os.data, msisdn_len,
+                        msisdn_bcd, sizeof(msisdn_bcd))) {
+                ogs_warn("Invalid MSISDN [len:%d] : ignored", msisdn_len);
+            } else {
+                mme_ue->msisdn_len = msisdn_len;
+                memcpy(mme_ue->msisdn,
+                        hdr->avp_value->os.data, mme_ue->msisdn_len);
+                ogs_cpystrn(mme_ue->msisdn_bcd,
+                        msisdn_bcd, sizeof(mme_ue->msisdn_bcd));
+                *subdatamask = (*subdatamask | OGS_DIAM_S6A_SUBDATA_MSISDN);
+            }
         }
     }
 
@@ -189,13 +199,22 @@ static int mme_s6a_subscription_data_from_avp(struct avp *avp,
         ret = fd_msg_avp_hdr(avpch1, &hdr);
         ogs_assert(ret == 0);
         if (hdr->avp_value->os.data && hdr->avp_value->os.len) {
-            mme_ue->a_msisdn_len =
+            int a_msisdn_len =
                 ogs_min(hdr->avp_value->os.len, OGS_MAX_MSISDN_LEN);
-            memcpy(mme_ue->a_msisdn, hdr->avp_value->os.data,
-                    mme_ue->a_msisdn_len);
-            ogs_buffer_to_bcd(mme_ue->a_msisdn,
-                    mme_ue->a_msisdn_len, mme_ue->a_msisdn_bcd);
-            *subdatamask = (*subdatamask | OGS_DIAM_S6A_SUBDATA_A_MSISDN);
+            char a_msisdn_bcd[OGS_MAX_MSISDN_BCD_LEN+1];
+
+            /* Keep the stored A-MSISDN if this one does not decode */
+            if (!ogs_buffer_to_bcd(hdr->avp_value->os.data, a_msisdn_len,
+                        a_msisdn_bcd, sizeof(a_msisdn_bcd))) {
+                ogs_warn("Invalid A-MSISDN [len:%d] : ignored", a_msisdn_len);
+            } else {
+                mme_ue->a_msisdn_len = a_msisdn_len;
+                memcpy(mme_ue->a_msisdn,
+                        hdr->avp_value->os.data, mme_ue->a_msisdn_len);
+                ogs_cpystrn(mme_ue->a_msisdn_bcd,
+                        a_msisdn_bcd, sizeof(mme_ue->a_msisdn_bcd));
+                *subdatamask = (*subdatamask | OGS_DIAM_S6A_SUBDATA_A_MSISDN);
+            }
         }
     }
 

@@ -183,7 +183,14 @@ void mme_gn_handle_sgsn_context_request(
 
     if (req->imsi.presence) {
         char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
-        ogs_buffer_to_bcd(req->imsi.data, req->imsi.len, imsi_bcd);
+        if (!ogs_buffer_to_bcd(req->imsi.data, req->imsi.len,
+                    imsi_bcd, sizeof(imsi_bcd))) {
+            ogs_warn("[Gn] Rx SGSN Context Request with invalid IMSI "
+                    "[len:%d]!", req->imsi.len);
+            mme_gtp1_send_sgsn_context_response(
+                    NULL, OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT, xact);
+            return;
+        }
         ogs_debug("    IMSI[%s]", imsi_bcd);
         mme_ue = mme_ue_find_by_imsi(req->imsi.data, req->imsi.len);
         if (!mme_ue)
@@ -379,7 +386,13 @@ int mme_gn_handle_sgsn_context_response(
         goto nack_and_reject;
     }
 
-    ogs_buffer_to_bcd(resp->imsi.data, resp->imsi.len, imsi_bcd);
+    if (!ogs_buffer_to_bcd(resp->imsi.data, resp->imsi.len,
+                imsi_bcd, sizeof(imsi_bcd))) {
+        ogs_error("[Gn] Rx SGSN Context Response with invalid IMSI [len:%d]!",
+                resp->imsi.len);
+        gtp1_cause = OGS_GTP1_CAUSE_MANDATORY_IE_INCORRECT;
+        goto nack_and_reject;
+    }
     ogs_info("    IMSI[%s]", imsi_bcd);
     mme_ue_set_imsi(mme_ue, imsi_bcd,
             MME_UE_IMSI_FROM_SGSN_CONTEXT_RESPONSE);

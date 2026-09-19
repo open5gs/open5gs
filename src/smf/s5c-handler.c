@@ -205,8 +205,11 @@ uint8_t smf_s5c_handle_create_session_request(
         smf_ue->msisdn_len = req->msisdn.len;
         if (smf_ue->msisdn_len > 0) {
             memcpy(smf_ue->msisdn, req->msisdn.data, smf_ue->msisdn_len);
-            ogs_buffer_to_bcd(
-                smf_ue->msisdn, smf_ue->msisdn_len, smf_ue->msisdn_bcd);
+            if (!ogs_buffer_to_bcd(smf_ue->msisdn, smf_ue->msisdn_len,
+                        smf_ue->msisdn_bcd, sizeof(smf_ue->msisdn_bcd))) {
+                ogs_error("Invalid MSISDN [len:%d]", smf_ue->msisdn_len);
+                return OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+            }
         }
     }
 
@@ -488,8 +491,11 @@ uint8_t smf_s5c_handle_create_session_request(
     if (req->msisdn.presence && req->msisdn.len && req->msisdn.data) {
         smf_ue->msisdn_len = ogs_min(req->msisdn.len, OGS_MAX_MSISDN_LEN);
         memcpy(smf_ue->msisdn, req->msisdn.data, smf_ue->msisdn_len);
-        ogs_buffer_to_bcd(smf_ue->msisdn,
-                smf_ue->msisdn_len, smf_ue->msisdn_bcd);
+        if (!ogs_buffer_to_bcd(smf_ue->msisdn, smf_ue->msisdn_len,
+                    smf_ue->msisdn_bcd, sizeof(smf_ue->msisdn_bcd))) {
+            ogs_error("Invalid MSISDN [len:%d]", smf_ue->msisdn_len);
+            return OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+        }
     }
 
     /* Set IMEI(SV) */
@@ -497,8 +503,11 @@ uint8_t smf_s5c_handle_create_session_request(
         smf_ue->imeisv_len = ogs_min(req->me_identity.len, OGS_MAX_IMEISV_LEN);
         memcpy(smf_ue->imeisv,
             (uint8_t*)req->me_identity.data, smf_ue->imeisv_len);
-        ogs_buffer_to_bcd(
-            smf_ue->imeisv, smf_ue->imeisv_len, smf_ue->imeisv_bcd);
+        if (!ogs_buffer_to_bcd(smf_ue->imeisv, smf_ue->imeisv_len,
+                    smf_ue->imeisv_bcd, sizeof(smf_ue->imeisv_bcd))) {
+            ogs_error("Invalid IMEI(SV) [len:%d]", smf_ue->imeisv_len);
+            return OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
+        }
     }
 
     /* Set Node Identifier */
