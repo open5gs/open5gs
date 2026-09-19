@@ -1585,6 +1585,10 @@ smf_sess_t *smf_sess_add_by_gtp1_message(ogs_gtp1_message_t *message)
         ogs_error("No RAT Type");
         return NULL;
     }
+    if (req->rat_type.u8 == 0) {
+        ogs_error("Invalid RAT Type [%d]", req->rat_type.u8);
+        return NULL;
+    }
 
     ogs_trace("smf_sess_add_by_message() [APN:%s]", apn);
 
@@ -1642,6 +1646,10 @@ smf_sess_t *smf_sess_add_by_gtp2_message(ogs_gtp2_message_t *message)
     }
     if (req->rat_type.presence == 0) {
         ogs_error("No RAT Type");
+        return NULL;
+    }
+    if (req->rat_type.u8 == 0) {
+        ogs_error("Invalid RAT Type [%d]", req->rat_type.u8);
         return NULL;
     }
 
