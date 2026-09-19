@@ -26,6 +26,7 @@
 #include "sbi-path.h"
 #include "ngap-path.h"
 #include "fd-path.h"
+#include "dhcpv6.h"
 
 uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause, uint8_t gtp_version)
 {
@@ -295,6 +296,22 @@ void smf_5gc_n4_handle_session_modification_response(
 
     ogs_pfcp_xact_commit(xact);
 
+    if (flags & OGS_PFCP_MODIFY_PD_LEASE) {
+        bool accepted;
+
+        if (!sess) {
+            ogs_error("No Context");
+            return;
+        }
+        accepted = rsp->cause.presence &&
+                rsp->cause.u8 == OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+        if (!accepted)
+            ogs_error("PD lease modification rejected [cause:%d]",
+                    rsp->cause.presence ? rsp->cause.u8 : 0);
+        smf_dhcpv6_pd_pfcp_complete(sess, accepted);
+        return;
+    }
+
     status = OGS_SBI_HTTP_STATUS_OK;
 
     if (!sess) {
@@ -322,6 +339,7 @@ void smf_5gc_n4_handle_session_modification_response(
         ogs_pfcp_far_t *far = NULL;
 
         ogs_assert(sess);
+
         for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
             pdr = ogs_pfcp_handle_created_pdr(
                     &sess->pfcp, &rsp->created_pdr[i],
@@ -1324,6 +1342,18 @@ void smf_epc_n4_handle_session_modification_response(
 
     if (!sess) {
         ogs_error("No Context");
+        return;
+    }
+
+    if (flags & OGS_PFCP_MODIFY_PD_LEASE) {
+        bool accepted;
+
+        accepted = rsp->cause.presence &&
+                rsp->cause.u8 == OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
+        if (!accepted)
+            ogs_error("PD lease modification rejected [cause:%d]",
+                    rsp->cause.presence ? rsp->cause.u8 : 0);
+        smf_dhcpv6_pd_pfcp_complete(sess, accepted);
         return;
     }
 
