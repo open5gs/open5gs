@@ -7,6 +7,7 @@ import oc from 'open-color';
 import SubscriberIcon from 'react-icons/lib/md/person-add';
 import ProfileIcon from 'react-icons/lib/md/content-copy';
 import AccountIcon from 'react-icons/lib/md/vpn-key';
+import EirIcon from 'react-icons/lib/md/phonelink-lock';
 
 const Menu = styled.div`
   display: block;
@@ -84,6 +85,10 @@ const Sidebar = ({ isOpen, width, selectedView, onSelectView }) => (
     <Item name="subscriber" selected={selectedView} onSelect={onSelectView}>
       <Icon><SubscriberIcon/></Icon>
       <Title>Subscriber</Title>
+    </Item>
+    <Item name="eir" selected={selectedView} onSelect={onSelectView}>
+      <Icon><EirIcon/></Icon>
+      <Title>EIR</Title>
     </Item>
     <Item name="profile" selected={selectedView} onSelect={onSelectView}>
       <Icon><ProfileIcon/></Icon>

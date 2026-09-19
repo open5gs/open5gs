@@ -186,6 +186,11 @@ amf:
   network_name:
     full: Open5GS
   amf_name: open5gs-amf0
+  eir:
+    enabled: true
+    unknown_action: allow
+    failure_action: reject
+    missing_pei_action: reject
   time:
     t3512:
       value: 540     # 9 mintues * 60 = 540 seconds
@@ -321,6 +326,15 @@ bsf:
   sbi:
     server:
       - address: 127.0.0.15
+        port: 7777
+    client:
+      scp:
+        - uri: http://127.0.0.200:7777
+
+eir:
+  sbi:
+    server:
+      - address: 127.0.0.21
         port: 7777
     client:
       scp:
