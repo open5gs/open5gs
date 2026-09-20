@@ -1772,16 +1772,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
  */
                         switch (e->h.sbi.state) {
                         case OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED:
-                            if (sess->amf_to_vsmf_release_stream_id >=
-                                    OGS_MIN_POOL_ID &&
-                                sess->amf_to_vsmf_release_stream_id <=
-                                    OGS_MAX_POOL_ID)
-                                ogs_error("UE requested release stream ID [%d]"
-                                        "has not been used yet",
-                                        sess->amf_to_vsmf_release_stream_id);
-                            /* Store Stream ID */
-                            sess->amf_to_vsmf_release_stream_id =
-                                ogs_sbi_id_from_stream(stream);
+                            /* The AMF stream was stored before the update. */
                             break;
                         case OGS_PFCP_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT:
     /*
@@ -2638,12 +2629,11 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                                 ogs_sbi_stream_find_by_id(
                                         sess->amf_to_vsmf_release_stream_id);
 
+                        sess->amf_to_vsmf_release_stream_id = OGS_INVALID_POOL_ID;
                         if (amf_to_vsmf_release_stream) {
                             ogs_assert(true ==
                                     ogs_sbi_send_http_status_no_content(
                                         amf_to_vsmf_release_stream));
-                            sess->amf_to_vsmf_release_stream_id =
-                                OGS_INVALID_POOL_ID;
                         }
 
                         memset(&param, 0, sizeof(param));
@@ -3031,25 +3021,19 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
                     CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
                         switch (e->h.sbi.state) {
                         case OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED:
-/*
- * Handle unexpected arrival of Nsmf_PDUSession_UpdateSMContext Response
- * (step 1a) after PFCP deletion triggered by UE (step 3a).
- * In Home-routed Roaming (TS 23.502 Section 4.3.4.3) SMContext Response is
- * expected before SMContext Request (step 3a), but races can invert order,
- * causing smf_gsm_state_wait_pfcp_deletion on PFCP release (steps 4a/4b).
- * Without handling the delayed Response here, no handler exists and a crash
- * results. Storing the stream ID lets the Response be processed safely.
- */
-                            if (sess->amf_to_vsmf_release_stream_id >=
-                                    OGS_MIN_POOL_ID &&
-                                sess->amf_to_vsmf_release_stream_id <=
-                                    OGS_MAX_POOL_ID)
-                                ogs_error("UE requested release stream ID [%d]"
-                                        "has not been used yet",
-                                        sess->amf_to_vsmf_release_stream_id);
-                            /* Store Stream ID */
-                            sess->amf_to_vsmf_release_stream_id =
-                                ogs_sbi_id_from_stream(stream);
+                            /* PFCP deletion will complete the AMF request. */
+                            break;
+                        case SMF_UPDATE_STATE_DEACTIVATED:
+                            /*
+                             * Deactivation of a stale NG context can overlap
+                             * duplicate-PSI release. Complete its AMF update
+                             * even if the H-SMF response arrives after PFCP
+                             * deletion has started; keep deletion in progress.
+                             */
+                            if (stream)
+                                smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                                        sess, stream,
+                                        OpenAPI_up_cnx_state_DEACTIVATED);
                             break;
 /*
  * Assume PDU session establishment and deregistration occur simultaneously.
@@ -3514,6 +3498,63 @@ void smf_gsm_state_wait_5gc_n1_n2_release(ogs_fsm_t *s, smf_event_t *e)
         switch (service_name_id) {
         case OpenAPI_service_name_nsmf_pdusession:
             SWITCH(sbi_message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_PDU_SESSIONS)
+                SWITCH(sbi_message->h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    SWITCH(sbi_message->h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+                        switch (e->h.sbi.state) {
+                        case OGS_PFCP_DELETE_TRIGGER_UE_REQUESTED:
+                            /*
+                             * The H-SMF response can arrive after PFCP
+                             * deletion. The original AMF request has already
+                             * been completed; do not restore its stream ID.
+                             */
+                            break;
+                        /*
+                         * The H-SMF activation response can also be delayed
+                         * past PFCP deletion if the UE releases the session
+                         * immediately after setup. Complete that earlier AMF
+                         * request, as in wait_pfcp_deletion, without changing
+                         * the session state or restarting activation.
+                         */
+                        case SMF_UPDATE_STATE_ACTIVATED_FROM_ACTIVATING:
+                            if (stream)
+                                smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                                        sess, stream,
+                                        OpenAPI_up_cnx_state_ACTIVATED);
+                            break;
+                        case SMF_UPDATE_STATE_ACTIVATED_FROM_NON_ACTIVATING:
+                            if (stream)
+                                ogs_assert(true ==
+                                    ogs_sbi_send_http_status_no_content(stream));
+                            break;
+                        case SMF_UPDATE_STATE_DEACTIVATED:
+                            /* The response may also arrive after deletion. */
+                            if (stream)
+                                smf_sbi_send_sm_context_updated_data_up_cnx_state(
+                                        sess, stream,
+                                        OpenAPI_up_cnx_state_DEACTIVATED);
+                            break;
+                        default:
+                            ogs_fatal("Unknown state [0x%x]", e->h.sbi.state);
+                            ogs_assert_if_reached();
+                        }
+                        break;
+                    DEFAULT
+                        ogs_error("[%s:%d] Invalid resource name [%s]",
+                                smf_ue->supi, sess->psi,
+                                sbi_message->h.resource.component[2]);
+                        ogs_assert_if_reached();
+                    END
+                    break;
+                DEFAULT
+                    ogs_error("[%s:%d] Invalid HTTP method [%s]",
+                            smf_ue->supi, sess->psi, sbi_message->h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
             CASE(OGS_SBI_RESOURCE_NAME_VSMF_PDU_SESSIONS)
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
