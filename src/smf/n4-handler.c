@@ -624,10 +624,26 @@ void smf_5gc_n4_handle_session_modification_response(
                     sess->nsmf_param.request_indication =
                         OpenAPI_request_indication_UE_REQ_PDU_SES_REL;
 
+                    /*
+                     * The H-SMF release request can overtake its response
+                     * to this update. Store the AMF stream before sending
+                     * so PFCP deletion can complete the original request.
+                     */
+                    if (sess->amf_to_vsmf_release_stream_id >= OGS_MIN_POOL_ID &&
+                        sess->amf_to_vsmf_release_stream_id <= OGS_MAX_POOL_ID)
+                        ogs_error("UE requested release stream ID "
+                                "[%d] has not been used yet",
+                                sess->amf_to_vsmf_release_stream_id);
+                    sess->amf_to_vsmf_release_stream_id =
+                        stream ? ogs_sbi_id_from_stream(stream) :
+                            OGS_INVALID_POOL_ID;
+
                     r = smf_sbi_discover_and_send(
                             OpenAPI_service_name_nsmf_pdusession, NULL,
                             smf_nsmf_pdusession_build_hsmf_update_data,
                             sess, stream, trigger, NULL);
+                    if (r != OGS_OK)
+                        sess->amf_to_vsmf_release_stream_id = OGS_INVALID_POOL_ID;
                     ogs_expect(r == OGS_OK);
                     ogs_assert(r != OGS_ERROR);
                 } else if (trigger ==

@@ -1852,6 +1852,19 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
                 param.ue_location = true;
                 param.ue_timezone = true;
 
+                /*
+                 * SUCI handling may have adopted the old UE's sessions and
+                 * their pending SBI transactions after xact_count was saved.
+                 * The count can therefore grow even when release-all sends
+                 * no new request because no SM context remains. Comparing
+                 * against that stale count would skip the AUSF request but
+                 * still enter gmm_state_authentication, stalling registration.
+                 *
+                 * Refresh the baseline immediately before release-all to
+                 * detect newly sent requests. AMF_SESSION_RELEASE_PENDING()
+                 * still covers releases that were already in progress.
+                 */
+                xact_count = amf_sess_xact_count(amf_ue);
                 amf_sbi_send_release_all_sessions(
                         ran_ue, amf_ue,
                         AMF_RELEASE_SM_CONTEXT_NO_STATE, &param);
@@ -1983,6 +1996,19 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e,
             param.ue_location = true;
             param.ue_timezone = true;
 
+            /*
+             * Identity handling may have adopted the old UE's sessions and
+             * their pending SBI transactions after xact_count was saved.
+             * For example, a saved count of 0 can become 2 through adoption.
+             * If no SM context remains, release-all sends no new request,
+             * yet comparing 2 against 0 would skip the AUSF request and
+             * enter gmm_state_authentication without starting authentication.
+             *
+             * Refresh the baseline after adoption and before release-all.
+             * The comparison then detects newly sent requests, while
+             * AMF_SESSION_RELEASE_PENDING() covers already pending releases.
+             */
+            xact_count = amf_sess_xact_count(amf_ue);
             amf_sbi_send_release_all_sessions(
                     ran_ue, amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE, &param);
 
