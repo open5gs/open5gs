@@ -33,6 +33,7 @@ conf_data.set('build_subprojects_freeDiameter_extensions_dir',
 example_conf = '''
     sample.yaml
     eir.yaml
+    s13.yaml
     attach.yaml
     dns.yaml
     310014.yaml

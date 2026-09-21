@@ -24,6 +24,7 @@ static ogs_thread_t *scp_thread = NULL;
 static ogs_thread_t *sepp_thread = NULL;
 static ogs_thread_t *pcrf_thread = NULL;
 static ogs_thread_t *hss_thread = NULL;
+static ogs_thread_t *eir_thread = NULL;
 static ogs_thread_t *upf_thread = NULL;
 static ogs_thread_t *sgwc_thread = NULL;
 static ogs_thread_t *sgwu_thread = NULL;
@@ -65,6 +66,9 @@ int app_initialize(const char *const argv[])
         sepp_thread = test_child_create("sepp", 0, argv_out);
     if (ogs_global_conf()->parameter.no_hss == 0)
         hss_thread = test_child_create("hss", 0, argv_out);
+    if (ogs_global_conf()->parameter.no_eir == 0 &&
+            ogs_global_conf()->parameter.eir_count > 0)
+        eir_thread = test_child_create("eir", 0, argv_out);
     if (ogs_global_conf()->parameter.no_pcrf == 0)
         pcrf_thread = test_child_create("pcrf", 0, argv_out);
 
@@ -124,6 +128,7 @@ void app_terminate(void)
     if (udm_thread) ogs_thread_destroy(udm_thread);
     if (ausf_thread) ogs_thread_destroy(ausf_thread);
 
+    if (eir_thread) ogs_thread_destroy(eir_thread);
     if (hss_thread) ogs_thread_destroy(hss_thread);
     if (pcrf_thread) ogs_thread_destroy(pcrf_thread);
 

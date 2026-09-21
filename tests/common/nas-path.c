@@ -160,6 +160,8 @@ void testemm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         testemm_handle_attach_accept(test_ue, &message.emm.attach_accept);
         break;
     case OGS_NAS_EPS_ATTACH_REJECT:
+        test_ue->attach_reject_cause =
+            message.emm.attach_reject.emm_cause;
         break;
     case OGS_NAS_EPS_SERVICE_REJECT:
         break;

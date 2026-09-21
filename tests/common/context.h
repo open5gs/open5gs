@@ -411,6 +411,7 @@ typedef struct test_ue_s {
     /* EPC: Last received message */
     S1AP_ProcedureCode_t s1ap_procedure_code;
     uint8_t emm_message_type;
+    ogs_nas_emm_cause_t attach_reject_cause;
     uint8_t esm_message_type;
 
     test_sess_t *sess;
