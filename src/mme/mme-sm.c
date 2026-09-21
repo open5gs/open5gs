@@ -33,6 +33,7 @@
 #include "mme-s11-handler.h"
 #include "mme-fd-path.h"
 #include "mme-s6a-handler.h"
+#include "mme-s13-handler.h"
 #include "mme-path.h"
 #include "mme-dns.h"
 
@@ -76,6 +77,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     mme_sess_t *sess = NULL;
 
     ogs_diam_s6a_message_t *s6a_message = NULL;
+    ogs_diam_s13_message_t *s13_message = NULL;
     uint8_t emm_cause = 0;
 
     ogs_gtp_node_t *gnode = NULL;
@@ -761,6 +763,50 @@ cleanup:
         ogs_subscription_data_free(&s6a_message->idr_message.subscription_data);
         ogs_subscription_data_free(&s6a_message->ula_message.subscription_data);
         ogs_free(s6a_message);
+        break;
+
+    case MME_EVENT_S13_MESSAGE:
+        s13_message = e->s13_message;
+        ogs_assert(s13_message);
+
+        /*
+         * Same race condition as for S6A_MESSAGE above: the UE context may
+         * have been removed while the EIR was being queried.
+         */
+        mme_ue = mme_ue_find_by_id(e->mme_ue_id);
+        if (!mme_ue) {
+            ogs_error("UE(mme-ue) context has already been removed");
+            ogs_free(s13_message);
+            break;
+        }
+
+        enb_ue = enb_ue_find_by_id(e->enb_ue_id);
+        /*
+         * The 'enb_ue' context is not checked
+         * because the status is checked in the sending routine.
+         */
+
+        switch (s13_message->cmd_code) {
+        case OGS_DIAM_S13_CMD_CODE_ME_IDENTITY_CHECK:
+            ogs_debug("OGS_DIAM_S13_CMD_CODE_ME_IDENTITY_CHECK");
+            emm_cause = mme_s13_handle_eca(mme_ue, s13_message);
+            
+            /* Only a real verdict is cached, never an error nor an
+             * unrecognized status that failure_action had to cover */
+            if (s13_message->result_code == ER_DIAMETER_SUCCESS &&
+                mme_s13_status_is_verdict(
+                    s13_message->eca_message.equipment_status_code))
+                mme_eir_cache_update(mme_ue->imsi_bcd, mme_ue->imeisv_bcd,
+                    s13_message->eca_message.equipment_status_code);
+
+            mme_s13_complete_check(enb_ue, mme_ue, emm_cause);
+            break;
+        default:
+            ogs_error("Invalid Type[%d]", s13_message->cmd_code);
+            break;
+        }
+
+        ogs_free(s13_message);
         break;
 
     case MME_EVENT_S11_MESSAGE:

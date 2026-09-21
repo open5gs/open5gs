@@ -41,9 +41,12 @@ void mme_s6a_send_ulr(enb_ue_t *enb_ue, mme_ue_t *mme_ue, uint32_t extra_ulr_fla
 /* MME Sends Purge UE Request to HSS */
 void mme_s6a_send_pur(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
 
+/* MME Sends ME Identity Check Request to EIR */
+void mme_s13_send_ecr(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
+
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* MME_FD_PATH_H */
-
