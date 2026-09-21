@@ -3404,6 +3404,10 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
         uint8_t *data = ue.ids[i].data;
         switch(ue.ids[i].id) {
         case OGS_PCO_ID_PASSWORD_AUTHENTICATION_PROTOCOL:
+            if (ue.ids[i].len < 2) {
+                ogs_error("Ignoring PAP container [len:%d]", ue.ids[i].len);
+                break;
+            }
             if (data[0] == 1) { /* Code : Authenticate-Request */
                 memset(&pco_pap, 0, sizeof(ogs_pco_pap_t));
 
@@ -3424,6 +3428,10 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
             }
             break;
         case OGS_PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL:
+            if (ue.ids[i].len < 2) {
+                ogs_error("Ignoring CHAP container [len:%d]", ue.ids[i].len);
+                break;
+            }
             if (data[0] == 2) { /* Code : Response */
                 memset(&pco_chap, 0, sizeof(ogs_pco_chap_t));
                 pco_size = 4; /* sizeof(code+identifier+len) */
@@ -3437,6 +3445,10 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
             }
             break;
         case OGS_PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL:
+            if (ue.ids[i].len < 4) {
+                ogs_error("Ignoring IPCP container [len:%d]", ue.ids[i].len);
+                break;
+            }
             if (data[0] == 1) { /* Code : Configuration Request */
                 ogs_pco_ipcp_t *ipcp = (ogs_pco_ipcp_t *)data;
                 uint16_t in_len = 0;
@@ -3447,6 +3459,14 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
 
                 ogs_assert(ipcp);
                 in_len = be16toh(ipcp->len);
+
+                /* The IPCP packet length is attacker-controlled; keep the
+                 * option scan below within the enclosing container. */
+                if (in_len < 4 || in_len > ue.ids[i].len) {
+                    ogs_error("Ignoring IPCP container "
+                            "[packet:%d container:%d]", in_len, ue.ids[i].len);
+                    break;
+                }
 
                 if (num_of_ipcp >= OGS_PCO_MAX_NUM_OF_IPCP) {
                     ogs_error("Ignoring IPCP container [max:%d]",

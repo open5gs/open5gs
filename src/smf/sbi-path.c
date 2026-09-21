@@ -445,10 +445,11 @@ void smf_sbi_send_sm_context_create_error(
         ogs_pkbuf_free(n1smbuf);
 }
 
-void smf_sbi_send_pdu_session_created_data(
+bool smf_sbi_send_pdu_session_created_data(
         smf_sess_t *sess, ogs_sbi_stream_t *stream)
 {
     int rv;
+    bool success = false;
     OpenAPI_pdu_session_created_data_t PduSessionCreatedData;
 
     OpenAPI_tunnel_info_t hcnTunnelInfo;
@@ -655,7 +656,14 @@ void smf_sbi_send_pdu_session_created_data(
     memset(&sendmsg, 0, sizeof(sendmsg));
 
     n1SmBufToUe = gsmue_build_pdu_session_establishment_accept(sess);
-    ogs_assert(n1SmBufToUe);
+    if (!n1SmBufToUe) {
+        ogs_error("gsmue_build_pdu_session_establishment_accept() failed");
+        smf_sbi_send_pdu_session_create_error(stream,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, OGS_SBI_APP_ERRNO_NULL,
+                OGS_5GSM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+                "Invalid protocol configuration options", NULL, NULL);
+        goto end;
+    }
 
     n1SmInfoToUe.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
     PduSessionCreatedData.n1_sm_info_to_ue = &n1SmInfoToUe;
@@ -689,6 +697,7 @@ void smf_sbi_send_pdu_session_created_data(
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
 
     ogs_free(sendmsg.http.location);
+    success = true;
 
 end:
     if (hcnTunnelInfo.ipv4_addr)
@@ -709,6 +718,8 @@ end:
         ogs_free(PduSessionCreatedData.ue_ipv4_address);
     if (PduSessionCreatedData.ue_ipv6_prefix)
         ogs_free(PduSessionCreatedData.ue_ipv6_prefix);
+
+    return success;
 }
 
 void smf_sbi_send_sm_context_updated_data(

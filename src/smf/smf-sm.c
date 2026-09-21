@@ -1109,9 +1109,11 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         &sess->serving_plmn_id, &sess->s_nssai,
                         SMF_METR_CTR_SM_PDUSESSIONCREATIONSUCC, 1);
             } else if (state == SMF_UECM_STATE_REGISTERED_HR) {
-                if (stream)
-                    smf_sbi_send_pdu_session_created_data(sess, stream);
-                else
+                if (stream) {
+                    if (smf_sbi_send_pdu_session_created_data(
+                                sess, stream) == false)
+                        break;
+                } else
                     ogs_error("Stream has already been removed");
 
                 smf_metrics_inst_by_slice_add(
