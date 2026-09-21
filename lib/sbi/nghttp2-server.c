@@ -25,6 +25,8 @@
 
 #define USE_SEND_DATA_WITH_NO_COPY 1
 
+#define MAX_HTTP_HEADER_LIST_SIZE (64 * 1024)
+
 static void server_init(int num_of_session_pool, int num_of_stream_pool);
 static void server_final(void);
 
@@ -100,6 +102,8 @@ typedef struct ogs_sbi_stream_s {
     int32_t                 stream_id;
     ogs_sbi_request_t       *request;
     bool                    memory_overflow;
+
+    size_t                  header_list_size;
 
     ogs_sbi_session_t       *session;
 
@@ -1437,6 +1441,7 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
                      nghttp2_rcbuf *name, nghttp2_rcbuf *value,
                      uint8_t flags, void *user_data)
 {
+    int rv;
     ogs_sbi_session_t *sbi_sess = user_data;
     ogs_sbi_stream_t *stream = NULL;
     ogs_sbi_request_t *request = NULL;
@@ -1474,6 +1479,29 @@ static int on_header(nghttp2_session *session, const nghttp2_frame *frame,
     ogs_assert(value);
     valuebuf = nghttp2_rcbuf_get_buf(value);
     ogs_assert(valuebuf.base);
+
+    /*
+     * Count every decoded field, including duplicates and empty values,
+     * before allocating strings. HTTP/2 adds 32 bytes per field, so the
+     * size limit also bounds the number of fields. Check the lengths before
+     * adding them to avoid integer overflow.
+     */
+    if (namebuf.len > MAX_HTTP_HEADER_LIST_SIZE - 32 ||
+        valuebuf.len > MAX_HTTP_HEADER_LIST_SIZE - 32 - namebuf.len ||
+        stream->header_list_size >
+            MAX_HTTP_HEADER_LIST_SIZE - 32 - namebuf.len - valuebuf.len) {
+        ogs_error("HTTP header list too large [stream:%d]", stream->stream_id);
+
+        /* Queue the reset; sending from a receive callback is not reentrant. */
+        rv = nghttp2_submit_rst_stream(session, NGHTTP2_FLAG_NONE,
+                stream->stream_id, NGHTTP2_ENHANCE_YOUR_CALM);
+        if (rv != 0)
+            ogs_error("nghttp2_submit_rst_stream() failed (%d:%s)",
+                    rv, nghttp2_strerror(rv));
+
+        return NGHTTP2_ERR_TEMPORAL_CALLBACK_FAILURE;
+    }
+    stream->header_list_size += namebuf.len + valuebuf.len + 32;
 
     if (valuebuf.len == 0) return 0;
 
@@ -1756,8 +1784,9 @@ static int on_begin_headers(nghttp2_session *session,
 static int session_send_preface(ogs_sbi_session_t *sbi_sess)
 {
     int rv;
-    nghttp2_settings_entry iv[1] = {
-        { NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS, ogs_app()->pool.stream }
+    nghttp2_settings_entry iv[2] = {
+        { NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS, ogs_app()->pool.stream },
+        { NGHTTP2_SETTINGS_MAX_HEADER_LIST_SIZE, MAX_HTTP_HEADER_LIST_SIZE }
     };
 
     ogs_assert(sbi_sess);

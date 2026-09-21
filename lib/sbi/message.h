@@ -679,8 +679,7 @@ ogs_sbi_response_t *ogs_sbi_build_response(
 int ogs_sbi_parse_response(
         ogs_sbi_message_t *message, ogs_sbi_response_t *response);
 
-#define ogs_sbi_header_set(ht, key, val) \
-    ogs_hash_set(ht, ogs_strdup(key), strlen(key), ogs_strdup(val))
+void ogs_sbi_header_set(ogs_hash_t *ht, const char *key, const char *val);
 #define ogs_sbi_header_get(ht, key) \
     ogs_hash_get(ht, key, strlen(key))
 

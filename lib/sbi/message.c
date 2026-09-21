@@ -1475,6 +1475,33 @@ void ogs_sbi_header_free(ogs_sbi_header_t *h)
         ogs_free(h->resource.component[i]);
 }
 
+void ogs_sbi_header_set(ogs_hash_t *ht, const char *key, const char *val)
+{
+    char *old_val, *new_val, *new_key;
+    int keylen;
+
+    ogs_assert(ht);
+    ogs_assert(key);
+    ogs_assert(val);
+
+    keylen = strlen(key);
+    old_val = ogs_hash_get(ht, key, keylen);
+
+    /* The new value may refer to the value already stored in the hash. */
+    new_val = ogs_strdup(val);
+    ogs_assert(new_val);
+
+    if (old_val) {
+        /* The hash retains the original key when replacing a value. */
+        ogs_hash_set(ht, key, keylen, new_val);
+        ogs_free(old_val);
+    } else {
+        new_key = ogs_strdup(key);
+        ogs_assert(new_key);
+        ogs_hash_set(ht, new_key, keylen, new_val);
+    }
+}
+
 void ogs_sbi_http_hash_free(ogs_hash_t *hash)
 {
     ogs_hash_index_t *hi;
