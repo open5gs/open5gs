@@ -560,7 +560,7 @@ int ogs_gtp1_parse_mm_context(
     ptr += val16;
 
     if ((ptr - (uint8_t *)octet->data) + 1 <= octet->len) {
-        CHECK_SPACE_ERR(*ptr);
+        CHECK_SPACE_ERR(1 + *ptr);
         if (*ptr > 0) {
             /* ptr[0] = Length of Access Restriction Data */
             decoded->nrsrna = ptr[1] & 0x01;
