@@ -23,6 +23,7 @@
 #include "ogs-app.h"
 #include "ogs-dbi.h"
 #include "ogs-sbi.h"
+#include "ogs-diameter-s13.h"
 
 #include "eir-sm.h"
 
@@ -36,6 +37,13 @@ extern int __eir_log_domain;
 #define OGS_LOG_DOMAIN __eir_log_domain
 
 typedef struct eir_context_s {
+    const char          *diam_conf_path;  /* EIR Diameter conf path */
+    ogs_diam_config_t   *diam_config;     /* EIR Diameter config */
+    bool                s13_enabled;      /* eir.freeDiameter is configured */
+
+    /* The N5g-eir handler (main thread) and the S13 handler (freeDiameter
+     * threads) share one mongoc client */
+    ogs_thread_mutex_t  db_lock;
 } eir_context_t;
 
 void eir_context_init(void);

@@ -107,8 +107,12 @@ bool eir_n5geir_eic_handle_equipment_status(
         return false;
     }
 
+    /* The S13 handler queries the same mongoc client from freeDiameter
+     * threads */
+    ogs_thread_mutex_lock(&eir_self()->db_lock);
     rv = ogs_dbi_eir_check_equipment(
             recvmsg->param.supi, recvmsg->param.pei, &record);
+    ogs_thread_mutex_unlock(&eir_self()->db_lock);
     switch (rv) {
     case OGS_OK:
         memset(&EirResponseData, 0, sizeof(EirResponseData));

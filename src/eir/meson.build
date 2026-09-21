@@ -22,6 +22,7 @@ libeir_sources = files('''
     n5geir-handler.c
 
     sbi-path.c
+    eir-fd-path.c
     eir-sm.c
 
     init.c
@@ -30,13 +31,15 @@ libeir_sources = files('''
 libeir = static_library('eir',
     sources : libeir_sources,
     dependencies : [libdbi_dep,
-                    libsbi_dep],
+                    libsbi_dep,
+                    libdiameter_s13_dep],
     install : false)
 
 libeir_dep = declare_dependency(
     link_with : libeir,
     dependencies : [libdbi_dep,
-                    libsbi_dep])
+                    libsbi_dep,
+                    libdiameter_s13_dep])
 
 eir_sources = files('''
     app.c

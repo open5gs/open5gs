@@ -10,6 +10,7 @@ global:
 #    peer: 64
 
 eir:
+  freeDiameter: @sysconfdir@/freeDiameter/eir.conf
   sbi:
     server:
       - address: 127.0.0.21
@@ -20,6 +21,33 @@ eir:
       scp:
         - uri: http://127.0.0.200:7777
 
+################################################################################
+# S13 (EPC MME) over Diameter
+################################################################################
+#  o The same eir collection answers ME-Identity-Check-Request from the MME.
+#    Remove eir.freeDiameter to serve N5g-eir (5G) only, or remove eir.sbi
+#    to serve S13 only (no NRF or SCP is then required).
+#  freeDiameter: @sysconfdir@/freeDiameter/eir.conf
+#
+#  o Inline freeDiameter configuration instead of a file
+#  freeDiameter:
+#    identity: eir.localdomain
+#    realm: localdomain
+#    listen_on: 127.0.0.21
+#    no_fwd: true
+#    load_extension:
+#      - module: @libdir@/freeDiameter/dbg_msg_dumps.fdx
+#        conf: 0x8888
+#      - module: @libdir@/freeDiameter/dict_rfc5777.fdx
+#      - module: @libdir@/freeDiameter/dict_mip6i.fdx
+#      - module: @libdir@/freeDiameter/dict_nasreq.fdx
+#      - module: @libdir@/freeDiameter/dict_nas_mipv6.fdx
+#      - module: @libdir@/freeDiameter/dict_dcca.fdx
+#      - module: @libdir@/freeDiameter/dict_dcca_3gpp.fdx
+#    connect:
+#      - identity: mme.localdomain
+#        address: 127.0.0.2
+#
 ################################################################################
 # SBI Server
 ################################################################################

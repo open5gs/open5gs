@@ -20,6 +20,7 @@
 #include "sbi-path.h"
 
 static eir_context_t self;
+static ogs_diam_config_t g_diam_conf;
 
 int __eir_log_domain;
 
@@ -29,11 +30,18 @@ void eir_context_init(void)
 {
     ogs_assert(context_initialized == 0);
 
+    /* Initial FreeDiameter Config */
+    memset(&g_diam_conf, 0, sizeof(ogs_diam_config_t));
+
     /* Initialize EIR context */
     memset(&self, 0, sizeof(eir_context_t));
+    self.diam_config = &g_diam_conf;
 
+    ogs_log_install_domain(&__ogs_diam_domain, "diam", ogs_core()->log.level);
     ogs_log_install_domain(&__ogs_dbi_domain, "dbi", ogs_core()->log.level);
     ogs_log_install_domain(&__eir_log_domain, "eir", ogs_core()->log.level);
+
+    ogs_thread_mutex_init(&self.db_lock);
 
     context_initialized = 1;
 }
@@ -41,6 +49,8 @@ void eir_context_init(void)
 void eir_context_final(void)
 {
     ogs_assert(context_initialized == 1);
+
+    ogs_thread_mutex_destroy(&self.db_lock);
 
     context_initialized = 0;
 }
@@ -52,11 +62,43 @@ eir_context_t *eir_self(void)
 
 static int eir_context_prepare(void)
 {
+    self.diam_config->cnf_port = DIAMETER_PORT;
+    self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
+
     return OGS_OK;
 }
 
 static int eir_context_validation(void)
 {
+    /*
+     * The EIR serves N5g-eir when eir.sbi is configured, S13 when
+     * eir.freeDiameter is, or both. eir.freeDiameter is either a
+     * freeDiameter configuration file or the inline identity, realm and
+     * listen_on set. At least one of the two interfaces is required.
+     */
+    if (self.diam_conf_path) {
+        self.s13_enabled = true;
+    } else if (self.diam_config->cnf_diamid ||
+            self.diam_config->cnf_diamrlm || self.diam_config->cnf_addr) {
+        if (!self.diam_config->cnf_diamid ||
+                !self.diam_config->cnf_diamrlm ||
+                !self.diam_config->cnf_addr) {
+            ogs_error("Incomplete eir.freeDiameter in '%s': "
+                    "identity, realm and listen_on are required",
+                    ogs_app()->file);
+            return OGS_ERROR;
+        }
+        self.s13_enabled = true;
+    }
+
+    /* ogs_sbi_context_parse_config() already ran, so the SBI server list
+     * is final here */
+    if (!self.s13_enabled && ogs_sbi_server_first() == NULL) {
+        ogs_error("Neither eir.sbi nor eir.freeDiameter in '%s': "
+                "the EIR would serve nothing", ogs_app()->file);
+        return OGS_ERROR;
+    }
+
     return OGS_OK;
 }
 
@@ -96,6 +138,165 @@ int eir_context_parse_config(void)
                     /* handle config in sbi library */
                 } else if (!strcmp(eir_key, "discovery")) {
                     /* handle config in sbi library */
+                } else if (!strcmp(eir_key, "freeDiameter")) {
+                    yaml_node_t *node =
+                        yaml_document_get_node(document, eir_iter.pair->value);
+                    ogs_assert(node);
+                    if (node->type == YAML_SCALAR_NODE) {
+                        self.diam_conf_path = ogs_yaml_iter_value(&eir_iter);
+                    } else if (node->type == YAML_MAPPING_NODE) {
+                        ogs_yaml_iter_t fd_iter;
+                        ogs_yaml_iter_recurse(&eir_iter, &fd_iter);
+
+                        while (ogs_yaml_iter_next(&fd_iter)) {
+                            const char *fd_key = ogs_yaml_iter_key(&fd_iter);
+                            ogs_assert(fd_key);
+                            if (!strcmp(fd_key, "identity")) {
+                                self.diam_config->cnf_diamid =
+                                    ogs_yaml_iter_value(&fd_iter);
+                            } else if (!strcmp(fd_key, "realm")) {
+                                self.diam_config->cnf_diamrlm =
+                                    ogs_yaml_iter_value(&fd_iter);
+                            } else if (!strcmp(fd_key, "port")) {
+                                const char *v = ogs_yaml_iter_value(&fd_iter);
+                                if (v) self.diam_config->cnf_port = atoi(v);
+                            } else if (!strcmp(fd_key, "sec_port")) {
+                                const char *v = ogs_yaml_iter_value(&fd_iter);
+                                if (v) self.diam_config->cnf_port_tls = atoi(v);
+                            } else if (!strcmp(fd_key, "listen_on")) {
+                                self.diam_config->cnf_addr =
+                                    ogs_yaml_iter_value(&fd_iter);
+                            } else if (!strcmp(fd_key, "no_fwd")) {
+                                self.diam_config->cnf_flags.no_fwd =
+                                    ogs_yaml_iter_bool(&fd_iter);
+                            } else if (!strcmp(fd_key, "load_extension")) {
+                                ogs_yaml_iter_t ext_array, ext_iter;
+                                ogs_yaml_iter_recurse(&fd_iter, &ext_array);
+                                do {
+                                    const char *module = NULL;
+                                    const char *conf = NULL;
+
+                                    if (ogs_yaml_iter_type(&ext_array) ==
+                                        YAML_MAPPING_NODE) {
+                                        memcpy(&ext_iter, &ext_array,
+                                                sizeof(ogs_yaml_iter_t));
+                                    } else if (ogs_yaml_iter_type(&ext_array) ==
+                                        YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(&ext_array))
+                                            break;
+                                        ogs_yaml_iter_recurse(
+                                                &ext_array, &ext_iter);
+                                    } else if (ogs_yaml_iter_type(&ext_array) ==
+                                        YAML_SCALAR_NODE) {
+                                        break;
+                                    } else
+                                        ogs_assert_if_reached();
+
+                                    while (ogs_yaml_iter_next(&ext_iter)) {
+                                        const char *ext_key =
+                                            ogs_yaml_iter_key(&ext_iter);
+                                        ogs_assert(ext_key);
+                                        if (!strcmp(ext_key, "module")) {
+                                            module = ogs_yaml_iter_value(
+                                                    &ext_iter);
+                                        } else if (!strcmp(ext_key, "conf")) {
+                                            conf = ogs_yaml_iter_value(
+                                                    &ext_iter);
+                                        } else
+                                            ogs_warn("unknown key `%s`",
+                                                    ext_key);
+                                    }
+
+                                    if (module) {
+                                        self.diam_config->
+                                            ext[self.diam_config->num_of_ext].
+                                                module = module;
+                                        self.diam_config->
+                                            ext[self.diam_config->num_of_ext].
+                                                conf = conf;
+                                        self.diam_config->num_of_ext++;
+                                    }
+                                } while (ogs_yaml_iter_type(&ext_array) ==
+                                        YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(fd_key, "connect")) {
+                                ogs_yaml_iter_t conn_array, conn_iter;
+                                ogs_yaml_iter_recurse(&fd_iter, &conn_array);
+                                do {
+                                    const char *identity = NULL;
+                                    const char *addr = NULL;
+                                    uint16_t port = 0;
+                                    int tc_timer = 0;
+
+                                    if (ogs_yaml_iter_type(&conn_array) ==
+                                        YAML_MAPPING_NODE) {
+                                        memcpy(&conn_iter, &conn_array,
+                                                sizeof(ogs_yaml_iter_t));
+                                    } else if (ogs_yaml_iter_type(
+                                                &conn_array) ==
+                                        YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(&conn_array))
+                                            break;
+                                        ogs_yaml_iter_recurse(
+                                                &conn_array, &conn_iter);
+                                    } else if (ogs_yaml_iter_type(
+                                                &conn_array) ==
+                                        YAML_SCALAR_NODE) {
+                                        break;
+                                    } else
+                                        ogs_assert_if_reached();
+
+                                    while (ogs_yaml_iter_next(&conn_iter)) {
+                                        const char *conn_key =
+                                            ogs_yaml_iter_key(&conn_iter);
+                                        ogs_assert(conn_key);
+                                        if (!strcmp(conn_key, "identity")) {
+                                            identity = ogs_yaml_iter_value(
+                                                    &conn_iter);
+                                        } else if (!strcmp(conn_key,
+                                                    "address")) {
+                                            addr = ogs_yaml_iter_value(
+                                                    &conn_iter);
+                                        } else if (!strcmp(conn_key, "port")) {
+                                            const char *v =
+                                                ogs_yaml_iter_value(&conn_iter);
+                                            if (v) port = atoi(v);
+                                        } else if (!strcmp(conn_key,
+                                                    "tc_timer")) {
+                                            const char *v =
+                                                ogs_yaml_iter_value(&conn_iter);
+                                            if (v) tc_timer = atoi(v);
+                                        } else
+                                            ogs_warn("unknown key `%s`",
+                                                    conn_key);
+                                    }
+
+                                    if (identity && addr) {
+                                        self.diam_config->
+                                            conn[self.diam_config->num_of_conn].
+                                                identity = identity;
+                                        self.diam_config->
+                                            conn[self.diam_config->num_of_conn].
+                                                addr = addr;
+                                        self.diam_config->
+                                            conn[self.diam_config->num_of_conn].
+                                                port = port;
+                                        self.diam_config->
+                                            conn[self.diam_config->num_of_conn].
+                                                tc_timer = tc_timer;
+                                        self.diam_config->num_of_conn++;
+                                    }
+                                } while (ogs_yaml_iter_type(&conn_array) ==
+                                        YAML_SEQUENCE_NODE);
+                            } else if (!strcmp(fd_key, "tc_timer")) {
+                                const char *v = ogs_yaml_iter_value(&fd_iter);
+                                if (v) self.diam_config->cnf_timer_tc = atoi(v);
+                            } else
+                                ogs_warn("unknown key `%s`", fd_key);
+                        }
+                    }
+                } else if (!strcmp(eir_key, "diameter_stats_interval")) {
+                    const char *v = ogs_yaml_iter_value(&eir_iter);
+                    if (v) self.diam_config->stats.interval_sec = atoi(v);
                 } else
                     ogs_warn("unknown key `%s`", eir_key);
             }
