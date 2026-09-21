@@ -43,6 +43,15 @@ mme:
     full: Open5GS
     short: Next
   mme_name: open5gs-mme0
+#  eir:                            # ME Identity Check over S13 (attach only)
+#    enabled: true
+#    realm: localdomain            # Destination-Realm
+#    host: eir.localdomain         # optional Destination-Host (open5gs-eird)
+#    timeout: 3                    # s, then failure_action applies
+#    max_age: 3600                 # s, cached verdict lifetime (0 = no expiry)
+#    unknown_action: allow         # allow(default)|reject
+#    failure_action: allow         # allow(default)|reject
+#    missing_pei_action: allow     # allow(default)|reject
   time:
 #    t3402:
 #      value: 720   # 12 minutes * 60 = 720 seconds
