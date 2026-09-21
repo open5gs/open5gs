@@ -88,6 +88,10 @@ ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
     xact->cb = cb;
     xact->data = data;
 
+    /* Link before allocating timers so failure cleanup can unlink safely. */
+    ogs_list_add(xact->org == OGS_PFCP_LOCAL_ORIGINATOR ?
+            &xact->node->local_list : &xact->node->remote_list, xact);
+
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout,
             OGS_UINT_TO_POINTER(xact->id));
@@ -121,9 +125,6 @@ ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
         ogs_pfcp_xact_delete(xact);
         return NULL;
     }
-
-    ogs_list_add(xact->org == OGS_PFCP_LOCAL_ORIGINATOR ?
-            &xact->node->local_list : &xact->node->remote_list, xact);
 
     ogs_list_init(&xact->pdr_to_create_list);
 
@@ -154,6 +155,10 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
     xact->xid = OGS_PFCP_SQN_TO_XID(sqn);
     xact->node = node;
 
+    /* Link before allocating timers so failure cleanup can unlink safely. */
+    ogs_list_add(xact->org == OGS_PFCP_LOCAL_ORIGINATOR ?
+            &xact->node->local_list : &xact->node->remote_list, xact);
+
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout,
             OGS_UINT_TO_POINTER(xact->id));
@@ -187,9 +192,6 @@ static ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
         ogs_pfcp_xact_delete(xact);
         return NULL;
     }
-
-    ogs_list_add(xact->org == OGS_PFCP_LOCAL_ORIGINATOR ?
-            &xact->node->local_list : &xact->node->remote_list, xact);
 
     ogs_debug("[%d] %s Create  peer %s",
             xact->xid,
@@ -765,8 +767,13 @@ int ogs_pfcp_xact_receive(
         ogs_debug("[%d] Cannot find new type %u from PFCP peer %s",
                 xid, type, ogs_sockaddr_to_string_static(node->addr_list));
         new = ogs_pfcp_xact_remote_create(node, sqn);
+        if (!new) {
+            ogs_error("[%d] No PFCP transaction resource for type %u "
+                    "from peer %s", xid, type,
+                    ogs_sockaddr_to_string_static(node->addr_list));
+            return OGS_ERROR;
+        }
     }
-    ogs_assert(new);
 
     ogs_debug("[%d] %s Receive peer %s",
             new->xid,

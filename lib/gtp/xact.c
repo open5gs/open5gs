@@ -92,6 +92,9 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
     xact->cb = cb;
     xact->data = data;
 
+    /* Link before allocating timers so failure cleanup can unlink safely. */
+    ogs_list_add(&xact->gnode->local_list, xact);
+
     /* 7.6 "The T3-RESPONSE timer shall be started when a signalling request
      * message (for which a response has been defined) is sent." */
     if (hdesc->type != OGS_GTP1_RAN_INFORMATION_RELAY_TYPE) {
@@ -118,8 +121,6 @@ ogs_gtp_xact_t *ogs_gtp1_xact_local_create(ogs_gtp_node_t *gnode,
         return NULL;
     }
     xact->holding_rcount = ogs_local_conf()->time.message.gtp.n3_holding_rcount;
-
-    ogs_list_add(&xact->gnode->local_list, xact);
 
     rv = ogs_gtp1_xact_update_tx(xact, hdesc, pkbuf);
     if (rv != OGS_OK) {
@@ -168,6 +169,9 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     xact->cb = cb;
     xact->data = data;
 
+    /* Link before allocating timers so failure cleanup can unlink safely. */
+    ogs_list_add(&xact->gnode->local_list, xact);
+
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout,
             OGS_UINT_TO_POINTER(xact->id));
@@ -199,8 +203,6 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
         ogs_gtp_xact_delete(xact);
         return NULL;
     }
-
-    ogs_list_add(&xact->gnode->local_list, xact);
 
     rv = ogs_gtp_xact_update_tx(xact, hdesc, pkbuf);
     if (rv != OGS_OK) {
@@ -238,6 +240,9 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
             OGS_GTP1_SQN_TO_XID(sqn) : OGS_GTP2_SQN_TO_XID(sqn);
     xact->gnode = gnode;
 
+    /* Link before allocating timers so failure cleanup can unlink safely. */
+    ogs_list_add(&xact->gnode->remote_list, xact);
+
     xact->tm_response = ogs_timer_add(
             ogs_app()->timer_mgr, response_timeout,
             OGS_UINT_TO_POINTER(xact->id));
@@ -269,8 +274,6 @@ static ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint8_t
         ogs_gtp_xact_delete(xact);
         return NULL;
     }
-
-    ogs_list_add(&xact->gnode->remote_list, xact);
 
     ogs_debug("[%d] REMOTE Create  peer [%s]:%d",
             xact->xid,
@@ -983,8 +986,13 @@ int ogs_gtp1_xact_receive(
         ogs_debug("[%d] Cannot find xact type %u from GTPv1 peer [%s]:%d",
                   xid, type, OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
         new = ogs_gtp_xact_remote_create(gnode, 1, sqn);
+        if (!new) {
+            ogs_error("[%d] No GTPv1 transaction resource for type %u "
+                    "from peer [%s]:%d", xid, type,
+                    OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
+            return OGS_ERROR;
+        }
     }
-    ogs_assert(new);
 
     ogs_debug("[%d] %s Receive peer [%s]:%d",
             new->xid,
@@ -1071,8 +1079,13 @@ int ogs_gtp_xact_receive(
         ogs_debug("[%d] Cannot find xact type %u from GTPv2 peer [%s]:%d",
                   xid, type, OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
         new = ogs_gtp_xact_remote_create(gnode, 2, sqn);
+        if (!new) {
+            ogs_error("[%d] No GTPv2 transaction resource for type %u "
+                    "from peer [%s]:%d", xid, type,
+                    OGS_ADDR(&gnode->addr, buf), OGS_PORT(&gnode->addr));
+            return OGS_ERROR;
+        }
     }
-    ogs_assert(new);
 
     ogs_debug("[%d] %s Receive peer [%s]:%d",
             new->xid,
