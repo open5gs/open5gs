@@ -1461,11 +1461,19 @@ void smf_s5c_handle_bearer_resource_command(
                     ogs_ipfw_copy_and_swap(&tmp, &pf->ipfw_rule);
                     pf->flow_description =
                         ogs_ipfw_encode_flow_description(&tmp);
-                    ogs_assert(pf->flow_description);
                 } else {
                     pf->flow_description =
                         ogs_ipfw_encode_flow_description(&pf->ipfw_rule);
-                    ogs_assert(pf->flow_description);
+                }
+
+                if (!pf->flow_description) {
+                    ogs_error("Invalid packet filter [pf-direction=%d]",
+                            pf->direction);
+                    ogs_gtp2_send_error_message(
+                        xact, get_sender_f_teid(sess, sender_f_teid),
+                        OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
+                        OGS_GTP2_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER);
+                    return;
                 }
 
                 tft_update = 1;
@@ -1544,11 +1552,19 @@ void smf_s5c_handle_bearer_resource_command(
                 ogs_ipfw_copy_and_swap(&tmp, &pf->ipfw_rule);
                 pf->flow_description =
                     ogs_ipfw_encode_flow_description(&tmp);
-                ogs_assert(pf->flow_description);
             } else {
                 pf->flow_description =
                     ogs_ipfw_encode_flow_description(&pf->ipfw_rule);
-                ogs_assert(pf->flow_description);
+            }
+
+            if (!pf->flow_description) {
+                ogs_error("Invalid packet filter [pf-direction=%d]",
+                        pf->direction);
+                ogs_gtp2_send_error_message(
+                    xact, get_sender_f_teid(sess, sender_f_teid),
+                    OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
+                    OGS_GTP2_CAUSE_SEMANTIC_ERRORS_IN_PACKET_FILTER);
+                return;
             }
 
             tft_update = 1;

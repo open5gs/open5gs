@@ -339,11 +339,16 @@ int gsm_handle_pdu_session_modification_qos_rules(
                     ogs_ipfw_copy_and_swap(&tmp, &pf->ipfw_rule);
                     pf->flow_description =
                         ogs_ipfw_encode_flow_description(&tmp);
-                    ogs_assert(pf->flow_description);
                 } else {
                     pf->flow_description =
                         ogs_ipfw_encode_flow_description(&pf->ipfw_rule);
-                    ogs_assert(pf->flow_description);
+                }
+
+                if (!pf->flow_description) {
+                    ogs_error("[%s:%d] Invalid packet filter [pf-direction=%d]",
+                            smf_ue->supi, sess->psi, pf->direction);
+                    smf_pf_remove(pf);
+                    return OGS_ERROR;
                 }
 
                 if (qos_rule[i].code ==
