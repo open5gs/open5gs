@@ -49,6 +49,13 @@ bool ausf_nausf_auth_handle_authenticate(ausf_ue_t *ausf_ue,
                 recvmsg, "No servingNetworkName", ausf_ue->suci, NULL));
         return false;
     }
+    if (!serving_network_name[0]) {
+        ogs_error("[%s] Empty servingNetworkName", ausf_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Empty servingNetworkName", ausf_ue->suci, NULL));
+        return false;
+    }
 
     if (ausf_ue->serving_network_name)
         ogs_free(ausf_ue->serving_network_name);

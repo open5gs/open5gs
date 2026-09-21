@@ -49,6 +49,13 @@ bool udm_nudm_ueau_handle_get(
                 recvmsg, "No servingNetworkName", udm_ue->suci, NULL));
         return false;
     }
+    if (!AuthenticationInfoRequest->serving_network_name[0]) {
+        ogs_error("[%s] Empty servingNetworkName", udm_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Empty servingNetworkName", udm_ue->suci, NULL));
+        return false;
+    }
 
     if (!AuthenticationInfoRequest->ausf_instance_id) {
         ogs_error("[%s] No ausfInstanceId", udm_ue->suci);
