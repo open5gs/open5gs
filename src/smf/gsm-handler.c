@@ -276,8 +276,22 @@ int gsm_handle_pdu_session_modification_qos_rules(
             for (j = 0; j < qos_rule[i].num_of_packet_filter &&
                         j < OGS_MAX_NUM_OF_FLOW_IN_NAS; j++) {
 
+                /*
+                 * The per-flow packet filter pool is limited to
+                 * OGS_MAX_NUM_OF_FLOW_IN_BEARER, but the UE can keep adding
+                 * packet filters to the same QoS flow -- either with several
+                 * rules in one request or with repeated requests -- since
+                 * "modify existing QoS rule and add packet filters" does not
+                 * remove the previous ones. Exhausting the pool is therefore
+                 * UE input, not an internal error: reject the request.
+                 */
                 pf = smf_pf_add(qos_flow);
-                ogs_assert(pf);
+                if (!pf) {
+                    ogs_error("[%s:%d] Overflow: PacketFilter in QoS flow "
+                            "[QRI/QFI:%d]",
+                            smf_ue->supi, sess->psi, qos_rule[i].identifier);
+                    return OGS_ERROR;
+                }
 
                 if (reconfigure_packet_filter(pf, &qos_rule[i], j) <= 0) {
                     ogs_error("[%s:%d] Invalid packet filter",

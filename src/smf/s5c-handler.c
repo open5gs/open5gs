@@ -1482,7 +1482,20 @@ void smf_s5c_handle_bearer_resource_command(
             pf = smf_pf_find_by_identifier(bearer, tft.pf[i].identifier+1);
             if (!pf)
                 pf = smf_pf_add(bearer);
-            ogs_assert(pf);
+            /*
+             * The per-bearer packet filter pool is limited to
+             * OGS_MAX_NUM_OF_FLOW_IN_BEARER. The UE can exceed it by adding
+             * packet filters that do not match an existing identifier,
+             * so this is UE input, not an internal error.
+             */
+            if (!pf) {
+                ogs_error("Overflow: PacketFilter in Bearer");
+                ogs_gtp2_send_error_message(
+                    xact, get_sender_f_teid(sess, sender_f_teid),
+                    OGS_GTP2_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
+                    OGS_GTP2_CAUSE_NO_RESOURCES_AVAILABLE);
+                return;
+            }
 
             if (reconfigure_packet_filter(pf, &tft, i) < 0) {
                 ogs_gtp2_send_error_message(
