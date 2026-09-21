@@ -3341,6 +3341,31 @@ static const uint8_t *ipcp_contains_option(
 #include "../version.h"
 static const char *pap_welcome = "Welcome to open5gs-smfd " OPEN5GS_VERSION;
 
+/*
+ * One request container can yield more than one response container
+ * (e.g. DNS server request -> primary + secondary), so the container cap
+ * that ogs_pco_parse() applies to the request does not bound the response.
+ */
+static bool smf_pco_id_add(
+        ogs_pco_t *pco, uint16_t id, uint8_t len, void *data)
+{
+    ogs_assert(pco);
+
+    if (pco->num_of_id >= OGS_MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID) {
+        ogs_error("PCO/EPCO response exceeds maximum number of containers "
+                "[id:0x%x max:%d]",
+                id, OGS_MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID);
+        return false;
+    }
+
+    pco->ids[pco->num_of_id].id = id;
+    pco->ids[pco->num_of_id].len = len;
+    pco->ids[pco->num_of_id].data = data;
+    pco->num_of_id++;
+
+    return true;
+}
+
 int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
 {
     int rv;
@@ -3394,10 +3419,8 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
                 pco_pap.identifier = data[1]; /* Identifier */
                 pco_pap.len = htobe16(pco_size);
 
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = pco_size;
-                smf.ids[smf.num_of_id].data = (uint8_t *)&pco_pap;
-                smf.num_of_id++;
+                smf_pco_id_add(&smf, ue.ids[i].id,
+                        pco_size, (uint8_t *)&pco_pap);
             }
             break;
         case OGS_PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL:
@@ -3409,10 +3432,8 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
                 pco_chap.identifier = data[1]; /* Identifier */
                 pco_chap.len = htobe16(pco_size);
 
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = pco_size;
-                smf.ids[smf.num_of_id].data = (uint8_t *)&pco_chap;
-                smf.num_of_id++;
+                smf_pco_id_add(&smf, ue.ids[i].id,
+                        pco_size, (uint8_t *)&pco_chap);
             }
             break;
         case OGS_PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL:
@@ -3427,7 +3448,12 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
                 ogs_assert(ipcp);
                 in_len = be16toh(ipcp->len);
 
-                ogs_assert(num_of_ipcp <= OGS_PCO_MAX_NUM_OF_IPCP);
+                if (num_of_ipcp >= OGS_PCO_MAX_NUM_OF_IPCP) {
+                    ogs_error("Ignoring IPCP container [max:%d]",
+                            OGS_PCO_MAX_NUM_OF_IPCP);
+                    break;
+                }
+
                 pco_ipcp[num_of_ipcp].code = 2; /* Code : Configuration Ack */
                 pco_ipcp[num_of_ipcp].identifier = ipcp->identifier; /* ID: Needs to match request */
 
@@ -3472,13 +3498,9 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
 
                 pco_ipcp[num_of_ipcp].len = htobe16(out_len);
 
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = out_len;
-                smf.ids[smf.num_of_id].data = (uint8_t *)&pco_ipcp[num_of_ipcp];
-
-                num_of_ipcp++;
-
-                smf.num_of_id++;
+                if (smf_pco_id_add(&smf, ue.ids[i].id, out_len,
+                            (uint8_t *)&pco_ipcp[num_of_ipcp]))
+                    num_of_ipcp++;
             }
             break;
         case OGS_PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST:
@@ -3486,20 +3508,16 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
                 rv = ogs_ipsubnet(
                         &dns_primary, smf_self()->dns[0], NULL);
                 ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV4_LEN;
-                smf.ids[smf.num_of_id].data = dns_primary.sub;
-                smf.num_of_id++;
+                smf_pco_id_add(&smf, ue.ids[i].id,
+                        OGS_IPV4_LEN, dns_primary.sub);
             }
 
             if (smf_self()->dns[1]) {
                 rv = ogs_ipsubnet(
                         &dns_secondary, smf_self()->dns[1], NULL);
                 ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV4_LEN;
-                smf.ids[smf.num_of_id].data = dns_secondary.sub;
-                smf.num_of_id++;
+                smf_pco_id_add(&smf, ue.ids[i].id,
+                        OGS_IPV4_LEN, dns_secondary.sub);
             }
             break;
         case OGS_PCO_ID_DNS_SERVER_IPV6_ADDRESS_REQUEST:
@@ -3507,20 +3525,16 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
                 rv = ogs_ipsubnet(
                         &dns6_primary, smf_self()->dns6[0], NULL);
                 ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV6_LEN;
-                smf.ids[smf.num_of_id].data = dns6_primary.sub;
-                smf.num_of_id++;
+                smf_pco_id_add(&smf, ue.ids[i].id,
+                        OGS_IPV6_LEN, dns6_primary.sub);
             }
 
             if (smf_self()->dns6[1]) {
                 rv = ogs_ipsubnet(
                         &dns6_secondary, smf_self()->dns6[1], NULL);
                 ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV6_LEN;
-                smf.ids[smf.num_of_id].data = dns6_secondary.sub;
-                smf.num_of_id++;
+                smf_pco_id_add(&smf, ue.ids[i].id,
+                        OGS_IPV6_LEN, dns6_secondary.sub);
             }
             break;
         case OGS_PCO_ID_P_CSCF_IPV4_ADDRESS_REQUEST:
@@ -3528,13 +3542,11 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
                 rv = ogs_ipsubnet(&p_cscf,
                     smf_self()->p_cscf[smf_self()->p_cscf_index], NULL);
                 ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV4_LEN;
-                smf.ids[smf.num_of_id].data = p_cscf.sub;
-                smf.num_of_id++;
-
-                smf_self()->p_cscf_index++;
-                smf_self()->p_cscf_index %= smf_self()->num_of_p_cscf;
+                if (smf_pco_id_add(&smf, ue.ids[i].id,
+                            OGS_IPV4_LEN, p_cscf.sub)) {
+                    smf_self()->p_cscf_index++;
+                    smf_self()->p_cscf_index %= smf_self()->num_of_p_cscf;
+                }
             }
             break;
         case OGS_PCO_ID_P_CSCF_IPV6_ADDRESS_REQUEST:
@@ -3542,22 +3554,17 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
                 rv = ogs_ipsubnet(&p_cscf6,
                     smf_self()->p_cscf6[smf_self()->p_cscf6_index], NULL);
                 ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV6_LEN;
-                smf.ids[smf.num_of_id].data = p_cscf6.sub;
-                smf.num_of_id++;
-
-                smf_self()->p_cscf6_index++;
-                smf_self()->p_cscf6_index %= smf_self()->num_of_p_cscf6;
+                if (smf_pco_id_add(&smf, ue.ids[i].id,
+                            OGS_IPV6_LEN, p_cscf6.sub)) {
+                    smf_self()->p_cscf6_index++;
+                    smf_self()->p_cscf6_index %= smf_self()->num_of_p_cscf6;
+                }
             }
             break;
         case OGS_PCO_ID_IPV4_LINK_MTU_REQUEST:
             if (smf_self()->mtu) {
                 mtu = htobe16(smf_self()->mtu);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = sizeof(uint16_t);
-                smf.ids[smf.num_of_id].data = &mtu;
-                smf.num_of_id++;
+                smf_pco_id_add(&smf, ue.ids[i].id, sizeof(uint16_t), &mtu);
             }
             break;
         case OGS_PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING:
@@ -3567,10 +3574,7 @@ int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length)
             /* TODO */
             break;
         case OGS_PCO_ID_MS_SUPPORT_LOCAL_ADDR_TFT_INDICATOR:
-            smf.ids[smf.num_of_id].id = ue.ids[i].id;
-            smf.ids[smf.num_of_id].len = 0;
-            smf.ids[smf.num_of_id].data = 0;
-            smf.num_of_id++;
+            smf_pco_id_add(&smf, ue.ids[i].id, 0, NULL);
             break;
         case OGS_PCO_ID_P_CSCF_RE_SELECTION_SUPPORT:
             /* TODO */
