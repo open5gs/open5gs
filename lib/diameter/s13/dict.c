@@ -12,6 +12,7 @@ struct local_rules_definition {
     struct dict_avp_request avp_vendor_plus_name;
     enum rule_position    position;
     int            min;
+    int            max;
 };
 
 #define RULE_ORDER( _position ) ((((_position) == RULE_FIXED_HEAD) || ((_position) == RULE_FIXED_TAIL)) ? 1 : 0 )
