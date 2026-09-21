@@ -622,7 +622,7 @@ int gsm_handle_pdu_session_modification_request(
                     "[REMOVE combined with TFT/QOS-MODIFY "
                     "pfcp_flags:0x%llx]",
                     smf_ue->supi, sess->psi, (long long)pfcp_flags);
-            ogs_assert_if_reached();
+            goto cleanup;
         }
 
     } else if (pfcp_flags &
