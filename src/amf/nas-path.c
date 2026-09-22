@@ -507,6 +507,10 @@ int nas_5gs_send_authentication_request(amf_ue_t *amf_ue)
 
     rv = nas_5gs_send_to_downlink_nas_transport(ran_ue, amf_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
+    
+    rv = ngap_send_amf_status_indication(amf_ue);
+    ogs_expect(rv == OGS_OK);
+    ogs_assert(rv != OGS_ERROR);
 
     return rv;
 }
