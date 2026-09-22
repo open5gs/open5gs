@@ -375,12 +375,14 @@ int upf_pfcp_send_session_report_request(
     n4buf = ogs_pfcp_build_session_report_request(h.type, report);
     if (!n4buf) {
         ogs_error("ogs_pfcp_build_session_report_request() failed");
+        ogs_pfcp_xact_delete(xact);
         return OGS_ERROR;
     }
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, n4buf);
     if (rv != OGS_OK) {
         ogs_error("ogs_pfcp_xact_update_tx() failed");
+        ogs_pfcp_xact_delete(xact);
         return OGS_ERROR;
     }
 
