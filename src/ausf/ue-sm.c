@@ -91,8 +91,29 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
         SWITCH(message->h.method)
         CASE(OGS_SBI_HTTP_METHOD_POST)
-            handled = ausf_nausf_auth_handle_authenticate(
-                    ausf_ue, stream, message);
+            /*
+             * POST is used both for the initial ue-authentications request
+             * and, for EAP-AKA', for the eap-session sub-resource
+             * (TS 29.509). The latter carries a UE EAP-Response.
+             */
+            if (message->h.resource.component[2] &&
+                strcmp(message->h.resource.component[2],
+                        OGS_SBI_RESOURCE_NAME_EAP_SESSION) == 0) {
+                if (!ausf_ue->supi) {
+                    ogs_error("[%s] No SUPI", ausf_ue->suci);
+                    ogs_assert(true ==
+                        ogs_sbi_server_send_error(stream,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                            message, "[%s] No SUPI", ausf_ue->suci, NULL));
+                    OGS_FSM_TRAN(s, ausf_ue_state_exception);
+                    break;
+                }
+                handled = ausf_nausf_auth_handle_authenticate_eap_session(
+                        ausf_ue, stream, message);
+            } else {
+                handled = ausf_nausf_auth_handle_authenticate(
+                        ausf_ue, stream, message);
+            }
             if (!handled) {
                 ogs_error("[%s] Cannot handle SBI message",
                         ausf_ue->suci);

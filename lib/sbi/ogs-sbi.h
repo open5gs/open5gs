@@ -43,6 +43,7 @@
 #include "model/authentication_subscription.h"
 #include "model/confirmation_data.h"
 #include "model/confirmation_data_response.h"
+#include "model/eap_session.h"
 #include "model/auth_event.h"
 #include "model/amf3_gpp_access_registration.h"
 #include "model/amf3_gpp_access_registration_modification.h"

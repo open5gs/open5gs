@@ -2382,6 +2382,56 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
 
                 SWITCH(sbi_message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (sbi_message->h.resource.component[2] &&
+                        strcmp(sbi_message->h.resource.component[2],
+                            OGS_SBI_RESOURCE_NAME_EAP_SESSION) == 0) {
+                        /*
+                         * EAP-AKA' (TS 29.509): the eap-session response
+                         * carries the AUSF verdict. ONGOING relays a new
+                         * EAP-Request; SUCCESS delivers EAP-Success then
+                         * proceeds to the Security Mode Command.
+                         */
+                        rv = amf_nausf_auth_handle_authenticate_confirmation(
+                                amf_ue, sbi_message);
+                        if (rv != OGS_OK) {
+                            ogs_error("[%s] Cannot handle SBI message",
+                                    amf_ue->suci);
+                            r = nas_5gs_send_authentication_reject(amf_ue);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
+                            AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                            break;
+                        } else if (amf_ue->auth_result ==
+                                OpenAPI_auth_result_AUTHENTICATION_ONGOING) {
+                            /* new EAP-Request relayed; await next response */
+                            break;
+                        } else {
+                            /* Deliver EAP-Success to the UE over NAS */
+                            r = nas_5gs_send_authentication_result(amf_ue);
+                            ogs_expect(r == OGS_OK);
+                            ogs_assert(r != OGS_ERROR);
+
+                            amf_ue->selected_int_algorithm =
+                                amf_selected_int_algorithm(amf_ue);
+                            amf_ue->selected_enc_algorithm =
+                                amf_selected_enc_algorithm(amf_ue);
+
+                            if (amf_ue->selected_int_algorithm ==
+                                    OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
+                                ogs_error("Encrypt[0x%x] can be skipped "
+                                    "with NEA0, but Integrity[0x%x] cannot be "
+                                    "bypassed with NIA0",
+                                    amf_ue->selected_enc_algorithm,
+                                    amf_ue->selected_int_algorithm);
+                                AMF_RESTORE_CONTEXT_ON_FAILURE(amf_ue, s);
+                                break;
+                            }
+
+                            OGS_FSM_TRAN(&amf_ue->sm, &gmm_state_security_mode);
+                        }
+                        break;
+                    }
+
                     rv = amf_nausf_auth_handle_authenticate(
                             amf_ue, sbi_message);
                     if (rv != OGS_OK) {

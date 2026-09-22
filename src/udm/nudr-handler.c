@@ -57,11 +57,16 @@ bool udm_nudr_dr_handle_subscription_authentication(
     size_t xres_len = 8;
     uint8_t xres_star[OGS_MAX_RES_LEN];
     uint8_t kausf[OGS_SHA256_DIGEST_SIZE];
+    uint8_t ck_prime[OGS_KEY_LEN];
+    uint8_t ik_prime[OGS_KEY_LEN];
 
     char rand_string[OGS_KEYSTRLEN(OGS_RAND_LEN)];
     char autn_string[OGS_KEYSTRLEN(OGS_AUTN_LEN)];
     char kausf_string[OGS_KEYSTRLEN(OGS_SHA256_DIGEST_SIZE)];
     char xres_star_string[OGS_KEYSTRLEN(OGS_MAX_RES_LEN)];
+    char xres_string[OGS_KEYSTRLEN(OGS_MAX_RES_LEN)];
+    char ck_prime_string[OGS_KEYSTRLEN(OGS_KEY_LEN)];
+    char ik_prime_string[OGS_KEYSTRLEN(OGS_KEY_LEN)];
 
     OpenAPI_authentication_subscription_t *AuthenticationSubscription = NULL;
     OpenAPI_authentication_info_result_t AuthenticationInfoResult;
@@ -108,7 +113,9 @@ bool udm_nudr_dr_handle_subscription_authentication(
             }
 
             if (AuthenticationSubscription->authentication_method !=
-                    OpenAPI_auth_method_5G_AKA) {
+                    OpenAPI_auth_method_5G_AKA &&
+                AuthenticationSubscription->authentication_method !=
+                    OpenAPI_auth_method_EAP_AKA_PRIME) {
                 ogs_error("[%s] Not supported Auth Method [%d]",
                         udm_ue->suci,
                         AuthenticationSubscription->authentication_method);
@@ -165,7 +172,11 @@ bool udm_nudr_dr_handle_subscription_authentication(
                 return false;
             }
 
-            udm_ue->auth_type = OpenAPI_auth_type_5G_AKA;
+            if (AuthenticationSubscription->authentication_method ==
+                    OpenAPI_auth_method_EAP_AKA_PRIME)
+                udm_ue->auth_type = OpenAPI_auth_type_EAP_AKA_PRIME;
+            else
+                udm_ue->auth_type = OpenAPI_auth_type_5G_AKA;
 
             ogs_ascii_to_hex(
                 AuthenticationSubscription->enc_opc_key,
@@ -237,20 +248,46 @@ bool udm_nudr_dr_handle_subscription_authentication(
                     xres_star);
 
             memset(&AuthenticationVector, 0, sizeof(AuthenticationVector));
-            AuthenticationVector.av_type = OpenAPI_av_type_5G_HE_AKA;
 
             ogs_hex_to_ascii(udm_ue->rand, sizeof(udm_ue->rand),
                     rand_string, sizeof(rand_string));
             AuthenticationVector.rand = rand_string;
-            ogs_hex_to_ascii(xres_star, sizeof(xres_star),
-                    xres_star_string, sizeof(xres_star_string));
-            AuthenticationVector.xres_star = xres_star_string;
             ogs_hex_to_ascii(autn, sizeof(autn),
                     autn_string, sizeof(autn_string));
             AuthenticationVector.autn = autn_string;
-            ogs_hex_to_ascii(kausf, sizeof(kausf),
-                    kausf_string, sizeof(kausf_string));
-            AuthenticationVector.kausf = kausf_string;
+
+            if (udm_ue->auth_type == OpenAPI_auth_type_EAP_AKA_PRIME) {
+                /*
+                 * RFC 5448 3.3 / TS33.402 Annex A : CK'/IK' derivation.
+                 * For EAP-AKA' the UDM returns the AV as AvEapAkaPrime
+                 * carrying plain XRES together with CK'/IK'; the AUSF then
+                 * derives the EAP keys and the Kausf anchor from CK'/IK'.
+                 */
+                ogs_kdf_ck_ik_prime(ck, ik,
+                        udm_ue->serving_network_name, autn,
+                        ck_prime, ik_prime);
+
+                AuthenticationVector.av_type = OpenAPI_av_type_EAP_AKA_PRIME;
+
+                ogs_hex_to_ascii(xres, xres_len,
+                        xres_string, sizeof(xres_string));
+                AuthenticationVector.xres = xres_string;
+                ogs_hex_to_ascii(ck_prime, sizeof(ck_prime),
+                        ck_prime_string, sizeof(ck_prime_string));
+                AuthenticationVector.ck_prime = ck_prime_string;
+                ogs_hex_to_ascii(ik_prime, sizeof(ik_prime),
+                        ik_prime_string, sizeof(ik_prime_string));
+                AuthenticationVector.ik_prime = ik_prime_string;
+            } else {
+                AuthenticationVector.av_type = OpenAPI_av_type_5G_HE_AKA;
+
+                ogs_hex_to_ascii(xres_star, sizeof(xres_star),
+                        xres_star_string, sizeof(xres_star_string));
+                AuthenticationVector.xres_star = xres_star_string;
+                ogs_hex_to_ascii(kausf, sizeof(kausf),
+                        kausf_string, sizeof(kausf_string));
+                AuthenticationVector.kausf = kausf_string;
+            }
 
             AuthenticationInfoResult.authentication_vector =
                 &AuthenticationVector;

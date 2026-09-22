@@ -534,6 +534,17 @@ struct amf_ue_s {
     uint8_t         kamf[OGS_SHA256_DIGEST_SIZE];
     OpenAPI_auth_result_e auth_result;
 
+    /*
+     * Primary authentication method selected by the AUSF.
+     * When OpenAPI_auth_type_EAP_AKA_PRIME, the AMF relays EAP packets
+     * between the UE (over NAS) and the AUSF (over the eap-session
+     * resource); eap[] holds the payload currently being relayed.
+     */
+    OpenAPI_auth_type_e auth_type;
+#define AMF_UE_MAX_EAP_MESSAGE_LEN 1500
+    uint8_t         eap[AMF_UE_MAX_EAP_MESSAGE_LEN];
+    uint16_t        eap_len;
+
     /* Integrity and ciphering keys */
     uint8_t         knas_int[OGS_SHA256_DIGEST_SIZE/2];
     uint8_t         knas_enc[OGS_SHA256_DIGEST_SIZE/2];

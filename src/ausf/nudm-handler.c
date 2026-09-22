@@ -18,13 +18,14 @@
  */
 
 #include "nudm-handler.h"
+#include "eap-aka-prime.h"
 
 static const char *links_member_name(OpenAPI_auth_type_e auth_type)
 {
-    if (auth_type == OpenAPI_auth_type_5G_AKA ||
-        auth_type == OpenAPI_auth_type_EAP_AKA_PRIME) {
+    if (auth_type == OpenAPI_auth_type_5G_AKA) {
         return OGS_SBI_RESOURCE_NAME_5G_AKA;
-    } else if (auth_type == OpenAPI_auth_type_EAP_TLS) {
+    } else if (auth_type == OpenAPI_auth_type_EAP_AKA_PRIME ||
+               auth_type == OpenAPI_auth_type_EAP_TLS) {
         return OGS_SBI_RESOURCE_NAME_EAP_SESSION;
     }
 
@@ -42,11 +43,15 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     ogs_sbi_response_t *response = NULL;
 
     char hxres_star_string[OGS_KEYSTRLEN(OGS_MAX_RES_LEN)];
+    const char *confirmation_resource = NULL;
+    uint8_t autn[OGS_AUTN_LEN];
+    char *eap_challenge = NULL;
 
     OpenAPI_authentication_info_result_t *AuthenticationInfoResult = NULL;
     OpenAPI_authentication_vector_t *AuthenticationVector = NULL;
     OpenAPI_ue_authentication_ctx_t UeAuthenticationCtx;
     OpenAPI_ue_authentication_ctx_5g_auth_data_t AV5G_AKA;
+    OpenAPI_av5g_aka_t Av5gAka;
     OpenAPI_map_t *LinksValueScheme = NULL;
     OpenAPI_links_value_schema_t LinksValueSchemeValue;
 
@@ -70,7 +75,9 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
 
     /* See TS29.509 6.1.7.3 Application Errors */
     if (AuthenticationInfoResult->auth_type !=
-            OpenAPI_auth_type_5G_AKA) {
+            OpenAPI_auth_type_5G_AKA &&
+        AuthenticationInfoResult->auth_type !=
+            OpenAPI_auth_type_EAP_AKA_PRIME) {
         ogs_error("[%s] Not supported Auth Method [%d]",
             ausf_ue->suci, AuthenticationInfoResult->auth_type);
         ogs_assert(true ==
@@ -92,12 +99,13 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
         return false;
     }
 
-    if (AuthenticationVector->av_type != OpenAPI_av_type_5G_HE_AKA) {
+    if (AuthenticationVector->av_type != OpenAPI_av_type_5G_HE_AKA &&
+        AuthenticationVector->av_type != OpenAPI_av_type_EAP_AKA_PRIME) {
         ogs_error("[%s] Not supported Auth Method [%d]",
             ausf_ue->suci, AuthenticationVector->av_type);
         /*
          * TS29.509
-         * 5.2.2.2.2 5G AKA 
+         * 5.2.2.2.2 5G AKA
          *
          * On failure or redirection, one of the HTTP status code
          * listed in table 6.1.7.3-1 shall be returned with the message
@@ -105,9 +113,9 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
          * attribute set to one of the application error listed in
          * Table 6.1.7.3-1.
          * Application Error: AUTHENTICATION_REJECTED
-         * HTTP status code: 403 Forbidden 
+         * HTTP status code: 403 Forbidden
          * Description: The user cannot be authenticated with this
-         * authentication method e.g. only SIM data available 
+         * authentication method e.g. only SIM data available
          */
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
@@ -127,33 +135,12 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
         return false;
     }
 
-    if (!AuthenticationVector->xres_star) {
-        ogs_error("[%s] No AuthenticationVector.xresStar",
-                ausf_ue->suci);
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No AuthenticationVector.xresStar", ausf_ue->suci,
-                NULL));
-        return false;
-    }
-
     if (!AuthenticationVector->autn) {
         ogs_error("[%s] No AuthenticationVector.autn", ausf_ue->suci);
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 recvmsg, "No AuthenticationVector.autn", ausf_ue->suci,
-                NULL));
-        return false;
-    }
-
-    if (!AuthenticationVector->kausf) {
-        ogs_error("[%s] No AuthenticationVector.kausf", ausf_ue->suci);
-        ogs_assert(true ==
-            ogs_sbi_server_send_error(stream,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No AuthenticationVector.kausf", ausf_ue->suci,
                 NULL));
         return false;
     }
@@ -186,29 +173,192 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
         strlen(AuthenticationVector->rand),
         ausf_ue->rand, sizeof(ausf_ue->rand));
     ogs_ascii_to_hex(
-        AuthenticationVector->xres_star,
-        strlen(AuthenticationVector->xres_star),
-        ausf_ue->xres_star, sizeof(ausf_ue->xres_star));
-    ogs_ascii_to_hex(
-        AuthenticationVector->kausf,
-        strlen(AuthenticationVector->kausf),
-        ausf_ue->kausf, sizeof(ausf_ue->kausf));
+        AuthenticationVector->autn,
+        strlen(AuthenticationVector->autn),
+        autn, sizeof(autn));
 
     memset(&UeAuthenticationCtx, 0, sizeof(UeAuthenticationCtx));
-
     UeAuthenticationCtx.auth_type = ausf_ue->auth_type;
 
-    memset(&AV5G_AKA, 0, sizeof(AV5G_AKA));
-    AV5G_AKA.rand = AuthenticationVector->rand;
-    AV5G_AKA.autn = AuthenticationVector->autn;
+    if (AuthenticationVector->av_type == OpenAPI_av_type_EAP_AKA_PRIME) {
+        const char *identity;
+        uint8_t emsk[OGS_EAP_AKA_PRIME_EMSK_LEN];
 
-    ogs_kdf_hxres_star(ausf_ue->rand, ausf_ue->xres_star,
-            ausf_ue->hxres_star);
-    ogs_hex_to_ascii(ausf_ue->hxres_star, sizeof(ausf_ue->hxres_star),
-            hxres_star_string, sizeof(hxres_star_string));
-    AV5G_AKA.hxres_star = hxres_star_string;
+        if (!AuthenticationVector->xres ||
+            !AuthenticationVector->ck_prime ||
+            !AuthenticationVector->ik_prime) {
+            ogs_error("[%s] Incomplete EAP-AKA' AuthenticationVector",
+                    ausf_ue->suci);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "Incomplete EAP-AKA' vector", ausf_ue->suci,
+                    NULL));
+            return false;
+        }
 
-    UeAuthenticationCtx._5g_auth_data = &AV5G_AKA;
+        if (strlen(AuthenticationVector->xres) / 2 >
+                sizeof(ausf_ue->xres)) {
+            ogs_error("[%s] EAP-AKA' XRES too long [%d]",
+                    ausf_ue->suci, (int)strlen(AuthenticationVector->xres));
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "EAP-AKA' XRES too long", ausf_ue->suci,
+                    NULL));
+            return false;
+        }
+
+        ausf_ue->xres_len = strlen(AuthenticationVector->xres) / 2;
+        ogs_ascii_to_hex(
+            AuthenticationVector->xres, strlen(AuthenticationVector->xres),
+            ausf_ue->xres, sizeof(ausf_ue->xres));
+        ogs_ascii_to_hex(
+            AuthenticationVector->ck_prime,
+            strlen(AuthenticationVector->ck_prime),
+            ausf_ue->ck_prime, sizeof(ausf_ue->ck_prime));
+        ogs_ascii_to_hex(
+            AuthenticationVector->ik_prime,
+            strlen(AuthenticationVector->ik_prime),
+            ausf_ue->ik_prime, sizeof(ausf_ue->ik_prime));
+
+        /*
+         * RFC 5448 3.4.1 : the PRF' identity is the EAP peer identity,
+         * i.e. the SUPI's bare IMSI digits without the "imsi-" prefix.
+         */
+        identity = ausf_ue->supi;
+        if (strncmp(identity, "imsi-", 5) == 0)
+            identity += 5;
+
+        ogs_kdf_eap_aka_prime_prf(ausf_ue->ck_prime, ausf_ue->ik_prime,
+                identity, strlen(identity),
+                NULL, ausf_ue->k_aut, NULL, NULL, emsk);
+
+        /* TS33.501 : Kausf is the 256 most significant bits of EMSK */
+        memcpy(ausf_ue->kausf, emsk, OGS_SHA256_DIGEST_SIZE);
+
+        /*
+         * RFC 3748 4.1 : each new EAP-Request carries a fresh Identifier.
+         * Start at 0 for the initial challenge (build_challenge increments
+         * it before use); on a synchronization-failure re-challenge keep
+         * the running Identifier so the new Request differs from the last.
+         */
+        if (!ausf_ue->eap_resync)
+            ausf_ue->eap_id = 0;
+        memset(&AV5G_AKA, 0, sizeof(AV5G_AKA));
+        eap_challenge =
+            ausf_eap_aka_prime_build_challenge(ausf_ue, ausf_ue->rand, autn);
+        if (!eap_challenge) {
+            ogs_error("[%s] Cannot build EAP-AKA' challenge", ausf_ue->suci);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                    recvmsg, "Cannot build EAP-AKA' challenge",
+                    ausf_ue->suci, NULL));
+            return false;
+        }
+        AV5G_AKA.eap_payload = eap_challenge;
+        UeAuthenticationCtx._5g_auth_data = &AV5G_AKA;
+
+        confirmation_resource = OGS_SBI_RESOURCE_NAME_EAP_SESSION;
+    } else {
+        if (!AuthenticationVector->xres_star) {
+            ogs_error("[%s] No AuthenticationVector.xresStar",
+                    ausf_ue->suci);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No AuthenticationVector.xresStar",
+                    ausf_ue->suci, NULL));
+            return false;
+        }
+        if (!AuthenticationVector->kausf) {
+            ogs_error("[%s] No AuthenticationVector.kausf", ausf_ue->suci);
+            ogs_assert(true ==
+                ogs_sbi_server_send_error(stream,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No AuthenticationVector.kausf", ausf_ue->suci,
+                    NULL));
+            return false;
+        }
+
+        ogs_ascii_to_hex(
+            AuthenticationVector->xres_star,
+            strlen(AuthenticationVector->xres_star),
+            ausf_ue->xres_star, sizeof(ausf_ue->xres_star));
+        ogs_ascii_to_hex(
+            AuthenticationVector->kausf,
+            strlen(AuthenticationVector->kausf),
+            ausf_ue->kausf, sizeof(ausf_ue->kausf));
+
+        memset(&AV5G_AKA, 0, sizeof(AV5G_AKA));
+        memset(&Av5gAka, 0, sizeof(Av5gAka));
+        Av5gAka.rand = AuthenticationVector->rand;
+        Av5gAka.autn = AuthenticationVector->autn;
+
+        ogs_kdf_hxres_star(ausf_ue->rand, ausf_ue->xres_star,
+                ausf_ue->hxres_star);
+        ogs_hex_to_ascii(ausf_ue->hxres_star, sizeof(ausf_ue->hxres_star),
+                hxres_star_string, sizeof(hxres_star_string));
+        Av5gAka.hxres_star = hxres_star_string;
+
+        /* 5gAuthData is the Av5gAka alternative of the union (TS 29.509) */
+        AV5G_AKA.av5g_aka = &Av5gAka;
+        UeAuthenticationCtx._5g_auth_data = &AV5G_AKA;
+
+        confirmation_resource = OGS_SBI_RESOURCE_NAME_5G_AKA_CONFIRMATION;
+    }
+
+    if (ausf_ue->eap_resync) {
+        /*
+         * This generate-auth-data response resolves a prior EAP-AKA'
+         * synchronization failure. Answer the held eap-session request
+         * with the fresh EAP-Challenge and authResult ONGOING instead of
+         * a UeAuthenticationCtx.
+         */
+        OpenAPI_eap_session_t EapSession;
+        OpenAPI_map_t *OngoingLink = NULL;
+        OpenAPI_links_value_schema_t OngoingLinkValue;
+
+        ausf_ue->eap_resync = false;
+
+        memset(&OngoingLinkValue, 0, sizeof(OngoingLinkValue));
+        memset(&header, 0, sizeof(header));
+        header.service.name = OpenAPI_service_name_ToString(
+                OpenAPI_service_name_nausf_auth);
+        header.api.version = (char *)OGS_SBI_API_V1;
+        header.resource.component[0] =
+                (char *)OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS;
+        header.resource.component[1] = ausf_ue->ctx_id;
+        header.resource.component[2] =
+                (char *)OGS_SBI_RESOURCE_NAME_EAP_SESSION;
+        OngoingLinkValue.href = ogs_sbi_server_uri(server, &header);
+        OngoingLink = OpenAPI_map_create(
+                (char *)OGS_SBI_RESOURCE_NAME_EAP_SESSION, &OngoingLinkValue);
+        ogs_assert(OngoingLink);
+
+        memset(&EapSession, 0, sizeof(EapSession));
+        EapSession.eap_payload = eap_challenge;
+        EapSession.auth_result = OpenAPI_auth_result_AUTHENTICATION_ONGOING;
+        EapSession._links = OpenAPI_list_create();
+        ogs_assert(EapSession._links);
+        OpenAPI_list_add(EapSession._links, OngoingLink);
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+        sendmsg.EapSession = &EapSession;
+
+        response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+        ogs_assert(response);
+        ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+        OpenAPI_list_free(EapSession._links);
+        OpenAPI_map_free(OngoingLink);
+        ogs_free(OngoingLinkValue.href);
+        if (eap_challenge)
+            ogs_free(eap_challenge);
+
+        return true;
+    }
 
     memset(&LinksValueSchemeValue, 0, sizeof(LinksValueSchemeValue));
 
@@ -219,8 +369,7 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     header.resource.component[0] =
             (char *)OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS;
     header.resource.component[1] = ausf_ue->ctx_id;
-    header.resource.component[2] =
-            (char *)OGS_SBI_RESOURCE_NAME_5G_AKA_CONFIRMATION;
+    header.resource.component[2] = (char *)confirmation_resource;
     LinksValueSchemeValue.href = ogs_sbi_server_uri(server, &header);
     LinksValueScheme = OpenAPI_map_create(
             (char *)links_member_name(UeAuthenticationCtx.auth_type),
@@ -253,6 +402,8 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     OpenAPI_list_free(UeAuthenticationCtx._links);
     OpenAPI_map_free(LinksValueScheme);
 
+    if (eap_challenge)
+        ogs_free(eap_challenge);
     ogs_free(LinksValueSchemeValue.href);
     ogs_free(sendmsg.http.location);
 
@@ -285,6 +436,8 @@ bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
     char kseaf_string[OGS_KEYSTRLEN(OGS_SHA256_DIGEST_SIZE)];
 
     OpenAPI_confirmation_data_response_t ConfirmationDataResponse;
+    OpenAPI_eap_session_t EapSession;
+    char *eap_result_payload = NULL;
     OpenAPI_auth_event_t *AuthEvent = NULL;
 
     bool rc;
@@ -344,29 +497,62 @@ bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
 
     AUTH_EVENT_STORE(ausf_ue, recvmsg->http.location);
 
-    memset(&ConfirmationDataResponse, 0, sizeof(ConfirmationDataResponse));
-
     if (AuthEvent->success == true)
         ausf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_SUCCESS;
     else
         ausf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_FAILURE;
 
-    ConfirmationDataResponse.auth_result = ausf_ue->auth_result;
-    ConfirmationDataResponse.supi = ausf_ue->supi;
-
-    ogs_kdf_kseaf(ausf_ue->serving_network_name,
-            ausf_ue->kausf, ausf_ue->kseaf);
-    ogs_hex_to_ascii(ausf_ue->kseaf, sizeof(ausf_ue->kseaf),
-            kseaf_string, sizeof(kseaf_string));
-    ConfirmationDataResponse.kseaf = kseaf_string;
-
     memset(&sendmsg, 0, sizeof(sendmsg));
 
-    sendmsg.ConfirmationDataResponse = &ConfirmationDataResponse;
+    if (ausf_ue->auth_type == OpenAPI_auth_type_EAP_AKA_PRIME) {
+        /*
+         * EAP-AKA' : the confirmation is returned as an EapSession
+         * carrying the terminating EAP-Success/Failure packet and, on
+         * success, the derived Kseaf.
+         */
+        memset(&EapSession, 0, sizeof(EapSession));
+
+        if (ausf_ue->auth_result ==
+                OpenAPI_auth_result_AUTHENTICATION_SUCCESS) {
+            eap_result_payload = ausf_eap_aka_prime_build_result(
+                    AUSF_EAP_CODE_SUCCESS, ausf_ue->eap_id);
+
+            ogs_kdf_kseaf(ausf_ue->serving_network_name,
+                    ausf_ue->kausf, ausf_ue->kseaf);
+            ogs_hex_to_ascii(ausf_ue->kseaf, sizeof(ausf_ue->kseaf),
+                    kseaf_string, sizeof(kseaf_string));
+            EapSession.k_seaf = kseaf_string;
+        } else {
+            eap_result_payload = ausf_eap_aka_prime_build_result(
+                    AUSF_EAP_CODE_FAILURE, ausf_ue->eap_id);
+        }
+
+        EapSession.eap_payload = eap_result_payload;
+        EapSession.auth_result = ausf_ue->auth_result;
+        EapSession.supi = ausf_ue->supi;
+
+        sendmsg.EapSession = &EapSession;
+    } else {
+        memset(&ConfirmationDataResponse, 0, sizeof(ConfirmationDataResponse));
+
+        ConfirmationDataResponse.auth_result = ausf_ue->auth_result;
+        ConfirmationDataResponse.supi = ausf_ue->supi;
+
+        ogs_kdf_kseaf(ausf_ue->serving_network_name,
+                ausf_ue->kausf, ausf_ue->kseaf);
+        ogs_hex_to_ascii(ausf_ue->kseaf, sizeof(ausf_ue->kseaf),
+                kseaf_string, sizeof(kseaf_string));
+        ConfirmationDataResponse.kseaf = kseaf_string;
+
+        sendmsg.ConfirmationDataResponse = &ConfirmationDataResponse;
+    }
 
     response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
     ogs_assert(response);
     ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    if (eap_result_payload)
+        ogs_free(eap_result_payload);
 
     return true;
 }
