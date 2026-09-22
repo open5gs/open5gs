@@ -4839,6 +4839,361 @@ static void test13_func(abts_case *tc, void *data)
 }
 
 
+/*
+ * A PCC rule installed at PDU session establishment (the static GBR rule of
+ * test_db_new_qos_flow) must survive AF AppSession churn on the same session:
+ * every SmPolicyDecision that adds or removes a per-AppSession rule leaves the
+ * static rule authorized, and re-binding it must not produce a spurious
+ * modification of its QoS flow.
+ *
+ * Establishment installs QFI 2 (static 5QI 1 rule). Then, twice: an AF creates
+ * an AppSession (one new 5QI 1 flow) and deletes it again. Each
+ * PDUSessionResourceModifyRequest is checked for exactly one flow, and never
+ * QFI 2: a stale pf_to_add_list read on the revisited static rule would put
+ * QFI 2 into the add-or-modify list of the create.
+ */
+static void test_pcc_rule_churn_func(abts_case *tc, void *data)
+{
+    int rv, i;
+    ogs_socknode_t *ngap = NULL;
+    ogs_socknode_t *gtpu = NULL;
+    ogs_pkbuf_t *gmmbuf = NULL;
+    ogs_pkbuf_t *gsmbuf = NULL;
+    ogs_pkbuf_t *nasbuf = NULL;
+    ogs_pkbuf_t *sendbuf = NULL;
+    ogs_pkbuf_t *recvbuf = NULL;
+    ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
+    test_ue_t *test_ue = NULL;
+    test_sess_t *sess = NULL;
+    test_bearer_t *qos_flow = NULL;
+    test_bearer_t *static_flow = NULL;
+    af_sess_t *af_sess = NULL;
+    af_npcf_policyauthorization_param_t af_param;
+    bson_t *doc = NULL;
+    uint8_t call_qfi = 0;
+
+    memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
+
+    mobile_identity_suci.h.supi_format = OGS_NAS_5GS_SUPI_FORMAT_IMSI;
+    mobile_identity_suci.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_SUCI;
+    mobile_identity_suci.routing_indicator1 = 0;
+    mobile_identity_suci.routing_indicator2 = 0xf;
+    mobile_identity_suci.routing_indicator3 = 0xf;
+    mobile_identity_suci.routing_indicator4 = 0xf;
+    mobile_identity_suci.protection_scheme_id = OGS_PROTECTION_SCHEME_NULL;
+    mobile_identity_suci.home_network_pki_value = 0;
+
+    test_ue = test_ue_add_by_suci(&mobile_identity_suci, "0000000014");
+    ogs_assert(test_ue);
+
+    test_ue->nr_cgi.cell_id = 0x40001;
+
+    test_ue->nas.registration.tsc = 0;
+    test_ue->nas.registration.ksi = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
+    test_ue->nas.registration.follow_on_request = 1;
+    test_ue->nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
+
+    test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
+    test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
+
+    ngap = testngap_client(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, ngap);
+
+    gtpu = test_gtpu_server(1, AF_INET);
+    ABTS_PTR_NOTNULL(tc, gtpu);
+
+    sendbuf = testngap_build_ng_setup_request(0x4000, 22);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    /* The subscriber carries a 5QI 1 PCC rule with packet filters, so the
+     * SMF installs it as a static QoS flow right after establishment. */
+    doc = test_db_new_qos_flow(test_ue);
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
+
+    test_ue->registration_request_param.guti = 1;
+    gmmbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+
+    test_ue->registration_request_param.gmm_capability = 1;
+    test_ue->registration_request_param.requested_nssai = 1;
+    test_ue->registration_request_param.last_visited_registered_tai = 1;
+    test_ue->registration_request_param.ue_usage_setting = 1;
+    nasbuf = testgmm_build_registration_request(test_ue, NULL, false, false);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
+                NGAP_RRCEstablishmentCause_mo_Signalling, false, true);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    gmmbuf = testgmm_build_identity_response(test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    gmmbuf = testgmm_build_authentication_response(test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    gmmbuf = testgmm_build_security_mode_complete(test_ue, nasbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_InitialContextSetup,
+            test_ue->ngap_procedure_code);
+
+    sendbuf = testngap_build_ue_radio_capability_info_indication(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    sendbuf = testngap_build_initial_context_setup_response(test_ue, false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    gmmbuf = testgmm_build_registration_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+
+    sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 5);
+    ogs_assert(sess);
+
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
+    sess->ul_nas_transport_param.dnn = 1;
+    sess->ul_nas_transport_param.s_nssai = 1;
+
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
+    gsmbuf = testgsm_build_pdu_session_establishment_request(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDUSessionResourceSetupRequest +
+     * DL NAS transport +
+     * PDU session establishment accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
+            test_ue->ngap_procedure_code);
+
+    qos_flow = test_qos_flow_find_by_qfi(sess, 1);
+    ogs_assert(qos_flow);
+
+    /* Send PDUSessionResourceSetupResponse */
+    sendbuf = testngap_sess_build_pdu_session_resource_setup_response(sess);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDUSessionResourceModifyRequest +
+     * DL NAS transport +
+     * PDU session modification command: the static rule becomes QFI 2 */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceModify,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, 1, sess->num_of_qos_flow_to_add_or_modify);
+    ABTS_INT_EQUAL(tc, 0, sess->num_of_qos_flow_to_release);
+    ABTS_INT_EQUAL(tc, 2, sess->last_qfi_to_add_or_modify);
+
+    static_flow = test_qos_flow_find_by_qfi(sess, 2);
+    ogs_assert(static_flow);
+
+    sendbuf = testngap_build_qos_flow_resource_modify_response(static_flow);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 0;
+    sess->pdu_session_establishment_param.ssc_mode = 0;
+    sess->pdu_session_establishment_param.epco = 0;
+
+    gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Waiting for creating dedicated QoS flow in PFCP protocol */
+    ogs_msleep(100);
+
+    for (i = 0; i < 2; i++) {
+        /* An AF AppSession on the same PDU session: one more 5QI 1 rule */
+        af_sess = af_sess_add_by_ue_address(&sess->ue_ip);
+        ogs_assert(af_sess);
+
+        af_sess->supi = ogs_strdup(test_ue->supi);
+        ogs_assert(af_sess->supi);
+
+        af_sess->dnn = ogs_strdup(sess->dnn);
+        ogs_assert(af_sess->dnn);
+
+        af_local_discover_and_send(
+                OpenAPI_service_name_nbsf_management,
+                af_sess, NULL,
+                af_nbsf_management_build_discover);
+
+        ogs_msleep(100);
+
+        memset(&af_param, 0, sizeof(af_param));
+        af_param.med_type = OpenAPI_media_type_AUDIO;
+        af_param.qos_type = 1;
+        af_param.flow_type = 99;
+
+        af_local_send_to_pcf(af_sess, &af_param,
+                af_npcf_policyauthorization_build_create);
+
+        /* Receive PDUSessionResourceModifyRequest +
+         * DL NAS transport +
+         * PDU session modification command: exactly the new flow.
+         * QFI 2 (the static rule, revisited by the binding pass) must not
+         * be in the add-or-modify list. */
+        recvbuf = testgnb_ngap_read(ngap);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        testngap_recv(test_ue, recvbuf);
+        ABTS_INT_EQUAL(tc,
+                NGAP_ProcedureCode_id_PDUSessionResourceModify,
+                test_ue->ngap_procedure_code);
+        ABTS_INT_EQUAL(tc, 1, sess->num_of_qos_flow_to_add_or_modify);
+        ABTS_INT_EQUAL(tc, 0, sess->num_of_qos_flow_to_release);
+        ABTS_TRUE(tc, sess->last_qfi_to_add_or_modify != 2);
+
+        call_qfi = sess->last_qfi_to_add_or_modify;
+        qos_flow = test_qos_flow_find_by_qfi(sess, call_qfi);
+        ogs_assert(qos_flow);
+
+        sendbuf = testngap_build_qos_flow_resource_modify_response(qos_flow);
+        ABTS_PTR_NOTNULL(tc, sendbuf);
+        rv = testgnb_ngap_send(ngap, sendbuf);
+        ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+        sess->ul_nas_transport_param.request_type =
+            OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
+        sess->ul_nas_transport_param.dnn = 0;
+        sess->ul_nas_transport_param.s_nssai = 0;
+        sess->pdu_session_establishment_param.ssc_mode = 0;
+        sess->pdu_session_establishment_param.epco = 0;
+
+        gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
+        ABTS_PTR_NOTNULL(tc, gsmbuf);
+        gmmbuf = testgmm_build_ul_nas_transport(sess,
+                OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+        ABTS_PTR_NOTNULL(tc, gmmbuf);
+        sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+        ABTS_PTR_NOTNULL(tc, sendbuf);
+        rv = testgnb_ngap_send(ngap, sendbuf);
+        ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+        ogs_msleep(100);
+
+        /* The AF deletes its AppSession: exactly the call flow is released,
+         * the static QFI 2 stays. The AF removes af_sess itself on the
+         * delete response (tests/af/af-sm.c). */
+        af_local_send_to_pcf(af_sess, NULL,
+                af_npcf_policyauthorization_build_delete);
+
+        recvbuf = testgnb_ngap_read(ngap);
+        ABTS_PTR_NOTNULL(tc, recvbuf);
+        testngap_recv(test_ue, recvbuf);
+        ABTS_INT_EQUAL(tc,
+                NGAP_ProcedureCode_id_PDUSessionResourceModify,
+                test_ue->ngap_procedure_code);
+        ABTS_INT_EQUAL(tc, 0, sess->num_of_qos_flow_to_add_or_modify);
+        ABTS_INT_EQUAL(tc, 1, sess->num_of_qos_flow_to_release);
+
+        sendbuf = testngap_build_qos_flow_resource_release_response(qos_flow);
+        ABTS_PTR_NOTNULL(tc, sendbuf);
+        rv = testgnb_ngap_send(ngap, sendbuf);
+        ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+        sess->ul_nas_transport_param.request_type =
+            OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
+        sess->ul_nas_transport_param.dnn = 0;
+        sess->ul_nas_transport_param.s_nssai = 0;
+        sess->pdu_session_establishment_param.ssc_mode = 0;
+        sess->pdu_session_establishment_param.epco = 0;
+
+        gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
+        ABTS_PTR_NOTNULL(tc, gsmbuf);
+        gmmbuf = testgmm_build_ul_nas_transport(sess,
+                OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+        ABTS_PTR_NOTNULL(tc, gmmbuf);
+        sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+        ABTS_PTR_NOTNULL(tc, sendbuf);
+        rv = testgnb_ngap_send(ngap, sendbuf);
+        ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+        test_bearer_remove(qos_flow);
+
+        ogs_msleep(100);
+
+        /* The static flow is still there on the test side, and the SMF
+         * never asked to release or modify it. */
+        ABTS_PTR_NOTNULL(tc, test_qos_flow_find_by_qfi(sess, 2));
+    }
+
+    test_af_qos_reference_cleanup(tc, test_ue, ngap, gtpu);
+}
+
 static void test_issue4672_func(abts_case *tc, void *data)
 {
     int rv;
@@ -5039,6 +5394,258 @@ static void test_arp_update_func(abts_case *tc, void *data)
     test_af_qos_reference_cleanup(tc, test_ue, ngap, gtpu);
 }
 
+static void test_pcc_rule_keeps_flows_func(abts_case *tc, void *data)
+{
+    int rv;
+    ogs_socknode_t *ngap = NULL;
+    ogs_socknode_t *gtpu = NULL;
+    test_ue_t *test_ue = NULL;
+    test_sess_t *sess = NULL;
+    test_bearer_t *qos_flow = NULL;
+    af_sess_t *af_sess = NULL;
+    af_npcf_policyauthorization_param_t af_param;
+    ogs_qos_t created;
+    uint8_t qfi = 0;
+
+    ogs_pkbuf_t *gmmbuf = NULL;
+    ogs_pkbuf_t *gsmbuf = NULL;
+    ogs_pkbuf_t *sendbuf = NULL;
+    ogs_pkbuf_t *recvbuf = NULL;
+
+    /*
+     * Issue #4526
+     *
+     * Per TS29.512 V18.13.0 Table 5.6.2.6-1 NOTE 3, "flowInfos" or
+     * "appId" shall be supplied when the PCC rule is initially
+     * provisioned; a later modification may omit them, and the PCF
+     * does so whenever only the QoS or the ARP of the rule changed.
+     *
+     * With the policy table kept as the authorized set, such a
+     * modification replaces the table entry. The entry must keep the
+     * flows it was provisioned with: a rule without flows cannot be
+     * bound once its QoS flow has to be created again.
+     *
+     * The sequence makes that visible with the stock PCF. An AF
+     * creates a rule (QFI 2), modifies its ARP without flowInfos, the
+     * UE deletes the QoS flow while the AppSession stays (as in
+     * test_issue4672_func), and the AF modifies the ARP once more,
+     * again without flowInfos. The rule is still authorized and has no
+     * QoS flow, so the binding creates one from the flows kept in the
+     * table. Without them the SMF logs "No flow in PCC Rule" and no
+     * PDUSessionResourceModifyRequest is sent.
+     */
+    test_af_qos_reference_setup(tc, "0000004526",
+            &test_ue, &sess, &af_sess, &ngap, &gtpu);
+
+    /* Create with bandwidth : dedicated QoS flow(QFI 2) */
+    memset(&af_param, 0, sizeof(af_param));
+    af_param.med_type = OpenAPI_media_type_AUDIO;
+    af_param.qos_reference = "test-audio";
+    af_param.qos_type = 1;
+    af_param.flow_type = 99;
+
+    af_local_send_to_pcf(af_sess, &af_param,
+            af_npcf_policyauthorization_build_create);
+
+    qos_flow = test_af_complete_qos_flow_modify(tc, test_ue, sess, ngap);
+    ogs_assert(qos_flow);
+
+    ABTS_INT_EQUAL(tc, OGS_5GC_PRE_EMPTION_ENABLED,
+            qos_flow->qos.arp.pre_emption_capability);
+    ABTS_TRUE(tc, qos_flow->qos.mbr.downlink != 0);
+    ABTS_TRUE(tc, qos_flow->qos.gbr.uplink != 0);
+    created = qos_flow->qos;
+
+    /* Update with ARP only : the PccRule carries no flowInfos */
+    memset(&af_param, 0, sizeof(af_param));
+    af_param.med_type = OpenAPI_media_type_AUDIO;
+    af_param.qos_reference = "test-audio";
+    af_param.res_prio = OpenAPI_reserv_priority_PRIO_1;
+    af_param.preempt_cap = OpenAPI_preemption_capability_NOT_PREEMPT;
+    af_param.preempt_vuln = OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
+
+    af_local_send_to_pcf(af_sess, &af_param,
+            af_npcf_policyauthorization_build_update_arp);
+
+    qos_flow = test_af_complete_qos_flow_modify(tc, test_ue, sess, ngap);
+    ogs_assert(qos_flow);
+
+    ABTS_INT_EQUAL(tc, OGS_5GC_PRE_EMPTION_DISABLED,
+            qos_flow->qos.arp.pre_emption_capability);
+
+    /* UE-initiated deletion of the dedicated QoS flow (QFI 2) */
+    sess->pti = 8;
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
+    sess->ul_nas_transport_param.dnn = 1;
+    sess->ul_nas_transport_param.s_nssai = 1;
+
+    sess->pdu_session_establishment_param.ssc_mode = 1;
+    sess->pdu_session_establishment_param.epco = 1;
+
+    gsmbuf = testgsm_build_pdu_session_modification_request(
+        qos_flow,
+        OGS_5GSM_CAUSE_REGULAR_DEACTIVATION,
+        OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE,
+        OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive PDUSessionResourceModifyRequest +
+     * DL NAS transport +
+     * PDU session modification command: QFI 2 is released */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceModify,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, 0, sess->num_of_qos_flow_to_add_or_modify);
+    ABTS_INT_EQUAL(tc, 1, sess->num_of_qos_flow_to_release);
+
+    sendbuf = testngap_build_qos_flow_resource_release_response(qos_flow);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 0;
+
+    sess->pdu_session_establishment_param.ssc_mode = 0;
+    sess->pdu_session_establishment_param.epco = 0;
+
+    gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    test_bearer_remove(qos_flow);
+
+    ogs_msleep(100);
+
+    /* Update with ARP only, again without flowInfos : the rule is still
+     * authorized and has no QoS flow, so the binding creates one from
+     * the flows kept in the policy table */
+    memset(&af_param, 0, sizeof(af_param));
+    af_param.med_type = OpenAPI_media_type_AUDIO;
+    af_param.qos_reference = "test-audio";
+    af_param.res_prio = OpenAPI_reserv_priority_PRIO_1;
+    af_param.preempt_cap = OpenAPI_preemption_capability_MAY_PREEMPT;
+    af_param.preempt_vuln = OpenAPI_preemption_vulnerability_PREEMPTABLE;
+
+    af_local_send_to_pcf(af_sess, &af_param,
+            af_npcf_policyauthorization_build_update_arp);
+
+    /* Receive PDUSessionResourceModifyRequest +
+     * DL NAS transport +
+     * PDU session modification command: exactly one new flow */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceModify,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, 1, sess->num_of_qos_flow_to_add_or_modify);
+    ABTS_INT_EQUAL(tc, 0, sess->num_of_qos_flow_to_release);
+    ABTS_TRUE(tc, sess->last_qfi_to_add_or_modify != 0);
+
+    qfi = sess->last_qfi_to_add_or_modify;
+    qos_flow = test_qos_flow_find_by_qfi(sess, qfi);
+    ogs_assert(qos_flow);
+
+    /* The flow carries the QoS of the rule: the ARP of this update and
+     * the bitrates negotiated on create */
+    ABTS_INT_EQUAL(tc, OGS_5GC_PRE_EMPTION_ENABLED,
+            qos_flow->qos.arp.pre_emption_capability);
+    ABTS_INT_EQUAL(tc, OGS_5GC_PRE_EMPTION_ENABLED,
+            qos_flow->qos.arp.pre_emption_vulnerability);
+    ABTS_TRUE(tc, created.mbr.downlink == qos_flow->qos.mbr.downlink);
+    ABTS_TRUE(tc, created.mbr.uplink == qos_flow->qos.mbr.uplink);
+    ABTS_TRUE(tc, created.gbr.downlink == qos_flow->qos.gbr.downlink);
+    ABTS_TRUE(tc, created.gbr.uplink == qos_flow->qos.gbr.uplink);
+
+    sendbuf = testngap_build_qos_flow_resource_modify_response(qos_flow);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 0;
+
+    sess->pdu_session_establishment_param.ssc_mode = 0;
+    sess->pdu_session_establishment_param.epco = 0;
+
+    gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_msleep(100);
+
+    /* The AF deletes its AppSession: the new flow is released. The AF
+     * removes af_sess itself on the delete response (tests/af/af-sm.c). */
+    af_local_send_to_pcf(af_sess, NULL,
+            af_npcf_policyauthorization_build_delete);
+
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceModify,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, 0, sess->num_of_qos_flow_to_add_or_modify);
+    ABTS_INT_EQUAL(tc, 1, sess->num_of_qos_flow_to_release);
+
+    sendbuf = testngap_build_qos_flow_resource_release_response(qos_flow);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    sess->ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION_REQUEST;
+    sess->ul_nas_transport_param.dnn = 0;
+    sess->ul_nas_transport_param.s_nssai = 0;
+
+    sess->pdu_session_establishment_param.ssc_mode = 0;
+    sess->pdu_session_establishment_param.epco = 0;
+
+    gsmbuf = testgsm_build_pdu_session_modification_complete(sess);
+    ABTS_PTR_NOTNULL(tc, gsmbuf);
+    gmmbuf = testgmm_build_ul_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, gsmbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    test_bearer_remove(qos_flow);
+
+    ogs_msleep(100);
+
+    test_af_qos_reference_cleanup(tc, test_ue, ngap, gtpu);
+}
+
 abts_suite *test_af(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -5063,8 +5670,10 @@ abts_suite *test_af(abts_suite *suite)
     abts_run_test(suite, test11_func, NULL);
     abts_run_test(suite, test12_func, NULL);
     abts_run_test(suite, test13_func, NULL);
+    abts_run_test(suite, test_pcc_rule_churn_func, NULL);
     abts_run_test(suite, test_issue4672_func, NULL);
     abts_run_test(suite, test_arp_update_func, NULL);
+    abts_run_test(suite, test_pcc_rule_keeps_flows_func, NULL);
 
     return suite;
 }

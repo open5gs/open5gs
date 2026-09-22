@@ -538,6 +538,10 @@ void testngap_handle_pdu_session_resource_modify_request(
                             test_ue, PDUSessionItem->pDUSessionID);
                 ogs_assert(sess);
 
+                sess->num_of_qos_flow_to_add_or_modify = 0;
+                sess->num_of_qos_flow_to_release = 0;
+                sess->last_qfi_to_add_or_modify = 0;
+
                 if (PDUSessionItem->nAS_PDU)
                     testngap_send_to_nas(test_ue, PDUSessionItem->nAS_PDU);
                 transfer = &PDUSessionItem->
@@ -578,7 +582,14 @@ void testngap_handle_pdu_session_resource_modify_request(
                                 qos_flow,
                                 QosFlowAddOrModifyRequestItem->
                                     qosFlowLevelQosParameters);
+                            sess->num_of_qos_flow_to_add_or_modify++;
+                            sess->last_qfi_to_add_or_modify = qos_flow->qfi;
                         }
+                        break;
+                    case NGAP_ProtocolIE_ID_id_QosFlowToReleaseList:
+                        ogs_assert(ie2->value.choice.QosFlowListWithCause);
+                        sess->num_of_qos_flow_to_release = OGS_ASN_LIST_COUNT(
+                                ie2->value.choice.QosFlowListWithCause);
                         break;
                     default:
                         break;
