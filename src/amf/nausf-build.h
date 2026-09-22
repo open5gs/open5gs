@@ -32,6 +32,8 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate_delete(
         amf_ue_t *amf_ue, void *data);
 ogs_sbi_request_t *amf_nausf_auth_build_authenticate_confirmation(
         amf_ue_t *amf_ue, void *data);
+ogs_sbi_request_t *amf_nausf_auth_build_authenticate_eap_session(
+        amf_ue_t *amf_ue, void *data);
 
 #ifdef __cplusplus
 }

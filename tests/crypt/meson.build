@@ -20,6 +20,7 @@ testunit_crypt_sources = files('''
     sha-test.c
     base64-test.c
     ecies-test.c
+    eap-aka-prime-test.c
     abts-main.c
 '''.split())
 
