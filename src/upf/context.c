@@ -818,8 +818,9 @@ void upf_sess_urr_acc_add(upf_sess_t *sess, ogs_pfcp_urr_t *urr, size_t size, bo
         report.num_of_usage_report = 1;
         upf_sess_urr_acc_snapshot(sess, urr);
 
-        ogs_assert(OGS_OK ==
-            upf_pfcp_send_session_report_request(sess, &report));
+        if (upf_pfcp_send_session_report_request(
+                    sess, &report) != OGS_OK)
+            ogs_error("PFCP Session Report Request failed");
         /* Start new report period/iteration: */
         upf_sess_urr_acc_timers_setup(sess, urr);
     }
@@ -936,8 +937,9 @@ static void upf_sess_urr_acc_timers_cb(void *data)
         report.num_of_usage_report = 1;
         upf_sess_urr_acc_snapshot(sess, urr);
 
-        ogs_assert(OGS_OK ==
-            upf_pfcp_send_session_report_request(sess, &report));
+        if (upf_pfcp_send_session_report_request(
+                    sess, &report) != OGS_OK)
+            ogs_error("PFCP Session Report Request failed");
     }
     /* Start new report period/iteration: */
     upf_sess_urr_acc_timers_setup(sess, urr);

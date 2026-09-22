@@ -370,12 +370,14 @@ int sgwu_pfcp_send_session_report_request(
     sxabuf = ogs_pfcp_build_session_report_request(h.type, report);
     if (!sxabuf) {
         ogs_error("ogs_pfcp_build_session_report_request() failed");
+        ogs_pfcp_xact_delete(xact);
         return OGS_ERROR;
     }
 
     rv = ogs_pfcp_xact_update_tx(xact, &h, sxabuf);
     if (rv != OGS_OK) {
         ogs_error("ogs_pfcp_xact_update_tx() failed");
+        ogs_pfcp_xact_delete(xact);
         return OGS_ERROR;
     }
 

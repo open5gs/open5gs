@@ -173,8 +173,9 @@ static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pk
                 sess = SGWU_SESS(far->sess);
                 ogs_assert(sess);
 
-                ogs_assert(OGS_OK ==
-                    sgwu_pfcp_send_session_report_request(sess, &report));
+                if (sgwu_pfcp_send_session_report_request(
+                            sess, &report) != OGS_OK)
+                    ogs_error("PFCP Session Report Request failed");
             }
         } else {
             ogs_error("[DROP] Cannot find FAR by Error-Indication");
@@ -269,8 +270,9 @@ static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pk
             report.downlink_data.qfi =
                 header_desc.qos_flow_identifier; /* for 5GC */
 
-            ogs_assert(OGS_OK ==
-                sgwu_pfcp_send_session_report_request(sess, &report));
+            if (sgwu_pfcp_send_session_report_request(
+                        sess, &report) != OGS_OK)
+                ogs_error("PFCP Session Report Request failed");
         }
 
         /*

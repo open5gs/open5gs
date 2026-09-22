@@ -243,8 +243,9 @@ static void _gtpv1_tun_recv_common_one(ogs_socket_t fd, ogs_pkbuf_t *recvbuf, bo
         if (pdr->qer && pdr->qer->qfi)
             report.downlink_data.qfi = pdr->qer->qfi; /* for 5GC */
 
-        ogs_assert(OGS_OK ==
-            upf_pfcp_send_session_report_request(sess, &report));
+        if (upf_pfcp_send_session_report_request(
+                    sess, &report) != OGS_OK)
+            ogs_error("PFCP Session Report Request failed");
     }
 
     /*
@@ -357,8 +358,9 @@ static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pk
                 sess = UPF_SESS(far->sess);
                 ogs_assert(sess);
 
-                ogs_assert(OGS_OK ==
-                    upf_pfcp_send_session_report_request(sess, &report));
+                if (upf_pfcp_send_session_report_request(
+                            sess, &report) != OGS_OK)
+                    ogs_error("PFCP Session Report Request failed");
             }
 
         } else {
@@ -849,8 +851,9 @@ static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pk
                             dl_report.downlink_data.qfi =
                                 dl_pdr->qer->qfi; /* for 5GC */
 
-                        ogs_assert(OGS_OK ==
-                            upf_pfcp_send_session_report_request(dl_sess, &dl_report));
+                        if (upf_pfcp_send_session_report_request(
+                                    dl_sess, &dl_report) != OGS_OK)
+                            ogs_error("PFCP Session Report Request failed");
                     }
 
                     /*
@@ -914,8 +917,9 @@ static void _gtpv1_u_recv_one(ogs_socket_t fd, ogs_sock_t *sock, ogs_pkbuf_t *pk
                 if (pdr->qer && pdr->qer->qfi)
                     report.downlink_data.qfi = pdr->qer->qfi; /* for 5GC */
 
-                ogs_assert(OGS_OK ==
-                    upf_pfcp_send_session_report_request(sess, &report));
+                if (upf_pfcp_send_session_report_request(
+                            sess, &report) != OGS_OK)
+                    ogs_error("PFCP Session Report Request failed");
             }
 
             /*
