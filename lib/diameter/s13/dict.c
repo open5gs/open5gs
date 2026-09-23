@@ -117,7 +117,7 @@ int ogs_dict_s13_entry(char *conffile)
                 {  {                      .avp_name = "Destination-Host" }, RULE_OPTIONAL, -1, 1 },
                 {  {                      .avp_name = "Destination-Realm" }, RULE_REQUIRED, -1, 1 },
                 {  { .avp_vendor = 10415, .avp_name = "Terminal-Information" }, RULE_REQUIRED, -1, 1 },
-                {  {                      .avp_name = "User-Name" }, RULE_REQUIRED, -1, 1 },
+                {  {                      .avp_name = "User-Name" }, RULE_OPTIONAL, -1, 1 },
                 {  {                      .avp_name = "Proxy-Info" }, RULE_OPTIONAL, -1, -1 },
                 {  {                      .avp_name = "Route-Record" }, RULE_OPTIONAL, -1, -1 },
 

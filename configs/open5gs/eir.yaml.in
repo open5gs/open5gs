@@ -10,7 +10,6 @@ global:
 #    peer: 64
 
 eir:
-  freeDiameter: @sysconfdir@/freeDiameter/eir.conf
   sbi:
     server:
       - address: 127.0.0.21
@@ -24,9 +23,9 @@ eir:
 ################################################################################
 # S13 (EPC MME) over Diameter
 ################################################################################
-#  o The same eir collection answers ME-Identity-Check-Request from the MME.
-#    Remove eir.freeDiameter to serve N5g-eir (5G) only, or remove eir.sbi
-#    to serve S13 only (no NRF or SCP is then required).
+#  o Disabled by default. Set eir.freeDiameter to answer
+#    ME-Identity-Check-Request from the MME out of the same eir collection.
+#    Remove eir.sbi as well to serve S13 only (no NRF or SCP is then required).
 #  freeDiameter: @sysconfdir@/freeDiameter/eir.conf
 #
 #  o Inline freeDiameter configuration instead of a file

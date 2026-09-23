@@ -18,15 +18,15 @@
  */
 
 /*
- * Isolated tests for the EIR (S13) decision logic and the IMEISV cache.
+ * Isolated tests for the EIR (S13) decision logic.
  *
  * Nothing here touches freeDiameter: mme_s13_*_cause() are pure functions
- * of their inputs, mme_s13_handle_eca() / mme_s13_precheck() only read
- * mme_self()->eir and the cache, and the cache API works on the MME context
- * alone. The Diameter wire path (mme_s13_send_ecr / mme_s13_eca_cb /
+ * of their inputs, mme_s13_handle_eca() only reads mme_self()->eir and
+ * mme_s13_eca_is_current() only reads the UE context. The Diameter wire path (mme_s13_send_ecr / mme_s13_eca_cb /
  * mme_s13_ecr_expire_cb) needs a peer and is covered by scenario tests.
  */
 
+#include "mme/mme-sm.h"
 #include "mme/mme-s13-handler.h"
 #include "core/abts.h"
 
@@ -73,13 +73,6 @@ static void s13_test_equipment_status(abts_case *tc, void *data)
     cfg.failure_action = MME_EIR_REJECT;
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
             mme_s13_equipment_status_cause(0xffffffff, &cfg));
-
-    /* ...and never enters the cache */
-    ABTS_TRUE(tc, mme_s13_status_is_verdict(OGS_DIAM_S13_EQUIPMENT_WHITELIST));
-    ABTS_TRUE(tc, mme_s13_status_is_verdict(OGS_DIAM_S13_EQUIPMENT_GREYLIST));
-    ABTS_TRUE(tc, mme_s13_status_is_verdict(OGS_DIAM_S13_EQUIPMENT_BLACKLIST));
-    ABTS_TRUE(tc, !mme_s13_status_is_verdict(3));
-    ABTS_TRUE(tc, !mme_s13_status_is_verdict(0xffffffff));
 }
 
 /* Result-Code / Experimental-Result -> cause, through the three policies */
@@ -291,8 +284,7 @@ static void s13_test_pei_from_terminal_info(abts_case *tc, void *data)
 }
 
 /*
- * mme_context_init() is needed by every test here, not only the cache
- * ones: it installs the "mme" log domain that mme-s13-handler.c logs to
+ * mme_context_init() is needed by every test here: it installs the "mme" log domain that mme-s13-handler.c logs to
  * (an ogs_warn() on an uninstalled domain is FATAL). It sizes its pools
  * from the static app and global configuration; the unit binary never
  * parses a config file, so give it small but non-zero sizes first.
@@ -354,271 +346,42 @@ static void s13_context_teardown(void)
     ogs_app()->pool.bearer = saved_conf.bearer;
 }
 
-static void s13_test_cache_basic(abts_case *tc, void *data)
-{
-    mme_eir_cache_entry_t *e1, *e2, *again;
-    ogs_time_t before;
-
-    mme_eir_cache_remove_all();
-
-    ABTS_TRUE(tc, mme_eir_cache_find("3512345678901201") == NULL);
-
-    before = ogs_get_monotonic_time();
-    ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-            "001010123456789", "3512345678901201",
-            OGS_DIAM_S13_EQUIPMENT_WHITELIST));
-    e1 = mme_eir_cache_find("3512345678901201");
-    ABTS_PTR_NOTNULL(tc, e1);
-    ABTS_INT_EQUAL(tc, OGS_DIAM_S13_EQUIPMENT_WHITELIST, e1->status);
-    ABTS_STR_EQUAL(tc, "3512345678901201", e1->imeisv_bcd);
-    ABTS_STR_EQUAL(tc, "001010123456789", e1->imsi_bcd);
-    ABTS_TRUE(tc, e1->checked_at >= before);
-
-    /* Same IMEISV again: updated in place, no second entry */
-    ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-            "001010999999999", "3512345678901201",
-            OGS_DIAM_S13_EQUIPMENT_BLACKLIST));
-    again = mme_eir_cache_find("3512345678901201");
-    ABTS_TRUE(tc, again == e1);
-    ABTS_INT_EQUAL(tc, OGS_DIAM_S13_EQUIPMENT_BLACKLIST, again->status);
-    ABTS_TRUE(tc, again->checked_at >= before);
-    /* IMSI is informational, not the key: first writer's value is kept */
-    ABTS_STR_EQUAL(tc, "001010123456789", again->imsi_bcd);
-
-    /* A different IMEISV is a different entry */
-    ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-            "001010123456789", "3512345678901202",
-            OGS_DIAM_S13_EQUIPMENT_GREYLIST));
-    e2 = mme_eir_cache_find("3512345678901202");
-    ABTS_PTR_NOTNULL(tc, e2);
-    ABTS_TRUE(tc, e2 != e1);
-    ABTS_INT_EQUAL(tc, OGS_DIAM_S13_EQUIPMENT_GREYLIST, e2->status);
-    ABTS_TRUE(tc, mme_eir_cache_find("3512345678901201") == e1);
-
-    mme_eir_cache_remove_all();
-    ABTS_TRUE(tc, mme_eir_cache_find("3512345678901201") == NULL);
-    ABTS_TRUE(tc, mme_eir_cache_find("3512345678901202") == NULL);
-}
-
-/* The hash keys on the entry's own buffer, never on the caller's */
-static void s13_test_cache_key_is_copied(abts_case *tc, void *data)
-{
-    char key[OGS_MAX_IMEISV_BCD_LEN+1];
-    mme_eir_cache_entry_t *e;
-
-    mme_eir_cache_remove_all();
-
-    strcpy(key, "3599999999999901");
-    ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-            "001010123456789", key, OGS_DIAM_S13_EQUIPMENT_WHITELIST));
-
-    /* Clobber the caller's buffer: the entry must still be reachable */
-    memset(key, 'x', OGS_MAX_IMEISV_BCD_LEN);
-    e = mme_eir_cache_find("3599999999999901");
-    ABTS_PTR_NOTNULL(tc, e);
-    ABTS_STR_EQUAL(tc, "3599999999999901", e->imeisv_bcd);
-    ABTS_TRUE(tc, mme_eir_cache_find(key) == NULL);
-
-    mme_eir_cache_remove_all();
-}
-
-/* TTL arithmetic, on a synthetic entry: no clock involved */
-static void s13_test_cache_freshness(abts_case *tc, void *data)
-{
-    mme_eir_cache_entry_t e;
-    ogs_time_t t0 = (ogs_time_t)1000 * OGS_USEC_PER_SEC;
-
-    memset(&e, 0, sizeof(e));
-    e.checked_at = t0;
-
-    /* max_age 0: never expires */
-    ABTS_TRUE(tc, mme_eir_cache_entry_is_fresh(&e, 0,
-            t0 + (ogs_time_t)365 * 86400 * OGS_USEC_PER_SEC));
-
-    /* Strictly inside the window */
-    ABTS_TRUE(tc, mme_eir_cache_entry_is_fresh(&e, 60, t0));
-    ABTS_TRUE(tc, mme_eir_cache_entry_is_fresh(&e, 60,
-            t0 + (ogs_time_t)60 * OGS_USEC_PER_SEC - 1));
-
-    /* Exactly max_age old: expired */
-    ABTS_TRUE(tc, !mme_eir_cache_entry_is_fresh(&e, 60,
-            t0 + (ogs_time_t)60 * OGS_USEC_PER_SEC));
-    ABTS_TRUE(tc, !mme_eir_cache_entry_is_fresh(&e, 60,
-            t0 + (ogs_time_t)3600 * OGS_USEC_PER_SEC));
-
-    /* Large max_age must not overflow the usec conversion */
-    ABTS_TRUE(tc, mme_eir_cache_entry_is_fresh(&e, 0xffffffffu,
-            t0 + (ogs_time_t)365 * 86400 * OGS_USEC_PER_SEC));
-}
-
-/* lookup() applies the TTL and drops a stale entry on the spot */
-static void s13_test_cache_lookup_ttl(abts_case *tc, void *data)
-{
-    mme_eir_cache_entry_t *e;
-
-    mme_eir_cache_remove_all();
-    mme_self()->eir.max_age = 60;
-
-    ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-            "001010123456789", "3512345678901201",
-            OGS_DIAM_S13_EQUIPMENT_WHITELIST));
-    ABTS_PTR_NOTNULL(tc, mme_eir_cache_lookup("3512345678901201"));
-
-    /* Age the entry past max_age */
-    e = mme_eir_cache_find("3512345678901201");
-    ABTS_PTR_NOTNULL(tc, e);
-    e->checked_at -= (ogs_time_t)61 * OGS_USEC_PER_SEC;
-    ABTS_TRUE(tc, mme_eir_cache_lookup("3512345678901201") == NULL);
-    /* ...and it is gone, not merely hidden */
-    ABTS_TRUE(tc, mme_eir_cache_find("3512345678901201") == NULL);
-
-    /* max_age 0: the same aged entry stays valid */
-    mme_self()->eir.max_age = 0;
-    ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-            "001010123456789", "3512345678901201",
-            OGS_DIAM_S13_EQUIPMENT_WHITELIST));
-    e = mme_eir_cache_find("3512345678901201");
-    e->checked_at -= (ogs_time_t)365 * 86400 * OGS_USEC_PER_SEC;
-    ABTS_PTR_NOTNULL(tc, mme_eir_cache_lookup("3512345678901201"));
-
-    mme_self()->eir.max_age = 3600;
-    mme_eir_cache_remove_all();
-}
-
 /*
- * Pool exhaustion. The pool holds max.ue * 2 entries (mme_context_init).
- * A new key on a full pool evicts the least recently used entry; a hit
- * (lookup or update) makes an entry the most recently used.
+ * Only the answer to the ECR the current attach is waiting for resumes it.
+ * A late ECA of a cancelled or replaced procedure must neither send the ULR
+ * nor reject the UE.
  */
-static void s13_test_cache_lru_eviction(abts_case *tc, void *data)
-{
-    int i, n = S13_TEST_MAX_UE * 2;
-    char imeisv[OGS_MAX_IMEISV_BCD_LEN+1];
-    char victim[OGS_MAX_IMEISV_BCD_LEN+1];
-
-    mme_eir_cache_remove_all();
-    mme_self()->eir.max_age = 3600;
-
-    for (i = 0; i < n; i++) {
-        snprintf(imeisv, sizeof(imeisv), "35%014d", i);
-        ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-                "001010123456789", imeisv, OGS_DIAM_S13_EQUIPMENT_WHITELIST));
-    }
-    for (i = 0; i < n; i++) {
-        snprintf(imeisv, sizeof(imeisv), "35%014d", i);
-        ABTS_PTR_NOTNULL(tc, mme_eir_cache_find(imeisv));
-    }
-
-    /* Touch #0 (the oldest) through a lookup: it is now the newest */
-    snprintf(imeisv, sizeof(imeisv), "35%014d", 0);
-    ABTS_PTR_NOTNULL(tc, mme_eir_cache_lookup(imeisv));
-
-    /* Full pool, new key: #1 is now the LRU and must go, #0 must stay */
-    snprintf(imeisv, sizeof(imeisv), "35%014d", n);
-    ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-            "001010123456789", imeisv, OGS_DIAM_S13_EQUIPMENT_WHITELIST));
-    ABTS_PTR_NOTNULL(tc, mme_eir_cache_find(imeisv));
-    snprintf(victim, sizeof(victim), "35%014d", 1);
-    ABTS_TRUE(tc, mme_eir_cache_find(victim) == NULL);
-    snprintf(imeisv, sizeof(imeisv), "35%014d", 0);
-    ABTS_PTR_NOTNULL(tc, mme_eir_cache_find(imeisv));
-
-    /* Refreshing #2 through an update also protects it: #3 goes next */
-    snprintf(imeisv, sizeof(imeisv), "35%014d", 2);
-    ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-            "001010123456789", imeisv, OGS_DIAM_S13_EQUIPMENT_GREYLIST));
-    snprintf(imeisv, sizeof(imeisv), "35%014d", n + 1);
-    ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-            "001010123456789", imeisv, OGS_DIAM_S13_EQUIPMENT_WHITELIST));
-    snprintf(victim, sizeof(victim), "35%014d", 3);
-    ABTS_TRUE(tc, mme_eir_cache_find(victim) == NULL);
-    snprintf(imeisv, sizeof(imeisv), "35%014d", 2);
-    ABTS_PTR_NOTNULL(tc, mme_eir_cache_find(imeisv));
-    ABTS_INT_EQUAL(tc, OGS_DIAM_S13_EQUIPMENT_GREYLIST,
-            mme_eir_cache_find(imeisv)->status);
-
-    /* remove_all gives every slot back */
-    mme_eir_cache_remove_all();
-    for (i = 0; i < n; i++) {
-        snprintf(imeisv, sizeof(imeisv), "35%014d", i);
-        ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-                "001010123456789", imeisv, OGS_DIAM_S13_EQUIPMENT_WHITELIST));
-    }
-    mme_eir_cache_remove_all();
-}
-
-/*
- * Pre-check used by the attach paths that skip authentication + SMC:
- * fresh verdict applied inline, otherwise the attach must go through the
- * authentication path so that the SMC collects the IMEISV.
- */
-static void s13_test_precheck(abts_case *tc, void *data)
+static void s13_test_eca_is_current(abts_case *tc, void *data)
 {
     mme_ue_t *mme_ue;
-    mme_eir_cache_entry_t *e;
-    const char *imeisv = "3512345678901201";
-
-    mme_eir_cache_remove_all();
-    mme_self()->eir.enabled = true;
-    mme_self()->eir.max_age = 3600;
 
     mme_ue = ogs_calloc(1, sizeof(*mme_ue));
     ABTS_PTR_NOTNULL(tc, mme_ue);
-    mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
-    mme_ue->nas_eps.attach.value = OGS_NAS_ATTACH_TYPE_EPS_ATTACH;
-    strcpy(mme_ue->imeisv_bcd, imeisv);
 
-    ABTS_TRUE(tc, mme_s13_check_wanted(mme_ue));
+    /* Waiting for the answer to ECR #7 on S1 context 3 */
+    mme_ue->enb_ue_id = 3;
+    mme_ue->eir_check_pending = true;
+    mme_ue->eir_check_id = 7;
+    OGS_FSM_STATE(&mme_ue->sm) =
+        (ogs_fsm_handler_t)emm_state_initial_context_setup;
+    ABTS_TRUE(tc, mme_s13_eca_is_current(mme_ue, 3, 7));
 
-    /* No cached verdict: authentication path */
-    ABTS_INT_EQUAL(tc, MME_S13_PRECHECK_NEED_CHECK, mme_s13_precheck(mme_ue));
+    /* Answer to an earlier ECR, replaced by a new attach */
+    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, 3, 6));
 
-    /* No usable IMEISV: same, the SMC will collect it */
-    mme_ue->imeisv_bcd[0] = 0;
-    ABTS_INT_EQUAL(tc, MME_S13_PRECHECK_NEED_CHECK, mme_s13_precheck(mme_ue));
-    strcpy(mme_ue->imeisv_bcd, imeisv);
+    /* Answer for a released S1 context */
+    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, 4, 7));
 
-    /* Fresh WHITE: fast path continues */
-    ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-            "001010123456789", imeisv, OGS_DIAM_S13_EQUIPMENT_WHITELIST));
-    ABTS_INT_EQUAL(tc, MME_S13_PRECHECK_CONTINUE, mme_s13_precheck(mme_ue));
+    /* The attach left emm_state_initial_context_setup */
+    OGS_FSM_STATE(&mme_ue->sm) = (ogs_fsm_handler_t)emm_state_exception;
+    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, 3, 7));
+    OGS_FSM_STATE(&mme_ue->sm) =
+        (ogs_fsm_handler_t)emm_state_initial_context_setup;
 
-    /* Fresh BLACK: reject inline, no knob */
-    ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-            "001010123456789", imeisv, OGS_DIAM_S13_EQUIPMENT_BLACKLIST));
-    ABTS_INT_EQUAL(tc, MME_S13_PRECHECK_REJECT, mme_s13_precheck(mme_ue));
+    /* No check pending: already answered, or the procedure was cancelled */
+    mme_ue->eir_check_pending = false;
+    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, 3, 7));
 
-    /* Fresh GREY: admitted, like the AMF */
-    ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-            "001010123456789", imeisv, OGS_DIAM_S13_EQUIPMENT_GREYLIST));
-    ABTS_INT_EQUAL(tc, MME_S13_PRECHECK_CONTINUE, mme_s13_precheck(mme_ue));
-
-    /* Stale verdict: dropped, authentication path */
-    e = mme_eir_cache_find(imeisv);
-    ABTS_PTR_NOTNULL(tc, e);
-    e->checked_at -= (ogs_time_t)3601 * OGS_USEC_PER_SEC;
-    ABTS_INT_EQUAL(tc, MME_S13_PRECHECK_NEED_CHECK, mme_s13_precheck(mme_ue));
-    ABTS_TRUE(tc, mme_eir_cache_find(imeisv) == NULL);
-
-    /* Not wanted at all: EIR disabled, emergency attach, TAU (v1) */
-    ABTS_INT_EQUAL(tc, OGS_OK, mme_eir_cache_update(
-            "001010123456789", imeisv, OGS_DIAM_S13_EQUIPMENT_BLACKLIST));
-    mme_self()->eir.enabled = false;
-    ABTS_TRUE(tc, !mme_s13_check_wanted(mme_ue));
-    ABTS_INT_EQUAL(tc, MME_S13_PRECHECK_CONTINUE, mme_s13_precheck(mme_ue));
-    mme_self()->eir.enabled = true;
-
-    mme_ue->nas_eps.attach.value = OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH;
-    ABTS_TRUE(tc, !mme_s13_check_wanted(mme_ue));
-    ABTS_INT_EQUAL(tc, MME_S13_PRECHECK_CONTINUE, mme_s13_precheck(mme_ue));
-    mme_ue->nas_eps.attach.value = OGS_NAS_ATTACH_TYPE_EPS_ATTACH;
-
-    mme_ue->nas_eps.type = MME_EPS_TYPE_TAU_REQUEST;
-    ABTS_TRUE(tc, !mme_s13_check_wanted(mme_ue));
-    ABTS_INT_EQUAL(tc, MME_S13_PRECHECK_CONTINUE, mme_s13_precheck(mme_ue));
-
-    mme_self()->eir.enabled = false;
-    mme_eir_cache_remove_all();
     ogs_free(mme_ue);
 }
 
@@ -636,15 +399,8 @@ abts_suite *test_mme_s13(abts_suite *suite)
     abts_run_test(suite, s13_test_imeisv_is_usable, NULL);
     abts_run_test(suite, s13_test_pei_from_terminal_info, NULL);
 
-    /* Cache */
-    abts_run_test(suite, s13_test_cache_basic, NULL);
-    abts_run_test(suite, s13_test_cache_key_is_copied, NULL);
-    abts_run_test(suite, s13_test_cache_freshness, NULL);
-    abts_run_test(suite, s13_test_cache_lookup_ttl, NULL);
-    abts_run_test(suite, s13_test_cache_lru_eviction, NULL);
-
-    /* Attach fast path pre-check */
-    abts_run_test(suite, s13_test_precheck, NULL);
+    /* Stale answers */
+    abts_run_test(suite, s13_test_eca_is_current, NULL);
 
     s13_context_teardown();
 

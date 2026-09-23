@@ -55,9 +55,9 @@ static uint32_t equipment_status_from_dbi(ogs_dbi_eir_status_t status)
 /*
  * Callback for incoming ME-Identity-Check-Request (TS 29.272 7.2.19).
  *
- * Same lookup and the same outcomes as the N5g-eir handler: the (SUPI, PEI)
- * pair built from User-Name and Terminal-Information is checked against the
- * eir collection. A known device is answered with Equipment-Status, an
+ * Same lookup and the same outcomes as the N5g-eir handler: the PEI built
+ * from Terminal-Information, with the SUPI from the optional User-Name, is
+ * checked against the eir collection. A known device is answered with Equipment-Status, an
  * unknown one with DIAMETER_ERROR_EQUIPMENT_UNKNOWN, a database problem
  * with DIAMETER_UNABLE_TO_COMPLY. Runs in a freeDiameter thread.
  */
@@ -71,7 +71,7 @@ static int eir_ogs_diam_s13_ecr_cb(struct msg **msg, struct avp *avp,
     union avp_value val;
 
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
-    char supi[sizeof(OGS_ID_SUPI_TYPE_IMSI "-") + OGS_MAX_IMSI_BCD_LEN];
+    char supi[sizeof(OGS_ID_SUPI_TYPE_IMSI "-") + OGS_MAX_IMSI_BCD_LEN] = "";
     char pei[OGS_DIAM_S13_MAX_PEI_LEN+1];
     const char *imei = NULL, *svn = NULL;
     size_t imei_len = 0, svn_len = 0;
@@ -93,29 +93,29 @@ static int eir_ogs_diam_s13_ecr_cb(struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ans = *msg;
 
-    /* User-Name: the IMSI */
+    /* [User-Name]: the IMSI. Optional: without it only the equipment
+     * records that apply to any subscriber are considered. */
     ret = fd_msg_search_avp(qry, ogs_diam_user_name, &avp);
     ogs_assert(ret == 0);
-    if (!avp) {
-        ogs_error("No User-Name AVP");
-        base_error = "DIAMETER_MISSING_AVP";
-        goto out;
-    }
-    ret = fd_msg_avp_hdr(avp, &hdr);
-    ogs_assert(ret == 0);
-    if (!hdr->avp_value->os.data || hdr->avp_value->os.len == 0 ||
-            hdr->avp_value->os.len > OGS_MAX_IMSI_BCD_LEN) {
-        ogs_error("Invalid User-Name AVP length [%u]",
-                (unsigned)hdr->avp_value->os.len);
-        base_error = "DIAMETER_INVALID_AVP_VALUE";
-        goto out;
-    }
-    ogs_cpystrn(imsi_bcd, (const char *)hdr->avp_value->os.data,
-            hdr->avp_value->os.len + 1);
-    if (!ogs_imsi_bcd_is_valid(imsi_bcd)) {
-        ogs_error("Invalid User-Name IMSI");
-        base_error = "DIAMETER_INVALID_AVP_VALUE";
-        goto out;
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        if (!hdr->avp_value->os.data || hdr->avp_value->os.len == 0 ||
+                hdr->avp_value->os.len > OGS_MAX_IMSI_BCD_LEN) {
+            ogs_error("Invalid User-Name AVP length [%u]",
+                    (unsigned)hdr->avp_value->os.len);
+            base_error = "DIAMETER_INVALID_AVP_VALUE";
+            goto out;
+        }
+        ogs_cpystrn(imsi_bcd, (const char *)hdr->avp_value->os.data,
+                hdr->avp_value->os.len + 1);
+        if (!ogs_imsi_bcd_is_valid(imsi_bcd)) {
+            ogs_error("Invalid User-Name IMSI");
+            base_error = "DIAMETER_INVALID_AVP_VALUE";
+            goto out;
+        }
+        ogs_snprintf(supi, sizeof(supi), "%s-%s",
+                OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
     }
 
     /* Terminal-Information { IMEI, [Software-Version] } */
@@ -153,14 +153,14 @@ static int eir_ogs_diam_s13_ecr_cb(struct msg **msg, struct avp *avp,
         base_error = "DIAMETER_INVALID_AVP_VALUE";
         goto out;
     }
-    ogs_snprintf(supi, sizeof(supi), "%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
 
-    ogs_debug("    ME-Identity-Check [supi:%s,pei:%s]", supi, pei);
+    ogs_debug("    ME-Identity-Check [supi:%s,pei:%s]",
+            supi[0] ? supi : "-", pei);
 
     /* The N5g-eir handler queries the same mongoc client from the
      * main thread */
     ogs_thread_mutex_lock(&eir_self()->db_lock);
-    rv = ogs_dbi_eir_check_equipment(supi, pei, &record);
+    rv = ogs_dbi_eir_check_equipment(supi[0] ? supi : NULL, pei, &record);
     ogs_thread_mutex_unlock(&eir_self()->db_lock);
 
     switch (rv) {

@@ -789,16 +789,12 @@ cleanup:
         switch (s13_message->cmd_code) {
         case OGS_DIAM_S13_CMD_CODE_ME_IDENTITY_CHECK:
             ogs_debug("OGS_DIAM_S13_CMD_CODE_ME_IDENTITY_CHECK");
-            emm_cause = mme_s13_handle_eca(mme_ue, s13_message);
-            
-            /* Only a real verdict is cached, never an error nor an
-             * unrecognized status that failure_action had to cover */
-            if (s13_message->result_code == ER_DIAMETER_SUCCESS &&
-                mme_s13_status_is_verdict(
-                    s13_message->eca_message.equipment_status_code))
-                mme_eir_cache_update(mme_ue->imsi_bcd, mme_ue->imeisv_bcd,
-                    s13_message->eca_message.equipment_status_code);
+            if (!mme_s13_eca_is_current(
+                        mme_ue, e->enb_ue_id, e->eir_check_id))
+                break;
+            mme_ue->eir_check_pending = false;
 
+            emm_cause = mme_s13_handle_eca(mme_ue, s13_message);
             mme_s13_complete_check(enb_ue, mme_ue, emm_cause);
             break;
         default:

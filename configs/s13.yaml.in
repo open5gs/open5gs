@@ -48,7 +48,6 @@ mme:
     realm: localdomain
     host: eir.localdomain
     timeout: 3
-    max_age: 1      # every test case shares one IMEISV: let verdicts expire
     unknown_action: allow
     failure_action: allow
     missing_pei_action: allow

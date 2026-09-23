@@ -251,10 +251,10 @@ the supported PEI/SUPI formats described below.
 ---
 
 `open5gs-eird` also answers the MME over S13 (Diameter, TS 29.272), so one
-`eir` collection serves both cores. `eir.yaml` points `freeDiameter` at
-`/etc/freeDiameter/eir.conf` (identity `eir.localdomain`, listening on
-`127.0.0.21`, MME peer `mme.localdomain`); remove that line to run the 5G-EIR
-only. An inline `freeDiameter:` mapping (identity, realm, listen_on,
+`eir` collection serves both cores. S13 is disabled by default: uncomment
+`freeDiameter: /etc/freeDiameter/eir.conf` in `eir.yaml` to enable it
+(identity `eir.localdomain`, listening on `127.0.0.21`, MME peer
+`mme.localdomain`). An inline `freeDiameter:` mapping (identity, realm, listen_on,
 load_extension, connect) is accepted as well, as for the HSS. In an EPC-only
 deployment the `sbi:` section can be dropped entirely: with no SBI server the
 EIR serves S13 alone and never looks for an NRF or an SCP.
@@ -280,11 +280,15 @@ ConnectPeer = "eir.localdomain" { ConnectTo = "127.0.0.21"; No_TLS; };
 
 The MME sends the IMEI (14 digits) and Software Version Number (2 digits) it
 received in Security Mode Complete; the EIR looks up `imeisv-<16 digits>`, so
-one record admits or blocks a device from both the AMF and the MME. A request
-without Software-Version is looked up as `imei-<15 digits>` with the check
+one record admits or blocks a device from both the AMF and the MME. The IMSI is
+sent in the optional User-Name AVP; without it only the records that have no
+`supi` apply. A request without Software-Version is looked up as `imei-<15 digits>` with the check
 digit computed. The verdicts follow the N5g-eir table: `WHITELISTED` and
 `GREYLISTED` attach, `BLACKLISTED` is rejected with EMM cause #6 (Illegal ME),
 an unknown device is answered with `DIAMETER_ERROR_EQUIPMENT_UNKNOWN` (5422)
 and follows `unknown_action` (#7), and any other failure follows
-`failure_action` (#17). The check runs on attach only, never on an emergency
-attach. `tests/s13` exercises this path end to end.
+`failure_action` (#17). As in the AMF, the check runs after Security Mode
+Complete, on attach only and never on an emergency attach; an attach that
+reuses a valid NAS security context skips SMC and therefore the check. Every
+attach queries the EIR: the MME keeps no cache of verdicts, and an answer
+that arrives after its attach was cancelled or replaced is ignored. `tests/s13` exercises this path end to end.

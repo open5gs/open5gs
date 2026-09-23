@@ -35,29 +35,40 @@ bool mme_s13_imeisv_is_usable(const char *imeisv_bcd)
     return true;
 }
 
-mme_s13_precheck_e mme_s13_precheck(mme_ue_t *mme_ue)
+bool mme_s13_eca_is_current(const mme_ue_t *mme_ue,
+        ogs_pool_id_t enb_ue_id, uint32_t eir_check_id)
 {
-    mme_eir_cache_entry_t *cached = NULL;
-
     ogs_assert(mme_ue);
 
-    if (!mme_s13_check_wanted(mme_ue))
-        return MME_S13_PRECHECK_CONTINUE;
+    /*
+     * The ECR is sent on Security Mode Complete, after which the attach
+     * waits in emm_state_initial_context_setup. Leaving that state, a new
+     * Attach Request or a new S1 connection ends the procedure the ECR
+     * was sent for, and a later ECR carries a new id.
+     */
+    if (!mme_ue->eir_check_pending) {
+        ogs_error("[%s] Ignore unexpected ME-Identity-Check-Answer",
+                mme_ue->imsi_bcd);
+        return false;
+    }
+    if (mme_ue->eir_check_id != eir_check_id) {
+        ogs_error("[%s] Ignore stale ME-Identity-Check-Answer [%u:%u]",
+                mme_ue->imsi_bcd, eir_check_id, mme_ue->eir_check_id);
+        return false;
+    }
+    if (mme_ue->enb_ue_id != enb_ue_id) {
+        ogs_error("[%s] Ignore ME-Identity-Check-Answer of a released "
+                "S1 context [%d:%d]",
+                mme_ue->imsi_bcd, enb_ue_id, mme_ue->enb_ue_id);
+        return false;
+    }
+    if (!OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
+        ogs_error("[%s] Ignore ME-Identity-Check-Answer outside the attach",
+                mme_ue->imsi_bcd);
+        return false;
+    }
 
-    /* No IMEISV yet: the SMC on the authentication path asks for it */
-    if (!mme_s13_imeisv_is_usable(mme_ue->imeisv_bcd))
-        return MME_S13_PRECHECK_NEED_CHECK;
-
-    cached = mme_eir_cache_lookup(mme_ue->imeisv_bcd);
-    if (!cached)
-        return MME_S13_PRECHECK_NEED_CHECK;
-
-    ogs_debug("[%s] EIR cache hit on attach fast path", mme_ue->imsi_bcd);
-
-    /* Only verdicts are cached, so a reject here is always a blacklist */
-    return mme_s13_equipment_status_cause(cached->status, &mme_self()->eir) ==
-            OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED ?
-        MME_S13_PRECHECK_CONTINUE : MME_S13_PRECHECK_REJECT;
+    return true;
 }
 
 ogs_nas_emm_cause_t mme_s13_failure_cause(const mme_eir_t *eir_config)
@@ -81,13 +92,6 @@ ogs_nas_emm_cause_t mme_s13_missing_pei_cause(const mme_eir_t *eir_config)
     return eir_config->missing_pei_action == MME_EIR_REJECT ?
         OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED :
         OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
-}
-
-bool mme_s13_status_is_verdict(uint32_t equipment_status_code)
-{
-    return equipment_status_code == OGS_DIAM_S13_EQUIPMENT_WHITELIST ||
-           equipment_status_code == OGS_DIAM_S13_EQUIPMENT_GREYLIST ||
-           equipment_status_code == OGS_DIAM_S13_EQUIPMENT_BLACKLIST;
 }
 
 ogs_nas_emm_cause_t mme_s13_equipment_status_cause(

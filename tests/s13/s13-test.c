@@ -127,13 +127,6 @@ static void s13_case(abts_case *tc, void *data)
     ogs_info("[S13] %s", test->name);
     memset(&fixture, 0, sizeof(fixture));
 
-    /*
-     * Every case uses the same IMEISV and mme.eir.max_age is 1 second in
-     * s13.yaml: let the previous verdict expire from the MME cache so that
-     * the ME-Identity-Check-Request really reaches the EIR.
-     */
-    ogs_msleep(1200);
-
     /* Setup Test UE & Session Context */
     memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
 

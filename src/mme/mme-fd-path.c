@@ -40,6 +40,7 @@ struct sess_state {
     ogs_pool_id_t enb_ue_id;
     struct timespec ts; /* Time of sending the message */
     ogs_pool_id_t gtp_xact_id; /* GTPv1C (Gn) xact originating this session */
+    uint32_t eir_check_id; /* S13: mme_ue->eir_check_id of this ECR */
 };
 
 static void mme_s6a_aia_cb(void *data, struct msg **msg);
@@ -49,7 +50,7 @@ static void mme_s13_eca_cb(void *data, struct msg **msg);
 static void mme_s13_ecr_expire_cb(void *data, DiamId_t sender,
         size_t sender_len, struct msg **req);
 static int mme_s13_push_event(mme_ue_t *mme_ue, enb_ue_t *enb_ue,
-        ogs_diam_s13_message_t *s13_message);
+        uint32_t eir_check_id, ogs_diam_s13_message_t *s13_message);
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
@@ -2742,20 +2743,6 @@ void mme_s13_send_ecr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
         return;
     }
 
-    {
-        mme_eir_cache_entry_t *cached =
-            mme_eir_cache_lookup(mme_ue->imeisv_bcd);
-
-        if (cached) {
-            ogs_info("[%s] EIR cache hit", mme_ue->imsi_bcd);
-            mme_s13_complete_check(enb_ue, mme_ue,
-                    mme_s13_equipment_status_cause(
-                        cached->status, &mme_self()->eir));
-            return;
-        }
-    }
-
-
     if (!mme_self()->eir.realm) {
         ogs_warn("[%s] No EIR configured, skipping ME identity check",
                 mme_ue->imsi_bcd);
@@ -2768,6 +2755,11 @@ void mme_s13_send_ecr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     ogs_assert(sess_data);
     sess_data->mme_ue_id = mme_ue->id;
     sess_data->enb_ue_id = enb_ue->id;
+
+    /* Only the answer to this very request may resume the attach */
+    mme_ue->eir_check_id++;
+    mme_ue->eir_check_pending = true;
+    sess_data->eir_check_id = mme_ue->eir_check_id;
 
     /* Create the request */
     ret = fd_msg_new(ogs_diam_s13_cmd_ecr, MSGFL_ALLOC_ETEID, &req);
@@ -2846,15 +2838,17 @@ void mme_s13_send_ecr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
-    /* Set the User-Name AVP */
-    ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
-    ogs_assert(ret == 0);
-    val.os.data = (uint8_t *)mme_ue->imsi_bcd;
-    val.os.len = strlen(mme_ue->imsi_bcd);
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
+    /* Set the User-Name AVP (optional, TS 29.272 7.2.19) */
+    if (MME_UE_HAVE_IMSI(mme_ue)) {
+        ret = fd_msg_avp_new(ogs_diam_user_name, 0, &avp);
+        ogs_assert(ret == 0);
+        val.os.data = (uint8_t *)mme_ue->imsi_bcd;
+        val.os.len = strlen(mme_ue->imsi_bcd);
+        ret = fd_msg_avp_setvalue(avp, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
+    }
 
     ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
     ogs_assert(ret == 0);
@@ -2891,7 +2885,7 @@ void mme_s13_send_ecr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
 }
 
 static int mme_s13_push_event(mme_ue_t *mme_ue, enb_ue_t *enb_ue,
-        ogs_diam_s13_message_t *s13_message)
+        uint32_t eir_check_id, ogs_diam_s13_message_t *s13_message)
 {
     int rv;
     mme_event_t *e = NULL;
@@ -2909,6 +2903,7 @@ static int mme_s13_push_event(mme_ue_t *mme_ue, enb_ue_t *enb_ue,
 
     e->mme_ue_id = mme_ue->id;
     e->enb_ue_id = enb_ue->id;
+    e->eir_check_id = eir_check_id;
     e->s13_message = s13_message;
 
     rv = ogs_queue_push(ogs_app()->queue, e);
@@ -3068,7 +3063,8 @@ cleanup:
                 s13_message->result_code = ER_DIAMETER_UNABLE_TO_COMPLY;
                 s13_message->err = &s13_message->result_code;
             }
-            if (mme_s13_push_event(mme_ue, enb_ue, s13_message) != OGS_OK)
+            if (mme_s13_push_event(mme_ue, enb_ue,
+                        sess_data->eir_check_id, s13_message) != OGS_OK)
                 error++;
             /* Ownership transferred, or already freed by the helper */
             s13_message = NULL;
@@ -3189,7 +3185,8 @@ static void mme_s13_ecr_expire_cb(void *data, DiamId_t sender,
     s13_message->err = &s13_message->result_code;
 
     /* Ownership goes to the event, or is released by the helper */
-    (void)mme_s13_push_event(mme_ue, enb_ue, s13_message);
+    (void)mme_s13_push_event(mme_ue, enb_ue,
+            sess_data->eir_check_id, s13_message);
     s13_message = NULL;
 
 cleanup:

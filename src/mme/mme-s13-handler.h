@@ -33,9 +33,6 @@ ogs_nas_emm_cause_t mme_s13_message_cause(
 ogs_nas_emm_cause_t mme_s13_handle_eca(
         mme_ue_t *mme_ue, ogs_diam_s13_message_t *s13_message);
 
-/* Only a real verdict (white/grey/black) is worth caching */
-bool mme_s13_status_is_verdict(uint32_t equipment_status_code);
-
 /* ULR when accepted, Attach/TAU Reject + release otherwise: the MME's
  * gmm_complete_equipment_identity_check() */
 void mme_s13_complete_check(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
@@ -49,21 +46,12 @@ bool mme_s13_check_wanted(const mme_ue_t *mme_ue);
 bool mme_s13_imeisv_is_usable(const char *imeisv_bcd);
 
 /*
- * Pre-check for the attach paths that skip authentication and SMC because
- * the UE already has a valid security context. Those paths would otherwise
- * never reach the ME identity check that hangs off SMC complete.
+ * True only for the answer to the ECR the current attach is waiting for.
+ * A late answer of a cancelled or replaced procedure must neither send
+ * the ULR nor reject the UE.
  */
-typedef enum {
-    MME_S13_PRECHECK_CONTINUE = 0, /* no check wanted, or a fresh cached
-                                    * verdict allows: keep the fast path */
-    MME_S13_PRECHECK_REJECT,       /* fresh cached verdict denies: reject
-                                    * with #6 Illegal ME */
-    MME_S13_PRECHECK_NEED_CHECK,   /* no fresh verdict: take the
-                                    * authentication path so the SMC
-                                    * collects the IMEISV and the ECR runs */
-} mme_s13_precheck_e;
-
-mme_s13_precheck_e mme_s13_precheck(mme_ue_t *mme_ue);
+bool mme_s13_eca_is_current(const mme_ue_t *mme_ue,
+        ogs_pool_id_t enb_ue_id, uint32_t eir_check_id);
 
 /* Shared reject path: Attach/TAU Reject + UE context release, with the
  * cause chosen by the decision table above. */

@@ -54,7 +54,6 @@ typedef struct mme_pgw_s mme_pgw_t;
 typedef struct mme_vlr_s mme_vlr_t;
 typedef struct mme_csmap_s mme_csmap_t;
 typedef struct mme_hssmap_s mme_hssmap_t;
-typedef struct mme_eir_cache_entry_s mme_eir_cache_entry_t;
 
 typedef struct enb_ue_s enb_ue_t;
 typedef struct sgw_ue_s sgw_ue_t;
@@ -82,11 +81,6 @@ typedef enum {
     MME_EIR_REJECT,
 } mme_eir_action_e;
 
-typedef enum {
-    MME_S13_PROC_ATTACH = 1,
-    MME_S13_PROC_TAU,
-} mme_s13_procedure_e;
-
 /* Control EIR (S13) functionality */
 typedef struct mme_eir_s {
     bool enabled;
@@ -98,25 +92,12 @@ typedef struct mme_eir_s {
      * (DIAMETER_ERROR_EQUIPMENT_UNKNOWN) is operator policy. */
     mme_eir_action_e unknown_action;
 
-    uint32_t    max_age;              /* s, 0 = no TTL */
-    uint32_t    timeout;              /* s, ECR answer deadline. On expiry
+    uint32_t    timeout;             /* s, ECR answer deadline. On expiry
                                        * failure_action applies. 0 = none */
     mme_eir_action_e failure_action;  /* No verdict: EIR unreachable, error
                                        * answer, or no answer within timeout */
     mme_eir_action_e missing_pei_action; /* no usable IMEISV to check */
-
-    ogs_hash_t  *cache;          /* key = imeisv_bcd */
-    ogs_list_t  cache_list;      /* LRU order: head = least recently used,
-                                  * tail = most recently used */
 } mme_eir_t;
-
-typedef struct mme_eir_cache_entry_s {
-    ogs_lnode_t lnode;
-    char        imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
-    char        imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
-    uint32_t    status;          /* Equipment-Status from the last ECA */
-    ogs_time_t  checked_at;      /* ogs_get_monotonic_time() of that ECA */
-} mme_eir_cache_entry_t;
 
 typedef struct mme_context_s {
     const char          *diam_conf_path;  /* MME Diameter conf path */
@@ -569,9 +550,13 @@ struct mme_ue_s {
     char            imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
     ogs_nas_mobile_identity_imeisv_t nas_mobile_identity_imeisv;
 
-    /* EIR (S13) per-UE state */
-    bool        imeisv_requested;   /* Identity Request already sent */
-    mme_s13_procedure_e s13_procedure;  /* ATTACH | TAU */
+    /*
+     * EIR (S13): ME identity check of the current attach. The id is
+     * carried by the ECR and must match on the answer, so that a late
+     * ECA of a cancelled or replaced procedure is ignored.
+     */
+    bool        eir_check_pending;
+    uint32_t    eir_check_id;
 
     uint8_t         msisdn[OGS_MAX_MSISDN_LEN];
     int             msisdn_len;
@@ -1444,19 +1429,6 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue);
 
 void mme_ue_save_memento(mme_ue_t *mme_ue, mme_ue_memento_t *memento);
 void mme_ue_restore_memento(mme_ue_t *mme_ue, const mme_ue_memento_t *memento);
-
-/* Raw lookup: no TTL check, no LRU touch */
-mme_eir_cache_entry_t *mme_eir_cache_find(const char *imeisv_bcd);
-/* Fresh entry or NULL. A stale entry is dropped on the way, a fresh one
- * becomes the most recently used. This is what the S13 decision uses. */
-mme_eir_cache_entry_t *mme_eir_cache_lookup(const char *imeisv_bcd);
-bool mme_eir_cache_entry_is_fresh(const mme_eir_cache_entry_t *entry,
-        uint32_t max_age, ogs_time_t now);
-/* Insert or refresh; evicts the least recently used entry when full */
-int  mme_eir_cache_update(const char *imsi_bcd, const char *imeisv_bcd,
-        uint32_t status);
-void mme_eir_cache_remove(mme_eir_cache_entry_t *entry);
-void mme_eir_cache_remove_all(void);
 
 mme_emerg_t *mme_emerg_add(uint8_t categories, const char *digits);
 void mme_emerg_remove(mme_emerg_t *emerg);

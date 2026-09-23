@@ -320,7 +320,6 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
         emm_common_state_e state)
 {
     int r, rv, xact_count = 0;
-    mme_s13_precheck_e s13_precheck = MME_S13_PRECHECK_CONTINUE;
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
@@ -504,24 +503,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e,
                 break;
             }
 
-            /*
-             * EIR (S13): with a valid security context this attach skips
-             * authentication and SMC, hence the ME identity check that
-             * hangs off SMC complete. A fresh cached verdict is applied
-             * here; without one the attach takes the authentication path
-             * below so the SMC collects the IMEISV and the ECR runs, as
-             * for a first attach.
-             */
-            s13_precheck = mme_s13_precheck(mme_ue);
-            if (s13_precheck == MME_S13_PRECHECK_REJECT) {
-                mme_s13_reject_ue(enb_ue, mme_ue,
-                        OGS_NAS_EMM_CAUSE_ILLEGAL_ME);
-                OGS_FSM_TRAN(s, &emm_state_exception);
-                break;
-            }
-
-            if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(mme_ue) &&
-                s13_precheck == MME_S13_PRECHECK_CONTINUE) {
+            if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 /*
                  * If the OLD ENB_UE is being maintained in MME-UE Context,
                  * it deletes the S1 Context after exchanging
@@ -1433,14 +1415,17 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                 OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
                 break;
             }
-            /* ME identity check against the EIR, before the S6a ULR
-             * (TS 23.401 clause 5.3.2.1). Attach only, never for an
-             * emergency attach: see mme_s13_check_wanted(). */
-            if (mme_s13_check_wanted(mme_ue)) {
+
+            /*
+             * ME identity check against the EIR before the S6a ULR
+             * (TS 23.401 clause 5.3.2.1), as the AMF does after
+             * Security Mode Complete. An attach that reuses a valid
+             * security context skips SMC and therefore the check.
+             */
+            if (mme_s13_check_wanted(mme_ue))
                 mme_s13_send_ecr(enb_ue, mme_ue);
-            } else {
+            else
                 mme_s6a_send_ulr(enb_ue, mme_ue, 0);
-            }
 
             if (MME_NEXT_GUTI_IS_AVAILABLE(mme_ue)) {
                 OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
@@ -1592,6 +1577,8 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         break;
     case OGS_FSM_EXIT_SIG:
+        /* An EIR answer belongs only to this attach procedure */
+        mme_ue->eir_check_pending = false;
         break;
     case MME_EVENT_EMM_MESSAGE:
         message = e->nas_message;
@@ -1917,7 +1904,6 @@ void emm_state_ue_context_will_remove(ogs_fsm_t *s, mme_event_t *e)
 void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
 {
     int r, rv, xact_count;
-    mme_s13_precheck_e s13_precheck = MME_S13_PRECHECK_CONTINUE;
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
@@ -1980,24 +1966,7 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            /*
-             * EIR (S13): with a valid security context this attach skips
-             * authentication and SMC, hence the ME identity check that
-             * hangs off SMC complete. A fresh cached verdict is applied
-             * here; without one the attach takes the authentication path
-             * below so the SMC collects the IMEISV and the ECR runs, as
-             * for a first attach.
-             */
-            s13_precheck = mme_s13_precheck(mme_ue);
-            if (s13_precheck == MME_S13_PRECHECK_REJECT) {
-                mme_s13_reject_ue(enb_ue, mme_ue,
-                        OGS_NAS_EMM_CAUSE_ILLEGAL_ME);
-                OGS_FSM_TRAN(s, &emm_state_exception);
-                break;
-            }
-
-            if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(mme_ue) &&
-                s13_precheck == MME_S13_PRECHECK_CONTINUE) {
+            if (h.integrity_protected && SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 /*
                  * If the OLD ENB_UE is being maintained in MME-UE Context,
                  * it deletes the S1 Context after exchanging

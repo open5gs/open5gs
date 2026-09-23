@@ -97,6 +97,7 @@ typedef struct mme_event_s {
 
     ogs_diam_s6a_message_t *s6a_message;
     ogs_diam_s13_message_t *s13_message;
+    uint32_t eir_check_id;
 
     mme_vlr_t *vlr;
     ogs_pool_id_t enb_id;
