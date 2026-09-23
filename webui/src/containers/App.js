@@ -11,6 +11,7 @@ import Notification from 'containers/Notification';
 import * as Subscriber from 'containers/Subscriber';
 import * as Profile from 'containers/Profile';
 import * as Account from 'containers/Account';
+import * as Eir from 'containers/Eir';
 
 class App extends Component {
   static propTypes = {
@@ -36,7 +37,7 @@ class App extends Component {
       session
     } = this.props;
 
-    if (view === "subscriber") {
+    if (view === "subscriber" || view === "eir") {
       document.body.style.backgroundColor = "#e9ecef";
     } else {
       document.body.style.backgroundColor = "white";
@@ -46,6 +47,9 @@ class App extends Component {
       <Layout>
         <Layout.Container visible={view === "subscriber"}>
           <Subscriber.Collection/>
+        </Layout.Container>
+        <Layout.Container visible={view === "eir"}>
+          <Eir.Collection/>
         </Layout.Container>
         <Layout.Container visible={view === "profile"}>
           <Profile.Collection/>

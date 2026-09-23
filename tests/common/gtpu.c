@@ -111,20 +111,24 @@ void testgtpu_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
 
     ogs_gtp2_header_t *gtp_h = NULL;
     struct ip6_hdr *ip6_h =  NULL;
-    struct nd_router_advert *advert_h = NULL;
-    struct nd_opt_prefix_info *prefix = NULL;
 
+    ogs_gtp2_header_desc_t header_desc;
+    int header_len;
     uint32_t teid;
     uint8_t mask[OGS_IPV6_LEN];
 
     ogs_assert(test_ue);
     ogs_assert(pkbuf);
+    ogs_assert(pkbuf->len >= OGS_GTPV1U_HEADER_LEN);
 
     gtp_h = (ogs_gtp2_header_t *)pkbuf->data;
     ogs_assert(gtp_h);
 
     ogs_assert(gtp_h->version == OGS_GTP1_VERSION_1);
     ogs_assert(gtp_h->type == OGS_GTPU_MSGTYPE_GPDU);
+
+    header_len = ogs_gtpu_parse_header(&header_desc, pkbuf);
+    ogs_assert(header_len >= OGS_GTPV1U_HEADER_LEN);
 
     teid = be32toh(gtp_h->teid);
 
@@ -138,9 +142,42 @@ void testgtpu_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         }
         ogs_assert(sess);
     } else if (test_ue->amf_ue_ngap_id) {
-        /* 5GC */
+        /* 5GC: require a DL PDU Session Container and an established QFI. */
+        int offset = OGS_GTPV1U_HEADER_LEN + OGS_GTPV1U_EXTENSION_HEADER_LEN;
+        uint8_t type;
+        uint8_t qfi = 0;
+
+        ogs_assert(gtp_h->flags & OGS_GTPU_FLAGS_E);
+        ogs_assert(header_len >= offset + 4);
+        type = pkbuf->data[offset - 1];
+
+        /* The common parser only extracts QFI from UL PDU information. */
+        while (type) {
+            uint8_t *ext = pkbuf->data + offset;
+            int len;
+
+            ogs_assert(offset + 4 <= header_len);
+            len = ext[0] * 4;
+            ogs_assert(len >= 4 && offset + len <= header_len);
+
+            if (type == OGS_GTP2_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER) {
+                ogs_assert(!qfi);
+                ogs_assert((ext[1] >> 4) ==
+                    OGS_GTP2_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION);
+                qfi = ext[2] & 0x3f;
+                ogs_assert(qfi);
+            }
+            type = ext[len - 1];
+            offset += len;
+        }
+        ogs_assert(qfi);
+
         ogs_list_for_each(&test_ue->sess_list, sess) {
-            if (sess->gnb_n3_teid == teid) goto found;
+            if (sess->gnb_n3_teid == teid) {
+                bearer = test_qos_flow_find_by_qfi(sess, qfi);
+                ogs_assert(bearer);
+                goto found;
+            }
         }
         ogs_assert(sess);
     } else {
@@ -150,17 +187,22 @@ void testgtpu_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
 found:
     ogs_assert(sess);
 
-    ip6_h = pkbuf->data + ogs_gtpu_parse_header(NULL, pkbuf);
+    ogs_assert(pkbuf->len >= header_len + sizeof(struct ip6_hdr));
+    ip6_h = (struct ip6_hdr *)(pkbuf->data + header_len);
     ogs_assert(ip6_h);
     if (ip6_h->ip6_nxt == IPPROTO_ICMPV6) {
         struct nd_router_advert *advert_h = (struct nd_router_advert *)
             ((unsigned char*)ip6_h + sizeof(struct ip6_hdr));
+        ogs_assert(pkbuf->len >= header_len + sizeof(struct ip6_hdr) +
+                sizeof(struct nd_router_advert));
         ogs_assert(advert_h);
         if (advert_h->nd_ra_hdr.icmp6_type == ND_ROUTER_ADVERT) {
             int i;
             struct nd_opt_prefix_info *prefix = (struct nd_opt_prefix_info *)
                 ((unsigned char*)advert_h + sizeof(struct nd_router_advert));
             ogs_assert(prefix);
+            ogs_assert(pkbuf->len >= header_len + sizeof(struct ip6_hdr) +
+                    sizeof(struct nd_router_advert) + sizeof(*prefix));
             n2mask(mask, prefix->nd_opt_pi_prefix_len);
             for (i = 0; i < OGS_IPV6_LEN; i++) {
                 sess->ue_ip.addr6[i] |=

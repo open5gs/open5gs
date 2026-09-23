@@ -257,6 +257,16 @@ int gsm_handle_pdu_session_modification_qos_rules(
         ogs_list_init(&qos_flow->pf_to_add_list);
 
         if (qos_rule[i].code == OGS_NAS_QOS_CODE_DELETE_EXISTING_QOS_RULE) {
+            /*
+             * Keep the default QoS flow for the PDU session lifetime.
+             * Use the stored flow rather than the UE-provided DQR bit.
+             */
+            if (qos_flow == smf_default_bearer_in_sess(sess)) {
+                ogs_error("[%s:%d] Cannot delete default QoS rule [QRI/QFI:%d]",
+                        smf_ue->supi, sess->psi, qos_rule[i].identifier);
+                return OGS_ERROR;
+            }
+
             smf_pf_remove_all(qos_flow);
 
             *pfcp_flags |= OGS_PFCP_MODIFY_REMOVE;

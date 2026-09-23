@@ -19,6 +19,7 @@ import Confirm from './Shared/Confirm';
 import * as Subscriber from './Subscriber';
 import * as Profile from './Profile';
 import * as Account from './Account';
+import * as Eir from './Eir';
 
 export {
   Layout,
@@ -41,5 +42,6 @@ export {
 
   Subscriber,
   Profile,
-  Account
+  Account,
+  Eir
 }

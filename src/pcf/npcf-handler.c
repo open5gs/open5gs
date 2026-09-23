@@ -759,6 +759,8 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
     OpenAPI_list_t *fDescList = NULL;
 
     OpenAPI_sm_policy_decision_t SmPolicyDecision;
+    bool pcc_rule_updated[OGS_MAX_NUM_OF_PCC_RULE] = {0};
+    bool pcc_rule_flow_presence[OGS_MAX_NUM_OF_PCC_RULE] = {0};
 
     OpenAPI_list_t *PccRuleList = NULL;
     OpenAPI_map_t *PccRuleMap = NULL;
@@ -1046,6 +1048,13 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
         }
 
         if (!pcc_rule) {
+            if (app_session->num_of_pcc_rule >= OGS_MAX_NUM_OF_PCC_RULE) {
+                strerror = ogs_msprintf("[%s:%d] Too many PCC rules",
+                        pcf_ue_sm->supi, sess->psi);
+                status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+                goto cleanup;
+            }
+
             pcc_rule = &app_session->pcc_rule[app_session->num_of_pcc_rule];
             ogs_assert(pcc_rule);
 
@@ -1125,10 +1134,21 @@ bool pcf_npcf_policyauthorization_handle_create(pcf_sess_t *sess,
                     pcc_rule->qos.arp.pre_emption_capability,
                     pcc_rule->qos.arp.pre_emption_vulnerability);
 
-        /**************************************************************
-         * Build PCC Rule & QoS Decision
-         *************************************************************/
-        PccRule = ogs_sbi_build_pcc_rule(pcc_rule, flow_presence);
+        j = pcc_rule - app_session->pcc_rule;
+        pcc_rule_updated[j] = true;
+        pcc_rule_flow_presence[j] |= (flow_presence != 0);
+    }
+
+    /* Emit each updated rule once, after all media components are applied.
+     * Keep flow information if any component changed the rule's flows. */
+    for (i = 0; i < app_session->num_of_pcc_rule; i++) {
+        ogs_pcc_rule_t *pcc_rule = &app_session->pcc_rule[i];
+
+        if (!pcc_rule_updated[i])
+            continue;
+
+        PccRule = ogs_sbi_build_pcc_rule(
+                pcc_rule, pcc_rule_flow_presence[i]);
         ogs_assert(PccRule->pcc_rule_id);
 
         PccRuleMap = OpenAPI_map_create(PccRule->pcc_rule_id, PccRule);
@@ -1285,6 +1305,8 @@ bool pcf_npcf_policyauthorization_handle_update(
     OpenAPI_list_t *fDescList = NULL;
 
     OpenAPI_sm_policy_decision_t SmPolicyDecision;
+    bool pcc_rule_updated[OGS_MAX_NUM_OF_PCC_RULE] = {0};
+    bool pcc_rule_flow_presence[OGS_MAX_NUM_OF_PCC_RULE] = {0};
 
     OpenAPI_list_t *PccRuleList = NULL;
     OpenAPI_map_t *PccRuleMap = NULL;
@@ -1512,10 +1534,18 @@ bool pcf_npcf_policyauthorization_handle_update(
         }
 
         if (!pcc_rule) {
+            if (app_session->num_of_pcc_rule >= OGS_MAX_NUM_OF_PCC_RULE) {
+                strerror = ogs_msprintf("[%s:%d] Too many PCC rules",
+                        pcf_ue_sm->supi, sess->psi);
+                status = OGS_SBI_HTTP_STATUS_FORBIDDEN;
+                goto cleanup;
+            }
+
             pcc_rule = &app_session->pcc_rule[app_session->num_of_pcc_rule];
             ogs_assert(pcc_rule);
 
-            pcc_rule->id = ogs_strdup(app_session->app_session_id);
+            pcc_rule->id = ogs_msprintf("%s-a%s",
+                            db_pcc_rule->id, app_session->app_session_id);
             ogs_assert(pcc_rule->id);
 
             memcpy(&pcc_rule->qos, &db_pcc_rule->qos, sizeof(ogs_qos_t));
@@ -1596,10 +1626,21 @@ bool pcf_npcf_policyauthorization_handle_update(
                     pcc_rule->qos.arp.pre_emption_capability,
                     pcc_rule->qos.arp.pre_emption_vulnerability);
 
-        /**************************************************************
-         * Build PCC Rule & QoS Decision
-         *************************************************************/
-        PccRule = ogs_sbi_build_pcc_rule(pcc_rule, flow_presence);
+        j = pcc_rule - app_session->pcc_rule;
+        pcc_rule_updated[j] = true;
+        pcc_rule_flow_presence[j] |= (flow_presence != 0);
+    }
+
+    /* Emit each updated rule once, after all media components are applied.
+     * Keep flow information if any component changed the rule's flows. */
+    for (i = 0; i < app_session->num_of_pcc_rule; i++) {
+        ogs_pcc_rule_t *pcc_rule = &app_session->pcc_rule[i];
+
+        if (!pcc_rule_updated[i])
+            continue;
+
+        PccRule = ogs_sbi_build_pcc_rule(
+                pcc_rule, pcc_rule_flow_presence[i]);
         ogs_assert(PccRule->pcc_rule_id);
 
         PccRuleMap = OpenAPI_map_create(PccRule->pcc_rule_id, PccRule);

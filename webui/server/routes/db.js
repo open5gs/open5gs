@@ -10,6 +10,9 @@ restify.serve(router, Subscriber, {
   idProperty: 'imsi'
 });
 
+const Eir = require('../models/eir');
+restify.serve(router, Eir, { prefix: '', version: '' });
+
 const Profile = require('../models/profile');
 restify.serve(router, Profile, {
   prefix: '',
