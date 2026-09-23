@@ -2787,7 +2787,7 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
     ogs_assert(qos_flow);
     ogs_assert(ogs_list_next(qos_flow) == NULL);
 
-    /* We'll use the DL-FAR for CP2UP-FAR */
+    /* Share the default QoS flow/EPS bearer's DL FAR with CP2UP. */
     cp2up_far = qos_flow->dl_far;
     ogs_assert(cp2up_far);
     ogs_pfcp_pdr_associate_far(cp2up_pdr, cp2up_far);
@@ -2809,21 +2809,25 @@ void smf_sess_create_cp_up_data_forwarding(smf_sess_t *sess)
 
 #if 0
     /*
-     * MODIFIED the PDI matching for UP2CP
-     * to not distinguish the QoS Flow Identifier.
-     *
-     * When omitted, the UPF was also adjusted to not compare the QFI.
+     * UP2CP (RS): keep QFI matching disabled. The F-TEID and SDF filter
+     * still apply, but RS forwarding is not restricted to one QoS flow.
      */
-    if (qos_flow->qer && qos_flow->qfi) {
-        /* To match the PDI of UP2CP_PDR(from ff02::2/128 to assigned)
-         * Router-Solicitation has QFI in the Extended Header */
+    if (qos_flow->qer && qos_flow->qfi)
         up2cp_pdr->qfi = qos_flow->qfi;
-
-        /* When UPF sends router advertisement to gNB,
-         * it includes QFI in extension header */
-        ogs_pfcp_pdr_associate_qer(cp2up_pdr, qos_flow->qer);
-    }
 #endif
+
+    /*
+     * CP2UP (RA): in 5GC, use the default QoS flow's QER to add the
+     * DL PDU Session Container and QFI on N3 (TS 29.281, 5.2.2.7;
+     * TS 38.415, 5.5.2.1). This is output marking, not PDI matching;
+     * leave cp2up_pdr->qfi unset because SMF-to-UPF RAs have no QFI.
+     *
+     * EPC may also have a QER for bitrate control, but has no 5GS QFI.
+     * The guard below therefore leaves EPC RA forwarding unchanged,
+     * without adding a PDU Session Container.
+     */
+    if (qos_flow->qer && qos_flow->qfi)
+        ogs_pfcp_pdr_associate_qer(cp2up_pdr, qos_flow->qer);
 }
 
 void smf_sess_delete_cp_up_data_forwarding(smf_sess_t *sess)
