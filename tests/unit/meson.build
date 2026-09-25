@@ -30,12 +30,15 @@ testunit_unit_sources = files('''
     mme-s13-test.c
     ipfw-test.c
     pfcp-rule-test.c
+    dhcpv6-test.c
 '''.split())
+
+smf_config_inc = include_directories('../../src/smf')
 
 testunit_unit_exe = executable('unit',
     sources : testunit_unit_sources,
     c_args : [testunit_core_cc_flags, sbi_cc_flags],
-    include_directories : srcinc,
+    include_directories : [srcinc, smf_config_inc],
     dependencies : [libs1ap_dep,
                     libgtp_dep,
                     libngap_dep,
@@ -43,6 +46,7 @@ testunit_unit_exe = executable('unit',
                     libsbi_dep,
                     libipfw_dep,
                     libpfcp_dep,
-                    libmme_dep])
+                    libmme_dep,
+                    libsmf_dep])
 
 test('unit', testunit_unit_exe, is_parallel : false, suite: 'unit')

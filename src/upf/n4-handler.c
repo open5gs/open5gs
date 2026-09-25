@@ -356,6 +356,40 @@ void upf_n4_handle_session_modification_request(
         goto cleanup;
 
     for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
+        ogs_pfcp_pdr_t *remove_pdr = NULL;
+
+        if (req->remove_pdr[i].presence == 0)
+            break;
+
+        /* Remove framed routes carried by this PDR from the lookup trie.
+         * Applied Removes are kept even if this request is later rejected,
+         * so the trie must drop the route before the PDR (and its strings)
+         * is freed. */
+        if (req->remove_pdr[i].pdr_id.presence) {
+            int k;
+
+            remove_pdr = ogs_pfcp_pdr_find(
+                    &sess->pfcp, req->remove_pdr[i].pdr_id.u16);
+
+            if (remove_pdr && remove_pdr->ipv4_framed_routes) {
+                for (k = 0; k < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; k++) {
+                    if (!remove_pdr->ipv4_framed_routes[k])
+                        break;
+                    upf_sess_remove_ue_ipv4_framed_route(sess,
+                            remove_pdr->ipv4_framed_routes[k]);
+                }
+            }
+
+            if (remove_pdr && remove_pdr->ipv6_framed_routes) {
+                for (k = 0; k < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; k++) {
+                    if (!remove_pdr->ipv6_framed_routes[k])
+                        break;
+                    upf_sess_remove_ue_ipv6_framed_route(sess,
+                            remove_pdr->ipv6_framed_routes[k]);
+                }
+            }
+        }
+
         if (ogs_pfcp_handle_remove_pdr(&sess->pfcp, &req->remove_pdr[i],
                 &cause_value, &offending_ie_value) == false)
             break;
@@ -495,6 +529,33 @@ void upf_n4_handle_session_modification_request(
         pdr = created_pdr[i];
         ogs_assert(pdr);
 
+        /* Install framed routes (e.g. DHCPv6-PD delegated prefix) */
+        if (pdr->ipv4_framed_routes) {
+            int j;
+
+            for (j = 0; j < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; j++) {
+                if (!pdr->ipv4_framed_routes[j])
+                    break;
+                cause_value = upf_sess_add_ue_ipv4_framed_route(sess,
+                        pdr->ipv4_framed_routes[j]);
+                if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                    goto cleanup;
+            }
+        }
+
+        if (pdr->ipv6_framed_routes) {
+            int j;
+
+            for (j = 0; j < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; j++) {
+                if (!pdr->ipv6_framed_routes[j])
+                    break;
+                cause_value = upf_sess_add_ue_ipv6_framed_route(sess,
+                        pdr->ipv6_framed_routes[j]);
+                if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+                    goto cleanup;
+            }
+        }
+
         /* Setup UPF-N3-TEID & QFI Hash */
         if (pdr->f_teid_len) {
             cause_value = ogs_pfcp_object_teid_hash_set(
@@ -532,6 +593,35 @@ cleanup:
             (unsigned long long)sess->upf_n4_seid,
             (unsigned long long)sess->smf_n4_f_seid.seid,
             cause_value, offending_ie_value);
+    /*
+     * Created PDRs are reclaimed below. Drop framed-route trie entries
+     * already installed for them so the trie matches surviving rules.
+     * A missing trie entry is not an error (install may not have run).
+     */
+    for (i = 0; i < num_of_created_pdr; i++) {
+        int k;
+
+        pdr = created_pdr[i];
+        if (!pdr)
+            continue;
+
+        if (pdr->ipv4_framed_routes) {
+            for (k = 0; k < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; k++) {
+                if (!pdr->ipv4_framed_routes[k])
+                    break;
+                upf_sess_remove_ue_ipv4_framed_route(sess,
+                        pdr->ipv4_framed_routes[k]);
+            }
+        }
+        if (pdr->ipv6_framed_routes) {
+            for (k = 0; k < OGS_MAX_NUM_OF_FRAMED_ROUTES_IN_PDI; k++) {
+                if (!pdr->ipv6_framed_routes[k])
+                    break;
+                upf_sess_remove_ue_ipv6_framed_route(sess,
+                        pdr->ipv6_framed_routes[k]);
+            }
+        }
+    }
     /*
      * Keep applied Updates and Removes; reclaim only newly created rules.
      * Common cleanup logs each removed ID. Count survivors only here,
