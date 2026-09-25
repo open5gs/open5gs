@@ -20,28 +20,29 @@
 /*
  * ME Identity Check over S13 against the Open5GS EIR (open5gs-eird).
  *
- * The MME runs with eir.enabled (configs/s13.yaml) and the EIR serves S13
+ * The MME runs with eir.enabled (configs/eir.yaml) and the EIR serves S13
  * next to N5g-eir out of the same eir collection. Each case provisions
  * records for the test UE IMEISV, runs an EPS attach, and checks what
  * follows Security Mode Complete: ESM Information Request when the
  * equipment is admitted, Attach Reject #6 Illegal ME when it is not.
  */
 
-#include "test-app.h"
+#include "integration.h"
 
-/* test_ue_set_mobile_identity_imsisv(): IMEI 86650704004053 + SVN 01 */
-#define S13_TEST_PEI "imeisv-8665070400405301"
-#define S13_TEST_OTHER_SUPI "imsi-999700000000099"
+/* Default test UE IMEI 86650704004053 with SVN 09;
+ * registration-test.c uses SVN 00-07 of the same IMEI. */
+#define ATTACH_TEST_PEI "imeisv-8665070400405309"
+#define ATTACH_TEST_OTHER_SUPI "imsi-999700000000099"
 
-typedef struct s13_case_s {
+typedef struct attach_case_s {
     const char *name;
     const char *generic_status;     /* eir record for the PEI only */
     const char *specific_status;    /* eir record for the PEI and a SUPI */
     bool specific_other_supi;       /* ...of another subscriber */
     ogs_nas_emm_cause_t reject_cause;   /* 0: attach accepted */
-} s13_case_t;
+} attach_case_t;
 
-static const s13_case_t cases[] = {
+static const attach_case_t cases[] = {
     { "whitelisted equipment attaches", "WHITELISTED", NULL, false, 0 },
     { "greylisted equipment attaches", "GREYLISTED", NULL, false, 0 },
     { "blacklisted equipment is rejected", "BLACKLISTED", NULL, false,
@@ -102,9 +103,9 @@ static void fixture_remove(abts_case *tc, fixture_t *fixture)
     }
 }
 
-static void s13_case(abts_case *tc, void *data)
+static void attach_case(abts_case *tc, void *data)
 {
-    const s13_case_t *test = data;
+    const attach_case_t *test = data;
     int rv;
     ogs_socknode_t *s1ap;
     ogs_socknode_t *gtpu;
@@ -124,7 +125,7 @@ static void s13_case(abts_case *tc, void *data)
     fixture_t fixture;
     char *supi = NULL;
 
-    ogs_info("[S13] %s", test->name);
+    ogs_debug("EIR attach: %s", test->name);
     memset(&fixture, 0, sizeof(fixture));
 
     /* Setup Test UE & Session Context */
@@ -148,6 +149,7 @@ static void s13_case(abts_case *tc, void *data)
 
     test_ue->k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
     test_ue->opc_string = "e8ed289deba952e4283b54e88e6183ca";
+    test_ue->mobile_identity_imeisv.digit16 = 9;
 
     sess = test_sess_add_by_apn(test_ue, "internet", OGS_GTP2_RAT_TYPE_EUTRAN);
     ogs_assert(sess);
@@ -182,10 +184,11 @@ static void s13_case(abts_case *tc, void *data)
 
     /********** Insert equipment records in the eir collection */
     if (test->generic_status)
-        fixture_insert(tc, &fixture, S13_TEST_PEI, NULL, test->generic_status);
+        fixture_insert(tc, &fixture,
+                ATTACH_TEST_PEI, NULL, test->generic_status);
     if (test->specific_status)
-        fixture_insert(tc, &fixture, S13_TEST_PEI,
-                test->specific_other_supi ? S13_TEST_OTHER_SUPI : supi,
+        fixture_insert(tc, &fixture, ATTACH_TEST_PEI,
+                test->specific_other_supi ? ATTACH_TEST_OTHER_SUPI : supi,
                 test->specific_status);
 
     /* Send Attach Request */
@@ -377,14 +380,14 @@ cleanup:
     test_ue_remove(test_ue);
 }
 
-abts_suite *test_s13(abts_suite *suite)
+abts_suite *test_eir_attach(abts_suite *suite)
 {
     int i;
 
     suite = ADD_SUITE(suite)
 
     for (i = 0; i < OGS_ARRAY_SIZE(cases); i++)
-        abts_run_test(suite, s13_case, (void *)&cases[i]);
+        abts_run_test(suite, attach_case, (void *)&cases[i]);
 
     return suite;
 }

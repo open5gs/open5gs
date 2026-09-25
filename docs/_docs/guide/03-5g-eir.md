@@ -292,4 +292,4 @@ Complete, on attach only and never on an emergency attach; an attach that
 reuses a valid NAS security context skips SMC and therefore the check. Each
 eligible attach with a usable IMEISV queries the EIR; the MME keeps no cache
 of verdicts. An answer is used only if it still matches the pending attach
-and its serving S1 context. `tests/s13` exercises this path end to end.
+and its serving S1 context. `tests/eir` exercises this path end to end.

@@ -104,7 +104,7 @@ static void terminate(void)
 
     test_child_terminate();
     app_terminate();
-    test_5gc_final();
+    test_app_final();
 
     ogs_free(eir_uri);
     ogs_free(nrf_uri);
@@ -120,7 +120,7 @@ static void initialize(const char *const argv[])
     if (rv != OGS_OK)
         ogs_error("EIR integration application setup failed [error:%d]", rv);
     ogs_assert(rv == OGS_OK);
-    test_5gc_init();
+    test_app_init();
 
     eir_uri = config_sbi_uri("eir");
     nrf_uri = config_sbi_uri("nrf");
@@ -156,5 +156,6 @@ int main(int argc, const char *const argv[])
     suite = test_eir_dbi(suite);
     suite = test_eir_service(suite);
     suite = test_eir_registration(suite);
+    suite = test_eir_attach(suite);
     return abts_report(suite);
 }
