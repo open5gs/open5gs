@@ -176,7 +176,7 @@ static int eir_ogs_diam_s13_ecr_cb(struct msg **msg, struct avp *avp,
         exp_error = OGS_DIAM_S13_ERROR_EQUIPMENT_UNKNOWN;
         break;
     default:
-        ogs_error("EIR database lookup failed [pei:%s,rv:%d]", pei, rv);
+        ogs_warn("EIR database lookup failed [pei:%s,rv:%d]", pei, rv);
         base_error = "DIAMETER_UNABLE_TO_COMPLY";
         break;
     }

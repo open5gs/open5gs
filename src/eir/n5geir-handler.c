@@ -23,28 +23,6 @@
 /* This EIR supports IMEI/IMEISV and IMSI-based SUPIs only. */
 #define EIR_IMSI_MIN_DIGITS 6
 
-static bool pei_is_supported(const char *pei)
-{
-    if (!pei) {
-        ogs_warn("Missing equipment identity");
-        return false;
-    }
-
-    /* Select the type before validation to avoid warnings for valid PEIs. */
-    if (!strncmp(pei, OGS_ID_PEI_TYPE_IMEI "-",
-                sizeof(OGS_ID_PEI_TYPE_IMEI "-") - 1))
-        return ogs_id_bcd_is_valid(pei, OGS_ID_PEI_TYPE_IMEI,
-                OGS_MAX_IMEI_BCD_LEN, OGS_MAX_IMEI_BCD_LEN);
-
-    if (!strncmp(pei, OGS_ID_SUPI_TYPE_IMEISV "-",
-                sizeof(OGS_ID_SUPI_TYPE_IMEISV "-") - 1))
-        return ogs_id_bcd_is_valid(pei, OGS_ID_SUPI_TYPE_IMEISV,
-                OGS_MAX_IMEISV_BCD_LEN, OGS_MAX_IMEISV_BCD_LEN);
-
-    ogs_warn("Unsupported PEI type; expected imei- or imeisv-");
-    return false;
-}
-
 static bool supi_is_supported(const char *supi)
 {
     return ogs_id_bcd_is_valid(supi, OGS_ID_SUPI_TYPE_IMSI,
@@ -88,7 +66,7 @@ bool eir_n5geir_eic_handle_equipment_status(
         return false;
     }
 
-    if (!pei_is_supported(recvmsg->param.pei)) {
+    if (!ogs_pei_is_valid(recvmsg->param.pei)) {
         ogs_warn("Invalid PEI in equipment-status request");
         ogs_assert(true ==
             ogs_sbi_server_send_error(stream,

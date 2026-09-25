@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+bool amf_n5geir_eic_check_wanted(const amf_ue_t *amf_ue);
+
 ogs_nas_5gmm_cause_t amf_n5geir_eic_failure_cause(void);
 
 ogs_nas_5gmm_cause_t amf_n5geir_eic_handle_equipment_status(

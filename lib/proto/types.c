@@ -453,6 +453,27 @@ bool ogs_id_bcd_is_valid(
     return bcd_string_is_valid(str + type_len + 1, min_len, max_len);
 }
 
+bool ogs_pei_is_valid(const char *pei)
+{
+    if (!pei) {
+        ogs_warn("Missing equipment identity");
+        return false;
+    }
+
+    if (!strncmp(pei, OGS_ID_PEI_TYPE_IMEI "-",
+                sizeof(OGS_ID_PEI_TYPE_IMEI "-") - 1))
+        return ogs_id_bcd_is_valid(pei, OGS_ID_PEI_TYPE_IMEI,
+                OGS_MAX_IMEI_BCD_LEN, OGS_MAX_IMEI_BCD_LEN);
+
+    if (!strncmp(pei, OGS_ID_SUPI_TYPE_IMEISV "-",
+                sizeof(OGS_ID_SUPI_TYPE_IMEISV "-") - 1))
+        return ogs_id_bcd_is_valid(pei, OGS_ID_SUPI_TYPE_IMEISV,
+                OGS_MAX_IMEISV_BCD_LEN, OGS_MAX_IMEISV_BCD_LEN);
+
+    ogs_warn("Unsupported PEI type; expected imei- or imeisv-");
+    return false;
+}
+
 bool ogs_pdu_session_id_is_valid(int psi)
 {
     return psi > OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED &&

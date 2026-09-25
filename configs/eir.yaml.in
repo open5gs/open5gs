@@ -37,15 +37,15 @@ mme:
         address: 127.0.0.8
       - identity: eir.localdomain
         address: 127.0.0.21
-  # attach-test.c expects an unknown device to be admitted.
+  # Exercise the same policy in the MME and AMF in each test run.
   eir:
     enabled: true
     realm: localdomain
     host: eir.localdomain
     timeout: 3
-    unknown_action: allow
-    failure_action: allow
-    missing_pei_action: allow
+    unknown_action: @eir_test_action@
+    failure_action: @eir_test_action@
+    missing_pei_action: @eir_test_action@
   s1ap:
     server:
       - address: 127.0.0.2
@@ -176,13 +176,12 @@ amf:
   time:
     t3512:
       value: 540
-  # registration-test.c expects an unknown device and an EIR failure to be
-  # rejected.
+  # eir.yaml uses reject; eir-allow.yaml uses allow.
   eir:
     enabled: true
-    unknown_action: reject
-    failure_action: reject
-    missing_pei_action: reject
+    unknown_action: @eir_test_action@
+    failure_action: @eir_test_action@
+    missing_pei_action: @eir_test_action@
 
 sgwu:
   pfcp:

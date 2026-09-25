@@ -324,6 +324,8 @@ bool ogs_bcd_string_is_valid(const char *bcd, int max_len);
  */
 bool ogs_id_bcd_is_valid(
         const char *str, const char *type, int min_len, int max_len);
+/* Supported PEIs: imei- with 15 digits or imeisv- with 16 digits. */
+bool ogs_pei_is_valid(const char *pei);
 bool ogs_imsi_bcd_is_valid(const char *imsi_bcd);
 bool ogs_imeisv_bcd_is_valid(const char *imeisv_bcd);
 int ogs_supi_to_imsi_bcd(

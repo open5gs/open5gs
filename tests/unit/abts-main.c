@@ -40,6 +40,7 @@ abts_suite *test_nrf_discovery(abts_suite *suite);
 abts_suite *test_crash(abts_suite *suite);
 abts_suite *test_mme_dns_select(abts_suite *suite);
 abts_suite *test_mme_s13(abts_suite *suite);
+abts_suite *test_amf_eir(abts_suite *suite);
 abts_suite *test_ipfw(abts_suite *suite);
 abts_suite *test_pfcp_rule(abts_suite *suite);
 
@@ -57,6 +58,7 @@ const struct testlist {
     {test_crash},
     {test_mme_dns_select},
     {test_mme_s13},
+    {test_amf_eir},
     {test_ipfw},
     {test_pfcp_rule},
     {NULL},

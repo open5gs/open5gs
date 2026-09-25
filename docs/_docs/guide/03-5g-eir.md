@@ -103,7 +103,7 @@ That's it — restart the AMF, and blacklisted devices will now be rejected at r
 |---|---|---|---|
 | `unknown_action` | The device isn't in the `eir` collection at all | Let it register | Block it |
 | `failure_action` | The 5G-EIR can't be reached, times out, or returns an error | Let it register | Block it |
-| `missing_pei_action` | The AMF never got the device's PEI | Let it register | Block it |
+| `missing_pei_action` | The AMF has no usable PEI | Let it register | Block it |
 
 The safe starting point for most deployments is to leave everything on `allow`: a network hiccup or a device you simply haven't classified yet should never lock out real users. Switch a policy to `reject` only once you're confident your device inventory (and your EIR's uptime) is complete enough that "unknown" really should mean "not allowed here."
 
@@ -243,7 +243,13 @@ index, lookups may scan the collection, and runtime duplicate detection cannot
 prevent concurrent conflicting writes. Provisioning tools must also validate
 the supported PEI/SUPI formats described below.
 
-**Registration timing.** The check runs once per initial registration attempt, after NAS security is established and the device's PEI has been obtained, and before Registration Accept is sent. It does not run on Service Request.
+**Registration timing.** The AMF checks non-emergency registration after Security
+Mode Complete, including mobility/periodic registration and the inter-AMF path
+when they run Security Mode Control. Emergency registration and Service Request
+do not trigger the check. A registration that reuses a valid NAS security
+context and skips Security Mode Control also skips the check. An absent or
+unsupported PEI follows `missing_pei_action`. The MME checks non-emergency
+attach after Security Mode Complete; TAU remains outside its check scope.
 
 **Current limitations.** This implementation supports `imei-` (15 digits), `imeisv-` (16 digits), and IMSI-based SUPIs (`imsi-`, 6–15 digits). Matching uses the supplied PEI string exactly; IMEI and IMEISV are not normalized to the same device identity. GPSI-based lookup, other PEI/SUPI formats, and optional feature negotiation are not implemented. It does not include CEIR federation, TAC-range/wildcard rules, bulk import, or a WebUI for managing `eir` records.
 
@@ -293,3 +299,11 @@ reuses a valid NAS security context skips SMC and therefore the check. Each
 eligible attach with a usable IMEISV queries the EIR; the MME keeps no cache
 of verdicts. An answer is used only if it still matches the pending attach
 and its serving S1 context. `tests/eir` exercises this path end to end.
+
+The Meson tests `eir` and `eir-allow` run the AMF and MME cases with matching
+`reject` and `allow` policies, respectively. Both runs reject blacklisted
+equipment; unknown equipment and EIR failures follow the selected policy.
+When running the test binary directly, set `OPEN5GS_EIR_TEST_POLICY=allow`
+to select the allow configuration and its expected results; the default is
+`reject`. The unit tests separately cover eligibility for registration and
+attach, including emergency procedures.

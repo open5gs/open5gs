@@ -24,7 +24,7 @@
  * next to N5g-eir out of the same eir collection. Each case provisions
  * records for the test UE IMEISV, runs an EPS attach, and checks what
  * follows Security Mode Complete: ESM Information Request when the
- * equipment is admitted, Attach Reject #6 Illegal ME when it is not.
+ * equipment is admitted, Attach Reject with the expected EMM cause otherwise.
  */
 
 #include "integration.h"
@@ -39,22 +39,26 @@ typedef struct attach_case_s {
     const char *generic_status;     /* eir record for the PEI only */
     const char *specific_status;    /* eir record for the PEI and a SUPI */
     bool specific_other_supi;       /* ...of another subscriber */
-    ogs_nas_emm_cause_t reject_cause;   /* 0: attach accepted */
+    ogs_nas_emm_cause_t reject_policy_cause; /* 0: attach accepted */
+    ogs_nas_emm_cause_t allow_policy_cause;
 } attach_case_t;
 
 static const attach_case_t cases[] = {
-    { "whitelisted equipment attaches", "WHITELISTED", NULL, false, 0 },
-    { "greylisted equipment attaches", "GREYLISTED", NULL, false, 0 },
+    { "whitelisted equipment attaches", "WHITELISTED", NULL, false, 0, 0 },
+    { "greylisted equipment attaches", "GREYLISTED", NULL, false, 0, 0 },
     { "blacklisted equipment is rejected", "BLACKLISTED", NULL, false,
-        OGS_NAS_EMM_CAUSE_ILLEGAL_ME },
-    { "unknown equipment attaches with unknown_action allow",
-        NULL, NULL, false, 0 },
+        OGS_NAS_EMM_CAUSE_ILLEGAL_ME, OGS_NAS_EMM_CAUSE_ILLEGAL_ME },
+    { "unknown equipment follows policy", NULL, NULL, false,
+        OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED, 0 },
     { "subscriber blacklist overrides generic whitelist",
-        "WHITELISTED", "BLACKLISTED", false, OGS_NAS_EMM_CAUSE_ILLEGAL_ME },
+        "WHITELISTED", "BLACKLISTED", false,
+        OGS_NAS_EMM_CAUSE_ILLEGAL_ME, OGS_NAS_EMM_CAUSE_ILLEGAL_ME },
     { "subscriber whitelist overrides generic blacklist",
-        "BLACKLISTED", "WHITELISTED", false, 0 },
+        "BLACKLISTED", "WHITELISTED", false, 0, 0 },
     { "record of another subscriber does not apply",
-        "WHITELISTED", "BLACKLISTED", true, 0 },
+        "WHITELISTED", "BLACKLISTED", true, 0, 0 },
+    { "EIR server failure follows policy", "INVALID", NULL, false,
+        OGS_NAS_EMM_CAUSE_NETWORK_FAILURE, 0 },
 };
 
 typedef struct fixture_s {
@@ -67,6 +71,7 @@ static void fixture_insert(abts_case *tc, fixture_t *fixture,
 {
     bson_error_t error;
     bson_t *document = NULL;
+    bson_t *opts = NULL;
     unsigned int index = fixture->count++;
 
     ogs_assert(index < OGS_ARRAY_SIZE(fixture->ids));
@@ -81,9 +86,14 @@ static void fixture_insert(abts_case *tc, fixture_t *fixture,
                 "pei", BCON_UTF8(pei), "status", BCON_UTF8(status));
     ogs_assert(document);
 
+    /* Exercise failure_action against a real EIR Diameter error. */
+    if (!strcmp(status, "INVALID"))
+        opts = BCON_NEW("bypassDocumentValidation", BCON_BOOL(true));
     if (!mongoc_collection_insert_one(ogs_mongoc()->collection.eir,
-                document, NULL, NULL, &error))
+                document, opts, NULL, &error))
         ABTS_FAIL(tc, error.message);
+    if (opts)
+        bson_destroy(opts);
     bson_destroy(document);
 }
 
@@ -106,6 +116,8 @@ static void fixture_remove(abts_case *tc, fixture_t *fixture)
 static void attach_case(abts_case *tc, void *data)
 {
     const attach_case_t *test = data;
+    ogs_nas_emm_cause_t expected_cause = test_eir_allow_policy() ?
+        test->allow_policy_cause : test->reject_policy_cause;
     int rv;
     ogs_socknode_t *s1ap;
     ogs_socknode_t *gtpu;
@@ -245,7 +257,7 @@ static void attach_case(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    if (test->reject_cause) {
+    if (expected_cause) {
         /* Receive Attach Reject */
         test_ue->emm_message_type = 0;
         test_ue->attach_reject_cause = 0;
@@ -254,7 +266,7 @@ static void attach_case(abts_case *tc, void *data)
         tests1ap_recv(test_ue, recvbuf);
         ABTS_INT_EQUAL(tc, OGS_NAS_EPS_ATTACH_REJECT,
                 test_ue->emm_message_type);
-        ABTS_INT_EQUAL(tc, test->reject_cause, test_ue->attach_reject_cause);
+        ABTS_INT_EQUAL(tc, expected_cause, test_ue->attach_reject_cause);
 
         /* Receive UE Context Release Command */
         recvbuf = testenb_s1ap_read(s1ap);

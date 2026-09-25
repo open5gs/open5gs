@@ -51,6 +51,38 @@ static void msg_exp_result(ogs_diam_s13_message_t *m, uint32_t code)
     m->exp_err = &m->result_code;
 }
 
+static void s13_test_check_wanted(abts_case *tc, void *data)
+{
+    mme_ue_t *mme_ue;
+    bool saved_enabled = mme_self()->eir.enabled;
+
+    mme_ue = ogs_calloc(1, sizeof(*mme_ue));
+    ABTS_PTR_NOTNULL(tc, mme_ue);
+
+    mme_self()->eir.enabled = true;
+    mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
+    mme_ue->nas_eps.attach.value = OGS_NAS_ATTACH_TYPE_EPS_ATTACH;
+    ABTS_TRUE(tc, mme_s13_check_wanted(mme_ue));
+    mme_ue->nas_eps.attach.value =
+        OGS_NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTACH;
+    ABTS_TRUE(tc, mme_s13_check_wanted(mme_ue));
+    mme_ue->nas_eps.attach.value = OGS_NAS_ATTACH_TYPE_EPS_EMERGENCY_ATTACH;
+    ABTS_TRUE(tc, !mme_s13_check_wanted(mme_ue));
+
+    mme_ue->nas_eps.attach.value = OGS_NAS_ATTACH_TYPE_EPS_ATTACH;
+    mme_ue->nas_eps.type = MME_EPS_TYPE_TAU_REQUEST;
+    ABTS_TRUE(tc, !mme_s13_check_wanted(mme_ue));
+    mme_ue->nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST;
+    ABTS_TRUE(tc, !mme_s13_check_wanted(mme_ue));
+
+    mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
+    mme_self()->eir.enabled = false;
+    ABTS_TRUE(tc, !mme_s13_check_wanted(mme_ue));
+
+    mme_self()->eir.enabled = saved_enabled;
+    ogs_free(mme_ue);
+}
+
 /* Equipment-Status -> EMM cause, no knob: the AMF's table */
 static void s13_test_equipment_status(abts_case *tc, void *data)
 {
@@ -395,6 +427,7 @@ abts_suite *test_mme_s13(abts_suite *suite)
     s13_context_setup();
 
     /* Decision logic */
+    abts_run_test(suite, s13_test_check_wanted, NULL);
     abts_run_test(suite, s13_test_equipment_status, NULL);
     abts_run_test(suite, s13_test_diameter_result_mapping, NULL);
     abts_run_test(suite, s13_test_handle_eca, NULL);

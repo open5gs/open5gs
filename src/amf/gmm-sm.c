@@ -2704,16 +2704,16 @@ static void gmm_security_mode_completed(ogs_fsm_t *s, amf_ue_t *amf_ue)
         return;
     }
 
-    if (amf_ue->nas.message_type != OGS_NAS_5GS_REGISTRATION_REQUEST ||
-            !amf_self()->eir.enabled) {
-        ogs_info("[%s] Skip 5G-EIR check [message:%d,enabled:%d]",
+    if (!amf_n5geir_eic_check_wanted(amf_ue)) {
+        ogs_info("[%s] Skip 5G-EIR check [message:%d,type:%d,enabled:%d]",
                 amf_ue->supi, amf_ue->nas.message_type,
+                amf_ue->nas.registration.value,
                 amf_self()->eir.enabled);
         gmm_continue_registration(s, amf_ue);
         return;
     }
 
-    if (amf_ue->pei) {
+    if (ogs_pei_is_valid(amf_ue->pei)) {
         r = amf_ue_sbi_discover_and_send_eir(amf_ue);
         if (r == OGS_OK) {
             amf_ue->eir_check_pending = true;
@@ -2723,7 +2723,7 @@ static void gmm_security_mode_completed(ogs_fsm_t *s, amf_ue_t *amf_ue)
 
         cause = amf_n5geir_eic_failure_cause();
     } else {
-        ogs_error("[%s] No PEI available for 5G-EIR "
+        ogs_error("[%s] No usable PEI for 5G-EIR "
                 "[missing_pei_action:%s]", amf_ue->supi,
                 amf_self()->eir.missing_pei_action ==
                     AMF_EIR_ACTION_REJECT ? "reject" : "allow");

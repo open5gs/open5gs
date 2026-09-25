@@ -13,6 +13,13 @@ testapp_eir_exe = executable('eir',
     dependencies : [libtestapp_dep, libcurl_dep])
 
 test('eir', testapp_eir_exe,
+    env : ['OPEN5GS_EIR_TEST_POLICY=reject'],
+    is_parallel : false,
+    timeout : 180,
+    suite : ['eir', 'app'])
+
+test('eir-allow', testapp_eir_exe,
+    env : ['OPEN5GS_EIR_TEST_POLICY=allow'],
     is_parallel : false,
     timeout : 180,
     suite : ['eir', 'app'])

@@ -143,6 +143,36 @@ static void identity_format(abts_case *tc, void *data)
                 test->min_len, test->max_len) == test->valid);
 }
 
+static void pei_format(abts_case *tc, void *data)
+{
+    static const struct {
+        const char *value;
+        bool valid;
+    } cases[] = {
+        { "imei-490154203237518", true },
+        { "imeisv-4901542032375186", true },
+        { NULL, false },
+        { "", false },
+        { "imei", false },
+        { "imeisv-", false },
+        { "imei-49015420323751", false },
+        { "imei-4901542032375186", false },
+        { "imeisv-490154203237518", false },
+        { "imeisv-49015420323751860", false },
+        { "imei-49015420323751x", false },
+        { "imeisv-490154203237518x", false },
+        { "imsi-490154203237518", false },
+        { "IMEI-490154203237518", false },
+        { "imei-490154203237518-1", false },
+        { "imeisv-4901542032375186 ", false },
+    };
+    size_t i;
+
+    for (i = 0; i < OGS_ARRAY_SIZE(cases); i++)
+        ABTS_ASSERT(tc, cases[i].value ? cases[i].value : "NULL PEI",
+                ogs_pei_is_valid(cases[i].value) == cases[i].valid);
+}
+
 static void legacy_identity_bounds(abts_case *tc, void *data)
 {
     /* Keep the existing BCD APIs' nonempty, maximum-length-only contract. */
@@ -307,6 +337,7 @@ abts_suite *test_proto_message(abts_suite *suite)
     abts_run_test(suite, proto_message_test2, NULL);
     for (i = 0; i < OGS_ARRAY_SIZE(identity_cases); i++)
         abts_run_test(suite, identity_format, (void *)&identity_cases[i]);
+    abts_run_test(suite, pei_format, NULL);
     abts_run_test(suite, legacy_identity_bounds, NULL);
     abts_run_test(suite, framed_route_format, NULL);
     abts_run_test(suite, framed_route_classful, NULL);

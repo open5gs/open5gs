@@ -39,19 +39,13 @@ bool mme_s13_check_wanted(const mme_ue_t *mme_ue)
 
 bool mme_s13_imeisv_is_usable(const char *imeisv_bcd)
 {
-    int i;
-
     /*
      * Terminal-Information needs the full 16 digits: IMEI (14, no check
      * digit) + SVN (2), TS 23.003 6.2.2. Anything else cannot be split.
      */
-    if (!imeisv_bcd || strlen(imeisv_bcd) != OGS_MAX_IMEISV_BCD_LEN)
-        return false;
-    for (i = 0; i < OGS_MAX_IMEISV_BCD_LEN; i++)
-        if (imeisv_bcd[i] < '0' || imeisv_bcd[i] > '9')
-            return false;
-
-    return true;
+    return imeisv_bcd &&
+        strlen(imeisv_bcd) == OGS_MAX_IMEISV_BCD_LEN &&
+        ogs_imeisv_bcd_is_valid(imeisv_bcd);
 }
 
 void mme_s13_start_check(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
