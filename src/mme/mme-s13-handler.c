@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2026 by LetMeConnect
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "mme-sm.h"
 #include "mme-s13-handler.h"
 #include "mme-fd-path.h"
@@ -35,8 +54,22 @@ bool mme_s13_imeisv_is_usable(const char *imeisv_bcd)
     return true;
 }
 
+void mme_s13_start_check(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
+{
+    ogs_assert(mme_ue);
+    ogs_assert(enb_ue);
+
+    if (!mme_s13_imeisv_is_usable(mme_ue->imeisv_bcd)) {
+        mme_s13_complete_check(enb_ue, mme_ue,
+                mme_s13_missing_pei_cause(&mme_self()->eir));
+        return;
+    }
+
+    mme_s13_send_ecr(enb_ue, mme_ue);
+}
+
 bool mme_s13_eca_is_current(const mme_ue_t *mme_ue,
-        ogs_pool_id_t enb_ue_id, uint32_t eir_check_id)
+        const enb_ue_t *enb_ue, uint32_t eir_check_id)
 {
     ogs_assert(mme_ue);
 
@@ -56,10 +89,19 @@ bool mme_s13_eca_is_current(const mme_ue_t *mme_ue,
                 mme_ue->imsi_bcd, eir_check_id, mme_ue->eir_check_id);
         return false;
     }
-    if (mme_ue->enb_ue_id != enb_ue_id) {
+    if (mme_ue->nas_eps.type != MME_EPS_TYPE_ATTACH_REQUEST) {
+        ogs_error("[%s] Ignore ME-Identity-Check-Answer "
+                "after attach cancellation",
+                mme_ue->imsi_bcd);
+        return false;
+    }
+    if (!enb_ue || !ENB_UE_IS_SERVING(mme_ue, enb_ue) ||
+            enb_ue->mme_ue_id != mme_ue->id) {
         ogs_error("[%s] Ignore ME-Identity-Check-Answer of a released "
                 "S1 context [%d:%d]",
-                mme_ue->imsi_bcd, enb_ue_id, mme_ue->enb_ue_id);
+                mme_ue->imsi_bcd,
+                enb_ue ? enb_ue->id : OGS_INVALID_POOL_ID,
+                mme_ue->enb_ue_id);
         return false;
     }
     if (!OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
@@ -183,15 +225,8 @@ void mme_s13_reject_ue(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
     if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
         ogs_info("[%s] Attach reject [OGS_NAS_EMM_CAUSE:%d]",
                 mme_ue->imsi_bcd, emm_cause);
-        r = nas_eps_send_attach_reject(
-                enb_ue, mme_ue, emm_cause,
+        r = nas_eps_send_attach_reject(enb_ue, mme_ue, emm_cause,
                 OGS_NAS_ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-        ogs_expect(r == OGS_OK);
-        ogs_assert(r != OGS_ERROR);
-    } else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
-        ogs_info("[%s] TAU reject [OGS_NAS_EMM_CAUSE:%d]",
-                mme_ue->imsi_bcd, emm_cause);
-        r = nas_eps_send_tau_reject(enb_ue, mme_ue, emm_cause);
         ogs_expect(r == OGS_OK);
         ogs_assert(r != OGS_ERROR);
     } else

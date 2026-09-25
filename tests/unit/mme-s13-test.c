@@ -22,8 +22,9 @@
  *
  * Nothing here touches freeDiameter: mme_s13_*_cause() are pure functions
  * of their inputs, mme_s13_handle_eca() only reads mme_self()->eir and
- * mme_s13_eca_is_current() only reads the UE context. The Diameter wire path (mme_s13_send_ecr / mme_s13_eca_cb /
- * mme_s13_ecr_expire_cb) needs a peer and is covered by scenario tests.
+ * mme_s13_eca_is_current() only reads the UE/S1 contexts. The Diameter wire
+ * path (mme_s13_send_ecr / mme_s13_eca_cb / mme_s13_ecr_expire_cb) needs a
+ * peer and is covered by scenario tests.
  */
 
 #include "mme/mme-sm.h"
@@ -283,17 +284,8 @@ static void s13_test_pei_from_terminal_info(abts_case *tc, void *data)
     ABTS_STR_EQUAL(tc, "", pei);
 }
 
-/*
- * mme_context_init() is needed by every test here: it installs the "mme" log domain that mme-s13-handler.c logs to
- * (an ogs_warn() on an uninstalled domain is FATAL). It sizes its pools
- * from the static app and global configuration; the unit binary never
- * parses a config file, so give it small but non-zero sizes first.
- */
-#define S13_TEST_MAX_UE 8
-
-static struct {
-    int max_ue, max_peer, nf, csmap, emerg, sess, bearer;
-} saved_conf;
+/* The decision tests need log domains and EIR policy, but no MME pools. */
+static mme_eir_t saved_eir;
 
 static struct {
     ogs_log_level_e mme, diam;
@@ -301,22 +293,14 @@ static struct {
 
 static void s13_context_setup(void)
 {
-    saved_conf.max_ue = ogs_global_conf()->max.ue;
-    saved_conf.max_peer = ogs_global_conf()->max.peer;
-    saved_conf.nf = ogs_app()->pool.nf;
-    saved_conf.csmap = ogs_app()->pool.csmap;
-    saved_conf.emerg = ogs_app()->pool.emerg;
-    saved_conf.sess = ogs_app()->pool.sess;
-    saved_conf.bearer = ogs_app()->pool.bearer;
+    saved_eir = mme_self()->eir;
 
-    ogs_global_conf()->max.ue = S13_TEST_MAX_UE;
-    ogs_global_conf()->max.peer = 2;
-    ogs_app()->pool.nf = 2;
-    ogs_app()->pool.csmap = 2;
-    ogs_app()->pool.emerg = 2;
-    ogs_app()->pool.sess = S13_TEST_MAX_UE;
-    ogs_app()->pool.bearer = S13_TEST_MAX_UE;
-    mme_context_init();
+    if (!ogs_log_find_domain("mme"))
+        ogs_log_install_domain(
+                &__mme_log_domain, "mme", ogs_core()->log.level);
+    if (!ogs_log_find_domain("diam"))
+        ogs_log_install_domain(
+                &__ogs_diam_domain, "diam", ogs_core()->log.level);
 
     /* Every case below deliberately drives the warn/error paths of
      * mme-s13-handler.c and lib/diameter/s13: silence both domains for
@@ -329,21 +313,9 @@ static void s13_context_setup(void)
 
 static void s13_context_teardown(void)
 {
-    /* Restore before mme_context_final() removes the "mme" domain */
     ogs_log_set_domain_level(__mme_log_domain, saved_log.mme);
     ogs_log_set_domain_level(__ogs_diam_domain, saved_log.diam);
-
-    mme_context_final();
-
-    /* Leave the process-wide configuration as we found it for the
-     * suites that run after this one */
-    ogs_global_conf()->max.ue = saved_conf.max_ue;
-    ogs_global_conf()->max.peer = saved_conf.max_peer;
-    ogs_app()->pool.nf = saved_conf.nf;
-    ogs_app()->pool.csmap = saved_conf.csmap;
-    ogs_app()->pool.emerg = saved_conf.emerg;
-    ogs_app()->pool.sess = saved_conf.sess;
-    ogs_app()->pool.bearer = saved_conf.bearer;
+    mme_self()->eir = saved_eir;
 }
 
 /*
@@ -354,33 +326,64 @@ static void s13_context_teardown(void)
 static void s13_test_eca_is_current(abts_case *tc, void *data)
 {
     mme_ue_t *mme_ue;
+    enb_ue_t enb_ue;
 
     mme_ue = ogs_calloc(1, sizeof(*mme_ue));
     ABTS_PTR_NOTNULL(tc, mme_ue);
+    memset(&enb_ue, 0, sizeof(enb_ue));
 
     /* Waiting for the answer to ECR #7 on S1 context 3 */
+    mme_ue->id = 1;
     mme_ue->enb_ue_id = 3;
+    mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
     mme_ue->eir_check_pending = true;
     mme_ue->eir_check_id = 7;
+    enb_ue.id = 3;
+    enb_ue.mme_ue_id = mme_ue->id;
     OGS_FSM_STATE(&mme_ue->sm) =
         (ogs_fsm_handler_t)emm_state_initial_context_setup;
-    ABTS_TRUE(tc, mme_s13_eca_is_current(mme_ue, 3, 7));
+    ABTS_TRUE(tc, mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
 
     /* Answer to an earlier ECR, replaced by a new attach */
-    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, 3, 6));
+    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, &enb_ue, 6));
+    ABTS_TRUE(tc, mme_ue->eir_check_pending);
 
-    /* Answer for a released S1 context */
-    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, 4, 7));
+    /* The S1 context was removed or replaced before event dispatch */
+    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, NULL, 7));
+    enb_ue.id = 4;
+    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
+    enb_ue.id = 3;
+
+    /* Both sides of the UE/S1 association must still agree */
+    enb_ue.mme_ue_id = 2;
+    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
+    enb_ue.mme_ue_id = mme_ue->id;
+
+    /* A release command leaves the IDs and EMM state unchanged */
+    enb_ue.ue_ctx_rel_action = S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK;
+    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
+    enb_ue.ue_ctx_rel_action = S1AP_UE_CTX_REL_INVALID_ACTION;
+
+    /* A detach procedure must not resume the earlier attach */
+    mme_ue->nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_TO_UE;
+    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
+    mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
+
+    /* Clearing pending invalidates the answer even if other fields match */
+    mme_ue->eir_check_pending = false;
+    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
+    mme_ue->eir_check_pending = true;
+    ABTS_TRUE(tc, mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
 
     /* The attach left emm_state_initial_context_setup */
     OGS_FSM_STATE(&mme_ue->sm) = (ogs_fsm_handler_t)emm_state_exception;
-    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, 3, 7));
+    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
     OGS_FSM_STATE(&mme_ue->sm) =
         (ogs_fsm_handler_t)emm_state_initial_context_setup;
 
     /* No check pending: already answered, or the procedure was cancelled */
     mme_ue->eir_check_pending = false;
-    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, 3, 7));
+    ABTS_TRUE(tc, !mme_s13_eca_is_current(mme_ue, &enb_ue, 7));
 
     ogs_free(mme_ue);
 }

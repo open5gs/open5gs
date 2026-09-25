@@ -57,9 +57,10 @@ static uint32_t equipment_status_from_dbi(ogs_dbi_eir_status_t status)
  *
  * Same lookup and the same outcomes as the N5g-eir handler: the PEI built
  * from Terminal-Information, with the SUPI from the optional User-Name, is
- * checked against the eir collection. A known device is answered with Equipment-Status, an
- * unknown one with DIAMETER_ERROR_EQUIPMENT_UNKNOWN, a database problem
- * with DIAMETER_UNABLE_TO_COMPLY. Runs in a freeDiameter thread.
+ * checked against the eir collection. A known device is answered with
+ * Equipment-Status, an unknown one with DIAMETER_ERROR_EQUIPMENT_UNKNOWN,
+ * and a database problem with DIAMETER_UNABLE_TO_COMPLY. Runs in a
+ * freeDiameter thread.
  */
 static int eir_ogs_diam_s13_ecr_cb(struct msg **msg, struct avp *avp,
         struct session *session, void *opaque, enum disp_action *act)

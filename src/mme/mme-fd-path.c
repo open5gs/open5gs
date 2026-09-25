@@ -2730,25 +2730,9 @@ void mme_s13_send_ecr(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
 
     ogs_debug("[MME] ME-Identity-Check-Request");
 
-    /*
-     * The Terminal-Information AVP is built out of the 16-digit IMEISV:
-     * 14 digits of IMEI (TAC + SNR, without the check digit) followed by
-     * the 2-digit Software Version Number. Anything shorter cannot be
-     * split, so the check is skipped rather than sending a malformed ECR.
-     */
-
-    if (!mme_s13_imeisv_is_usable(mme_ue->imeisv_bcd)) {
-        mme_s13_complete_check(enb_ue, mme_ue,
-                mme_s13_missing_pei_cause(&mme_self()->eir));
-        return;
-    }
-
-    if (!mme_self()->eir.realm) {
-        ogs_warn("[%s] No EIR configured, skipping ME identity check",
-                mme_ue->imsi_bcd);
-        mme_s6a_send_ulr(enb_ue, mme_ue, 0);
-        return;
-    }
+    /* Validated by mme_s13_start_check() and configuration parsing. */
+    ogs_assert(mme_s13_imeisv_is_usable(mme_ue->imeisv_bcd));
+    ogs_assert(mme_self()->eir.realm);
 
     /* Create the random value to store with the session */
     sess_data = ogs_calloc(1, sizeof(*sess_data));

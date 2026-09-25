@@ -289,6 +289,7 @@ an unknown device is answered with `DIAMETER_ERROR_EQUIPMENT_UNKNOWN` (5422)
 and follows `unknown_action` (#7), and any other failure follows
 `failure_action` (#17). As in the AMF, the check runs after Security Mode
 Complete, on attach only and never on an emergency attach; an attach that
-reuses a valid NAS security context skips SMC and therefore the check. Every
-attach queries the EIR: the MME keeps no cache of verdicts, and an answer
-that arrives after its attach was cancelled or replaced is ignored. `tests/s13` exercises this path end to end.
+reuses a valid NAS security context skips SMC and therefore the check. Each
+eligible attach with a usable IMEISV queries the EIR; the MME keeps no cache
+of verdicts. An answer is used only if it still matches the pending attach
+and its serving S1 context. `tests/s13` exercises this path end to end.

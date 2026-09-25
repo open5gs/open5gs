@@ -781,16 +781,12 @@ cleanup:
         }
 
         enb_ue = enb_ue_find_by_id(e->enb_ue_id);
-        /*
-         * The 'enb_ue' context is not checked
-         * because the status is checked in the sending routine.
-         */
 
         switch (s13_message->cmd_code) {
         case OGS_DIAM_S13_CMD_CODE_ME_IDENTITY_CHECK:
             ogs_debug("OGS_DIAM_S13_CMD_CODE_ME_IDENTITY_CHECK");
             if (!mme_s13_eca_is_current(
-                        mme_ue, e->enb_ue_id, e->eir_check_id))
+                        mme_ue, enb_ue, e->eir_check_id))
                 break;
             mme_ue->eir_check_pending = false;
 

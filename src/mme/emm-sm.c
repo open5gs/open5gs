@@ -1423,7 +1423,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
              * security context skips SMC and therefore the check.
              */
             if (mme_s13_check_wanted(mme_ue))
-                mme_s13_send_ecr(enb_ue, mme_ue);
+                mme_s13_start_check(enb_ue, mme_ue);
             else
                 mme_s6a_send_ulr(enb_ue, mme_ue, 0);
 

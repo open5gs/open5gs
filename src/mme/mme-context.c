@@ -2534,7 +2534,7 @@ int mme_context_parse_config(void)
                         ogs_assert(eir_key);
                         if (!strcmp(eir_key, "enabled")) {
                             self.eir.enabled =
-                                ogs_yaml_iter_bool(&eir_iter);                   
+                                ogs_yaml_iter_bool(&eir_iter);
                         } else if (!strcmp(eir_key, "host")) {
                             self.eir.host = ogs_yaml_iter_value(&eir_iter);
                         } else if (!strcmp(eir_key, "realm")) {

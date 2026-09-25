@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2026 by LetMeConnect
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef MME_S13_HANDLER_H
 #define MME_S13_HANDLER_H
 
@@ -13,11 +32,13 @@ extern "C" {
  * "continue with the ULR".
  *
  *   WHITELISTED / GREYLISTED         -> accepted (greylist is logged)
- *   BLACKLISTED                      -> #6  Illegal ME, always
- *   DIAMETER_ERROR_EQUIPMENT_UNKNOWN -> unknown_action:     #7  EPS services not allowed
- *   no usable IMEISV                 -> missing_pei_action: #7  EPS services not allowed
- *   no verdict (other error, timeout,
- *   unrecognized Equipment-Status)   -> failure_action:     #17 Network failure
+ *   BLACKLISTED                     -> #6 Illegal ME, always
+ *   DIAMETER_ERROR_EQUIPMENT_UNKNOWN -> unknown_action (#7 on reject)
+ *   no usable IMEISV                -> missing_pei_action (#7 on reject)
+ *   no verdict (error, timeout,
+ *   unrecognized Equipment-Status)  -> failure_action (#17 on reject)
+ *
+ * #7 is EPS services not allowed; #17 is Network failure.
  *
  * #17 is the EPS translation of the AMF's #90 (the UE retries after T3411).
  * #6 and #7 both make the UE consider the USIM invalid for EPS until
@@ -33,8 +54,8 @@ ogs_nas_emm_cause_t mme_s13_message_cause(
 ogs_nas_emm_cause_t mme_s13_handle_eca(
         mme_ue_t *mme_ue, ogs_diam_s13_message_t *s13_message);
 
-/* ULR when accepted, Attach/TAU Reject + release otherwise: the MME's
- * gmm_complete_equipment_identity_check() */
+/* ULR when accepted, Attach Reject + release otherwise, corresponding to
+ * the AMF's gmm_complete_equipment_identity_check(). */
 void mme_s13_complete_check(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         ogs_nas_emm_cause_t emm_cause);
 
@@ -45,15 +66,18 @@ bool mme_s13_check_wanted(const mme_ue_t *mme_ue);
 /* 16 decimal digits, i.e. splittable into IMEI (14) + SVN (2) */
 bool mme_s13_imeisv_is_usable(const char *imeisv_bcd);
 
+/* Apply missing_pei_action or send an ECR with the validated IMEISV. */
+void mme_s13_start_check(enb_ue_t *enb_ue, mme_ue_t *mme_ue);
+
 /*
  * True only for the answer to the ECR the current attach is waiting for.
  * A late answer of a cancelled or replaced procedure must neither send
  * the ULR nor reject the UE.
  */
 bool mme_s13_eca_is_current(const mme_ue_t *mme_ue,
-        ogs_pool_id_t enb_ue_id, uint32_t eir_check_id);
+        const enb_ue_t *enb_ue, uint32_t eir_check_id);
 
-/* Shared reject path: Attach/TAU Reject + UE context release, with the
+/* Shared reject path: Attach Reject + UE context release, with the
  * cause chosen by the decision table above. */
 void mme_s13_reject_ue(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
         ogs_nas_emm_cause_t emm_cause);

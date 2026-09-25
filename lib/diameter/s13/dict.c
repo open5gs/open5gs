@@ -1,3 +1,34 @@
+/*********************************************************************************************************
+ * Software License Agreement (BSD License)                                                               *
+ * Author: Thomas Klausner <tk@giga.or.at>                                                                *
+ *                                                                                                        *
+ * Copyright (c) 2013, Thomas Klausner                                                                    *
+ * All rights reserved.                                                                                   *
+ *                                                                                                        *
+ * Written under contract by nfotex IT GmbH, http://nfotex.com/                                           *
+ *                                                                                                        *
+ * Redistribution and use of this software in source and binary forms, with or without modification, are  *
+ * permitted provided that the following conditions are met:                                              *
+ *                                                                                                        *
+ * * Redistributions of source code must retain the above                                                 *
+ *   copyright notice, this list of conditions and the                                                    *
+ *   following disclaimer.                                                                                *
+ *                                                                                                        *
+ * * Redistributions in binary form must reproduce the above                                              *
+ *   copyright notice, this list of conditions and the                                                    *
+ *   following disclaimer in the documentation and/or other                                               *
+ *   materials provided with the distribution.                                                            *
+ *                                                                                                        *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED *
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A *
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR *
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT     *
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS    *
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR *
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF   *
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                                                             *
+ *********************************************************************************************************/
+
 #include <freeDiameter/extension.h>
 
 /* The content of this file follows the same structure as dict_base_proto.c */
@@ -72,7 +103,7 @@ int ogs_dict_s13_entry(char *conffile)
             };
 
             /* Search for Terminal-Information parent AVP */
-            if (fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME_ALL_VENDORS, 
+            if (fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME_ALL_VENDORS,
                               "Terminal-Information", &avp, ENOENT) == 0) {
                 /* Terminal-Information exists - register its sub-rules */
                 PARSE_loc_rules(rules, avp);
@@ -88,7 +119,7 @@ int ogs_dict_s13_entry(char *conffile)
             /* Equipment-Status typically has no sub-AVPs in S13, but we reference it */
             /* If it needs sub-rules in the future, add them here */
 
-            if (fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME_ALL_VENDORS, 
+            if (fd_dict_search(fd_g_config->cnf_dict, DICT_AVP, AVP_BY_NAME_ALL_VENDORS,
                               "Equipment-Status", &avp, ENOENT) != 0) {
                 /* Equipment-Status doesn't exist - log warning but continue */
                 TRACE_DEBUG(INFO, "Equipment-Status AVP not found in dictionary - S13 may not work correctly");
@@ -160,6 +191,6 @@ int ogs_dict_s13_entry(char *conffile)
     return 0;
 }
 
-#if 0 
+#if 0
 EXTENSION_ENTRY("dict_s13", ogs_dict_s13_entry, "dict_dcca_3gpp");
 #endif
