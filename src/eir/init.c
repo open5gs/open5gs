@@ -18,6 +18,7 @@
  */
 
 #include "sbi-path.h"
+#include "eir-fd-path.h"
 
 static ogs_thread_t *thread;
 static void eir_main(void *data);
@@ -66,6 +67,17 @@ int eir_initialize(void)
     if (rv != OGS_OK)
         ogs_warn("EIR database constraints could not be prepared; "
                 "continuing with runtime validation");
+
+    /* S13 towards the MME, out of the same eir collection */
+    if (eir_self()->s13_enabled) {
+        rv = eir_fd_init();
+        if (rv != OGS_OK) {
+            ogs_error("Failed to initialize EIR Diameter S13 [%d]", rv);
+            return rv;
+        }
+    } else {
+        ogs_info("S13 is not served: no eir.freeDiameter configuration");
+    }
 
     rv = eir_sbi_open();
     if (rv != OGS_OK) {
@@ -118,6 +130,9 @@ void eir_terminate(void)
     ogs_timer_delete(t_termination_holding);
 
     eir_sbi_close();
+
+    if (eir_self()->s13_enabled)
+        eir_fd_final();
 
     ogs_dbi_final();
 

@@ -22,6 +22,7 @@
 #include "s1ap-handler.h"
 #include "mme-gn-handler.h"
 #include "mme-fd-path.h"
+#include "mme-s13-handler.h"
 #include "emm-handler.h"
 #include "emm-build.h"
 #include "esm-handler.h"
@@ -1415,7 +1416,16 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            mme_s6a_send_ulr(enb_ue, mme_ue, 0);
+            /*
+             * ME identity check against the EIR before the S6a ULR
+             * (TS 23.401 clause 5.3.2.1), as the AMF does after
+             * Security Mode Complete. An attach that reuses a valid
+             * security context skips SMC and therefore the check.
+             */
+            if (mme_s13_check_wanted(mme_ue))
+                mme_s13_send_ecr(enb_ue, mme_ue);
+            else
+                mme_s6a_send_ulr(enb_ue, mme_ue, 0);
 
             if (MME_NEXT_GUTI_IS_AVAILABLE(mme_ue)) {
                 OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
@@ -1567,6 +1577,8 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         break;
     case OGS_FSM_EXIT_SIG:
+        /* An EIR answer belongs only to this attach procedure */
+        mme_ue->eir_check_pending = false;
         break;
     case MME_EVENT_EMM_MESSAGE:
         message = e->nas_message;

@@ -24,6 +24,7 @@ freediameter_conf = '''
     hss.conf
     smf.conf
     pcrf.conf
+    eir.conf
 '''.split()
 
 foreach file : freediameter_conf

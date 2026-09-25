@@ -79,6 +79,10 @@ int emm_handle_attach_request(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
             sizeof(ogs_nas_eps_attach_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
 
+    /* A new attach replaces the procedure an EIR answer may still be
+     * pending for */
+    mme_ue->eir_check_pending = false;
+
     ogs_debug("    ATTACH TYPE[%d] TSC[%d] KSI[%d] VALUE[%d]",
             mme_ue->nas_eps.type,
             mme_ue->nas_eps.attach.tsc,

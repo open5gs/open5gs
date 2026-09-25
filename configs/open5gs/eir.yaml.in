@@ -21,6 +21,33 @@ eir:
         - uri: http://127.0.0.200:7777
 
 ################################################################################
+# S13 (EPC MME) over Diameter
+################################################################################
+#  o Disabled by default. Set eir.freeDiameter to answer
+#    ME-Identity-Check-Request from the MME out of the same eir collection.
+#    Remove eir.sbi as well to serve S13 only (no NRF or SCP is then required).
+#  freeDiameter: @sysconfdir@/freeDiameter/eir.conf
+#
+#  o Inline freeDiameter configuration instead of a file
+#  freeDiameter:
+#    identity: eir.localdomain
+#    realm: localdomain
+#    listen_on: 127.0.0.21
+#    no_fwd: true
+#    load_extension:
+#      - module: @libdir@/freeDiameter/dbg_msg_dumps.fdx
+#        conf: 0x8888
+#      - module: @libdir@/freeDiameter/dict_rfc5777.fdx
+#      - module: @libdir@/freeDiameter/dict_mip6i.fdx
+#      - module: @libdir@/freeDiameter/dict_nasreq.fdx
+#      - module: @libdir@/freeDiameter/dict_nas_mipv6.fdx
+#      - module: @libdir@/freeDiameter/dict_dcca.fdx
+#      - module: @libdir@/freeDiameter/dict_dcca_3gpp.fdx
+#    connect:
+#      - identity: mme.localdomain
+#        address: 127.0.0.2
+#
+################################################################################
 # SBI Server
 ################################################################################
 #  o Bind to the address on the eth0 and advertise as open5gs-eir.svc.local

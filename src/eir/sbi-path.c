@@ -24,6 +24,10 @@ int eir_sbi_open(void)
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_nf_service_t *service = NULL;
 
+    /* S13 only: nothing to register with the NRF */
+    if (ogs_sbi_server_first() == NULL)
+        return OGS_OK;
+
     /* Initialize SELF NF instance */
     nf_instance = ogs_sbi_self()->nf_instance;
     ogs_assert(nf_instance);

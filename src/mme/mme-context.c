@@ -228,6 +228,11 @@ static int mme_context_prepare(void)
     self.dns.cache_ttl = 60;
     self.dns.guard_timeout = 3000;
 
+    self.eir.unknown_action     = MME_EIR_ALLOW;
+    self.eir.failure_action     = MME_EIR_ALLOW;
+    self.eir.missing_pei_action = MME_EIR_ALLOW;
+    self.eir.timeout            = 3;
+
     return OGS_OK;
 }
 
@@ -345,6 +350,14 @@ static int mme_context_validation(void)
         return OGS_ERROR;
     }
 
+    if (self.eir.enabled && self.eir.realm == NULL) {
+        ogs_error("No mme.eir.realm in '%s'", ogs_app()->file);
+        return OGS_ERROR;
+    }
+    if (self.eir.enabled && self.eir.timeout == 0)
+        ogs_warn("mme.eir.timeout is 0: an unresponsive EIR will never "
+                 "trigger failure_action");
+
     return OGS_OK;
 }
 
@@ -433,6 +446,25 @@ static int parse_rai(ogs_yaml_iter_t *parent_iter, ogs_nas_rai_t *rai)
 
     if (!lai_parsed || !rac_parsed)
         return OGS_ERROR;
+    return OGS_OK;
+}
+
+/* Same contract as amf_context_parse_eir_action(): an invalid value is a
+ * configuration error, not a silently applied default. */
+static int mme_context_parse_eir_action(
+        ogs_yaml_iter_t *iter, const char *key, mme_eir_action_e *action)
+{
+    const char *value = ogs_yaml_iter_value(iter);
+
+    if (!value || !strcmp(value, "allow"))
+        *action = MME_EIR_ALLOW;
+    else if (!strcmp(value, "reject"))
+        *action = MME_EIR_REJECT;
+    else {
+        ogs_error("invalid %s `%s` (expected `allow` or `reject`)", key, value);
+        return OGS_ERROR;
+    }
+
     return OGS_OK;
 }
 
@@ -2493,6 +2525,38 @@ int mme_context_parse_config(void)
                     }
                 } else if (!strcmp(mme_key, "mme_name")) {
                     self.mme_name = ogs_yaml_iter_value(&mme_iter);
+                } else if (!strcmp(mme_key, "eir")) {
+                    ogs_yaml_iter_t eir_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &eir_iter);
+
+                    while (ogs_yaml_iter_next(&eir_iter)) {
+                        const char *eir_key = ogs_yaml_iter_key(&eir_iter);
+                        ogs_assert(eir_key);
+                        if (!strcmp(eir_key, "enabled")) {
+                            self.eir.enabled =
+                                ogs_yaml_iter_bool(&eir_iter);                   
+                        } else if (!strcmp(eir_key, "host")) {
+                            self.eir.host = ogs_yaml_iter_value(&eir_iter);
+                        } else if (!strcmp(eir_key, "realm")) {
+                            self.eir.realm = ogs_yaml_iter_value(&eir_iter);
+                        } else if (!strcmp(eir_key, "timeout")) {
+                            const char *v = ogs_yaml_iter_value(&eir_iter);
+                            if (v) self.eir.timeout = atoi(v);
+                        } else if (!strcmp(eir_key, "unknown_action")) {
+                            rv = mme_context_parse_eir_action(&eir_iter,
+                                    eir_key, &self.eir.unknown_action);
+                            if (rv != OGS_OK) return rv;
+                        } else if (!strcmp(eir_key, "failure_action")) {
+                            rv = mme_context_parse_eir_action(&eir_iter,
+                                    eir_key, &self.eir.failure_action);
+                            if (rv != OGS_OK) return rv;
+                        } else if (!strcmp(eir_key, "missing_pei_action")) {
+                            rv = mme_context_parse_eir_action(&eir_iter,
+                                    eir_key, &self.eir.missing_pei_action);
+                            if (rv != OGS_OK) return rv;
+                        } else
+                            ogs_warn("unknown key `%s`", eir_key);
+                    }
                 } else if (!strcmp(mme_key, "time")) {
                     ogs_yaml_iter_t time_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &time_iter);

@@ -24,6 +24,7 @@
 
 #include "ogs-s1ap.h"
 #include "ogs-diameter-s6a.h"
+#include "ogs-diameter-s13.h"
 #include "ogs-gtp.h"
 #include "ogs-nas-eps.h"
 #include "ogs-app.h"
@@ -74,6 +75,29 @@ typedef struct served_gummei_s {
     int             num_of_mme_code;
     uint8_t         mme_code[CODE_PER_MME];
 } served_gummei_t;
+
+typedef enum {
+    MME_EIR_ALLOW = 0,      /* default on calloc: fail-open */
+    MME_EIR_REJECT,
+} mme_eir_action_e;
+
+/* Control EIR (S13) functionality */
+typedef struct mme_eir_s {
+    bool enabled;
+    const char  *host;
+    const char  *realm;
+
+    /* Whitelisted and greylisted equipment is always allowed, blacklisted
+     * always rejected (no knob, as in the AMF). Only "unknown to the EIR"
+     * (DIAMETER_ERROR_EQUIPMENT_UNKNOWN) is operator policy. */
+    mme_eir_action_e unknown_action;
+
+    uint32_t    timeout;             /* s, ECR answer deadline. On expiry
+                                       * failure_action applies. 0 = none */
+    mme_eir_action_e failure_action;  /* No verdict: EIR unreachable, error
+                                       * answer, or no answer within timeout */
+    mme_eir_action_e missing_pei_action; /* no usable IMEISV to check */
+} mme_eir_t;
 
 typedef struct mme_context_s {
     const char          *diam_conf_path;  /* MME Diameter conf path */
@@ -185,6 +209,7 @@ typedef struct mme_context_s {
     struct {
         const char *dnn;            /* Emergency APN */
     } emergency;
+    mme_eir_t eir;     /* Control EIR functionality */
 } mme_context_t;
 
 typedef struct mme_sgsn_route_s {
@@ -524,6 +549,14 @@ struct mme_ue_s {
     int             masked_imeisv_len;
     char            imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
     ogs_nas_mobile_identity_imeisv_t nas_mobile_identity_imeisv;
+
+    /*
+     * EIR (S13): ME identity check of the current attach. The id is
+     * carried by the ECR and must match on the answer, so that a late
+     * ECA of a cancelled or replaced procedure is ignored.
+     */
+    bool        eir_check_pending;
+    uint32_t    eir_check_id;
 
     uint8_t         msisdn[OGS_MAX_MSISDN_LEN];
     int             msisdn_len;

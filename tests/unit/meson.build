@@ -27,6 +27,7 @@ testunit_unit_sources = files('''
     nrf-discovery-test.c
     crash-test.c
     mme-dns-select-test.c
+    mme-s13-test.c
     ipfw-test.c
     pfcp-rule-test.c
 '''.split())

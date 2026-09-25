@@ -143,8 +143,10 @@ static int ogs_sbi_context_validation(
 
     ogs_assert(context_initialized == 1);
 
-    /* If SMF is only used in 4G EPC, no SBI interface is required.  */
-    if (local && strcmp(local, "smf") != 0 && ogs_sbi_server_first() == NULL) {
+    /* If SMF is only used in 4G EPC, or the EIR only serves S13,
+     * no SBI interface is required. */
+    if (local && strcmp(local, "smf") != 0 && strcmp(local, "eir") != 0 &&
+            ogs_sbi_server_first() == NULL) {
         ogs_error("No %s.sbi.address: in '%s'", local, ogs_app()->file);
         return OGS_ERROR;
     }
@@ -162,6 +164,9 @@ static int ogs_sbi_context_validation(
                 /* Skip SCP */
             } else if (local && strcmp(local, "smf") == 0) {
                 /* Skip SMF since SMF can run 4G */
+            } else if (local && strcmp(local, "eir") == 0 &&
+                    ogs_sbi_server_first() == NULL) {
+                /* Skip EIR when it only serves S13 */
             } else {
                 if (NF_INSTANCE_CLIENT(self.nrf_instance) ||
                     NF_INSTANCE_CLIENT(self.scp_instance)) {

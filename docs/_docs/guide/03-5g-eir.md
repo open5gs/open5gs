@@ -245,4 +245,50 @@ the supported PEI/SUPI formats described below.
 
 **Registration timing.** The check runs once per initial registration attempt, after NAS security is established and the device's PEI has been obtained, and before Registration Accept is sent. It does not run on Service Request.
 
-**Current limitations.** This implementation supports `imei-` (15 digits), `imeisv-` (16 digits), and IMSI-based SUPIs (`imsi-`, 6–15 digits). Matching uses the supplied PEI string exactly; IMEI and IMEISV are not normalized to the same device identity. GPSI-based lookup, other PEI/SUPI formats, and optional feature negotiation are not implemented. It does not include EPC/MME S13, Diameter EIR, CEIR federation, TAC-range/wildcard rules, bulk import, or a WebUI for managing `eir` records.
+**Current limitations.** This implementation supports `imei-` (15 digits), `imeisv-` (16 digits), and IMSI-based SUPIs (`imsi-`, 6–15 digits). Matching uses the supplied PEI string exactly; IMEI and IMEISV are not normalized to the same device identity. GPSI-based lookup, other PEI/SUPI formats, and optional feature negotiation are not implemented. It does not include CEIR federation, TAC-range/wildcard rules, bulk import, or a WebUI for managing `eir` records.
+
+## 7. EPC (4G): the same EIR over S13
+---
+
+`open5gs-eird` also answers the MME over S13 (Diameter, TS 29.272), so one
+`eir` collection serves both cores. S13 is disabled by default: uncomment
+`freeDiameter: /etc/freeDiameter/eir.conf` in `eir.yaml` to enable it
+(identity `eir.localdomain`, listening on `127.0.0.21`, MME peer
+`mme.localdomain`). An inline `freeDiameter:` mapping (identity, realm, listen_on,
+load_extension, connect) is accepted as well, as for the HSS. In an EPC-only
+deployment the `sbi:` section can be dropped entirely: with no SBI server the
+EIR serves S13 alone and never looks for an NRF or an SCP.
+
+On the MME side, enable the check in `mme.yaml` and let its freeDiameter
+configuration know the EIR peer:
+
+```yaml
+mme:
+  eir:
+    enabled: true
+    realm: localdomain
+    host: eir.localdomain
+    unknown_action: allow
+    failure_action: allow
+    missing_pei_action: allow
+```
+
+```
+# /etc/freeDiameter/mme.conf
+ConnectPeer = "eir.localdomain" { ConnectTo = "127.0.0.21"; No_TLS; };
+```
+
+The MME sends the IMEI (14 digits) and Software Version Number (2 digits) it
+received in Security Mode Complete; the EIR looks up `imeisv-<16 digits>`, so
+one record admits or blocks a device from both the AMF and the MME. The IMSI is
+sent in the optional User-Name AVP; without it only the records that have no
+`supi` apply. A request without Software-Version is looked up as `imei-<15 digits>` with the check
+digit computed. The verdicts follow the N5g-eir table: `WHITELISTED` and
+`GREYLISTED` attach, `BLACKLISTED` is rejected with EMM cause #6 (Illegal ME),
+an unknown device is answered with `DIAMETER_ERROR_EQUIPMENT_UNKNOWN` (5422)
+and follows `unknown_action` (#7), and any other failure follows
+`failure_action` (#17). As in the AMF, the check runs after Security Mode
+Complete, on attach only and never on an emergency attach; an attach that
+reuses a valid NAS security context skips SMC and therefore the check. Every
+attach queries the EIR: the MME keeps no cache of verdicts, and an answer
+that arrives after its attach was cancelled or replaced is ignored. `tests/s13` exercises this path end to end.
