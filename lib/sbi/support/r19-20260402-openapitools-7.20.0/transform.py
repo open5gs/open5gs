@@ -1301,20 +1301,20 @@ def _find_items_ref_in_lines(item_lines):
     return None
 
 
-def _ref_json_type(ref_str, current_file, all_schemas):
+def _ref_json_type(ref_str, current_file, all_schemas, allow_nullable=False):
     """
     JSON type of the directly referenced schema, limited to what the
     union code in model-body.mustache can represent:
       "object" - has properties (a model struct)
       "string" - plain string or format: byte (char *)
-    Enums, maps, free-form objects, dates, nullable schemas and
-    aliases return None.
+    Enums, maps, free-form objects, dates and aliases return None.
+    Nullable schemas are only supported as top-level union alternatives.
     """
     result = _resolve_ref_to_schema(ref_str, current_file, all_schemas)
     if result is None:
         return None
     _, schema = result
-    if schema.get("nullable"):
+    if schema.get("nullable") and not allow_nullable:
         return None
     if schema.get("properties"):
         return "object"
@@ -1352,7 +1352,7 @@ def _inline_array_json_type(item_lines, current_file, all_schemas):
 def try_transform_category_i_mixed(lines, start_idx, all_schemas, current_file,
                                     eol="\n"):
     """
-    oneOf with mixed inline and $ref items -> named properties.
+    oneOf with distinct JSON types or mixed inline/$ref items -> named properties.
 
     Each item becomes a property in a type: object. Property names
     are derived from schema names:
@@ -1365,7 +1365,9 @@ def try_transform_category_i_mixed(lines, start_idx, all_schemas, current_file,
     x-open5gs-union: true is added and the generated model serializes
     the member that is set as the JSON value itself and picks the
     member by JSON type when parsing, so the wire format follows the
-    oneOf (#4771). Otherwise the plain wrapper object is generated and
+    oneOf (#4771). At most one alternative may also accept JSON null.
+    All-$ref unions such as Av5gAka | EapPayload are supported too.
+    Otherwise the plain wrapper object is generated for mixed items and
     reported as a warning; items sharing a JSON type (e.g. several
     arrays) would need item-level matching to be told apart.
 
@@ -1475,6 +1477,7 @@ def try_transform_category_i_mixed(lines, start_idx, all_schemas, current_file,
     prop_entries = []
     prop_names_seen = set()
     json_types = []
+    nullable_count = 0
 
     for item in items:
         first = item[0].strip()
@@ -1496,7 +1499,12 @@ def try_transform_category_i_mixed(lines, start_idx, all_schemas, current_file,
             prop_entries.append((schema_name, value_lines))
             has_ref_item = True
             json_types.append(
-                _ref_json_type(ref_val, current_file, all_schemas))
+                _ref_json_type(ref_val, current_file, all_schemas,
+                               allow_nullable=True))
+            resolved = _resolve_ref_to_schema(
+                ref_val, current_file, all_schemas)
+            if resolved is not None and resolved[1].get("nullable"):
+                nullable_count += 1
 
         elif first == "- type: array":
             # Inline array -> derive name from items.$ref
@@ -1544,10 +1552,6 @@ def try_transform_category_i_mixed(lines, start_idx, all_schemas, current_file,
         else:
             return None
 
-    # Must have at least one inline item (otherwise category I handles it)
-    if not has_inline_item:
-        return None
-
     # --- Detect "array of X or single X" pattern ---
     # If an inline array's items.$ref target matches a sibling $ref target,
     # this is "array or single object" -- not a true union. Skip.
@@ -1571,7 +1575,10 @@ def try_transform_category_i_mixed(lines, start_idx, all_schemas, current_file,
 
     # --- Union at JSON level only if the items differ by JSON type ---
     is_union = (None not in json_types
-                and len(set(json_types)) == len(json_types))
+                and len(set(json_types)) == len(json_types)
+                and nullable_count <= 1)
+    if not has_inline_item and not is_union:
+        return None
 
     # --- Check sibling key conflict ---
     new_keys = {"type", "properties"}
@@ -1726,7 +1733,7 @@ def transform_lines(lines, string_schemas=None, all_schemas=None,
                     changed_i += 1
                     continue
 
-            # I-mixed: inline+$ref mix -> each item becomes a named property
+            # I-mixed: distinct JSON types or inline+$ref -> named properties
             if all_schemas is not None:
                 transformed = try_transform_category_i_mixed(
                     lines, i, all_schemas, current_file, eol=eol)

@@ -704,9 +704,16 @@ components:
         authType:
           $ref: '#/components/schemas/AuthType'
         5gAuthData:
-          oneOf:
-            - $ref: '#/components/schemas/Av5gAka'
-            - $ref: '#/components/schemas/EapPayload'
+#          oneOf:
+#            - $ref: '#/components/schemas/Av5gAka'
+#            - $ref: '#/components/schemas/EapPayload'
+          type: object
+          x-open5gs-union: true
+          properties:
+            Av5gAka:
+              $ref: '#/components/schemas/Av5gAka'
+            EapPayload:
+              $ref: '#/components/schemas/EapPayload'
         _links:
           type: object
           description: >

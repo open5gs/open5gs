@@ -340,13 +340,20 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
         return NULL;
     }
 
-    if ({{#vars}}({{{classname}}}->{{{name}}} != NULL){{^-last}} +
+    if ({{#vars}}{{^required}}{{#isNullable}}({{{classname}}}->is_{{{name}}}_null != false) + {{/isNullable}}{{/required}}({{{classname}}}->{{{name}}} != NULL){{^-last}} +
             {{/-last}}{{/vars}} != 1) {
         ogs_error("OpenAPI_{{classname}}_convertToJSON() failed [{{{name}}}]: exactly one alternative must be set");
         return NULL;
     }
 
 {{#vars}}
+    {{^required}}
+    {{#isNullable}}
+    if ({{{classname}}}->is_{{{name}}}_null) {
+        return cJSON_CreateNull();
+    }
+    {{/isNullable}}
+    {{/required}}
     {{#isArray}}
     if ({{{classname}}}->{{{name}}}) {
         item = cJSON_CreateArray();
@@ -393,6 +400,11 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
 {
     OpenAPI_lnode_t *node = NULL;
 {{#vars}}
+    {{^required}}
+    {{#isNullable}}
+    bool is_{{{name}}}_null = false;
+    {{/isNullable}}
+    {{/required}}
     {{#isArray}}
     OpenAPI_list_t *{{{name}}} = NULL;
     {{/isArray}}
@@ -448,12 +460,20 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
         ogs_assert({{{name}}});
     {{/isByteArray}}
 {{/vars}}
+{{#vars}}
+    {{^required}}
+    {{#isNullable}}
+    } else if (cJSON_IsNull({{classname}}JSON)) {
+        is_{{{name}}}_null = true;
+    {{/isNullable}}
+    {{/required}}
+{{/vars}}
     } else {
         ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
         goto end;
     }
 
-    return OpenAPI_{{classname}}_create({{#vars}}{{{name}}}{{^-last}}, {{/-last}}{{/vars}});
+    return OpenAPI_{{classname}}_create({{#vars}}{{^required}}{{#isNullable}}is_{{{name}}}_null, {{/isNullable}}{{/required}}{{{name}}}{{^-last}}, {{/-last}}{{/vars}});
 end:
 {{#vars}}
     {{#isArray}}

@@ -20,15 +20,15 @@ extern "C" {
 #endif
 
 struct OpenAPI_ue_authentication_ctx_5g_auth_data_s {
-    char *rand;
-    char *hxres_star;
-    char *autn;
+    struct OpenAPI_av5g_aka_s *av5g_aka;
+    bool is_eap_payload_null;
+    char *eap_payload;
 };
 
 OpenAPI_ue_authentication_ctx_5g_auth_data_t *OpenAPI_ue_authentication_ctx_5g_auth_data_create(
-    char *rand,
-    char *hxres_star,
-    char *autn
+    OpenAPI_av5g_aka_t *av5g_aka,
+    bool is_eap_payload_null,
+    char *eap_payload
 );
 void OpenAPI_ue_authentication_ctx_5g_auth_data_free(OpenAPI_ue_authentication_ctx_5g_auth_data_t *ue_authentication_ctx_5g_auth_data);
 OpenAPI_ue_authentication_ctx_5g_auth_data_t *OpenAPI_ue_authentication_ctx_5g_auth_data_parseFromJSON(cJSON *ue_authentication_ctx_5g_auth_dataJSON);

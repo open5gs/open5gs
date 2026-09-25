@@ -46,7 +46,8 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
     OpenAPI_authentication_info_result_t *AuthenticationInfoResult = NULL;
     OpenAPI_authentication_vector_t *AuthenticationVector = NULL;
     OpenAPI_ue_authentication_ctx_t UeAuthenticationCtx;
-    OpenAPI_ue_authentication_ctx_5g_auth_data_t AV5G_AKA;
+    OpenAPI_ue_authentication_ctx_5g_auth_data_t AuthData;
+    OpenAPI_av5g_aka_t AV5G_AKA;
     OpenAPI_map_t *LinksValueScheme = NULL;
     OpenAPI_links_value_schema_t LinksValueSchemeValue;
 
@@ -208,7 +209,9 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
             hxres_star_string, sizeof(hxres_star_string));
     AV5G_AKA.hxres_star = hxres_star_string;
 
-    UeAuthenticationCtx._5g_auth_data = &AV5G_AKA;
+    memset(&AuthData, 0, sizeof(AuthData));
+    AuthData.av5g_aka = &AV5G_AKA;
+    UeAuthenticationCtx._5g_auth_data = &AuthData;
 
     memset(&LinksValueSchemeValue, 0, sizeof(LinksValueSchemeValue));
 

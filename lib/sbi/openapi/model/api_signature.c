@@ -5,13 +5,15 @@
 #include "api_signature.h"
 
 OpenAPI_api_signature_t *OpenAPI_api_signature_create(
-    char *callback_type
+    char *uri,
+    OpenAPI_callback_name_t *callback_name
 )
 {
     OpenAPI_api_signature_t *api_signature_local_var = ogs_malloc(sizeof(OpenAPI_api_signature_t));
     ogs_assert(api_signature_local_var);
 
-    api_signature_local_var->callback_type = callback_type;
+    api_signature_local_var->uri = uri;
+    api_signature_local_var->callback_name = callback_name;
 
     return api_signature_local_var;
 }
@@ -23,13 +25,22 @@ void OpenAPI_api_signature_free(OpenAPI_api_signature_t *api_signature)
     if (NULL == api_signature) {
         return;
     }
-    if (api_signature->callback_type) {
-        ogs_free(api_signature->callback_type);
-        api_signature->callback_type = NULL;
+    if (api_signature->uri) {
+        ogs_free(api_signature->uri);
+        api_signature->uri = NULL;
+    }
+    if (api_signature->callback_name) {
+        OpenAPI_callback_name_free(api_signature->callback_name);
+        api_signature->callback_name = NULL;
     }
     ogs_free(api_signature);
 }
 
+/*
+ * oneOf union (x-open5gs-union): the members are the alternatives of the
+ * original oneOf. Exactly one is set, and it is the JSON value itself
+ * rather than a property of a wrapper object.
+ */
 cJSON *OpenAPI_api_signature_convertToJSON(OpenAPI_api_signature_t *api_signature)
 {
     cJSON *item = NULL;
@@ -40,41 +51,53 @@ cJSON *OpenAPI_api_signature_convertToJSON(OpenAPI_api_signature_t *api_signatur
         return NULL;
     }
 
-    item = cJSON_CreateObject();
-    if (!api_signature->callback_type) {
-        ogs_error("OpenAPI_api_signature_convertToJSON() failed [callback_type]");
+    if ((api_signature->uri != NULL) +
+            (api_signature->callback_name != NULL) != 1) {
+        ogs_error("OpenAPI_api_signature_convertToJSON() failed [ApiSignature]: exactly one alternative must be set");
         return NULL;
     }
-    if (cJSON_AddStringToObject(item, "callbackType", api_signature->callback_type) == NULL) {
-        ogs_error("OpenAPI_api_signature_convertToJSON() failed [callback_type]");
-        goto end;
+
+    if (api_signature->uri) {
+        return cJSON_CreateString(api_signature->uri);
+    }
+    if (api_signature->callback_name) {
+        return OpenAPI_callback_name_convertToJSON(api_signature->callback_name);
     }
 
-end:
-    return item;
+    ogs_error("OpenAPI_api_signature_convertToJSON() failed [ApiSignature]");
+    return NULL;
 }
 
 OpenAPI_api_signature_t *OpenAPI_api_signature_parseFromJSON(cJSON *api_signatureJSON)
 {
-    OpenAPI_api_signature_t *api_signature_local_var = NULL;
     OpenAPI_lnode_t *node = NULL;
-    cJSON *callback_type = NULL;
-    callback_type = cJSON_GetObjectItemCaseSensitive(api_signatureJSON, "callbackType");
-    if (!callback_type) {
-        ogs_error("OpenAPI_api_signature_parseFromJSON() failed [callback_type]");
-        goto end;
-    }
-    if (!cJSON_IsString(callback_type)) {
-        ogs_error("OpenAPI_api_signature_parseFromJSON() failed [callback_type]");
+    char *uri = NULL;
+    OpenAPI_callback_name_t *callback_name = NULL;
+
+    if (cJSON_IsString(api_signatureJSON)) {
+        uri = ogs_strdup(api_signatureJSON->valuestring);
+        ogs_assert(uri);
+    } else if (cJSON_IsObject(api_signatureJSON)) {
+        callback_name = OpenAPI_callback_name_parseFromJSON(api_signatureJSON);
+        if (!callback_name) {
+            ogs_error("OpenAPI_callback_name_parseFromJSON failed [callback_name]");
+            goto end;
+        }
+    } else {
+        ogs_error("OpenAPI_api_signature_parseFromJSON() failed [ApiSignature]");
         goto end;
     }
 
-    api_signature_local_var = OpenAPI_api_signature_create (
-        ogs_strdup(callback_type->valuestring)
-    );
-
-    return api_signature_local_var;
+    return OpenAPI_api_signature_create(uri, callback_name);
 end:
+    if (uri) {
+        ogs_free(uri);
+        uri = NULL;
+    }
+    if (callback_name) {
+        OpenAPI_callback_name_free(callback_name);
+        callback_name = NULL;
+    }
     return NULL;
 }
 

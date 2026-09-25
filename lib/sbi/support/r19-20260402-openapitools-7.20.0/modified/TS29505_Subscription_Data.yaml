@@ -11375,10 +11375,17 @@ components:
           type: string
 
     TraceDataOrSharedTraceDataId:
-      oneOf:
-        - $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
-        - $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/SharedDataId'
-
+#      oneOf:
+#        - $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+#        - $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/SharedDataId'
+#
+      type: object
+      x-open5gs-union: true
+      properties:
+        TraceData:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        SharedDataId:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/SharedDataId'
     PeiUpdateInfo:
       allOf:
         - $ref: 'TS29503_Nudm_UECM.yaml#/components/schemas/PeiUpdateInfo'

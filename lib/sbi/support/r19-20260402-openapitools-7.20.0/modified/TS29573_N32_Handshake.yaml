@@ -214,9 +214,16 @@ components:
 #        - type: string
     ApiSignature:
       description: API URI of the service operation
-      oneOf:
-        - $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
-        - $ref: '#/components/schemas/CallbackName'
+#      oneOf:
+#        - $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+#        - $ref: '#/components/schemas/CallbackName'
+      type: object
+      x-open5gs-union: true
+      properties:
+        Uri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        CallbackName:
+          $ref: '#/components/schemas/CallbackName'
     HttpMethod:
       description: Enumeration of HTTP methods
 #      anyOf:

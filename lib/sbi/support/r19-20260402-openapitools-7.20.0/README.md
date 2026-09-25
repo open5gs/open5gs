@@ -4,16 +4,14 @@
 $ sudo apt install default-jdk
 
 * To install Node.js
-$ sudo apt update
-$ sudo apt install curl
-$ curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-$ sudo apt install nodejs
+$ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+$ nvm install 24
 
 * To install OpenAPI Geneator
-$ sudo npm install @openapitools/openapi-generator-cli -g
+$ npm install @openapitools/openapi-generator-cli -g
 
 $ Run generator
-$ sudo openapi-generator-cli version-manager set 7.20.0
+$ openapi-generator-cli version-manager set 7.20.0
 $ python3 transform.py ./patched ./modified
 $ ./generator.sh
 
