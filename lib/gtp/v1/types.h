@@ -234,10 +234,10 @@ typedef struct ogs_gtp1_gsn_addr_s {
 #define OGS_GTP1_QOS_PROFILE_MAX_LEN 255
 /* TS 24.008 10.5.6.5 Quality of service */
 typedef struct ogs_gtp1_qos_profile_data_extended_bit_rate_s {
-    uint8_t max_bit_rate_uplink;
-    uint8_t guaranteed_bit_rate_uplink;
     uint8_t max_bit_rate_downlink;
     uint8_t guaranteed_bit_rate_downlink;
+    uint8_t max_bit_rate_uplink;
+    uint8_t guaranteed_bit_rate_uplink;
 } __attribute__ ((packed)) ogs_gtp1_qos_profile_data_extended_bit_rate_t;
 typedef struct ogs_gtp1_qos_profile_data_s {
 ED3(uint8_t spare1:2;,
