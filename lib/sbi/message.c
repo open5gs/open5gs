@@ -3507,6 +3507,12 @@ static int parse_multipart(
     boundary = ogs_strndup(http->content+preamble, i-preamble);
     ogs_assert(boundary);
 
+    if (!boundary[0]) {
+        ogs_error("Empty multipart boundary");
+        ogs_free(boundary);
+        return OGS_ERROR;
+    }
+
     parser = multipart_parser_init(boundary, &settings);
     ogs_assert(parser);
 
