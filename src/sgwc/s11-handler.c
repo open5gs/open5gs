@@ -262,7 +262,7 @@ void sgwc_s11_handle_create_session_request(
     /* Set User Location Information */
     if (req->user_location_information.presence == 1) {
         decoded = ogs_gtp2_parse_uli(&uli, &req->user_location_information);
-        if (req->user_location_information.len == decoded) {
+        if (decoded > 0 && req->user_location_information.len == decoded) {
             sgwc_ue->uli_presence = true;
 
             ogs_nas_to_plmn_id(&sgwc_ue->e_tai.plmn_id, &uli.tai.nas_plmn_id);
@@ -625,7 +625,7 @@ void sgwc_s11_handle_modify_bearer_request(
 
     if (req->user_location_information.presence == 1) {
         decoded = ogs_gtp2_parse_uli(&uli, &req->user_location_information);
-        if (req->user_location_information.len == decoded) {
+        if (decoded > 0 && req->user_location_information.len == decoded) {
             sgwc_ue->uli_presence = true;
 
             ogs_nas_to_plmn_id(&sgwc_ue->e_tai.plmn_id, &uli.tai.nas_plmn_id);
@@ -1056,7 +1056,7 @@ void sgwc_s11_handle_create_bearer_response(
 
     if (rsp->user_location_information.presence == 1) {
         decoded = ogs_gtp2_parse_uli(&uli, &rsp->user_location_information);
-        if (rsp->user_location_information.len == decoded) {
+        if (decoded > 0 && rsp->user_location_information.len == decoded) {
             sgwc_ue->uli_presence = true;
 
             ogs_nas_to_plmn_id(&sgwc_ue->e_tai.plmn_id, &uli.tai.nas_plmn_id);

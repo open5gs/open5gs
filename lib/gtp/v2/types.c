@@ -763,6 +763,11 @@ int16_t ogs_gtp2_parse_uli(ogs_gtp2_uli_t *uli, ogs_tlv_octet_t *octet)
 
     memset(uli, 0, sizeof(ogs_gtp2_uli_t));
 
+    if (octet->len < 1) {
+        ogs_error("ULI IE too short [%u]", octet->len);
+        return 0;
+    }
+
     uli->flags = source->flags;
     size++;
 
