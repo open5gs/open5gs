@@ -525,6 +525,20 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                     continue;
                 }
 
+                /*
+                 * Issue #4526
+                 *
+                 * OGS_PFCP_MODIFY_CREATE and OGS_PFCP_MODIFY_REMOVE
+                 * cannot be combined in one modification, see the flag
+                 * check below. Leave the rule in the policy table so
+                 * that the next binding consumes it.
+                 */
+                if (pfcp_flags & OGS_PFCP_MODIFY_REMOVE) {
+                    ogs_warn("Defer QosFlow[Id:%s] creation: "
+                            "removal in progress", pcc_rule->id);
+                    continue;
+                }
+
                 if (ogs_list_count(&sess->bearer_list) >=
                         OGS_MAX_NUM_OF_BEARER) {
                     ogs_error("QosFlow Overflow[%d]",
@@ -605,39 +619,6 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                             pcc_rule->qos.arp.pre_emption_vulnerability);
                     qos_flow->qos.arp = pcc_rule->qos.arp;
                     qos_presence = true;
-                }
-
-                /*
-                 * Check if any MBR/GBR value is non-zero. This indicates that
-                 * the flow might require GBR/MBR-specific handling.
-                 */
-                if (pcc_rule->qos.mbr.downlink || pcc_rule->qos.mbr.uplink ||
-                    pcc_rule->qos.gbr.downlink || pcc_rule->qos.gbr.uplink) {
-
-                    /*
-                     * If new packet filters are being added, or if any MBR/GBR
-                     * field differs from what is currently set, then we must
-                     * update the QoS parameters.
-                     */
-                    if ((ogs_list_count(&qos_flow->pf_to_add_list) > 0) ||
-                        (qos_flow->qos.mbr.downlink != pcc_rule->qos.mbr.downlink) ||
-                        (qos_flow->qos.mbr.uplink != pcc_rule->qos.mbr.uplink) ||
-                        (qos_flow->qos.gbr.downlink != pcc_rule->qos.gbr.downlink) ||
-                        (qos_flow->qos.gbr.uplink != pcc_rule->qos.gbr.uplink)) {
-
-                        /*
-                         * Update the QoS parameters so that the GBR QoS Flow
-                         * Information IE is properly encoded in the upcoming
-                         * signaling (NGAP/PFCP) messages.
-                         */
-                        memcpy(&qos_flow->qos, &pcc_rule->qos, sizeof(ogs_qos_t));
-
-                        /*
-                         * Setting 'qos_presence' to true triggers encoding of
-                         * the QoS IE in the subsequent Bearer Request message.
-                         */
-                        qos_presence = true;
-                    }
                 }
             }
 
@@ -720,11 +701,65 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                 ogs_list_add(&qos_flow->pf_to_add_list, &pf->to_add_node);
             }
 
+            /*
+             * Issue #4526
+             *
+             * This must run after the pf_to_add_list rebuild above.
+             * The list is not emptied at the end of a transaction, so
+             * reading its count before the rebuild sees the packet
+             * filters of the previous transaction.
+             *
+             * Rebuilding the table recreates rules instead of
+             * revisiting them, so this was harmless before. With delta
+             * semantics every authorized rule is revisited on each
+             * notify, and a stale count marks unchanged GBR flows as
+             * modified. The UE then receives a QoS rule create
+             * operation with no packet filters for a QFI it already
+             * has, and its QoS state diverges from the SMF's.
+             */
+            if (qos_flow_created == false &&
+                (pcc_rule->qos.mbr.downlink || pcc_rule->qos.mbr.uplink ||
+                 pcc_rule->qos.gbr.downlink || pcc_rule->qos.gbr.uplink)) {
+
+                /*
+                 * If new packet filters are being added, or if any MBR/GBR
+                 * field differs from what is currently set, then we must
+                 * update the QoS parameters.
+                 */
+                if ((ogs_list_count(&qos_flow->pf_to_add_list) > 0) ||
+                    (qos_flow->qos.mbr.downlink != pcc_rule->qos.mbr.downlink) ||
+                    (qos_flow->qos.mbr.uplink != pcc_rule->qos.mbr.uplink) ||
+                    (qos_flow->qos.gbr.downlink != pcc_rule->qos.gbr.downlink) ||
+                    (qos_flow->qos.gbr.uplink != pcc_rule->qos.gbr.uplink)) {
+
+                    /*
+                     * Update the QoS parameters so that the GBR QoS Flow
+                     * Information IE is properly encoded in the upcoming
+                     * signaling (NGAP/PFCP) messages.
+                     */
+                    memcpy(&qos_flow->qos, &pcc_rule->qos, sizeof(ogs_qos_t));
+
+                    /*
+                     * Setting 'qos_presence' to true triggers encoding of
+                     * the QoS IE in the subsequent Bearer Request message.
+                     */
+                    qos_presence = true;
+                }
+            }
+
             if (qos_flow_created == false &&
                 qos_presence == false &&
                 ogs_list_count(&qos_flow->pf_to_add_list) == 0) {
-                ogs_warn("No need to send 'Session Modification Request'");
-                ogs_warn("qos_flow_created:%d, qos_presence:%d, rule_count:%d",
+                /*
+                 * Issue #4526
+                 *
+                 * Now routine: the policy table holds every authorized
+                 * rule, so an already-bound unmodified rule reaches
+                 * this point on each binding. Not a warning.
+                 */
+                ogs_debug("No need to send 'Session Modification Request'");
+                ogs_debug("qos_flow_created:%d, qos_presence:%d, "
+                    "rule_count:%d",
                     qos_flow_created, qos_presence,
                     ogs_list_count(&qos_flow->pf_to_add_list));
                 continue;
@@ -754,12 +789,25 @@ void smf_qos_flow_binding(smf_sess_t *sess)
                                 &qos_flow->to_modify_node);
             }
         } else if (pcc_rule->type == OGS_PCC_RULE_TYPE_REMOVE) {
+            /*
+             * Issue #4526
+             *
+             * See the INSTALL branch above. Leave the rule in the
+             * policy table so that the next binding consumes it.
+             */
+            if (pfcp_flags & OGS_PFCP_MODIFY_CREATE) {
+                ogs_warn("Defer QosFlow[Id:%s] removal: "
+                        "creation in progress", pcc_rule->id);
+                continue;
+            }
+
             qos_flow = smf_qos_flow_find_by_pcc_rule_id(sess, pcc_rule->id);
 
             if (!qos_flow) {
-                ogs_warn("No need to send 'Session Modification Request'");
-                ogs_warn("  - QosFlow[Id:%s] has already been removed.",
+                ogs_debug("No need to send 'Session Modification Request'");
+                ogs_debug("  - QosFlow[Id:%s] has already been removed.",
                         pcc_rule->id);
+                OGS_PCC_RULE_FREE(pcc_rule);
                 continue;
             }
 
@@ -768,11 +816,31 @@ void smf_qos_flow_binding(smf_sess_t *sess)
             ogs_list_add(&sess->qos_flow_to_modify_list,
                             &qos_flow->to_modify_node);
 
+            /* No longer authorized; the removal is on the modify list */
+            OGS_PCC_RULE_FREE(pcc_rule);
+
         } else {
             ogs_error("Invalid Type[%d]", pcc_rule->type);
             ogs_assert_if_reached();
         }
     }
+
+    /*
+     * Issue #4526
+     *
+     * Compact the consumed REMOVE entries; a freed slot has a NULL id.
+     * What remains is the set of PCC rules that are still authorized.
+     */
+    for (i = 0, j = 0; i < sess->policy.num_of_pcc_rule; i++) {
+        if (sess->policy.pcc_rule[i].id == NULL)
+            continue;
+        if (i != j)
+            sess->policy.pcc_rule[j] = sess->policy.pcc_rule[i];
+        j++;
+    }
+    for (i = j; i < sess->policy.num_of_pcc_rule; i++)
+        memset(&sess->policy.pcc_rule[i], 0, sizeof(ogs_pcc_rule_t));
+    sess->policy.num_of_pcc_rule = j;
 
     check = pfcp_flags & (OGS_PFCP_MODIFY_CREATE|OGS_PFCP_MODIFY_REMOVE);
     if (check != 0 &&

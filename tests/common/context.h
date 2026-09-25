@@ -467,6 +467,13 @@ typedef struct test_sess_s {
 
     ogs_list_t qos_flow_to_modify_list;
 
+    /* From the last PDUSessionResourceModifyRequest received for this
+     * session: how many QoS flows the SMF asked to add or modify, how many
+     * to release, and the QFI of the last add-or-modify item. */
+    int num_of_qos_flow_to_add_or_modify;
+    int num_of_qos_flow_to_release;
+    uint8_t last_qfi_to_add_or_modify;
+
     test_ue_t *test_ue;
 } test_sess_t;
 
