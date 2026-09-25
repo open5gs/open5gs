@@ -28,6 +28,7 @@
 extern "C" {
 #endif
 
+#define OGS_DBI_MAX_AUTH_METHOD_LEN 32
 typedef struct ogs_dbi_auth_info_s {
     uint8_t       k[OGS_KEY_LEN];
     uint8_t       use_opc;
@@ -36,6 +37,11 @@ typedef struct ogs_dbi_auth_info_s {
     uint8_t       amf[OGS_AMF_LEN];
     uint8_t       rand[OGS_RAND_LEN];
     uint64_t      sqn;
+    /*
+     * Optional subscriber authentication method as stored in the DB
+     * ("5G_AKA" or "EAP_AKA_PRIME"); empty means the default (5G-AKA).
+     */
+    char          authentication_method[OGS_DBI_MAX_AUTH_METHOD_LEN];
 } ogs_dbi_auth_info_t;
 
 int ogs_dbi_auth_info(char *supi, ogs_dbi_auth_info_t *auth_info);

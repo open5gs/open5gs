@@ -26,6 +26,8 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_get(ausf_ue_t *ausf_ue, void *data)
 
     OpenAPI_authentication_info_request_t AuthenticationInfoRequest;
     OpenAPI_resynchronization_info_t ResynchronizationInfo;
+    char rand_string[OGS_KEYSTRLEN(OGS_RAND_LEN)];
+    char auts_string[OGS_KEYSTRLEN(OGS_AUTS_LEN)];
 
     ogs_assert(ausf_ue);
 
@@ -47,7 +49,19 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_get(ausf_ue_t *ausf_ue, void *data)
     AuthenticationInfoRequest.ausf_instance_id =
         NF_INSTANCE_ID(ogs_sbi_self()->nf_instance);
 
-    if (data) {
+    if (ausf_ue->eap_resync) {
+        /* EAP-AKA' resync: build the info from the stored RAND and AUTS */
+        memset(&ResynchronizationInfo, 0, sizeof(ResynchronizationInfo));
+        ogs_hex_to_ascii(ausf_ue->rand, OGS_RAND_LEN,
+                rand_string, sizeof(rand_string));
+        ogs_hex_to_ascii(ausf_ue->eap_auts, OGS_AUTS_LEN,
+                auts_string, sizeof(auts_string));
+        ResynchronizationInfo.rand = rand_string;
+        ResynchronizationInfo.auts = auts_string;
+
+        AuthenticationInfoRequest.resynchronization_info =
+            &ResynchronizationInfo;
+    } else if (data) {
         OpenAPI_resynchronization_info_t *recvinfo = data;
 
         memset(&ResynchronizationInfo, 0, sizeof(ResynchronizationInfo));

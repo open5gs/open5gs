@@ -704,9 +704,22 @@ components:
         authType:
           $ref: '#/components/schemas/AuthType'
         5gAuthData:
-          oneOf:
-            - $ref: '#/components/schemas/Av5gAka'
-            - $ref: '#/components/schemas/EapPayload'
+          type: object
+          x-open5gs-union: true
+          description: >
+            oneOf Av5gAka | EapPayload (TS 29.509), expressed as an
+            x-open5gs-union object: the member that is set is serialized as
+            the JSON value itself, i.e. an Av5gAka object for 5G AKA or the
+            base64 EAP packet string for EAP-AKA'/EAP-TLS, matching the
+            oneOf wire format. EapPayload is inlined non-nullable here
+            because a selected oneOf alternative always carries a packet.
+          properties:
+            Av5gAka:
+              $ref: '#/components/schemas/Av5gAka'
+            EapPayload:
+              type: string
+              format: byte
+              description: base64-encoded EAP packet
         _links:
           type: object
           description: >

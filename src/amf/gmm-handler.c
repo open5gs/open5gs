@@ -976,6 +976,37 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
 
     CLEAR_AMF_UE_TIMER(amf_ue->t3560);
 
+    if (amf_ue->auth_type == OpenAPI_auth_type_EAP_AKA_PRIME) {
+        /* EAP-AKA' : relay the EAP-Response from the UE to the AUSF */
+        ogs_nas_eap_message_t *eap_message =
+            &authentication_response->eap_message;
+
+        if (!(authentication_response->presencemask &
+                OGS_NAS_5GS_AUTHENTICATION_RESPONSE_EAP_MESSAGE_PRESENT) ||
+            !eap_message->length || !eap_message->buffer) {
+            ogs_error("[%s] No EAP message in Authentication Response",
+                    amf_ue->suci);
+            return OGS_ERROR;
+        }
+        if (eap_message->length > sizeof(amf_ue->eap)) {
+            ogs_error("[%s] EAP message too long [%d]",
+                    amf_ue->suci, eap_message->length);
+            return OGS_ERROR;
+        }
+
+        memcpy(amf_ue->eap, eap_message->buffer, eap_message->length);
+        amf_ue->eap_len = eap_message->length;
+
+        r = amf_ue_sbi_discover_and_send(
+                OpenAPI_service_name_nausf_auth, NULL,
+                amf_nausf_auth_build_authenticate_eap_session,
+                amf_ue, 0, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+
+        return OGS_OK;
+    }
+
     if (authentication_response_parameter->length != OGS_MAX_RES_LEN) {
         ogs_error("[%s] Invalid length [%d]",
                 amf_ue->suci, authentication_response_parameter->length);

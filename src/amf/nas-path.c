@@ -511,6 +511,37 @@ int nas_5gs_send_authentication_request(amf_ue_t *amf_ue)
     return rv;
 }
 
+int nas_5gs_send_authentication_result(amf_ue_t *amf_ue)
+{
+    int rv;
+    ran_ue_t *ran_ue = NULL;
+    ogs_pkbuf_t *gmmbuf = NULL;
+
+    if (!amf_ue) {
+        ogs_error("UE(amf-ue) context has already been removed");
+        return OGS_NOTFOUND;
+    }
+
+    ran_ue = ran_ue_find_by_id(amf_ue->ran_ue_id);
+    if (!ran_ue) {
+        ogs_error("[%s] NG context has already been removed", amf_ue->supi);
+        return OGS_NOTFOUND;
+    }
+
+    ogs_debug("[%s] Authentication result", amf_ue->suci);
+
+    gmmbuf = gmm_build_authentication_result(amf_ue);
+    if (!gmmbuf) {
+        ogs_error("gmm_build_authentication_result() failed");
+        return OGS_ERROR;
+    }
+
+    rv = nas_5gs_send_to_downlink_nas_transport(ran_ue, amf_ue, gmmbuf);
+    ogs_expect(rv == OGS_OK);
+
+    return rv;
+}
+
 int nas_5gs_send_authentication_reject(amf_ue_t *amf_ue)
 {
     int rv;

@@ -20,6 +20,7 @@
 #include "sbi-path.h"
 #include "nnrf-handler.h"
 #include "nausf-handler.h"
+#include "eap-aka-prime.h"
 
 bool ausf_nausf_auth_handle_authenticate(ausf_ue_t *ausf_ue,
         ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
@@ -113,6 +114,127 @@ bool ausf_nausf_auth_handle_authenticate_confirmation(ausf_ue_t *ausf_ue,
     } else {
         ausf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_SUCCESS;
     }
+
+    r = ausf_sbi_discover_and_send(
+            OpenAPI_service_name_nudm_ueau, NULL,
+            ausf_nudm_ueau_build_result_confirmation_inform,
+            ausf_ue, stream, NULL);
+    ogs_expect(r == OGS_OK);
+    ogs_assert(r != OGS_ERROR);
+
+    return true;
+}
+
+/* Maximum consecutive AKA'-Synchronization-Failures before giving up */
+#define AUSF_EAP_MAX_SYNC_FAILURES 2
+
+/* Respond to the held eap-session request with a terminating EAP-Failure. */
+static bool send_eap_aka_prime_failure(ausf_ue_t *ausf_ue,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+    OpenAPI_eap_session_t EapSession;
+    char *eap_payload;
+
+    ausf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_FAILURE;
+
+    eap_payload = ausf_eap_aka_prime_build_result(
+            AUSF_EAP_CODE_FAILURE, ausf_ue->eap_id);
+
+    memset(&EapSession, 0, sizeof(EapSession));
+    EapSession.eap_payload = eap_payload;
+    EapSession.auth_result = OpenAPI_auth_result_AUTHENTICATION_FAILURE;
+    EapSession.supi = ausf_ue->supi;
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    sendmsg.EapSession = &EapSession;
+
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+    ogs_assert(response);
+    ogs_assert(true == ogs_sbi_server_send_response(stream, response));
+
+    if (eap_payload)
+        ogs_free(eap_payload);
+
+    return true;
+}
+
+bool ausf_nausf_auth_handle_authenticate_eap_session(ausf_ue_t *ausf_ue,
+        ogs_sbi_stream_t *stream, ogs_sbi_message_t *recvmsg)
+{
+    OpenAPI_eap_session_t *EapSession = NULL;
+    bool success = false;
+    uint8_t auts[OGS_AUTS_LEN];
+    int subtype, r;
+
+    ogs_assert(ausf_ue);
+    ogs_assert(stream);
+    ogs_assert(recvmsg);
+
+    EapSession = recvmsg->EapSession;
+    if (!EapSession || !EapSession->eap_payload) {
+        ogs_error("[%s] No EapSession.eapPayload", ausf_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No EapSession.eapPayload", ausf_ue->suci, NULL));
+        return false;
+    }
+
+    subtype = ausf_eap_aka_prime_handle_response(
+            ausf_ue, EapSession->eap_payload, &success, auts);
+    if (subtype < 0) {
+        ogs_error("[%s] Malformed EAP-Response", ausf_ue->suci);
+        ogs_assert(true ==
+            ogs_sbi_server_send_error(stream, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "Malformed EAP-Response", ausf_ue->suci, NULL));
+        return false;
+    }
+
+    if (subtype == AUSF_EAP_AKA_SUBTYPE_SYNCHRONIZATION_FAILURE) {
+        /*
+         * The UE reported an SQN synchronization failure. Bounded by
+         * AUSF_EAP_MAX_SYNC_FAILURES to avoid an endless re-challenge loop
+         * (TS 33.501 6.1.3.3); otherwise fetch a fresh authentication
+         * vector from the UDM with the AUTS and re-challenge (the UDM
+         * response handler answers this request with authResult ONGOING).
+         */
+        ausf_ue->eap_sync_count++;
+        if (ausf_ue->eap_sync_count > AUSF_EAP_MAX_SYNC_FAILURES) {
+            ogs_error("[%s] Too many EAP-AKA' synchronization failures",
+                    ausf_ue->suci);
+            return send_eap_aka_prime_failure(ausf_ue, stream, recvmsg);
+        }
+
+        ogs_info("[%s] EAP-AKA' synchronization failure, resyncing",
+                ausf_ue->suci);
+        memcpy(ausf_ue->eap_auts, auts, OGS_AUTS_LEN);
+        ausf_ue->eap_resync = true;
+
+        r = ausf_sbi_discover_and_send(
+                OpenAPI_service_name_nudm_ueau, NULL,
+                ausf_nudm_ueau_build_get,
+                ausf_ue, stream, NULL);
+        ogs_expect(r == OGS_OK);
+        ogs_assert(r != OGS_ERROR);
+
+        return true;
+    }
+
+    /* Any non-sync response clears the synchronization-failure counter. */
+    ausf_ue->eap_sync_count = 0;
+
+    if (!success) {
+        /*
+         * AKA'-Challenge with a bad AT_MAC/AT_RES, or an
+         * Authentication-Reject / Client-Error: terminate with EAP-Failure.
+         */
+        ogs_warn("[%s] EAP-AKA' authentication failed (subtype %d)",
+                ausf_ue->suci, subtype);
+        return send_eap_aka_prime_failure(ausf_ue, stream, recvmsg);
+    }
+
+    ausf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_SUCCESS;
 
     r = ausf_sbi_discover_and_send(
             OpenAPI_service_name_nudm_ueau, NULL,

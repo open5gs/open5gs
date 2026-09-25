@@ -105,6 +105,8 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     if (message->ConfirmationDataResponse)
         OpenAPI_confirmation_data_response_free(
                 message->ConfirmationDataResponse);
+    if (message->EapSession)
+        OpenAPI_eap_session_free(message->EapSession);
     if (message->AuthEvent)
         OpenAPI_auth_event_free(message->AuthEvent);
     if (message->Amf3GppAccessRegistration)
@@ -1584,6 +1586,9 @@ static char *build_json(ogs_sbi_message_t *message)
         item = OpenAPI_confirmation_data_response_convertToJSON(
                 message->ConfirmationDataResponse);
         ogs_assert(item);
+    } else if (message->EapSession) {
+        item = OpenAPI_eap_session_convertToJSON(message->EapSession);
+        ogs_assert(item);
     } else if (message->AuthEvent) {
         item = OpenAPI_auth_event_convertToJSON(message->AuthEvent);
         ogs_assert(item);
@@ -1971,22 +1976,36 @@ static int parse_json(ogs_sbi_message_t *message,
             CASE(OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS)
                 SWITCH(message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    if (message->res_status == 0) {
-                        message->AuthenticationInfo =
-                            OpenAPI_authentication_info_parseFromJSON(item);
-                        if (!message->AuthenticationInfo) {
+                    SWITCH(message->h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_EAP_SESSION)
+                        /* EAP-AKA' (TS 29.509): both the EAP-Response
+                         * request and the server's response are an
+                         * EapSession. */
+                        message->EapSession =
+                            OpenAPI_eap_session_parseFromJSON(item);
+                        if (!message->EapSession) {
                             rv = OGS_ERROR;
                             ogs_error("JSON parse error");
                         }
-                    } else if (message->res_status ==
-                            OGS_SBI_HTTP_STATUS_CREATED) {
-                        message->UeAuthenticationCtx =
-                        OpenAPI_ue_authentication_ctx_parseFromJSON(item);
-                        if (!message->UeAuthenticationCtx) {
-                            rv = OGS_ERROR;
-                            ogs_error("JSON parse error");
+                        break;
+                    DEFAULT
+                        if (message->res_status == 0) {
+                            message->AuthenticationInfo =
+                                OpenAPI_authentication_info_parseFromJSON(item);
+                            if (!message->AuthenticationInfo) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        } else if (message->res_status ==
+                                OGS_SBI_HTTP_STATUS_CREATED) {
+                            message->UeAuthenticationCtx =
+                            OpenAPI_ue_authentication_ctx_parseFromJSON(item);
+                            if (!message->UeAuthenticationCtx) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
                         }
-                    }
+                    END
                     break;
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
                     if (message->res_status == 0) {
@@ -1996,7 +2015,8 @@ static int parse_json(ogs_sbi_message_t *message,
                             rv = OGS_ERROR;
                             ogs_error("JSON parse error");
                         }
-                    } else if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                    } else if (message->res_status ==
+                            OGS_SBI_HTTP_STATUS_OK) {
                         message->ConfirmationDataResponse =
                             OpenAPI_confirmation_data_response_parseFromJSON(
                                     item);
