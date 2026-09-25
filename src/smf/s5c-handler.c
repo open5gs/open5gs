@@ -222,13 +222,12 @@ uint8_t smf_s5c_handle_create_session_request(
 
     if (sess->gtp_rat_type == OGS_GTP2_RAT_TYPE_EUTRAN) {
         /* User Location Inforation is mandatory only for E-UTRAN */
-        ogs_assert(req->user_location_information.presence);
         if (req->user_location_information.presence == 0) {
             ogs_error("No User Location Information(ULI)");
             return OGS_GTP2_CAUSE_MANDATORY_IE_MISSING;
         }
         decoded = ogs_gtp2_parse_uli(&uli, &req->user_location_information);
-        if (req->user_location_information.len != decoded) {
+        if (decoded == 0 || req->user_location_information.len != decoded) {
             ogs_error("Invalid User Location Information(ULI)");
             return OGS_GTP2_CAUSE_MANDATORY_IE_INCORRECT;
         }
