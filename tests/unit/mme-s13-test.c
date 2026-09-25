@@ -100,10 +100,10 @@ static void s13_test_equipment_status(abts_case *tc, void *data)
                 OGS_DIAM_S13_EQUIPMENT_BLACKLIST, &cfg));
 
     /* Unrecognized status is not a verdict: failure_action decides */
-    cfg.failure_action = MME_EIR_ALLOW;
+    cfg.failure_action = OGS_EIR_ACTION_ALLOW;
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED,
             mme_s13_equipment_status_cause(3, &cfg));
-    cfg.failure_action = MME_EIR_REJECT;
+    cfg.failure_action = OGS_EIR_ACTION_REJECT;
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
             mme_s13_equipment_status_cause(0xffffffff, &cfg));
 }
@@ -127,11 +127,11 @@ static void s13_test_diameter_result_mapping(abts_case *tc, void *data)
 
     /* Transport / protocol / permanent errors carry no verdict:
      * failure_action, #17 when rejecting */
-    cfg.failure_action = MME_EIR_ALLOW;
+    cfg.failure_action = OGS_EIR_ACTION_ALLOW;
     msg_result(&m, ER_DIAMETER_UNABLE_TO_DELIVER);
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED,
             mme_s13_message_cause(&m, &cfg));
-    cfg.failure_action = MME_EIR_REJECT;
+    cfg.failure_action = OGS_EIR_ACTION_REJECT;
     msg_result(&m, ER_DIAMETER_UNABLE_TO_DELIVER);
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
             mme_s13_message_cause(&m, &cfg));
@@ -144,17 +144,17 @@ static void s13_test_diameter_result_mapping(abts_case *tc, void *data)
 
     /* 5422 in Experimental-Result is a verdict: "unknown to the EIR",
      * unknown_action, #7 when rejecting */
-    cfg.unknown_action = MME_EIR_ALLOW;
+    cfg.unknown_action = OGS_EIR_ACTION_ALLOW;
     msg_exp_result(&m, OGS_DIAM_S13_ERROR_EQUIPMENT_UNKNOWN);
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED,
             mme_s13_message_cause(&m, &cfg));
-    cfg.unknown_action = MME_EIR_REJECT;
+    cfg.unknown_action = OGS_EIR_ACTION_REJECT;
     msg_exp_result(&m, OGS_DIAM_S13_ERROR_EQUIPMENT_UNKNOWN);
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED,
             mme_s13_message_cause(&m, &cfg));
 
     /* ...and only there: 5422 in Result-Code is not a verdict */
-    cfg.failure_action = MME_EIR_REJECT;
+    cfg.failure_action = OGS_EIR_ACTION_REJECT;
     msg_result(&m, OGS_DIAM_S13_ERROR_EQUIPMENT_UNKNOWN);
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
             mme_s13_message_cause(&m, &cfg));
@@ -171,10 +171,10 @@ static void s13_test_diameter_result_mapping(abts_case *tc, void *data)
             mme_s13_message_cause(&m, &cfg));
 
     /* Missing IMEISV: missing_pei_action, #7 when rejecting */
-    cfg.missing_pei_action = MME_EIR_ALLOW;
+    cfg.missing_pei_action = OGS_EIR_ACTION_ALLOW;
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED,
             mme_s13_missing_pei_cause(&cfg));
-    cfg.missing_pei_action = MME_EIR_REJECT;
+    cfg.missing_pei_action = OGS_EIR_ACTION_REJECT;
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED,
             mme_s13_missing_pei_cause(&cfg));
 }
@@ -188,8 +188,8 @@ static void s13_test_handle_eca(abts_case *tc, void *data)
     mme_ue = ogs_calloc(1, sizeof(*mme_ue)); /* only asserted non-NULL */
     ABTS_PTR_NOTNULL(tc, mme_ue);
 
-    mme_self()->eir.unknown_action = MME_EIR_ALLOW;
-    mme_self()->eir.failure_action = MME_EIR_ALLOW;
+    mme_self()->eir.unknown_action = OGS_EIR_ACTION_ALLOW;
+    mme_self()->eir.failure_action = OGS_EIR_ACTION_ALLOW;
 
     msg_result(&m, ER_DIAMETER_SUCCESS);
     m.eca_message.equipment_status_code = OGS_DIAM_S13_EQUIPMENT_WHITELIST;
@@ -202,36 +202,36 @@ static void s13_test_handle_eca(abts_case *tc, void *data)
             mme_s13_handle_eca(mme_ue, &m));
 
     /* Blacklisted: #6 whatever the policies say */
-    mme_self()->eir.unknown_action = MME_EIR_REJECT;
-    mme_self()->eir.failure_action = MME_EIR_REJECT;
+    mme_self()->eir.unknown_action = OGS_EIR_ACTION_REJECT;
+    mme_self()->eir.failure_action = OGS_EIR_ACTION_REJECT;
     msg_result(&m, ER_DIAMETER_SUCCESS);
     m.eca_message.equipment_status_code = OGS_DIAM_S13_EQUIPMENT_BLACKLIST;
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_ILLEGAL_ME,
             mme_s13_handle_eca(mme_ue, &m));
-    mme_self()->eir.unknown_action = MME_EIR_ALLOW;
-    mme_self()->eir.failure_action = MME_EIR_ALLOW;
+    mme_self()->eir.unknown_action = OGS_EIR_ACTION_ALLOW;
+    mme_self()->eir.failure_action = OGS_EIR_ACTION_ALLOW;
 
     /* An error Result-Code wins over whatever Equipment-Status is left */
     msg_result(&m, ER_DIAMETER_UNABLE_TO_DELIVER);
     m.eca_message.equipment_status_code = OGS_DIAM_S13_EQUIPMENT_WHITELIST;
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED,
             mme_s13_handle_eca(mme_ue, &m));
-    mme_self()->eir.failure_action = MME_EIR_REJECT;
+    mme_self()->eir.failure_action = OGS_EIR_ACTION_REJECT;
     msg_result(&m, ER_DIAMETER_UNABLE_TO_DELIVER);
     m.eca_message.equipment_status_code = OGS_DIAM_S13_EQUIPMENT_WHITELIST;
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
             mme_s13_handle_eca(mme_ue, &m));
-    mme_self()->eir.failure_action = MME_EIR_ALLOW;
+    mme_self()->eir.failure_action = OGS_EIR_ACTION_ALLOW;
 
     /* Unknown equipment follows mme_self()->eir.unknown_action */
     msg_exp_result(&m, OGS_DIAM_S13_ERROR_EQUIPMENT_UNKNOWN);
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED,
             mme_s13_handle_eca(mme_ue, &m));
-    mme_self()->eir.unknown_action = MME_EIR_REJECT;
+    mme_self()->eir.unknown_action = OGS_EIR_ACTION_REJECT;
     msg_exp_result(&m, OGS_DIAM_S13_ERROR_EQUIPMENT_UNKNOWN);
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED,
             mme_s13_handle_eca(mme_ue, &m));
-    mme_self()->eir.unknown_action = MME_EIR_ALLOW;
+    mme_self()->eir.unknown_action = OGS_EIR_ACTION_ALLOW;
 
     ogs_free(mme_ue);
 }
@@ -256,11 +256,11 @@ static void s13_test_timeout_follows_failure_action(abts_case *tc, void *data)
     mme_ue = ogs_calloc(1, sizeof(*mme_ue));
     ABTS_PTR_NOTNULL(tc, mme_ue);
 
-    mme_self()->eir.failure_action = MME_EIR_REJECT;
+    mme_self()->eir.failure_action = OGS_EIR_ACTION_REJECT;
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_NETWORK_FAILURE,
             mme_s13_handle_eca(mme_ue, m));
 
-    mme_self()->eir.failure_action = MME_EIR_ALLOW;
+    mme_self()->eir.failure_action = OGS_EIR_ACTION_ALLOW;
     ABTS_INT_EQUAL(tc, OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED,
             mme_s13_handle_eca(mme_ue, m));
 

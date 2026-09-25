@@ -2726,8 +2726,8 @@ static void gmm_security_mode_completed(ogs_fsm_t *s, amf_ue_t *amf_ue)
         ogs_error("[%s] No usable PEI for 5G-EIR "
                 "[missing_pei_action:%s]", amf_ue->supi,
                 amf_self()->eir.missing_pei_action ==
-                    AMF_EIR_ACTION_REJECT ? "reject" : "allow");
-        cause = amf_self()->eir.missing_pei_action == AMF_EIR_ACTION_REJECT ?
+                    OGS_EIR_ACTION_REJECT ? "reject" : "allow");
+        cause = amf_self()->eir.missing_pei_action == OGS_EIR_ACTION_REJECT ?
             OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED :
             OGS_5GMM_CAUSE_REQUEST_ACCEPTED;
     }

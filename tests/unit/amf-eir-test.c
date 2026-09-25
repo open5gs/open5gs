@@ -59,8 +59,8 @@ static void eir_test_equipment_status(abts_case *tc, void *data)
     amf_ue_t *amf_ue;
     ogs_sbi_message_t message;
     OpenAPI_eir_response_data_t response;
-    amf_eir_action_e saved_unknown = amf_self()->eir.unknown_action;
-    amf_eir_action_e saved_failure = amf_self()->eir.failure_action;
+    ogs_eir_action_e saved_unknown = amf_self()->eir.unknown_action;
+    ogs_eir_action_e saved_failure = amf_self()->eir.failure_action;
 
     amf_ue = ogs_calloc(1, sizeof(*amf_ue));
     ABTS_PTR_NOTNULL(tc, amf_ue);
@@ -71,8 +71,8 @@ static void eir_test_equipment_status(abts_case *tc, void *data)
     message.res_status = OGS_SBI_HTTP_STATUS_OK;
     message.EirResponseData = &response;
 
-    amf_self()->eir.unknown_action = AMF_EIR_ACTION_REJECT;
-    amf_self()->eir.failure_action = AMF_EIR_ACTION_REJECT;
+    amf_self()->eir.unknown_action = OGS_EIR_ACTION_REJECT;
+    amf_self()->eir.failure_action = OGS_EIR_ACTION_REJECT;
     response.status = OpenAPI_equipment_status_WHITELISTED;
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_REQUEST_ACCEPTED,
             amf_n5geir_eic_handle_equipment_status(amf_ue, &message));
@@ -83,8 +83,8 @@ static void eir_test_equipment_status(abts_case *tc, void *data)
     response.status = OpenAPI_equipment_status_BLACKLISTED;
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_ILLEGAL_ME,
             amf_n5geir_eic_handle_equipment_status(amf_ue, &message));
-    amf_self()->eir.unknown_action = AMF_EIR_ACTION_ALLOW;
-    amf_self()->eir.failure_action = AMF_EIR_ACTION_ALLOW;
+    amf_self()->eir.unknown_action = OGS_EIR_ACTION_ALLOW;
+    amf_self()->eir.failure_action = OGS_EIR_ACTION_ALLOW;
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_ILLEGAL_ME,
             amf_n5geir_eic_handle_equipment_status(amf_ue, &message));
 
@@ -98,8 +98,8 @@ static void eir_test_unknown_and_failure(abts_case *tc, void *data)
     amf_ue_t *amf_ue;
     ogs_sbi_message_t message;
     OpenAPI_problem_details_t problem;
-    amf_eir_action_e saved_unknown = amf_self()->eir.unknown_action;
-    amf_eir_action_e saved_failure = amf_self()->eir.failure_action;
+    ogs_eir_action_e saved_unknown = amf_self()->eir.unknown_action;
+    ogs_eir_action_e saved_failure = amf_self()->eir.failure_action;
 
     amf_ue = ogs_calloc(1, sizeof(*amf_ue));
     ABTS_PTR_NOTNULL(tc, amf_ue);
@@ -112,12 +112,12 @@ static void eir_test_unknown_and_failure(abts_case *tc, void *data)
     problem.cause = "ERROR_EQUIPMENT_UNKNOWN";
 
     /* A recognized unknown-equipment response ignores failure_action. */
-    amf_self()->eir.unknown_action = AMF_EIR_ACTION_ALLOW;
-    amf_self()->eir.failure_action = AMF_EIR_ACTION_REJECT;
+    amf_self()->eir.unknown_action = OGS_EIR_ACTION_ALLOW;
+    amf_self()->eir.failure_action = OGS_EIR_ACTION_REJECT;
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_REQUEST_ACCEPTED,
             amf_n5geir_eic_handle_equipment_status(amf_ue, &message));
-    amf_self()->eir.unknown_action = AMF_EIR_ACTION_REJECT;
-    amf_self()->eir.failure_action = AMF_EIR_ACTION_ALLOW;
+    amf_self()->eir.unknown_action = OGS_EIR_ACTION_REJECT;
+    amf_self()->eir.failure_action = OGS_EIR_ACTION_ALLOW;
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED,
             amf_n5geir_eic_handle_equipment_status(amf_ue, &message));
 
@@ -125,7 +125,7 @@ static void eir_test_unknown_and_failure(abts_case *tc, void *data)
     message.ProblemDetails = NULL;
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_REQUEST_ACCEPTED,
             amf_n5geir_eic_handle_equipment_status(amf_ue, &message));
-    amf_self()->eir.failure_action = AMF_EIR_ACTION_REJECT;
+    amf_self()->eir.failure_action = OGS_EIR_ACTION_REJECT;
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
             amf_n5geir_eic_handle_equipment_status(amf_ue, &message));
 
@@ -134,7 +134,7 @@ static void eir_test_unknown_and_failure(abts_case *tc, void *data)
             amf_n5geir_eic_handle_equipment_status(amf_ue, &message));
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED,
             amf_n5geir_eic_failure_cause());
-    amf_self()->eir.failure_action = AMF_EIR_ACTION_ALLOW;
+    amf_self()->eir.failure_action = OGS_EIR_ACTION_ALLOW;
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_REQUEST_ACCEPTED,
             amf_n5geir_eic_handle_equipment_status(amf_ue, &message));
     ABTS_INT_EQUAL(tc, OGS_5GMM_CAUSE_REQUEST_ACCEPTED,

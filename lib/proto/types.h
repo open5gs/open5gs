@@ -317,6 +317,13 @@ bool ogs_id_get_type_value(const char *str, char **type, char **value);
 /* Numeric validation logs the reason for invalid input at WARNING level. */
 bool ogs_bcd_string_is_valid(const char *bcd, int max_len);
 /*
+ * Check len ASCII decimal digits without requiring a NUL terminator.
+ * NULL or invalid input returns false; an embedded NUL is not a digit.
+ * The caller supplies positive minimum/maximum digit counts.
+ */
+bool ogs_bcd_string_is_valid_n(
+        const char *bcd, size_t len, int min_len, int max_len);
+/*
  * Check "<type>-<decimal digits>" without allocation.
  * NULL or malformed input logs a warning and returns false.
  * Bounds apply to the digit count;

@@ -400,10 +400,18 @@ cleanup:
     return false;
 }
 
-static bool bcd_string_is_valid(
-        const char *bcd, int min_len, int max_len)
+bool ogs_bcd_string_is_valid_n(
+        const char *bcd, size_t len, int min_len, int max_len)
 {
-    size_t i, len = strlen(bcd);
+    size_t i;
+
+    ogs_assert(min_len > 0);
+    ogs_assert(max_len >= min_len);
+
+    if (!bcd) {
+        ogs_warn("Missing BCD string");
+        return false;
+    }
 
     if (len < (size_t)min_len || len > (size_t)max_len) {
         ogs_warn("Invalid BCD string length [%zu], expected [%d..%d]",
@@ -427,7 +435,7 @@ bool ogs_bcd_string_is_valid(const char *bcd, int max_len)
     ogs_assert(bcd);
     ogs_assert(max_len > 0);
 
-    return bcd_string_is_valid(bcd, 1, max_len);
+    return ogs_bcd_string_is_valid_n(bcd, strlen(bcd), 1, max_len);
 }
 
 bool ogs_id_bcd_is_valid(
@@ -450,7 +458,8 @@ bool ogs_id_bcd_is_valid(
         return false;
     }
 
-    return bcd_string_is_valid(str + type_len + 1, min_len, max_len);
+    str += type_len + 1;
+    return ogs_bcd_string_is_valid_n(str, strlen(str), min_len, max_len);
 }
 
 bool ogs_pei_is_valid(const char *pei)

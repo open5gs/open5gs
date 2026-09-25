@@ -29,6 +29,7 @@ testunit_unit_sources = files('''
     mme-dns-select-test.c
     mme-s13-test.c
     amf-eir-test.c
+    eir-config-test.c
     ipfw-test.c
     pfcp-rule-test.c
 '''.split())

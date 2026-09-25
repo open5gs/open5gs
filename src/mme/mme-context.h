@@ -76,11 +76,6 @@ typedef struct served_gummei_s {
     uint8_t         mme_code[CODE_PER_MME];
 } served_gummei_t;
 
-typedef enum {
-    MME_EIR_ALLOW = 0,      /* default on calloc: fail-open */
-    MME_EIR_REJECT,
-} mme_eir_action_e;
-
 /* Control EIR (S13) functionality */
 typedef struct mme_eir_s {
     bool enabled;
@@ -90,13 +85,13 @@ typedef struct mme_eir_s {
     /* Whitelisted and greylisted equipment is always allowed, blacklisted
      * always rejected (no knob, as in the AMF). Only "unknown to the EIR"
      * (DIAMETER_ERROR_EQUIPMENT_UNKNOWN) is operator policy. */
-    mme_eir_action_e unknown_action;
+    ogs_eir_action_e unknown_action;
 
     uint32_t    timeout;             /* s, ECR answer deadline. On expiry
                                        * failure_action applies. 0 = none */
-    mme_eir_action_e failure_action;  /* No verdict: EIR unreachable, error
+    ogs_eir_action_e failure_action;  /* No verdict: EIR unreachable, error
                                        * answer, or no answer within timeout */
-    mme_eir_action_e missing_pei_action; /* no usable IMEISV to check */
+    ogs_eir_action_e missing_pei_action; /* no usable IMEISV to check */
 } mme_eir_t;
 
 typedef struct mme_context_s {

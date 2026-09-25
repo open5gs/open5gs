@@ -694,6 +694,29 @@ int ogs_app_parse_local_conf(const char *local)
     return OGS_OK;
 }
 
+int ogs_app_parse_eir_action(
+        ogs_yaml_iter_t *iter, const char *key, ogs_eir_action_e *action)
+{
+    const char *value;
+
+    ogs_assert(iter);
+    ogs_assert(key);
+    ogs_assert(action);
+
+    value = ogs_yaml_iter_value(iter);
+
+    if (!value || !strcmp(value, "allow"))
+        *action = OGS_EIR_ACTION_ALLOW;
+    else if (!strcmp(value, "reject"))
+        *action = OGS_EIR_ACTION_REJECT;
+    else {
+        ogs_error("invalid %s `%s` (expected `allow` or `reject`)", key, value);
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
 int ogs_app_parse_timer_seconds(
         const char *local, ogs_yaml_iter_t *parent, ogs_time_t *seconds)
 {

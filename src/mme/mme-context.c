@@ -228,9 +228,9 @@ static int mme_context_prepare(void)
     self.dns.cache_ttl = 60;
     self.dns.guard_timeout = 3000;
 
-    self.eir.unknown_action     = MME_EIR_ALLOW;
-    self.eir.failure_action     = MME_EIR_ALLOW;
-    self.eir.missing_pei_action = MME_EIR_ALLOW;
+    self.eir.unknown_action     = OGS_EIR_ACTION_ALLOW;
+    self.eir.failure_action     = OGS_EIR_ACTION_ALLOW;
+    self.eir.missing_pei_action = OGS_EIR_ACTION_ALLOW;
     self.eir.timeout            = 3;
 
     return OGS_OK;
@@ -446,25 +446,6 @@ static int parse_rai(ogs_yaml_iter_t *parent_iter, ogs_nas_rai_t *rai)
 
     if (!lai_parsed || !rac_parsed)
         return OGS_ERROR;
-    return OGS_OK;
-}
-
-/* Same contract as amf_context_parse_eir_action(): an invalid value is a
- * configuration error, not a silently applied default. */
-static int mme_context_parse_eir_action(
-        ogs_yaml_iter_t *iter, const char *key, mme_eir_action_e *action)
-{
-    const char *value = ogs_yaml_iter_value(iter);
-
-    if (!value || !strcmp(value, "allow"))
-        *action = MME_EIR_ALLOW;
-    else if (!strcmp(value, "reject"))
-        *action = MME_EIR_REJECT;
-    else {
-        ogs_error("invalid %s `%s` (expected `allow` or `reject`)", key, value);
-        return OGS_ERROR;
-    }
-
     return OGS_OK;
 }
 
@@ -2543,15 +2524,15 @@ int mme_context_parse_config(void)
                             const char *v = ogs_yaml_iter_value(&eir_iter);
                             if (v) self.eir.timeout = atoi(v);
                         } else if (!strcmp(eir_key, "unknown_action")) {
-                            rv = mme_context_parse_eir_action(&eir_iter,
+                            rv = ogs_app_parse_eir_action(&eir_iter,
                                     eir_key, &self.eir.unknown_action);
                             if (rv != OGS_OK) return rv;
                         } else if (!strcmp(eir_key, "failure_action")) {
-                            rv = mme_context_parse_eir_action(&eir_iter,
+                            rv = ogs_app_parse_eir_action(&eir_iter,
                                     eir_key, &self.eir.failure_action);
                             if (rv != OGS_OK) return rv;
                         } else if (!strcmp(eir_key, "missing_pei_action")) {
-                            rv = mme_context_parse_eir_action(&eir_iter,
+                            rv = ogs_app_parse_eir_action(&eir_iter,
                                     eir_key, &self.eir.missing_pei_action);
                             if (rv != OGS_OK) return rv;
                         } else

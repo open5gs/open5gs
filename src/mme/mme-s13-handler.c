@@ -44,8 +44,8 @@ bool mme_s13_imeisv_is_usable(const char *imeisv_bcd)
      * digit) + SVN (2), TS 23.003 6.2.2. Anything else cannot be split.
      */
     return imeisv_bcd &&
-        strlen(imeisv_bcd) == OGS_MAX_IMEISV_BCD_LEN &&
-        ogs_imeisv_bcd_is_valid(imeisv_bcd);
+        ogs_bcd_string_is_valid_n(imeisv_bcd, strlen(imeisv_bcd),
+                OGS_MAX_IMEISV_BCD_LEN, OGS_MAX_IMEISV_BCD_LEN);
 }
 
 void mme_s13_start_check(enb_ue_t *enb_ue, mme_ue_t *mme_ue)
@@ -112,8 +112,9 @@ ogs_nas_emm_cause_t mme_s13_failure_cause(const mme_eir_t *eir_config)
     ogs_assert(eir_config);
 
     ogs_warn("Applying EIR failure_action[%s]",
-            eir_config->failure_action == MME_EIR_REJECT ? "reject" : "allow");
-    return eir_config->failure_action == MME_EIR_REJECT ?
+            eir_config->failure_action == OGS_EIR_ACTION_REJECT ?
+                "reject" : "allow");
+    return eir_config->failure_action == OGS_EIR_ACTION_REJECT ?
         OGS_NAS_EMM_CAUSE_NETWORK_FAILURE :
         OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
 }
@@ -123,9 +124,9 @@ ogs_nas_emm_cause_t mme_s13_missing_pei_cause(const mme_eir_t *eir_config)
     ogs_assert(eir_config);
 
     ogs_error("No usable IMEISV for the EIR [missing_pei_action:%s]",
-            eir_config->missing_pei_action == MME_EIR_REJECT ?
+            eir_config->missing_pei_action == OGS_EIR_ACTION_REJECT ?
                 "reject" : "allow");
-    return eir_config->missing_pei_action == MME_EIR_REJECT ?
+    return eir_config->missing_pei_action == OGS_EIR_ACTION_REJECT ?
         OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED :
         OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
 }
@@ -164,9 +165,9 @@ ogs_nas_emm_cause_t mme_s13_message_cause(
     if (s13_message->exp_err &&
         *s13_message->exp_err == OGS_DIAM_S13_ERROR_EQUIPMENT_UNKNOWN) {
         ogs_info("Unknown equipment [unknown_action:%s]",
-                eir_config->unknown_action == MME_EIR_REJECT ?
+                eir_config->unknown_action == OGS_EIR_ACTION_REJECT ?
                     "reject" : "allow");
-        return eir_config->unknown_action == MME_EIR_REJECT ?
+        return eir_config->unknown_action == OGS_EIR_ACTION_REJECT ?
             OGS_NAS_EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED :
             OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED;
     }

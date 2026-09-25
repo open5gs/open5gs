@@ -53,11 +53,6 @@ typedef enum {
     REGISTRATION_STATUS_UPDATE_NEW_AMF_STATE,
 } amf_ue_context_transfer_state_t;
 
-typedef enum {
-    AMF_EIR_ACTION_ALLOW = 0,
-    AMF_EIR_ACTION_REJECT,
-} amf_eir_action_e;
-
 typedef struct amf_context_s {
     /* Served GUAMI */
     int num_of_served_guami;
@@ -137,9 +132,9 @@ typedef struct amf_context_s {
 
     struct {
         bool enabled;
-        amf_eir_action_e unknown_action;
-        amf_eir_action_e failure_action;
-        amf_eir_action_e missing_pei_action;
+        ogs_eir_action_e unknown_action;
+        ogs_eir_action_e failure_action;
+        ogs_eir_action_e missing_pei_action;
     } eir;
 
 } amf_context_t;

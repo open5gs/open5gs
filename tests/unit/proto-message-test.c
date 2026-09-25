@@ -173,6 +173,33 @@ static void pei_format(abts_case *tc, void *data)
                 ogs_pei_is_valid(cases[i].value) == cases[i].valid);
 }
 
+static void bcd_explicit_length(abts_case *tc, void *data)
+{
+    const char digits[] = { '0', '0', '1' };
+    const char suffix[] = { '0', '1', 'x' };
+    const char embedded_nul[] = { '0', '\0', '1' };
+    const char invalid_byte[] = { '0', '\xff', '1' };
+
+    /* The supplied span need not be terminated and may end before a suffix. */
+    ABTS_TRUE(tc, ogs_bcd_string_is_valid_n(digits, sizeof(digits), 3, 3));
+    ABTS_TRUE(tc, ogs_bcd_string_is_valid_n(suffix, 2, 1, 3));
+    ABTS_TRUE(tc, !ogs_bcd_string_is_valid_n(suffix, sizeof(suffix), 1, 3));
+
+    /* Check both inclusive bounds and reject lengths outside them. */
+    ABTS_TRUE(tc, ogs_bcd_string_is_valid_n(digits, 1, 1, 3));
+    ABTS_TRUE(tc, ogs_bcd_string_is_valid_n(digits, 3, 1, 3));
+    ABTS_TRUE(tc, !ogs_bcd_string_is_valid_n(digits, 2, 3, 3));
+    ABTS_TRUE(tc, !ogs_bcd_string_is_valid_n(digits, 3, 1, 2));
+    ABTS_TRUE(tc, !ogs_bcd_string_is_valid_n(digits, 0, 1, 3));
+
+    ABTS_TRUE(tc, !ogs_bcd_string_is_valid_n(NULL, 0, 1, 3));
+    ABTS_TRUE(tc, !ogs_bcd_string_is_valid_n(NULL, 3, 1, 3));
+    ABTS_TRUE(tc, !ogs_bcd_string_is_valid_n(
+                embedded_nul, sizeof(embedded_nul), 1, 3));
+    ABTS_TRUE(tc, !ogs_bcd_string_is_valid_n(
+                invalid_byte, sizeof(invalid_byte), 1, 3));
+}
+
 static void legacy_identity_bounds(abts_case *tc, void *data)
 {
     /* Keep the existing BCD APIs' nonempty, maximum-length-only contract. */
@@ -338,6 +365,7 @@ abts_suite *test_proto_message(abts_suite *suite)
     for (i = 0; i < OGS_ARRAY_SIZE(identity_cases); i++)
         abts_run_test(suite, identity_format, (void *)&identity_cases[i]);
     abts_run_test(suite, pei_format, NULL);
+    abts_run_test(suite, bcd_explicit_length, NULL);
     abts_run_test(suite, legacy_identity_bounds, NULL);
     abts_run_test(suite, framed_route_format, NULL);
     abts_run_test(suite, framed_route_classful, NULL);

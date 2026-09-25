@@ -101,20 +101,16 @@ static int eir_ogs_diam_s13_ecr_cb(struct msg **msg, struct avp *avp,
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
-        if (!hdr->avp_value->os.data || hdr->avp_value->os.len == 0 ||
-                hdr->avp_value->os.len > OGS_MAX_IMSI_BCD_LEN) {
-            ogs_error("Invalid User-Name AVP length [%u]",
+        if (!ogs_bcd_string_is_valid_n(
+                    (const char *)hdr->avp_value->os.data,
+                    hdr->avp_value->os.len, 1, OGS_MAX_IMSI_BCD_LEN)) {
+            ogs_error("Invalid User-Name IMSI [len:%u]",
                     (unsigned)hdr->avp_value->os.len);
             base_error = "DIAMETER_INVALID_AVP_VALUE";
             goto out;
         }
         ogs_cpystrn(imsi_bcd, (const char *)hdr->avp_value->os.data,
                 hdr->avp_value->os.len + 1);
-        if (!ogs_imsi_bcd_is_valid(imsi_bcd)) {
-            ogs_error("Invalid User-Name IMSI");
-            base_error = "DIAMETER_INVALID_AVP_VALUE";
-            goto out;
-        }
         ogs_snprintf(supi, sizeof(supi), "%s-%s",
                 OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
     }
