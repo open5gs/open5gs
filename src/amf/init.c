@@ -81,37 +81,6 @@ int amf_initialize(void)
 
 static ogs_timer_t *t_termination_holding = NULL;
 
-static void event_cleanup(void *data)
-{
-    amf_event_t *e = data;
-
-    ogs_assert(e);
-
-    switch (e->h.id) {
-    case OGS_EVENT_SBI_CLIENT:
-        ogs_sbi_response_free(e->h.sbi.response);
-        break;
-    case AMF_EVENT_NGAP_LO_ACCEPT:
-        ogs_sock_destroy(e->ngap.sock);
-        break;
-    case AMF_EVENT_NGAP_TIMER:
-        if (e->h.timer_id == AMF_TIMER_NG_DELAYED_SEND)
-            ogs_timer_delete(e->timer);
-        break;
-    default:
-        break;
-    }
-
-    /* SBI server requests are owned and freed by their streams. */
-    if (e->h.id >= AMF_EVENT_BASE) {
-        if (e->ngap.addr)
-            ogs_free(e->ngap.addr);
-        if (e->pkbuf)
-            ogs_pkbuf_free(e->pkbuf);
-    }
-    ogs_event_free(e);
-}
-
 static void event_termination(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -145,9 +114,6 @@ void amf_terminate(void)
 
     ngap_close();
     amf_sbi_close();
-
-    /* Release queued events without dispatching into finalized NF FSMs. */
-    ogs_queue_drain(ogs_app()->queue, event_cleanup);
 
     ogs_metrics_context_close(ogs_metrics_self());
 

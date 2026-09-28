@@ -166,64 +166,12 @@ static void test_queue_timeout(abts_case *tc, void *data)
     ogs_queue_destroy(q);
 }
 
-typedef struct {
-    abts_case *tc;
-    unsigned int order;
-    unsigned int *next;
-} queue_cleanup_item_t;
-
-static void queue_cleanup(void *data)
-{
-    queue_cleanup_item_t *item = data;
-
-    ABTS_INT_EQUAL(item->tc, item->order, *item->next);
-    (*item->next)++;
-}
-
-static void test_queue_drain(abts_case *tc, void *data)
-{
-    ogs_queue_t *q = ogs_queue_create(3);
-    queue_cleanup_item_t items[4];
-    unsigned int i, next = 1;
-    void *value = NULL;
-
-    ABTS_PTR_NOTNULL(tc, q);
-    for (i = 0; i < 4; i++) {
-        items[i].tc = tc;
-        items[i].order = i;
-        items[i].next = &next;
-    }
-
-    for (i = 0; i < 3; i++)
-        ABTS_INT_EQUAL(tc, OGS_OK, ogs_queue_trypush(q, &items[i]));
-    ABTS_INT_EQUAL(tc, OGS_OK, ogs_queue_trypop(q, &value));
-    ABTS_TRUE(tc, value == &items[0]);
-    /* Wrap around before termination, leaving three queued items. */
-    ABTS_INT_EQUAL(tc, OGS_OK, ogs_queue_trypush(q, &items[3]));
-    ABTS_INT_EQUAL(tc, OGS_OK, ogs_queue_term(q));
-
-    ABTS_INT_EQUAL(tc, OGS_DONE, ogs_queue_trypop(q, &value));
-    ABTS_INT_EQUAL(tc, OGS_DONE, ogs_queue_push(q, &items[0]));
-    ABTS_INT_EQUAL(tc, OGS_DONE, ogs_queue_trypush(q, &items[0]));
-    ABTS_INT_EQUAL(tc, OGS_DONE,
-            ogs_queue_timedpush(q, &items[0], ogs_time_from_msec(1)));
-
-    ogs_queue_drain(q, queue_cleanup);
-    ABTS_INT_EQUAL(tc, 4, next);
-    ABTS_INT_EQUAL(tc, 0, ogs_queue_size(q));
-    ogs_queue_drain(q, queue_cleanup);
-    ABTS_INT_EQUAL(tc, 4, next);
-    ABTS_INT_EQUAL(tc, OGS_DONE, ogs_queue_trypush(q, &items[0]));
-    ogs_queue_destroy(q);
-}
-
 abts_suite *test_queue(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test_queue_producer_consumer, NULL);
     abts_run_test(suite, test_queue_timeout, NULL);
-    abts_run_test(suite, test_queue_drain, NULL);
 
     return suite;
 }

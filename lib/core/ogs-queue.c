@@ -114,12 +114,11 @@ static int queue_push(ogs_queue_t *queue, void *data, ogs_time_t timeout)
 {
     int rv;
 
-    ogs_thread_mutex_lock(&queue->one_big_mutex);
-
     if (queue->terminated) {
-        ogs_thread_mutex_unlock(&queue->one_big_mutex);
         return OGS_DONE; /* no more elements ever again */
     }
+
+    ogs_thread_mutex_lock(&queue->one_big_mutex);
 
     if (ogs_queue_full(queue)) {
         if (!timeout) {
@@ -143,15 +142,16 @@ static int queue_push(ogs_queue_t *queue, void *data, ogs_time_t timeout)
                 return rv;
             }
         }
-        if (queue->terminated) {
-            ogs_thread_mutex_unlock(&queue->one_big_mutex);
-            return OGS_DONE;
-        }
-        /* If we wake up and it's still full, then we were interrupted */
+        /* If we wake up and it's still empty, then we were interrupted */
         if (ogs_queue_full(queue)) {
             ogs_warn("queue full (intr)");
             ogs_thread_mutex_unlock(&queue->one_big_mutex);
-            return OGS_ERROR;
+            if (queue->terminated) {
+                return OGS_DONE; /* no more elements ever again */
+            }
+            else {
+                return OGS_ERROR;
+            }
         }
     }
 
@@ -208,12 +208,11 @@ static int queue_pop(ogs_queue_t *queue, void **data, ogs_time_t timeout)
 {
     int rv;
 
-    ogs_thread_mutex_lock(&queue->one_big_mutex);
-
     if (queue->terminated) {
-        ogs_thread_mutex_unlock(&queue->one_big_mutex);
         return OGS_DONE; /* no more elements ever again */
     }
+
+    ogs_thread_mutex_lock(&queue->one_big_mutex);
 
     /* Keep waiting until we wake up and find that the queue is not empty. */
     if (ogs_queue_empty(queue)) {
@@ -238,15 +237,15 @@ static int queue_pop(ogs_queue_t *queue, void **data, ogs_time_t timeout)
                 return rv;
             }
         }
-        if (queue->terminated) {
-            ogs_thread_mutex_unlock(&queue->one_big_mutex);
-            return OGS_DONE;
-        }
         /* If we wake up and it's still empty, then we were interrupted */
         if (ogs_queue_empty(queue)) {
             ogs_warn("queue empty (intr)");
             ogs_thread_mutex_unlock(&queue->one_big_mutex);
-            return OGS_ERROR;
+            if (queue->terminated) {
+                return OGS_DONE; /* no more elements ever again */
+            } else {
+                return OGS_ERROR;
+            }
         }
     } 
 
@@ -307,28 +306,3 @@ int ogs_queue_term(ogs_queue_t *queue)
     return ogs_queue_interrupt_all(queue);
 }
 
-void ogs_queue_drain(ogs_queue_t *queue, void (*cleanup)(void *data))
-{
-    void *data;
-
-    ogs_assert(queue);
-    ogs_assert(cleanup);
-
-    ogs_thread_mutex_lock(&queue->one_big_mutex);
-    ogs_assert(queue->terminated);
-
-    while (!ogs_queue_empty(queue)) {
-        data = queue->data[queue->out];
-        queue->data[queue->out] = NULL;
-        queue->nelts--;
-        queue->out++;
-        if (queue->out >= queue->bounds)
-            queue->out -= queue->bounds;
-
-        ogs_thread_mutex_unlock(&queue->one_big_mutex);
-        cleanup(data);
-        ogs_thread_mutex_lock(&queue->one_big_mutex);
-    }
-
-    ogs_thread_mutex_unlock(&queue->one_big_mutex);
-}

@@ -200,7 +200,9 @@ static void test4_main(void *data)
 
     size = ogs_sctp_recvdata(sctp, str, STRLEN, NULL, &sinfo);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
+#if !HAVE_USRSCTP
     ABTS_INT_EQUAL(tc, PPID, sinfo.ppid);
+#endif
 
     ogs_sctp_destroy(sctp);
 

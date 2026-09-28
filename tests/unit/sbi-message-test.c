@@ -1201,12 +1201,12 @@ static void sbi_message_test12(abts_case *tc, void *data)
 static void sbi_message_test13(abts_case *tc, void *data)
 {
     const char *cases[] = {
-        ("{\"authType\":\"5G_AKA\",\"5gAuthData\":{"
+        "{\"authType\":\"5G_AKA\",\"5gAuthData\":{"
         "\"rand\":\"00112233445566778899aabbccddeeff\","
         "\"hxresStar\":\"00112233445566778899aabbccddeeff\","
-        "\"autn\":\"00112233445566778899aabbccddeeff\"},\"_links\":{}}"),
-        ("{\"authType\":\"EAP_AKA_PRIME\","
-        "\"5gAuthData\":\"cGF5bG9hZA==\",\"_links\":{}}"),
+        "\"autn\":\"00112233445566778899aabbccddeeff\"},\"_links\":{}}",
+        "{\"authType\":\"EAP_AKA_PRIME\","
+        "\"5gAuthData\":\"cGF5bG9hZA==\",\"_links\":{}}",
         "{\"authType\":\"EAP_AKA_PRIME\",\"5gAuthData\":null,\"_links\":{}}"
     };
     OpenAPI_ue_authentication_ctx_t *ctx, *copy;
