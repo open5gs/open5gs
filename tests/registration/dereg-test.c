@@ -1896,6 +1896,7 @@ static void test7_issues4209_func(abts_case *tc, void *data)
     ogs_pkbuf_t *recvbuf;
     ogs_ngap_message_t message;
     int i;
+    uint64_t ran_ue_ngap_id, amf_ue_ngap_id;
 
     ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
     test_ue_t *test_ue = NULL;
@@ -2095,6 +2096,33 @@ static void test7_issues4209_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /*
+     * The first release is sent after the AMF checks the deregistration
+     * request. Wait for it before a new InitialUEMessage can advance
+     * the uplink NAS COUNT ahead of the pending deregistration.
+     * Receiving the old release changes the test UE's NGAP IDs, so keep
+     * the deregistration connection's IDs for the next InitialUEMessage.
+     */
+    ran_ue_ngap_id = test_ue->ran_ue_ngap_id;
+    amf_ue_ngap_id = test_ue->amf_ue_ngap_id;
+
+    /* OLD Receive UEContextReleaseCommand */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_UEContextRelease,
+            test_ue->ngap_procedure_code);
+
+    /* Send OLD UEContextReleaseComplete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    test_ue->ran_ue_ngap_id = ran_ue_ngap_id;
+    test_ue->amf_ue_ngap_id = amf_ue_ngap_id;
+
     /* Send Registration request */
     memset(&test_ue->registration_request_param, 0,
             sizeof(test_ue->registration_request_param));
@@ -2112,20 +2140,6 @@ static void test7_issues4209_func(abts_case *tc, void *data)
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
                 NGAP_RRCEstablishmentCause_mo_Signalling, false, true);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* OLD Receive UEContextReleaseCommand */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-    ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_UEContextRelease,
-            test_ue->ngap_procedure_code);
-
-    /* Send OLD UEContextReleaseComplete */
-    sendbuf = testngap_build_ue_context_release_complete(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -2253,6 +2267,33 @@ static void test7_issues4209_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /*
+     * The first release is sent after the AMF checks the deregistration
+     * request. Wait for it before a new InitialUEMessage can advance
+     * the uplink NAS COUNT ahead of the pending deregistration.
+     * Receiving the old release changes the test UE's NGAP IDs, so keep
+     * the deregistration connection's IDs for the next InitialUEMessage.
+     */
+    ran_ue_ngap_id = test_ue->ran_ue_ngap_id;
+    amf_ue_ngap_id = test_ue->amf_ue_ngap_id;
+
+    /* OLD Receive UEContextReleaseCommand */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_UEContextRelease,
+            test_ue->ngap_procedure_code);
+
+    /* Send OLD UEContextReleaseComplete */
+    sendbuf = testngap_build_ue_context_release_complete(test_ue);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    test_ue->ran_ue_ngap_id = ran_ue_ngap_id;
+    test_ue->amf_ue_ngap_id = amf_ue_ngap_id;
+
     /* Send Registration request
      * - Update Registration request type
      * - Uplink Data Status */
@@ -2275,20 +2316,6 @@ static void test7_issues4209_func(abts_case *tc, void *data)
 
     sendbuf = testngap_build_initial_ue_message(test_ue, gmmbuf,
                 NGAP_RRCEstablishmentCause_mo_Signalling, true, true);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* OLD Receive UEContextReleaseCommand */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-    ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_UEContextRelease,
-            test_ue->ngap_procedure_code);
-
-    /* Send OLD UEContextReleaseComplete */
-    sendbuf = testngap_build_ue_context_release_complete(test_ue);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

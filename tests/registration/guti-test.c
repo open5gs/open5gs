@@ -1247,6 +1247,7 @@ static void test_issues2839_func(abts_case *tc, void *data)
     ogs_ngap_message_t message;
     int i;
 
+    uint64_t old_ran_ue_ngap_id, old_amf_ue_ngap_id;
     uint64_t ran_ue_ngap_id; /* gNB-UE-NGAP-ID received from gNB */
     uint64_t amf_ue_ngap_id; /* AMF-UE-NGAP-ID received from AMF */
 
@@ -1393,6 +1394,14 @@ static void test_issues2839_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Receive Configuration update command */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_DownlinkNASTransport,
+            test_ue->ngap_procedure_code);
+
     /* Send PDU session establishment request */
     sess = test_sess_add_by_dnn_and_psi(test_ue, "internet", 5);
     ogs_assert(sess);
@@ -1414,6 +1423,25 @@ static void test_issues2839_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /*
+     * Wait until the AMF has processed the old connection's UL NAS
+     * before a new InitialUEMessage can put that connection on hold.
+     * Keep its NGAP setup response pending while registering again.
+     */
+    old_ran_ue_ngap_id = test_ue->ran_ue_ngap_id;
+    old_amf_ue_ngap_id = test_ue->amf_ue_ngap_id;
+
+    /* Receive PDUSessionResourceSetupRequest +
+     * DL NAS transport + PDU session establishment accept */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc,
+            NGAP_ProcedureCode_id_PDUSessionResourceSetup,
+            test_ue->ngap_procedure_code);
+    ABTS_INT_EQUAL(tc, old_ran_ue_ngap_id, test_ue->ran_ue_ngap_id);
+    ABTS_INT_EQUAL(tc, old_amf_ue_ngap_id, test_ue->amf_ue_ngap_id);
 
     /* Send Registration request
      * - Update Registration request type
@@ -1439,14 +1467,6 @@ static void test_issues2839_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Configuration update command */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
-    ABTS_INT_EQUAL(tc,
-            NGAP_ProcedureCode_id_DownlinkNASTransport,
-            test_ue->ngap_procedure_code);
-
     /* OLD Receive UEContextReleaseCommand */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
@@ -1468,15 +1488,11 @@ static void test_issues2839_func(abts_case *tc, void *data)
     ran_ue_ngap_id = test_ue->ran_ue_ngap_id;
     amf_ue_ngap_id = test_ue->amf_ue_ngap_id;
 
-    /* Receive PDUSessionResourceSetupRequest +
-     * DL NAS transport +
-     * PDU session establishment accept */
-    recvbuf = testgnb_ngap_read(ngap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    testngap_recv(test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, old_ran_ue_ngap_id + 1, ran_ue_ngap_id);
+    ABTS_INT_EQUAL(tc, old_amf_ue_ngap_id + 1, amf_ue_ngap_id);
 
-    ABTS_INT_EQUAL(tc, ran_ue_ngap_id, test_ue->ran_ue_ngap_id + 1);
-    ABTS_INT_EQUAL(tc, amf_ue_ngap_id, test_ue->amf_ue_ngap_id + 1);
+    test_ue->ran_ue_ngap_id = old_ran_ue_ngap_id;
+    test_ue->amf_ue_ngap_id = old_amf_ue_ngap_id;
 
     /* Send OLD UEContextReleaseComplete */
     sendbuf = testngap_build_ue_context_release_complete(test_ue);
