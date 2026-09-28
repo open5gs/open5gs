@@ -1,0 +1,238 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-akma
+  version: 1.1.0-alpha.4
+  description: |
+    API for Naanf_AKMA.  
+    © 2023, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).  
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.535 V18.3.0; 5G System; AKMA Anchor Services.
+  url: 'https://www.3gpp.org/ftp/Specs/archive/29_series/29.535/'
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - naanf-akma
+servers:
+  - url: '{apiRoot}/naanf-akma/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501.
+
+
+paths:
+  /register-anchorkey:
+    post:
+      summary: Store AKMA related key material.
+      operationId: RegisterAKMAKey
+      tags:
+        - Register the AKMA related key material
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - naanf-akma
+        - oAuth2ClientCredentials:
+          - naanf-akma
+          - naanf-akma:anchorkey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AkmaKeyInfo'
+      responses:
+        '200':
+          description: The requested information was returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AkmaKeyInfo'
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /retrieve-applicationkey:
+    post:
+      summary: Request to retrieve AKMA Application Key information.
+      operationId: GetAKMAAPPKeyMaterial
+      tags:
+        - Retrieve the AKMA Application key material (Collection)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - naanf-akma
+        - oAuth2ClientCredentials:
+          - naanf-akma
+          - naanf-akma:applicationkeyget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'TS29522_AKMA.yaml#/components/schemas/AkmaAfKeyRequest'
+      responses:
+        '200':
+          description: The requested information was returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29522_AKMA.yaml#/components/schemas/AkmaAfKeyData'
+        '204':
+          description: No Content (The requested AKMA Application material does not exist.)
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /remove-context:
+    post:
+      summary: Request to remove the AKMA related key material.
+      operationId: RemoveContext
+      tags:
+        - Remove the AKMA Application key material (deletion)
+      security:
+        - {}
+        - oAuth2ClientCredentials:
+          - naanf-akma
+        - oAuth2ClientCredentials:
+          - naanf-akma
+          - naanf-akma:anchorkey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CtxRemove'
+      responses:
+        '204':
+          description: No Content (The AKMA context for the UE has been removed successfully.)
+        '307':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/307'
+        '308':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/308'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '502':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/502'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            naanf_akma: Access to the Naanf_AKMA API
+            naanf_akma:anchorkey: >
+              Access to service operations applying to store or remove the AKMA related key 
+              material.
+            naanf_akma:applicationkeyget: >
+              Access to service operations applying to request the AKMA Application Key information
+              for the UE.
+            naanf-akma:applicationkeyget:supi-access: >
+              Return SUPI in the AKMA Application Key information for the UE.
+
+  schemas: 
+    AkmaKeyInfo:
+      description: Represents AKMA related key material.
+      type: object
+      properties:
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        aKId:
+          $ref: 'TS29522_AKMA.yaml#/components/schemas/AKId'
+        kAkma:
+          type: string
+      required:
+        - aKId
+        - kAkma
+      oneOf:
+        - required: [supi]
+        - required: [gpsi]
+
+    CtxRemove:
+      description: >
+        Parameters to request to delete the AKMA context for the UE, the "supi" attribute shall be 
+        included.
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
