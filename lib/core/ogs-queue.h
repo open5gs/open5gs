@@ -62,6 +62,9 @@ unsigned int ogs_queue_size(ogs_queue_t *queue);
 int ogs_queue_interrupt_all(ogs_queue_t *queue);
 int ogs_queue_term(ogs_queue_t *queue);
 
+/* Discard pending items after termination and after all consumers stop. */
+void ogs_queue_drain(ogs_queue_t *queue, void (*cleanup)(void *data));
+
 
 #ifdef __cplusplus
 }
