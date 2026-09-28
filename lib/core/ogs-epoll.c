@@ -143,6 +143,21 @@ static int epoll_add(ogs_poll_t *poll)
     ee.data.fd = poll->fd;
 
     rv = epoll_ctl(context->epfd, op, poll->fd, &ee);
+    if (rv < 0 && op == EPOLL_CTL_MOD && ogs_socket_errno == ENOENT) {
+        /* The descriptor was closed without being removed from the pollset
+         * and its number reused, so the map entry is stale. Insert it. */
+        map->read = (poll->when & OGS_POLLIN) ? poll : NULL;
+        map->write = (poll->when & OGS_POLLOUT) ? poll : NULL;
+
+        ee.events = 0;
+        if (map->read)
+            ee.events |= (EPOLLIN|EPOLLRDHUP);
+        if (map->write)
+            ee.events |= EPOLLOUT;
+
+        op = EPOLL_CTL_ADD;
+        rv = epoll_ctl(context->epfd, op, poll->fd, &ee);
+    }
     if (rv < 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                 "epoll_ctl[%d] failed(%d)", op, rv);
