@@ -163,21 +163,15 @@ static bool fixture_begin(abts_case *tc)
     bson_error_t error;
     bson_t *query = BCON_NEW("pei", "{", "$in", "[",
             BCON_UTF8(TEST_EIR_PEI), BCON_UTF8(TEST_EIR_IMEI), "]", "}");
-    int64_t count;
+    bool removed;
 
-#if MONGOC_CHECK_VERSION(1, 11, 0)
-    count = mongoc_collection_count_documents(
-            ogs_mongoc()->collection.eir, query, NULL, NULL, NULL, &error);
-#else
-    count = mongoc_collection_count(ogs_mongoc()->collection.eir,
-            MONGOC_QUERY_NONE, query, 0, 0, NULL, &error);
-#endif
-
+    /* Recover fixtures left by an interrupted run, including per-SUPI rows. */
+    removed = mongoc_collection_delete_many(
+            ogs_mongoc()->collection.eir, query, NULL, NULL, &error);
     bson_destroy(query);
-    if (count != 0)
-        ABTS_FAIL(tc, count < 0 ? error.message :
-                "EIR DB fixture PEI already exists; existing records kept");
-    return count == 0;
+    if (!removed)
+        ABTS_FAIL(tc, error.message);
+    return removed;
 }
 
 static bool fixture_write(abts_case *tc, fixture_t *fixture,
@@ -227,6 +221,39 @@ static void fixture_end(abts_case *tc, fixture_t *fixture)
             ABTS_FAIL(tc, error.message);
         bson_destroy(query);
     }
+}
+
+static void recover_interrupted_fixture(abts_case *tc, void *data)
+{
+    fixture_t fixture = {0};
+    ogs_dbi_eir_record_t record;
+    int rv;
+
+    if (!fixture_begin(tc))
+        return;
+    if (!fixture_insert(tc, &fixture, GENERIC("WHITELISTED"), NULL) ||
+            !fixture_insert(tc, &fixture, SPECIFIC("BLACKLISTED"), NULL) ||
+            !fixture_insert(tc, &fixture,
+                "{\"pei\":\"" TEST_EIR_IMEI
+                "\",\"status\":\"WHITELISTED\"}", NULL))
+        goto cleanup;
+
+    /* Start the next case without running the previous case's cleanup. */
+    if (!fixture_begin(tc) || !fixture_begin(tc))
+        goto cleanup;
+
+    rv = ogs_dbi_eir_check_equipment(NULL, TEST_EIR_PEI, &record);
+    ABTS_INT_EQUAL(tc, OGS_NOTFOUND, rv);
+    ogs_dbi_eir_record_free(&record);
+    rv = ogs_dbi_eir_check_equipment(TEST_EIR_SUPI, TEST_EIR_PEI, &record);
+    ABTS_INT_EQUAL(tc, OGS_NOTFOUND, rv);
+    ogs_dbi_eir_record_free(&record);
+    rv = ogs_dbi_eir_check_equipment(NULL, TEST_EIR_IMEI, &record);
+    ABTS_INT_EQUAL(tc, OGS_NOTFOUND, rv);
+    ogs_dbi_eir_record_free(&record);
+
+cleanup:
+    fixture_end(tc, &fixture);
 }
 
 static void equipment_lookup(abts_case *tc, void *data)
@@ -385,6 +412,7 @@ abts_suite *test_eir_dbi(abts_suite *suite)
     unsigned int i;
 
     suite = ADD_SUITE(suite)
+    abts_run_test(suite, recover_interrupted_fixture, NULL);
     for (i = 0; i < OGS_ARRAY_SIZE(write_cases); i++)
         abts_run_test(suite, database_constraints, (void *)&write_cases[i]);
     abts_run_test(suite, repeated_database_init, NULL);

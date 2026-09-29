@@ -66,13 +66,29 @@ typedef struct fixture_s {
     unsigned int count;
 } fixture_t;
 
-static void fixture_insert(abts_case *tc, fixture_t *fixture,
+static bool fixture_begin(abts_case *tc)
+{
+    bson_t *query = BCON_NEW("pei", BCON_UTF8(ATTACH_TEST_PEI));
+    bson_error_t error;
+    bool removed;
+
+    /* Clear generic and subscriber-specific records left by interrupted runs. */
+    removed = mongoc_collection_delete_many(ogs_mongoc()->collection.eir,
+            query, NULL, NULL, &error);
+    bson_destroy(query);
+    if (!removed)
+        ABTS_FAIL(tc, error.message);
+    return removed;
+}
+
+static bool fixture_insert(abts_case *tc, fixture_t *fixture,
         const char *pei, const char *supi, const char *status)
 {
     bson_error_t error;
     bson_t *document = NULL;
     bson_t *opts = NULL;
     unsigned int index = fixture->count++;
+    bool inserted;
 
     ogs_assert(index < OGS_ARRAY_SIZE(fixture->ids));
     bson_oid_init(&fixture->ids[index], NULL);
@@ -89,12 +105,14 @@ static void fixture_insert(abts_case *tc, fixture_t *fixture,
     /* Exercise failure_action against a real EIR Diameter error. */
     if (!strcmp(status, "INVALID"))
         opts = BCON_NEW("bypassDocumentValidation", BCON_BOOL(true));
-    if (!mongoc_collection_insert_one(ogs_mongoc()->collection.eir,
-                document, opts, NULL, &error))
+    inserted = mongoc_collection_insert_one(ogs_mongoc()->collection.eir,
+            document, opts, NULL, &error);
+    if (!inserted)
         ABTS_FAIL(tc, error.message);
     if (opts)
         bson_destroy(opts);
     bson_destroy(document);
+    return inserted;
 }
 
 static void fixture_remove(abts_case *tc, fixture_t *fixture)
@@ -119,8 +137,8 @@ static void attach_case(abts_case *tc, void *data)
     ogs_nas_emm_cause_t expected_cause = test_eir_allow_policy() ?
         test->allow_policy_cause : test->reject_policy_cause;
     int rv;
-    ogs_socknode_t *s1ap;
-    ogs_socknode_t *gtpu;
+    ogs_socknode_t *s1ap = NULL;
+    ogs_socknode_t *gtpu = NULL;
     ogs_pkbuf_t *emmbuf;
     ogs_pkbuf_t *esmbuf;
     ogs_pkbuf_t *sendbuf;
@@ -136,6 +154,7 @@ static void attach_case(abts_case *tc, void *data)
     bson_t *doc = NULL;
     fixture_t fixture;
     char *supi = NULL;
+    bool subscriber_inserted = false;
 
     ogs_debug("EIR attach: %s", test->name);
     memset(&fixture, 0, sizeof(fixture));
@@ -169,6 +188,32 @@ static void attach_case(abts_case *tc, void *data)
     supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, test_ue->imsi);
     ogs_assert(supi);
 
+    /* Reset even cases that intentionally have no equipment record. */
+    if (!fixture_begin(tc))
+        goto cleanup;
+
+    /********** Insert Subscriber in Database */
+    doc = test_db_new_simple(test_ue);
+    ABTS_PTR_NOTNULL(tc, doc);
+    if (!doc)
+        goto cleanup;
+    rv = test_db_insert_ue(test_ue, doc);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    if (rv != OGS_OK)
+        goto cleanup;
+    subscriber_inserted = true;
+
+    /********** Insert equipment records in the eir collection */
+    if (test->generic_status &&
+            !fixture_insert(tc, &fixture,
+                ATTACH_TEST_PEI, NULL, test->generic_status))
+        goto cleanup;
+    if (test->specific_status &&
+            !fixture_insert(tc, &fixture, ATTACH_TEST_PEI,
+                test->specific_other_supi ? ATTACH_TEST_OTHER_SUPI : supi,
+                test->specific_status))
+        goto cleanup;
+
     /* eNB connects to MME */
     s1ap = tests1ap_client(AF_INET);
     ABTS_PTR_NOTNULL(tc, s1ap);
@@ -188,20 +233,6 @@ static void attach_case(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     tests1ap_recv(NULL, recvbuf);
-
-    /********** Insert Subscriber in Database */
-    doc = test_db_new_simple(test_ue);
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_INT_EQUAL(tc, OGS_OK, test_db_insert_ue(test_ue, doc));
-
-    /********** Insert equipment records in the eir collection */
-    if (test->generic_status)
-        fixture_insert(tc, &fixture,
-                ATTACH_TEST_PEI, NULL, test->generic_status);
-    if (test->specific_status)
-        fixture_insert(tc, &fixture, ATTACH_TEST_PEI,
-                test->specific_other_supi ? ATTACH_TEST_OTHER_SUPI : supi,
-                test->specific_status);
 
     /* Send Attach Request */
     memset(&sess->pdn_connectivity_param,
@@ -380,13 +411,16 @@ cleanup:
 
     /********** Remove equipment records and Subscriber in Database */
     fixture_remove(tc, &fixture);
-    ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue));
+    if (subscriber_inserted)
+        ABTS_INT_EQUAL(tc, OGS_OK, test_db_remove_ue(test_ue));
 
     /* eNB disonncect from MME */
-    testenb_s1ap_close(s1ap);
+    if (s1ap)
+        testenb_s1ap_close(s1ap);
 
     /* eNB disonncect from SGW */
-    test_gtpu_close(gtpu);
+    if (gtpu)
+        test_gtpu_close(gtpu);
 
     ogs_free(supi);
     test_ue_remove(test_ue);

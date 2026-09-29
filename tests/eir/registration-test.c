@@ -52,29 +52,21 @@ typedef struct registration_fixture_s {
     unsigned int count;
 } registration_fixture_t;
 
-/* Refuse existing identities; the test must never replace another fixture. */
-static bool identity_unused(abts_case *tc, mongoc_collection_t *collection,
+/* Reset this test identity so interrupted runs do not affect the next case. */
+static bool clear_identity(abts_case *tc, mongoc_collection_t *collection,
         const char *key, const char *value)
 {
     bson_t *query = BCON_NEW(key, BCON_UTF8(value));
-    mongoc_cursor_t *cursor;
-    const bson_t *document;
     bson_error_t error;
-    bool found, failed;
+    bool removed;
 
     ogs_assert(query);
-    cursor = mongoc_collection_find_with_opts(collection, query, NULL, NULL);
-    ogs_assert(cursor);
-    found = mongoc_cursor_next(cursor, &document);
-    failed = mongoc_cursor_error(cursor, &error);
-    if (failed) {
+    removed = mongoc_collection_delete_many(
+            collection, query, NULL, NULL, &error);
+    if (!removed)
         ABTS_FAIL(tc, error.message);
-    } else if (found) {
-        ABTS_FAIL(tc, "EIR registration fixture identity already exists");
-    }
-    mongoc_cursor_destroy(cursor);
     bson_destroy(query);
-    return !failed && !found;
+    return removed;
 }
 
 /* Each document is removed by its owned _id, including after a failed step. */
@@ -121,8 +113,8 @@ static bool seed_registration(abts_case *tc, test_ue_t *ue, const char *pei,
     mongoc_collection_t *subscriber = ogs_mongoc()->collection.subscriber;
     mongoc_collection_t *eir = ogs_mongoc()->collection.eir;
 
-    if (!identity_unused(tc, subscriber, "imsi", ue->imsi) ||
-            !identity_unused(tc, eir, "pei", pei))
+    if (!clear_identity(tc, subscriber, "imsi", ue->imsi) ||
+            !clear_identity(tc, eir, "pei", pei))
         return false;
 
     ogs_hex_from_string(ue->k_string, ue->k, sizeof(ue->k));

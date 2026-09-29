@@ -235,8 +235,7 @@ static void service_request(abts_case *tc, void *data)
     bson_t *insert_opts = NULL;
     bson_oid_t oid;
     bson_error_t error;
-    int64_t count;
-    bool inserted = false, received;
+    bool removed, inserted = false, received;
     http_result_t result;
     const char *expected_content_type;
     cJSON *document, *status;
@@ -244,17 +243,12 @@ static void service_request(abts_case *tc, void *data)
     ogs_debug("EIR HTTP/2: %s", test->name);
     bson_init(&query);
     BSON_APPEND_UTF8(&query, "pei", SERVICE_PEI);
-#if MONGOC_CHECK_VERSION(1, 11, 0)
-    count = mongoc_collection_count_documents(
-            collection, &query, NULL, NULL, NULL, &error);
-#else
-    count = mongoc_collection_count(
-            collection, MONGOC_QUERY_NONE, &query, 0, 0, NULL, &error);
-#endif
+    /* Reset this case's PEI even when the case expects no equipment record. */
+    removed = mongoc_collection_delete_many(
+            collection, &query, NULL, NULL, &error);
     bson_destroy(&query);
-    if (count != 0) {
-        ABTS_FAIL(tc, count < 0 ? error.message :
-                "EIR HTTP fixture PEI already exists; existing records kept");
+    if (!removed) {
+        ABTS_FAIL(tc, error.message);
         return;
     }
 

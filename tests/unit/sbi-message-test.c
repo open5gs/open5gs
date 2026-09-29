@@ -1201,12 +1201,12 @@ static void sbi_message_test12(abts_case *tc, void *data)
 static void sbi_message_test13(abts_case *tc, void *data)
 {
     const char *cases[] = {
-        "{\"authType\":\"5G_AKA\",\"5gAuthData\":{"
+        ("{\"authType\":\"5G_AKA\",\"5gAuthData\":{"
         "\"rand\":\"00112233445566778899aabbccddeeff\","
         "\"hxresStar\":\"00112233445566778899aabbccddeeff\","
-        "\"autn\":\"00112233445566778899aabbccddeeff\"},\"_links\":{}}",
-        "{\"authType\":\"EAP_AKA_PRIME\","
-        "\"5gAuthData\":\"cGF5bG9hZA==\",\"_links\":{}}",
+        "\"autn\":\"00112233445566778899aabbccddeeff\"},\"_links\":{}}"),
+        ("{\"authType\":\"EAP_AKA_PRIME\","
+        "\"5gAuthData\":\"cGF5bG9hZA==\",\"_links\":{}}"),
         "{\"authType\":\"EAP_AKA_PRIME\",\"5gAuthData\":null,\"_links\":{}}"
     };
     OpenAPI_ue_authentication_ctx_t *ctx, *copy;
@@ -1271,6 +1271,63 @@ static void sbi_message_test13(abts_case *tc, void *data)
     ogs_log_set_domain_level(id, level);
 }
 
+static void sbi_message_test14(abts_case *tc, void *data)
+{
+    const struct {
+        const char *uri;
+        int expected;
+    } cases[] = {
+        /* URI from the CIFuzz input: 20 f7 3a 2f 2f 26. */
+        { "\xf7://&", OGS_ERROR },
+        /* Absolute URIs without a path must not start tokenization. */
+        { "http://localhost", OGS_ERROR },
+        { "https://localhost:7777", OGS_ERROR },
+        { "http://[::1]:7777", OGS_ERROR },
+        { "http://localhost?key=value", OGS_ERROR },
+        { "http://localhost#fragment", OGS_ERROR },
+        /* Empty paths and missing API versions are also invalid. */
+        { "", OGS_ERROR },
+        { "/", OGS_ERROR },
+        { "http://localhost/", OGS_ERROR },
+        { "/nnrf-nfm", OGS_ERROR },
+        /* Preserve relative/absolute URI parsing and percent decoding. */
+        { "/nnrf-nfm/v1/nf-instances", OGS_OK },
+        { "http://localhost/nnrf-nfm/v1/nf-instances", OGS_OK },
+        { "https://localhost:7777/nnrf-nfm/v1/nf-instances", OGS_OK },
+        { "http://[::1]:7777/nnrf-nfm/v1/nf-instances", OGS_OK },
+        { "/nnrf%2dnfm/v1/nf%2dinstances", OGS_OK },
+    };
+    ogs_sbi_header_t header;
+    ogs_sbi_message_t message;
+    int id = ogs_log_get_domain_id("sbi");
+    ogs_log_level_e level = ogs_log_get_domain_level(id);
+    int rv;
+    size_t i;
+
+    ogs_log_set_domain_level(id, OGS_LOG_NONE);
+    for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+        memset(&header, 0, sizeof(header));
+        header.method = ogs_strdup(OGS_SBI_HTTP_METHOD_GET);
+        header.uri = ogs_strdup(cases[i].uri);
+        ABTS_PTR_NOTNULL(tc, header.method);
+        ABTS_PTR_NOTNULL(tc, header.uri);
+
+        rv = ogs_sbi_parse_header(&message, &header);
+        ABTS_INT_EQUAL(tc, cases[i].expected, rv);
+        if (rv == OGS_OK) {
+            ABTS_STR_EQUAL(tc, "nnrf-nfm", message.h.service.name);
+            ABTS_STR_EQUAL(tc, "v1", message.h.api.version);
+            ABTS_STR_EQUAL(tc, "nf-instances",
+                    message.h.resource.component[0]);
+            ABTS_PTR_EQUAL(tc, NULL, message.h.resource.component[1]);
+        }
+
+        ogs_sbi_header_free(&header);
+        ogs_free(header.uri);
+    }
+    ogs_log_set_domain_level(id, level);
+}
+
 abts_suite *test_sbi_message(abts_suite *suite)
 {
     size_t i;
@@ -1300,6 +1357,7 @@ abts_suite *test_sbi_message(abts_suite *suite)
     abts_run_test(suite, eir_problem_roundtrip, NULL);
     abts_run_test(suite, sbi_message_test12, NULL);
     abts_run_test(suite, sbi_message_test13, NULL);
+    abts_run_test(suite, sbi_message_test14, NULL);
 
     return suite;
 }

@@ -1,6 +1,7 @@
 # Dedicated configuration for tests/eir. One open5gs-eird serves N5g-eir to
 # the AMF and S13 to the MME out of the same eir collection.
-# Fixtures are owned and removed by each test; the database is never dropped.
+# Each case resets its reserved test identities, then removes its own fixtures.
+# The database and unrelated identities are preserved.
 db_uri: mongodb://localhost/open5gs
 
 logger:

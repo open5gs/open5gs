@@ -245,7 +245,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                     e->h.sbi.message = &message;
                     ogs_fsm_dispatch(&nf_instance->sm, e);
                 } else
-                    ogs_error("NF instance FSM has been finalized");
+                    ogs_warn("NF instance FSM has been finalized");
 
                 break;
 

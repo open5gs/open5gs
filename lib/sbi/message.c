@@ -1424,7 +1424,7 @@ int ogs_sbi_parse_header(ogs_sbi_message_t *message, ogs_sbi_header_t *header)
 
     if (p[0] != '/') {
         int rv = yuarel_parse(&yuarel, p);
-        if (rv != OGS_OK) {
+        if (rv != OGS_OK || !yuarel.path) {
             ogs_error("yuarel_parse() failed");
             ogs_free(uri);
             return OGS_ERROR;
