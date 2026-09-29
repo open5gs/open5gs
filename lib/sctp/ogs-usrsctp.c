@@ -332,6 +332,7 @@ int ogs_sctp_recvmsg(ogs_sock_t *sock, void *msg, size_t len,
 
     memset(&rcv_info, 0, sizeof rcv_info);
     memset(&addr, 0, sizeof addr);
+    infolen = sizeof rcv_info;
     n = usrsctp_recvv(socket, msg, len,
             &addr.sa, &addrlen,
             (void *)&rcv_info,
