@@ -309,6 +309,7 @@ libsbi_openapi_sources = files('''
     model/create_ue_context_403_response.c
     model/create_ue_context_request.c
     model/credit_management_status.c
+    model/data_change_notify.c
     model/data_filter.c
     model/data_ind.c
     model/data_restoration_notification.c
