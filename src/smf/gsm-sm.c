@@ -3136,6 +3136,38 @@ void smf_gsm_state_wait_pfcp_deletion(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert_if_reached();
         }
         break;
+
+    case SMF_EVT_NGAP_MESSAGE:
+        smf_ue = smf_ue_find_by_id(sess->smf_ue_id);
+        ogs_assert(smf_ue);
+
+        stream_id = OGS_POINTER_TO_UINT(e->h.sbi.data);
+        ogs_assert(stream_id >= OGS_MIN_POOL_ID &&
+                stream_id <= OGS_MAX_POOL_ID);
+
+        stream = ogs_sbi_stream_find_by_id(stream_id);
+        if (!stream) {
+            ogs_error("STREAM has already been removed [%d]", stream_id);
+            break;
+        }
+
+        switch (e->ngap.type) {
+        case OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP:
+            /*
+             * The N2 SM info of /modify is queued again, so a /release
+             * already in the queue can move the session here first.
+             * Acknowledge it without activating the session being deleted,
+             * as in smf_gsm_state_wait_5gc_n1_n2_release().
+             */
+            ogs_warn("[%s:%d] Late PDU_RES_SETUP_RSP during PFCP deletion",
+                    smf_ue->supi, sess->psi);
+            ogs_assert(true == ogs_sbi_send_http_status_no_content(stream));
+            break;
+        default:
+            ogs_error("[%s:%d] Unknown message[%d]",
+                    smf_ue->supi, sess->psi, e->ngap.type);
+        }
+        break;
     }
 }
 
