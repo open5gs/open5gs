@@ -242,6 +242,22 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /*
+     * UEContextReleaseComplete and SGsAP-Paging-Request use different
+     * SCTP associations. Their send order therefore does not guarantee
+     * the order in which the MME processes them.
+     *
+     * If the SGsAP paging request is processed first, the UE is still
+     * ECM-CONNECTED and SMS paging triggers SGsAP-Service-Request rather
+     * than S1AP Paging. This test would then block waiting for an S1AP
+     * Paging message that is never sent.
+     *
+     * There is no S1AP response to UEContextReleaseComplete that can be
+     * used as a protocol barrier, so allow the asynchronous S1 release
+     * processing to complete before testing the ECM-IDLE paging path.
+     */
+    ogs_msleep(100);
+
     /* Send SGsAP-Paging-Request */
     sendbuf = test_sgsap_paging_request(2);
     ABTS_PTR_NOTNULL(tc, sendbuf);
