@@ -3369,8 +3369,16 @@ int mme_enb_remove(mme_enb_t *enb)
 
     ogs_hash_set(self.enb_addr_hash,
             enb->sctp.addr, sizeof(ogs_sockaddr_t), NULL);
+
+    /*
+     * S1 Setup on a new SCTP association may have already replaced this ID
+     * while shutdown of the old association was still pending. Removing
+     * the old context must not erase the replacement's ID mapping. A false
+     * result only skips unindexing; the old context is still torn down.
+     */
     if (enb->enb_id_presence == true)
-        ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
+        ogs_hash_unset_if_owner(self.enb_id_hash,
+                &enb->enb_id, sizeof(enb->enb_id), enb);
 
     /*
      * CHECK:
@@ -3417,11 +3425,26 @@ int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id)
 {
     ogs_assert(enb);
 
+    /*
+     * Remove our previous ID before changing its key bytes, but leave it
+     * alone if another association has already taken over that mapping.
+     */
     if (enb->enb_id_presence == true)
-        ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
+        ogs_hash_unset_if_owner(self.enb_id_hash,
+                &enb->enb_id, sizeof(enb->enb_id), enb);
 
     enb->enb_id = enb_id;
-    ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), enb);
+
+    /*
+     * A reconnect can register the same eNB-ID before the old association's
+     * shutdown event is handled. Keep the existing last-registration-wins
+     * mapping, but also replace the key pointer: plain ogs_hash_set() would
+     * retain &old_enb->enb_id even though its value now points to this
+     * context. Freeing or reusing the old context could then break lookups
+     * (including handover target lookup), even with owner-checked removal.
+     */
+    ogs_hash_set_rekey(self.enb_id_hash,
+            &enb->enb_id, sizeof(enb->enb_id), enb);
 
     enb->enb_id_presence = true;
 

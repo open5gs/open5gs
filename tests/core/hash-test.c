@@ -386,6 +386,148 @@ static void hash_count_5(abts_case *tc, void *data)
     ogs_hash_destroy(h);
 }
 
+/* Ordinary set must continue to preserve an existing entry's key pointer. */
+static void hash_set_preserves_key_test(abts_case *tc, void *data)
+{
+    ogs_hash_t *h = ogs_hash_make();
+    uint32_t key[2] = { 0x4001, 0x4001 };
+    int owner[2] = { 0, 1 };
+    ogs_hash_index_t *hi;
+
+    ogs_assert(h);
+    ogs_hash_set(h, &key[0], sizeof(key[0]), &owner[0]);
+    ogs_hash_set(h, &key[1], sizeof(key[1]), &owner[1]);
+    ABTS_PTR_EQUAL(tc, &owner[1], ogs_hash_get(h, &key[1], sizeof(key[1])));
+    hi = ogs_hash_first(h);
+    ABTS_PTR_NOTNULL(tc, hi);
+    if (hi)
+        ABTS_PTR_EQUAL(tc, &key[0], ogs_hash_this_key(hi));
+    ABTS_INT_EQUAL(tc, 1, ogs_hash_count(h));
+    ogs_hash_destroy(h);
+}
+
+static void hash_set_rekey_owner_test(abts_case *tc, void *data)
+{
+    ogs_hash_t *h = ogs_hash_make();
+    uint32_t *old_id = ogs_malloc(sizeof(*old_id));
+    uint32_t new_id = 0x4001;
+    int owner[2] = { 0, 1 };
+    ogs_hash_index_t *hi;
+
+    ogs_assert(h);
+    ogs_assert(old_id);
+    *old_id = new_id;
+    ogs_hash_set_rekey(h, old_id, sizeof(*old_id), &owner[0]);
+    ogs_hash_set_rekey(h, &new_id, sizeof(new_id), &owner[1]);
+    ABTS_INT_EQUAL(tc, 1, ogs_hash_count(h));
+    hi = ogs_hash_first(h);
+    ABTS_PTR_NOTNULL(tc, hi);
+    if (hi)
+        ABTS_PTR_EQUAL(tc, &new_id, ogs_hash_this_key(hi));
+
+    /* Old teardown must not delete the replacement; this skip is logged. */
+    ABTS_TRUE(tc, !ogs_hash_unset_if_owner(
+                h, old_id, sizeof(*old_id), &owner[0]));
+    ABTS_PTR_EQUAL(tc, &owner[1],
+            ogs_hash_get(h, &new_id, sizeof(new_id)));
+
+    /* The old key storage can now go away without orphaning the new owner. */
+    ogs_free(old_id);
+    ABTS_PTR_EQUAL(tc, &owner[1],
+            ogs_hash_get(h, &new_id, sizeof(new_id)));
+    ogs_hash_set_rekey(h, &new_id, sizeof(new_id), &owner[1]);
+    ABTS_INT_EQUAL(tc, 1, ogs_hash_count(h));
+    ABTS_TRUE(tc, ogs_hash_unset_if_owner(
+                h, &new_id, sizeof(new_id), &owner[1]));
+    ABTS_INT_EQUAL(tc, 0, ogs_hash_count(h));
+    ABTS_PTR_EQUAL(tc, NULL, ogs_hash_get(h, &new_id, sizeof(new_id)));
+    ogs_hash_destroy(h);
+}
+
+static void hash_set_rekey_string_test(abts_case *tc, void *data)
+{
+    ogs_hash_t *h = ogs_hash_make();
+    char old_key[] = "same-id";
+    char new_key[] = "same-id";
+    int owner[2] = { 0, 1 };
+    ogs_hash_index_t *hi;
+
+    ogs_assert(h);
+    ogs_hash_set(h, old_key, OGS_HASH_KEY_STRING, &owner[0]);
+    ogs_hash_set_rekey(h, new_key, OGS_HASH_KEY_STRING, &owner[1]);
+    hi = ogs_hash_first(h);
+    ABTS_PTR_NOTNULL(tc, hi);
+    if (hi) {
+        ABTS_PTR_EQUAL(tc, new_key, ogs_hash_this_key(hi));
+        ABTS_INT_EQUAL(tc, strlen(new_key), ogs_hash_this_key_len(hi));
+    }
+    old_key[0] = 'X';
+    ABTS_PTR_EQUAL(tc, &owner[1],
+            ogs_hash_get(h, new_key, OGS_HASH_KEY_STRING));
+
+    /* A resolved string length denotes the same logical key. */
+    ogs_hash_set_rekey(h, new_key, strlen(new_key), &owner[1]);
+    ABTS_INT_EQUAL(tc, 1, ogs_hash_count(h));
+    ogs_hash_destroy(h);
+}
+
+/* Force collisions so rekeying also exercises removal within a bucket. */
+static unsigned int hash_rekey_collision(const char *key, int *klen)
+{
+    if (*klen == OGS_HASH_KEY_STRING)
+        *klen = strlen(key);
+    return 1;
+}
+
+static void hash_set_rekey_collision_test(abts_case *tc, void *data)
+{
+    ogs_hash_t *h = ogs_hash_make_custom(hash_rekey_collision);
+    uint32_t old_key[64], new_key[64];
+    int owner[64], i;
+
+    ogs_assert(h);
+    for (i = 0; i < 64; i++) {
+        old_key[i] = new_key[i] = i;
+        owner[i] = i;
+        ogs_hash_set(h, &old_key[i], sizeof(old_key[i]), &owner[i]);
+    }
+    for (i = 0; i < 64; i++) {
+        ogs_hash_set_rekey(h, &new_key[i], sizeof(new_key[i]), &owner[i]);
+        old_key[i] = i + 64;
+    }
+    ABTS_INT_EQUAL(tc, 64, ogs_hash_count(h));
+    for (i = 0; i < 64; i++) {
+        ABTS_PTR_EQUAL(tc, &owner[i],
+                ogs_hash_get(h, &new_key[i], sizeof(new_key[i])));
+        ABTS_TRUE(tc, ogs_hash_unset_if_owner(
+                    h, &new_key[i], sizeof(new_key[i]), &owner[i]));
+    }
+    ABTS_INT_EQUAL(tc, 0, ogs_hash_count(h));
+    ogs_hash_destroy(h);
+}
+
+static void hash_set_rekey_arguments_test(abts_case *tc, void *data)
+{
+    ogs_hash_t *h = ogs_hash_make();
+    ogs_hash_t *tables[2] = { h, h };
+    uint32_t key = 0;
+    int owner = 0;
+    const void *keys[2] = { &key, &key };
+    const void *values[2] = { &owner, &owner };
+    int lengths[2] = { sizeof(key), sizeof(key) };
+    int ti = 0, ki = 0, li = 0, vi = 0;
+
+    ogs_assert(h);
+    /* A function-backed macro must evaluate each argument only once. */
+    ogs_hash_set_rekey(tables[ti++], keys[ki++], lengths[li++], values[vi++]);
+    ABTS_INT_EQUAL(tc, 1, ti);
+    ABTS_INT_EQUAL(tc, 1, ki);
+    ABTS_INT_EQUAL(tc, 1, li);
+    ABTS_INT_EQUAL(tc, 1, vi);
+    ABTS_PTR_EQUAL(tc, &owner, ogs_hash_get(h, &key, sizeof(key)));
+    ogs_hash_destroy(h);
+}
+
 abts_suite *test_hash(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -393,6 +535,11 @@ abts_suite *test_hash(abts_suite *suite)
     abts_run_test(suite, hash_make_test, NULL);
     abts_run_test(suite, hash_set_test, NULL);
     abts_run_test(suite, hash_get_or_set_test, NULL);
+    abts_run_test(suite, hash_set_preserves_key_test, NULL);
+    abts_run_test(suite, hash_set_rekey_owner_test, NULL);
+    abts_run_test(suite, hash_set_rekey_string_test, NULL);
+    abts_run_test(suite, hash_set_rekey_collision_test, NULL);
+    abts_run_test(suite, hash_set_rekey_arguments_test, NULL);
     abts_run_test(suite, hash_reset, NULL);
     abts_run_test(suite, same_value, NULL);
     abts_run_test(suite, same_value_custom, NULL);

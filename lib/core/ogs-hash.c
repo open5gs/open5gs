@@ -374,6 +374,24 @@ void *ogs_hash_get_or_set_debug(ogs_hash_t *ht,
     return NULL;
 }
 
+void ogs_hash_set_rekey_debug(ogs_hash_t *ht,
+        const void *key, int klen, const void *val, const char *file_line)
+{
+    ogs_assert(ht);
+    ogs_assert(key);
+    ogs_assert(klen);
+    ogs_assert(val);
+
+    /*
+     * Updating an existing entry with ogs_hash_set() changes only its value.
+     * Remove it first so find_entry() also installs the supplied key pointer
+     * on insertion. Neither call frees the displaced key or value.
+     * Keep ordinary ogs_hash_set() semantics unchanged for other callers.
+     */
+    ogs_hash_set_debug(ht, key, klen, NULL, file_line);
+    ogs_hash_set_debug(ht, key, klen, val, file_line);
+}
+
 bool ogs_hash_unset_if_owner_debug(ogs_hash_t *ht,
         const void *key, int klen, const void *owner, const char *file_line)
 {
