@@ -28,7 +28,9 @@ testunit_unit_sources = files('''
     crash-test.c
     mme-dns-select-test.c
     mme-s13-test.c
+    mme-enb-id-test.c
     amf-eir-test.c
+    amf-gnb-id-test.c
     eir-config-test.c
     ipfw-test.c
     pfcp-rule-test.c
