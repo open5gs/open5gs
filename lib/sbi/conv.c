@@ -756,7 +756,7 @@ uint64_t ogs_sbi_bitrate_from_string(char *str)
     END
 
     if (bitrate >= (INT64_MAX / mul))
-        bitrate = INT64_MAX;
+        return INT64_MAX;
     else
         bitrate *= mul;
 

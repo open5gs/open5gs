@@ -413,7 +413,7 @@ bool ogs_hash_unset_if_owner_debug(ogs_hash_t *ht,
      * while this context was still being torn down). Leave the entry alone so
      * the live context stays findable; clearing it would orphan that entry.
      */
-    ogs_error("%s: hash unset skipped: entry not owned by expected context",
+    ogs_warn("%s: hash unset skipped: entry not owned by expected context",
             file_line);
     return false;
 }

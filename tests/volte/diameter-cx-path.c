@@ -134,7 +134,7 @@ void test_cx_send_uar(test_ue_t *test_ue, int id_type)
     /* Set the Destination-Host AVP */
     ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = TEST_HSS_IDENTITY;
+    val.os.data = (uint8_t *)TEST_HSS_IDENTITY;
     val.os.len  = strlen(TEST_HSS_IDENTITY);
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
@@ -403,7 +403,7 @@ static void test_cx_send_mar(struct sess_state *sess_data)
     /* Set the Destination-Host AVP */
     ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = TEST_HSS_IDENTITY;
+    val.os.data = (uint8_t *)TEST_HSS_IDENTITY;
     val.os.len  = strlen(TEST_HSS_IDENTITY);
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
@@ -729,7 +729,7 @@ static void test_cx_send_sar(struct sess_state *sess_data)
     /* Set the Destination-Host AVP */
     ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = TEST_HSS_IDENTITY;
+    val.os.data = (uint8_t *)TEST_HSS_IDENTITY;
     val.os.len  = strlen(TEST_HSS_IDENTITY);
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
@@ -1010,7 +1010,7 @@ static void test_cx_send_lir(struct sess_state *sess_data)
     /* Set the Destination-Host AVP */
     ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = TEST_HSS_IDENTITY;
+    val.os.data = (uint8_t *)TEST_HSS_IDENTITY;
     val.os.len  = strlen(TEST_HSS_IDENTITY);
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
