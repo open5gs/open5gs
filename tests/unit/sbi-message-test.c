@@ -721,6 +721,21 @@ static void sbi_message_test8(abts_case *tc, void *data)
 
 static void sbi_message_test9(abts_case *tc, void *data)
 {
+    static const struct {
+        const char *input;
+        const char *expected;
+    } cases[] = {
+        { "%41%2f%2F", "A//" },
+        { "%80%ff", "\200\377" },
+        /* OSS-Fuzz: a '%' without two hex digits is dropped. */
+        { "%\3770", "\3770" },
+        { "%-0", "-0" },
+        { "%0G", "0G" },
+        /* A truncated escape is dropped as before. */
+        { "%", "" },
+        { "%A", "A" },
+    };
+    size_t i;
     const char *original = "{\"sst\": 1, \"sd\": \"A08923\"}";
     char *encoded = ogs_sbi_url_encode(original);
     char *decoded = ogs_sbi_url_decode(encoded);
@@ -731,6 +746,12 @@ static void sbi_message_test9(abts_case *tc, void *data)
 
     ogs_free(encoded);
     ogs_free(decoded);
+
+    for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+        decoded = ogs_sbi_url_decode(cases[i].input);
+        ABTS_STR_EQUAL(tc, cases[i].expected, decoded);
+        ogs_free(decoded);
+    }
 }
 
 typedef struct multipart_parser_data_s {

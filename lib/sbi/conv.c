@@ -491,7 +491,8 @@ char *ogs_sbi_url_decode(const char *str)
         ogs_assert(buf);
         while (*pstr) {
             if (*pstr == '%') {
-                if (pstr[1] && pstr[2]) {
+                if (isxdigit((unsigned char)pstr[1]) &&
+                        isxdigit((unsigned char)pstr[2])) {
                     *pbuf++ = ogs_from_hex(pstr[1]) << 4 |
                                 ogs_from_hex(pstr[2]);
                     pstr += 2;
