@@ -19,6 +19,7 @@ testunit_unit_sources = files('''
     abts-main.c
     proto-message-test.c
     s1ap-message-test.c
+    sbcap-message-test.c
     nas-message-test.c
     gtp-message-test.c
     ngap-message-test.c
@@ -41,6 +42,7 @@ testunit_unit_exe = executable('unit',
     c_args : [testunit_core_cc_flags, sbi_cc_flags],
     include_directories : srcinc,
     dependencies : [libs1ap_dep,
+                    libsbcap_dep,
                     libgtp_dep,
                     libngap_dep,
                     libnas_eps_dep,
