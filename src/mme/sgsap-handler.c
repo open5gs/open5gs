@@ -737,18 +737,34 @@ void sgsap_handle_downlink_unitdata(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_tlv_free_all(root);
 
-    ogs_assert(nas_mobile_identity_imsi);
-    ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
-    ogs_assert(nas_message_container_buffer);
-    ogs_assert(nas_message_container_length);
+    /* Received IEs are peer input, not internal invariants. Validate
+     * the size before reading the identity type or converting digits. */
+    if (!nas_mobile_identity_imsi) {
+        ogs_error("Missing SGsAP IMSI");
+        return;
+    }
+    if (nas_mobile_identity_imsi_len != SGSAP_IE_IMSI_LEN) {
+        ogs_error("Invalid SGsAP IMSI length [%d], expected [%d]",
+                nas_mobile_identity_imsi_len, SGSAP_IE_IMSI_LEN);
+        return;
+    }
+    if (nas_mobile_identity_imsi->type != OGS_NAS_MOBILE_IDENTITY_IMSI) {
+        ogs_error("Invalid SGsAP identity type [%d], expected [%d]",
+                nas_mobile_identity_imsi->type, OGS_NAS_MOBILE_IDENTITY_IMSI);
+        return;
+    }
+    if (!nas_message_container_buffer) {
+        ogs_error("Missing SGsAP NAS message container");
+        return;
+    }
+    if (!nas_message_container_length) {
+        ogs_error("Empty SGsAP NAS message container");
+        return;
+    }
 
-    if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
-
-        ogs_nas_eps_imsi_to_bcd(nas_mobile_identity_imsi,
-                nas_mobile_identity_imsi_len, imsi_bcd);
-        mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
-    } else
-        ogs_assert_if_reached();
+    ogs_nas_eps_imsi_to_bcd(nas_mobile_identity_imsi,
+            nas_mobile_identity_imsi_len, imsi_bcd);
+    mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
 
     if (!mme_ue) {
         ogs_error("No UE(mme-ue) context");

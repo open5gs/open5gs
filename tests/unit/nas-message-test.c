@@ -479,12 +479,67 @@ static void ogs_nas_eps_message_test9(abts_case *tc, void *data)
     ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
 }
 
+static void imeisv_conversion_test(abts_case *tc, void *data)
+{
+    ogs_nas_mobile_identity_imeisv_t identity = {
+        .digit1 = 1, .digit2 = 2, .digit3 = 3, .digit4 = 4,
+        .digit5 = 5, .digit6 = 6, .digit7 = 7, .digit8 = 8,
+        .digit9 = 9, .digit10 = 0, .digit11 = 1, .digit12 = 2,
+        .digit13 = 3, .digit14 = 4, .digit15 = 5, .digit16 = 6,
+        .digit17 = 0xf, .odd_even = 0,
+        .type = OGS_NAS_MOBILE_IDENTITY_IMEISV
+    };
+    struct {
+        char bcd[OGS_MAX_IMEISV_BCD_LEN + 1];
+        uint8_t guard;
+    } output, saved;
+    ogs_log_level_e level = ogs_log_get_domain_level(__ogs_nas_domain);
+    const uint8_t invalid_lengths[] = {0, 8, 10};
+    size_t i;
+
+    memset(&output, 0xa5, sizeof(output));
+    ABTS_INT_EQUAL(tc, OGS_OK,
+            ogs_nas_imeisv_to_bcd(&identity, sizeof(identity), output.bcd));
+    ABTS_STR_EQUAL(tc, "1234567890123456", output.bcd);
+    ABTS_INT_EQUAL(tc, 0xa5, output.guard);
+    saved = output;
+
+    /* Suppress only the errors deliberately triggered by this test. */
+    ogs_log_set_domain_level(__ogs_nas_domain, OGS_LOG_NONE);
+    identity.odd_even = 1;
+    ABTS_INT_EQUAL(tc, OGS_ERROR,
+            ogs_nas_imeisv_to_bcd(&identity, sizeof(identity), output.bcd));
+    ABTS_TRUE(tc, !memcmp(&saved, &output, sizeof(output)));
+    identity.odd_even = 0;
+    for (i = 0; i < OGS_ARRAY_SIZE(invalid_lengths); i++) {
+        ABTS_INT_EQUAL(tc, OGS_ERROR,
+                ogs_nas_imeisv_to_bcd(&identity,
+                    invalid_lengths[i], output.bcd));
+        ABTS_TRUE(tc, !memcmp(&saved, &output, sizeof(output)));
+    }
+
+    /* Filler and digit validity keep the previous acceptance policy. */
+    identity.digit17 = 0;
+    ABTS_INT_EQUAL(tc, OGS_OK,
+            ogs_nas_imeisv_to_bcd(&identity, sizeof(identity), output.bcd));
+    ABTS_TRUE(tc, !memcmp(&saved, &output, sizeof(output)));
+    identity.digit17 = 0xf;
+    identity.digit1 = 0xa;
+    ABTS_INT_EQUAL(tc, OGS_OK,
+            ogs_nas_imeisv_to_bcd(&identity, sizeof(identity), output.bcd));
+    ABTS_INT_EQUAL(tc, ':', output.bcd[0]);
+    ABTS_INT_EQUAL(tc, 0, output.bcd[OGS_MAX_IMEISV_BCD_LEN]);
+    ABTS_INT_EQUAL(tc, 0xa5, output.guard);
+    ogs_log_set_domain_level(__ogs_nas_domain, level);
+}
+
 abts_suite *test_nas_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
 
+    abts_run_test(suite, imeisv_conversion_test, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test1, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test2, NULL);
     abts_run_test(suite, ogs_nas_eps_message_test3, NULL);

@@ -264,11 +264,21 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
             sess->pgw_epco.data;
     } else if (sess->pgw_pco.presence && sess->pgw_pco.len &&
             sess->pgw_pco.data) {
-        activate_default_eps_bearer_context_request->presencemask |=
-            OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
-        protocol_configuration_options->length = sess->pgw_pco.len;
-        memcpy(protocol_configuration_options->buffer,
-                sess->pgw_pco.data, protocol_configuration_options->length);
+        /* Check the original GTP length before narrowing it to a NAS
+         * octet. Do not truncate inside a PCO container. Omit this optional
+         * IE rather than fail the builder: its callers assert on failure. */
+        if (sess->pgw_pco.len >
+                sizeof(protocol_configuration_options->buffer)) {
+            ogs_error("[%s] Omit oversized PCO [len:%u,max:%zu]",
+                    mme_ue->imsi_bcd, sess->pgw_pco.len,
+                    sizeof(protocol_configuration_options->buffer));
+        } else {
+            activate_default_eps_bearer_context_request->presencemask |=
+                OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+            protocol_configuration_options->length = sess->pgw_pco.len;
+            memcpy(protocol_configuration_options->buffer,
+                    sess->pgw_pco.data, protocol_configuration_options->length);
+        }
     }
 
     if (create_action == OGS_GTP_CREATE_IN_ATTACH_REQUEST)

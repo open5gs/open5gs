@@ -20,6 +20,8 @@
 #include "ogs-s1ap.h"
 #include "ogs-crypt.h"
 #include "core/abts.h"
+#include "mme/mme-context.h"
+#include "mme/sgsap-handler.h"
 
 static void test1_func(abts_case *tc, void *data)
 {
@@ -763,6 +765,50 @@ static void test8_func(abts_case *tc, void *data)
     ogs_pkbuf_free(enb_pkbuf);
 }
 
+static void sgsap_invalid_downlink_unitdata_test(abts_case *tc, void *data)
+{
+    static const struct {
+        uint8_t bytes[16];
+        unsigned int len;
+    } cases[] = {
+        {{7}, 1},                                      /* No IEs */
+        {{7, 22, 1, 0}, 4},                            /* No IMSI */
+        {{7, 1, 0, 22, 1, 0}, 6},                      /* Empty IMSI */
+        {{7, 1, 1, 0x19, 22, 1, 0}, 7},                /* Short IMSI */
+        {{7, 1, 8, 0x19}, 4},                          /* Truncated TLV */
+        {{7, 1, 9, 0x19, 0, 0, 0, 0, 0, 0, 0, 0,
+            22, 1, 0}, 15},                            /* Long IMSI */
+        {{7, 1, 8, 0x1b, 0, 0, 0, 0, 0, 0, 0,
+            22, 1, 0}, 14},                            /* Wrong type */
+        {{7, 1, 8, 0x19, 0, 0, 0, 0, 0, 0, 0}, 11},  /* No container */
+        {{7, 1, 8, 0x19, 0, 0, 0, 0, 0, 0, 0,
+            22, 0}, 13},                               /* Empty container */
+    };
+    mme_vlr_t vlr;
+    ogs_pkbuf_t *pkbuf;
+    size_t i;
+
+    ogs_log_install_domain(&__mme_log_domain, "mme", OGS_LOG_ERROR);
+    ogs_log_level_e level = ogs_log_get_domain_level(__mme_log_domain);
+
+    ogs_log_set_domain_level(__mme_log_domain, OGS_LOG_NONE);
+    memset(&vlr, 0, sizeof(vlr));
+    for (i = 0; i < OGS_ARRAY_SIZE(cases); i++) {
+        pkbuf = ogs_pkbuf_alloc(NULL, sizeof(cases[i].bytes));
+        ABTS_PTR_NOTNULL(tc, pkbuf);
+        if (!pkbuf) {
+            ogs_log_set_domain_level(__mme_log_domain, level);
+            return;
+        }
+        ogs_pkbuf_put_data(pkbuf, cases[i].bytes, cases[i].len);
+        /* No MME UE hash is installed: malformed messages must return
+         * before lookup, as well as avoiding peer-triggered assertions. */
+        sgsap_handle_downlink_unitdata(&vlr, pkbuf);
+        ogs_pkbuf_free(pkbuf);
+    }
+    ogs_log_set_domain_level(__mme_log_domain, level);
+}
+
 abts_suite *test_crash(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -775,6 +821,7 @@ abts_suite *test_crash(abts_suite *suite)
     abts_run_test(suite, test6_func, NULL);
     abts_run_test(suite, test7_func, NULL);
     abts_run_test(suite, test8_func, NULL);
+    abts_run_test(suite, sgsap_invalid_downlink_unitdata_test, NULL);
 
     return suite;
 }

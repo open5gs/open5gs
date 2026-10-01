@@ -1125,22 +1125,31 @@ ogs_nas_5gmm_cause_t gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
         mobile_identity_imeisv =
             (ogs_nas_mobile_identity_imeisv_t *)imeisv->buffer;
         ogs_assert(mobile_identity_imeisv);
-
-        switch (mobile_identity_imeisv->type) {
-        case OGS_NAS_5GS_MOBILE_IDENTITY_IMEISV:
-            /* TS23.003 6.2.2 Composition of IMEISV
-             *
-             * The International Mobile station Equipment Identity and
-             * Software Version Number (IMEISV) is composed.
-             *
-             * TAC(8 digits) - SNR(6 digits) - SVN(2 digits)
-             * IMEISV(16 digits) ==> 8bytes
-             */
-            if (imeisv->length == sizeof(ogs_nas_mobile_identity_imeisv_t)) {
+        /* Check the container before reading even its identity type. */
+        if (imeisv->length != sizeof(*mobile_identity_imeisv)) {
+            ogs_error("[%s] Invalid IMEISV length [%d]",
+                    amf_ue->supi, imeisv->length);
+            ogs_log_hexdump(OGS_LOG_ERROR, imeisv->buffer, imeisv->length);
+        } else {
+            switch (mobile_identity_imeisv->type) {
+            case OGS_NAS_5GS_MOBILE_IDENTITY_IMEISV:
+                /* TS23.003 6.2.2 Composition of IMEISV
+                 *
+                 * The International Mobile station Equipment Identity and
+                 * Software Version Number (IMEISV) is composed.
+                 *
+                 * TAC(8 digits) - SNR(6 digits) - SVN(2 digits)
+                 * IMEISV(16 digits) ==> 8bytes
+                 */
+                if (ogs_nas_imeisv_to_bcd(mobile_identity_imeisv,
+                            imeisv->length, amf_ue->imeisv_bcd) != OGS_OK) {
+                    ogs_error("[%s] Invalid IMEISV encoding", amf_ue->supi);
+                    ogs_log_hexdump(OGS_LOG_ERROR,
+                            imeisv->buffer, imeisv->length);
+                    break;
+                }
                 memcpy(&amf_ue->nas_mobile_identity_imeisv,
                     mobile_identity_imeisv, imeisv->length);
-                ogs_nas_imeisv_to_bcd(mobile_identity_imeisv, imeisv->length,
-                        amf_ue->imeisv_bcd);
                 ogs_nas_imeisv_bcd_to_buffer(amf_ue->imeisv_bcd,
                         amf_ue->masked_imeisv, &amf_ue->masked_imeisv_len);
                 amf_ue->masked_imeisv[5] = 0xff;
@@ -1149,17 +1158,12 @@ ogs_nas_5gmm_cause_t gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
                     ogs_free(amf_ue->pei);
                 amf_ue->pei = ogs_msprintf("imeisv-%s", amf_ue->imeisv_bcd);
                 ogs_assert(amf_ue->pei);
-            } else {
-                ogs_error("[%s] Unknown IMEISV Length [%d]",
-                        amf_ue->supi, imeisv->length);
-                ogs_log_hexdump(OGS_LOG_ERROR, imeisv->buffer, imeisv->length);
+                break;
+            default:
+                ogs_error("[%s] Invalid IMEISV Type [%d]",
+                        amf_ue->supi, mobile_identity_imeisv->type);
+                break;
             }
-            break;
-        default:
-            ogs_warn("[%s] Invalid IMEISV Type [%d]",
-                    amf_ue->supi, mobile_identity_imeisv->type);
-            break;
-
         }
     }
 

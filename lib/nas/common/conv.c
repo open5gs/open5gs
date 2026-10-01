@@ -19,10 +19,28 @@
 
 #include "ogs-nas-common.h"
 
-void ogs_nas_imeisv_to_bcd(
+int ogs_nas_imeisv_to_bcd(
     ogs_nas_mobile_identity_imeisv_t *imeisv, uint8_t imeisv_len, char *bcd)
 {
-    int bcd_len;
+    /* IMEISV contains exactly 16 digits: 9 NAS octets with even parity.
+     * Check before writing, so invalid input leaves the stored identity
+     * untouched and cannot reach the unbounded BCD-to-buffer converters. */
+    if (imeisv_len != sizeof(*imeisv)) {
+        ogs_error("Invalid IMEISV length [%d], expected [%zu]",
+                imeisv_len, sizeof(*imeisv));
+        return OGS_ERROR;
+    }
+    if (imeisv->odd_even) {
+        ogs_error("Invalid IMEISV odd/even [%d], expected [0]",
+                imeisv->odd_even);
+        return OGS_ERROR;
+    }
+
+    /* Preserve the existing tolerance for a nonstandard filler. It is
+     * outside the 16 digits copied below, so it cannot enlarge bcd[]. */
+    if (imeisv->digit17 != 0xf)
+        ogs_error("Invalid IMEISV filler [0x%x], expected [0xf]; ignored",
+                (unsigned int)imeisv->digit17);
 
     bcd[0] = '0' + imeisv->digit1;
     bcd[1] = '0' + imeisv->digit2;
@@ -40,18 +58,8 @@ void ogs_nas_imeisv_to_bcd(
     bcd[13] = '0' + imeisv->digit14;
     bcd[14] = '0' + imeisv->digit15;
     bcd[15] = '0' + imeisv->digit16;
-    bcd[16] = '0' + imeisv->digit17;
-
-    bcd_len = imeisv_len * 2 - 1;
-    if (!imeisv->odd_even) { /* if bcd length is even */
-        if (imeisv->digit17 != 0xf) {
-            ogs_warn("Spec warning : bcd[%d] = 0x%x, 0x%x",
-                    bcd_len-1, imeisv->digit17, bcd[bcd_len-1]);
-        }
-        (bcd_len)--;
-    }
-
-    bcd[bcd_len] = 0;
+    bcd[OGS_MAX_IMEISV_BCD_LEN] = 0;
+    return OGS_OK;
 }
 
 void *ogs_nas_imeisv_bcd_to_buffer(const char *in, uint8_t *out, int *out_len)
