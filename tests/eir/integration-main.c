@@ -7,6 +7,7 @@
 static char *eir_uri;
 static char *nrf_uri;
 static bool allow_policy;
+static bool epc_guti;
 
 bool test_eir_allow_policy(void)
 {
@@ -112,8 +113,8 @@ static void terminate(void)
     app_terminate();
     test_app_final();
 
-    ogs_free(eir_uri);
-    ogs_free(nrf_uri);
+    if (eir_uri) ogs_free(eir_uri);
+    if (nrf_uri) ogs_free(nrf_uri);
     ogs_app_terminate();
     curl_global_cleanup();
 }
@@ -128,9 +129,11 @@ static void initialize(const char *const argv[])
     ogs_assert(rv == OGS_OK);
     test_app_init();
 
-    eir_uri = config_sbi_uri("eir");
-    nrf_uri = config_sbi_uri("nrf");
-    ogs_assert(eir_uri && nrf_uri);
+    if (!epc_guti) {
+        eir_uri = config_sbi_uri("eir");
+        nrf_uri = config_sbi_uri("nrf");
+        ogs_assert(eir_uri && nrf_uri);
+    }
 
     rv = app_initialize(argv);
     if (rv != OGS_OK)
@@ -142,7 +145,18 @@ int main(int argc, const char *const argv[])
 {
     abts_suite *suite = NULL;
     CURLcode rv;
+    const char *config;
+    const char *mode = ogs_env_get("OPEN5GS_EIR_TEST_MODE");
     const char *policy = ogs_env_get("OPEN5GS_EIR_TEST_POLICY");
+
+    if (mode) {
+        if (!strcmp(mode, "epc-guti"))
+            epc_guti = true;
+        else if (strcmp(mode, "integration")) {
+            fprintf(stderr, "Invalid EIR test mode: %s\n", mode);
+            return EXIT_FAILURE;
+        }
+    }
 
     if (policy) {
         if (!strcmp(policy, "allow"))
@@ -161,8 +175,13 @@ int main(int argc, const char *const argv[])
     }
 
     atexit(terminate);
-    test_app_run(argc, argv,
-            allow_policy ? "eir-allow.yaml" : "eir.yaml", initialize);
+    config = epc_guti ? "attach.yaml" :
+        allow_policy ? "eir-allow.yaml" : "eir.yaml";
+    test_app_run(argc, argv, config, initialize);
+
+    /* EPC regressions also run without EIR, so do not require SBI discovery. */
+    if (epc_guti)
+        return abts_report(test_guti_epc(suite));
 
     /* Discovery confirms that EIR registered its SBI service with the NRF. */
     if (!test_eir_wait_ready()) {

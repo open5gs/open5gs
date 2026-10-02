@@ -850,6 +850,17 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     }
 
     if (mme_ue_from_stmsi) {
+        if (mme_ue_from_stmsi->attach_session_delete_pending) {
+            /* Keep the authenticated Attach's serving S1 association. */
+            if (enb_ue_new) {
+                r = s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+                ogs_expect(r == OGS_OK);
+                ogs_assert(r != OGS_ERROR);
+            }
+            return;
+        }
         /* If NAS(mme_ue_t) has already been associated with
          * older S1(enb_ue_t) context */
         if (ECM_CONNECTED(mme_ue_from_stmsi)) {

@@ -844,10 +844,19 @@ void mme_s11_handle_delete_session_response(
         /* No Action to be taken after sessions are deleted during
          * MME Initiated detach. S1 will be cleared after receipt
          * of the detach accept from UE */
-    } else if (action == OGS_GTP_DELETE_SEND_AUTHENTICATION_REQUEST) {
-        if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
-            mme_s6a_send_air(enb_ue, mme_ue, NULL);
+    } else if (action == OGS_GTP_DELETE_SEND_UPDATE_LOCATION_REQUEST) {
+        bool continue_attach = mme_ue->attach_session_delete_pending &&
+            mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST &&
+            OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup) &&
+            enb_ue && ENB_UE_IS_SERVING(mme_ue, enb_ue);
+
+        MME_SESS_CLEAR(sess);
+        if (!mme_sess_count(mme_ue)) {
+            mme_ue->attach_session_delete_pending = false;
+            if (continue_attach)
+                mme_s6a_send_ulr(enb_ue, mme_ue, 0);
         }
+        return;
 
     } else if (action == OGS_GTP_DELETE_SEND_DETACH_ACCEPT) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {

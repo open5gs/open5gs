@@ -154,6 +154,8 @@ void testemm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         break;
     case OGS_NAS_EPS_AUTHENTICATION_REJECT:
         break;
+    case OGS_NAS_EPS_DETACH_ACCEPT:
+        break;
     case OGS_NAS_EPS_SECURITY_MODE_COMMAND:
         break;
     case OGS_NAS_EPS_ATTACH_ACCEPT:

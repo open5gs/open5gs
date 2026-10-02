@@ -503,7 +503,7 @@ ogs_pkbuf_t *testemm_build_detach_request(
     if (integrity_protected)
         return test_nas_eps_security_encode(test_ue, &message);
     else
-        return ogs_nas_eps_plain_encode(&message);
+        return test_nas_eps_plain_encode(&message);
 }
 
 ogs_pkbuf_t *testemm_build_service_request(test_ue_t *test_ue)

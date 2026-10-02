@@ -21,6 +21,7 @@
 #define MME_SM_H
 
 #include "mme-event.h"
+#include "mme-context.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,6 +46,24 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e);
 void emm_state_registered(ogs_fsm_t *s, mme_event_t *e);
 void emm_state_ue_context_will_remove(ogs_fsm_t *s, mme_event_t *e);
 void emm_state_exception(ogs_fsm_t *s, mme_event_t *e);
+
+/* Keep the failure log's file, line and function at the call site. */
+#define MME_RESTORE_CONTEXT_ON_FAILURE(__mME, __s) do { \
+    CLEAR_MME_UE_TIMER((__mME)->t3460); \
+    if ((__mME)->can_restore_context) { \
+        mme_ue_restore_memento((__mME), &((__mME)->memento)); \
+        (__mME)->security_context_available = 1; \
+        (__mME)->mac_failed = 0; \
+        if (!OGS_FSM_CHECK((__s), emm_state_registered)) \
+            OGS_FSM_TRAN((__s), &emm_state_registered); \
+        ogs_warn("[%s] Failure in transaction; restoring context and " \
+                 "transitioning to REGISTERED.", (__mME)->imsi_bcd); \
+    } else { \
+        OGS_FSM_TRAN((__s), &emm_state_exception); \
+        ogs_warn("[%s] Failure in transaction; no context " \
+                 "restoration.", (__mME)->imsi_bcd); \
+    } \
+} while (0)
 
 void esm_state_initial(ogs_fsm_t *s, mme_event_t *e);
 void esm_state_final(ogs_fsm_t *s, mme_event_t *e);

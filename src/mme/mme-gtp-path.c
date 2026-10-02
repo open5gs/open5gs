@@ -172,6 +172,11 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
 
     switch (type) {
     case OGS_GTP2_DELETE_SESSION_REQUEST_TYPE:
+        if (xact->delete_action ==
+                OGS_GTP_DELETE_SEND_UPDATE_LOCATION_REQUEST) {
+            /* Do not resume this Attach on a later deletion response. */
+            mme_ue->attach_session_delete_pending = false;
+        }
         /*
          * If SESSION_CONTEXT_WILL_DELETED(MME_UE) is not cleared,
          * The MME cannot send Delete-Session-Request to the SGW-C.

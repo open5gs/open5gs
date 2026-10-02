@@ -267,6 +267,13 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         mme_ue = mme_ue_find_by_id(enb_ue->mme_ue_id);
 
+        if (mme_ue && mme_ue->attach_session_delete_pending) {
+            ogs_error("[%s] NAS message while deleting old Attach sessions",
+                    mme_ue->imsi_bcd);
+            ogs_pkbuf_free(pkbuf);
+            return;
+        }
+
         /*
          * ATTACH REQUEST on an S1 context that already belongs to
          * someone else.
@@ -349,6 +356,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
                 ogs_assert(ECM_IDLE(mme_ue));
             } else {
+                if (mme_ue->attach_session_delete_pending) {
+                    ogs_error("[%s] NAS message while deleting old Attach "
+                            "sessions", mme_ue->imsi_bcd);
+                    r = s1ap_send_ue_context_release_command(enb_ue,
+                            S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                            S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+                    ogs_expect(r == OGS_OK);
+                    ogs_assert(r != OGS_ERROR);
+                    ogs_pkbuf_free(pkbuf);
+                    return;
+                }
                 /* Here, if the MME_UE Context is found,
                  * the integrity check is not performed
                  * For example, ATTACH_REQUEST,
@@ -438,6 +456,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
+        if (mme_ue->attach_session_delete_pending || mme_ue->eir_check_pending) {
+            ogs_error("[%s] ESM message while "
+                    "checking EIR or deleting sessions", mme_ue->imsi_bcd);
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
         if (ogs_nas_esm_decode(&nas_message, pkbuf) != OGS_OK) {
             ogs_error("ogs_nas_esm_decode() failed");
             ogs_pkbuf_free(pkbuf);
@@ -655,6 +679,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         switch (s6a_message->cmd_code) {
         case OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
             ogs_debug("OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION");
+            if (!OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication) ||
+                !enb_ue || !ENB_UE_IS_SERVING(mme_ue, enb_ue)) {
+                ogs_error("[%s] Ignore AIA for an inactive authentication",
+                        mme_ue->imsi_bcd);
+                break;
+            }
             if (e->gtp_xact_id != OGS_INVALID_POOL_ID)
                 xact = ogs_gtp_xact_find_by_id(e->gtp_xact_id);
             else
@@ -691,9 +721,17 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 } else
                     ogs_error("Invalid Type[%d]", mme_ue->nas_eps.type);
 
-                r = s1ap_send_ue_context_release_command(enb_ue,
-                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                if (mme_ue->can_restore_context &&
+                    OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication)) {
+                    MME_RESTORE_CONTEXT_ON_FAILURE(mme_ue, &mme_ue->sm);
+                    r = s1ap_send_ue_context_release_command(enb_ue,
+                            S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                            S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
+                } else {
+                    r = s1ap_send_ue_context_release_command(enb_ue,
+                            S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                            S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                }
                 ogs_expect(r == OGS_OK);
                 ogs_assert(r != OGS_ERROR);
                 break;
