@@ -96,6 +96,10 @@ typedef struct ogs_sbi_client_s {
     void            *multi;             /* CURL multi handle */
     int             still_running;      /* number of running CURL handle */
 
+    /* dead-connection self-heal (see client.c) */
+    int             num_of_consecutive_timeouts;
+    ogs_time_t      last_connection_reset;
+
     unsigned int    reference_count;    /* reference count for memory free */
 } ogs_sbi_client_t;
 
