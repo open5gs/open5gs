@@ -20,6 +20,7 @@
 #include "mme-sm.h"
 #include "mme-s13-handler.h"
 #include "mme-fd-path.h"
+#include "mme-path.h"
 #include "nas-path.h"
 #include "s1ap-path.h"
 
@@ -201,7 +202,7 @@ void mme_s13_complete_check(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
 
     if (emm_cause == OGS_NAS_EMM_CAUSE_REQUEST_ACCEPTED) {
         ogs_info("[%s] Continue attach after EIR check", mme_ue->imsi_bcd);
-        mme_s6a_send_ulr(enb_ue, mme_ue, 0);
+        mme_send_delete_session_or_update_location_request(enb_ue, mme_ue);
         return;
     }
 
@@ -227,9 +228,5 @@ void mme_s13_reject_ue(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
     } else
         ogs_error("Invalid Type[%d]", mme_ue->nas_eps.type);
 
-    r = s1ap_send_ue_context_release_command(enb_ue,
-            S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-            S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
-    ogs_expect(r == OGS_OK);
-    ogs_assert(r != OGS_ERROR);
+    mme_send_delete_session_or_mme_ue_context_release(enb_ue, mme_ue);
 }

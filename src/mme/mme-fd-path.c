@@ -820,6 +820,8 @@ static void _mme_s6a_send_air(enb_ue_t *enb_ue, mme_ue_t *mme_ue,
 
     /* Clear Security Context */
     CLEAR_SECURITY_CONTEXT(mme_ue);
+    /* A response to an earlier challenge cannot satisfy this AIR. */
+    mme_ue->xres_len = 0;
 
     /* Create the random value to store with the session */
     sess_data = ogs_calloc(1, sizeof (*sess_data));

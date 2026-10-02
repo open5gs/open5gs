@@ -5817,6 +5817,11 @@ void mme_ue_save_memento(mme_ue_t *mme_ue, mme_ue_memento_t *memento)
     ogs_assert(mme_ue);
     ogs_assert(memento);
 
+    memento->ue_ksi = mme_ue->nas_eps.ue.ksi;
+    memento->ue_tsc = mme_ue->nas_eps.ue.tsc;
+    memento->mme_ksi = mme_ue->nas_eps.mme.ksi;
+    memento->mme_tsc = mme_ue->nas_eps.mme.tsc;
+
     memcpy(&memento->ue_network_capability,
             &mme_ue->ue_network_capability,
             sizeof(memento->ue_network_capability));
@@ -5854,6 +5859,11 @@ void mme_ue_restore_memento(mme_ue_t *mme_ue, const mme_ue_memento_t *memento)
 {
     ogs_assert(mme_ue);
     ogs_assert(memento);
+
+    mme_ue->nas_eps.ue.ksi = memento->ue_ksi;
+    mme_ue->nas_eps.ue.tsc = memento->ue_tsc;
+    mme_ue->nas_eps.mme.ksi = memento->mme_ksi;
+    mme_ue->nas_eps.mme.tsc = memento->mme_tsc;
 
     memcpy(&mme_ue->ue_network_capability,
             &memento->ue_network_capability,

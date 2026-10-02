@@ -419,6 +419,10 @@ struct sgw_ue_s {
 };
 
 typedef struct mme_ue_memento_s {
+    /* NAS key identifiers changed by an unauthenticated Attach. */
+    uint8_t ue_ksi, ue_tsc;
+    uint8_t mme_ksi, mme_tsc;
+
     /* UE network capability info: supported network features. */
     ogs_nas_ue_network_capability_t ue_network_capability;
     /* MS network capability info: supported network features. */
@@ -624,6 +628,9 @@ struct mme_ue_s {
 
     /* flag: 1 = allow restoration of context, 0 = disallow */
     bool            can_restore_context;
+
+    /* Authenticated Attach waiting for the old PDN sessions to be deleted. */
+    bool            attach_session_delete_pending;
 
     /*
      * ue_context_will_remove:
